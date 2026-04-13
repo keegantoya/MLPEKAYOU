@@ -1,4 +1,5 @@
-import { useParams } from "react-router-dom";
+
+  import { useParams } from "react-router-dom";
 import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -58,7 +59,7 @@ const Collection = () => {
 
       if (user) {
         const { data: saved } = await supabase
-          .from("collection_progress")
+          .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", user.id)
           .eq("set_id", id)
@@ -114,7 +115,7 @@ const Collection = () => {
       if (!user) return;
 
       await supabase
-        .from("collection_progress")
+        .from("collection_progress_raw")
         .upsert(
           {
             user_id: user.id,
@@ -223,9 +224,146 @@ const Collection = () => {
   };
 
   const getCardBack = (rarity: string, number: number) => {
-    return "/card-backs/M1R-SR-SGR-SCBACK.jpeg";
-  };
 
+  const padded = String(number).padStart(3, "0");
+
+// Force default for LSR
+if (rarity === "LSR") {
+  return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+}
+
+  // ---------- MOON 1 ----------
+  if (set.prefix === "M1") {
+
+    // R (individual backs)
+    if (rarity === "R") {
+      return `/moon-1-other-backs/M1RBK${padded}.jpg`;
+    }
+
+    // SR (individual backs)
+    if (rarity === "SR") {
+      return `/moon-1-other-backs/M1SRB${padded}.jpg`;
+    }
+
+    // HR
+    if (rarity === "HR") {
+      const sideways = [8,9,10,18,19,21,23,27,32,34,36];
+      if (sideways.includes(number)) {
+        return `/card-backs/M1HRSIDEWAYSBACK.jpg`;
+      }
+      return `/card-backs/M1HRBACK.jpeg`;
+    }
+
+    // SSR
+    if (rarity === "SSR") {
+      return `/card-backs/M1SSRBACK.jpeg`;
+    }
+
+    // UR
+    if (rarity === "UR") {
+      if (number === 16) {
+        return `/card-backs/M1URSIDEWAYSBACK.jpg`;
+      }
+      return `/card-backs/M1URBACK.jpeg`;
+    }
+
+    // SGR
+    if (rarity === "SGR") {
+      return `/card-backs/M1SGRBACK.jpeg`;
+    }
+
+    // SC
+    if (rarity === "SC") {
+      if (number === 7) {
+        return `/card-backs/M1SCBACK.jpeg`;
+      }
+      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+    }
+
+    // LSR default
+    if (rarity === "LSR") {
+      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+    }
+  }
+
+  // ---------- MOON 2 ----------
+  if (set.prefix === "M2") {
+
+    if (rarity === "R") {
+      return `/moon-2-other-backs/M2RB${padded}.jpg`;
+    }
+
+    if (rarity === "SR") {
+      return `/moon-2-other-backs/M2SRB${padded}.jpg`;
+    }
+
+    if (rarity === "HR") {
+      if (number <= 22) {
+        return `/card-backs/M1SCBACK.jpeg`;
+      }
+      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+    }
+
+    if (rarity === "SSR") {
+      return `/card-backs/M2SSRBACK.jpg`;
+    }
+
+    if (rarity === "UR") {
+      return `/card-backs/M1URBACK.jpeg`;
+    }
+
+    if (rarity === "SGR") {
+      return `/card-backs/M2SGRBACK.jpg`;
+    }
+
+    if (rarity === "ZR") {
+  return `/card-backs/M2ZRBACK.jpeg`;
+}
+
+    if (rarity === "SC") {
+      if (number === 7) {
+        return `/card-backs/M2SC007BACK.jpg`;
+      }
+      return `/card-backs/M2SCBACK.jpeg`;
+    }
+
+    if (rarity === "SHINING ZR") {
+      return `/card-backs/M2SZRBACK.jpg`;
+    }
+
+    if (rarity === "LSR") {
+      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+    }
+  }
+
+  // ---------- RAINBOW 1 ----------
+  if (set.prefix === "R1") {
+
+    if (rarity === "R") {
+      return `/rainbow-1-backs/R1RB${padded}.jpg`;
+    }
+
+    if (rarity === "SR") {
+      return `/rainbow-1-backs/R1SRB${padded}.jpg`;
+    }
+
+    if (rarity === "FR") {
+      return `/card-backs/R1FRBACK.jpg`;
+    }
+
+    if (rarity === "UR") {
+      return `/card-backs/M1URBACK.jpeg`;
+    }
+
+    // default group
+if (["TGR","TR","MTR","SSR","USR","XR"].includes(rarity)) {
+  return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+}
+
+}
+
+return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+};
   return (
     <div className="min-h-screen bg-background">
       <KayouHeader />
@@ -235,49 +373,55 @@ const Collection = () => {
           {set.name}
         </h1>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {cards.map((card) => {
-            const key = `${card.rarity}-${card.number}`;
-            const isFlipped = flipped[key];
+                {!loaded ? (
+          <div className="text-center py-16 text-muted-foreground">
+            Loading collection...
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {cards.map((card) => {
+              const key = `${card.rarity}-${card.number}`;
+              const isFlipped = flipped[key];
 
-            return (
-              <div
-                key={key}
-                className="aspect-[5/7] cursor-pointer perspective relative"
-                onClick={() => toggleFlip(key)}
-              >
+              return (
                 <div
-                  className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-                    isFlipped ? "rotate-y-180" : ""
-                  }`}
+                  key={key}
+                  className="aspect-[5/7] cursor-pointer perspective relative"
+                  onClick={() => toggleFlip(key)}
                 >
-                  <img
-                    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
-                    className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-                  />
+                  <div
+                    className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+                      isFlipped ? "rotate-y-180" : ""
+                    }`}
+                  >
+                    <img
+                      src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
+                      className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+                    />
 
-                  <img
-                    src={getCardBack(card.rarity, card.number)}
-                    className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-                  />
+                    <img
+                      src={getCardBack(card.rarity, card.number)}
+                      className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+                    />
 
-                  {isFlipped && (
-                    <button
-                      onClick={(e) => toggleTrade(key, e)}
-                      className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
-                        forTrade[key]
-                          ? "bg-yellow-400 text-black"
-                          : "bg-black/60 text-white"
-                      }`}
-                    >
-                      ⇄
-                    </button>
-                  )}
+                    {isFlipped && (
+                      <button
+                        onClick={(e) => toggleTrade(key, e)}
+                        className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
+                          forTrade[key]
+                            ? "bg-yellow-400 text-black"
+                            : "bg-black/60 text-white"
+                        }`}
+                      >
+                        ⇄
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
