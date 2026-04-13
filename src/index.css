@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+
+    --primary: 45 100% 51%;
+    --primary-foreground: 0 0% 13%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 13%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 330 70% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 45 100% 51%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 45 100% 51%;
+    --sidebar-primary-foreground: 0 0% 13%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 0 0% 92%;
+    --sidebar-ring: 45 100% 51%;
+
+    --kayou-yellow: 45 100% 51%;
+    --kayou-dark: 0 0% 13%;
+    --pony-pink: 330 70% 55%;
+    --pony-purple: 280 60% 50%;
+    --pony-blue: 210 80% 55%;
+    --collection-green: 145 60% 45%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .kayou-header {
+    background-color: hsl(var(--kayou-dark));
+  }
+
+  .btn-kayou {
+    background-color: hsl(var(--kayou-yellow));
+    color: hsl(var(--kayou-dark));
+  }
+
+  .btn-kayou:hover {
+    background-color: hsl(45 100% 45%);
+  }
+
+  .text-pony-pink {
+    color: hsl(var(--pony-pink));
+  }
+
+  .bg-pony-pink {
+    background-color: hsl(var(--pony-pink));
+  }
+
+  .collection-progress {
+    background-color: hsl(var(--collection-green));
+  }
+
+  /* Card Flip Styles */
+
+  .perspective {
+    perspective: 1000px;
+  }
+
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
