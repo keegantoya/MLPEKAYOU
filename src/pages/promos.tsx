@@ -24,7 +24,7 @@ const Promos = () => {
 
       if (user) {
         const { data: saved } = await supabase
-          .from("collection_progress")
+          .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", user.id)
           .eq("set_id", setId)
@@ -52,7 +52,7 @@ const Promos = () => {
       if (!user) return;
 
       await supabase
-        .from("collection_progress")
+        .from("collection_progress_raw")
         .upsert(
           {
             user_id: user.id,
