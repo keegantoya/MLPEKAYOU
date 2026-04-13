@@ -21,33 +21,25 @@ const FunMoments1 = () => {
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
 
-    if (!user) {
-      console.log("No user found");
-      return;
-    }
+    if (!user) return;
 
     const isTrading = forTrade[key];
 
     if (isTrading) {
-      const { error } = await supabase
+      await supabase
         .from("for_trade")
         .delete()
         .eq("user_id", user.id)
         .eq("set_id", "7")
         .eq("card_key", key);
-
-      if (error) console.log("DELETE ERROR:", error);
-
     } else {
-      const { error } = await supabase
+      await supabase
         .from("for_trade")
         .insert({
           user_id: user.id,
           set_id: "7",
           card_key: key
         });
-
-      if (error) console.log("INSERT ERROR:", error);
     }
 
     setForTrade((prev) => ({
@@ -64,7 +56,7 @@ const FunMoments1 = () => {
 
       if (user) {
         const { data: saved } = await supabase
-          .from("collection_progress")
+          .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", user.id)
           .eq("set_id", "7")
@@ -120,7 +112,7 @@ const FunMoments1 = () => {
       if (!user) return;
 
       await supabase
-        .from("collection_progress")
+        .from("collection_progress_raw")
         .upsert(
           {
             user_id: user.id,
@@ -193,51 +185,58 @@ const FunMoments1 = () => {
           {set.name}
         </h1>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {cards.map((card) => {
+        {!loaded ? (
+          <div className="text-center py-16 text-muted-foreground">
+            Loading collection...
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {cards.map((card) => {
 
-            const key = `${card.rarity}-${card.number}`;
-            const isFlipped = flipped[key];
+              const key = `${card.rarity}-${card.number}`;
+              const isFlipped = flipped[key];
 
-            return (
-              <div
-                key={key}
-                className="aspect-[5/7] cursor-pointer perspective relative"
-                onClick={() => toggleFlip(key)}
-              >
+              return (
                 <div
-                  className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-                    isFlipped ? "rotate-y-180" : ""
-                  }`}
+                  key={key}
+                  className="aspect-[5/7] cursor-pointer perspective relative"
+                  onClick={() => toggleFlip(key)}
                 >
-                  <img
-                    src={`/cards/${set.folder}/${set.prefix}${card.rarity}${String(card.number).padStart(3, "0")}.jpg`}
-                    className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-                  />
+                  <div
+                    className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+                      isFlipped ? "rotate-y-180" : ""
+                    }`}
+                  >
+                    <img
+                      src={`/cards/${set.folder}/${set.prefix}${card.rarity}${String(card.number).padStart(3, "0")}.jpg`}
+                      className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+                    />
 
-                  <img
-                    src={getCardBack(card.rarity, card.number)}
-                    className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-                  />
+                    <img
+                      src={getCardBack(card.rarity, card.number)}
+                      className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+                    />
 
-                  {isFlipped && (
-                    <button
-                      onClick={(e) => toggleTrade(key, e)}
-                      className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
-                        forTrade[key]
-                          ? "bg-yellow-400 text-black"
-                          : "bg-black/60 text-white"
-                      }`}
-                    >
-                      ⇄
-                    </button>
-                  )}
+                    {isFlipped && (
+                      <button
+                        onClick={(e) => toggleTrade(key, e)}
+                        className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
+                          forTrade[key]
+                            ? "bg-yellow-400 text-black"
+                            : "bg-black/60 text-white"
+                        }`}
+                      >
+                        ⇄
+                      </button>
+                    )}
 
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
+
       </div>
     </div>
   );
