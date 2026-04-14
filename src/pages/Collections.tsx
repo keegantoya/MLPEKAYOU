@@ -115,7 +115,7 @@ const collections: Collection[] = [
     setName: "",
     imageUrl: "/thumbnails/promos-thumbnail.jpg",
     totalCards: 1,
-    category: "limited-cards",
+    category: "serialized",
   }
 ];
 
@@ -179,18 +179,6 @@ const Collections = () => {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  useEffect(() => {
-  const handleFocus = () => {
-    window.location.reload();
-  };
-
-  window.addEventListener("focus", handleFocus);
-
-  return () => {
-    window.removeEventListener("focus", handleFocus);
-  };
-}, []);
 
   const filtered =
     activeCategory === "all"

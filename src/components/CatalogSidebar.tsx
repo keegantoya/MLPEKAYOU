@@ -15,7 +15,7 @@ const categories: Category[] = [
   { name: "Fun Moments Edition", slug: "fun-moments", count: 2 },
   { name: "Trading Card Game", slug: "tcg", count: 3 },
   { name: "Promotional Cards", slug: "promos", count: 5 },
-  { name: "Serialized/Limited", slug: "limited", count: 1 },
+  { name: "Serialized/Limited", slug: "serialized", count: 1 },
 ];
 
 interface CatalogSidebarProps {
