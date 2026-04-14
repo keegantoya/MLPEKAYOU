@@ -71,7 +71,8 @@ const releasedRoutes: Record<string, string> = {
   "2": "/collection/2",
   "5": "/collection/5",
   "7": "/fun-moments-1",
-  "9": "/promos"
+  "9": "/promos",
+  "10": "/limited-cards"
 };
 
 const MyProgress = () => {
