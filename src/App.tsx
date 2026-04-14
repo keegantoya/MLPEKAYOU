@@ -28,10 +28,12 @@ import FriendshipBegins from "./pages/friendship-begins";
 import Selling from "@/pages/selling";
 import ForTrade from "./pages/for-trade";
 import LimitedCards from "@/pages/limited-cards";
+import PasswordReset from "./pages/password-reset";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const AppRoutes = () => {
+
   useEffect(() => {
     const {
       data: { subscription },
@@ -45,35 +47,42 @@ const App = () => {
   }, []);
 
   return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/collections" element={<Collections />} />
+      <Route path="/collection/:id" element={<Collection />} />
+      <Route path="/my-progress" element={<MyProgress />} />
+      <Route path="/my-iso" element={<MyISO />} />
+      <Route path="/community" element={<Community />} />
+      <Route path="/community/:id" element={<CommunitySet />} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/collectors" element={<Collectors />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/moon3" element={<Moon3 />} />
+      <Route path="/star1" element={<Star1 />} />
+      <Route path="/rainbow2" element={<Rainbow2 />} />
+      <Route path="/fantasy-wonderland" element={<FantasyWonderland />} />
+      <Route path="/fun-moments-2" element={<FunMoments2 />} />
+      <Route path="/fun-moments-1" element={<FunMoments1 />} />
+      <Route path="/password-reset" element={<PasswordReset />} />
+      <Route path="/promos" element={<Promos />} />
+      <Route path="/friendship-begins" element={<FriendshipBegins />} />
+      <Route path="/selling" element={<Selling />} />
+      <Route path="/for-trade" element={<ForTrade />} />
+      <Route path="/limited-cards" element={<LimitedCards />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collection/:id" element={<Collection />} />
-            <Route path="/my-progress" element={<MyProgress />} />
-            <Route path="/my-iso" element={<MyISO />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/community/:id" element={<CommunitySet />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/collectors" element={<Collectors />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/moon3" element={<Moon3 />} />
-            <Route path="/star1" element={<Star1 />} />
-            <Route path="/rainbow2" element={<Rainbow2 />} />
-            <Route path="/fantasy-wonderland" element={<FantasyWonderland />} />
-            <Route path="/fun-moments-2" element={<FunMoments2 />} />
-            <Route path="/fun-moments-1" element={<FunMoments1 />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/promos" element={<Promos />} />
-            <Route path="/friendship-begins" element={<FriendshipBegins />} />
-            <Route path="/selling" element={<Selling />} />
-            <Route path="/for-trade" element={<ForTrade />} />
-            <Route path="/limited-cards" element={<LimitedCards />} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
