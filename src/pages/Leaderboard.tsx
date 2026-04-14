@@ -83,7 +83,25 @@ const sets = [
       UR: 10,
       CR: 12
     }
+  },
+  {
+  id: "9",
+  name: "Promo Cards",
+  folder: "promo-cards",
+  prefix: "PR",
+  rarities: {
+    PR: 5
   }
+},
+{
+  id: "10",
+  name: "Serialized & Limited Cards",
+  folder: "serialized-limited-cards",
+  prefix: "LC",
+  rarities: {
+    LC: 1
+  }
+}
 ];
 
 const Leaderboard = () => {
@@ -93,6 +111,7 @@ const Leaderboard = () => {
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const [loadingHidden, setLoadingHidden] = useState(false);
   const [tradeCards, setTradeCards] = useState<any[]>([]);
+  const [view, setView] = useState<"choice" | "iso" | "trade">("choice");
 
   useEffect(() => {
     const load = async () => {
@@ -159,6 +178,7 @@ const Leaderboard = () => {
 
   const loadISO = async (user: any) => {
     setSelectedUser(user);
+     setView("choice");
     setLoadingHidden(true);
 
     const { data: progress } = await supabase
@@ -211,12 +231,23 @@ const Leaderboard = () => {
   };
 
   const getTradeImage = (setId: string, cardKey: string) => {
-    const [rarity, number] = cardKey.split("-");
-    const set = sets.find((s) => s.id === setId);
-    if (!set) return null;
+  const [rarity, number] = cardKey.split("-");
+  const set = sets.find((s) => s.id === setId);
 
-    return `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
-  };
+  // PROMOS
+  if (rarity === "PR") {
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+  }
+  // LIMITED
+if (rarity === "LC") {
+  return "/serialized-limited-cards/andypricepromo.jpg";
+}
+
+  if (!set) return null;
+
+  return `/cards/${set.folder}/${set.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}.jpg`;
+};
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -263,121 +294,174 @@ const Leaderboard = () => {
         </div>
 
         {selectedUser && (
-          <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
-            <div className="bg-background max-w-6xl mx-auto mt-10 p-6 rounded-xl">
+  <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+    <div className="bg-background max-w-3xl mx-auto mt-16 p-4 rounded-xl shadow-lg">
 
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="mb-6"
-              >
-                Close
-              </button>
+      <div className="sticky top-0 z-50 bg-background py-3 mb-4 border-b flex justify-end">
+  <button
+    onClick={() => setSelectedUser(null)}
+    className="text-muted-foreground hover:text-foreground text-sm font-medium"
+  >
+    ✕ Close
+  </button>
+</div>
 
-              <h2 className="text-2xl font-bold mb-6">
-                {selectedUser.username}'s ISO + Trade
-              </h2>
+      <h2 className="text-2xl font-bold mb-6">
+        {selectedUser.username}
+      </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {view === "choice" && (
+        <div className="flex flex-col gap-4">
 
-                {/* ISO */}
-                <div>
-                  {!loadingHidden && sets
-                    .filter(s => !hiddenSets.includes(s.id))
-                    .map((set) => {
+          <button
+            onClick={() => setView("iso")}
+            className="border rounded-lg p-4 hover:bg-muted"
+          >
+            This User's ISO
+          </button>
 
-                      const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
-                        Array.from({ length: count as number }, (_, i) => ({
-                          rarity,
-                          number: i + 1
-                        }))
-                      );
+          <button
+            onClick={() => setView("trade")}
+            className="border rounded-lg p-4 hover:bg-muted"
+          >
+            This User's Cards For Trade
+          </button>
 
-                      const missing = cards.filter(card => {
-                        const key = `${card.rarity}-${card.number}`;
-                        return !owned[`${set.id}-${key}`];
-                      });
+        </div>
+      )}
 
-                      if (missing.length === 0) return null;
+      <div>
 
-                      return (
-                        <div key={set.id} className="mb-8">
+        {view === "iso" && (
+          <div>
 
-                          <h4 className="text-sm text-muted-foreground mb-2">
-                            {set.name}
-                          </h4>
+            <button
+              onClick={() => setView("choice")}
+              className="mb-4 text-sm underline"
+            >
+              ← Back
+            </button>
 
-                          <div className="grid grid-cols-4 gap-2">
+            <h3 className="text-lg font-bold mb-4">
+              ISO
+            </h3>
 
-                            {missing.map((card) => (
-                              <img
-                                key={`${card.rarity}-${card.number}`}
-                                src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
-                                className="rounded-lg"
-                              />
-                            ))}
+            {!loadingHidden && sets
+              .filter(s => !hiddenSets.includes(s.id))
+              .map((set) => {
 
-                          </div>
+                const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+                  Array.from({ length: count as number }, (_, i) => ({
+                    rarity,
+                    number: i + 1
+                  }))
+                );
 
-                        </div>
-                      );
+                const missing = cards.filter(card => {
+                  const key = `${card.rarity}-${card.number}`;
+                  return !owned[`${set.id}-${key}`];
+                });
 
-                    })}
-                </div>
+                if (missing.length === 0) return null;
 
-                {/* TRADE */}
-                <div>
+                return (
+                  <div key={set.id} className="mb-8">
 
-                  {tradeCards.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No cards listed for trade.
-                    </p>
-                  ) : (
-                    Object.entries(
-                      tradeCards.reduce((acc: any, card: any) => {
-                        if (!acc[card.set_id]) acc[card.set_id] = [];
-                        acc[card.set_id].push(card);
-                        return acc;
-                      }, {})
-                    ).map(([setId, cards]: any) => {
+                    <h4 className="text-sm text-muted-foreground mb-2">
+                      {set.name}
+                    </h4>
 
-                      const set = sets.find((s) => s.id === setId);
+                    <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
 
-                      return (
-                        <div key={setId} className="mb-8">
+                      {missing.map((card) => (
+                        <img
+  key={`${card.rarity}-${card.number}`}
+  src={
+  set.id === "9"
+    ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+    : set.id === "10"
+    ? "/serialized-limited-cards/andypricepromo.jpg"
+    : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+}
+  className="rounded-md w-full"
+/>
+                      ))}
 
-                          <h4 className="text-sm text-muted-foreground mb-2">
-                            {set?.name || "Unknown Set"}
-                          </h4>
+                    </div>
 
-                          <div className="grid grid-cols-4 gap-2">
+                  </div>
+                );
 
-                            {cards.map((card: any) => {
-                              const img = getTradeImage(card.set_id, card.card_key);
-                              if (!img) return null;
-
-                              return (
-                                <img
-                                  key={card.id}
-                                  src={img}
-                                  className="rounded-lg"
-                                />
-                              );
-                            })}
-
-                          </div>
-
-                        </div>
-                      );
-                    })
-                  )}
-
-                </div>
-
-              </div>
-
-            </div>
+              })}
           </div>
         )}
+
+        {view === "trade" && (
+          <div>
+
+            <button
+              onClick={() => setView("choice")}
+              className="mb-4 text-sm underline"
+            >
+              ← Back
+            </button>
+
+            <h3 className="text-lg font-bold mb-4">
+              FOR TRADE
+            </h3>
+
+            {tradeCards.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No cards listed for trade.
+              </p>
+            ) : (
+              Object.entries(
+                tradeCards.reduce((acc: any, card: any) => {
+                  if (!acc[card.set_id]) acc[card.set_id] = [];
+                  acc[card.set_id].push(card);
+                  return acc;
+                }, {})
+              ).map(([setId, cards]: any) => {
+
+                const set = sets.find((s) => s.id === setId);
+
+                return (
+                  <div key={setId} className="mb-8">
+
+                    <h4 className="text-sm text-muted-foreground mb-2">
+                      {set?.name || "Unknown Set"}
+                    </h4>
+
+                    <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
+
+                      {cards.map((card: any) => {
+                        const img = getTradeImage(card.set_id, card.card_key);
+                        if (!img) return null;
+
+                        return (
+                          <img
+                            key={card.id}
+                            src={img}
+                            className="rounded-md w-full"
+                          />
+                        );
+                      })}
+
+                    </div>
+
+                  </div>
+                );
+              })
+            )}
+
+          </div>
+        )}
+
+      </div>
+
+    </div>
+  </div>
+)}
 
       </div>
     </div>

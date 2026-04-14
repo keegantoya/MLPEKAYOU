@@ -2,7 +2,9 @@ import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-const FunMoments1 = () => {
+const LimitedCards = () => {
+
+  const setId = "10";
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
@@ -30,14 +32,14 @@ const FunMoments1 = () => {
         .from("for_trade")
         .delete()
         .eq("user_id", user.id)
-        .eq("set_id", "7")
+        .eq("set_id", setId)
         .eq("card_key", key);
     } else {
       await supabase
         .from("for_trade")
         .insert({
           user_id: user.id,
-          set_id: "7",
+          set_id: setId,
           card_key: key
         });
     }
@@ -59,7 +61,7 @@ const FunMoments1 = () => {
           .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", user.id)
-          .eq("set_id", "7")
+          .eq("set_id", setId)
           .single();
 
         if (saved?.progress) {
@@ -85,7 +87,7 @@ const FunMoments1 = () => {
         .from("for_trade")
         .select("card_key")
         .eq("user_id", user.id)
-        .eq("set_id", "7");
+        .eq("set_id", setId);
 
       if (trades) {
         const tradeMap: Record<string, boolean> = {};
@@ -116,7 +118,7 @@ const FunMoments1 = () => {
         .upsert(
           {
             user_id: user.id,
-            set_id: "7",
+            set_id: setId,
             progress: flipped
           },
           { onConflict: "user_id,set_id" }
@@ -126,63 +128,21 @@ const FunMoments1 = () => {
     saveProgress();
   }, [flipped, loaded]);
 
-  const set = {
-    name: "Fun Moments: First Volume",
-    folder: "fun-moments-one",
-    prefix: "FM1",
-    rarities: {
-      N: 20,
-      SN: 20,
-      R: 35,
-      SR: 15,
-      SSR: 15,
-      UR: 10,
-      CR: 12
+  const cards = [
+    {
+      key: "LC-1",
+      image: "/serialized-limited-cards/andypricepromo.jpg"
     }
-  };
-
-  const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
-    Array.from({ length: count as number }, (_, i) => ({
-      rarity,
-      number: i + 1
-    }))
-  );
-
-  const getCardBack = (rarity: string, number: number) => {
-
-    if (rarity === "N" || rarity === "SN") {
-      return `/fun-moments-one-backs/FM1BACKN${String(number).padStart(3, "0")}.jpg`;
-    }
-
-    if (rarity === "R") {
-      return `/fun-moments-one-backs/FM1RB${String(number).padStart(3, "0")}.jpg`;
-    }
-
-    if (rarity === "SR") {
-      return `/fun-moments-one-backs/FM1SRB${String(number).padStart(3, "0")}.jpg`;
-    }
-
-    if (rarity === "UR") {
-      return "/card-backs/M1URBACK.jpeg";
-    }
-
-    if (rarity === "CR") {
-      if (number <= 9) {
-        return "/fun-moments-one-backs/FM1CRBACK001.jpg";
-      }
-      return "/fun-moments-one-backs/FM1CRBACK002.jpg";
-    }
-
-    return "/card-backs/M1R-SR-SGR-SCBACK.jpeg";
-  };
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <KayouHeader />
 
       <div className="container py-8">
+
         <h1 className="text-2xl font-bold mb-6">
-          {set.name}
+          Serialized & Limited Cards
         </h1>
 
         {!loaded ? (
@@ -190,51 +150,56 @@ const FunMoments1 = () => {
             Loading collection...
           </div>
         ) : (
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-            {cards.map((card) => {
 
-              const key = `${card.rarity}-${card.number}`;
-              const isFlipped = flipped[key];
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
 
-              return (
+          {cards.map((card) => {
+
+            const isFlipped = flipped[card.key];
+
+            return (
+              <div
+                key={card.key}
+                className="aspect-[5/7] cursor-pointer perspective relative"
+                onClick={() => toggleFlip(card.key)}
+              >
                 <div
-                  key={key}
-                  className="aspect-[5/7] cursor-pointer perspective relative"
-                  onClick={() => toggleFlip(key)}
+                  className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+                    isFlipped ? "rotate-y-180" : ""
+                  }`}
                 >
-                  <div
-                    className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-                      isFlipped ? "rotate-y-180" : ""
-                    }`}
-                  >
-                    <img
-                      src={`/cards/${set.folder}/${set.prefix}${card.rarity}${String(card.number).padStart(3, "0")}.jpg`}
-                      className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-                    />
 
-                    <img
-                      src={getCardBack(card.rarity, card.number)}
-                      className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-                    />
+                  <img
+                    src={card.image}
+                    className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+                  />
 
-                    {isFlipped && (
-                      <button
-                        onClick={(e) => toggleTrade(key, e)}
-                        className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
-                          forTrade[key]
-                            ? "bg-yellow-400 text-black"
-                            : "bg-black/60 text-white"
-                        }`}
-                      >
-                        ⇄
-                      </button>
-                    )}
+                  <img
+                    src="/card-backs/M1R-SR-SGR-SCBACK.jpeg"
+                    className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+                  />
 
-                  </div>
+                  {isFlipped && (
+                    <button
+                      onClick={(e) => toggleTrade(card.key, e)}
+                      className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
+                        forTrade[card.key]
+                          ? "bg-yellow-400 text-black"
+                          : "bg-black/60 text-white"
+                      }`}
+                    >
+                      ⇄
+                    </button>
+                  )}
+
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+
+          })}
+
+        </div>
+
         )}
 
       </div>
@@ -242,4 +207,4 @@ const FunMoments1 = () => {
   );
 };
 
-export default FunMoments1;
+export default LimitedCards;

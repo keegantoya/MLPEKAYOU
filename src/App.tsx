@@ -27,6 +27,7 @@ import Promos from "./pages/promos";
 import FriendshipBegins from "./pages/friendship-begins";
 import Selling from "@/pages/selling";
 import ForTrade from "./pages/for-trade";
+import LimitedCards from "@/pages/limited-cards";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => {
             <Route path="/friendship-begins" element={<FriendshipBegins />} />
             <Route path="/selling" element={<Selling />} />
             <Route path="/for-trade" element={<ForTrade />} />
+            <Route path="/limited-cards" element={<LimitedCards />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

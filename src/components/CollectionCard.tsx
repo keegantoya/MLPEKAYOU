@@ -38,6 +38,9 @@ const CollectionCard = ({
 
     case "9":
       return "/promos";
+      
+      case "10":
+  return "/limited-cards";
 
     case "7":
       return "/fun-moments-1";

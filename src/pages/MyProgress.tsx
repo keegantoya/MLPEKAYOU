@@ -57,6 +57,12 @@ const sets = [
   name: "Promos",
   total: 5,
   rarities: { PR: 5}
+},
+{
+  id: "10",
+  name: "Serialized & Limited Cards",
+  total: 1,
+  rarities: { LC: 1 }
 }
 ];
 
@@ -147,17 +153,26 @@ const MyProgress = () => {
 
             return (
               <div key={set.id} className="relative">
-                <button
-                  onClick={() => route && navigate(route)}
-                  className={`
-                    w-full bg-card rounded-xl border p-4 shadow-sm text-left transition
-                    ${isReleased
-                      ? "hover:shadow-md hover:scale-[1.01] cursor-pointer"
-                      : "opacity-60 cursor-not-allowed"
-                    }
-                    ${isHidden ? "opacity-40" : ""}
-                  `}
-                >
+
+  {isHidden && (
+    <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+      <div className="bg-black/70 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md">
+        Not Collecting
+      </div>
+    </div>
+  )}
+
+  <button
+    onClick={() => route && navigate(route)}
+    className={`
+      w-full bg-card rounded-xl border p-4 shadow-sm text-left transition
+      ${isReleased
+        ? "hover:shadow-md hover:scale-[1.01] cursor-pointer"
+        : "opacity-60 cursor-not-allowed"
+      }
+      ${isHidden ? "opacity-40" : ""}
+    `}
+  >
                   <div className="flex justify-between mb-2">
                     <span className="font-medium text-sm">
                       {set.name}

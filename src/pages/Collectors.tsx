@@ -89,7 +89,25 @@ const sets = [
       UR: 10,
       CR: 12
     }
+  },
+  {
+  id: "9",
+  name: "Promos",
+  folder: "promo-cards",
+  prefix: "PR",
+  rarities: {
+    PR: 5
   }
+},
+{
+  id: "10",
+  name: "Serialized & Limited Cards",
+  folder: "serialized-limited-cards",
+  prefix: "LC",
+  rarities: {
+    LC: 1
+  }
+}
 ];
 
 const Collectors = () => {
@@ -102,6 +120,7 @@ const Collectors = () => {
   const [owned, setOwned] = useState<Record<string, boolean>>({});
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const [tradeCards, setTradeCards] = useState<any[]>([]);
+  const [view, setView] = useState<"iso" | "trade">("iso");
 
   const searchUsers = async () => {
     setLoading(true);
@@ -231,21 +250,45 @@ setTradeCards(trades || []);
         {selectedUser && (
   <div>
 
-    <h2 className="text-2xl font-bold mb-6">
-      {selectedUser.username}'s ISO + Trade
-    </h2>
+    <div className="flex items-center justify-between mb-6">
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <h2 className="text-2xl font-bold">
+    {selectedUser.username}
+  </h2>
 
-      <div>
+  <div className="flex gap-2">
+    <button
+      onClick={() => setView("iso")}
+      className={`px-3 py-1 rounded-lg text-sm border ${
+        view === "iso"
+          ? "bg-primary text-white"
+          : "hover:bg-muted"
+      }`}
+    >
+      ISO
+    </button>
 
-        <h3 className="text-xl font-bold mb-4">
-          ISO
-        </h3>
+    <button
+      onClick={() => setView("trade")}
+      className={`px-3 py-1 rounded-lg text-sm border ${
+        view === "trade"
+          ? "bg-primary text-white"
+          : "hover:bg-muted"
+      }`}
+    >
+      Trade
+    </button>
+  </div>
 
-        {sets
-          .filter(s => !hiddenSets.includes(s.id))
-          .map((set) => {
+</div>
+{view === "iso" && (
+<div>
+
+  <h3 className="text-xl font-bold mb-4">
+    ISO
+  </h3>
+
+        {sets.map((set) => {
 
           const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
             Array.from({ length: count as number }, (_, i) => ({
@@ -255,11 +298,11 @@ setTradeCards(trades || []);
           );
 
           const missing = cards.filter(card => {
-            const key = `${card.rarity}-${card.number}`;
-            return !owned[`${set.id}-${key}`];
-          });
+  const key = `${card.rarity}-${card.number}`;
+  return !owned[`${set.id}-${key}`];
+});
 
-          if (missing.length === 0) return null;
+          if (hiddenSets.includes(set.id)) return null;
 
           return (
             <div key={set.id} className="mb-10">
@@ -273,7 +316,13 @@ setTradeCards(trades || []);
                 {missing.map((card) => (
                   <img
                     key={`${card.rarity}-${card.number}`}
-                    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
+                    src={
+  set.id === "9"
+  ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+  : set.id === "10"
+  ? `/serialized-limited-cards/andypricepromo.jpg`
+    : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+}
                     className="rounded-lg"
                   />
                 ))}
@@ -286,12 +335,16 @@ setTradeCards(trades || []);
         })}
 
       </div>
+      
+)}
 
-      <div>
 
-        <h3 className="text-xl font-bold mb-4">
-          For Trade
-        </h3>
+{view === "trade" && (
+<div>
+
+<h3 className="text-xl font-bold mb-4">
+  For Trade
+</h3>
 
         {tradeCards.length === 0 ? (
           <p className="text-muted-foreground text-sm">
@@ -326,7 +379,13 @@ setTradeCards(trades || []);
                     return (
                       <img
                         key={card.id}
-                        src={`/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3,"0")}.jpg`}
+                        src={
+   rarity === "PR"
+    ? `/promo-cards/mlpepr${String(number).padStart(3,"0")}.jpg`
+    : rarity === "LC"
+    ? "/serialized-limited-cards/andypricepromo.jpg"
+    : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3,"0")}.jpg`
+}
                         className="rounded-lg"
                       />
                     );
@@ -342,12 +401,11 @@ setTradeCards(trades || []);
 
         )}
 
-      </div>
+        </div>
+)}
 
     </div>
-
-  </div>
-)}
+  )}
 
       </div>
     </div>

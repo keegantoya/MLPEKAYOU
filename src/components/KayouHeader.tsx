@@ -51,10 +51,13 @@ const KayouHeader = () => {
   const [user, setUser] = useState<any>(null);
 
   const [showLogin, setShowLogin] = useState(false);
+  const [showSignupSuccess, setShowSignupSuccess] = useState(false);
+const [newUsername, setNewUsername] = useState("");
   const [loginStep, setLoginStep] = useState<"email" | "password">("email");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [showMobilePrompt, setShowMobilePrompt] = useState(false);
 
   useEffect(() => {
     const getSession = async () => {
@@ -72,6 +75,16 @@ const KayouHeader = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+ useEffect(() => {
+  const isMobile = window.innerWidth < 640;
+  const hasSeenPrompt = localStorage.getItem("seenLoginPrompt");
+
+  if (isMobile && !user && !hasSeenPrompt) {
+    setShowMobilePrompt(true);
+    localStorage.setItem("seenLoginPrompt", "true");
+  }
+}, [user]);
 
   const handleLoginSubmit = async () => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -91,35 +104,36 @@ const KayouHeader = () => {
   };
 
   const handleSignupSubmit = async () => {
-    const username = generateUsername();
+  const username = generateUsername();
 
-    const { data, error } = await supabase.auth.signUp({
-      email: loginEmail,
-      password: loginPassword,
-      options: {
-        data: { username }
-      }
+  const { data, error } = await supabase.auth.signUp({
+    email: loginEmail,
+    password: loginPassword,
+    options: {
+      data: { username }
+    }
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  if (data.user) {
+    await supabase.from("profiles").insert({
+      id: data.user.id,
+      username,
     });
+  }
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
+  setNewUsername(username);
+  setShowLogin(false);
+  setShowSignupSuccess(true);
 
-    if (data.user) {
-      await supabase.from("profiles").insert({
-        id: data.user.id,
-        username,
-      });
-    }
-
-    alert(`Account created! Your username is: ${username}`);
-
-    setShowLogin(false);
-    setLoginEmail("");
-    setLoginPassword("");
-    setLoginStep("email");
-  };
+  setLoginEmail("");
+  setLoginPassword("");
+  setLoginStep("email");
+};
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -282,7 +296,7 @@ const KayouHeader = () => {
           </div>
 
           {/* CENTER LOGO */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
+<div className="flex items-center gap-2 mx-auto">
             <img
               src={logo}
               alt="MLP Kayou Wiki"
@@ -296,7 +310,7 @@ const KayouHeader = () => {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
 
             {!user && (
               <>
@@ -329,11 +343,194 @@ const KayouHeader = () => {
         </div>
       </header>
 
+{showMobilePrompt && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+
+{/* Pink Glitter Around Popup */}
+<div className="pointer-events-none absolute inset-0">
+
+  {[...Array(20)].map((_, i) => (
+    <span key={i} className={`glitter glitter-${i}`} />
+  ))}
+
+</div>
+
+    <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-14 flex flex-col min-h-[260px]">
+
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
+        <img src={logo} className="h-12" />
+      </div>
+
+      <div className="text-center mb-6 text-gray-700">
+        <div className="text-lg font-semibold mb-2">
+          Welcome to MLPEKAYOU!
+        </div>
+
+        <div className="text-sm text-gray-500">
+          Signing in allows you to save your progress. Not ready? No worries, you can still
+          create an account from the sidebar menu later.
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center gap-3">
+        <Button
+  variant="ghost"
+  className="border border-neutral-400 text-neutral-700 hover:bg-neutral-100"
+  onClick={() => {
+    setAuthMode("login");
+    setShowMobilePrompt(false);
+    setShowLogin(true);
+  }}
+>
+  Sign In
+</Button>
+
+        <Button
+          className="bg-yellow-400 text-black"
+          onClick={() => {
+            setAuthMode("signup");
+            setShowMobilePrompt(false);
+            setShowLogin(true);
+          }}
+        >
+          Sign Up
+        </Button>
+      </div>
+
+<div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
+  <Button
+    className="bg-pink-100 hover:bg-pink-200 text-neutral-700 rounded-xl px-6 shadow-md border border-pink-200"
+    onClick={() => setShowMobilePrompt(false)}
+  >
+    No thanks!
+  </Button>
+</div>
+
+</div>
+
+  </div>
+)}
+
+<style>
+{`
+.glitter {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #f9a8d4;
+  border-radius: 50%;
+  opacity: 0.9;
+  animation: sparkle 3s infinite ease-in-out;
+  box-shadow: 
+    0 0 6px #f9a8d4,
+    0 0 12px #f9a8d4,
+    0 0 18px #fbcfe8;
+}
+
+.glitter:nth-child(odd) {
+  width: 5px;
+  height: 5px;
+}
+
+.glitter:nth-child(even) {
+  width: 9px;
+  height: 9px;
+}
+
+.glitter-0 { top: 10%; left: 20%; }
+.glitter-1 { top: 20%; right: 15%; }
+.glitter-2 { bottom: 15%; left: 30%; }
+.glitter-3 { bottom: 20%; right: 20%; }
+.glitter-4 { top: 50%; left: 10%; }
+.glitter-5 { top: 60%; right: 10%; }
+.glitter-6 { top: 30%; left: 50%; }
+.glitter-7 { bottom: 40%; right: 40%; }
+.glitter-8 { top: 15%; left: 70%; }
+.glitter-9 { bottom: 10%; left: 60%; }
+.glitter-10 { top: 35%; right: 25%; }
+.glitter-11 { bottom: 25%; left: 15%; }
+.glitter-12 { top: 65%; right: 35%; }
+.glitter-13 { top: 45%; left: 75%; }
+.glitter-14 { bottom: 35%; right: 10%; }
+.glitter-15 { top: 5%; left: 45%; }
+.glitter-16 { bottom: 5%; right: 50%; }
+.glitter-17 { top: 55%; left: 35%; }
+.glitter-18 { bottom: 45%; left: 55%; }
+.glitter-19 { top: 25%; right: 5%; }
+
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0.5) translateY(0px); }
+  50% { opacity: 1; transform: scale(1.2) translateY(-6px); }
+  100% { opacity: 0; transform: scale(0.5) translateY(0px); }
+}
+`}
+</style>
+
+{/* SIGNUP SUCCESS POPUP */}
+{showSignupSuccess && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+
+    {/* Glitter */}
+    <div className="pointer-events-none absolute inset-0">
+      {[...Array(20)].map((_, i) => (
+        <span key={i} className={`glitter glitter-${i}`} />
+      ))}
+    </div>
+
+    <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-14 flex flex-col min-h-[260px]">
+
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
+        <img src={logo} className="h-12" />
+      </div>
+
+      <div className="text-center mb-6 text-gray-700">
+
+        <div className="text-lg font-semibold mb-2">
+          Account Created!
+        </div>
+
+        <div className="text-sm text-gray-500 mb-4">
+          We've assigned you a username:
+        </div>
+
+        <div className="font-bold text-pink-500 text-lg mb-4">
+          {newUsername}
+        </div>
+
+        <div className="text-sm text-gray-500">
+          A confirmation email has been sent.  
+          Please check your email to activate your account.
+        </div>
+
+      </div>
+
+      <div className="flex justify-center">
+        <Button
+          className="bg-yellow-400 text-black"
+          onClick={() => setShowSignupSuccess(false)}
+        >
+          Got it!
+        </Button>
+      </div>
+
+    </div>
+  </div>
+)}
+
       {/* LOGIN POPUP */}
       {showLogin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
 
-          <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14">
+{/* Pink Glitter Around Popup */}
+<div className="pointer-events-none absolute inset-0">
+
+  {[...Array(20)].map((_, i) => (
+    <span key={i} className={`glitter glitter-${i}`} />
+  ))}
+
+</div>
+
+          <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-12 flex flex-col min-h-[260px]">
 
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
               <img src={logo} className="h-12" />
@@ -364,14 +561,16 @@ const KayouHeader = () => {
             </div>
 
             <input
-              type={loginStep === "email" ? "email" : "password"}
-              className="w-full border rounded-lg px-3 py-2 mb-4"
-              onChange={(e) =>
-                loginStep === "email"
-                  ? setLoginEmail(e.target.value)
-                  : setLoginPassword(e.target.value)
-              }
-            />
+  type={loginStep === "email" ? "email" : "password"}
+  value={loginStep === "email" ? loginEmail : loginPassword}
+  autoComplete="off"
+  className="w-full border rounded-lg px-3 py-2 mb-4"
+  onChange={(e) =>
+    loginStep === "email"
+      ? setLoginEmail(e.target.value)
+      : setLoginPassword(e.target.value)
+  }
+/>
 
             <div className="flex justify-end gap-2">
               <Button

@@ -26,7 +26,8 @@ const sets = [
   { id: "6", name: "Rainbow Second Edition", total: 170 },
   { id: "7", name: "Fun Moments First Edition", total: 127 },
   { id: "8", name: "Fun Moments Second Edition", total: 136 },
-  { id: "9", name: "Promos", total: 5 }
+  { id: "9", name: "Promos", total: 5 },
+  { id: "10", name: "Serialized & Limited Cards", total: 1 }
 ];
 
 const isoSets = [
@@ -98,13 +99,19 @@ const isoSets = [
     }
   },
   {
-    id: "9",
-    name: "Promos",
-    folder: "promos",
-    prefix: "PR",
-    rarities: { PR: 5 }
-  
-  }
+  id: "9",
+  name: "Promos",
+  folder: "promo-cards",
+  prefix: "PR",
+  rarities: { PR: 5 }
+},
+{
+  id: "10",
+  name: "Serialized & Limited Cards",
+  folder: "serialized-limited-cards",
+  prefix: "LC",
+  rarities: { LC: 1 }
+}
 ];
 
 const Community = () => {
@@ -117,21 +124,25 @@ const Community = () => {
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const [loadingHidden, setLoadingHidden] = useState(false);
   const [tradeCards, setTradeCards] = useState<any[]>([]);
-
-  // ✅ FIX ADDED (this was missing and caused your error)
+  const [view, setView] = useState<"choice" | "iso" | "trade">("choice");
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
   };
 
   const getTradeImage = (setId: string, cardKey: string) => {
-    const [rarity, number] = cardKey.split("-");
+  const [rarity, number] = cardKey.split("-");
+  const set = isoSets.find((s) => s.id === setId);
 
-    const set = isoSets.find((s) => s.id === setId);
-    if (!set) return null;
+  // PROMOS
+  if (rarity === "PR") {
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+  }
 
-    return `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
-  };
+  if (!set) return null;
+
+  return `/cards/${set.folder}/${set.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}.jpg`;
+};
 
   const getAvatar = (avatar?: string) => {
     if (!avatar) return starlight;
@@ -144,6 +155,20 @@ const Community = () => {
 
   useEffect(() => {
     const load = async () => {
+
+const blockedFirstFinishers = {
+  "1": ["HeiManTou"],
+  "2": ["HeiManTou"],
+  "3": ["HeiManTou"],
+  "4": ["HeiManTou"],
+  "5": ["HeiManTou"],
+  "6": ["HeiManTou"],
+  "7": ["HeiManTou"],
+  "8": ["HeiManTou"],
+  "9": ["HeiManTou"],
+  "tcg": ["HeiManTou"],
+  "friendship-begins": ["HeiManTou"]
+};
 
       const { data: progress } = await supabase
         .from("collection_progress")
@@ -184,11 +209,17 @@ const Community = () => {
           }
         });
 
-        if (owned === total && !first[row.set_id]) {
-          first[row.set_id] = {
-            ...profileMap[row.user_id]
-          };
-        }
+        const profile = profileMap[row.user_id];
+
+if (
+  owned === total &&
+  !first[row.set_id] &&
+  !blockedFirstFinishers[row.set_id]?.includes(profile?.username)
+) {
+  first[row.set_id] = {
+    ...profile
+  };
+}
 
       });
 
@@ -201,8 +232,10 @@ const Community = () => {
   }, []);
 
   const loadISO = async (user: any) => {
+    
 
     setSelectedUser(user);
+    setView("choice");
     setLoadingHidden(true);
 
     const { data: progress } = await supabase
@@ -309,130 +342,181 @@ const Community = () => {
         </div>
 
         {/* MODAL */}
-        {selectedUser && (
+{selectedUser && (
 
-          <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+<div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+  <div className="bg-background max-w-3xl mx-auto mt-16 p-4 rounded-xl shadow-lg">
 
-            <div className="bg-background max-w-6xl mx-auto mt-10 p-6 rounded-xl">
+    <div className="sticky top-0 z-50 bg-background py-3 mb-4 border-b flex justify-end">
+  <button
+    onClick={() => setSelectedUser(null)}
+    className="text-muted-foreground hover:text-foreground text-sm font-medium"
+  >
+    ✕ Close
+  </button>
+</div>
 
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="mb-6"
-              >
-                Close
-              </button>
+    <h2 className="text-2xl font-bold mb-6">
+      {selectedUser.username}
+    </h2>
 
-              <h2 className="text-2xl font-bold mb-6">
-                {selectedUser.username}'s ISO + Trade
-              </h2>
+    {view === "choice" && (
+      <div className="flex flex-col gap-4">
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <button
+          onClick={() => setView("iso")}
+          className="border rounded-lg p-4 hover:bg-muted"
+        >
+          This User's ISO
+        </button>
 
-                {/* ISO */}
-                <div>
-                  <h3 className="text-xl font-bold mb-4">ISO</h3>
+        <button
+          onClick={() => setView("trade")}
+          className="border rounded-lg p-4 hover:bg-muted"
+        >
+          This User's Cards For Trade
+        </button>
 
-                  {!loadingHidden && isoSets
-                    .filter(s => !hiddenSets.includes(s.id))
-                    .map((set) => {
+      </div>
+    )}
 
-                      const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
-                        Array.from({ length: count as number }, (_, i) => ({
-                          rarity,
-                          number: i + 1
-                        }))
-                      );
+    <div>
 
-                      const missing = cards.filter(card => {
-                        const key = `${card.rarity}-${card.number}`;
-                        return !owned[`${set.id}-${key}`];
-                      });
+      {view === "iso" && (
+        <div>
 
-                      if (!missing.length) return null;
+          <button
+            onClick={() => setView("choice")}
+            className="mb-4 text-sm underline"
+          >
+            ← Back
+          </button>
 
-                      return (
-                        <div key={set.id} className="mb-6">
+          <h3 className="text-lg font-bold mb-4">
+            ISO
+          </h3>
 
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {set.name}
-                          </p>
+          {!loadingHidden && isoSets
+            .filter(s => !hiddenSets.includes(s.id))
+            .map((set) => {
 
-                          <div className="grid grid-cols-4 gap-2">
-                            {missing.map(card => (
-                              <img
-                                key={`${card.rarity}-${card.number}`}
-                                src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
-                                className="rounded-md"
-                              />
-                            ))}
-                          </div>
+              const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+                Array.from({ length: count as number }, (_, i) => ({
+                  rarity,
+                  number: i + 1
+                }))
+              );
 
-                        </div>
-                      );
+              const missing = cards.filter(card => {
+                const key = `${card.rarity}-${card.number}`;
+                return !owned[`${set.id}-${key}`];
+              });
 
-                    })}
-                </div>
-
-               {/* TRADE */}
-<div>
-  <h3 className="text-xl font-bold mb-4">For Trade</h3>
-
-  {tradeCards.length === 0 ? (
-    <p className="text-sm text-muted-foreground">
-      No cards listed for trade.
-    </p>
-  ) : (
-    Object.entries(
-      tradeCards.reduce((acc: any, card: any) => {
-        if (!acc[card.set_id]) acc[card.set_id] = [];
-        acc[card.set_id].push(card);
-        return acc;
-      }, {})
-    ).map(([setId, cards]: any) => {
-
-      const set = isoSets.find((s) => s.id === setId);
-
-      return (
-        <div key={setId} className="mb-6">
-
-          <p className="text-sm text-muted-foreground mb-2">
-            {set?.name || "Unknown Set"}
-          </p>
-
-          <div className="grid grid-cols-4 gap-2">
-            {cards.map((card: any) => {
-              const img = getTradeImage(card.set_id, card.card_key);
-              if (!img) return null;
+              if (!missing.length) return null;
 
               return (
-                <img
-                  key={card.id}
-                  src={img}
-                  className="rounded-md"
-                />
+                <div key={set.id} className="mb-8">
+
+                  <h4 className="text-sm text-muted-foreground mb-2">
+                    {set.name}
+                  </h4>
+
+                  <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
+
+                    {missing.map(card => (
+                      <img
+                        key={`${card.rarity}-${card.number}`}
+                        src={
+  set.id === "9"
+    ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+    : set.id === "10"
+    ? "/serialized-limited-cards/andypricepromo.jpg"
+    : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+}
+                        className="rounded-md w-full"
+                      />
+                    ))}
+
+                  </div>
+
+                </div>
               );
+
             })}
-          </div>
+        </div>
+      )}
+
+      {view === "trade" && (
+        <div>
+
+          <button
+            onClick={() => setView("choice")}
+            className="mb-4 text-sm underline"
+          >
+            ← Back
+          </button>
+
+          <h3 className="text-lg font-bold mb-4">
+            FOR TRADE
+          </h3>
+
+          {tradeCards.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No cards listed for trade.
+            </p>
+          ) : (
+            Object.entries(
+              tradeCards.reduce((acc: any, card: any) => {
+                if (!acc[card.set_id]) acc[card.set_id] = [];
+                acc[card.set_id].push(card);
+                return acc;
+              }, {})
+            ).map(([setId, cards]: any) => {
+
+              const set = isoSets.find((s) => s.id === setId);
+
+              return (
+                <div key={setId} className="mb-8">
+
+                  <h4 className="text-sm text-muted-foreground mb-2">
+                    {set?.name || "Unknown Set"}
+                  </h4>
+
+                  <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
+
+                    {cards.map((card: any) => {
+                      const img = getTradeImage(card.set_id, card.card_key);
+                      if (!img) return null;
+
+                      return (
+                        <img
+                          key={card.id}
+                          src={img}
+                          className="rounded-md w-full"
+                        />
+                      );
+                    })}
+
+                  </div>
+
+                </div>
+              );
+            })
+          )}
 
         </div>
-      );
-    })
-  )}
-</div>
+      )}
 
-</div>
+    </div>
 
-</div>
-
+  </div>
 </div>
 
 )}
 
-</div>
-
-</div>
-);
-
+      </div>
+    </div>
+  );
 };
 
 export default Community;

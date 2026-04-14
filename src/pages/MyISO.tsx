@@ -69,7 +69,26 @@ const sets = [
       UR: 10,
       CR: 12
     }
+  },
+  ,
+{
+  id: "9",
+  name: "Promos",
+  folder: "promo-cards",
+  prefix: "PR",
+  rarities: {
+    PR: 5
   }
+},
+{
+  id: "10",
+  name: "Serialized & Limited Cards",
+  folder: "serialized-limited-cards",
+  prefix: "LC",
+  rarities: {
+    LC: 1
+  }
+}
 ];
 
 const MyISO = () => {
@@ -214,17 +233,23 @@ const MyISO = () => {
           return (
             <div key={set.id} className="mb-10">
 
-              <h2 className="text-xl font-semibold mb-4">
-                {set.name}
-              </h2>
+              <h2 className="text-base sm:text-lg md:text-xl font-semibold mb-3 sm:mb-4">
+  {set.name}
+</h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 gap-2">
 
                 {missing.map((card) => (
 
                   <img
                     key={`${card.rarity}-${card.number}`}
-                    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
+                    src={
+  set.id === "9"
+    ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+    : set.id === "10"
+    ? "/serialized-limited-cards/andypricepromo.jpg"
+    : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+}
                     className="rounded-lg"
                   />
 

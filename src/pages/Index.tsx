@@ -46,7 +46,7 @@ const featuredSets: Set[] = [
   {
     id: "tcg",
     title: "Fantasy Wonderland",
-    setName: "TCG",
+    setName: "",
     imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
     totalCards: 0,
     category: "tcg",
@@ -181,23 +181,28 @@ const Index = () => {
 </div>
 </section>
 
- <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-  <p className="mb-2">
-    This website is approved by Kayou US, but is not run or owned by Kayou or any Kayou employees.
-  </p>
-  <p className="text-[8px] italic mb-2">
-  This website was reviewed by Justin at Kayou_US on TikTok, a representative of Kayou's US E-Commerce division.
-</p>
-  <p className="mb-4">
-    This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
-  </p>
+<footer className="border-t border-border py-4 sm:py-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+  <div className="max-w-lg mx-auto">
 
-  <img
-    src="/logos/collab-logo.png"
-    alt="MLPEKAYOU x KAYOU"
-    className="mx-auto h-20 opacity-90 mb-4"
-  />
+    <p className="mb-1 sm:mb-1.5">
+      This website is not run or owned by Kayou.
+    </p>
 
+    <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+      All rights to respective owners. All rights to Kayou.
+    </p>
+
+    <p className="mb-2 sm:mb-2.5">
+      This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+    </p>
+
+    <img
+      src="/logos/collab-logo.png"
+      alt="MLPEKAYOU x KAYOU"
+      className="mx-auto h-10 sm:h-14 opacity-90"
+    />
+
+  </div>
 </footer>
 
     </div>

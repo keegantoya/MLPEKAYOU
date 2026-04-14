@@ -24,7 +24,7 @@ const Promos = () => {
 
       if (user) {
         const { data: saved } = await supabase
-          .from("collection_progress")
+          .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", user.id)
           .eq("set_id", setId)
@@ -52,7 +52,7 @@ const Promos = () => {
       if (!user) return;
 
       await supabase
-        .from("collection_progress")
+        .from("collection_progress_raw")
         .upsert(
           {
             user_id: user.id,
@@ -80,7 +80,7 @@ const Promos = () => {
           Promo Cards
         </h1>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
 
           {cards.map((card) => {
 

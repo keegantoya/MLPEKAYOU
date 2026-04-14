@@ -58,7 +58,7 @@ const Collection = () => {
 
       if (user) {
         const { data: saved } = await supabase
-          .from("collection_progress")
+          .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", user.id)
           .eq("set_id", id)
@@ -114,7 +114,7 @@ const Collection = () => {
       if (!user) return;
 
       await supabase
-        .from("collection_progress")
+        .from("collection_progress_raw")
         .upsert(
           {
             user_id: user.id,
@@ -372,49 +372,55 @@ return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
           {set.name}
         </h1>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {cards.map((card) => {
-            const key = `${card.rarity}-${card.number}`;
-            const isFlipped = flipped[key];
+                {!loaded ? (
+          <div className="text-center py-16 text-muted-foreground">
+            Loading collection...
+          </div>
+        ) : (
+         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+            {cards.map((card) => {
+              const key = `${card.rarity}-${card.number}`;
+              const isFlipped = flipped[key];
 
-            return (
-              <div
-                key={key}
-                className="aspect-[5/7] cursor-pointer perspective relative"
-                onClick={() => toggleFlip(key)}
-              >
+              return (
                 <div
-                  className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-                    isFlipped ? "rotate-y-180" : ""
-                  }`}
+                  key={key}
+                  className="aspect-[5/7] cursor-pointer perspective relative"
+                  onClick={() => toggleFlip(key)}
                 >
-                  <img
-                    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
-                    className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-                  />
+                  <div
+                    className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+                      isFlipped ? "rotate-y-180" : ""
+                    }`}
+                  >
+                    <img
+                      src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
+                      className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+                    />
 
-                  <img
-                    src={getCardBack(card.rarity, card.number)}
-                    className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-                  />
+                    <img
+                      src={getCardBack(card.rarity, card.number)}
+                      className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+                    />
 
-                  {isFlipped && (
-                    <button
-                      onClick={(e) => toggleTrade(key, e)}
-                      className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
-                        forTrade[key]
-                          ? "bg-yellow-400 text-black"
-                          : "bg-black/60 text-white"
-                      }`}
-                    >
-                      ⇄
-                    </button>
-                  )}
+                    {isFlipped && (
+                      <button
+                        onClick={(e) => toggleTrade(key, e)}
+                        className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
+                          forTrade[key]
+                            ? "bg-yellow-400 text-black"
+                            : "bg-black/60 text-white"
+                        }`}
+                      >
+                        ⇄
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

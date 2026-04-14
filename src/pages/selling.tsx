@@ -92,34 +92,34 @@ export default function Selling() {
                   Lower Tier Cards
                 </h3>
 
-                <div className="space-y-1 text-neutral-700">
+                <div className="space-y-1 text-xs sm:text-sm text-neutral-700">
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Moon Editions</span> - R, SR, HR, SSR, UR
                     </span>
-                    <span>Not Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Not Valuable</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Rainbow Editions</span> - BASE, ST, R, SR, FR, TR
                     </span>
-                    <span>Not Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Not Valuable</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Fun Moments Editions</span> - N, R, SR, SSR, UR
                     </span>
-                    <span>Not Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Not Valuable</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Star Editions</span> - SSR, SCR, UR
                     </span>
-                    <span>Not Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Not Valuable</span>
                   </div>
 
                 </div>
@@ -131,34 +131,34 @@ export default function Selling() {
                   Higher Tier Cards
                 </h3>
 
-                <div className="space-y-1 text-neutral-700">
+                <div className="space-y-1 text-xs sm:text-sm text-neutral-700">
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Moon Editions</span> - LSR, SGR, ZR, SC, ◇ZR
                     </span>
-                    <span>Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Valuable</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Rainbow Editions</span> - TGR, USR, XR
                     </span>
-                    <span>Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Valuable</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Fun Moments Editions</span> - UGR, CR
                     </span>
-                    <span>Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Valuable</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>
                       <span className="font-semibold">Star Editions</span> - USR, AR, OR, BP, ◇AR
                     </span>
-                    <span>Valuable</span>
+                    <span className="text-[10px] sm:text-sm">Valuable</span>
                   </div>
 
                 </div>

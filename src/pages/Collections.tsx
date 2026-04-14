@@ -101,7 +101,6 @@ const collections: Collection[] = [
     totalCards: 191,
     category: "tcg",
   },
-
   {
     id: "9",
     title: "Promotional Cards",
@@ -109,6 +108,14 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/promos-thumbnail.jpg",
     totalCards: 5,
     category: "promos",
+  },
+  {
+    id: "10",
+    title: "Serialized & Limited Cards",
+    setName: "",
+    imageUrl: "/thumbnails/promos-thumbnail.jpg",
+    totalCards: 1,
+    category: "limited-cards",
   }
 ];
 
