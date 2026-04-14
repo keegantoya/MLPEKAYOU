@@ -76,9 +76,20 @@ const Promos = () => {
 
       <div className="container py-8">
 
-        <h1 className="text-2xl font-bold mb-6">
-          Promo Cards
-        </h1>
+        <div className="relative flex items-center mb-4">
+
+  <button
+    onClick={() => window.history.back()}
+    className="text-sm text-muted-foreground hover:text-foreground"
+  >
+    ← Back
+  </button>
+
+  <h1 className="text-lg font-semibold w-full text-right md:text-center">
+    Promo Cards
+  </h1>
+
+</div>
 
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
 

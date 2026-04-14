@@ -10,7 +10,8 @@ import {
   Settings,
   ArrowLeftRight,
   Users,
-  List
+  List,
+  Grid
 } from "lucide-react";
 
 import { Button } from "./ui/button";
@@ -52,12 +53,18 @@ const KayouHeader = () => {
 
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
-const [newUsername, setNewUsername] = useState("");
+  const [newUsername, setNewUsername] = useState("");
   const [loginStep, setLoginStep] = useState<"email" | "password">("email");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [showMobilePrompt, setShowMobilePrompt] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const [loginError, setLoginError] = useState("");
+  const [showForgot, setShowForgot] = useState(false);
+  const [showResetSent, setShowResetSent] = useState(false);
 
   useEffect(() => {
     const getSession = async () => {
@@ -87,23 +94,57 @@ const [newUsername, setNewUsername] = useState("");
 }, [user]);
 
   const handleLoginSubmit = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
-      password: loginPassword,
-    });
+  const { error } = await supabase.auth.signInWithPassword({
+    email: loginEmail,
+    password: loginPassword,
+  });
+
+  if (error) {
+    setLoginError("Incorrect password");
+    setShowForgot(true);
+    return;
+  }
+
+  setShowLogin(false);
+  setLoginEmail("");
+  setLoginPassword("");
+  setLoginStep("email");
+  setLoginError("");
+  setShowForgot(false);
+};
+
+const handleForgotPassword = async () => {
+  try {
+    console.log("Sending reset for:", loginEmail);
+
+    const { data, error } = await supabase.auth.resetPasswordForEmail(
+      loginEmail,
+      {
+        redirectTo: window.location.origin + "/password-reset",
+      }
+    );
+
+    console.log("Reset response:", data, error);
 
     if (error) {
-      alert("Invalid email or password");
-      return;
-    }
+      alert("Error sending reset: " + error.message);
+    } else {
+  setShowLogin(false);
+  setShowResetSent(true);
+}
 
-    setShowLogin(false);
-    setLoginEmail("");
-    setLoginPassword("");
-    setLoginStep("email");
-  };
+  } catch (err) {
+    console.error("Reset failed:", err);
+  }
+};
 
   const handleSignupSubmit = async () => {
+
+  if (loginPassword !== confirmPassword) {
+    setLoginError("Passwords do not match");
+    return;
+  }
+
   const username = generateUsername();
 
   const { data, error } = await supabase.auth.signUp({
@@ -132,6 +173,7 @@ const [newUsername, setNewUsername] = useState("");
 
   setLoginEmail("");
   setLoginPassword("");
+  setConfirmPassword("");
   setLoginStep("email");
 };
 
@@ -149,7 +191,7 @@ const [newUsername, setNewUsername] = useState("");
           {/* LEFT SIDE */}
           <div className="flex items-center gap-3">
 
-            <Sheet>
+            <Sheet open={open} onOpenChange={setOpen}>
   <SheetTrigger asChild>
     <Button
       variant="ghost"
@@ -161,114 +203,145 @@ const [newUsername, setNewUsername] = useState("");
   </SheetTrigger>
 
   <SheetContent side="left" className="w-64 p-4">
-  <div className="flex flex-col gap-2">
+  <div className="flex flex-col gap-2 mt-8">
 
     {user && (
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={() => navigate("/profile")}
-      >
-        <Settings className="h-4 w-4 mr-2" />
-        Profile
-      </Button>
-    )}
+  <Button
+    variant="ghost"
+    className="w-full justify-start"
+    onClick={() => {
+      navigate("/profile");
+      setOpen(false);
+    }}
+  >
+    <Settings className="h-4 w-4 mr-2" />
+    Profile
+  </Button>
+)}
 
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/")}
-    >
-      <Home className="h-4 w-4 mr-2" />
-      Home
-    </Button>
-
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/collections")}
-    >
-      <List className="h-4 w-4 mr-2" />
-      Collections
-    </Button>
-
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/my-progress")}
-    >
-      <BarChart className="h-4 w-4 mr-2" />
-      My Progress
-    </Button>
-
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/my-iso")}
-    >
-      <List className="h-4 w-4 mr-2" />
-      My ISO
-    </Button>
-
-    <Button
+<Button
   variant="ghost"
   className="w-full justify-start"
-  onClick={() => navigate("/for-trade")}
+  onClick={() => {
+    navigate("/");
+    setOpen(false);
+  }}
+>
+  <Home className="h-4 w-4 mr-2" />
+  Home
+</Button>
+
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/collections");
+    setOpen(false);
+  }}
+>
+  <Grid className="h-4 w-4 mr-2" />
+  Collections
+</Button>
+
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/my-progress");
+    setOpen(false);
+  }}
+>
+  <BarChart className="h-4 w-4 mr-2" />
+  My Progress
+</Button>
+
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/my-iso");
+    setOpen(false);
+  }}
+>
+  <List className="h-4 w-4 mr-2" />
+  My ISO
+</Button>
+
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/for-trade");
+    setOpen(false);
+  }}
 >
   <ArrowLeftRight className="h-4 w-4 mr-2" />
   For Trade
 </Button>
 
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/community")}
-    >
-      <Trophy className="h-4 w-4 mr-2" />
-      Community Progress
-    </Button>
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/community");
+    setOpen(false);
+  }}
+>
+  <Trophy className="h-4 w-4 mr-2" />
+  Community Progress
+</Button>
 
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/leaderboard")}
-    >
-      <Medal className="h-4 w-4 mr-2" />
-      Top Collectors
-    </Button>
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/leaderboard");
+    setOpen(false);
+  }}
+>
+  <Medal className="h-4 w-4 mr-2" />
+  Leaderboard
+</Button>
 
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/collectors")}
-    >
-      <Users className="h-4 w-4 mr-2" />
-      Other Collectors
-    </Button>
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/collectors");
+    setOpen(false);
+  }}
+>
+  <Users className="h-4 w-4 mr-2" />
+  Other Collectors
+</Button>
 
-    <Button
-      variant="ghost"
-      className="w-full justify-start"
-      onClick={() => navigate("/selling")}
-    >
-      <Tag className="h-4 w-4 mr-2" />
-      Selling
-    </Button>
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/selling");
+    setOpen(false);
+  }}
+>
+  <Tag className="h-4 w-4 mr-2" />
+  Selling
+</Button>
 
-    {!user && (
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={() => {
-          setAuthMode("login");
-          setShowLogin(true);
-        }}
-        
-      >
-        <User className="h-4 w-4 mr-2" />
-        Log In
-      </Button>
-    )}
+{!user && (
+  <Button
+    variant="ghost"
+    className="w-full justify-start"
+    onClick={() => {
+      setAuthMode("login");
+      setShowLogin(true);
+      setOpen(false);
+    }}
+  >
+    <User className="h-4 w-4 mr-2" />
+    Log In
+  </Button>
+)}
+
 {!user && (
   <Button
     variant="ghost"
@@ -276,22 +349,27 @@ const [newUsername, setNewUsername] = useState("");
     onClick={() => {
       setAuthMode("signup");
       setShowLogin(true);
+      setOpen(false);
     }}
   >
     <User className="h-4 w-4 mr-2" />
     Create Account
   </Button>
 )}
-    {user && (
-      <Button
-        variant="ghost"
-        className="w-full justify-start"
-        onClick={handleLogout}
-      >
-        <LogOut className="h-4 w-4 mr-2" />
-        Logout
-      </Button>
-    )}
+
+{user && (
+  <Button
+    variant="ghost"
+    className="w-full justify-start"
+    onClick={() => {
+      handleLogout();
+      setOpen(false);
+    }}
+  >
+    <LogOut className="h-4 w-4 mr-2" />
+    Logout
+  </Button>
+)}
 
   </div>
 </SheetContent>
@@ -530,6 +608,49 @@ const [newUsername, setNewUsername] = useState("");
   </div>
 )}
 
+{/* RESET SENT POPUP */}
+{showResetSent && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+
+    {/* Glitter */}
+    <div className="pointer-events-none absolute inset-0">
+      {[...Array(20)].map((_, i) => (
+        <span key={i} className={`glitter glitter-${i}`} />
+      ))}
+    </div>
+
+    <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-14 flex flex-col min-h-[260px]">
+
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
+        <img src={logo} className="h-12" />
+      </div>
+
+      <div className="text-center mb-6 text-gray-700">
+
+        <div className="text-lg font-semibold mb-2">
+          Password Reset Sent
+        </div>
+
+        <div className="text-sm text-gray-500">
+          Check your email for instructions to reset your password.
+          If you don't see it, check your spam folder.
+        </div>
+
+      </div>
+
+      <div className="flex justify-center">
+        <Button
+          className="bg-yellow-400 text-black"
+          onClick={() => setShowResetSent(false)}
+        >
+          Got it
+        </Button>
+      </div>
+
+    </div>
+  </div>
+)}
+
       {/* LOGIN POPUP */}
       {showLogin && (
        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -573,18 +694,54 @@ const [newUsername, setNewUsername] = useState("");
               )}
             </div>
 
-            <input
-  type={loginStep === "email" ? "email" : "password"}
-  value={loginStep === "email" ? loginEmail : loginPassword}
-  autoComplete="off"
-  className="w-full border rounded-lg px-3 py-2 mb-4"
-  onChange={(e) =>
-    loginStep === "email"
-      ? setLoginEmail(e.target.value)
-      : setLoginPassword(e.target.value)
-  }
-/>
+            {loginStep === "email" && (
+  <input
+    type="email"
+    value={loginEmail}
+    autoComplete="off"
+    className="w-full border rounded-lg px-3 py-2 mb-2"
+    onChange={(e) => setLoginEmail(e.target.value)}
+  />
+)}
 
+{loginStep === "password" && (
+  <>
+    <input
+      type="password"
+      placeholder="Password"
+      value={loginPassword}
+      autoComplete="off"
+      className="w-full border rounded-lg px-3 py-2 mb-2"
+      onChange={(e) => setLoginPassword(e.target.value)}
+    />
+
+    {authMode === "signup" && (
+      <input
+        type="password"
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        autoComplete="off"
+        className="w-full border rounded-lg px-3 py-2 mb-2"
+        onChange={(e) => setConfirmPassword(e.target.value)}
+      />
+    )}
+  </>
+)}
+
+{loginError && loginStep === "password" && (
+  <div className="text-sm text-red-500 mb-2">
+    {loginError}
+  </div>
+)}
+
+{showForgot && loginStep === "password" && (
+  <button
+    onClick={handleForgotPassword}
+    className="text-sm text-pink-500 hover:text-pink-600 mb-4"
+  >
+    Forgot your password? Request a reset here.
+  </button>
+)}
             <div className="flex justify-end gap-2">
               <Button
                 variant="ghost"

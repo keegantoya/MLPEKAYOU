@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 const FunMoments1 = () => {
-
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
   const [forTrade, setForTrade] = useState<Record<string, boolean>>({});
@@ -20,7 +19,6 @@ const FunMoments1 = () => {
 
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
-
     if (!user) return;
 
     const isTrading = forTrade[key];
@@ -78,7 +76,6 @@ const FunMoments1 = () => {
     const loadTrade = async () => {
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user;
-
       if (!user) return;
 
       const { data: trades } = await supabase
@@ -89,11 +86,9 @@ const FunMoments1 = () => {
 
       if (trades) {
         const tradeMap: Record<string, boolean> = {};
-
         trades.forEach((card) => {
           tradeMap[card.card_key] = true;
         });
-
         setForTrade(tradeMap);
       }
     };
@@ -108,7 +103,6 @@ const FunMoments1 = () => {
     const saveProgress = async () => {
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user;
-
       if (!user) return;
 
       await supabase
@@ -149,7 +143,6 @@ const FunMoments1 = () => {
   );
 
   const getCardBack = (rarity: string, number: number) => {
-
     if (rarity === "N" || rarity === "SN") {
       return `/fun-moments-one-backs/FM1BACKN${String(number).padStart(3, "0")}.jpg`;
     }
@@ -177,22 +170,34 @@ const FunMoments1 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <KayouHeader />
 
       <div className="container py-8">
-        <h1 className="text-2xl font-bold mb-6">
-          {set.name}
-        </h1>
+
+        {/* HEADER */}
+        <div className="relative flex items-center mb-4">
+
+          <button
+            onClick={() => window.history.back()}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← Back
+          </button>
+
+          <h1 className="text-lg font-semibold w-full text-right md:text-center">
+            {set.name}
+          </h1>
+
+        </div>
 
         {!loaded ? (
           <div className="text-center py-16 text-muted-foreground">
             Loading collection...
           </div>
         ) : (
-<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {cards.map((card) => {
-
               const key = `${card.rarity}-${card.number}`;
               const isFlipped = flipped[key];
 
@@ -207,6 +212,7 @@ const FunMoments1 = () => {
                       isFlipped ? "rotate-y-180" : ""
                     }`}
                   >
+
                     <img
                       src={`/cards/${set.folder}/${set.prefix}${card.rarity}${String(card.number).padStart(3, "0")}.jpg`}
                       className="absolute w-full h-full object-cover rounded-lg backface-hidden"

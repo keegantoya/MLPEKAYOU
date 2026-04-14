@@ -3,18 +3,24 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
-import starlight from "@/assets/avatars/starlight-glimmer.jpg";
-import rarity from "@/assets/avatars/rarity.jpg";
-import pearButter from "@/assets/avatars/pear-butter.jpg";
-import luna from "@/assets/avatars/luna.jpg";
-import trixie from "@/assets/avatars/trixie.jpg";
+import avatar001 from "../assets/avatars/avatar001.jpg";
+import avatar002 from "../assets/avatars/avatar002.jpg";
+import avatar003 from "../assets/avatars/avatar003.jpg";
+import avatar004 from "../assets/avatars/avatar004.jpg";
+import avatar005 from "../assets/avatars/avatar005.jpg";
+import avatar006 from "../assets/avatars/avatar006.jpg";
+import avatar007 from "../assets/avatars/avatar007.jpg";
+import avatar008 from "../assets/avatars/avatar008.jpg";
 
 const avatars = [
-  { name: "Starlight Glimmer", file: "starlight-glimmer", src: starlight },
-  { name: "Rarity", file: "rarity", src: rarity },
-  { name: "Pear Butter", file: "pear-butter", src: pearButter },
-  { name: "Princess Luna", file: "luna", src: luna },
-  { name: "Trixie", file: "trixie", src: trixie },
+  { name: "Avatar 001", file: "avatar001", src: avatar001 },
+  { name: "Avatar 002", file: "avatar002", src: avatar002 },
+  { name: "Avatar 003", file: "avatar003", src: avatar003 },
+  { name: "Avatar 004", file: "avatar004", src: avatar004 },
+  { name: "Avatar 005", file: "avatar005", src: avatar005 },
+  { name: "Avatar 006", file: "avatar006", src: avatar006 },
+  { name: "Avatar 007", file: "avatar007", src: avatar007 },
+  { name: "Avatar 008", file: "avatar008", src: avatar008 },
 ];
 
 const Profile = () => {
@@ -26,8 +32,6 @@ const Profile = () => {
   const [avatar, setAvatar] = useState("");
   const [canChange, setCanChange] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-  const [showIsoSettings, setShowIsoSettings] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -44,14 +48,6 @@ const Profile = () => {
         setOriginalUsername(savedUsername);
         setAvatar(savedAvatar);
         setCanChange(!hasChanged);
-
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("iso_hidden_sets")
-          .eq("id", data.user.id)
-          .single();
-
-        setHiddenSets(profile?.iso_hidden_sets || []);
       }
     };
 
@@ -75,7 +71,6 @@ const Profile = () => {
       id: user.id,
       username,
       avatar_url: avatar,
-      iso_hidden_sets: hiddenSets,
     });
 
     setLoading(false);
@@ -98,15 +93,8 @@ const Profile = () => {
     });
   };
 
-  const toggleSet = (id: string) => {
-    if (hiddenSets.includes(id)) {
-      setHiddenSets(hiddenSets.filter((s) => s !== id));
-    } else {
-      setHiddenSets([...hiddenSets, id]);
-    }
-  };
-
-  const currentAvatar = avatars.find((a) => a.file === avatar);
+  const currentAvatar =
+  avatars.find((a) => a.file === avatar) || avatars[0];
 
   if (!user) {
     return <div className="container mx-auto p-6">Please log in</div>;
@@ -114,7 +102,6 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-xl">
-
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
@@ -123,52 +110,9 @@ const Profile = () => {
         Back
       </button>
 
-      <div className="flex justify-between items-center mb-6">
-  <h1 className="text-2xl font-bold">Profile</h1>
-
-  <div className="relative">
-    <button
-      onClick={() => setShowIsoSettings(!showIsoSettings)}
-      className="text-sm px-3 py-1 rounded-lg border hover:bg-muted"
-    >
-      Hide Sets
-    </button>
-
-    {showIsoSettings && (
-      <div className="absolute right-0 mt-2 w-72 bg-background border rounded-xl shadow-lg p-4 z-50">
-
-        <h2 className="font-semibold mb-1">
-          Not wanting to collect every set?
-        </h2>
-
-        <p className="text-sm text-muted-foreground mb-3">
-          Hide unwanted sets from your personal and public ISOs.
-        </p>
-
-        {[
-          { id: "1", name: "Eternal Moon 1" },
-          { id: "2", name: "Eternal Moon 2" },
-          { id: "3", name: "Eternal Moon 3" },
-          { id: "5", name: "Rainbow 1" },
-          { id: "7", name: "Fun Moments 1" }
-        ].map((set) => (
-          <label key={set.id} className="flex items-center gap-2 mb-2">
-            <input
-              type="checkbox"
-              checked={hiddenSets.includes(set.id)}
-              onChange={() => toggleSet(set.id)}
-            />
-            {set.name}
-          </label>
-        ))}
-
-      </div>
-    )}
-  </div>
-</div>
+      <h1 className="text-2xl font-bold mb-6">Profile</h1>
 
       <div className="space-y-6">
-
         {currentAvatar && (
           <div className="flex justify-center">
             <img
@@ -181,10 +125,7 @@ const Profile = () => {
 
         <div>
           <p className="text-sm text-muted-foreground mb-2">
-            Your username currently is{" "}
-            <span className="font-semibold">
-              {originalUsername || "Not set yet"}
-            </span>
+            Others can find you in "Other Collectors" by the name set below.
           </p>
 
           <input
@@ -199,7 +140,7 @@ const Profile = () => {
         <div>
           <h2 className="font-semibold mb-3">Choose Avatar</h2>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3">
             {avatars.map((a) => (
               <button
                 key={a.file}
@@ -223,7 +164,6 @@ const Profile = () => {
             {loading ? "Saving..." : "Save Profile"}
           </button>
         )}
-
       </div>
     </div>
   );

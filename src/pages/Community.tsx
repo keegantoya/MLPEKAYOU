@@ -3,18 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-import starlight from "@/assets/avatars/starlight-glimmer.jpg";
-import rarity from "@/assets/avatars/rarity.jpg";
-import pearButter from "@/assets/avatars/pear-butter.jpg";
-import luna from "@/assets/avatars/luna.jpg";
-import trixie from "@/assets/avatars/trixie.jpg";
+import avatar001 from "@/assets/avatars/avatar001.jpg";
+import avatar002 from "@/assets/avatars/avatar002.jpg";
+import avatar003 from "@/assets/avatars/avatar003.jpg";
+import avatar004 from "@/assets/avatars/avatar004.jpg";
+import avatar005 from "@/assets/avatars/avatar005.jpg";
+import avatar006 from "@/assets/avatars/avatar006.jpg";
+import avatar007 from "@/assets/avatars/avatar007.jpg";
+import avatar008 from "@/assets/avatars/avatar008.jpg";
 
 const avatarMap: Record<string, string> = {
-  "starlight-glimmer.jpg": starlight,
-  "rarity.jpg": rarity,
-  "pear-butter.jpg": pearButter,
-  "luna.jpg": luna,
-  "trixie.jpg": trixie
+  "avatar001.jpg": avatar001,
+  "avatar002.jpg": avatar002,
+  "avatar003.jpg": avatar003,
+  "avatar004.jpg": avatar004,
+  "avatar005.jpg": avatar005,
+  "avatar006.jpg": avatar006,
+  "avatar007.jpg": avatar007,
+  "avatar008.jpg": avatar008,
 };
 
 const sets = [
@@ -145,12 +151,12 @@ const Community = () => {
 };
 
   const getAvatar = (avatar?: string) => {
-    if (!avatar) return starlight;
+    if (!avatar) return avatar001;
 
     let file = avatar.split("/").pop() || "";
     if (!file.includes(".")) file = `${file}.jpg`;
 
-    return avatarMap[file] || starlight;
+    return avatarMap[file] || avatar001;
   };
 
   useEffect(() => {
@@ -285,7 +291,7 @@ if (
           </h1>
 
           <p className="text-sm text-muted-foreground">
-            Those who are the first registered on MLPEKAYOU to complete a set are granted their name and chosen avatar.
+            Those who are the first registered on MLPEKAYOU to complete a set are granted their name and chosen avatar on the #1 spot for each set. Must be verified through Discord server to maintain this position.
           </p>
         </div>
 
@@ -345,16 +351,16 @@ if (
 {selectedUser && (
 
 <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
-  <div className="bg-background max-w-3xl mx-auto mt-16 p-4 rounded-xl shadow-lg">
+  <div className="bg-background max-w-6xl mx-auto mt-16 p-4 rounded-xl shadow-lg">
 
     <div className="sticky top-0 z-50 bg-background py-3 mb-4 border-b flex justify-end">
-  <button
-    onClick={() => setSelectedUser(null)}
-    className="text-muted-foreground hover:text-foreground text-sm font-medium"
-  >
-    ✕ Close
-  </button>
-</div>
+      <button
+        onClick={() => setSelectedUser(null)}
+        className="text-muted-foreground hover:text-foreground text-sm font-medium"
+      >
+        ✕ Close
+      </button>
+    </div>
 
     <h2 className="text-2xl font-bold mb-6">
       {selectedUser.username}
@@ -380,21 +386,21 @@ if (
       </div>
     )}
 
-    <div>
+    {view === "iso" && (
+      <div>
 
-      {view === "iso" && (
-        <div>
+        <button
+          onClick={() => setView("choice")}
+          className="mb-4 text-sm underline"
+        >
+          ← Back
+        </button>
 
-          <button
-            onClick={() => setView("choice")}
-            className="mb-4 text-sm underline"
-          >
-            ← Back
-          </button>
+        <h3 className="text-lg font-bold mb-4">
+          ISO
+        </h3>
 
-          <h3 className="text-lg font-bold mb-4">
-            ISO
-          </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
           {!loadingHidden && isoSets
             .filter(s => !hiddenSets.includes(s.id))
@@ -415,25 +421,25 @@ if (
               if (!missing.length) return null;
 
               return (
-                <div key={set.id} className="mb-8">
+                <div key={set.id} className="border rounded-xl p-4 bg-card">
 
-                  <h4 className="text-sm text-muted-foreground mb-2">
+                  <h4 className="text-sm text-muted-foreground mb-3">
                     {set.name}
                   </h4>
 
-                  <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
+                  <div className="flex flex-wrap gap-1">
 
                     {missing.map(card => (
                       <img
                         key={`${card.rarity}-${card.number}`}
                         src={
-  set.id === "9"
-    ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
-    : set.id === "10"
-    ? "/serialized-limited-cards/andypricepromo.jpg"
-    : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
-}
-                        className="rounded-md w-full"
+                          set.id === "9"
+                            ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+                            : set.id === "10"
+                            ? "/serialized-limited-cards/andypricepromo.jpg"
+                            : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+                        }
+                        className="rounded-md w-[90px]"
                       />
                     ))}
 
@@ -443,29 +449,34 @@ if (
               );
 
             })}
+
         </div>
-      )}
 
-      {view === "trade" && (
-        <div>
+      </div>
+    )}
 
-          <button
-            onClick={() => setView("choice")}
-            className="mb-4 text-sm underline"
-          >
-            ← Back
-          </button>
+    {view === "trade" && (
+      <div>
 
-          <h3 className="text-lg font-bold mb-4">
-            FOR TRADE
-          </h3>
+        <button
+          onClick={() => setView("choice")}
+          className="mb-4 text-sm underline"
+        >
+          ← Back
+        </button>
 
-          {tradeCards.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No cards listed for trade.
-            </p>
-          ) : (
-            Object.entries(
+        <h3 className="text-lg font-bold mb-4">
+          FOR TRADE
+        </h3>
+
+        {tradeCards.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No cards listed for trade.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+            {Object.entries(
               tradeCards.reduce((acc: any, card: any) => {
                 if (!acc[card.set_id]) acc[card.set_id] = [];
                 acc[card.set_id].push(card);
@@ -476,13 +487,13 @@ if (
               const set = isoSets.find((s) => s.id === setId);
 
               return (
-                <div key={setId} className="mb-8">
+                <div key={setId} className="border rounded-xl p-4 bg-card">
 
-                  <h4 className="text-sm text-muted-foreground mb-2">
+                  <h4 className="text-sm text-muted-foreground mb-3">
                     {set?.name || "Unknown Set"}
                   </h4>
 
-                  <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
+                  <div className="flex flex-wrap gap-1">
 
                     {cards.map((card: any) => {
                       const img = getTradeImage(card.set_id, card.card_key);
@@ -492,7 +503,7 @@ if (
                         <img
                           key={card.id}
                           src={img}
-                          className="rounded-md w-full"
+                          className="rounded-md w-[90px]"
                         />
                       );
                     })}
@@ -501,19 +512,18 @@ if (
 
                 </div>
               );
-            })
-          )}
+            })}
 
-        </div>
-      )}
+          </div>
+        )}
 
-    </div>
+      </div>
+    )}
 
   </div>
 </div>
 
 )}
-
       </div>
     </div>
   );

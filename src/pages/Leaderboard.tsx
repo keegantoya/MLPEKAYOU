@@ -2,18 +2,24 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-import starlight from "@/assets/avatars/starlight-glimmer.jpg";
-import rarity from "@/assets/avatars/rarity.jpg";
-import pearButter from "@/assets/avatars/pear-butter.jpg";
-import luna from "@/assets/avatars/luna.jpg";
-import trixie from "@/assets/avatars/trixie.jpg";
+import avatar001 from "@/assets/avatars/avatar001.jpg";
+import avatar002 from "@/assets/avatars/avatar002.jpg";
+import avatar003 from "@/assets/avatars/avatar003.jpg";
+import avatar004 from "@/assets/avatars/avatar004.jpg";
+import avatar005 from "@/assets/avatars/avatar005.jpg";
+import avatar006 from "@/assets/avatars/avatar006.jpg";
+import avatar007 from "@/assets/avatars/avatar007.jpg";
+import avatar008 from "@/assets/avatars/avatar008.jpg";
 
 const avatarMap: Record<string, string> = {
-  "starlight-glimmer.jpg": starlight,
-  "rarity.jpg": rarity,
-  "pear-butter.jpg": pearButter,
-  "luna.jpg": luna,
-  "trixie.jpg": trixie
+  "avatar001.jpg": avatar001,
+  "avatar002.jpg": avatar002,
+  "avatar003.jpg": avatar003,
+  "avatar004.jpg": avatar004,
+  "avatar005.jpg": avatar005,
+  "avatar006.jpg": avatar006,
+  "avatar007.jpg": avatar007,
+  "avatar008.jpg": avatar008,
 };
 
 const sets = [
@@ -217,12 +223,12 @@ const Leaderboard = () => {
   };
 
   const getAvatar = (avatar?: string) => {
-    if (!avatar) return starlight;
+    if (!avatar) return avatar001;
 
     let file = avatar.split("/").pop() || "";
     if (!file.includes(".")) file = `${file}.jpg`;
 
-    return avatarMap[file] || starlight;
+    return avatarMap[file] || avatar001;
   };
 
   const getRarityCode = (rarity: string) => {
@@ -333,129 +339,138 @@ if (rarity === "LC") {
       <div>
 
         {view === "iso" && (
-          <div>
+  <div>
 
-            <button
-              onClick={() => setView("choice")}
-              className="mb-4 text-sm underline"
-            >
-              ← Back
-            </button>
+    <button
+      onClick={() => setView("choice")}
+      className="mb-4 text-sm underline"
+    >
+      ← Back
+    </button>
 
-            <h3 className="text-lg font-bold mb-4">
-              ISO
-            </h3>
+    <h3 className="text-lg font-bold mb-4">
+      ISO
+    </h3>
 
-            {!loadingHidden && sets
-              .filter(s => !hiddenSets.includes(s.id))
-              .map((set) => {
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-                const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
-                  Array.from({ length: count as number }, (_, i) => ({
-                    rarity,
-                    number: i + 1
-                  }))
-                );
+      {!loadingHidden && sets
+        .filter(s => !hiddenSets.includes(s.id))
+        .map((set) => {
 
-                const missing = cards.filter(card => {
-                  const key = `${card.rarity}-${card.number}`;
-                  return !owned[`${set.id}-${key}`];
-                });
+          const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+            Array.from({ length: count as number }, (_, i) => ({
+              rarity,
+              number: i + 1
+            }))
+          );
 
-                if (missing.length === 0) return null;
+          const missing = cards.filter(card => {
+            const key = `${card.rarity}-${card.number}`;
+            return !owned[`${set.id}-${key}`];
+          });
 
-                return (
-                  <div key={set.id} className="mb-8">
+          if (missing.length === 0) return null;
 
-                    <h4 className="text-sm text-muted-foreground mb-2">
-                      {set.name}
-                    </h4>
+          return (
+            <div key={set.id} className="border rounded-xl p-4 bg-card">
 
-                    <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
+              <h4 className="text-sm text-muted-foreground mb-3">
+                {set.name}
+              </h4>
 
-                      {missing.map((card) => (
-                        <img
-  key={`${card.rarity}-${card.number}`}
-  src={
-  set.id === "9"
-    ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
-    : set.id === "10"
-    ? "/serialized-limited-cards/andypricepromo.jpg"
-    : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
-}
-  className="rounded-md w-full"
-/>
-                      ))}
+              <div className="flex flex-wrap gap-1">
 
-                    </div>
+                {missing.map((card) => (
+                  <img
+                    key={`${card.rarity}-${card.number}`}
+                    src={
+                      set.id === "9"
+                        ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+                        : set.id === "10"
+                        ? "/serialized-limited-cards/andypricepromo.jpg"
+                        : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+                    }
+                    className="rounded-md w-[90px]"
+                  />
+                ))}
 
-                  </div>
-                );
+              </div>
 
-              })}
-          </div>
-        )}
+            </div>
+          );
 
-        {view === "trade" && (
-          <div>
+        })}
 
-            <button
-              onClick={() => setView("choice")}
-              className="mb-4 text-sm underline"
-            >
-              ← Back
-            </button>
+    </div>
 
-            <h3 className="text-lg font-bold mb-4">
-              FOR TRADE
-            </h3>
+  </div>
+)}
 
-            {tradeCards.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No cards listed for trade.
-              </p>
-            ) : (
-              Object.entries(
-                tradeCards.reduce((acc: any, card: any) => {
-                  if (!acc[card.set_id]) acc[card.set_id] = [];
-                  acc[card.set_id].push(card);
-                  return acc;
-                }, {})
-              ).map(([setId, cards]: any) => {
+{view === "trade" && (
+  <div>
 
-                const set = sets.find((s) => s.id === setId);
+    <button
+      onClick={() => setView("choice")}
+      className="mb-4 text-sm underline"
+    >
+      ← Back
+    </button>
 
-                return (
-                  <div key={setId} className="mb-8">
+    <h3 className="text-lg font-bold mb-4">
+      FOR TRADE
+    </h3>
 
-                    <h4 className="text-sm text-muted-foreground mb-2">
-                      {set?.name || "Unknown Set"}
-                    </h4>
+    {tradeCards.length === 0 ? (
+      <p className="text-sm text-muted-foreground">
+        No cards listed for trade.
+      </p>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-                    <div className="grid grid-cols-5 md:grid-cols-6 gap-1">
+        {Object.entries(
+          tradeCards.reduce((acc: any, card: any) => {
+            if (!acc[card.set_id]) acc[card.set_id] = [];
+            acc[card.set_id].push(card);
+            return acc;
+          }, {})
+        ).map(([setId, cards]: any) => {
 
-                      {cards.map((card: any) => {
-                        const img = getTradeImage(card.set_id, card.card_key);
-                        if (!img) return null;
+          const set = sets.find((s) => s.id === setId);
 
-                        return (
-                          <img
-                            key={card.id}
-                            src={img}
-                            className="rounded-md w-full"
-                          />
-                        );
-                      })}
+          return (
+            <div key={setId} className="border rounded-xl p-4 bg-card">
 
-                    </div>
+              <h4 className="text-sm text-muted-foreground mb-3">
+                {set?.name || "Unknown Set"}
+              </h4>
 
-                  </div>
-                );
-              })
-            )}
+              <div className="flex flex-wrap gap-1">
 
-          </div>
-        )}
+                {cards.map((card: any) => {
+                  const img = getTradeImage(card.set_id, card.card_key);
+                  if (!img) return null;
+
+                  return (
+                    <img
+                      key={card.id}
+                      src={img}
+                      className="rounded-md w-[90px]"
+                    />
+                  );
+                })}
+
+              </div>
+
+            </div>
+          );
+        })}
+
+      </div>
+    )}
+
+  </div>
+)}
 
       </div>
 

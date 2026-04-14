@@ -141,9 +141,20 @@ const LimitedCards = () => {
 
       <div className="container py-8">
 
-        <h1 className="text-2xl font-bold mb-6">
-          Serialized & Limited Cards
-        </h1>
+        <div className="relative flex items-center mb-4">
+
+  <button
+    onClick={() => window.history.back()}
+    className="text-sm text-muted-foreground hover:text-foreground"
+  >
+    ← Back
+  </button>
+
+  <h1 className="text-lg font-semibold w-full text-right md:text-center">
+    Serialized & Limited Cards
+  </h1>
+
+</div>
 
         {!loaded ? (
           <div className="text-center py-16 text-muted-foreground">

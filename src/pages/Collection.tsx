@@ -201,7 +201,7 @@ const Collection = () => {
 
   if (!set) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gray-50">
         <KayouHeader />
         <div className="container py-8">
           <h1 className="text-2xl font-bold">Set not found</h1>
@@ -368,16 +368,27 @@ return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
       <KayouHeader />
 
       <div className="container py-8">
-        <h1 className="text-2xl font-bold mb-6">
-          {set.name}
-        </h1>
+        <div className="relative flex items-center mb-4">
+
+  <button
+    onClick={() => window.history.back()}
+    className="text-sm text-muted-foreground hover:text-foreground"
+  >
+    ← Back
+  </button>
+
+  <h1 className="text-lg font-semibold w-full text-right md:text-center">
+    {set.name}
+  </h1>
+
+</div>
 
                 {!loaded ? (
           <div className="text-center py-16 text-muted-foreground">
             Loading collection...
           </div>
         ) : (
-<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+<div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {cards.map((card) => {
               const key = `${card.rarity}-${card.number}`;
               const isFlipped = flipped[key];

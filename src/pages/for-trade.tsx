@@ -82,10 +82,8 @@ export default function ForTrade() {
           </h1>
 
           <p className="text-muted-foreground text-sm mt-1 max-w-md">
-            These are cards you marked as available for trade, which will appear on your public profile. 
-            Once a trade has been completed, press the check mark to remove the card from this list.
-            Removing the card from "My Trading List" does not mark a card as missing from your set and 
-            does not affect progress bars toward set completion.
+            These are cards you marked as available for trade, which will appear on your public profile. Once a trade has been completed, press the check mark to remove the card from this list.
+            Removing the card from "My Trading List" does not mark a card as missing from your set and does not affect progress bars toward set completion.
           </p>
         </div>
 
@@ -100,7 +98,7 @@ export default function ForTrade() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
             {cards.map((card) => {
               const image = getCardImage(card.set_id, card.card_key);
 

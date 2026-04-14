@@ -3,17 +3,25 @@ import { supabase } from "@/lib/supabase";
 import KayouHeader from "@/components/KayouHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import starlight from "@/assets/avatars/starlight-glimmer.jpg";
-import rarity from "@/assets/avatars/rarity.jpg";
-import pearButter from "@/assets/avatars/pear-butter.jpg";
-import luna from "@/assets/avatars/luna.jpg";
-import trixie from "@/assets/avatars/trixie.jpg";
+
+import avatar001 from "@/assets/avatars/avatar001.jpg";
+import avatar002 from "@/assets/avatars/avatar002.jpg";
+import avatar003 from "@/assets/avatars/avatar003.jpg";
+import avatar004 from "@/assets/avatars/avatar004.jpg";
+import avatar005 from "@/assets/avatars/avatar005.jpg";
+import avatar006 from "@/assets/avatars/avatar006.jpg";
+import avatar007 from "@/assets/avatars/avatar007.jpg";
+import avatar008 from "@/assets/avatars/avatar008.jpg";
+
 const avatarMap: Record<string, string> = {
-  "starlight-glimmer.jpg": starlight,
-  "rarity.jpg": rarity,
-  "pear-butter.jpg": pearButter,
-  "luna.jpg": luna,
-  "trixie.jpg": trixie
+  "avatar001.jpg": avatar001,
+  "avatar002.jpg": avatar002,
+  "avatar003.jpg": avatar003,
+  "avatar004.jpg": avatar004,
+  "avatar005.jpg": avatar005,
+  "avatar006.jpg": avatar006,
+  "avatar007.jpg": avatar007,
+  "avatar008.jpg": avatar008,
 };
 
 interface User {
@@ -186,12 +194,12 @@ setTradeCards(trades || []);
   };
 
   const getAvatar = (avatar?: string) => {
-  if (!avatar) return starlight;
+  if (!avatar) return avatar001;
 
   let file = avatar.split("/").pop() || "";
   if (!file.includes(".")) file = `${file}.jpg`;
 
-  return avatarMap[file] || starlight;
+  return avatarMap[file] || avatar001;
 };
 
   return (
@@ -282,7 +290,7 @@ setTradeCards(trades || []);
 
 </div>
 {view === "iso" && (
-<div>
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
   <h3 className="text-xl font-bold mb-4">
     ISO
@@ -302,16 +310,18 @@ setTradeCards(trades || []);
   return !owned[`${set.id}-${key}`];
 });
 
+if (missing.length === 0) return null;
+
           if (hiddenSets.includes(set.id)) return null;
 
           return (
-            <div key={set.id} className="mb-10">
+            <div key={set.id} className="border rounded-xl p-4 bg-card">
 
               <h3 className="text-xl font-semibold mb-4">
                 {set.name}
               </h3>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="flex flex-wrap gap-2">
 
                 {missing.map((card) => (
                   <img
@@ -323,7 +333,7 @@ setTradeCards(trades || []);
   ? `/serialized-limited-cards/andypricepromo.jpg`
     : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
 }
-                    className="rounded-lg"
+                    className="rounded-lg w-[90px]"
                   />
                 ))}
 
@@ -340,7 +350,7 @@ setTradeCards(trades || []);
 
 
 {view === "trade" && (
-<div>
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
 <h3 className="text-xl font-bold mb-4">
   For Trade
@@ -361,16 +371,16 @@ setTradeCards(trades || []);
           ).map(([setId, cards]: any) => {
 
             const set = sets.find(s => s.id === setId);
-            if (!set) return null;
+if (!set || hiddenSets.includes(set.id)) return null;
 
             return (
-              <div key={setId} className="mb-10">
+              <div key={setId} className="border rounded-xl p-4 bg-card">
 
                 <h3 className="text-xl font-semibold mb-4">
                   {set.name}
                 </h3>
 
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex flex-wrap gap-2">
 
                   {cards.map((card: any) => {
 
@@ -386,7 +396,7 @@ setTradeCards(trades || []);
     ? "/serialized-limited-cards/andypricepromo.jpg"
     : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3,"0")}.jpg`
 }
-                        className="rounded-lg"
+                        className="rounded-lg w-[90px]"
                       />
                     );
 
