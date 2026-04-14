@@ -263,12 +263,25 @@ const [newUsername, setNewUsername] = useState("");
           setAuthMode("login");
           setShowLogin(true);
         }}
+        
       >
         <User className="h-4 w-4 mr-2" />
         Log In
       </Button>
     )}
-
+{!user && (
+  <Button
+    variant="ghost"
+    className="w-full justify-start"
+    onClick={() => {
+      setAuthMode("signup");
+      setShowLogin(true);
+    }}
+  >
+    <User className="h-4 w-4 mr-2" />
+    Create Account
+  </Button>
+)}
     {user && (
       <Button
         variant="ghost"
