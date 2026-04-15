@@ -247,9 +247,13 @@ setTradeCards(trades || []);
           Back to Community
         </button>
 
-        <h1 className="text-2xl font-bold mb-6">
-          {set.name} Leaderboard
-        </h1>
+        <h1 className="text-2xl font-bold">
+  {set.name} Leaderboard
+</h1>
+
+<p className="text-sm text-muted-foreground mb-6">
+  This page only shows the top 30 collectors closest to completing the set, and those who have completed it already.
+</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

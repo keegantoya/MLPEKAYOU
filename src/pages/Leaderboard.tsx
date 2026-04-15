@@ -57,10 +57,10 @@ const sets = [
 
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState<any[]>([]);
+  const [openProfile, setOpenProfile] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
-
       const { data: progress } = await supabase
         .from("collection_progress")
         .select("*");
@@ -70,50 +70,67 @@ const Leaderboard = () => {
         .select("*");
 
       const profileMap: Record<string, any> = {};
-      profiles?.forEach((p: any) => {
-        profileMap[p.id] = p;
-      });
-
+profiles?.forEach((p: any) => {
+  profileMap[p.id] = {
+    ...p,
+    hiddenSets: p.iso_hidden_sets || []
+  };
+});
       const totals: Record<string, any> = {};
       const seen: Record<string, boolean> = {};
 
       progress?.forEach((row: any) => {
-
         const key = `${row.user_id}-${row.set_id}`;
         if (seen[key]) return;
         seen[key] = true;
 
         const set = sets.find(s => s.id === row.set_id);
-        if (!set) return;
+if (!set) return;
+
+const id = row.user_id;
+
+// ✅ Always create user FIRST
+if (!totals[id]) {
+  totals[id] = {
+    id,
+    username: profileMap[id]?.username || "Anonymous",
+    avatar: profileMap[id]?.avatar_url,
+    total: 0,
+    missing: [] as string[],
+    hiddenSets: profileMap[id]?.hiddenSets || []
+  };
+}
+
+// ✅ Check if this set is hidden
+const isHidden = profileMap[id]?.hiddenSets?.includes(row.set_id);
 
         let owned = 0;
+let missingCards: string[] = [];
 
-        Object.entries(set.rarities).forEach(([rarity, count]) => {
-          for (let i = 1; i <= count; i++) {
-            const cardKey = `${rarity}-${i}`;
-            if (row.progress?.[cardKey]) {
-              owned++;
-            }
-          }
-        });
+Object.entries(set.rarities).forEach(([rarity, count]) => {
+  for (let i = 1; i <= count; i++) {
+    const cardKey = `${rarity}-${i}`;
 
-        const id = row.user_id;
+    if (row.progress?.[cardKey]) {
+  owned++;
+} else if (!isHidden) {
+  const displayRarity = rarity === "LC" ? "PR" : rarity;
+  const displayKey = `${displayRarity}-${i}`;
 
-        if (!totals[id]) {
-          totals[id] = {
-            id,
-            username: profileMap[id]?.username || "Anonymous",
-            avatar: profileMap[id]?.avatar_url,
-            total: 0
-          };
-        }
+  missingCards.push(`${set.name} • ${displayKey}`);
+}
+  }
+});
+
 
         totals[id].total += owned;
+        totals[id].missing.push(...missingCards);
       });
 
-      const sorted =
-        Object.values(totals)
-          .sort((a: any, b: any) => b.total - a.total);
+      const sorted = Object.values(totals)
+  .filter((user: any) => user.username !== "HeiManTou") // 🚫 REMOVE THIS USER
+  .sort((a: any, b: any) => b.total - a.total)
+  .slice(0, 12); // ✅ TOP 12
 
       setLeaders(sorted);
     };
@@ -134,41 +151,183 @@ const Leaderboard = () => {
     <div className="min-h-screen bg-background">
       <KayouHeader />
 
-      <div className="container py-8">
-        <h1 className="text-2xl font-bold mb-6">
-          Top Collectors
+      <div className="container py-8 overflow-visible">
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          Top KayouUS Collectors
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {leaders.map((user, index) => (
-            <div
-              key={index}
-              className="bg-card border rounded-xl p-5 shadow-sm"
-            >
-              <div className="flex items-center gap-3">
+          {leaders.map((user, index) => {
+            const isOpen = openProfile === user.id;
 
-                <div className="font-bold">
-                  #{index + 1}
+            return (
+              <div
+  key={index}
+  className="relative bg-card border rounded-xl p-5 shadow-sm cursor-pointer hover:shadow-md transition"
+  onClick={() =>
+    setOpenProfile(isOpen ? null : user.id)
+  }
+>
+                <div
+  className={`flex items-center gap-3 ${
+    index < 3 ? "justify-center text-center" : ""
+  }`}
+>
+                  {index >= 3 && (
+  <div className="font-bold">
+    #{index + 1}
+  </div>
+)}
+
+                  <div className="relative">
+  <img
+    src={getAvatar(user.avatar)}
+    className="w-10 h-10 rounded-full"
+  />
+
+  {/* ✨ SPARKLES ATTACHED TO AVATAR */}
+  <>
+    {/* 🥇 #1 */}
+    {index === 0 && (
+      <>
+        {/* MOBILE: above avatar only */}
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 md:hidden pointer-events-none">
+          <div className="sparkle sparkle-1"></div>
+          <div className="sparkle sparkle-2"></div>
+          <div className="sparkle sparkle-3"></div>
+        </div>
+
+        {/* DESKTOP: original positions */}
+        <div className="hidden md:block absolute -top-3 left-4 pointer-events-none">
+          <div className="sparkle sparkle-1"></div>
+          <div className="sparkle sparkle-2"></div>
+          <div className="sparkle sparkle-3"></div>
+        </div>
+
+        <div className="hidden md:block absolute top-6 -left-2 pointer-events-none">
+          <div className="sparkle sparkle-1"></div>
+          <div className="sparkle sparkle-2"></div>
+          <div className="sparkle sparkle-3"></div>
+        </div>
+      </>
+    )}
+
+    {/* 🥈 #2 */}
+    {index === 1 && (
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none">
+        <div className="sparkle sparkle-1"></div>
+        <div className="sparkle sparkle-2"></div>
+        <div className="sparkle sparkle-3"></div>
+      </div>
+    )}
+
+   {/* 🥉 #3 */}
+{index === 2 && (
+  <>
+    {/* MOBILE: above avatar */}
+    <div className="absolute -top-3 left-1/2 -translate-x-1/2 md:hidden pointer-events-none">
+      <div className="sparkle sparkle-1"></div>
+      <div className="sparkle sparkle-2"></div>
+      <div className="sparkle sparkle-3"></div>
+    </div>
+
+    {/* DESKTOP: above avatar (same as #2 style) */}
+    <div className="hidden md:block absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none">
+      <div className="sparkle sparkle-1"></div>
+      <div className="sparkle sparkle-2"></div>
+      <div className="sparkle sparkle-3"></div>
+    </div>
+  </>
+)}
+  </>
+
+  {/* 🎀 RIBBON */}
+  {index < 3 && (
+  <div className="absolute -top-1 -right-2 flex flex-col items-center">
+    
+    {/* Top tag */}
+    <div
+      className={`text-[10px] font-bold px-2 py-0.5 rounded-sm shadow-md rotate-6
+        ${index === 0 ? "bg-yellow-400 text-black" : ""}
+        ${index === 1 ? "bg-gray-300 text-black" : ""}
+        ${index === 2 ? "bg-amber-600 text-white" : ""}
+      `}
+    >
+      {index === 0 && "1st"}
+      {index === 1 && "2nd"}
+      {index === 2 && "3rd"}
+    </div>
+
+    {/* Ribbon tail */}
+    <div
+      className={`w-2 h-2 rotate-45 -mt-1
+        ${index === 0 ? "bg-yellow-400" : ""}
+        ${index === 1 ? "bg-gray-300" : ""}
+        ${index === 2 ? "bg-amber-600" : ""}
+      `}
+    />
+  </div>
+)}
+</div>
+
+                  <div>
+                    <div className="font-semibold">
+                      {user.username}
+                    </div>
+
+                    <div className="text-sm text-muted-foreground">
+                      {user.total} cards
+                    </div>
+                  </div>
                 </div>
 
-                <img
-                  src={getAvatar(user.avatar)}
-                  className="w-10 h-10 rounded-full"
-                />
+                {/* ✅ POPUP */}
+                {isOpen && (
+                  <div className="absolute left-0 top-full mt-2 w-full bg-background border rounded-lg p-4 shadow-lg z-10">
+                    <div className="text-sm">
 
-                <div>
-                  <div className="font-semibold">
-                    {user.username}
-                  </div>
+                      <div className="text-xs text-muted-foreground leading-snug mb-2">
+  These are the only cards this user is missing that keeps them from 100% completion of all released sets.
+</div>
 
-                  <div className="text-sm text-muted-foreground">
-                    {user.total} cards
+{user.hiddenSets.length > 0 && (
+  <div className="text-xs text-muted-foreground italic mb-2">
+    {user.hiddenSets.map((setId: string, i: number) => {
+      const set = sets.find(s => s.id === setId);
+      return (
+        <div key={i}>
+          This user is not collecting {set?.name}.
+        </div>
+      );
+    })}
+  </div>
+)}
+
+                      <div className="font-semibold mb-1">
+                        {user.username}
+                      </div>
+
+                      <div className="max-h-40 overflow-y-auto text-xs space-y-1">
+  {user.missing.length === 0 ? (
+    <div className="text-green-500 font-semibold">
+      ✅ 100% Complete
+    </div>
+  ) : (
+    user.missing.slice(0, 50).map((card: string, i: number) => (
+      <div key={i} className="text-muted-foreground">
+        {card}
+      </div>
+    ))
+  )}
+</div>
+
+                    </div>
                   </div>
-                </div>
+                )}
 
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
       </div>

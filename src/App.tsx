@@ -29,6 +29,8 @@ import LimitedCards from "@/pages/limited-cards";
 import PasswordReset from "./pages/password-reset";
 import TradingPost from "./pages/trading-post";
 import TradingPostInner from "./pages/trading-post-inner";
+import MyTrades from "@/pages/MyTrades";
+import MyTradesSets from "@/pages/MyTradesSets";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +55,7 @@ const AppRoutes = () => {
       <Route path="/collection/:id" element={<Collection />} />
       <Route path="/my-progress" element={<MyProgress />} />
       <Route path="/my-iso" element={<MyISO />} />
+      <Route path="/my-trades" element={<MyTrades />} />
       <Route path="/community" element={<Community />} />
       <Route path="/community/:id" element={<CommunitySet />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
@@ -71,6 +74,7 @@ const AppRoutes = () => {
       <Route path="/trading-post" element={<TradingPost />} />
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/my-trades/:setId" element={<MyTradesSets />} />
     </Routes>
   );
 };

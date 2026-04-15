@@ -5,42 +5,9 @@ import { supabase } from "@/lib/supabase";
 const FunMoments1 = () => {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
-  const [forTrade, setForTrade] = useState<Record<string, boolean>>({});
 
   const toggleFlip = (key: string) => {
     setFlipped((prev) => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
-
-  const toggleTrade = async (key: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    const { data } = await supabase.auth.getSession();
-    const user = data.session?.user;
-    if (!user) return;
-
-    const isTrading = forTrade[key];
-
-    if (isTrading) {
-      await supabase
-        .from("for_trade")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("set_id", "7")
-        .eq("card_key", key);
-    } else {
-      await supabase
-        .from("for_trade")
-        .insert({
-          user_id: user.id,
-          set_id: "7",
-          card_key: key
-        });
-    }
-
-    setForTrade((prev) => ({
       ...prev,
       [key]: !prev[key]
     }));
@@ -69,31 +36,6 @@ const FunMoments1 = () => {
     };
 
     loadProgress();
-  }, []);
-
-  // LOAD TRADE
-  useEffect(() => {
-    const loadTrade = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
-
-      const { data: trades } = await supabase
-        .from("for_trade")
-        .select("card_key")
-        .eq("user_id", user.id)
-        .eq("set_id", "7");
-
-      if (trades) {
-        const tradeMap: Record<string, boolean> = {};
-        trades.forEach((card) => {
-          tradeMap[card.card_key] = true;
-        });
-        setForTrade(tradeMap);
-      }
-    };
-
-    loadTrade();
   }, []);
 
   // SAVE PROGRESS
@@ -176,20 +118,29 @@ const FunMoments1 = () => {
       <div className="container py-8">
 
         {/* HEADER */}
-        <div className="relative flex items-center mb-4">
+        <div className="mb-6">
 
-          <button
-            onClick={() => window.history.back()}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            ← Back
-          </button>
+  {/* Back Button */}
+  <div className="mb-3">
+    <button
+      onClick={() => window.history.back()}
+      className="text-sm text-muted-foreground hover:text-foreground"
+    >
+      ← Back
+    </button>
+  </div>
 
-          <h1 className="text-lg font-semibold w-full text-right md:text-center">
-            {set.name}
-          </h1>
+  {/* Title + Description */}
+  <div className="text-center px-2">
+    <h1 className="text-lg font-semibold">
+      {set.name}
+    </h1>
+    <p className="text-xs text-gray-400 mt-1">
+      The trading function has moved! Open your menu and find "My Trades."
+    </p>
+  </div>
 
-        </div>
+</div>
 
         {!loaded ? (
           <div className="text-center py-16 text-muted-foreground">
@@ -222,19 +173,6 @@ const FunMoments1 = () => {
                       src={getCardBack(card.rarity, card.number)}
                       className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
                     />
-
-                    {isFlipped && (
-                      <button
-                        onClick={(e) => toggleTrade(key, e)}
-                        className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
-                          forTrade[key]
-                            ? "bg-yellow-400 text-black"
-                            : "bg-black/60 text-white"
-                        }`}
-                      >
-                        ⇄
-                      </button>
-                    )}
 
                   </div>
                 </div>

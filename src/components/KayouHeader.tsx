@@ -11,7 +11,8 @@ import {
   ArrowLeftRight,
   Users,
   List,
-  Grid
+  Grid,
+   Layers
 } from "lucide-react";
 
 import { Button } from "./ui/button";
@@ -265,6 +266,18 @@ const handleForgotPassword = async () => {
 >
   <List className="h-4 w-4 mr-2" />
   My ISO
+</Button>
+
+<Button
+  variant="ghost"
+  className="w-full justify-start"
+  onClick={() => {
+    navigate("/my-trades");
+    setOpen(false);
+  }}
+>
+  <Layers className="h-4 w-4 mr-2" />
+  My Trades
 </Button>
 
 <Button
