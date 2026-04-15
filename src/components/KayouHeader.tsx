@@ -186,7 +186,7 @@ const handleForgotPassword = async () => {
   return (
     <>
       <header className="sticky top-0 z-50 bg-neutral-700 text-white border-b border-neutral-600 shadow-sm">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="w-full flex h-16 items-center px-2 sm:px-4">
 
           {/* LEFT SIDE */}
           <div className="flex items-center gap-3">
@@ -271,12 +271,12 @@ const handleForgotPassword = async () => {
   variant="ghost"
   className="w-full justify-start"
   onClick={() => {
-    navigate("/for-trade");
+    navigate("/trading-post");
     setOpen(false);
   }}
 >
   <ArrowLeftRight className="h-4 w-4 mr-2" />
-  For Trade
+  Trading Post
 </Button>
 
 <Button
@@ -301,18 +301,6 @@ const handleForgotPassword = async () => {
 >
   <Medal className="h-4 w-4 mr-2" />
   Leaderboard
-</Button>
-
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/collectors");
-    setOpen(false);
-  }}
->
-  <Users className="h-4 w-4 mr-2" />
-  Other Collectors
 </Button>
 
 <Button
@@ -387,18 +375,20 @@ const handleForgotPassword = async () => {
           </div>
 
           {/* CENTER LOGO */}
-<div className="flex items-center gap-2 mx-auto">
-            <img
-              src={logo}
-              alt="MLP Kayou Wiki"
-              className="h-[36px] sm:h-[46px] cursor-pointer"
-              onClick={() => navigate("/")}
-            />
+<div className="flex-1 flex justify-center items-center">
+  <div className="flex items-center gap-2">
+    <img
+      src={logo}
+      alt="MLP Kayou Wiki"
+      className="h-[36px] sm:h-[46px] cursor-pointer"
+      onClick={() => navigate("/")}
+    />
 
-            <span className="text-yellow-400 font-black text-xl sm:text-2xl">
-              BETA
-            </span>
-          </div>
+    <span className="text-yellow-400 font-black text-xl sm:text-2xl">
+      BETA
+    </span>
+  </div>
+</div>
 
           {/* RIGHT SIDE */}
           <div className="hidden sm:flex items-center gap-2">

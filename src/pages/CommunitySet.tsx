@@ -268,17 +268,13 @@ setTradeCards(trades || []);
         <span>#{index + 1}</span>
 
         <img
-          src={getAvatar(user.avatar)}
-          className="w-6 h-6 rounded-full cursor-pointer"
-          onClick={() => loadISO(user)}
-        />
+  src={getAvatar(user.avatar)}
+  className="w-6 h-6 rounded-full"
+/>
 
-        <span
-          className="cursor-pointer hover:underline"
-          onClick={() => loadISO(user)}
-        >
-          {user.username}
-        </span>
+        <span>
+  {user.username}
+</span>
       </div>
 
       <div className="relative">
@@ -309,17 +305,13 @@ setTradeCards(trades || []);
                     </span>
 
                     <img
-                      src={getAvatar(user.avatar)}
-                      className="w-6 h-6 rounded-full cursor-pointer"
-                      onClick={() => loadISO(user)}
-                    />
+  src={getAvatar(user.avatar)}
+  className="w-6 h-6 rounded-full"
+/>
 
-                    <span
-                      className="cursor-pointer hover:underline"
-                      onClick={() => loadISO(user)}
-                    >
-                      {user.username}
-                    </span>
+                    <span>
+  {user.username}
+</span>
                   </div>
                 </div>
               ))}
@@ -334,195 +326,6 @@ setTradeCards(trades || []);
           </div>
 
         </div>
-
-        {selectedUser && (
-
-<div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
-  <div className="bg-background max-w-3xl mx-auto mt-16 p-4 rounded-xl shadow-lg">
-
-    <div className="sticky top-0 z-50 bg-background py-3 mb-4 border-b flex justify-end">
-  <button
-    onClick={() => setSelectedUser(null)}
-    className="text-muted-foreground hover:text-foreground text-sm font-medium"
-  >
-    ✕ Close
-  </button>
-</div>
-
-    <h2 className="text-2xl font-bold mb-6">
-      {selectedUser.username}
-    </h2>
-
-    {view === "choice" && (
-      <div className="flex flex-col gap-4">
-
-        <button
-          onClick={() => setView("iso")}
-          className="border rounded-lg p-4 hover:bg-muted"
-        >
-          This User's ISO
-        </button>
-
-        <button
-          onClick={() => setView("trade")}
-          className="border rounded-lg p-4 hover:bg-muted"
-        >
-          This User's Cards For Trade
-        </button>
-
-      </div>
-    )}
-
-    <div>
-
-      {view === "iso" && (
-  <div>
-
-    <button
-      onClick={() => setView("choice")}
-      className="mb-4 text-sm underline"
-    >
-      ← Back
-    </button>
-
-    <h3 className="text-lg font-bold mb-4">
-      ISO
-    </h3>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-
-      {isoSets
-        .filter(s => !hiddenSets.includes(s.id))
-        .map((set) => {
-
-          const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
-            Array.from({ length: count as number }, (_, i) => ({
-              rarity,
-              number: i + 1
-            }))
-          );
-
-          const missing = cards.filter(card => {
-            const key = `${card.rarity}-${card.number}`;
-            return !owned[`${set.id}-${key}`];
-          });
-
-          if (missing.length === 0) return null;
-
-          return (
-            <div key={set.id} className="border rounded-xl p-4 bg-card">
-
-              <h4 className="text-sm text-muted-foreground mb-3">
-                {set.name}
-              </h4>
-
-              <div className="flex flex-wrap gap-1">
-
-                {missing.map(card => (
-                  <img
-                    key={`${card.rarity}-${card.number}`}
-                    src={
-                      set.id === "9"
-                        ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
-                        : set.id === "10"
-                        ? "/serialized-limited-cards/andypricepromo.jpg"
-                        : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
-                    }
-                    className="rounded-md w-[90px]"
-                  />
-                ))}
-
-              </div>
-
-            </div>
-          );
-
-        })}
-
-    </div>
-
-  </div>
-)}
-
-      {view === "trade" && (
-  <div>
-
-    <button
-      onClick={() => setView("choice")}
-      className="mb-4 text-sm underline"
-    >
-      ← Back
-    </button>
-
-    <h3 className="text-lg font-bold mb-4">
-      FOR TRADE
-    </h3>
-
-    {tradeCards.length === 0 ? (
-      <p className="text-sm text-muted-foreground">
-        No cards listed for trade.
-      </p>
-    ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-
-        {Object.entries(
-          tradeCards.reduce((acc: any, card: any) => {
-            if (!acc[card.set_id]) acc[card.set_id] = [];
-            acc[card.set_id].push(card);
-            return acc;
-          }, {})
-        ).map(([setId, cards]: any) => {
-
-          const set = isoSets.find(s => s.id === setId);
-
-          return (
-            <div key={setId} className="border rounded-xl p-4 bg-card">
-
-              <h4 className="text-sm text-muted-foreground mb-3">
-                {set?.name || "Unknown Set"}
-              </h4>
-
-              <div className="flex flex-wrap gap-1">
-
-                {cards.map((card: any) => {
-
-                  const [rarity, number] = card.card_key.split("-");
-
-                  const img =
-                    rarity === "PR"
-                      ? `/promo-cards/mlpepr${String(number).padStart(3,"0")}.jpg`
-                      : rarity === "LC"
-                      ? "/serialized-limited-cards/andypricepromo.jpg"
-                      : `/cards/${isoSets.find(s => s.id === card.set_id)?.folder}/${isoSets.find(s => s.id === card.set_id)?.prefix}${getRarityCode(rarity)}${String(number).padStart(3,"0")}.jpg`;
-
-                  return (
-                    <img
-                      key={card.id}
-                      src={img}
-                      className="rounded-md w-[90px]"
-                    />
-                  );
-
-                })}
-
-              </div>
-
-            </div>
-          );
-        })}
-
-      </div>
-    )}
-
-  </div>
-)}
-
-    </div>
-
-  </div>
-</div>
-
-)}
 
       </div>
     </div>

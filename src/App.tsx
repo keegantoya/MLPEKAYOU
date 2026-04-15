@@ -15,7 +15,6 @@ import MyISO from "./pages/MyISO";
 import Community from "./pages/Community";
 import CommunitySet from "./pages/CommunitySet";
 import Leaderboard from "./pages/Leaderboard";
-import Collectors from "./pages/Collectors";
 import NotFound from "./pages/NotFound";
 import Moon3 from "./pages/Moon3";
 import Star1 from "./pages/Star1";
@@ -26,9 +25,10 @@ import FunMoments1 from "./pages/FunMoments1";
 import Promos from "./pages/promos";
 import FriendshipBegins from "./pages/friendship-begins";
 import Selling from "@/pages/selling";
-import ForTrade from "./pages/for-trade";
 import LimitedCards from "@/pages/limited-cards";
 import PasswordReset from "./pages/password-reset";
+import TradingPost from "./pages/trading-post";
+import TradingPostInner from "./pages/trading-post-inner";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +56,6 @@ const AppRoutes = () => {
       <Route path="/community" element={<Community />} />
       <Route path="/community/:id" element={<CommunitySet />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
-      <Route path="/collectors" element={<Collectors />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/moon3" element={<Moon3 />} />
       <Route path="/star1" element={<Star1 />} />
@@ -68,8 +67,9 @@ const AppRoutes = () => {
       <Route path="/promos" element={<Promos />} />
       <Route path="/friendship-begins" element={<FriendshipBegins />} />
       <Route path="/selling" element={<Selling />} />
-      <Route path="/for-trade" element={<ForTrade />} />
       <Route path="/limited-cards" element={<LimitedCards />} />
+      <Route path="/trading-post" element={<TradingPost />} />
+      <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
