@@ -1,9 +1,30 @@
 import KayouHeader from "@/components/KayouHeader";
 import CollectionCard from "@/components/CollectionCard";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function MyTrades() {
   const navigate = useNavigate();
+
+   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+   useEffect(() => {
+  const loadHidden = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("iso_hidden_sets")
+      .eq("id", user.id)
+      .single();
+
+    setHiddenSets(profile?.iso_hidden_sets || []);
+  };
+
+  loadHidden();
+}, []);
 
   const collections = [
     {
@@ -56,7 +77,9 @@ export default function MyTrades() {
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 mt-6">
-            {collections.map((col) => (
+            {collections
+  .filter((col) => !hiddenSets.includes(col.id))
+  .map((col) => (
               <div
                 key={col.id}
                 onClick={() => navigate(`/my-trades/${col.id}`)}
