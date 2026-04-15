@@ -82,7 +82,7 @@ export default function MyTrades() {
   .map((col) => (
               <div
                 key={col.id}
-                onClick={() => navigate(`/my-trades/${col.id}`)}
+                onClick={() => navigate(`/my-trades/${col.id}`, { replace: true })}
                 className="cursor-pointer"
               >
                 <CollectionCard {...col} />
