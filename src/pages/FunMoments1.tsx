@@ -18,6 +18,7 @@ const FunMoments1 = () => {
     const loadProgress = async () => {
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user;
+      console.log("ACTUAL USER ID:", user?.id);
 
       if (user) {
         const { data: saved } = await supabase
@@ -26,6 +27,8 @@ const FunMoments1 = () => {
           .eq("user_id", user.id)
           .eq("set_id", "7")
           .single();
+
+          console.log("LOADED PROGRESS:", saved);
 
         if (saved?.progress) {
           setFlipped(saved.progress);
@@ -40,27 +43,38 @@ const FunMoments1 = () => {
 
   // SAVE PROGRESS
   useEffect(() => {
-    if (!loaded) return;
+  if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
 
-      await supabase
-        .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: "7",
-            progress: flipped
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: "7",
+          progress: flipped
+        },
+        { onConflict: "user_id,set_id" }
+      );
 
-    saveProgress();
-  }, [flipped, loaded]);
+    console.log("SAVE ERROR:", error);
+
+    const { data: check } = await supabase
+      .from("collection_progress_raw")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("set_id", "7");
+
+    console.log("AFTER SAVE:", check);
+  };
+
+  saveProgress();
+}, [flipped, loaded]);
+
 
   const set = {
     name: "Fun Moments: First Volume",
