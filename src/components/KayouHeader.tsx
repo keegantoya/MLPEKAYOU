@@ -149,7 +149,7 @@ const handleForgotPassword = async () => {
   email: loginEmail,
   password: loginPassword,
   options: {
-    emailRedirectTo: window.location.origin,
+    emailRedirectTo: window.location.origin + "/account-confirmation",
     data: { username }
   }
 });
