@@ -27,6 +27,7 @@ import FriendshipBegins from "./pages/friendship-begins";
 import Selling from "@/pages/selling";
 import LimitedCards from "@/pages/limited-cards";
 import PasswordReset from "./pages/password-reset";
+import AccountConfirmation from "./pages/accountconfirmation";
 import TradingPost from "./pages/trading-post";
 import TradingPostInner from "./pages/trading-post-inner";
 import MyTrades from "@/pages/MyTrades";
@@ -85,6 +86,7 @@ const AppRoutes = () => {
       <Route path="/fun-moments-3" element={<FunMoments3 />} />
       <Route path="/public-iso" element={<PublicISO />} />
       <Route path="/public-iso/:setId" element={<PublicISOSet />} />
+      <Route path="/account-confirmation" element={<AccountConfirmation />} />
     </Routes>
   );
 };
