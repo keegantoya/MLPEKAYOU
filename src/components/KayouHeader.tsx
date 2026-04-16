@@ -242,6 +242,7 @@ const handleForgotPassword = async () => {
     <Settings className="h-4 w-4 mr-2" />
     Profile
   </Button>
+  
 )}
 
   {/* MENU BUTTONS */}
@@ -344,15 +345,32 @@ const handleForgotPassword = async () => {
 <div className="hidden sm:flex items-center gap-3">
 
   {user && (
+  <>
     <Button
       variant="ghost"
-      className="text-white hover:bg-white/10"
-      onClick={handleLogout}
+      className="w-full justify-start"
+      onClick={() => {
+        navigate("/profile");
+        setOpen(false);
+      }}
+    >
+      <Settings className="h-4 w-4 mr-2" />
+      Profile
+    </Button>
+
+    <Button
+      variant="ghost"
+      className="w-full justify-start text-red-500"
+      onClick={() => {
+        handleLogout();
+        setOpen(false);
+      }}
     >
       <LogOut className="h-4 w-4 mr-2" />
       Logout
     </Button>
-  )}
+  </>
+)}
 
   {!user && (
   <>
