@@ -3,7 +3,6 @@ import KayouHeader from "@/components/KayouHeader";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import CollectionCard from "@/components/CollectionCard";
 import { loadUserProgress } from "@/lib/loadProgress";
-import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -130,7 +129,6 @@ const Collections = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [sets, setSets] = useState<Collection[]>([]);
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {

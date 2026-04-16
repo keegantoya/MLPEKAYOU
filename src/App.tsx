@@ -103,16 +103,5 @@ const App = () => {
   );
 };
 
-useEffect(() => {
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_IN") {
-      console.log("User signed in via email link:", session);
-    }
-  });
-
-  return () => subscription.unsubscribe();
-}, []);
 
 export default App;
