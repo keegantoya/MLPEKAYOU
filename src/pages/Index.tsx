@@ -214,7 +214,7 @@ const Index = () => {
     {/* RIGHT SIDE IMAGE */}
     <div className="w-full md:w-[40%]">
       <img
-        src="/src/assets/avatars/mlpekayousam.jpg"
+  src={aboutImage}
         alt="About MLPEKAYOU"
         className="rounded-xl w-full object-cover max-h-64"
       />
