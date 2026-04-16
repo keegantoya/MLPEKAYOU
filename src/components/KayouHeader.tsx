@@ -153,7 +153,6 @@ const handleForgotPassword = async () => {
     data: { username }
   }
 });
-
   if (error) {
     alert(error.message);
     return;
