@@ -31,6 +31,7 @@ import TradingPost from "./pages/trading-post";
 import TradingPostInner from "./pages/trading-post-inner";
 import MyTrades from "@/pages/MyTrades";
 import MyTradesSets from "@/pages/MyTradesSets";
+import AboutMe from "@/pages/AboutMe";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ const AppRoutes = () => {
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="*" element={<NotFound />} />
       <Route path="/my-trades/:setId" element={<MyTradesSets />} />
+      <Route path="/about" element={<AboutMe />} />
     </Routes>
   );
 };

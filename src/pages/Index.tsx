@@ -6,6 +6,7 @@ import CollectionCard from "@/components/CollectionCard";
 import { useEffect, useState } from "react";
 import { loadUserProgress } from "@/lib/loadProgress";
 import { supabase } from "@/lib/supabase";
+import aboutImage from "@/assets/avatars/mlpekayousam.jpg";
 
 type Set = {
   id: string;
@@ -185,6 +186,44 @@ const Index = () => {
           ))}
         </div>
       </section>
+
+{/* ABOUT ME PAGE */}
+<section className="max-w-5xl mx-auto px-4 mt-6 mb-10">
+  <div className="bg-card border rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
+
+    {/* LEFT SIDE */}
+    <div className="flex-1 text-center">
+
+      <h2 className="text-xl font-semibold mb-2">
+        About MLPEKAYOUWIKI
+      </h2>
+
+      <p className="text-sm text-muted-foreground mb-4">
+        If you're interested in helping support this website or learning about where it comes from, you can learn about it here.
+      </p>
+
+      <Button
+  onClick={() => navigate("/about")}
+  className="bg-pink-200 hover:bg-pink-300 text-black px-5 py-2 rounded-lg"
+>
+  ABOUT ME
+</Button>
+
+    </div>
+
+    {/* RIGHT SIDE IMAGE */}
+    <div className="w-full md:w-[40%]">
+      <img
+        src="/src/assets/avatars/mlpekayousam.jpg"
+        alt="About MLPEKAYOU"
+        className="rounded-xl w-full object-cover max-h-64"
+      />
+    </div>
+
+  </div>
+</section>
+
+
 
       <footer className="border-t border-border py-4 sm:py-5 text-center text-[10px] sm:text-xs text-muted-foreground">
         <div className="max-w-lg mx-auto">

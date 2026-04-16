@@ -135,11 +135,15 @@ const CommunitySet = () => {
     for (let i = 1; i <= count; i++) {
       total++;
 
-      const key = `${rarity}-${i}`;
+     const key1 = `${rarity}-${i}`;
+const key2 = `${id}-${rarity}-${i}`;
 
-      if (row.progress && row.progress[key] === true) {
-        owned++;
-      }
+const value1 = row.progress?.[key1];
+const value2 = row.progress?.[key2];
+
+if (value1 || value2) {
+  owned++;
+}
     }
   });
 
