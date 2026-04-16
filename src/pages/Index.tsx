@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { loadUserProgress } from "@/lib/loadProgress";
 import { supabase } from "@/lib/supabase";
 import aboutImage from "@/assets/avatars/mlpekayousam.jpg";
+import logoWithCards from "@/assets/avatars/logowithcards.png";
 
 type Set = {
   id: string;
@@ -124,6 +125,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <KayouHeader />
+
+      {/* Hero Image */}
+<section className="w-full px-4 mt-4">
+  <div className="max-w-6xl mx-auto">
+    <img
+      src={logoWithCards}
+      alt="MLPE Kayou Logo with Cards"
+      className="w-full max-w-2xl mx-auto object-contain"
+    />
+  </div>
+</section>
 
       {/* Giveaway Banner */}
       <section className="w-full px-4 mt-4">

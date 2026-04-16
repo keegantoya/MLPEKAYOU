@@ -19,7 +19,6 @@ import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
-
 import {
   Sheet,
   SheetContent,
@@ -51,7 +50,6 @@ const generateUsername = () => {
 const KayouHeader = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -62,7 +60,6 @@ const KayouHeader = () => {
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [showMobilePrompt, setShowMobilePrompt] = useState(false);
   const [open, setOpen] = useState(false);
-
   const [loginError, setLoginError] = useState("");
   const [showForgot, setShowForgot] = useState(false);
   const [showResetSent, setShowResetSent] = useState(false);
@@ -149,12 +146,13 @@ const handleForgotPassword = async () => {
   const username = generateUsername();
 
   const { data, error } = await supabase.auth.signUp({
-    email: loginEmail,
-    password: loginPassword,
-    options: {
-      data: { username }
-    }
-  });
+  email: loginEmail,
+  password: loginPassword,
+  options: {
+    emailRedirectTo: window.location.origin,
+    data: { username }
+  }
+});
 
   if (error) {
     alert(error.message);
@@ -187,26 +185,53 @@ const handleForgotPassword = async () => {
   return (
     <>
       <header className="sticky top-0 z-50 bg-neutral-700 text-white border-b border-neutral-600 shadow-sm">
-        <div className="w-full flex h-16 items-center px-2 sm:px-4">
+  <div className="w-full flex h-16 items-center px-2 sm:px-4 relative justify-between">
 
-          {/* LEFT SIDE */}
-          <div className="flex items-center gap-3">
+    {/* LEFT SIDE */}
+    <div className="flex items-center gap-3">
 
-            <Sheet open={open} onOpenChange={setOpen}>
-  <SheetTrigger asChild>
-    <Button
-      variant="ghost"
-      size="icon"
-      className="text-white hover:bg-white/10"
-    >
-      <Menu className="h-5 w-5" />
-    </Button>
-  </SheetTrigger>
+      {user && (
+  <Button
+    variant="ghost"
+    size="icon"
+    className="hidden sm:inline-flex text-white hover:bg-white/10"
+    onClick={() => navigate("/profile")}
+  >
+    <User className="h-5 w-5" />
+  </Button>
+)}
+  {/* DESKTOP DISCORD BUTTON */}
+  <Button
+    className="hidden sm:inline-flex bg-yellow-400 text-black font-bold"
+    onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
+  >
+    DISCORD
+  </Button>
 
-  <SheetContent side="left" className="w-64 p-4">
-  <div className="flex flex-col gap-2 mt-8">
+  <Button
+  className="hidden sm:inline-flex bg-pink-400 hover:bg-pink-500 text-black font-bold"
+  onClick={() => window.open("https://www.tiktok.com/@keanaex", "_blank")}
+>
+  TIKTOK
+</Button>
 
-    {user && (
+      {/* MOBILE ONLY MENU */}
+      <div className="sm:hidden">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+
+          <SheetContent side="left" className="w-64 p-4">
+            <div className="flex flex-col gap-2 mt-8">
+
+              {user && (
   <Button
     variant="ghost"
     className="w-full justify-start"
@@ -220,222 +245,164 @@ const handleForgotPassword = async () => {
   </Button>
 )}
 
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/");
-    setOpen(false);
-  }}
->
-  <Home className="h-4 w-4 mr-2" />
-  Home
+  {/* MENU BUTTONS */}
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/"); setOpen(false); }}>
+    <Home className="h-4 w-4 mr-2" />
+    Home
+  </Button>
+
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/collections"); setOpen(false); }}>
+    <Grid className="h-4 w-4 mr-2" />
+    Collections
+  </Button>
+
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/my-progress"); setOpen(false); }}>
+    <BarChart className="h-4 w-4 mr-2" />
+    My Progress
+  </Button>
+
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/my-iso"); setOpen(false); }}>
+    <List className="h-4 w-4 mr-2" />
+    My ISO
+  </Button>
+
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/my-trades"); setOpen(false); }}>
+    <Layers className="h-4 w-4 mr-2" />
+    My Trades
+  </Button>
+
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/public-iso"); setOpen(false); }}>
+  <Users className="h-4 w-4 mr-2" />
+  Open ISOs
 </Button>
 
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/collections");
-    setOpen(false);
-  }}
->
-  <Grid className="h-4 w-4 mr-2" />
-  Collections
-</Button>
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/trading-post"); setOpen(false); }}>
+    <ArrowLeftRight className="h-4 w-4 mr-2" />
+    Open Trades
+  </Button>
 
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/my-progress");
-    setOpen(false);
-  }}
->
-  <BarChart className="h-4 w-4 mr-2" />
-  My Progress
-</Button>
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/community"); setOpen(false); }}>
+    <Trophy className="h-4 w-4 mr-2" />
+    Community
+  </Button>
 
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/my-iso");
-    setOpen(false);
-  }}
->
-  <List className="h-4 w-4 mr-2" />
-  My ISO
-</Button>
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/leaderboard"); setOpen(false); }}>
+    <Medal className="h-4 w-4 mr-2" />
+    Leaderboard
+  </Button>
 
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/my-trades");
-    setOpen(false);
-  }}
->
-  <Layers className="h-4 w-4 mr-2" />
-  My Trades
-</Button>
+  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/selling"); setOpen(false); }}>
+    <Tag className="h-4 w-4 mr-2" />
+    Selling
+  </Button>
 
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/trading-post");
-    setOpen(false);
-  }}
->
-  <ArrowLeftRight className="h-4 w-4 mr-2" />
-  Trading Post
-</Button>
+  <div className="border-t my-3" />
 
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/community");
-    setOpen(false);
-  }}
->
-  <Trophy className="h-4 w-4 mr-2" />
-  Community Progress
-</Button>
-
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/leaderboard");
-    setOpen(false);
-  }}
->
-  <Medal className="h-4 w-4 mr-2" />
-  Leaderboard
-</Button>
-
-<Button
-  variant="ghost"
-  className="w-full justify-start"
-  onClick={() => {
-    navigate("/selling");
-    setOpen(false);
-  }}
->
-  <Tag className="h-4 w-4 mr-2" />
-  Selling
-</Button>
-
-{!user && (
+  {/* DISCORD */}
   <Button
-    variant="ghost"
-    className="w-full justify-start"
+    className="w-full justify-start bg-yellow-400 text-black font-bold"
     onClick={() => {
-      setAuthMode("login");
-      setShowLogin(true);
+      window.open("https://discord.gg/fb7cHz4kdD", "_blank");
       setOpen(false);
     }}
   >
-    <User className="h-4 w-4 mr-2" />
-    Log In
+    DISCORD
   </Button>
-)}
 
-{!user && (
+  {/* TIKTOK */}
   <Button
-    variant="ghost"
-    className="w-full justify-start"
+    className="w-full justify-start bg-pink-400 hover:bg-pink-500 text-black font-bold mt-2"
     onClick={() => {
-      setAuthMode("signup");
-      setShowLogin(true);
+      window.open("https://www.tiktok.com/@keanaex", "_blank");
       setOpen(false);
     }}
   >
-    <User className="h-4 w-4 mr-2" />
-    Create Account
+    TIKTOK
   </Button>
+
+</div>
+          </SheetContent>
+        </Sheet>
+      </div>
+
+    </div>
+
+    {/* CENTER LOGO */}
+    <div className="flex-1 flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2 items-center gap-2">
+      <img
+        src={logo}
+        alt="MLP Kayou Wiki"
+        className="h-[32px] sm:h-[40px] md:h-[46px] cursor-pointer"
+        onClick={() => navigate("/")}
+      />
+
+      <span className="text-yellow-400 font-black text-lg sm:text-xl md:text-2xl">
+        BETA
+      </span>
+    </div>
+
+   {/* RIGHT SIDE */}
+<div className="hidden sm:flex items-center gap-3">
+
+  {user && (
+    <Button
+      variant="ghost"
+      className="text-white hover:bg-white/10"
+      onClick={handleLogout}
+    >
+      <LogOut className="h-4 w-4 mr-2" />
+      Logout
+    </Button>
+  )}
+
+  {!user && (
+  <>
+    <Button
+      variant="ghost"
+      className="text-white hover:bg-white/10"
+      onClick={() => {
+        setAuthMode("login");
+        setShowLogin(true);
+      }}
+    >
+      Login
+    </Button>
+
+    <Button
+      className="bg-yellow-400 text-black"
+      onClick={() => {
+        setAuthMode("signup");
+        setShowLogin(true);
+      }}
+    >
+      Make Account
+    </Button>
+  </>
 )}
 
-{user && (
-  <Button
-    variant="ghost"
-    className="w-full justify-start"
-    onClick={() => {
-      handleLogout();
-      setOpen(false);
-    }}
-  >
-    <LogOut className="h-4 w-4 mr-2" />
-    Logout
-  </Button>
-)}
-
-  </div>
-</SheetContent>
-</Sheet>
-
-            <Button
-              className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-2 sm:px-4"
-              onClick={() =>
-                window.open("https://discord.gg/fb7cHz4kdD", "_blank")
-              }
-            >
-              DISCORD
-            </Button>
-
-          </div>
-
-          {/* CENTER LOGO */}
-<div className="flex-1 flex justify-center items-center">
-  <div className="flex items-center gap-2">
-    <img
-      src={logo}
-      alt="MLP Kayou Wiki"
-      className="h-[36px] sm:h-[46px] cursor-pointer"
-      onClick={() => navigate("/")}
-    />
-
-    <span className="text-yellow-400 font-black text-xl sm:text-2xl">
-      BETA
-    </span>
-  </div>
 </div>
 
-          {/* RIGHT SIDE */}
-          <div className="hidden sm:flex items-center gap-2">
+  </div>
+</header>
 
-            {!user && (
-              <>
-                <Button
-                  variant="ghost"
-                  className="text-white"
-                  onClick={() => {
-                    setAuthMode("login");
-                    setShowLogin(true);
-                  }}
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Log In
-                </Button>
+        <div className="hidden sm:block sticky top-16 z-40 bg-neutral-700 text-white border-b border-neutral-600">
+  <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap justify-center gap-2">
 
-                <Button
-                  className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-4"
-                  onClick={() => {
-                    setAuthMode("signup");
-                    setShowLogin(true);
-                  }}
-                >
-                  Create Account
-                </Button>
-              </>
-            )}
+  <Button variant="ghost" onClick={() => navigate("/")}>Home</Button>
+  <Button variant="ghost" onClick={() => navigate("/collections")}>Collections</Button>
+  <Button variant="ghost" onClick={() => navigate("/my-progress")}>My Progress</Button>
 
-          </div>
+  <Button variant="ghost" onClick={() => navigate("/my-iso")}>My ISO</Button>
+  <Button variant="ghost" onClick={() => navigate("/public-iso")}>Open ISOs</Button>
 
-        </div>
-      </header>
+  <Button variant="ghost" onClick={() => navigate("/my-trades")}>My Trades</Button>
+  <Button variant="ghost" onClick={() => navigate("/trading-post")}>Open Trades</Button>
+  <Button variant="ghost" onClick={() => navigate("/community")}>Community</Button>
+  <Button variant="ghost" onClick={() => navigate("/leaderboard")}>Leaderboard</Button>
+  <Button variant="ghost" onClick={() => navigate("/selling")}>Selling</Button>
+
+</div>
+</div>
 
 {showMobilePrompt && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">

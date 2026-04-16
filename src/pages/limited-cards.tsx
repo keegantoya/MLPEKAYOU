@@ -58,7 +58,7 @@ const LimitedCards = () => {
 
       if (user) {
         const { data: saved } = await supabase
-          .from("collection_progress_raw")
+          .from("collection_progress")
           .select("progress")
           .eq("user_id", user.id)
           .eq("set_id", setId)
@@ -189,19 +189,7 @@ const LimitedCards = () => {
                     src="/card-backs/M1R-SR-SGR-SCBACK.jpeg"
                     className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
                   />
-
-                  {isFlipped && (
-                    <button
-                      onClick={(e) => toggleTrade(card.key, e)}
-                      className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
-                        forTrade[card.key]
-                          ? "bg-yellow-400 text-black"
-                          : "bg-black/60 text-white"
-                      }`}
-                    >
-                      ⇄
-                    </button>
-                  )}
+                
 
                 </div>
               </div>

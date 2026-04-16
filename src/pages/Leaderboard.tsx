@@ -84,7 +84,7 @@ profiles?.forEach((p: any) => {
         if (seen[key]) return;
         seen[key] = true;
 
-        const set = sets.find(s => s.id === row.set_id);
+        const set = sets.find(s => s.id === String(row.set_id));
 if (!set) return;
 
 const id = row.user_id;
@@ -102,7 +102,7 @@ if (!totals[id]) {
 }
 
 // ✅ Check if this set is hidden
-const isHidden = profileMap[id]?.hiddenSets?.includes(row.set_id);
+const isHidden = profileMap[id]?.hiddenSets?.includes(String(row.set_id));
 
         let owned = 0;
 let missingCards: string[] = [];
@@ -111,7 +111,10 @@ Object.entries(set.rarities).forEach(([rarity, count]) => {
   for (let i = 1; i <= count; i++) {
     const cardKey = `${rarity}-${i}`;
 
-    if (row.progress?.[cardKey]) {
+    const value = row.progress?.[cardKey];
+const isOwned = value !== false && value != null;
+
+if (isOwned) {
   owned++;
 } else if (!isHidden) {
   const displayRarity = rarity === "LC" ? "PR" : rarity;

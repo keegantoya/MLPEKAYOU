@@ -183,19 +183,7 @@ const Promos = () => {
                       className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
                     />
 
-                    {/* TRADE BUTTON (ONLY WHEN FLIPPED) */}
-                    {isFlipped && (
-                      <button
-                        onClick={(e) => toggleTrade(key, e)}
-                        className={`absolute top-1 right-1 z-10 rounded-full p-1 shadow-md ${
-                          forTrade[key]
-                            ? "bg-yellow-400 text-black"
-                            : "bg-black/60 text-white"
-                        }`}
-                      >
-                        ⇄
-                      </button>
-                    )}
+    
 
                   </div>
                 </div>

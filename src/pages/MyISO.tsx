@@ -61,46 +61,46 @@ const MyISO = () => {
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+  const load = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
 
-      if (!user) return;
+    setUserId(user.id);
+    setUsername(user.user_metadata?.username || "My");
 
-      setUserId(user.id);
-      setUsername(user.user_metadata?.username || "My");
+    const { data: progress } = await supabase
+      .from("collection_progress")
+      .select("*")
+      .eq("user_id", user.id);
 
-      const { data: progress } = await supabase
-        .from("collection_progress")
-        .select("*")
-        .eq("user_id", user.id);
+    const allOwned: Record<string, boolean> = {};
 
-      const allOwned: Record<string, boolean> = {};
-
-      progress?.forEach((set: any) => {
-        Object.entries(set.progress || {}).forEach(([key, value]) => {
-          if (value) {
-            allOwned[`${set.set_id}-${key}`] = true;
-          }
-        });
+    progress?.forEach((set: any) => {
+      Object.entries(set.progress || {}).forEach(([key, value]) => {
+        if (value) {
+          allOwned[`${set.set_id}-${key}`] = true;
+        }
       });
+    });
 
-      setOwned(allOwned);
+    setOwned(allOwned);
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("iso_hidden_sets")
-        .eq("id", user.id)
-        .single();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("iso_hidden_sets")
+      .eq("id", user.id)
+      .single();
 
-      setHiddenSets(profile?.iso_hidden_sets || []);
-    };
+    setHiddenSets(profile?.iso_hidden_sets || []);
 
-    load();
-  }, []);
+    setLoading(false);
+  };
 
+  load();
+}, []);
   const toggleSet = async (setId: string) => {
     if (!userId) return;
 
@@ -171,60 +171,63 @@ const MyISO = () => {
         </div>
 
         {/* ✅ GRID FIX */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<div>
+  {loading ? (
+    <div className="text-center py-10 text-muted-foreground">
+      Loading your ISO...
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {sets
+        .filter(set => !hiddenSets.includes(set.id))
+        .map((set) => {
 
-          {sets
-            .filter(set => !hiddenSets.includes(set.id))
-            .map((set) => {
+          const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+            Array.from({ length: count as number }, (_, i) => ({
+              rarity,
+              number: i + 1
+            }))
+          );
 
-              const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
-                Array.from({ length: count as number }, (_, i) => ({
-                  rarity,
-                  number: i + 1
-                }))
-              );
+          const missing = cards.filter(card => {
+            const key = `${card.rarity}-${card.number}`;
+            return !owned[`${set.id}-${key}`];
+          });
 
-              const missing = cards.filter(card => {
-                const key = `${card.rarity}-${card.number}`;
-                return !owned[`${set.id}-${key}`];
-              });
+          if (missing.length === 0) return null;
 
-              if (missing.length === 0) return null;
+          return (
+            <div key={set.id} className="border rounded-xl p-4 bg-card">
+              <h2 className="text-sm md:text-base font-semibold mb-2">
+                {set.name}
+              </h2>
 
-              return (
-                <div key={set.id} className="border rounded-xl p-4 bg-card">
+              <div className="flex flex-wrap gap-2">
+                {missing.map((card) => (
+                  <img
+                    key={`${card.rarity}-${card.number}`}
+                    src={
+                      set.id === "9"
+                        ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+                        : set.id === "10"
+                        ? "/serialized-limited-cards/andypricepromo.jpg"
+                        : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+                    }
+                    className="rounded-lg w-[90px]"
+                  />
+                ))}
+              </div>
+            </div>
+          );
 
-                  <h2 className="text-sm md:text-base font-semibold mb-2">
-                    {set.name}
-                  </h2>
-
-                  <div className="flex flex-wrap gap-2">
-
-                    {missing.map((card) => (
-                      <img
-                        key={`${card.rarity}-${card.number}`}
-                        src={
-                          set.id === "9"
-                            ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
-                            : set.id === "10"
-                            ? "/serialized-limited-cards/andypricepromo.jpg"
-                            : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
-                        }
-                        className="rounded-lg w-[90px]"
-                      />
-                    ))}
-
-                  </div>
-
-                </div>
-              );
-
-            })}
-
+        })}
+    </div>
+  )}
+</div>
+          
         </div>
 
       </div>
-    </div>
   );
 };
 

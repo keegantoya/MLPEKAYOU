@@ -5,28 +5,16 @@ import { useNavigate } from "react-router-dom";
 
 const sets = [
   {
+  id: "9",
+  name: "Promotional Cards",
+  total: 5,
+  rarities: { PR: 5}
+  },
+  {
     id: "1",
     name: "Eternal Moon First Edition",
     total: 186,
     rarities: { R:30, SR:20, SSR:54, HR:36, UR:16, LSR:15, SGR:8, SC:7 }
-  },
-  {
-    id: "2",
-    name: "Eternal Moon Second Edition",
-    total: 189,
-    rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }
-  },
-  {
-    id: "3",
-    name: "Eternal Moon Third Edition",
-    total: 290,
-    rarities: {}
-  },
-  {
-    id: "4",
-    name: "Star First Edition",
-    total: 105,
-    rarities: {}
   },
   {
     id: "5",
@@ -35,36 +23,66 @@ const sets = [
     rarities: { R:30, SR:15, FR:18, TR:12, TGR:8, MTR:18, SSR:15, UR:15, USR:8, XR:7 }
   },
   {
-    id: "6",
-    name: "Rainbow Second Edition",
-    total: 170,
-    rarities: {}
-  },
-  {
     id: "7",
     name: "Fun Moments First Edition",
     total: 127,
     rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 }
   },
   {
+    id: "2",
+    name: "Eternal Moon Second Edition",
+    total: 189,
+    rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }
+  },
+  {
   id: "8",
   name: "Fun Moments Second Edition",
   total: 136,
   rarities: {}
-},
-{
-  id: "9",
-  name: "Promos",
-  total: 5,
-  rarities: { PR: 5}
-},
-{
+  },
+  {
+    id: "friendship-begins",
+    name: "Friendship Begins",
+    total: 68,
+    rarities: {}
+  },
+  {
+    id: "3",
+    name: "Eternal Moon Third Edition",
+    total: 290,
+    rarities: {}
+  },
+  {
+    id: "11",
+    name: "Fun Moments Three",
+    total: 148,
+    rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR: 9, CR:12, SCR: 12 }
+  },
+  {
+    id: "4",
+    name: "Star First Edition",
+    total: 105,
+    rarities: {}
+  },
+  {
+    id: "6",
+    name: "Rainbow Second Edition",
+    total: 170,
+    rarities: {}
+  },
+  {
+  id: "tcg",
+  name: "Fantasy Wonderland",
+  total: 191,
+  rarities: {}
+  },
+  {
   id: "10",
   name: "Serialized & Limited Cards",
   total: 1,
   rarities: { LC: 1 }
-}
-];
+  },
+  ];
 
 const releasedRoutes: Record<string, string> = {
   "1": "/collection/1",
@@ -137,6 +155,9 @@ const MyProgress = () => {
       <div className="container py-8">
         <h1 className="text-2xl font-bold mb-6">
           My Progress
+          <p className="text-gray-500 text-sm sm:text-base mb-6">
+            Sets that are not released will not be clickable. 
+          </p>
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

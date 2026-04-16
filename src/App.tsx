@@ -32,6 +32,10 @@ import TradingPostInner from "./pages/trading-post-inner";
 import MyTrades from "@/pages/MyTrades";
 import MyTradesSets from "@/pages/MyTradesSets";
 import AboutMe from "@/pages/AboutMe";
+import MyTradesView from "@/pages/MyTradesView";
+import FunMoments3 from "./pages/FunMoments3";
+import PublicISO from "@/pages/PublicISO";
+import PublicISOSet from "@/pages/PublicISOSet";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +81,10 @@ const AppRoutes = () => {
       <Route path="*" element={<NotFound />} />
       <Route path="/my-trades/:setId" element={<MyTradesSets />} />
       <Route path="/about" element={<AboutMe />} />
+      <Route path="/my-trades/view/:setId" element={<MyTradesView />} />
+      <Route path="/fun-moments-3" element={<FunMoments3 />} />
+      <Route path="/public-iso" element={<PublicISO />} />
+      <Route path="/public-iso/:setId" element={<PublicISOSet />} />
     </Routes>
   );
 };

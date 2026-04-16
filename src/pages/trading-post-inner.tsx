@@ -380,13 +380,19 @@ return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).p
             </>
           ) : (
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-              {filteredCards.map((card) => (
-                <img
-                  key={card.id}
-                  src={getCardImage(card)}
-                  className="w-full rounded-md"
-                />
-              ))}
+              {filteredCards
+  .sort((a, b) => {
+    const numA = parseInt(a.card_key.split("-")[1]);
+    const numB = parseInt(b.card_key.split("-")[1]);
+    return numA - numB;
+  })
+  .map((card) => (
+    <img
+      key={card.id}
+      src={getCardImage(card)}
+      className="w-full rounded-md"
+    />
+  ))}
             </div>
           )}
 

@@ -48,6 +48,8 @@ const CollectionCard = ({
     case "8":
       return "/fun-moments-2";
 
+    case "11":
+      return "/fun-moments-3";
     default:
       return `/collection/${id}`;
   }
