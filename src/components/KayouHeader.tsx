@@ -298,6 +298,35 @@ const handleForgotPassword = async () => {
 
   <div className="border-t my-3" />
 
+{/* ACTIONS (MOBILE) */}
+<div className="flex flex-col gap-3">
+
+  {!user && (
+    <>
+      <Button
+        className="w-full justify-start bg-neutral-100 text-black font-bold hover:bg-neutral-200"
+        onClick={() => {
+          setAuthMode("login");
+          setShowLogin(true);
+          setOpen(false);
+        }}
+      >
+        LOGIN
+      </Button>
+
+      <Button
+        className="w-full justify-start bg-neutral-100 text-black font-bold hover:bg-yellow-500"
+        onClick={() => {
+          setAuthMode("signup");
+          setShowLogin(true);
+          setOpen(false);
+        }}
+      >
+        CREATE AN ACCOUNT
+      </Button>
+    </>
+  )}
+
   {/* DISCORD */}
   <Button
     className="w-full justify-start bg-yellow-400 text-black font-bold"
@@ -311,7 +340,7 @@ const handleForgotPassword = async () => {
 
   {/* TIKTOK */}
   <Button
-    className="w-full justify-start bg-pink-400 hover:bg-pink-500 text-black font-bold mt-2"
+    className="w-full justify-start bg-yellow-400 hover:bg-pink-500 text-black font-bold"
     onClick={() => {
       window.open("https://www.tiktok.com/@keanaex", "_blank");
       setOpen(false);
@@ -319,6 +348,8 @@ const handleForgotPassword = async () => {
   >
     TIKTOK
   </Button>
+
+</div>
 
 </div>
           </SheetContent>
