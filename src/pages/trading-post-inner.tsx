@@ -217,7 +217,12 @@ return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).p
                         selectedRarity === rarity ? "bg-primary text-white" : ""
                       }`}
                     >
-                      {rarity}
+                      {rarity === "SHINING ZR"
+  ? "⬦ZR"
+  : rarity === "LC"
+  ? "PR"
+  : rarity}
+                      
                     </button>
                   ))}
                 </div>

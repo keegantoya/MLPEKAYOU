@@ -199,18 +199,22 @@ if (!isOwned) {
             <div className="flex flex-wrap gap-2 mb-6 justify-center">
               {rarityMap[setId].map((rarity) => (
                 <button
-                  key={rarity}
-                  onClick={() =>
-                    setSelectedRarity(
-                      selectedRarity === rarity ? null : rarity
-                    )
-                  }
-                  className={`px-3 py-1 text-xs border rounded ${
-                    selectedRarity === rarity ? "bg-primary text-white" : ""
-                  }`}
-                >
-                  {rarity}
-                </button>
+  key={rarity}
+  onClick={() =>
+    setSelectedRarity(
+      selectedRarity === rarity ? null : rarity
+    )
+  }
+  className={`px-3 py-1 text-xs border rounded ${
+    selectedRarity === rarity ? "bg-primary text-white" : ""
+  }`}
+>
+  {rarity === "SHINING ZR"
+  ? "⬦ZR"
+  : rarity === "LC"
+  ? "PR"
+  : rarity}
+</button>
               ))}
             </div>
 
