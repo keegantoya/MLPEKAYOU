@@ -162,9 +162,7 @@ const handleSaveDiscord = async () => {
           </h1>
 
           <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
-            Enter your Discord username here. You will only be able to do this once.
-            It will display beside your username on anything you have for trade so
-            that people can find you.
+            Only people who have their Discord username entered can appear in the Trading Post. Check your profile to set your Discord username.
           </p>
         </div>
 
@@ -191,36 +189,6 @@ const handleSaveDiscord = async () => {
     </div>
   )}
 </div>
-
-        {/* DISCORD INPUT */}
-        <div className="flex justify-center mb-8">
-          {savedDiscord ? (
-            <div className="text-sm text-muted-foreground">
-              Discord:{" "}
-              <span className="font-medium text-foreground">
-                {savedDiscord}
-              </span>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Enter Discord username"
-                value={discord}
-                onChange={(e) => setDiscord(e.target.value)}
-                className="border rounded-md px-3 py-2 text-sm w-[250px]"
-              />
-
-              <button
-                onClick={handleSaveDiscord}
-                disabled={saving}
-                className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* SET GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

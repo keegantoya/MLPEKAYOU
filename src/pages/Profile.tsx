@@ -23,6 +23,7 @@ const avatars = [
   { name: "Avatar 008", file: "avatar008", src: avatar008 },
 ];
 
+
 const Profile = () => {
   const navigate = useNavigate();
 
@@ -32,27 +33,43 @@ const Profile = () => {
   const [avatar, setAvatar] = useState("");
   const [canChange, setCanChange] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [discord, setDiscord] = useState("");
+  const [savingDiscord, setSavingDiscord] = useState(false);
+  const [discordLocked, setDiscordLocked] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser();
 
-      if (data.user) {
-        setUser(data.user);
+    if (data.user) {
+      setUser(data.user);
 
-        const savedUsername = data.user.user_metadata?.username || "";
-        const savedAvatar = data.user.user_metadata?.avatar || "";
-        const hasChanged = data.user.user_metadata?.username_locked;
+      const savedUsername = data.user.user_metadata?.username || "";
+      const savedAvatar = data.user.user_metadata?.avatar || "";
+      const hasChanged = data.user.user_metadata?.username_locked;
 
-        setUsername(savedUsername);
-        setOriginalUsername(savedUsername);
-        setAvatar(savedAvatar);
-        setCanChange(!hasChanged);
+      // this is the temporary unlock i implemented //
+  setCanChange(true);
+
+setUsername(savedUsername);
+setOriginalUsername(savedUsername);
+setAvatar(savedAvatar);
+
+      const { data: profileData } = await supabase
+        .from("trading_profiles")
+        .select("discord_username")
+        .eq("user_id", data.user.id)
+        .single();
+
+      if (profileData?.discord_username) {
+        setDiscord(profileData.discord_username);
+          setDiscordLocked(true);
       }
-    };
+    }
+  };
 
-    getUser();
-  }, []);
+  getUser();
+}, []);
 
   const handleSave = async () => {
     if (!username) return;
@@ -101,7 +118,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-xl">
+    <div className="container mx-auto p-6 max-w-6xl">
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
@@ -112,48 +129,33 @@ const Profile = () => {
 
       <h1 className="text-2xl font-bold mb-6">Profile</h1>
 
-      <div className="space-y-6">
-        {currentAvatar && (
-          <div className="flex justify-center">
-            <img
-              src={currentAvatar.src}
-              alt="Profile Avatar"
-              className="w-24 h-24 rounded-full border"
-            />
-          </div>
-        )}
+      <div className="grid md:grid-cols-[1fr_1.5fr] gap-10">
 
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">
-            Others can find you in "Other Collectors" by the name set below.
-          </p>
+  {/* LEFT SIDE */}
+  <div className="space-y-6">
+    {currentAvatar && (
+      <div className="flex justify-center md:justify-start">
+        <img
+          src={currentAvatar.src}
+          alt="Profile Avatar"
+          className="w-24 h-24 rounded-full border"
+        />
+      </div>
+    )}
 
-          <input
-            type="text"
-            value={username}
-            disabled={!canChange}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2"
-          />
-        </div>
+    <div>
+      <p className="text-sm text-muted-foreground mb-2">
+        This is the username that can be used to search for you on the site in searchable fields.
+      </p>
 
-        <div>
-          <h2 className="font-semibold mb-3">Choose Avatar</h2>
-
-          <div className="grid grid-cols-3">
-            {avatars.map((a) => (
-              <button
-                key={a.file}
-                onClick={() => handleAvatarSelect(a.file)}
-                className={`border rounded-lg p-2 ${
-                  avatar === a.file ? "border-primary" : ""
-                }`}
-              >
-                <img src={a.src} className="rounded-lg" />
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="flex gap-2 max-w-md">
+        <input
+          type="text"
+          value={username}
+          disabled={!canChange}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full border rounded-lg px-3 py-2"
+        />
 
         {canChange && (
           <button
@@ -161,10 +163,72 @@ const Profile = () => {
             disabled={loading}
             className="px-4 py-2 bg-primary text-white rounded-lg"
           >
-            {loading ? "Saving..." : "Save Profile"}
+            {loading ? "Saving..." : "Save"}
           </button>
         )}
       </div>
+
+      <div className="mt-4">
+        <h2 className="font-semibold mb-2">Discord Username</h2>
+
+        <div className="flex gap-2 max-w-md">
+          <input
+            type="text"
+            placeholder="Enter Discord username"
+            value={discord}
+            disabled={discordLocked}
+            onChange={(e) => setDiscord(e.target.value)}
+            className={`w-full border rounded-lg px-3 py-2 ${
+              discordLocked ? "bg-muted text-muted-foreground cursor-not-allowed" : ""
+            }`}
+          />
+
+          {!discordLocked && (
+            <button
+              onClick={async () => {
+                if (!discord.trim()) return;
+
+                setSavingDiscord(true);
+
+                await supabase.from("trading_profiles").upsert({
+                  user_id: user.id,
+                  discord_username: discord.trim(),
+                });
+
+                setSavingDiscord(false);
+                setDiscordLocked(true);
+              }}
+              disabled={savingDiscord}
+              className="px-4 py-2 bg-primary text-white rounded-lg"
+            >
+              {savingDiscord ? "Saving..." : "Save"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* RIGHT SIDE */}
+  <div>
+    <h2 className="font-semibold mb-3">Choose Avatar! Have an idea for more? Message me on Discord!</h2>
+
+    <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {avatars.map((a) => (
+        <button
+          key={a.file}
+          onClick={() => handleAvatarSelect(a.file)}
+          className={`border rounded-lg p-2 ${
+            avatar === a.file ? "border-primary" : ""
+          }`}
+        >
+          <img src={a.src} className="rounded-lg" />
+        </button>
+      ))}
+    </div>
+  </div>
+
+</div>
     </div>
   );
 };

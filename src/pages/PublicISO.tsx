@@ -149,7 +149,7 @@ setSelectedRarity(null);
         </h1>
 
         <p className="text-center text-muted-foreground mb-8">
-          View what cards others are looking for. Want to set your discord name to display beside your username? Click "Open Trades."
+          Only people who have their Discord username entered can appear in ISOs. Check your profile to set your Discord username.
         </p>
 
         <div className="max-w-md mx-auto mb-8 relative">
