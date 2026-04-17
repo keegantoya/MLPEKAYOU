@@ -77,8 +77,8 @@ export default function PublicISOSet() {
         .range(0, 5000);
 
       const { data: profileData } = await supabase
-        .from("profiles")
-        .select("id, username");
+  .from("profiles")
+  .select("id, username, iso_hidden_sets");
 
       const { data: tradingData } = await supabase
         .from("trading_profiles")
@@ -87,14 +87,19 @@ export default function PublicISOSet() {
       const profileMap: Record<string, any> = {};
       (profileData || []).forEach(p => profileMap[p.id] = p);
 
+      const hiddenMap: Record<string, string[]> = {};
+
       const tradingMap: Record<string, string> = {};
       (tradingData || []).forEach(p => tradingMap[p.user_id] = p.discord_username);
 
       // ✅ FIXED ISO LOGIC (matches personal ISO)
       const isoMap: Record<string, TradeCard[]> = {};
+      const ownedByRarity: Record<string, Set<string>> = {};
 
       (progress || []).forEach((row: any) => {
         const userId = row.user_id;
+        if (!tradingMap[userId]) return;
+        if (hiddenMap[userId]?.includes(setId)) return;
         if (!isoMap[userId]) isoMap[userId] = [];
 
         const progressData = row.progress || {};
@@ -111,24 +116,67 @@ export default function PublicISOSet() {
         );
 
         // compare against owned
-        allCards.forEach((card) => {
+        // ✅ PASS 1 — Track what the user actually owns per rarity
+allCards.forEach((card) => {
   const key = `${card.rarity}-${card.number}`;
+  const value = progressData[key];
 
-  console.log("CR CHECK:", key, progressData[key]);
+  const isOwned =
+    value === true ||
+    value?.owned === true;
 
- const value = progressData[key];
+  if (isOwned) {
+    if (!ownedByRarity[card.rarity]) {
+      ownedByRarity[card.rarity] = new Set();
+    }
+    ownedByRarity[card.rarity].add(userId);
+  }
+});
 
-const isOwned =
-  value === true ||
-  value?.owned === true;
+// ✅ PASS 2 — Build ISO with filtering rules
+allCards.forEach((card) => {
+  const key = `${card.rarity}-${card.number}`;
+  const value = progressData[key];
 
-if (!isOwned) {
-    isoMap[userId].push({
-      id: `${userId}-${row.set_id}-${key}`,
-      user_id: userId,
-      set_id: row.set_id,
-      card_key: key
-    });
+  const isOwned =
+    value === true ||
+    value?.owned === true;
+
+  if (!isOwned) {
+    const rarity = card.rarity;
+
+    const isLimited = rarity === "LC";
+    const hasDiscord = !!tradingMap[userId];
+
+    const isUltraRare =
+      rarity === "SC" ||
+      rarity === "ZR" ||
+      rarity === "SHINING ZR";
+
+    const hasOwnedInRarity =
+      ownedByRarity[rarity]?.has(userId);
+
+    const hasAnyProgress =
+      Object.keys(progressData).length > 0;
+
+    // ✅ THE FILTER THAT FIXES EVERYTHING
+    if (
+  // ANDY PRICE PROMO
+  (isLimited && hasDiscord) ||
+
+  // ULTRA RARE CARDS (ZR, SC, <>ZR)
+  (isUltraRare && hasAnyProgress) ||
+
+  // COMMON CARDS (R, SR, SSR, UR, SGR, LSR, HR, ETC...)
+  (!isUltraRare && !isLimited && hasOwnedInRarity)
+) {
+      isoMap[userId].push({
+        id: `${userId}-${row.set_id}-${key}`,
+        user_id: userId,
+        set_id: row.set_id,
+        card_key: key
+      });
+    }
   }
 });
       });
