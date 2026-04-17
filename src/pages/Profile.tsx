@@ -26,8 +26,8 @@ const avatars = [
 const bannedWords = [
   "admin", "administrator", "mod", "moderator", "owner", "staff", "support",
   "fuck", "shit", "bitch", "asshole", "dick", "cock", "pussy", "vagina",
-  "fag", "faggot", "nigger", "nigga", "niglet", "nig",
-  "rape", "rapist", "molest", "pedo", "pedophile",
+  "fag", "faggot", "nigger", "nigga", "niglet",
+  "rape", "rapist", "molest", "pedo", "pedophile", "epstein", "trump"
 ];
 
 const Profile = () => {
