@@ -43,16 +43,16 @@ const queryClient = new QueryClient();
 const AppRoutes = () => {
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        console.log("Auth changed:", session.user);
-      }
-    });
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+      window.location.reload();
+    }
+  });
 
-    return () => subscription.unsubscribe();
-  }, []);
+  return () => subscription.unsubscribe();
+}, []);
 
   return (
     <Routes>
