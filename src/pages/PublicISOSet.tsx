@@ -151,7 +151,11 @@ allCards.forEach((card) => {
     const isUltraRare =
       rarity === "SC" ||
       rarity === "ZR" ||
-      rarity === "SHINING ZR";
+      rarity === "SHINING ZR" ||
+      rarity === "USR" ||
+      rarity === "CR" ||
+      rarity === "UGR" ||
+      rarity === "XR";
 
     const hasOwnedInRarity =
       ownedByRarity[rarity]?.has(userId);
