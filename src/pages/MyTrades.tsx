@@ -25,19 +25,18 @@ export default function MyTrades() {
 
       setHiddenSets(profile?.iso_hidden_sets || []);
 
-      // Load ALL trade rows (same as your working trading page)
-      const { data: trades } = await supabase
-        .from("for_trade")
-        .select("*");
+      // ✅ ONLY load this user's trades directly
+const { data: trades } = await supabase
+  .from("for_trade")
+  .select("*")
+  .eq("user_id", user.id);
 
-      // Filter to only this user
-      const userTrades = (trades || []).filter(
-        (t) => t.user_id === user.id
-      );
+// ✅ Normalize set_id to string (prevents mismatch issues)
+const uniqueSets = [
+  ...new Set((trades || []).map((t) => String(t.set_id).trim()))
+];
 
-      // Get unique set IDs
-      const uniqueSets = [...new Set(userTrades.map((t) => t.set_id))];
-      setTradeSets(uniqueSets);
+setTradeSets(uniqueSets);
     };
 
     loadData();
@@ -117,24 +116,26 @@ export default function MyTrades() {
           </h2>
 
           {tradeSets.length > 0 ? (
-            <div className="flex flex-wrap justify-center gap-4">
-              {collections
-                .filter((col) => tradeSets.includes(col.id))
-                .map((col) => (
-                  <button
-                    key={col.id}
-                    onClick={() => navigate(`/my-trades/view/${col.id}`)}
-                    className="px-4 py-2 bg-pink-200 text-pink-800 rounded-lg hover:bg-pink-300 transition"
-                  >
-                    {col.title} ({col.setName})
-                  </button>
-                ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 mt-4">
-              You haven’t marked any cards for trade yet.
-            </p>
-          )}
+  <div className="flex flex-wrap justify-center gap-4">
+    {collections
+      .filter((col) =>
+        tradeSets.includes(String(col.id).trim())
+      )
+      .map((col) => (
+        <button
+          key={col.id}
+          onClick={() => navigate(`/my-trades/view/${col.id}`)}
+          className="px-4 py-2 bg-pink-200 text-pink-800 rounded-lg hover:bg-pink-300 transition"
+        >
+          {col.title} ({col.setName})
+        </button>
+      ))}
+  </div>
+) : (
+  <p className="text-gray-500 mt-4">
+    You haven’t marked any cards for trade yet.
+  </p>
+)}
 
         </div>
       </div>
