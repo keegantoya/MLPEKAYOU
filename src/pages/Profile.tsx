@@ -23,6 +23,12 @@ const avatars = [
   { name: "Avatar 008", file: "avatar008", src: avatar008 },
 ];
 
+const bannedWords = [
+  "admin", "administrator", "mod", "moderator", "owner", "staff", "support",
+  "fuck", "shit", "bitch", "asshole", "dick", "cock", "pussy", "vagina",
+  "fag", "faggot", "nigger", "nigga", "niglet", "nig",
+  "rape", "rapist", "molest", "pedo", "pedophile",
+];
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -72,28 +78,49 @@ setAvatar(savedAvatar);
 }, []);
 
   const handleSave = async () => {
-    if (!username) return;
+  if (!username) return;
 
-    setLoading(true);
+  // ✅ BANNED WORD CHECK
+  const lower = username.toLowerCase();
 
-    await supabase.auth.updateUser({
-      data: {
-        username,
-        avatar,
-        username_locked: true,
-      },
-    });
+// replace common bypass characters
+const normalized = lower
+  .replace(/1/g, "i")
+  .replace(/3/g, "e")
+  .replace(/4/g, "a")
+  .replace(/@/g, "a")
+  .replace(/0/g, "o")
+  .replace(/\$/g, "s");
 
-    await supabase.from("profiles").upsert({
-      id: user.id,
+  const hasBannedWord = bannedWords.some((word) =>
+  normalized.includes(word)
+);
+
+  if (hasBannedWord) {
+    alert("This username contains a restricted word.");
+    return;
+  }
+
+  setLoading(true);
+
+  await supabase.auth.updateUser({
+    data: {
       username,
-      avatar_url: avatar,
-    });
+      avatar,
+      username_locked: true,
+    },
+  });
 
-    setLoading(false);
-    setCanChange(false);
-    setOriginalUsername(username);
-  };
+  await supabase.from("profiles").upsert({
+    id: user.id,
+    username,
+    avatar_url: avatar,
+  });
+
+  setLoading(false);
+  setCanChange(false);
+  setOriginalUsername(username);
+};
 
   const handleAvatarSelect = async (file: string) => {
     setAvatar(file);
