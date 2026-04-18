@@ -15,31 +15,50 @@ const FunMoments1 = () => {
 
   // LOAD PROGRESS
   useEffect(() => {
-    const loadProgress = async () => {
+  const loadProgress = async (userOverride?: any) => {
+    let user = userOverride;
+
+    if (!user) {
       const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      console.log("ACTUAL USER ID:", user?.id);
+      user = data.session?.user;
+    }
 
-      if (user) {
-        const { data: saved } = await supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", user.id)
-          .eq("set_id", "7")
-          .single();
+    console.log("ACTUAL USER ID:", user?.id);
 
-          console.log("LOADED PROGRESS:", saved);
+    if (user) {
+      const { data: saved } = await supabase
+        .from("collection_progress_raw")
+        .select("progress")
+        .eq("user_id", user.id)
+        .eq("set_id", "7")
+        .single();
 
-        if (saved?.progress) {
-          setFlipped(saved.progress);
-        }
+      console.log("LOADED PROGRESS:", saved);
+
+      if (saved?.progress) {
+        setFlipped(saved.progress);
+      } else {
+        setFlipped({});
       }
+    } else {
+      setFlipped({});
+    }
 
-      setLoaded(true);
-    };
+    setLoaded(true);
+  };
 
-    loadProgress();
-  }, []);
+  // initial load
+  loadProgress();
+
+  // 🔥 listen for login/logout
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    loadProgress(session?.user);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
   // SAVE PROGRESS
   useEffect(() => {
@@ -74,6 +93,7 @@ const FunMoments1 = () => {
 
   saveProgress();
 }, [flipped, loaded]);
+
 
 
   const set = {

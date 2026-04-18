@@ -49,38 +49,32 @@ const Promos = () => {
     }));
   };
 
-  // LOAD PROGRESS
   useEffect(() => {
-    const loadProgress = async () => {
+  const loadAll = async (userOverride?: any) => {
+    let user = userOverride;
+
+    if (!user) {
       const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+      user = data.session?.user;
+    }
 
-      if (user) {
-        const { data: saved } = await supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", user.id)
-          .eq("set_id", setId)
-          .single();
+    if (user) {
+      
+      // LOAD PROGRESS
+      const { data: saved } = await supabase
+        .from("collection_progress_raw")
+        .select("progress")
+        .eq("user_id", user.id)
+        .eq("set_id", setId)
+        .single();
 
-        if (saved?.progress) {
-          setFlipped(saved.progress);
-        }
+      if (saved?.progress) {
+        setFlipped(saved.progress);
+      } else {
+        setFlipped({});
       }
 
-      setLoaded(true);
-    };
-
-    loadProgress();
-  }, []);
-
-  // LOAD TRADE
-  useEffect(() => {
-    const loadTrade = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
-
+      // LOAD TRADE
       const { data: trades } = await supabase
         .from("for_trade")
         .select("card_key")
@@ -93,11 +87,31 @@ const Promos = () => {
           tradeMap[card.card_key] = true;
         });
         setForTrade(tradeMap);
+      } else {
+        setForTrade({});
       }
-    };
 
-    loadTrade();
-  }, []);
+    } else {
+      // not logged in
+      setFlipped({});
+      setForTrade({});
+    }
+
+    setLoaded(true);
+  };
+
+  // initial load
+  loadAll();
+
+  // 🔥 react to login/logout
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    loadAll(session?.user);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
   // SAVE PROGRESS
   useEffect(() => {

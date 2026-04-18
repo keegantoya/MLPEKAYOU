@@ -230,6 +230,20 @@ const handleForgotPassword = async () => {
           <SheetContent side="left" className="w-64 p-4">
             <div className="flex flex-col gap-2 mt-8">
 
+{user && (
+  <Button
+    variant="ghost"
+    className="w-full justify-start text-red-500"
+    onClick={() => {
+      handleLogout();
+      setOpen(false);
+    }}
+  >
+    <LogOut className="h-4 w-4 mr-2" />
+    Logout
+  </Button>
+)}
+
               {user && (
   <Button
     variant="ghost"
@@ -784,7 +798,6 @@ const handleForgotPassword = async () => {
               </Button>
 
             </div>
-
           </div>
 
         </div>

@@ -32,9 +32,7 @@ const sets: Record<string, { name: string; total: number }> = {
   "5": { name: "Rainbow First Edition", total: 146 },
   "6": { name: "Rainbow Second Edition", total: 170 },
   "7": { name: "Fun Moments First Edition", total: 127 },
-  "8": { name: "Fun Moments Second Edition", total: 136 },
-  "9": { name: "Promos", total: 5 },
-  "10": { name: "Serialized & Limited Cards", total: 1 }
+  "8": { name: "Fun Moments Second Edition", total: 136 }
 };
 
 const isoSets = [
@@ -65,25 +63,15 @@ const isoSets = [
     folder: "fun-moments-one",
     prefix: "FM1",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 }
-  },
-  {
-  id: "9",
-  name: "Promos",
-  folder: "promo-cards",
-  prefix: "PR",
-  rarities: { PR: 5 }
-},
-{
-  id: "10",
-  name: "Serialized & Limited Cards",
-  folder: "serialized-limited-cards",
-  prefix: "LC",
-  rarities: { LC: 1 }
-}
+  }
 ];
 
 const medals = ["🥇", "🥈", "🥉"];
 const forcedStillCollecting = ["HeiManTou"];
+
+const manualPlacements: Record<string, string[]> = {
+  "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"] // order = 1st, 2nd, 3rd...
+};
 
 const CommunitySet = () => {
   const { id } = useParams();
@@ -105,7 +93,7 @@ const CommunitySet = () => {
     const load = async () => {
 
       const { data: progress } = await supabase
-        .from("collection_progress")
+        .from("collection_progress_raw")
         .select("*")
         .eq("set_id", id);
 
@@ -120,30 +108,29 @@ const CommunitySet = () => {
         profileMap[p.id] = p;
       });
 
-      const active: any[] = [];
-      const finished: any[] = [];
+     const active: any[] = [];
+const finished: any[] = [];
 
-      progress.forEach((row: any) => {
+progress.forEach((row: any) => {
 
   const isoSet = isoSets.find(s => s.id === id);
   if (!isoSet) return;
 
   let owned = 0;
-  let total = 0;
 
   Object.entries(isoSet.rarities).forEach(([rarity, count]) => {
     for (let i = 1; i <= count; i++) {
-      total++;
 
-     const key1 = `${rarity}-${i}`;
-const key2 = `${id}-${rarity}-${i}`;
+      const key = `${rarity}-${i}`;
+      const value = row.progress?.[key];
 
-const value1 = row.progress?.[key1];
-const value2 = row.progress?.[key2];
+      const isOwned =
+        value === true ||
+        value?.owned === true;
 
-if (value1 || value2) {
-  owned++;
-}
+      if (isOwned) {
+        owned++;
+      }
     }
   });
 
@@ -155,28 +142,56 @@ if (value1 || value2) {
     updated: row.updated_at
   };
 
- if (forcedStillCollecting.includes(user.username)) {
-  active.push(user);
-} else if (owned === total) {
-  finished.push(user);
-} else {
-  active.push(user);
-}
+  const actualTotal = set.total;
+
+  if (forcedStillCollecting.includes(user.username)) {
+    active.push(user);
+  } else if (owned === actualTotal) {
+    finished.push(user);
+  } else {
+    active.push(user);
+  }
 
 });
 
-      active.sort((a, b) => {
+// ✅ THIS WAS BROKEN — NOW FIXED
+active.sort((a, b) => {
   if (forcedStillCollecting.includes(a.username)) return -1;
   if (forcedStillCollecting.includes(b.username)) return 1;
   return b.owned - a.owned;
 });
 
-      finished.sort(
-        (a, b) =>
-          new Date(a.updated).getTime() - new Date(b.updated).getTime()
-      );
+// ✅ completed sort
+if (manualPlacements[id || ""]) {
 
-      setCollectors(active.slice(0, 30));
+  const manualOrder = manualPlacements[id || ""];
+
+  finished.sort((a, b) => {
+
+    const aIndex = manualOrder.indexOf(a.username);
+    const bIndex = manualOrder.indexOf(b.username);
+
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+
+    return new Date(a.updated).getTime() - new Date(b.updated).getTime();
+  });
+
+} else {
+
+  finished.sort(
+    (a, b) =>
+      new Date(a.updated).getTime() - new Date(b.updated).getTime()
+  );
+
+}
+
+setCollectors(active.slice(0, 30));
+setCompleted(finished.slice(0, 10));
       setCompleted(finished.slice(0, 10));
 
     };

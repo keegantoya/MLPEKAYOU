@@ -9,12 +9,36 @@ const Collection = () => {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
 
-  const toggleFlip = (key: string) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  const toggleFlip = async (key: string) => {
+
+  // 1. Create updated state
+  const newFlipped = {
+    ...flipped,
+    [key]: !flipped[key]
   };
+
+  // 2. Update UI immediately
+  setFlipped(newFlipped);
+
+  // 3. Get current user
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+
+  if (!user) return;
+
+  // 4. Save to database
+  await supabase
+    .from("collection_progress_raw")
+    .upsert(
+      {
+        user_id: user.id,
+        set_id: id,
+        progress: newFlipped,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: "user_id,set_id" }
+    );
+};
 
   // LOAD PROGRESS
   useEffect(() => {
@@ -41,30 +65,46 @@ const Collection = () => {
     loadProgress();
   }, [id]);
 
-  // SAVE PROGRESS
+  // SAVE PROGRESS ( RELOAD AFTER LOGIN )
   useEffect(() => {
-    if (!loaded) return;
+  const loadProgress = async (userOverride?: any) => {
+    let user = userOverride;
 
-    const saveProgress = async () => {
+    if (!user) {
       const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+      user = data.session?.user;
+    }
 
-      if (!user) return;
-
-      await supabase
+    if (user) {
+      const { data: saved } = await supabase
         .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: id,
-            progress: flipped
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+        .select("progress")
+        .eq("user_id", user.id)
+        .eq("set_id", id)
+        .single();
 
-    saveProgress();
-  }, [flipped, id, loaded]);
+      if (saved?.progress) {
+        setFlipped(saved.progress);
+      } else {
+        setFlipped({});
+      }
+    } else {
+      setFlipped({});
+    }
+
+    setLoaded(true);
+  };
+
+  loadProgress();
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    loadProgress(session?.user);
+  });
+
+  return () => subscription.unsubscribe();
+}, [id]);
 
   const sets = {
     "1": {

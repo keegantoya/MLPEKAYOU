@@ -32,9 +32,22 @@ const sets = [
   { id: "6", name: "Rainbow Second Edition", total: 170 },
   { id: "7", name: "Fun Moments First Edition", total: 127 },
   { id: "8", name: "Fun Moments Second Edition", total: 136 },
-  { id: "9", name: "Promos", total: 5 },
-  { id: "10", name: "Serialized & Limited Cards", total: 1 }
 ];
+
+const manualFirstFinishers: Record<string, { username: string; avatar_url?: string }> = {
+  "1": {
+    username: "Jacob",
+    avatar_url: "avatar003.jpg"
+  },
+  "2": {
+    username: "Jacob",
+    avatar_url: "avatar003.jpg"
+  },
+  "5": {
+    username: "Keegan (Owner)",
+    avatar_url: "avatar002.jpg"
+  }
+};
 
 const isoSets = [
   {
@@ -103,21 +116,7 @@ const isoSets = [
       UR: 10,
       CR: 12
     }
-  },
-  {
-  id: "9",
-  name: "Promos",
-  folder: "promo-cards",
-  prefix: "PR",
-  rarities: { PR: 5 }
-},
-{
-  id: "10",
-  name: "Serialized & Limited Cards",
-  folder: "serialized-limited-cards",
-  prefix: "LC",
-  rarities: { LC: 1 }
-}
+  }
 ];
 
 const Community = () => {
@@ -159,83 +158,9 @@ const Community = () => {
     return avatarMap[file] || avatar001;
   };
 
-  useEffect(() => {
-    const load = async () => {
-
-const blockedFirstFinishers = {
-  "1": ["HeiManTou"],
-  "2": ["HeiManTou"],
-  "3": ["HeiManTou"],
-  "4": ["HeiManTou"],
-  "5": ["HeiManTou"],
-  "6": ["HeiManTou"],
-  "7": ["HeiManTou"],
-  "8": ["HeiManTou"],
-  "9": ["HeiManTou"],
-  "tcg": ["HeiManTou"],
-  "friendship-begins": ["HeiManTou"]
-};
-
-      const { data: progress } = await supabase
-        .from("collection_progress")
-        .select("*")
-        .order("updated_at", { ascending: true });
-
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url");
-
-      if (!progress || !profiles) return;
-
-      const profileMap: Record<string, any> = {};
-
-      profiles.forEach((p: any) => {
-        profileMap[p.id] = p;
-      });
-
-      const first: Record<string, any> = {};
-
-      progress.forEach((row: any) => {
-
-        const set = isoSets.find(s => s.id === row.set_id);
-        if (!set) return;
-
-        let owned = 0;
-        let total = 0;
-
-        Object.entries(set.rarities).forEach(([rarity, count]) => {
-          for (let i = 1; i <= count; i++) {
-            total++;
-
-            const key = `${rarity}-${i}`;
-
-            if (row.progress && row.progress[key] === true) {
-              owned++;
-            }
-          }
-        });
-
-        const profile = profileMap[row.user_id];
-
-if (
-  owned === total &&
-  !first[row.set_id] &&
-  !blockedFirstFinishers[row.set_id]?.includes(profile?.username)
-) {
-  first[row.set_id] = {
-    ...profile
-  };
-}
-
-      });
-
-      setFirstFinishers(first);
-
-    };
-
-    load();
-
-  }, []);
+useEffect(() => {
+  setFirstFinishers(manualFirstFinishers);
+}, []);
 
   const loadISO = async (user: any) => {
     
@@ -244,10 +169,10 @@ if (
     setView("choice");
     setLoadingHidden(true);
 
-    const { data: progress } = await supabase
-      .from("collection_progress")
-      .select("*")
-      .eq("user_id", user.id);
+   const { data: progress } = await supabase
+  .from("collection_progress_raw")
+  .select("*")
+  .eq("user_id", user.id);
 
     const allOwned: Record<string, boolean> = {};
 
@@ -291,7 +216,7 @@ if (
           </h1>
 
           <p className="text-sm text-muted-foreground">
-            Those who are the first registered on MLPEKAYOU to complete a set are granted their name and chosen avatar on the #1 spot for each set. Must be verified through Discord server to maintain this position.
+           If you are the first user of MLPEKAYOU to master set a US set, send proof to the owner in the Discord and your image and name will appear on that set. This is done manually, not automatically, to ensure validity.
           </p>
         </div>
 
@@ -313,12 +238,12 @@ if (
                 View leaderboard →
               </div>
 
-              {firstFinishers[set.id] && (
+              {firstFinishers[String(set.id)] && (
                 <div className="absolute top-3 right-3 flex flex-col items-center">
                   <div className="relative w-14 h-14">
 
                     <img
-                      src={getAvatar(firstFinishers[set.id].avatar_url)}
+                      src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
                       className="w-14 h-14 rounded-full border-2 border-background shadow-lg"
                     />
 
@@ -329,7 +254,7 @@ if (
                   </div>
 
                   <div className="font-semibold text-xs mt-1 text-center">
-                    {firstFinishers[set.id].username}
+                    {firstFinishers[String(set.id)]?.username}
                   </div>
 
                 </div>
