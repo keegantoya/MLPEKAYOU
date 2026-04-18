@@ -43,11 +43,21 @@ const queryClient = new QueryClient();
 const AppRoutes = () => {
 
   useEffect(() => {
+  let lastUserId: string | null = null;
+
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      console.log("Auth changed:", session.user);
+    const currentUserId = session?.user?.id ?? null;
+
+    // Only reload if the user actually changed
+    if (currentUserId !== lastUserId) {
+      lastUserId = currentUserId;
+
+      // Prevent reload on initial mount
+      if (event !== "INITIAL_SESSION") {
+        window.location.reload();
+      }
     }
   });
 

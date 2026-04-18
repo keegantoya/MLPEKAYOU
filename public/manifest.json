@@ -1,0 +1,20 @@
+{
+  "name": "MLPEKAYOU",
+  "short_name": "MLP",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/app-icons/appicon1.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/app-icons/appicon2.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
