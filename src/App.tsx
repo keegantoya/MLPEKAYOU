@@ -53,11 +53,6 @@ const AppRoutes = () => {
     // Only reload if the user actually changed
     if (currentUserId !== lastUserId) {
       lastUserId = currentUserId;
-
-      // Prevent reload on initial mount
-      if (event !== "INITIAL_SESSION") {
-        window.location.reload();
-      }
     }
   });
 
