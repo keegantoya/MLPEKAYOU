@@ -37,6 +37,7 @@ import MyTradesView from "@/pages/MyTradesView";
 import FunMoments3 from "./pages/FunMoments3";
 import PublicISO from "@/pages/PublicISO";
 import PublicISOSet from "@/pages/PublicISOSet";
+import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -64,9 +65,31 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/collections" element={<Collections />} />
       <Route path="/collection/:id" element={<Collection />} />
-      <Route path="/my-progress" element={<MyProgress />} />
-      <Route path="/my-iso" element={<MyISO />} />
-      <Route path="/my-trades" element={<MyTrades />} />
+      <Route
+  path="/my-progress"
+  element={
+    <RequireAuth>
+      <MyProgress />
+    </RequireAuth>
+  }
+/>
+<Route
+  path="/my-iso"
+  element={
+    <RequireAuth>
+      <MyISO />
+    </RequireAuth>
+  }
+/>
+<Route
+  path="/my-trades"
+  element={
+    <RequireAuth>
+      <MyTrades />
+    </RequireAuth>
+  }
+/>
+
       <Route path="/community" element={<Community />} />
       <Route path="/community/:id" element={<CommunitySet />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
@@ -87,7 +110,14 @@ const AppRoutes = () => {
       <Route path="*" element={<NotFound />} />
       <Route path="/my-trades/:setId" element={<MyTradesSets />} />
       <Route path="/about" element={<AboutMe />} />
-      <Route path="/my-trades/view/:setId" element={<MyTradesView />} />
+     <Route
+  path="/my-trades/view/:setId"
+  element={
+    <RequireAuth>
+      <MyTradesView />
+    </RequireAuth>
+  }
+/>
       <Route path="/fun-moments-3" element={<FunMoments3 />} />
       <Route path="/public-iso" element={<PublicISO />} />
       <Route path="/public-iso/:setId" element={<PublicISOSet />} />
