@@ -132,9 +132,13 @@ const Collections = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+    const load = async (userOverride?: any) => {
+      let user = userOverride;
+
+if (!user) {
+  const { data } = await supabase.auth.getSession();
+  user = data.session?.user;
+}
 
       if (!user) {
         setSets(
@@ -177,10 +181,10 @@ const Collections = () => {
     load();
 
     const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      load();
-    });
+  data: { subscription },
+} = supabase.auth.onAuthStateChange((_event, session) => {
+  load(session?.user);
+});
 
     return () => subscription.unsubscribe();
   }, []);

@@ -64,10 +64,25 @@ const MyISO = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const load = async () => {
-    const { data } = await supabase.auth.getSession();
-    const user = data.session?.user;
+  const load = async (userOverride?: any) => {
+    let user = userOverride;
 
+    if (!user) {
+      const { data } = await supabase.auth.getSession();
+      user = data.session?.user;
+    }
+
+    // 🔴 FIX 1: handle not logged in
+    if (!user) {
+      setUserId(null);
+      setOwned({});
+      setHiddenSets([]);
+      setUsername("My");
+      setLoading(false);
+      return;
+    }
+
+    // ✅ SAFE now
     setUserId(user.id);
     setUsername(user.user_metadata?.username || "My");
 
@@ -99,8 +114,19 @@ const MyISO = () => {
     setLoading(false);
   };
 
+  // initial load
   load();
+
+  // 🔥 THIS IS THE CRITICAL FIX
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    load(session?.user);
+  });
+
+  return () => subscription.unsubscribe();
 }, []);
+
   const toggleSet = async (setId: string) => {
     if (!userId) return;
 

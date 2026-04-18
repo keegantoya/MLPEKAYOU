@@ -11,36 +11,55 @@ export default function MyTrades() {
   const [tradeSets, setTradeSets] = useState<string[]>([]);
 
   useEffect(() => {
-    const loadData = async () => {
+  const loadData = async (userOverride?: any) => {
+    let user = userOverride;
+
+    if (!user) {
       const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+      user = data.session?.user;
+    }
 
-      // Load hidden sets
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("iso_hidden_sets")
-        .eq("id", user.id)
-        .single();
+    // 🔴 handle logged-out state properly
+    if (!user) {
+      setHiddenSets([]);
+      setTradeSets([]);
+      return;
+    }
 
-      setHiddenSets(profile?.iso_hidden_sets || []);
+    // Load hidden sets
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("iso_hidden_sets")
+      .eq("id", user.id)
+      .single();
 
-      // ✅ ONLY load this user's trades directly
-const { data: trades } = await supabase
-  .from("for_trade")
-  .select("*")
-  .eq("user_id", user.id);
+    setHiddenSets(profile?.iso_hidden_sets || []);
 
-// ✅ Normalize set_id to string (prevents mismatch issues)
-const uniqueSets = [
-  ...new Set((trades || []).map((t) => String(t.set_id).trim()))
-];
+    // Load trades
+    const { data: trades } = await supabase
+      .from("for_trade")
+      .select("*")
+      .eq("user_id", user.id);
 
-setTradeSets(uniqueSets);
-    };
+    const uniqueSets = [
+      ...new Set((trades || []).map((t) => String(t.set_id).trim()))
+    ];
 
-    loadData();
-  }, []);
+    setTradeSets(uniqueSets);
+  };
+
+  // initial load
+  loadData();
+
+  // 🔥 THIS IS THE FIX (same as your other pages)
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    loadData(session?.user);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
   const collections = [
     {

@@ -42,41 +42,61 @@ export default function MyTradesSets() {
   const [tradeCards, setTradeCards] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    const load = async () => {
+  const load = async (userOverride?: any) => {
+    let user = userOverride;
+
+    if (!user) {
       const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+      user = data.session?.user;
+    }
 
-      // 🔹 LOAD PROGRESS (MATCHES YOUR WORKING FILE)
-      const { data: progress } = await supabase
-        .from("collection_progress")
-        .select("*")
-        .eq("user_id", user.id);
+    // 🔴 handle logged-out case
+    if (!user) {
+      setProgressMap({});
+      setTradeCards({});
+      return;
+    }
 
-      const map: Record<string, any> = {};
-      progress?.forEach((row: any) => {
-        map[row.set_id] = row.progress || {};
-      });
+    // 🔹 LOAD PROGRESS
+    const { data: progress } = await supabase
+      .from("collection_progress")
+      .select("*")
+      .eq("user_id", user.id);
 
-      setProgressMap(map);
+    const map: Record<string, any> = {};
+    progress?.forEach((row: any) => {
+      map[row.set_id] = row.progress || {};
+    });
 
-      // 🔹 LOAD TRADE (USER FILTERED)
-      const { data: trades } = await supabase
-        .from("for_trade")
-        .select("*")
-        .eq("set_id", setId)
-        .eq("user_id", user.id);
+    setProgressMap(map);
 
-      const tradeMap: Record<string, boolean> = {};
-      trades?.forEach((card: any) => {
-        tradeMap[card.card_key] = true;
-      });
+    // 🔹 LOAD TRADE
+    const { data: trades } = await supabase
+      .from("for_trade")
+      .select("*")
+      .eq("set_id", setId)
+      .eq("user_id", user.id);
 
-      setTradeCards(tradeMap);
-    };
+    const tradeMap: Record<string, boolean> = {};
+    trades?.forEach((card: any) => {
+      tradeMap[card.card_key] = true;
+    });
 
-    load();
-  }, [setId]);
+    setTradeCards(tradeMap);
+  };
+
+  // initial load
+  load();
+
+  // 🔥 THE FIX
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    load(session?.user);
+  });
+
+  return () => subscription.unsubscribe();
+}, [setId]);
 
   const toggleTrade = async (cardKey: string) => {
     const { data } = await supabase.auth.getSession();

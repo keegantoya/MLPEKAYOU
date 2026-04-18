@@ -99,54 +99,73 @@ const MyProgress = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadProgress = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  const loadProgress = async (userOverride?: any) => {
+    let user = userOverride;
 
-      const { data: collectionData } = await supabase
-        .from("collection_progress")
-        .select("*")
-        .eq("user_id", user.id);
+    if (!user) {
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
+    }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("iso_hidden_sets")
-        .eq("id", user.id)
-        .single();
+    if (!user) {
+      setProgress({});
+      return;
+    }
 
-      setHiddenSets(profile?.iso_hidden_sets || []);
+    const { data: collectionData } = await supabase
+      .from("collection_progress")
+      .select("*")
+      .eq("user_id", user.id);
 
-      const progressMap = new Map(
-        collectionData?.map((row) => [String(row.set_id), row]) || []
-      );
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("iso_hidden_sets")
+      .eq("id", user.id)
+      .single();
 
-      const newProgress: Record<string, number> = {};
+    setHiddenSets(profile?.iso_hidden_sets || []);
 
-      sets.forEach((set) => {
-        const found = progressMap.get(set.id);
+    const progressMap = new Map(
+      collectionData?.map((row) => [String(row.set_id), row]) || []
+    );
 
-        if (!found?.progress || !set.rarities) {
-          newProgress[set.id] = 0;
-          return;
+    const newProgress: Record<string, number> = {};
+
+    sets.forEach((set) => {
+      const found = progressMap.get(set.id);
+
+      if (!found?.progress || !set.rarities) {
+        newProgress[set.id] = 0;
+        return;
+      }
+
+      let owned = 0;
+
+      Object.entries(set.rarities).forEach(([rarity, count]) => {
+        for (let i = 1; i <= count; i++) {
+          const key = `${rarity}-${i}`;
+          if (found.progress[key]) owned++;
         }
-
-        let owned = 0;
-
-        Object.entries(set.rarities).forEach(([rarity, count]) => {
-          for (let i = 1; i <= count; i++) {
-            const key = `${rarity}-${i}`;
-            if (found.progress[key]) owned++;
-          }
-        });
-
-        newProgress[set.id] = owned;
       });
 
-      setProgress(newProgress);
-    };
+      newProgress[set.id] = owned;
+    });
 
-    loadProgress();
-  }, []);
+    setProgress(newProgress);
+  };
+
+  // initial load
+  loadProgress();
+
+  // 🔥 THIS FIXES YOUR LOGIN ISSUE
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    loadProgress(session?.user);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
   return (
     <div className="min-h-screen bg-background">

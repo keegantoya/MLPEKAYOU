@@ -263,6 +263,8 @@ allCards.forEach((card) => {
 >
   {rarity === "SHINING ZR"
   ? "⬦ZR"
+   : rarity === "SN"
+  ? "⬦N"
   : rarity === "LC"
   ? "PR"
   : rarity}

@@ -219,6 +219,8 @@ return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).p
                     >
                       {rarity === "SHINING ZR"
   ? "⬦ZR"
+    : rarity === "SN"
+  ? "⬦N"
   : rarity === "LC"
   ? "PR"
   : rarity}
