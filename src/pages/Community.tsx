@@ -25,13 +25,13 @@ const avatarMap: Record<string, string> = {
 
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", total: 186 },
+  { id: "5", name: "Rainbow First Edition", total: 146 },
+  { id: "7", name: "Fun Moments First Edition", total: 127 },
   { id: "2", name: "Eternal Moon Second Edition", total: 189 },
+  { id: "8", name: "Fun Moments Second Edition", total: 136 },
   { id: "3", name: "Eternal Moon Third Edition", total: 290 },
   { id: "4", name: "Star First Edition", total: 105 },
-  { id: "5", name: "Rainbow First Edition", total: 146 },
   { id: "6", name: "Rainbow Second Edition", total: 170 },
-  { id: "7", name: "Fun Moments First Edition", total: 127 },
-  { id: "8", name: "Fun Moments Second Edition", total: 136 },
 ];
 
 const manualFirstFinishers: Record<string, { username: string; avatar_url?: string }> = {
