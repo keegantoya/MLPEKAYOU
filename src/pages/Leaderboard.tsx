@@ -29,11 +29,6 @@ const sets = [
     rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 }
   },
   {
-    id: "2",
-    name: "Eternal Moon: Second Edition",
-    rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 }
-  },
-  {
     id: "5",
     name: "Rainbow: First Edition",
     rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 }
@@ -42,6 +37,11 @@ const sets = [
     id: "7",
     name: "Fun Moments: First Edition",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 }
+  },
+  {
+    id: "2",
+    name: "Eternal Moon: Second Edition",
+    rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 }
   },
   {
     id: "9",
