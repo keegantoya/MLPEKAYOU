@@ -100,7 +100,14 @@ export default function MyTrades() {
     <>
       <KayouHeader />
 
-      <div className="min-h-screen bg-neutral-100 p-4 sm:p-6">
+      <div
+  className="min-h-screen p-4 sm:p-6"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
         <div className="max-w-4xl mx-auto text-center">
 
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">

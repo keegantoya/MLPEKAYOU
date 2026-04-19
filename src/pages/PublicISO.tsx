@@ -16,6 +16,12 @@ const sets = [
   { id: "10", name: "Serialized & Limited Cards", released: true },
 ];
 
+const rarityDisplayMap: Record<string, string> = {
+  "SN": "⬦N",
+  "SHINING ZR": "⬦ZR",
+    "LC": "PR",
+};
+
 const setConfigs: Record<string, any> = {
   "1": { rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } },
   "2": { rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 } },
@@ -139,7 +145,14 @@ setSelectedRarity(null);
 };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+  className="min-h-screen"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
       <KayouHeader />
 
       <div className="container py-8">
@@ -162,7 +175,7 @@ setSelectedRarity(null);
   />
 
   {results.length > 0 && (
-    <div className="absolute w-full bg-background border rounded-lg mt-1 shadow-lg z-50">
+    <div className="absolute w-full bg-white border rounded-lg mt-1 shadow-lg z-50">
       {results.map((user) => (
         <div
           key={user.id}
@@ -188,9 +201,9 @@ setSelectedRarity(null);
                   navigate(`/public-iso/${set.id}`);
                 }
               }}
-              className={`relative rounded-xl border p-4 cursor-pointer transition
-                ${set.released ? "hover:bg-accent" : "opacity-60 cursor-not-allowed"}
-              `}
+              className={`relative rounded-xl border p-4 cursor-pointer transition bg-white shadow-sm
+  ${set.released ? "hover:bg-gray-100" : "opacity-60 cursor-not-allowed"}
+`}
             >
               <div className="font-semibold mb-2">
                 {set.name}
@@ -215,7 +228,7 @@ setSelectedRarity(null);
 
       {selectedUser && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-background p-6 rounded-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
+    <div className="bg-white p-6 rounded-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto shadow-lg">
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">
@@ -261,14 +274,14 @@ setSelectedRarity(null);
 
     <div className="flex flex-wrap gap-2">
       {Object.keys(userISO[selectedSet]).map((rarity) => (
-        <button
-          key={rarity}
-          onClick={() => setSelectedRarity(rarity)}
-          className="px-3 py-1 text-xs border rounded hover:bg-accent"
-        >
-          {rarity}
-        </button>
-      ))}
+  <button
+    key={rarity}
+    onClick={() => setSelectedRarity(rarity)}
+    className="px-3 py-1 text-xs border rounded hover:bg-accent"
+  >
+    {rarityDisplayMap[rarity] || rarity}
+  </button>
+))}
     </div>
   </div>
 )}

@@ -241,27 +241,31 @@ return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).p
             {(["9","10"].includes(setId || "") || selectedRarity) && (
               <div className="space-y-6">
   {(() => {
-    const filteredUsers = Object.entries(groupedTrades).filter(([userId, cards]) => {
-      if (viewMode[userId] === "iso") return true;
+    const filteredUsers = Object.entries(groupedTrades)
 
-      if (["9","10"].includes(setId || "")) return true;
+  .filter(([userId]) => tradingProfiles[userId])
 
-      return selectedRarity
-        ? cards.some(c => c.card_key.startsWith(selectedRarity))
-        : false;
-    });
+  .filter(([userId, cards]) => {
+    if (viewMode[userId] === "iso") return true;
 
-    if (
-  filteredUsers.length === 0 &&
-  selectedRarity &&
-  !Object.values(viewMode).includes("iso")
-) {
-      return (
-        <div className="text-center text-sm text-muted-foreground mt-8">
-          There are no trades currently listed for this rarity of this set.
-        </div>
-      );
-    }
+    if (["9","10"].includes(setId || "")) return true;
+
+    return selectedRarity
+      ? cards.some(c => c.card_key.startsWith(selectedRarity))
+      : false;
+  })
+
+  .sort((a, b) => a[1].length - b[1].length);
+
+if (filteredUsers.length === 0) {
+  return (
+    <div className="text-center text-sm text-muted-foreground mt-8">
+      {setId === "10"
+        ? "HAH! We're all too poor to have the Andy Price promo for trade. Try again another time."
+        : "There are no trades currently listed for this rarity of this set."}
+    </div>
+  );
+}
 
     return filteredUsers.map(([userId, cards]) => {
       const sourceCards =

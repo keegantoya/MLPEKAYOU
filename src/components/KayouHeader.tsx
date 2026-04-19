@@ -183,7 +183,7 @@ const handleForgotPassword = async () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-neutral-700 text-white border-b border-neutral-600 shadow-sm">
+      <header className="sticky top-0 z-50 bg-neutral-900/30 backdrop-blur-xl backdrop-saturate-150 text-white shadow-sm">
   <div className="w-full flex h-16 items-center px-2 sm:px-4 relative justify-between">
 
     {/* LEFT SIDE */}
@@ -201,14 +201,14 @@ const handleForgotPassword = async () => {
 )}
   {/* DESKTOP DISCORD BUTTON */}
   <Button
-    className="hidden sm:inline-flex bg-yellow-400 text-black font-bold"
-    onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
-  >
-    DISCORD
-  </Button>
+  className="hidden sm:inline-flex bg-yellow-400/90 text-black font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-[1px] transition-all backdrop-blur-sm border border-white/20"
+  onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
+>
+  DISCORD
+</Button>
 
   <Button
-  className="hidden sm:inline-flex bg-pink-400 hover:bg-pink-500 text-black font-bold"
+  className="hidden sm:inline-flex bg-pink-400/90 text-black font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-[1px] transition-all backdrop-blur-sm border border-white/20"
   onClick={() => window.open("https://www.tiktok.com/@keanaex", "_blank")}
 >
   TIKTOK
@@ -227,7 +227,7 @@ const handleForgotPassword = async () => {
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="left" className="w-64 p-4">
+          <SheetContent side="left" className="w-64 p-4 bg-neutral-900/40 backdrop-blur-xl backdrop-saturate-150 text-white border-r border-white/10">
             <div className="flex flex-col gap-2 mt-8">
 
 {user && (
@@ -318,7 +318,7 @@ const handleForgotPassword = async () => {
   {!user && (
     <>
       <Button
-        className="w-full justify-start bg-neutral-100 text-black font-bold hover:bg-neutral-200"
+        className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
         onClick={() => {
           setAuthMode("login");
           setShowLogin(true);
@@ -329,7 +329,7 @@ const handleForgotPassword = async () => {
       </Button>
 
       <Button
-        className="w-full justify-start bg-neutral-100 text-black font-bold hover:bg-yellow-500"
+        className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
         onClick={() => {
           setAuthMode("signup");
           setShowLogin(true);
@@ -343,7 +343,7 @@ const handleForgotPassword = async () => {
 
   {/* DISCORD */}
   <Button
-    className="w-full justify-start bg-yellow-400 text-black font-bold"
+    className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
     onClick={() => {
       window.open("https://discord.gg/fb7cHz4kdD", "_blank");
       setOpen(false);
@@ -354,7 +354,7 @@ const handleForgotPassword = async () => {
 
   {/* TIKTOK */}
   <Button
-    className="w-full justify-start bg-yellow-400 hover:bg-pink-500 text-black font-bold"
+    className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
     onClick={() => {
       window.open("https://www.tiktok.com/@keanaex", "_blank");
       setOpen(false);
@@ -393,7 +393,7 @@ const handleForgotPassword = async () => {
   <>
     <Button
       variant="ghost"
-      className="w-full justify-start"
+      className="w-full justify-start text-white hover:bg-white/10"
       onClick={() => {
         navigate("/profile");
         setOpen(false);
@@ -447,7 +447,7 @@ const handleForgotPassword = async () => {
   </div>
 </header>
 
-        <div className="hidden sm:block sticky top-16 z-40 bg-neutral-700 text-white border-b border-neutral-600">
+       <div className="hidden sm:block sticky top-16 z-40 bg-neutral-900/30 backdrop-blur-xl backdrop-saturate-150 text-white">
   <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap justify-center gap-2">
 
   <Button variant="ghost" onClick={() => navigate("/")}>Home</Button>

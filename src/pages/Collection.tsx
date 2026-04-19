@@ -2,12 +2,22 @@ import { useParams } from "react-router-dom";
 import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import confetti from "canvas-confetti";
 
 const Collection = () => {
   const { id = "" } = useParams();
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
+  const [celebrated, setCelebrated] = useState(false);
+
+  const fireConfetti = () => {
+  confetti({
+    particleCount: 150,
+    spread: 90,
+    origin: { y: 0.6 },
+  });
+};
 
   const toggleFlip = async (key: string) => {
 
@@ -64,6 +74,18 @@ const Collection = () => {
 
     loadProgress();
   }, [id]);
+
+useEffect(() => {
+  if (!loaded) return;
+
+  const total = cards.length;
+  const owned = Object.values(flipped).filter(Boolean).length;
+
+  if (total > 0 && owned === total) {
+    fireConfetti();
+    setCelebrated(true);
+  }
+}, [flipped, loaded, celebrated]);
 
   // SAVE PROGRESS ( RELOAD AFTER LOGIN )
   useEffect(() => {
@@ -342,7 +364,7 @@ if (["TGR","TR","MTR","SSR","USR","XR"].includes(rarity)) {
 return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
 };
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <KayouHeader />
 
       <div className="container py-8">

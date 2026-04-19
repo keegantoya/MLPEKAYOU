@@ -148,24 +148,38 @@ const MyISO = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+  className="min-h-screen"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
       <KayouHeader />
 
       <div className="container py-8">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">
-            {username}'s ISO
-          </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
+  
+  <div>
+    <h1 className="text-2xl font-bold">
+      My ISO
+    </h1>
+    
+    <p className="text-sm text-gray-500 mt-1">
+      This is your personal ISO. This appears publicly on Open ISOs. You can be searched by your MLPEKAYOU username. Hiding sets removes them from your public and personal ISO.
+    </p>
+  </div>
 
-          <div className="relative">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="text-sm px-3 py-1 rounded-lg border hover:bg-muted"
-            >
-              Hide Sets
-            </button>
+  <div className="relative">
+    <button
+      onClick={() => setShowDropdown(!showDropdown)}
+      className="text-sm px-3 py-1 rounded-lg bg-white border shadow-sm hover:bg-gray-100 transition"
+    >
+      Hide Sets
+    </button>
 
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-80 bg-background border rounded-xl shadow-lg p-4 z-50">

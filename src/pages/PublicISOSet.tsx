@@ -91,8 +91,6 @@ export default function PublicISOSet() {
 
       const tradingMap: Record<string, string> = {};
       (tradingData || []).forEach(p => tradingMap[p.user_id] = p.discord_username);
-
-      // ✅ FIXED ISO LOGIC (matches personal ISO)
       const isoMap: Record<string, TradeCard[]> = {};
       const ownedByRarity: Record<string, Set<string>> = {};
 
@@ -107,16 +105,12 @@ export default function PublicISOSet() {
 
         if (!config) return;
 
-        // build full checklist
         const allCards = Object.entries(config.rarities).flatMap(([rarity, count]) =>
           Array.from({ length: count as number }, (_, i) => ({
             rarity,
             number: i + 1
           }))
         );
-
-        // compare against owned
-        // ✅ PASS 1 — Track what the user actually owns per rarity
 allCards.forEach((card) => {
   const key = `${card.rarity}-${card.number}`;
   const value = progressData[key];
@@ -132,8 +126,6 @@ allCards.forEach((card) => {
     ownedByRarity[card.rarity].add(userId);
   }
 });
-
-// ✅ PASS 2 — Build ISO with filtering rules
 allCards.forEach((card) => {
   const key = `${card.rarity}-${card.number}`;
   const value = progressData[key];
@@ -163,7 +155,6 @@ allCards.forEach((card) => {
     const hasAnyProgress =
       Object.keys(progressData).length > 0;
 
-    // ✅ THE FILTER THAT FIXES EVERYTHING
     if (
   // ANDY PRICE PROMO
   (isLimited && hasDiscord) ||
@@ -229,7 +220,14 @@ allCards.forEach((card) => {
   const set = setId ? sets[setId] : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+  className="min-h-screen"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
       <KayouHeader />
 
       <div className="container py-8">
@@ -257,9 +255,11 @@ allCards.forEach((card) => {
       selectedRarity === rarity ? null : rarity
     )
   }
-  className={`px-3 py-1 text-xs border rounded ${
-    selectedRarity === rarity ? "bg-primary text-white" : ""
-  }`}
+  className={`px-3 py-1 text-xs border rounded bg-white text-black shadow-sm ${
+  selectedRarity === rarity
+    ?  "bg-yellow-400 text-black border-yellow-500"
+    : "hover:bg-gray-100"
+}`}
 >
   {rarity === "SHINING ZR"
   ? "⬦ZR"

@@ -58,9 +58,14 @@
     @apply border-border;
   }
 
+html {
+  overscroll-behavior: none;
+}
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
+      overscroll-behavior: none;
   }
 }
 

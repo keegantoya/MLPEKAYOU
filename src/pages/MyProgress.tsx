@@ -168,25 +168,35 @@ const MyProgress = () => {
 }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+  className="min-h-screen flex flex-col"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
       <KayouHeader />
 
-      <div className="container py-8">
+      <div className="container py-8 flex-1">
         <h1 className="text-2xl font-bold mb-6">
           My Progress
           <p className="text-gray-500 text-sm sm:text-base mb-6">
-            Sets that are not released will not be clickable. 
+            Once KayouUS releases files to me, new sets will appear here.
           </p>
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sets.map((set) => {
+          {sets
+  .filter((set) => releasedRoutes[set.id]) 
+  .map((set) => {
             const owned = progress[set.id] || 0;
 
             const percent =
               set.total > 0
                 ? Math.round((owned / set.total) * 100)
                 : 0;
+                const isMastered = percent === 100;
 
             const route = releasedRoutes[set.id];
             const isReleased = !!route;
@@ -214,6 +224,13 @@ const MyProgress = () => {
       ${isHidden ? "opacity-40" : ""}
     `}
   >
+    {isMastered && (
+  <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+    <div className="bg-emerald-500/90 text-white text-[10px] font-semibold px-2 py-1 rounded-md shadow-md tracking-wide text-center">
+  MASTERSET COMPLETE
+</div>
+  </div>
+)}
                   <div className="flex justify-between mb-2">
                     <span className="font-medium text-sm">
                       {set.name}
@@ -239,6 +256,27 @@ const MyProgress = () => {
             );
           })}
         </div>
+        <footer className="border-t border-border py-4 sm:py-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+        <div className="max-w-lg mx-auto">
+          <p className="mb-1 sm:mb-1.5">
+            This website is not run or owned by Kayou.
+          </p>
+
+          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+            All rights to respective owners. All rights to Kayou.
+          </p>
+
+          <p className="mb-2 sm:mb-2.5">
+            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          </p>
+
+          <img
+            src="/logos/collab-logo.png"
+            alt="MLPEKAYOU x KAYOU"
+            className="mx-auto h-10 sm:h-14 opacity-90"
+          />
+        </div>
+      </footer>
       </div>
     </div>
   );

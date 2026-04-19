@@ -54,7 +54,7 @@ const collections: Collection[] = [
   {
     id: "8",
     title: "Fun Moments",
-    setName: "Second Edition",
+    setName: "Two",
     imageUrl: "/thumbnails/fme02TN.jpg",
     totalCards: 136,
     category: "fun-moments",
@@ -70,7 +70,7 @@ const collections: Collection[] = [
   {
     id: "3",
     title: "Eternal Moon",
-    setName: "Third Edition",
+    setName: "Three",
     imageUrl: "/thumbnails/moon-te.jpg",
     totalCards: 290,
     category: "eternal-moon",
@@ -86,7 +86,7 @@ const collections: Collection[] = [
   {
     id: "4",
     title: "Star",
-    setName: "First Edition",
+    setName: "One",
     imageUrl: "/thumbnails/s1-thumbnail.jpg",
     totalCards: 105,
     category: "star",
@@ -94,7 +94,7 @@ const collections: Collection[] = [
   {
     id: "6",
     title: "Rainbow",
-    setName: "Second Edition",
+    setName: "Two",
     imageUrl: "/thumbnails/rainbow2thumbnail.jpg",
     totalCards: 170,
     category: "rainbow",
@@ -123,6 +123,15 @@ const collections: Collection[] = [
     totalCards: 1,
     category: "serialized",
   }
+];
+
+const unreleasedSetIds = [
+  "11", // Fun Moments 3
+  "4",  // Star 1
+  "3",  // Moon 3
+  "tcg", // Fantasy Wonderland
+  "friendship-begins", // Self explanatory
+  "6",  // Rainbow 2
 ];
 
 const Collections = () => {
@@ -195,39 +204,61 @@ if (!user) {
       : sets.filter((c) => c.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+  className="min-h-screen"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
       <KayouHeader />
 
       <div className="container py-8 flex gap-8">
-        <CatalogSidebar
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-        />
+  
+  {/* Sidebar wrapper */}
+  <div className="hidden md:block bg-white/95 backdrop-blur rounded-xl p-4">
+  <CatalogSidebar
+    activeCategory={activeCategory}
+    onCategoryChange={setActiveCategory}
+  />
+</div>
 
-        <main className="flex-1">
+  <main className="flex-1">
 
           <div className="mb-4">
             <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
+  onClick={() => navigate(-1)}
+  className="flex items-center gap-2 text-sm text-gray-600 hover:text-black"
+>
+  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition">
+    <ArrowLeft className="h-4 w-4" />
+  </div>
+  Back
+</button>
           </div>
 
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-lg font-bold text-foreground">
-              {activeCategory === "all"
-                ? "All Collections"
-                : filtered[0]?.title || "Collections"}
-            </h1>
+          <div className="mb-6">
 
-            <span className="text-sm text-muted-foreground">
-              {filtered.length} {filtered.length === 1 ? "set" : "sets"}
-            </span>
-          </div>
+  <div className="flex items-center justify-between">
+    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
+      {activeCategory === "all"
+        ? "All Collections"
+        : filtered[0]?.title || "Collections"}
+    </h1>
 
+    <span className="text-sm text-gray-500 tracking-wide">
+      {filtered.length} {filtered.length === 1 ? "set" : "sets"}
+    </span>
+  </div>
+
+  {activeCategory === "all" && (
+    <p className="mt-2 text-sm md:text-base text-gray-700 leading-relaxed">
+      Log into to save your set progress, set trades, and set ISOs. Some sets files have not yet been released to me by KayouUS. I am asking every day.
+    </p>
+  )}
+
+</div>
           {activeCategory === "limited" ? (
             <div className="flex items-center justify-center py-20">
               <p className="text-yellow-500 text-center max-w-xl leading-relaxed">
@@ -237,33 +268,111 @@ if (!user) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-              {filtered.map((col) => {
-                const isHidden = hiddenSets.includes(col.id);
+           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+  {filtered.map((col) => {
+    const isHidden = hiddenSets.includes(col.id);
 
-                return (
-                  <div key={col.id} className="relative">
+      const isMastered = col.progress === 100;
 
-                    <div className={isHidden ? "opacity-40" : ""}>
-                      <CollectionCard {...col} />
-                    </div>
+    const unreleasedSetIds = [
+      "11", // Fun Moments 3
+      "4",  // Star 1
+      "3",  // Moon 3
+      "tcg",
+      "friendship-begins",
+      "6",  // Rainbow 2
+    ];
 
-                    {isHidden && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="bg-background/80 text-xs font-semibold px-3 py-2 rounded-lg text-center shadow">
-                          NOT COLLECTING
-                        </div>
-                      </div>
-                    )}
+    const waitingOnKayouIds = [
+      "8", // Fun Moments 2
+    ];
 
-                  </div>
-                );
-              })}
+    const isUnreleased = unreleasedSetIds.includes(col.id);
+    const isWaiting = waitingOnKayouIds.includes(col.id);
+
+    return (
+      <div key={col.id} className="relative">
+
+        {/* Card */}
+        <div
+          className={`${
+            isUnreleased || isWaiting
+              ? "opacity-50 grayscale pointer-events-none"
+              : isHidden
+              ? "opacity-50 grayscale"
+              : ""
+          }`}
+        >
+          <CollectionCard {...col} />
+        </div>
+
+        {/* NOT COLLECTING */}
+        {isHidden && !isUnreleased && !isWaiting && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+           <div className="bg-yellow-400/90 text-black text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest">
+              NOT COLLECTING
             </div>
+          </div>
+        )}
+
+        {/* UNRELEASED */}
+        {isUnreleased && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+           <div className="bg-yellow-400/90 text-black text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest">
+              UNRELEASED
+            </div>
+          </div>
+        )}
+
+        {/* WAITING ON KAYOU */}
+        {isWaiting && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-yellow-400/90 text-black text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center">
+              WAITING ON KAYOUUS
+            </div>
+          </div>
+        )}
+
+        {/* MASTERSET */}
+{isMastered && !isHidden && !isUnreleased && !isWaiting && (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <div className="bg-green-500/90 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center">
+      CONGRATULATIONS ON THE MASETERSET
+    </div>
+  </div>
+)}
+
+      </div>
+    );
+  })}
+</div>
           )}
 
         </main>
       </div>
+
+      <footer className="border-t py-4 sm:py-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+        <div className="max-w-lg mx-auto">
+          <p className="mb-1 sm:mb-1.5">
+            This website is not run or owned by Kayou.
+          </p>
+
+          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+            All rights to respective owners. All rights to Kayou.
+          </p>
+
+          <p className="mb-2 sm:mb-2.5">
+            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          </p>
+
+          <img
+            src="/logos/collab-logo.png"
+            alt="MLPEKAYOU x KAYOU"
+            className="mx-auto h-10 sm:h-14 opacity-90"
+          />
+        </div>
+      </footer>
+
     </div>
   );
 };

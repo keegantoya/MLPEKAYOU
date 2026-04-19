@@ -55,6 +55,11 @@ const sets = [
   }
 ];
 
+const rarityDisplayMap: Record<string, string> = {
+  "SHINING ZR": "⬦ZR",
+  "SN": "⬦N",
+};
+
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState<any[]>([]);
   const [openProfile, setOpenProfile] = useState<string | null>(null);
@@ -107,27 +112,43 @@ const isHidden = profileMap[id]?.hiddenSets?.includes(String(row.set_id));
         let owned = 0;
 let missingCards: string[] = [];
 
+let totalCardsInSet = 0;
+
 Object.entries(set.rarities).forEach(([rarity, count]) => {
+  totalCardsInSet += count as number;
   for (let i = 1; i <= count; i++) {
     const cardKey = `${rarity}-${i}`;
 
     const value = row.progress?.[cardKey];
-const isOwned = value !== false && value != null;
+    const isOwned = value !== false && value != null;
 
-if (isOwned) {
-  owned++;
-} else if (!isHidden) {
-  const displayRarity = rarity === "LC" ? "PR" : rarity;
-  const displayKey = `${displayRarity}-${i}`;
+    if (isOwned) {
+      owned++;
+    } else if (!isHidden) {
+      let displayRarity = rarity === "LC" ? "PR" : rarity;
 
-  missingCards.push(`${set.name} • ${displayKey}`);
-}
+      // ✅ Apply visual overrides
+      if (rarityDisplayMap[displayRarity]) {
+        displayRarity = rarityDisplayMap[displayRarity];
+      }
+
+      const displayKey = `${displayRarity}-${i}`;
+
+      missingCards.push(`${set.name} • ${displayKey}`);
+    }
   }
 });
 
 
         totals[id].total += owned;
         totals[id].missing.push(...missingCards);
+        if (!totals[id].mastered) {
+  totals[id].mastered = [];
+}
+
+if (owned === totalCardsInSet && totalCardsInSet > 0) {
+  totals[id].mastered.push(set.name);
+}
       });
 
       const sorted = Object.values(totals)
@@ -151,15 +172,28 @@ if (isOwned) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+  className="min-h-screen"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
       <KayouHeader />
 
-      <div className="container py-8 overflow-visible">
-        <h1 className="text-2xl font-bold mb-6 text-center">
-          Top KayouUS Collectors
-        </h1>
+<div className="container py-8 overflow-visible">
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div className="text-center mb-6">
+    <h1 className="text-2xl font-bold">
+      Top KayouUS Collectors
+    </h1>
+    <p className="text-sm text-muted-foreground mt-1">
+      The top 12 collectors on this website who have collected ALL card releases will appear here. Their ISOs show only the cards they are missing from ALL current releases.
+    </p>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {leaders.map((user, index) => {
             const isOpen = openProfile === user.id;
 
@@ -293,13 +327,23 @@ if (isOwned) {
   These are the only cards this user is missing that keeps them from 100% completion of all released sets.
 </div>
 
+{user.mastered?.length > 0 && (
+  <div className="text-xs text-emerald-600 font-medium mb-2 space-y-1">
+    {user.mastered.map((setName: string, i: number) => (
+      <div key={i}>
+        {user.username} has completed {setName}.
+      </div>
+    ))}
+  </div>
+)}
+
 {user.hiddenSets.length > 0 && (
   <div className="text-xs text-muted-foreground italic mb-2">
     {user.hiddenSets.map((setId: string, i: number) => {
       const set = sets.find(s => s.id === setId);
       return (
         <div key={i}>
-          This user is not collecting {set?.name}.
+          {user.username} is not collecting {set?.name}.
         </div>
       );
     })}
@@ -316,7 +360,7 @@ if (isOwned) {
       ✅ 100% Complete
     </div>
   ) : (
-    user.missing.slice(0, 50).map((card: string, i: number) => (
+    user.missing.map((card: string, i: number) => (
       <div key={i} className="text-muted-foreground">
         {card}
       </div>

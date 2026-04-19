@@ -123,7 +123,14 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div
+  className="min-h-screen"
+  style={{
+    backgroundColor: "#f5f5f5",
+    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
+    backgroundSize: "16px 16px",
+  }}
+>
       <KayouHeader />
 
       {/* Hero Image */}
@@ -152,16 +159,16 @@ const Index = () => {
 
             {/* Right Content */}
             <div className="w-full md:w-[55%] text-center flex flex-col items-center">
-              <h2 className="text-xl md:text-2xl font-bold mb-2">
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">
                 MLPEKAYOU BETA LAUNCH GIVEAWAY!
               </h2>
 
-              <p className="text-sm mb-1">
+              <p className="text-sm md:text-base text-gray-700 leading-relaxed mb-1">
                 In celebration of MLPEKAYOU Beta finally launching, we are giving away
                 an English Moon 2 Fluttershy SC!
               </p>
 
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-gray-500 tracking-wide mb-3">
                 Rules and conditions apply.
               </p>
 
