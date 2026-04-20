@@ -83,6 +83,16 @@ const [selectedIsoSet, setSelectedIsoSet] = useState<Record<string, string>>({})
         .select("*")
         .eq("set_id", setId);
 
+          console.log("TRADES:", trades);
+
+          console.log(
+  "RARITIES:",
+  trades
+    .filter(t => t.set_id == setId)
+    .map(t => t.card_key)
+    .slice(0, 50)
+);
+
   const { data: progress } = await supabase
   .from("collection_progress")
   .select("*");
@@ -150,7 +160,10 @@ setLoading(false);
   if (!set) return null;
 
   const getCardImage = (card: TradeCard) => {
-    const [rarity, number] = card.card_key.split("-");
+    let rarity = card.card_key.substring(0, card.card_key.lastIndexOf("-"));
+const number = card.card_key.substring(card.card_key.lastIndexOf("-") + 1);
+
+if (rarity === "SHINING ZR") rarity = "SZR";
 
     if (rarity === "PR") return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
     if (rarity === "LC") return "/serialized-limited-cards/andypricepromo.jpg";
@@ -176,6 +189,14 @@ setLoading(false);
 
 return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}.jpg`;
   };
+
+  const getCleanRarity = (cardKey: string) => {
+  let rarity = cardKey.substring(0, cardKey.lastIndexOf("-")).trim();
+
+  if (rarity === "SZR" || rarity === "SHINING ZR") return "SHINING ZR";
+
+  return rarity;
+};
 
   const allRarities = Object.keys(set.rarities);
 
@@ -243,16 +264,14 @@ return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).p
   {(() => {
     const filteredUsers = Object.entries(groupedTrades)
 
-  .filter(([userId]) => tradingProfiles[userId])
-
   .filter(([userId, cards]) => {
     if (viewMode[userId] === "iso") return true;
 
     if (["9","10"].includes(setId || "")) return true;
 
     return selectedRarity
-      ? cards.some(c => c.card_key.startsWith(selectedRarity))
-      : false;
+  ? cards.some(c => getCleanRarity(c.card_key) === selectedRarity?.trim())
+  : false;
   })
 
   .sort((a, b) => a[1].length - b[1].length);
@@ -278,7 +297,7 @@ if (filteredUsers.length === 0) {
           ? sourceCards
           : ["9","10"].includes(setId || "")
           ? cards
-          : cards.filter(c => c.card_key.startsWith(selectedRarity!));
+          : cards.filter(c => getCleanRarity(c.card_key) === selectedRarity!)
 
       if (filteredCards.length === 0) {
         return (

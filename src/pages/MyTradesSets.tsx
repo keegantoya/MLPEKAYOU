@@ -38,6 +38,11 @@ export default function MyTradesSets() {
   const { setId } = useParams();
   const navigate = useNavigate();
 
+  const getRarityCode = (rarity: string) => {
+  if (rarity === "SHINING ZR") return "SZR";
+  return rarity;
+};
+
   const [progressMap, setProgressMap] = useState<Record<string, any>>({});
   const [tradeCards, setTradeCards] = useState<Record<string, boolean>>({});
 
@@ -121,7 +126,7 @@ export default function MyTradesSets() {
     } else {
       await supabase.from("for_trade").insert({
         user_id: user.id,
-        set_id: setId,
+        set_id: Number(setId),
         card_key: cardKey
       });
 
@@ -200,7 +205,7 @@ if (!set) {
                   }`}
                 >
                   <img
-                    src={`/cards/${set.folder}/${set.prefix}${card.rarity}${String(card.number).padStart(3,"0")}.jpg`}
+                    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
                     className="rounded-lg w-full"
                   />
 

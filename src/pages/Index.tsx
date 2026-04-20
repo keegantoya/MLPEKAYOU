@@ -151,21 +151,20 @@ const Index = () => {
             {/* Left Image */}
             <div className="w-full md:w-[45%]">
               <img
-                src="/website-assets/giveaway001.jpg"
+                src="/website-assets/giveaway002.jpg"
                 alt="MLPEKAYOU Giveaway"
-                className="rounded-xl w-full max-h-64 object-cover"
+                className="rounded-xl w-full h-auto object-contain"
               />
             </div>
 
             {/* Right Content */}
             <div className="w-full md:w-[55%] text-center flex flex-col items-center">
               <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">
-                MLPEKAYOU BETA LAUNCH GIVEAWAY!
+                MLPEKAYOU GIVEAWAY!
               </h2>
 
               <p className="text-sm md:text-base text-gray-700 leading-relaxed mb-1">
-                In celebration of MLPEKAYOU Beta finally launching, we are giving away
-                an English Moon 2 Fluttershy SC!
+                In celebration of our continued partnership with Kayou and the success of MLPEKAYOU, we will be giving away one box of Moon 2 and 6 packs of Moon 2 to two lucky winners!
               </p>
 
               <p className="text-xs text-gray-500 tracking-wide mb-3">

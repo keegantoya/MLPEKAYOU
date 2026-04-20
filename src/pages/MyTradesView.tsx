@@ -43,8 +43,14 @@ export default function MyTradesView() {
     load();
   }, [setId]);
 
+const getRarityCode = (rarity: string) => {
+  if (rarity === "SHINING ZR") return "SZR";
+  return rarity;
+};
+
   const getCardImage = (card: TradeCard) => {
-    const [rarity, number] = card.card_key.split("-");
+    const [rarityRaw, number] = card.card_key.split("-");
+    const rarity = getRarityCode(rarityRaw);
 
     const config: any = {
       "1": { folder: "first-edition-moon", prefix: "M1" },
