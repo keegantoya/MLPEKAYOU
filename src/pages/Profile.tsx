@@ -11,6 +11,7 @@ import avatar005 from "../assets/avatars/avatar005.jpg";
 import avatar006 from "../assets/avatars/avatar006.jpg";
 import avatar007 from "../assets/avatars/avatar007.jpg";
 import avatar008 from "../assets/avatars/avatar008.jpg";
+import heimantouAvatar from "../assets/avatars/heimantouavatar.png";
 
 const avatars = [
   { name: "Avatar 001", file: "avatar001", src: avatar001 },
@@ -42,6 +43,7 @@ const Profile = () => {
   const [discord, setDiscord] = useState("");
   const [savingDiscord, setSavingDiscord] = useState(false);
   const [discordLocked, setDiscordLocked] = useState(false);
+  const [isHeiManTou, setIsHeiManTou] = useState(false);
 
   useEffect(() => {
   const getUser = async () => {
@@ -51,6 +53,7 @@ const Profile = () => {
       setUser(data.user);
 
       const savedUsername = data.user.user_metadata?.username || "";
+      setIsHeiManTou(savedUsername === "HeiManTou (Chinese Collector)");
       const savedAvatar = data.user.user_metadata?.avatar || "";
       const hasChanged = data.user.user_metadata?.username_locked;
 
@@ -123,6 +126,7 @@ const normalized = lower
 };
 
   const handleAvatarSelect = async (file: string) => {
+    if (isHeiManTou) return;
     setAvatar(file);
 
     await supabase.auth.updateUser({
@@ -137,8 +141,16 @@ const normalized = lower
     });
   };
 
-  const currentAvatar =
+  let currentAvatar =
   avatars.find((a) => a.file === avatar) || avatars[0];
+
+if (isHeiManTou) {
+  currentAvatar = {
+    name: "Hidden Avatar",
+    file: "heimantou",
+    src: heimantouAvatar,
+  };
+}
 
   if (!user) {
     return <div className="container mx-auto p-6">Please log in</div>;

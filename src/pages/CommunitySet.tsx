@@ -12,6 +12,7 @@ import avatar005 from "@/assets/avatars/avatar005.jpg";
 import avatar006 from "@/assets/avatars/avatar006.jpg";
 import avatar007 from "@/assets/avatars/avatar007.jpg";
 import avatar008 from "@/assets/avatars/avatar008.jpg";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
 
 const avatarMap: Record<string, string> = {
   "avatar001.jpg": avatar001,
@@ -67,7 +68,7 @@ const isoSets = [
 ];
 
 const medals = ["🥇", "🥈", "🥉"];
-const forcedStillCollecting = ["HeiManTou"];
+const forcedStillCollecting = [""];
 
 const manualPlacements: Record<string, string[]> = {
   "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"] // order = 1st, 2nd, 3rd...
@@ -144,17 +145,19 @@ progress.forEach((row: any) => {
 
   const actualTotal = set.total;
 
-  if (forcedStillCollecting.includes(user.username)) {
-    active.push(user);
-  } else if (owned === actualTotal) {
-    finished.push(user);
-  } else {
-    active.push(user);
-  }
+ if (
+  id === "7" && 
+  user.username === "HeiManTou (Chinese Collector)"
+) {
+  active.push(user);
+} else if (owned === actualTotal) {
+  finished.push(user);
+} else {
+  active.push(user);
+}
 
 });
 
-// ✅ THIS WAS BROKEN — NOW FIXED
 active.sort((a, b) => {
   if (forcedStillCollecting.includes(a.username)) return -1;
   if (forcedStillCollecting.includes(b.username)) return 1;
@@ -162,7 +165,7 @@ active.sort((a, b) => {
 });
 
 // ✅ completed sort
-if (manualPlacements[id || ""]) {
+if (manualPlacements[id || "HeiManTou (Chinese Collector)"]) {
 
   const manualOrder = manualPlacements[id || ""];
 
@@ -236,14 +239,19 @@ const { data: trades } = await supabase
 setTradeCards(trades || []);
 };
 
-  const getAvatar = (avatar?: string) => {
-    if (!avatar) return avatar001;
+  const getAvatar = (avatar?: string, username?: string) => {
+  // HEIMANTOU SPECIALTY
+  if (username === "HeiManTou (Chinese Collector)") {
+    return heimantouAvatar;
+  }
 
-    let file = avatar.split("/").pop() || "";
-    if (!file.includes(".")) file = `${file}.jpg`;
+  if (!avatar) return avatar001;
 
-    return avatarMap[file] || avatar001;
-  };
+  let file = avatar.split("/").pop() || "";
+  if (!file.includes(".")) file = `${file}.jpg`;
+
+  return avatarMap[file] || avatar001;
+};
 
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
@@ -298,7 +306,7 @@ setTradeCards(trades || []);
         <span>#{index + 1}</span>
 
         <img
-  src={getAvatar(user.avatar)}
+  src={getAvatar(user.avatar, user.username)}
   className="w-6 h-6 rounded-full"
 />
 
@@ -335,7 +343,7 @@ setTradeCards(trades || []);
                     </span>
 
                     <img
-  src={getAvatar(user.avatar)}
+  src={getAvatar(user.avatar, user.username)}
   className="w-6 h-6 rounded-full"
 />
 

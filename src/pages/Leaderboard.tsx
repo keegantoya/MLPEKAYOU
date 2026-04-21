@@ -152,7 +152,7 @@ if (owned === totalCardsInSet && totalCardsInSet > 0) {
       });
 
       const sorted = Object.values(totals)
-  .filter((user: any) => user.username !== "HeiManTou") // 🚫 REMOVE THIS USER
+  .filter((user: any) => user.username !== "HeiManTou (Chinese Collector)") // 🚫 REMOVE THIS USER
   .sort((a: any, b: any) => b.total - a.total)
   .slice(0, 12); // ✅ TOP 12
 

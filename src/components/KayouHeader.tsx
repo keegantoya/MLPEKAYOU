@@ -27,6 +27,16 @@ import {
 
 import logo from "@/assets/avatars/mlpekayouwiki.png";
 
+import avatar001 from "@/assets/avatars/avatar001.jpg";
+import avatar002 from "@/assets/avatars/avatar002.jpg";
+import avatar003 from "@/assets/avatars/avatar003.jpg";
+import avatar004 from "@/assets/avatars/avatar004.jpg";
+import avatar005 from "@/assets/avatars/avatar005.jpg";
+import avatar006 from "@/assets/avatars/avatar006.jpg";
+import avatar007 from "@/assets/avatars/avatar007.jpg";
+import avatar008 from "@/assets/avatars/avatar008.jpg";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
+
 const generateUsername = () => {
   const names = [
     "Twilight Sparkle",
@@ -47,9 +57,35 @@ const generateUsername = () => {
   return `${name} ${number}`;
 };
 
+const avatarMap: Record<string, string> = {
+  "avatar001.jpg": avatar001,
+  "avatar002.jpg": avatar002,
+  "avatar003.jpg": avatar003,
+  "avatar004.jpg": avatar004,
+  "avatar005.jpg": avatar005,
+  "avatar006.jpg": avatar006,
+  "avatar007.jpg": avatar007,
+  "avatar008.jpg": avatar008,
+};
+
+const getAvatar = (avatar?: string, username?: string) => {
+  // HEIMANTOU SPECIALTY
+  if (username === "HeiManTou") {
+    return heimantouAvatar;
+  }
+
+  if (!avatar) return avatar001;
+
+  let file = avatar.split("/").pop() || "";
+  if (!file.includes(".")) file = `${file}.jpg`;
+
+  return avatarMap[file] || avatar001;
+};
+
 const KayouHeader = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -64,11 +100,27 @@ const KayouHeader = () => {
   const [showForgot, setShowForgot] = useState(false);
   const [showResetSent, setShowResetSent] = useState(false);
 
+const getProfile = async (userId: string) => {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+
+  setProfile(data);
+};
+
   useEffect(() => {
     const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ?? null);
-    };
+  const { data } = await supabase.auth.getSession();
+  const currentUser = data.session?.user ?? null;
+
+  setUser(currentUser);
+
+  if (currentUser) {
+    getProfile(currentUser.id);
+  }
+};
 
     getSession();
 
@@ -183,20 +235,24 @@ const handleForgotPassword = async () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-neutral-900/30 backdrop-blur-xl backdrop-saturate-150 text-white shadow-sm">
+      <header className="sticky top-0 z-50 bg-neutral-950/70 backdrop-blur-2xl border-b border-white/10 text-white shadow-sm">
   <div className="w-full flex h-16 items-center px-2 sm:px-4 relative justify-between">
 
     {/* LEFT SIDE */}
     <div className="flex items-center gap-3">
 
-      {user && (
+      {user && profile && (
   <Button
     variant="ghost"
     size="icon"
     className="hidden sm:inline-flex text-white hover:bg-white/10"
     onClick={() => navigate("/profile")}
   >
-    <User className="h-5 w-5" />
+    <img
+  src={getAvatar(profile?.avatar_url)}
+  alt="avatar"
+  className="h-10 w-10 rounded-full object-cover border-2 border-white/30"
+/>
   </Button>
 )}
   {/* DESKTOP DISCORD BUTTON */}
@@ -229,20 +285,6 @@ const handleForgotPassword = async () => {
 
           <SheetContent side="left" className="w-64 p-4 bg-neutral-900/40 backdrop-blur-xl backdrop-saturate-150 text-white border-r border-white/10">
             <div className="flex flex-col gap-2 mt-8">
-
-{user && (
-  <Button
-    variant="ghost"
-    className="w-full justify-start text-red-500"
-    onClick={() => {
-      handleLogout();
-      setOpen(false);
-    }}
-  >
-    <LogOut className="h-4 w-4 mr-2" />
-    Logout
-  </Button>
-)}
 
               {user && (
   <Button
@@ -393,18 +435,6 @@ const handleForgotPassword = async () => {
   <>
     <Button
       variant="ghost"
-      className="w-full justify-start text-white hover:bg-white/10"
-      onClick={() => {
-        navigate("/profile");
-        setOpen(false);
-      }}
-    >
-      <Settings className="h-4 w-4 mr-2" />
-      Profile
-    </Button>
-
-    <Button
-      variant="ghost"
       className="w-full justify-start text-red-500"
       onClick={() => {
         handleLogout();
@@ -447,7 +477,7 @@ const handleForgotPassword = async () => {
   </div>
 </header>
 
-       <div className="hidden sm:block sticky top-16 z-40 bg-neutral-900/30 backdrop-blur-xl backdrop-saturate-150 text-white">
+       <div className="hidden sm:block sticky top-16 z-40 bg-neutral-900/75 backdrop-blur-xl border-b border-white/10 backdrop-saturate-150 text-white">
   <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap justify-center gap-2">
 
   <Button variant="ghost" onClick={() => navigate("/")}>Home</Button>
