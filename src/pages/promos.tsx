@@ -31,7 +31,7 @@ const Promos = () => {
         .from("for_trade")
         .delete()
         .eq("user_id", user.id)
-        .eq("set_id", setId)
+        .eq("set_id", Number(setId))
         .eq("card_key", key);
     } else {
       await supabase
@@ -65,7 +65,7 @@ const Promos = () => {
         .from("collection_progress_raw")
         .select("progress")
         .eq("user_id", user.id)
-        .eq("set_id", setId)
+        .eq("set_id", Number(setId))
         .single();
 
       if (saved?.progress) {
@@ -79,7 +79,7 @@ const Promos = () => {
         .from("for_trade")
         .select("card_key")
         .eq("user_id", user.id)
-        .eq("set_id", setId);
+        .eq("set_id", Number(setId));
 
       if (trades) {
         const tradeMap: Record<string, boolean> = {};

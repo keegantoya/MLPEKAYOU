@@ -126,7 +126,7 @@ export default function MyTradesSets() {
     } else {
       await supabase.from("for_trade").insert({
         user_id: user.id,
-        set_id: Number(setId),
+        set_id: setId,
         card_key: cardKey
       });
 

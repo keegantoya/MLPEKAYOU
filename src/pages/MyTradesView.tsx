@@ -31,10 +31,10 @@ export default function MyTradesView() {
 
       // ✅ ONLY pull cards already marked for trade
       const { data: trades } = await supabase
-        .from("for_trade")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("set_id", setId);
+  .from("for_trade")
+  .select("*")
+  .eq("user_id", user.id)
+  .eq("set_id", setId);
 
       setCards(trades || []);
       setLoading(false);

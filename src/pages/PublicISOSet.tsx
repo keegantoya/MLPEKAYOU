@@ -73,7 +73,7 @@ export default function PublicISOSet() {
       const { data: progress } = await supabase
         .from("collection_progress_raw")
         .select("*")
-        .eq("set_id", setId)
+        .eq("set_id", Number(setId))
         .range(0, 5000);
 
       const { data: profileData } = await supabase
