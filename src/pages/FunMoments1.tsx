@@ -97,7 +97,7 @@ const FunMoments1 = () => {
 
 
   const set = {
-    name: "Fun Moments: First Volume",
+    name: "Fun Moments: First Edition",
     folder: "fun-moments-one",
     prefix: "FM1",
     rarities: {
@@ -154,25 +154,25 @@ const FunMoments1 = () => {
         {/* HEADER */}
         <div className="mb-6">
 
-  {/* Back Button */}
-  <div className="mb-3">
-    <button
-      onClick={() => window.history.back()}
-      className="text-sm text-muted-foreground hover:text-foreground"
-    >
-      ← Back
-    </button>
-  </div>
+ <div className="mb-3 flex items-center justify-between px-2">
 
-  {/* Title + Description */}
-  <div className="text-center px-2">
-    <h1 className="text-lg font-semibold">
-      {set.name}
-    </h1>
-    <p className="text-xs text-gray-400 mt-1">
-      The trading function has moved! Open your menu and find "My Trades."
-    </p>
-  </div>
+  {/* Back Button */}
+  <button
+    onClick={() => window.history.back()}
+    className="text-sm text-muted-foreground hover:text-foreground"
+  >
+    ← Back
+  </button>
+
+  {/* Title */}
+  <h1 className="text-lg font-semibold text-center flex-1">
+    {set.name}
+  </h1>
+
+</div>
+      <p className="text-center text-sm md:text-base text-gray-500 max-w-sm md:max-w-2xl mx-auto mt-2 px-3">
+  This series of Fun Moments was the first to hit North America. It is only available online, and differs from the Chinese boxes due to its hit rate of 1 CR guaranteed per box. 
+</p>
 
 </div>
 

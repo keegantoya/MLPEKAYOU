@@ -11,7 +11,7 @@ const sets = [
   { id: "5", name: "Rainbow First Edition", released: true },
   { id: "6", name: "Rainbow Second Edition", released: false },
   { id: "7", name: "Fun Moments First Edition", released: true },
-  { id: "8", name: "Fun Moments Second Edition", released: false },
+  { id: "8", name: "Fun Moments Second Edition", released: true },
   { id: "9", name: "Promos", released: true },
   { id: "10", name: "Serialized & Limited Cards", released: true },
 ];
@@ -27,6 +27,7 @@ const setConfigs: Record<string, any> = {
   "2": { rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 } },
   "5": { rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 } },
   "7": { rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
+  "8": { rarities: { N: 20, SN: 20, R:35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
   "9": { rarities: { PR: 5 } },
   "10": { rarities: { LC: 1 } }
 };
@@ -148,10 +149,17 @@ setSelectedRarity(null);
     <div
   className="min-h-screen"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
+    linear-gradient(to bottom, #faf7ef, #f4efe4)
+  `,
+  backgroundSize: `
+    24px 24px,
+    cover,
+    cover
+  `,
+}}
 >
       <KayouHeader />
 
@@ -162,7 +170,7 @@ setSelectedRarity(null);
         </h1>
 
         <p className="text-center text-muted-foreground mb-8">
-          Only people who have their Discord username entered can appear in ISOs. Check your profile to set your Discord username.
+         Only people with their Discord usernames saved to their profile will appear if they are missing cards. They will only appear on high-tier rarity cards if they have any progress on the set. When searching for somepony, you must search their MLPEKAYOU username, not their Discord username.
         </p>
 
         <div className="max-w-md mx-auto mb-8 relative">

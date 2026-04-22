@@ -40,6 +40,14 @@ const sets = [
     }
   },
   {
+  id: "8",
+  name: "Fun Moments Second Edition",
+  folder: "fun-moments-two",   
+  prefix: "FM2",               
+  total: 136,
+  rarities: { N: 20, SN: 20, R:35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
+},
+  {
     id: "9",
     name: "Promos",
     folder: "promo-cards",
@@ -117,7 +125,6 @@ const MyISO = () => {
   // initial load
   load();
 
-  // 🔥 THIS IS THE CRITICAL FIX
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -151,10 +158,17 @@ const MyISO = () => {
     <div
   className="min-h-screen"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
+    linear-gradient(to bottom, #faf7ef, #f4efe4)
+  `,
+  backgroundSize: `
+    24px 24px,
+    cover,
+    cover
+  `,
+}}
 >
       <KayouHeader />
 
@@ -168,8 +182,8 @@ const MyISO = () => {
       My ISO
     </h1>
     
-    <p className="text-sm text-gray-500 mt-1">
-      This is your personal ISO. This appears publicly on Open ISOs. You can be searched by your MLPEKAYOU username. Hiding sets removes them from your public and personal ISO.
+    <p className="text-sm text-black mt-1">
+      Your ISO is built from cards that you do not flip around. These cards appear publicly in "All ISOs" and anyone can see your ISO by searching your MLPEKAYOU username. Simply click "Hide Sets" if you do not want to see, and do not want others to see, sets you do not wish to collect.
     </p>
   </div>
 

@@ -31,6 +31,13 @@ const sets = [
     folder: "fun-moments-one",
     prefix: "FM1",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 }
+  },
+  {
+    id: "8",
+    name: "Fun Moments: Second Edition",
+    folder: "fun-moments-two",
+    prefix: "FM2",
+    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
   }
 ];
 

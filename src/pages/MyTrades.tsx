@@ -65,23 +65,15 @@ export default function MyTrades() {
     {
       id: "1",
       title: "Eternal Moon",
-      setName: "First Edition",
+      setName: "One",
       imageUrl: "/thumbnails/moon-fe.jpg",
       totalCards: 186,
       category: "eternal-moon",
     },
     {
-      id: "2",
-      title: "Eternal Moon",
-      setName: "Second Edition",
-      imageUrl: "/thumbnails/moon-se.jpg",
-      totalCards: 189,
-      category: "eternal-moon",
-    },
-    {
       id: "5",
       title: "Rainbow",
-      setName: "First Edition",
+      setName: "One",
       imageUrl: "/thumbnails/rainbow1thumbnail.jpg",
       totalCards: 146,
       category: "rainbow",
@@ -89,9 +81,25 @@ export default function MyTrades() {
     {
       id: "7",
       title: "Fun Moments",
-      setName: "First Edition",
+      setName: "One",
       imageUrl: "/thumbnails/fme01TN.jpg",
       totalCards: 127,
+      category: "fun-moments",
+    },
+    {
+      id: "2",
+      title: "Eternal Moon",
+      setName: "Two",
+      imageUrl: "/thumbnails/moon-se.jpg",
+      totalCards: 189,
+      category: "eternal-moon",
+    },
+    {
+      id: "8",
+      title: "Fun Moments",
+      setName: "Two",
+      imageUrl: "/thumbnails/fme02TN.jpg",
+      totalCards: 136,
       category: "fun-moments",
     },
   ];
@@ -103,20 +111,29 @@ export default function MyTrades() {
       <div
   className="min-h-screen p-4 sm:p-6"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
+    backgroundImage: `
+      radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
+      linear-gradient(to bottom, #e2d3b0, #cbb892)
+    `,
+    backgroundSize: `
+      20px 20px,
+      cover,
+      cover
+    `,
   }}
 >
         <div className="max-w-4xl mx-auto text-center">
 
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-            My Trades
-          </h1>
+          <div className="mb-6">
+  <h1 className="text-2xl sm:text-3xl font-bold text-[#3b2a1a]">
+    My Trades
+  </h1>
 
-          <p className="text-gray-500 text-sm sm:text-base mb-6">
-            Any cards you have flipped and marked as "owned" will appear here. You may now click on a set to view and mark cards for trade.
-          </p>
+  <p className="text-[#5c4022] text-sm sm:text-base mt-2 max-w-xl mx-auto">
+    All cards you own will appear here, and you can mark them for trade. You must have your Discord username set in your profile to appear publicly on the trading boards.
+  </p>
+</div>
 
           {/* COLLECTIONS */}
           <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-6">
@@ -128,7 +145,7 @@ export default function MyTrades() {
                   onClick={() => navigate(`/my-trades/${col.id}`, { replace: true })}
                   className="cursor-pointer"
                 >
-                  <CollectionCard {...col} />
+                  <CollectionCard {...col} showProgress={false} />
                 </div>
               ))}
           </div>

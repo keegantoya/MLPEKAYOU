@@ -67,24 +67,6 @@ const isoSets = [
     }
   },
   {
-    id: "2",
-    name: "Eternal Moon: Second Edition",
-    folder: "second-edition-moon",
-    prefix: "M2",
-    rarities: {
-      R: 30,
-      SR: 20,
-      SSR: 54,
-      HR: 30,
-      UR: 16,
-      LSR: 16,
-      SGR: 8,
-      ZR: 7,
-      SC: 7,
-      "SHINING ZR": 1
-    }
-  },
-  {
     id: "5",
     name: "Rainbow: First Edition",
     folder: "rainbow-one",
@@ -103,6 +85,24 @@ const isoSets = [
     }
   },
   {
+    id: "2",
+    name: "Eternal Moon: Second Edition",
+    folder: "second-edition-moon",
+    prefix: "M2",
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 54,
+      HR: 30,
+      UR: 16,
+      LSR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      "SHINING ZR": 1
+    }
+  },
+  {
     id: "7",
     name: "Fun Moments: First Edition",
     folder: "fun-moments-one",
@@ -114,6 +114,22 @@ const isoSets = [
       SR: 15,
       SSR: 15,
       UR: 10,
+      CR: 12
+    }
+  },
+  {
+    id: "8",
+    name: "Fun Moments: Second Edition",
+    folder: "fun-moments-two",
+    prefix: "FM2",
+    rarities: {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      UGR: 9,
       CR: 12
     }
   }
@@ -207,10 +223,17 @@ useEffect(() => {
     <div
   className="min-h-screen"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
+    linear-gradient(to bottom, #faf7ef, #f4efe4)
+  `,
+  backgroundSize: `
+    24px 24px,
+    cover,
+    cover
+  `,
+}}
 >
 
       <KayouHeader />
@@ -230,7 +253,7 @@ useEffect(() => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
           {sets
-            .filter((set) => ["1", "2", "5", "7"].includes(set.id))
+            .filter((set) => ["1", "5", "2", "7", "8"].includes(set.id))
             .map((set) => (
 
             <button
@@ -273,7 +296,28 @@ useEffect(() => {
 
           ))}
 
+          </div>
+<footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
+        <div className="max-w-lg mx-auto">
+          <p className="mb-1 sm:mb-1.5">
+            This website is not run or owned by Kayou.
+          </p>
+
+          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+            All rights to respective owners. All rights to Kayou.
+          </p>
+
+          <p className="mb-2 sm:mb-2.5">
+            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          </p>
+
+          <img
+            src="/logos/collab-logo.png"
+            alt="MLPEKAYOU x KAYOU"
+            className="mx-auto h-10 sm:h-14 opacity-90"
+          />
         </div>
+      </footer>
       </div>
     </div>
   );

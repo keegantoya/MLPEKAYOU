@@ -32,14 +32,14 @@
               key={cat.slug}
               onClick={() => onCategoryChange(cat.slug)}
               className={`w-full flex items-center justify-between text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                activeCategory === cat.slug
-                  ? "bg-primary/10 text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+  activeCategory === cat.slug
+    ? "bg-[#6b4f2a]/60 text-white font-semibold"
+    : "text-white/80 hover:text-white hover:bg-[#6b4f2a]/40"
+}`}
             >
               <span>{cat.name}</span>
               {activeCategory === cat.slug && (
-                <ChevronRight className="h-4 w-4 text-primary" />
+                <ChevronRight className="h-4 w-4 text-white/80" />
               )}
             </button>
           ))}

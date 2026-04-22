@@ -5,25 +5,32 @@ export default function Selling() {
     <div
   className="min-h-screen text-neutral-800"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
+    linear-gradient(to bottom, #faf7ef, #f4efe4)
+  `,
+  backgroundSize: `
+    24px 24px,
+    cover,
+    cover
+  `,
+}}
 >
       <KayouHeader />
 
       <main className="p-6 max-w-6xl mx-auto">
 
         {/* Main Title */}
-        <h1 className="text-3xl font-bold text-center mb-10">
-          Selling and Buying Kayou Cards
-        </h1>
+        <h1 className="text-3xl font-bold text-center mb-10 text-[#3b2a1a]">
+  Selling and Buying Kayou Cards
+</h1>
 
         {/* Two Column Layout */}
         <div className="grid md:grid-cols-2 gap-12">
 
           {/* LEFT SIDE */}
-          <div className="text-center">
+          <div className="text-center flex flex-col justify-center h-full">
 
             <h2 className="text-2xl font-bold mb-3">
               Buying Sealed Product
@@ -77,11 +84,6 @@ export default function Selling() {
 
             </div>
 
-<div className="mt-10 mb-6 p-4 rounded-lg bg-neutral-50 text-sm text-neutral-600 text-center border">
-  Fantasy Wonderland and Friendship Begins are not yet added to this guide
-  because not enough information is known about them.
-</div>
-
           </div>
 
           {/* RIGHT SIDE */}
@@ -129,6 +131,13 @@ export default function Selling() {
                     <span className="text-[10px] sm:text-sm">Not Valuable</span>
                   </div>
 
+                  <div className="flex justify-between">
+                    <span>
+                      <span className="font-semibold">Fantasy Wonderland</span> - C, U, SR, SPR
+                    </span>
+                    <span className="text-[10px] sm:text-sm">Not Valuable</span>
+                  </div>
+
                 </div>
               </div>
 
@@ -162,11 +171,18 @@ export default function Selling() {
                   </div>
 
                   <div className="flex justify-between">
-                    <span>
-                      <span className="font-semibold">Star Editions</span> - USR, AR, OR, BP, ◇AR
-                    </span>
-                    <span className="text-[10px] sm:text-sm">Valuable</span>
-                  </div>
+  <span>
+    <span className="font-semibold">Star Editions</span> - USR, AR, OR, BP, ◇AR
+  </span>
+  <span className="text-[10px] sm:text-sm">Valuable</span>
+</div>
+
+<div className="flex justify-between">
+  <span className="w-[80%]">
+    <span className="font-semibold">Fantasy Wonderland</span> - GR, CR, RR, ※ER, ※GR, ※SPR, ※CR, ※RR
+  </span>
+  <span className="text-[10px] sm:text-sm">Valuable</span>
+</div>
 
                 </div>
               </div>
@@ -252,10 +268,42 @@ export default function Selling() {
               <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN CR</span><span>$35</span></div>
           </div>
 
+          <div className="border rounded-lg p-4 bg-neutral-50">
+            <h3 className="font-bold mb-2">Fantasy Wonderland</h3>
+            <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>RR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※GR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※SPR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>UNK</span></div>
+          </div>
+
         </div>
 
       </main>
+<footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
+        <div className="max-w-lg mx-auto">
+          <p className="mb-1 sm:mb-1.5">
+            This website is not run or owned by Kayou.
+          </p>
 
+          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+            All rights to respective owners. All rights to Kayou.
+          </p>
+
+          <p className="mb-2 sm:mb-2.5">
+            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          </p>
+
+          <img
+            src="/logos/collab-logo.png"
+            alt="MLPEKAYOU x KAYOU"
+            className="mx-auto h-10 sm:h-14 opacity-90"
+          />
+        </div>
+      </footer>
     </div>
   );
 }

@@ -16,6 +16,7 @@ const rarityMap: Record<string, string[]> = {
   "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
   "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
   "7": ["N","SN","R","SR","SSR","UR","CR"],
+  "8": ["N", "SN","R","SR","SSR","UR","UGR","CR"],
   "9": ["PR"],
   "10": ["LC"]
 };
@@ -33,9 +34,10 @@ const getCardImage = (card: TradeCard) => {
 
   const config: any = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
-    "2": { folder: "second-edition-moon", prefix: "M2" },
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
+    "2": { folder: "second-edition-moon", prefix: "M2" },
+    "8": { folder: "fun-moments-two", prefix: "FM2" },
   };
 
   const getRarityCode = (rarity: string) => {
@@ -61,9 +63,10 @@ export default function TradingPostInner() {
 
   const setNames: Record<string, string> = {
   "1": "Eternal Moon: First Edition",
-  "2": "Eternal Moon: Second Edition",
   "5": "Rainbow: First Edition",
   "7": "Fun Moments: First Edition",
+  "2": "Eternal Moon: Second Edition",
+  "8": "Fun Moments: Second Edition",
   "9": "Promo Cards",
   "10": "Serialized & Limited Cards"
 };
@@ -133,10 +136,17 @@ export default function TradingPostInner() {
     <div
       className="min-h-screen"
       style={{
-        backgroundColor: "#f5f5f5",
-        backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-        backgroundSize: "16px 16px",
-      }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
+    linear-gradient(to bottom, #faf7ef, #f4efe4)
+  `,
+  backgroundSize: `
+    24px 24px,
+    cover,
+    cover
+  `,
+}}
     >
       <KayouHeader />
 

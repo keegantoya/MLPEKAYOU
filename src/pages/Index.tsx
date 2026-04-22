@@ -1,249 +1,87 @@
 import KayouHeader from "@/components/KayouHeader";
-import { ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import CollectionCard from "@/components/CollectionCard";
-import { useEffect, useState } from "react";
-import { loadUserProgress } from "@/lib/loadProgress";
-import { supabase } from "@/lib/supabase";
-import aboutImage from "@/assets/avatars/mlpekayousam.jpg";
 import logoWithCards from "@/assets/avatars/logowithcards.png";
-
-type Set = {
-  id: string;
-  title: string;
-  setName: string;
-  imageUrl: string;
-  totalCards: number;
-  category: string;
-  progress?: number;
-  collectedCards?: number;
-};
-
-const featuredSets: Set[] = [
-  {
-    id: "3",
-    title: "Eternal Moon",
-    setName: "Third Volume",
-    imageUrl: "/thumbnails/moon-te.jpg",
-    totalCards: 290,
-    category: "eternal-moon",
-  },
-  {
-    id: "star1",
-    title: "Eternal Star",
-    setName: "First Volume",
-    imageUrl: "/thumbnails/s1-thumbnail.jpg",
-    totalCards: 105,
-    category: "eternal-star",
-  },
-  {
-    id: "rainbow2",
-    title: "Eternal Rainbow",
-    setName: "Second Volume",
-    imageUrl: "/thumbnails/rainbow2thumbnail.jpg",
-    totalCards: 146,
-    category: "eternal-rainbow",
-  },
-  {
-    id: "tcg",
-    title: "Fantasy Wonderland",
-    setName: "",
-    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
-    totalCards: 0,
-    category: "tcg",
-  },
-  {
-    id: "friendship-begins",
-    title: "Friendship Begins",
-    setName: "",
-    imageUrl: "/thumbnails/friendship-begins-thumbnail.jpg",
-    totalCards: 0,
-    category: "tcg",
-  },
-];
+import aboutMeButton from "@/assets/avatars/aboutmebutton.png";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [sets, setSets] = useState<Set[]>([]);
-
-  // 🔐 Password Reset Redirect (THIS IS THE IMPORTANT PART)
-  useEffect(() => {
-    const hash = window.location.hash;
-
-    if (hash && hash.includes("access_token")) {
-      navigate("/password-reset" + hash);
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-
-      if (!user) {
-        setSets(
-          featuredSets.map((set) => ({
-            ...set,
-            progress: 0,
-            collectedCards: 0,
-          }))
-        );
-        return;
-      }
-
-      const progress = await loadUserProgress();
-
-      const updated = featuredSets.map((set) => {
-        const collected = progress[set.id] || 0;
-        const percent =
-          set.totalCards > 0
-            ? Math.round((collected / set.totalCards) * 100)
-            : 0;
-
-        return {
-          ...set,
-          collectedCards: collected,
-          progress: percent,
-        };
-      });
-
-      setSets(updated);
-    };
-
-    load();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      load();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   return (
     <div
-  className="min-h-screen"
-  style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
->
+     style={{
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
+    linear-gradient(to bottom, #e2d3b0, #cbb892)
+  `,
+  backgroundSize: `
+    16px 16px,
+    cover,
+    cover
+  `,
+}}
+    >
       <KayouHeader />
 
-      {/* Hero Image */}
-<section className="w-full px-4 mt-4">
-  <div className="max-w-6xl mx-auto">
-    <img
-      src={logoWithCards}
-      alt="MLPE Kayou Logo with Cards"
-      className="w-full max-w-2xl mx-auto object-contain"
-    />
-  </div>
-</section>
+      <section className="w-full flex justify-center mt-0 sm:-mt-10 pb-12 sm:pb-6">
+        <div className="relative w-[1600px] max-w-full">
 
-      {/* Giveaway Banner */}
-      <section className="w-full px-4 mt-4">
-        <div className="max-w-5xl mx-auto border-2 border-yellow-400 rounded-2xl p-4 bg-white">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Left Image */}
-            <div className="w-full md:w-[45%]">
-              <img
-                src="/website-assets/giveaway002.jpg"
-                alt="MLPEKAYOU Giveaway"
-                className="rounded-xl w-full h-auto object-contain"
-              />
-            </div>
-
-            {/* Right Content */}
-            <div className="w-full md:w-[55%] text-center flex flex-col items-center">
-              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 mb-2">
-                MLPEKAYOU GIVEAWAY!
-              </h2>
-
-              <p className="text-sm md:text-base text-gray-700 leading-relaxed mb-1">
-                In celebration of our continued partnership with Kayou and the success of MLPEKAYOU, we will be giving away one box of Moon 2 and 6 packs of Moon 2 to two lucky winners!
-              </p>
-
-              <p className="text-xs text-gray-500 tracking-wide mb-3">
-                Rules and conditions apply.
-              </p>
-
-              <a
-                href="https://discord.gg/fb7cHz4kdD"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="btn-kayou rounded-full px-5 py-2 text-sm">
-                  ENTER GIVEAWAY
-                </Button>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="max-w-6xl mx-auto py-12 px-4">
-        <div className="flex flex-col items-center mb-6 gap-2">
-          <Link to="/collections">
-            <Button className="btn-kayou font-semibold gap-2 px-5 h-9 rounded-lg">
-              See all Releases <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-
-          <h2 className="text-lg font-bold text-foreground text-center">
-            Upcoming Releases
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center">
-          {sets.map((set) => (
-            <CollectionCard key={set.id} {...set} />
-          ))}
-        </div>
-      </section>
-
-{/* ABOUT ME PAGE */}
-<section className="max-w-5xl mx-auto px-4 mt-6 mb-10">
-  <div className="bg-card border rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
-
-    {/* LEFT SIDE */}
-    <div className="flex-1 text-center">
-
-      <h2 className="text-xl font-semibold mb-2">
-        About MLPEKAYOUWIKI
-      </h2>
-
-      <p className="text-sm text-muted-foreground mb-4">
-        If you're interested in helping support this website or learning about where it comes from, you can learn about it here.
-      </p>
-
-      <Button
+          {/* IMAGE */}
+          <img
+            src={logoWithCards}
+            alt="MLPE Kayou Logo"
+            className="w-full object-contain"
+          />
+          <img
+  src={aboutMeButton}
+  alt="About Me"
   onClick={() => navigate("/about")}
-  className="bg-pink-200 hover:bg-pink-300 text-black px-5 py-2 rounded-lg"
->
-  ABOUT ME
-</Button>
+  className="
+    absolute left-1/2 
+    top-[80%] sm:top-[70%] 
+    -translate-x-[54%] sm:-translate-x-[51%]
+    w-[145px] sm:w-[450px] 
+    cursor-pointer hover:scale-105 transition
+  "
+/>
 
-    </div>
+        </div>
+      </section>
 
-    {/* RIGHT SIDE IMAGE */}
-    <div className="w-full md:w-[40%]">
-      <img
-  src={aboutImage}
-        alt="About MLPEKAYOU"
-        className="rounded-xl w-full object-cover max-h-64"
-      />
-    </div>
+<section className="w-full pt-0 pb-12 sm:-mt-16">
+
+  <div className="flex flex-wrap justify-center sm:justify-between items-center gap-6 px-6">
+
+    <img
+      src="/website-assets/stepone.png"
+      alt="Step One"
+      className="w-[45%] sm:w-[22%] h-auto"
+    />
+
+    <img
+      src="/website-assets/steptwo.png"
+      alt="Step Two"
+      className="w-[45%] sm:w-[22%] h-auto"
+    />
+
+    <img
+      src="/website-assets/stepthree.png"
+      alt="Step Three"
+      className="w-[45%] sm:w-[22%] h-auto"
+    />
+
+    <img
+      src="/website-assets/stepfour.png"
+      alt="Step Four"
+      className="w-[45%] sm:w-[22%] h-auto"
+    />
 
   </div>
 </section>
 
 
-
-      <footer className="border-t border-border py-4 sm:py-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+      {/* FOOTER */}
+      <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
           <p className="mb-1 sm:mb-1.5">
             This website is not run or owned by Kayou.

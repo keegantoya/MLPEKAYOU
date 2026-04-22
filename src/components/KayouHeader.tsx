@@ -86,6 +86,9 @@ const KayouHeader = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+ const [avatarSrc, setAvatarSrc] = useState<string | null>(() => {
+  return sessionStorage.getItem("avatar");
+});
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -99,8 +102,11 @@ const KayouHeader = () => {
   const [loginError, setLoginError] = useState("");
   const [showForgot, setShowForgot] = useState(false);
   const [showResetSent, setShowResetSent] = useState(false);
+  const [showTradesMenu, setShowTradesMenu] = useState(false);
+  const [showIsoMenu, setShowIsoMenu] = useState(false);
 
 const getProfile = async (userId: string) => {
+
   const { data } = await supabase
     .from("profiles")
     .select("*")
@@ -125,10 +131,18 @@ const getProfile = async (userId: string) => {
     getSession();
 
     const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+  data: { subscription },
+} = supabase.auth.onAuthStateChange((_event, session) => {
+  const currentUser = session?.user ?? null;
+
+  setUser(currentUser);
+
+  if (currentUser && !profile) {
+  getProfile(currentUser.id);
+} else {
+  
+  }
+});
 
     return () => subscription.unsubscribe();
   }, []);
@@ -142,6 +156,13 @@ const getProfile = async (userId: string) => {
     localStorage.setItem("seenLoginPrompt", "true");
   }
 }, [user]);
+useEffect(() => {
+  if (profile?.avatar_url) {
+    const avatar = getAvatar(profile.avatar_url);
+    setAvatarSrc(avatar);
+    sessionStorage.setItem("avatar", avatar);
+  }
+}, [profile]);
 
   const handleLoginSubmit = async () => {
   const { error } = await supabase.auth.signInWithPassword({
@@ -235,40 +256,48 @@ const handleForgotPassword = async () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-neutral-950/70 backdrop-blur-2xl border-b border-white/10 text-white shadow-sm">
-  <div className="w-full flex h-16 items-center px-2 sm:px-4 relative justify-between">
+      <header className="sticky top-0 z-50 bg-[#3b2a1a]/70 backdrop-blur-2xl border-b border-white/10 text-white shadow-sm">
+  <div className="w-full flex h-20 items-center px-2 sm:px-4 relative justify-between">
 
     {/* LEFT SIDE */}
     <div className="flex items-center gap-3">
 
-      {user && profile && (
+      {user && (
   <Button
     variant="ghost"
     size="icon"
-    className="hidden sm:inline-flex text-white hover:bg-white/10"
+    className="hidden sm:flex text-[#f5e6c8] hover:bg-[#6b4f2a]/40 hover:text-white"
     onClick={() => navigate("/profile")}
   >
     <img
-  src={getAvatar(profile?.avatar_url)}
-  alt="avatar"
-  className="h-10 w-10 rounded-full object-cover border-2 border-white/30"
-/>
+      src={avatarSrc || avatar001}
+      alt="avatar"
+      className="h-10 w-10 rounded-full object-cover border-2 border-white/30"
+    />
   </Button>
 )}
   {/* DESKTOP DISCORD BUTTON */}
-  <Button
-  className="hidden sm:inline-flex bg-yellow-400/90 text-black font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-[1px] transition-all backdrop-blur-sm border border-white/20"
+  <button
+  className="hidden sm:inline-flex items-center justify-center"
   onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
 >
-  DISCORD
-</Button>
+  <img
+    src="/website-assets/discordlogo.png"
+    alt="Discord"
+    className="h-10 w-auto"
+  />
+</button>
 
-  <Button
-  className="hidden sm:inline-flex bg-pink-400/90 text-black font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-[1px] transition-all backdrop-blur-sm border border-white/20"
+  <button
+  className="hidden sm:inline-flex items-center justify-center"
   onClick={() => window.open("https://www.tiktok.com/@keanaex", "_blank")}
 >
-  TIKTOK
-</Button>
+  <img
+    src="/website-assets/tiktoklogo.png"
+    alt="TikTok"
+    className="h-10 w-auto"
+  />
+</button>
 
       {/* MOBILE ONLY MENU */}
       <div className="sm:hidden">
@@ -286,68 +315,69 @@ const handleForgotPassword = async () => {
           <SheetContent side="left" className="w-64 p-4 bg-neutral-900/40 backdrop-blur-xl backdrop-saturate-150 text-white border-r border-white/10">
             <div className="flex flex-col gap-2 mt-8">
 
-              {user && (
-  <Button
-    variant="ghost"
-    className="w-full justify-start"
-    onClick={() => {
-      navigate("/profile");
-      setOpen(false);
-    }}
-  >
-    <Settings className="h-4 w-4 mr-2" />
-    Profile
-  </Button>
-  
-)}
+              <Button
+  variant="ghost"
+  className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10"
+  onClick={() => {
+    navigate("/profile");
+    setOpen(false);
+  }}
+>
+  <img
+    src={avatarSrc || avatar001}
+    alt="avatar"
+    className="h-5 w-5 rounded-full object-cover mr-2 border border-white/30"
+  />
+  Profile
+</Button>
 
   {/* MENU BUTTONS */}
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/"); setOpen(false); }}>
     <Home className="h-4 w-4 mr-2" />
     Home
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/collections"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/collections"); setOpen(false); }}>
     <Grid className="h-4 w-4 mr-2" />
     Collections
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/my-progress"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-progress"); setOpen(false); }}>
     <BarChart className="h-4 w-4 mr-2" />
     My Progress
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/my-iso"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-iso"); setOpen(false); }}>
     <List className="h-4 w-4 mr-2" />
     My ISO
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/my-trades"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-trades"); setOpen(false); }}>
     <Layers className="h-4 w-4 mr-2" />
     My Trades
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/public-iso"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/public-iso"); setOpen(false); }}>
   <Users className="h-4 w-4 mr-2" />
   Open ISOs
 </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/trading-post"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/trading-post"); setOpen(false); }}>
     <ArrowLeftRight className="h-4 w-4 mr-2" />
     Open Trades
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/community"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/community"); setOpen(false); }}>
     <Trophy className="h-4 w-4 mr-2" />
     Community
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/leaderboard"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/leaderboard"); setOpen(false); }}>
     <Medal className="h-4 w-4 mr-2" />
     Leaderboard
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate("/selling"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/selling"); setOpen(false); }}>
     <Tag className="h-4 w-4 mr-2" />
     Selling
   </Button>
@@ -434,16 +464,15 @@ const handleForgotPassword = async () => {
   {user && (
   <>
     <Button
-      variant="ghost"
-      className="w-full justify-start text-red-500"
-      onClick={() => {
-        handleLogout();
-        setOpen(false);
-      }}
-    >
-      <LogOut className="h-4 w-4 mr-2" />
-      Logout
-    </Button>
+  variant="ghost"
+  className="text-white hover:bg-white/10"
+  onClick={() => {
+    handleLogout();
+    setOpen(false);
+  }}
+>
+  Logout
+</Button>
   </>
 )}
 
@@ -477,21 +506,123 @@ const handleForgotPassword = async () => {
   </div>
 </header>
 
-       <div className="hidden sm:block sticky top-16 z-40 bg-neutral-900/75 backdrop-blur-xl border-b border-white/10 backdrop-saturate-150 text-white">
-  <div className="max-w-6xl mx-auto px-4 py-2 flex flex-wrap justify-center gap-2">
+       <div className="hidden sm:block sticky top-16 z-40 bg-[#4a3420]/75 backdrop-blur-xl border-b border-white/10 backdrop-saturate-150 text-white">
+  <div className="w-full px-4 py-2 flex justify-center gap-2">
 
-  <Button variant="ghost" onClick={() => navigate("/")}>Home</Button>
-  <Button variant="ghost" onClick={() => navigate("/collections")}>Collections</Button>
-  <Button variant="ghost" onClick={() => navigate("/my-progress")}>My Progress</Button>
+  <Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => navigate("/")}
+>
+  Home
+</Button>
+ <Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => navigate("/collections")}
+>
+  Collections
+</Button>
+  <Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => navigate("/my-progress")}
+>
+  Progress
+</Button>
 
-  <Button variant="ghost" onClick={() => navigate("/my-iso")}>My ISO</Button>
-  <Button variant="ghost" onClick={() => navigate("/public-iso")}>Open ISOs</Button>
+ <div className="relative">
+  <Button
+    variant="ghost"
+    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a]"
+    onClick={() => setShowIsoMenu(!showIsoMenu)}
+  >
+    ISO ▾
+  </Button>
 
-  <Button variant="ghost" onClick={() => navigate("/my-trades")}>My Trades</Button>
-  <Button variant="ghost" onClick={() => navigate("/trading-post")}>Open Trades</Button>
-  <Button variant="ghost" onClick={() => navigate("/community")}>Community</Button>
-  <Button variant="ghost" onClick={() => navigate("/leaderboard")}>Leaderboard</Button>
-  <Button variant="ghost" onClick={() => navigate("/selling")}>Selling</Button>
+  {showIsoMenu && (
+    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#3b2a1a]/95 backdrop-blur-xl border border-[#8b6a3e]/30 rounded-2xl shadow-xl z-50">
+      
+      <button
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+        onClick={() => {
+          navigate("/my-iso");
+          setShowIsoMenu(false);
+        }}
+      >
+        My ISO
+      </button>
+
+      <button
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+        onClick={() => {
+          navigate("/public-iso");
+          setShowIsoMenu(false);
+        }}
+      >
+        All ISOs
+      </button>
+
+    </div>
+  )}
+</div>
+
+<div className="relative">
+  <Button
+    variant="ghost"
+    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a]"
+    onClick={() => setShowTradesMenu(!showTradesMenu)}
+  >
+    Trades ▾
+  </Button>
+
+  {showTradesMenu && (
+   <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#3b2a1a]/95 backdrop-blur-xl border border-[#8b6a3e]/30 rounded-2xl shadow-xl z-50">
+      
+      <button
+  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => {
+    navigate("/my-trades");
+    setShowTradesMenu(false);
+  }}
+>
+  My Trades
+</button>
+
+<button
+  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => {
+    navigate("/trading-post");
+    setShowTradesMenu(false);
+  }}
+>
+  Community Trades
+</button>
+
+    </div>
+  )}
+</div>
+  <Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => navigate("/community")}
+>
+  Community Progress
+</Button>
+  <Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => navigate("/leaderboard")}
+>
+  KayouUS Leaderboard
+</Button>
+  <Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  onClick={() => navigate("/selling")}
+>
+  Selling
+</Button>
 
 </div>
 </div>

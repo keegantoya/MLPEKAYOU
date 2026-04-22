@@ -60,9 +60,17 @@ const collections: Collection[] = [
     category: "fun-moments",
   },
   {
+    id: "tcg",
+    title: "Fantasy",
+    setName: "Wonderland",
+    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
+    totalCards: 191,
+    category: "tcg",
+  },
+  {
     id: "friendship-begins",
-    title: "Friendship Begins",
-    setName: "",
+    title: "Friendship",
+    setName: "Begins",
     imageUrl: "/thumbnails/friendship-begins-thumbnail.jpg",
     totalCards: 191,
     category: "tcg",
@@ -100,25 +108,17 @@ const collections: Collection[] = [
     category: "rainbow",
   },
   {
-    id: "tcg",
-    title: "Fantasy Wonderland",
-    setName: "",
-    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
-    totalCards: 191,
-    category: "tcg",
-  },
-  {
     id: "9",
-    title: "Promotional Cards",
-    setName: "",
+    title: "Promotional",
+    setName: "Cards",
     imageUrl: "/thumbnails/promos-thumbnail.jpg",
     totalCards: 5,
     category: "promos",
   },
   {
     id: "10",
-    title: "Serialized & Limited Cards",
-    setName: "",
+    title: "Serialized & Limited",
+    setName: "Cards",
     imageUrl: "/thumbnails/promos-thumbnail.jpg",
     totalCards: 1,
     category: "serialized",
@@ -205,11 +205,18 @@ if (!user) {
 
   return (
     <div
-  className="min-h-screen"
+  className="min-h-screen relative overflow-hidden"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
+    backgroundImage: `
+      radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
+      linear-gradient(to bottom, #e2d3b0, #cbb892)
+    `,
+    backgroundSize: `
+      20px 20px,
+      cover,
+      cover
+    `,
   }}
 >
       <KayouHeader />
@@ -217,7 +224,7 @@ if (!user) {
       <div className="container py-8 flex gap-8">
   
   {/* Sidebar wrapper */}
-  <div className="hidden md:block bg-white/95 backdrop-blur rounded-xl p-4">
+  <div className="hidden md:block bg-[#3b2a1a]/70 backdrop-blur-xl rounded-xl p-4 text-white border border-[#8b6a3e]/30">
   <CatalogSidebar
     activeCategory={activeCategory}
     onCategoryChange={setActiveCategory}
@@ -229,10 +236,10 @@ if (!user) {
           <div className="mb-4">
             <button
   onClick={() => navigate(-1)}
-  className="flex items-center gap-2 text-sm text-gray-600 hover:text-black"
+  className="flex items-center gap-2 text-sm text-[#3b2a1a] hover:text-black"
 >
-  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition">
-    <ArrowLeft className="h-4 w-4" />
+  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[#3b2a1a] hover:bg-[#2a1e12] transition">
+    <ArrowLeft className="h-4 w-4 text-[#f5e6c8]" />
   </div>
   Back
 </button>
@@ -241,20 +248,20 @@ if (!user) {
           <div className="mb-6">
 
   <div className="flex items-center justify-between">
-    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">
+    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[#3b2a1a]">
       {activeCategory === "all"
         ? "All Collections"
         : filtered[0]?.title || "Collections"}
     </h1>
 
-    <span className="text-sm text-gray-500 tracking-wide">
+    <span className="text-sm text-[#3b2a1a] tracking-wide">
       {filtered.length} {filtered.length === 1 ? "set" : "sets"}
     </span>
   </div>
 
   {activeCategory === "all" && (
-    <p className="mt-2 text-sm md:text-base text-gray-700 leading-relaxed">
-      Log into to save your set progress, set trades, and set ISOs. Some sets files have not yet been released to me by KayouUS. I am asking every day.
+    <p className="mt-2 text-sm md:text-base text-[#5c4228] leading-relaxed">
+      Sets are updated as KayouUS sends the files to place into them. They are working very hard to help with this website and all of their efforts are deeply appreciated. Sets below will display in release order.
     </p>
   )}
 
@@ -278,13 +285,12 @@ if (!user) {
       "11", // Fun Moments 3
       "4",  // Star 1
       "3",  // Moon 3
-      "tcg",
       "friendship-begins",
       "6",  // Rainbow 2
     ];
 
     const waitingOnKayouIds = [
-      "8", // Fun Moments 2
+      "tcg", // Friendship Begins
     ];
 
     const isUnreleased = unreleasedSetIds.includes(col.id);
@@ -336,7 +342,7 @@ if (!user) {
         {/* MASTERSET */}
 {isMastered && !isHidden && !isUnreleased && !isWaiting && (
   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-    <div className="bg-green-500/90 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center">
+    <div className="bg-green-500/85 text-white text-[10px] font-semibold px-3 py-1.5 rounded-md shadow tracking-wide text-center max-w-[90%]">
       CONGRATULATIONS ON THE MASETERSET
     </div>
   </div>
@@ -351,7 +357,7 @@ if (!user) {
         </main>
       </div>
 
-      <footer className="border-t py-4 sm:py-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+      <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
           <p className="mb-1 sm:mb-1.5">
             This website is not run or owned by Kayou.

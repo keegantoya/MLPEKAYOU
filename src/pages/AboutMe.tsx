@@ -1,18 +1,35 @@
 import KayouHeader from "@/components/KayouHeader";
+import { useNavigate } from "react-router-dom";
 import aboutCard from "@/assets/avatars/abmasset1.jpg";
 import wikiImage from "@/assets/avatars/mlpekayouwikidark.png";
 
 export default function AboutMe() {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div
+  className="min-h-screen relative overflow-hidden"
+  style={{
+    backgroundImage: `
+      radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
+      linear-gradient(to bottom, #e2d3b0, #cbb892)
+    `,
+    backgroundSize: `
+      20px 20px,
+      cover,
+      cover
+    `,
+  }}
+>
       <KayouHeader />
 
-      {/* ✨ GLITTER FIELD */}
-      <div className="pointer-events-none absolute inset-0">
-        {[...Array(40)].map((_, i) => (
-          <span key={i} className={`glitter glitter-${i}`} />
-        ))}
-      </div>
+      <div className="max-w-5xl mx-auto px-4 pt-4">
+  <button
+    onClick={() => window.history.back()}
+    className="text-sm text-amber-900 hover:text-amber-700"
+  >
+    ← Back
+  </button>
+</div>
 
       {/* MAIN CONTENT */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-16 space-y-6">
@@ -30,7 +47,7 @@ export default function AboutMe() {
 
           <div className="flex-1 text-center md:text-left">
 
-            <h3 className="text-lg font-semibold text-center mb-4 text-pink-400">
+            <h3 className="text-lg font-semibold text-center mb-4 text-amber-900">
               About the Creator
             </h3>
 
@@ -57,7 +74,7 @@ export default function AboutMe() {
 
           <div className="flex-1 text-center md:text-left">
 
-            <h3 className="text-lg font-semibold text-center mb-4 text-pink-400">
+            <h3 className="text-lg font-semibold text-center mb-4 text-amber-900">
               About MLPEKAYOU
             </h3>
 
@@ -128,7 +145,7 @@ export default function AboutMe() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <button className="bg-pink-300 hover:bg-pink-400 text-black font-semibold px-5 py-2 rounded-lg">
+        <button className="bg-[#e6c27a] hover:bg-[#d4af63] text-[#3b2a1a] font-semibold px-5 py-2 rounded-lg">
           My TikTok
         </button>
       </a>
@@ -145,51 +162,7 @@ export default function AboutMe() {
 
       </div>
 
-      {/* GLITTER STYLES */}
-      <style>
-        {`
-        .glitter {
-          position: absolute;
-          width: 6px;
-          height: 6px;
-          background: #f9a8d4;
-          border-radius: 50%;
-          opacity: 0.12;
-          animation: sparkle 3s infinite ease-in-out;
-          box-shadow:
-            0 0 2px rgba(249,168,212,0.3),
-            0 0 6px rgba(251,207,232,0.2);
-        }
-
-        .glitter:nth-child(odd) {
-          width: 4px;
-          height: 4px;
-        }
-
-        .glitter:nth-child(even) {
-          width: 7px;
-          height: 7px;
-        }
-
-        ${[...Array(40)]
-          .map(
-            (_, i) => `
-          .glitter-${i} {
-            top: ${Math.random() * 100}%;
-            left: ${Math.random() * 100}%;
-            animation-delay: ${Math.random() * 3}s;
-          }
-        `
-          )
-          .join("")}
-
-        @keyframes sparkle {
-          0% { opacity: 0; transform: scale(0.5) translateY(0px); }
-          50% { opacity: 1; transform: scale(1.2) translateY(-6px); }
-          100% { opacity: 0; transform: scale(0.5) translateY(0px); }
-        }
-      `}
-      </style>
+    
     </div>
   );
 }

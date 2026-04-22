@@ -38,7 +38,7 @@ const sets = [
   id: "8",
   name: "Fun Moments Second Edition",
   total: 136,
-  rarities: {}
+  rarities: { N: 20, SN: 20, R:35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
   },
   {
     id: "friendship-begins",
@@ -90,7 +90,8 @@ const releasedRoutes: Record<string, string> = {
   "5": "/collection/5",
   "7": "/fun-moments-1",
   "9": "/promos",
-  "10": "/limited-cards"
+  "10": "/limited-cards",
+  "8": "/fun-moments-2"
 };
 
 const MyProgress = () => {
@@ -171,20 +172,28 @@ const MyProgress = () => {
     <div
   className="min-h-screen flex flex-col"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
+    linear-gradient(to bottom, #e2d3b0, #cbb892)
+  `,
+  backgroundSize: `
+    16px 16px,
+    cover,
+    cover
+  `,
+}}
 >
       <KayouHeader />
 
       <div className="container py-8 flex-1">
-        <h1 className="text-2xl font-bold mb-6">
-          My Progress
-          <p className="text-gray-500 text-sm sm:text-base mb-6">
-            Once KayouUS releases files to me, new sets will appear here.
-          </p>
-        </h1>
+        <h1 className="text-2xl font-bold mb-2 text-[#3b2a1a]">
+  My Progress
+</h1>
+
+<p className="text-[#5c4022] text-sm sm:text-base mb-6 max-w-xl">
+ All progress updates based on the cards you flip. Progress is saved to your account and accessible on any device.
+</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sets
@@ -216,7 +225,7 @@ const MyProgress = () => {
   <button
     onClick={() => route && navigate(route)}
     className={`
-      w-full bg-card rounded-xl border p-4 shadow-sm text-left transition
+      w-full bg-[#8b6a3e] rounded-xl p-4 shadow-sm text-left transition
       ${isReleased
         ? "hover:shadow-md hover:scale-[1.01] cursor-pointer"
         : "opacity-60 cursor-not-allowed"
@@ -232,23 +241,23 @@ const MyProgress = () => {
   </div>
 )}
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-sm">
+                    <span className="font-medium text-white/80">
                       {set.name}
                     </span>
 
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-white/80">
                       {percent}%
                     </span>
                   </div>
 
                   <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-primary transition-all"
+  className="h-full bg-primary transition-all"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
 
-                  <div className="text-xs text-muted-foreground mt-2">
+                  <div className="text-xs text-white/80 mt-2">
                     {owned} / {set.total}
                   </div>
                 </button>
@@ -256,7 +265,7 @@ const MyProgress = () => {
             );
           })}
         </div>
-        <footer className="border-t border-border py-4 sm:py-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+        <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
           <p className="mb-1 sm:mb-1.5">
             This website is not run or owned by Kayou.

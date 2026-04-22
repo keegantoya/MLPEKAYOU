@@ -5,13 +5,13 @@ import { supabase } from "@/lib/supabase"
 
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", released: true },
+  { id: "5", name: "Rainbow First Edition", released: true },
+  { id: "7", name: "Fun Moments First Edition", released: true },
   { id: "2", name: "Eternal Moon Second Edition", released: true },
+  { id: "8", name: "Fun Moments Second Edition", released: true },
   { id: "3", name: "Eternal Moon Third Edition", released: false },
   { id: "4", name: "Star First Edition", released: false },
-  { id: "5", name: "Rainbow First Edition", released: true },
   { id: "6", name: "Rainbow Second Edition", released: false },
-  { id: "7", name: "Fun Moments First Edition", released: true },
-  { id: "8", name: "Fun Moments Second Edition", released: false },
   { id: "9", name: "Promos", released: true },
   { id: "10", name: "Serialized & Limited Cards", released: true }
 ];
@@ -32,6 +32,7 @@ const getCardImage = (card: any) => {
     "2": { folder: "second-edition-moon", prefix: "M2" },
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
+    "8": { folder: "fun-moments-two", prefix: "FM2" },
   };
 
   const c = config[set_id];
@@ -154,10 +155,17 @@ const handleSaveDiscord = async () => {
     <div
   className="min-h-screen"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
+    linear-gradient(to bottom, #faf7ef, #f4efe4)
+  `,
+  backgroundSize: `
+    24px 24px,
+    cover,
+    cover
+  `,
+}}
 >
       <KayouHeader />
 
@@ -169,7 +177,7 @@ const handleSaveDiscord = async () => {
           </h1>
 
           <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
-            Only people who have their Discord username entered can appear in the Trading Post. Check your profile to set your Discord username.
+           Only people with their Discord usernames saved to their profile will appear if they have cards for trade. When searching for a trader, you must search their MLPEKAYOU username, not their Discord username.
           </p>
         </div>
 

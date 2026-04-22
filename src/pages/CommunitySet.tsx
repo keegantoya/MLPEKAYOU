@@ -64,6 +64,13 @@ const isoSets = [
     folder: "fun-moments-one",
     prefix: "FM1",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 }
+  },
+  {
+    id: "8",
+    name: "Fun Moments: Second Edition",
+    folder: "fun-moments-two",
+    prefix: "FM2",
+    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR:9, CR: 12 }
   }
 ];
 
@@ -264,10 +271,17 @@ setTradeCards(trades || []);
     <div
   className="min-h-screen"
   style={{
-    backgroundColor: "#f5f5f5",
-    backgroundImage: "radial-gradient(#d1d5db 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
-  }}
+  backgroundImage: `
+    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
+    linear-gradient(to bottom, #faf7ef, #f4efe4)
+  `,
+  backgroundSize: `
+    24px 24px,
+    cover,
+    cover
+  `,
+}}
 >
       <KayouHeader />
 

@@ -57,6 +57,7 @@ const getRarityCode = (rarity: string) => {
       "2": { folder: "second-edition-moon", prefix: "M2" },
       "5": { folder: "rainbow-one", prefix: "R1" },
       "7": { folder: "fun-moments-one", prefix: "FM1" },
+      "8": { folder: "fun-moments-two", prefix: "FM2" },
     };
 
     const c = config[card.set_id];

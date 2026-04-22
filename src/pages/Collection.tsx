@@ -131,6 +131,7 @@ useEffect(() => {
   const sets = {
     "1": {
       name: "Eternal Moon: First Edition",
+      description: "The first set of Kayou cards to surface in the U.S., found on Target shelves, and the beginning of Kayou's journey to the United States. These cards are now out of print, with less than 200 boxes left in Kayou's stock at this time.",
       folder: "first-edition-moon",
       prefix: "M1",
       rarities: {
@@ -147,6 +148,7 @@ useEffect(() => {
 
     "2": {
       name: "Eternal Moon: Second Edition",
+      description: "The second Eternal Moon set to populate in the United States, bringing success to Kayou's ventures. This 12-pack box turned into many variants to hit shelves in places likes Target, Walmart, Gamestop, and Best Buy. This series introduced the first 'Collector's Box,' and the first ⬦ZR in the United States.",
       folder: "second-edition-moon",
       prefix: "M2",
       rarities: {
@@ -164,7 +166,8 @@ useEffect(() => {
     },
 
     "5": {
-      name: "Rainbow: First Volume",
+      name: "Rainbow: First Edition",
+      description: "Kayou's first rainbow set to come to the United States, sold exclusively online, with significantly improved hit rates when compared to Chinese boxes. When pulling an XR from his box, you will never pull only one. It is always zero or two. This box was only available online.",
       folder: "rainbow-one",
       prefix: "R1",
       rarities: {
@@ -180,21 +183,6 @@ useEffect(() => {
         XR: 7
       }
     },
-
-    "7": {
-      name: "Fun Moments: First Volume",
-      folder: "fun-moments-one",
-      prefix: "FM1",
-      rarities: {
-        N: 20,
-        SN: 20,
-        R: 35,
-        SR: 15,
-        SSR: 15,
-        UR: 10,
-        CR: 12
-      }
-    }
   };
 
   const set = sets[id as keyof typeof sets];
@@ -368,29 +356,27 @@ return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
       <KayouHeader />
 
       <div className="container py-8">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center px-2">
 
   {/* Back Button */}
-  <div className="mb-3">
-    <button
-      onClick={() => window.history.back()}
-      className="text-sm text-muted-foreground hover:text-foreground"
-    >
-      ← Back
-    </button>
-  </div>
+  <button
+    onClick={() => window.history.back()}
+    className="text-sm text-amber-900 hover:text-amber-700 mr-3 whitespace-nowrap"
+  >
+    ← Back
+  </button>
 
-  {/* Title + Description */}
-  <div className="text-center px-2">
-    <h1 className="text-lg font-semibold">
-      {set.name}
-    </h1>
-    <p className="text-xs text-gray-400 mt-1">
-      The trading function has moved! Open your menu and find "My Trades."
-    </p>
-  </div>
+  {/* Title */}
+  <h1 className="text-lg font-semibold text-center flex-1">
+    {set.name}
+  </h1>
 
 </div>
+
+{/* Description */}
+<p className="text-center text-sm md:text-base text-gray-500 max-w-sm md:max-w-2xl mx-auto px-3 mt-2">
+  {set.description}
+</p>
 
                 {!loaded ? (
           <div className="text-center py-16 text-muted-foreground">
