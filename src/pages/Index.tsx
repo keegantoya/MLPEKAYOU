@@ -79,6 +79,46 @@ const Index = () => {
   </div>
 </section>
 
+{/* GIVEAWAY / TIKTOK SECTION */}
+<section className="w-full py-12 px-6">
+  <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-8">
+
+    {/* IMAGE SIDE */}
+    <div className="w-full sm:w-1/2 flex justify-center">
+      <img
+        src="/website-assets/giveaway002.jpg"
+        alt="Kayou Giveaway"
+        className="w-full max-w-md rounded-lg shadow-md"
+      />
+    </div>
+
+    {/* TEXT SIDE */}
+     <div className="w-full sm:w-1/2 text-center sm:text-left text-[#5c4022]">
+      <h2 className="text-2xl sm:text-3xl font-semibold mb-4">
+        Ongoing Giveaways
+      </h2>
+
+      <p className="mb-6 text-sm sm:text-base leading-relaxed">
+        I am regularly hosting some type of giveaway, whether it is an SC or a box, in the Discord server. Whatever giveaway is active at the time will be attached to this announcement. Join our server to join the fun! I've also hosted giveaways in partnership with Kayou in the past, so keep an eye out for more of those!
+      </p>
+
+      <button
+        onClick={() => window.open("https://www.tiktok.com/@YOURACCOUNT", "_blank")}
+        className="
+          px-6 py-3 
+          bg-[#5c4022] text-[#e2d3b0] 
+          rounded-md 
+          hover:scale-105 hover:bg-[#4a321a]
+          transition
+        "
+      >
+        Join our Discord
+      </button>
+    </div>
+
+  </div>
+</section>
+
 
       {/* FOOTER */}
       <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
@@ -93,6 +133,10 @@ const Index = () => {
 
           <p className="mb-2 sm:mb-2.5">
             This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          </p>
+
+          <p className="mb-2 sm:mb-2.5">
+            This homepage was designed with the help and guidance of Maissa B.
           </p>
 
           <img
