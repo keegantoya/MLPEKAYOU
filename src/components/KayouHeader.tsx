@@ -1012,8 +1012,13 @@ const handleForgotPassword = async () => {
               <Button
                 className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
                 onClick={() => {
-  localStorage.setItem("seenAnnouncement", "true");
-  setShowMobilePrompt(false);
+  if (loginStep === "email") {
+    setLoginStep("password");
+  } else {
+    authMode === "login"
+      ? handleLoginSubmit()
+      : handleSignupSubmit();
+  }
 }}
               >
                 Continue
