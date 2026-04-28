@@ -2,6 +2,7 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 const sets = [
   {
@@ -258,6 +259,18 @@ if (!set) {
                     src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
                     className="rounded-lg w-full"
                   />
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+<div className="absolute inset-0 pointer-events-none overflow-hidden">
+  {[...Array(5)].map((_, i) => (
+    <img
+      key={i}
+      src={watermark}
+      className="absolute opacity-30 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
+      style={{ top: `${i * 25 - 20}%` }}
+    />
+  ))}
+</div>
+</div>
                   <div
   onClick={(e) => e.stopPropagation()}
   className="absolute bottom-1 right-1 flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow"

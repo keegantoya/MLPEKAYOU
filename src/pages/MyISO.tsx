@@ -2,6 +2,7 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import myProgressBadge from "@/assets/avatars/personaliso.png";
+import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 const sets = [
   {
@@ -257,18 +258,36 @@ const MyISO = () => {
 
               <div className="flex flex-wrap gap-2">
                 {missing.map((card) => (
-                  <img
-                    key={`${card.rarity}-${card.number}`}
-                    src={
-                      set.id === "9"
-                        ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
-                        : set.id === "10"
-                        ? "/serialized-limited-cards/andypricepromo.jpg"
-                        : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
-                    }
-                    className="rounded-lg w-[90px]"
-                  />
-                ))}
+  <div
+    key={`${card.rarity}-${card.number}`}
+    className="relative w-[90px]"
+  >
+    <img
+      src={
+        set.id === "9"
+          ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+          : set.id === "10"
+          ? "/serialized-limited-cards/andypricepromo.jpg"
+          : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+      }
+      className="rounded-lg w-full"
+    />
+
+    {/* ✅ WATERMARK */}
+    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+  {[...Array(5)].map((_, i) => (
+    <img
+      key={i}
+      src={watermark}
+      className="absolute opacity-30 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
+      style={{ top: `${i * 25 - 20}%` }}
+    />
+  ))}
+</div>
+    </div>
+  </div>
+))}
               </div>
             </div>
           );

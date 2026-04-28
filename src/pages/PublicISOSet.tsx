@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import KayouHeader from "@/components/KayouHeader";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 type TradeCard = {
   id: string;
@@ -363,12 +364,29 @@ allCards.forEach((card) => {
                 return numA - numB;
               })
               .map((card) => (
-                <img
-                  key={card.id}
-                  src={getCardImage(card)}
-                  className="w-full rounded-md"
-                />
-              ))}
+  <div key={card.id} className="relative">
+    
+    <img
+      src={getCardImage(card)}
+      className="w-full rounded-md"
+    />
+
+    {/* ✅ WATERMARK */}
+    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+  {[...Array(5)].map((_, i) => (
+    <img
+      key={i}
+      src={watermark}
+      className="absolute opacity-30 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
+      style={{ top: `${i * 25 - 20}%` }}
+    />
+  ))}
+</div>
+    </div>
+
+  </div>
+))}
           </div>
 
         </div>

@@ -163,14 +163,12 @@ useEffect(() => {
   }, []);
 
  useEffect(() => {
-  const isMobile = window.innerWidth < 640;
-  const hasSeenPrompt = localStorage.getItem("seenLoginPrompt");
+  const hasSeen = localStorage.getItem("seenAnnouncement");
 
-  if (isMobile && !user && !hasSeenPrompt) {
+  if (!hasSeen) {
     setShowMobilePrompt(true);
-    localStorage.setItem("seenLoginPrompt", "true");
   }
-}, [user]);
+}, []);
 useEffect(() => {
   if (profile?.avatar_url) {
     const avatar = getAvatar(profile.avatar_url);
@@ -715,48 +713,37 @@ const handleForgotPassword = async () => {
   />
 </div>
 
-      <div className="text-center mb-6 text-gray-700">
-        <div className="text-lg font-semibold mb-2">
-          Welcome to MLPEKAYOU!
-        </div>
+     <div className="text-center mb-6 text-gray-700">
+  
+  <div className="text-lg font-semibold mb-2 text-red-500 text-center">
+    Important Notice
+  </div>
 
-        <div className="text-sm text-gray-500">
-          Signing in allows you to save your progress. Not ready? No worries, you can still
-          create an account from the sidebar menu later.
-        </div>
-      </div>
+  <div className="text-sm text-gray-700 mb-4">
+    All assets on this website were provided by KayouUS with explicit permission and access. I had to do a lot of work to obtain these images.
+    Saving and stealing them for your own guide is unacceptable and will not be tolerated. Watermarks have been added and saving images has been disabled.
+    Think twice about the hundreds of hours I spent building and coding this website, building connections at Kayou, and sorting through the original files named in Chinese to create this website.
+    Stealing these assets without a care and without crediting is unacceptable and the assets now have watermarks. I explicitly obtained both the assets and the permission to use them.
+  </div>
+
+  <div className="text-sm text-gray-500">
+    Please ask permission before using assets for uses such as your own guide or website. I would have sent you through the proper channels to obtain the permission yourself. I am very deeply saddened that lack of the honesty has caused me to have to watermark these assets.
+  </div>
+
+</div>
 
       <div className="flex-1 flex items-center justify-center gap-3">
-        <Button
-  variant="ghost"
-  className="border border-neutral-400 text-neutral-700 hover:bg-neutral-100"
-  onClick={() => {
-    setAuthMode("login");
-    setShowMobilePrompt(false);
-    setShowLogin(true);
-  }}
->
-  Sign In
-</Button>
-
-        <Button
-          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
-          onClick={() => {
-            setAuthMode("signup");
-            setShowMobilePrompt(false);
-            setShowLogin(true);
-          }}
-        >
-          Sign Up
-        </Button>
       </div>
 
 <div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
   <Button
     className="bg-pink-100 hover:bg-pink-200 text-neutral-700 rounded-xl px-6 shadow-md border border-pink-200"
-    onClick={() => setShowMobilePrompt(false)}
+    onClick={() => {
+  localStorage.setItem("seenAnnouncement", "true");
+  setShowMobilePrompt(false);
+}}
   >
-    No thanks!
+    Understood.
   </Button>
 </div>
 
@@ -1025,14 +1012,9 @@ const handleForgotPassword = async () => {
               <Button
                 className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
                 onClick={() => {
-                  if (loginStep === "email") {
-                    setLoginStep("password");
-                  } else {
-                    authMode === "login"
-                      ? handleLoginSubmit()
-                      : handleSignupSubmit();
-                  }
-                }}
+  localStorage.setItem("seenAnnouncement", "true");
+  setShowMobilePrompt(false);
+}}
               >
                 Continue
               </Button>

@@ -52,15 +52,30 @@ const AppRoutes = () => {
   } = supabase.auth.onAuthStateChange((event, session) => {
     const currentUserId = session?.user?.id ?? null;
 
-    // Only reload if the user actually changed
     if (currentUserId !== lastUserId) {
       lastUserId = currentUserId;
     }
   });
 
-  return () => subscription.unsubscribe();
-}, []);
+  const handleRightClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
 
+    if (target.tagName === "IMG") {
+      e.preventDefault();
+    }
+  };
+
+  const preventDrag = (e: DragEvent) => e.preventDefault();
+
+  document.addEventListener("contextmenu", handleRightClick);
+  document.addEventListener("dragstart", preventDrag);
+
+  return () => {
+    subscription.unsubscribe();
+    document.removeEventListener("contextmenu", handleRightClick);
+    document.removeEventListener("dragstart", preventDrag);
+  };
+}, []);
   return (
     <Routes>
       <Route path="/" element={<Index />} />

@@ -67,6 +67,11 @@ html {
     font-family: 'Inter', sans-serif;
       overscroll-behavior: none;
   }
+  img {
+  -webkit-touch-callout: none; /* disables iOS save menu */
+  -webkit-user-select: none;
+  user-select: none;
+}
 }
 
 @layer utilities {

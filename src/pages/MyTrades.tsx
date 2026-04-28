@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import inventoryBadge from "@/assets/avatars/inventorybadge.png";
+import myTradesBadge from "@/assets/avatars/mytradesbadge.png";
 
 
 export default function MyTrades() {
@@ -155,7 +156,7 @@ export default function MyTrades() {
 
           {/* TRADE SETS */}
           <img
-  src="/src/assets/avatars/mytradesbadge.png"
+  src={myTradesBadge}
   alt="My Trades"
   className="mx-auto h-10 sm:h-14 md:h-16 object-contain"
 />
