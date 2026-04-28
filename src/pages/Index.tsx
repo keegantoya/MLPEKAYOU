@@ -95,7 +95,7 @@ useEffect(() => {
         ownedCount += ownedCards;
       }
 
-      if (totalCards > 0 && ownedCards === totalCards) {
+      if (totalCards > 0 && ownedCards > 0 && ownedCards === totalCards) {
         completedCount += 1;
       }
     });

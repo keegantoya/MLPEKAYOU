@@ -2,6 +2,7 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import myProgressBadge from "@/assets/avatars/myprogressbadge.png";
 
 const sets = [
   {
@@ -181,7 +182,7 @@ const MyProgress = () => {
 
       <div className="container py-8 flex-1">
         <img
-  src="/src/assets/avatars/myprogressbadge.png"
+  src={myProgressBadge}
   alt="My Progress"
   className="mx-auto h-14 sm:h-16 md:h-20 object-contain mb-2"
 />

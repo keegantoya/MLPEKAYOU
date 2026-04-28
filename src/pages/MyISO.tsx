@@ -1,6 +1,7 @@
 import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import myProgressBadge from "@/assets/avatars/personaliso.png";
 
 const sets = [
   {
