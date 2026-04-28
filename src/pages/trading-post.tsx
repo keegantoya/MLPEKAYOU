@@ -171,7 +171,21 @@ const handleSaveDiscord = async () => {
   alt="Trading Post"
   className="mx-auto h-10 sm:h-14 md:h-16 object-contain mb-2"
 />
-          <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
+  <div className="mt-3 flex justify-center">
+  <div
+    className="text-black text-[10px] px-4 py-[4px] rounded-full
+               border border-yellow-600 shadow-sm max-w-xs text-center leading-tight"
+    style={{
+      background: "linear-gradient(90deg, #d4af37 0%, #f5e6a8 50%, #d4af37 100%)"
+    }}
+  >
+    <div>Terry Davis is the only reason the Trading Post still exists.</div>
+    <div className="text-[9px] opacity-80">
+      It kept breaking and I almost scrapped it Everypony thank Terry Davis.
+    </div>
+  </div>
+</div>
+<p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
            Only people with their Discord usernames saved to their profile will appear if they have cards for trade. When searching for a trader, you must search their MLPEKAYOU username, not their Discord username.
           </p>
         </div>
@@ -331,7 +345,8 @@ const handleSaveDiscord = async () => {
   </div>
 )}
 
-      </div>
+            </div>
+
     </div>
   );
 };

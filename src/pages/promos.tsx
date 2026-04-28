@@ -198,18 +198,7 @@ const Promos = () => {
                       src="/card-backs/M1R-SR-SGR-SCBACK.jpeg"
                       className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
                     />
-                    
-{/* 🔥 WATERMARK */}
-<div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-30 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
-</div>
+                  
 </div>
     
 

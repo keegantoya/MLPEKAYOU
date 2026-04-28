@@ -259,8 +259,9 @@ if (!set) {
                     src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
                     className="rounded-lg w-full"
                   />
-                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-<div className="absolute inset-0 pointer-events-none overflow-hidden">
+
+                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
   {[...Array(5)].map((_, i) => (
     <img
       key={i}
@@ -270,7 +271,8 @@ if (!set) {
     />
   ))}
 </div>
-</div>
+    </div>
+                  
                   <div
   onClick={(e) => e.stopPropagation()}
   className="absolute bottom-1 right-1 flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow"

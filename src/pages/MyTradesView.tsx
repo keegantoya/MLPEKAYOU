@@ -30,7 +30,6 @@ export default function MyTradesView() {
       const user = data.session?.user;
       if (!user) return;
 
-      // ✅ ONLY pull cards already marked for trade
       const { data: trades } = await supabase
   .from("for_trade")
   .select("*")
@@ -116,8 +115,7 @@ const getRarityCode = (rarity: string) => {
       className="w-full rounded-md"
     />
 
-    {/* ✅ WATERMARK */}
-    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+ <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
   {[...Array(5)].map((_, i) => (
     <img
@@ -128,8 +126,7 @@ const getRarityCode = (rarity: string) => {
     />
   ))}
 </div>
-    </div>
-
+</div>
   </div>
 ))}
   </div>

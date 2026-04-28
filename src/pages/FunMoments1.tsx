@@ -208,9 +208,8 @@ const FunMoments1 = () => {
                       src={getCardBack(card.rarity, card.number)}
                       className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
                     />
-
-                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-<div className="absolute inset-0 pointer-events-none overflow-hidden">
+ <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
   {[...Array(5)].map((_, i) => (
     <img
       key={i}
@@ -220,7 +219,8 @@ const FunMoments1 = () => {
     />
   ))}
 </div>
-</div>
+    </div>
+                  
 
                   </div>
                 </div>

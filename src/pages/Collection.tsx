@@ -404,13 +404,8 @@ return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
                       src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
                       className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                     />
-
-                    <img
-                      src={getCardBack(card.rarity, card.number)}
-                      className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-                    />
-                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
- <div className="absolute inset-0 pointer-events-none overflow-hidden">
+ <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
   {[...Array(5)].map((_, i) => (
     <img
       key={i}
@@ -420,7 +415,25 @@ return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
     />
   ))}
 </div>
-                     </div>
+    </div>
+                    <img
+                      src={getCardBack(card.rarity, card.number)}
+                      className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+                    />
+          
+ <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+  {[...Array(5)].map((_, i) => (
+    <img
+      key={i}
+      src={watermark}
+      className="absolute opacity-30 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
+      style={{ top: `${i * 25 - 20}%` }}
+    />
+  ))}
+</div>
+    </div>
+
                      </div>
                 </div>
               );

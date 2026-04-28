@@ -78,11 +78,34 @@ export default function TradingPostInner() {
   const load = async () => {
   setLoading(true);
 
-  const { data: trades } = await supabase
+let allTrades: any[] = [];
+let from = 0;
+const pageSize = 1000;
+
+while (true) {
+  let query = supabase
     .from("for_trade")
     .select("*")
-    .eq("set_id", setId)
-    .order("id", { ascending: false }); // 🔥 FORCE FRESH ORDER
+    .eq("set_id", Number(setId))
+    .order("id", { ascending: false })
+    .range(from, from + pageSize - 1);
+
+  if (selectedRarity) {
+    query = query.like("card_key", `${selectedRarity}-%`);
+  }
+
+  const { data } = await query;
+
+  if (!data || data.length === 0) break;
+
+  allTrades = [...allTrades, ...data];
+
+  if (data.length < pageSize) break;
+
+  from += pageSize;
+}
+
+const trades = allTrades;
 
   const { data: profileData } = await supabase
     .from("profiles")
@@ -223,6 +246,8 @@ const countB = selectedRarity
                 return countA - countB;
               })
               .map(([userId, cards]) => {
+
+                  if (!tradingProfiles[userId]) return null;
 
                 if (!selectedRarity) return null;
 

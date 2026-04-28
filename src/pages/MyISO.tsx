@@ -214,6 +214,8 @@ const MyISO = () => {
                         checked={!hiddenSets.includes(set.id)}
                         onChange={() => toggleSet(set.id)}
                       />
+
+                      
                       {set.name}
                     </label>
                   ))}
@@ -273,8 +275,7 @@ const MyISO = () => {
       className="rounded-lg w-full"
     />
 
-    {/* ✅ WATERMARK */}
-    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
   {[...Array(5)].map((_, i) => (
     <img

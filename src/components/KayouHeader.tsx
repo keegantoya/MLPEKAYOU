@@ -720,14 +720,11 @@ const handleForgotPassword = async () => {
   </div>
 
   <div className="text-sm text-gray-700 mb-4">
-    All assets on this website were provided by KayouUS with explicit permission and access. I had to do a lot of work to obtain these images.
-    Saving and stealing them for your own guide is unacceptable and will not be tolerated. Watermarks have been added and saving images has been disabled.
-    Think twice about the hundreds of hours I spent building and coding this website, building connections at Kayou, and sorting through the original files named in Chinese to create this website.
-    Stealing these assets without a care and without crediting is unacceptable and the assets now have watermarks. I explicitly obtained both the assets and the permission to use them.
+    All card assets, front and back, were obtained by gaining direct access and permission from Kayou US. Please do not take these images for use other than personal.
   </div>
 
   <div className="text-sm text-gray-500">
-    Please ask permission before using assets for uses such as your own guide or website. I would have sent you through the proper channels to obtain the permission yourself. I am very deeply saddened that lack of the honesty has caused me to have to watermark these assets.
+   If you are saving them to use for an ISO post, that is not a concern. If you are saving them to use on your own public website or domain, please refrain. Reach out to me and I will guide you to the channels to get access and permission yourself instead of stealing images. I do not want to have to incorporate watermarks again.
   </div>
 
 </div>
