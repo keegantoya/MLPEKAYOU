@@ -210,15 +210,15 @@ const Promos = () => {
     />
   ))}
 </div>
+</div>
     
 
                   </div>
                   {card.number === 1 && (
   <div className="text-[10px] text-gray-500 text-center mt-1">
-    This asset was obtained from WAIFUCARDS.APP
+    This asset (MLPE-PR-001) was obtained from WAIFUCARDS.APP
   </div>
 )}
-                </div>
                 </div>
               );
             })}
