@@ -1,6 +1,7 @@
 import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import leaderboardBadge from "@/assets/avatars/leaderboardbadge.png";
 
 import avatar001 from "@/assets/avatars/avatar001.jpg";
 import avatar002 from "@/assets/avatars/avatar002.jpg";
@@ -91,6 +92,13 @@ profiles?.forEach((p: any) => {
       const seen: Record<string, boolean> = {};
 
       progress?.forEach((row: any) => {
+        const ownedMap: Record<string, boolean> = {};
+
+Object.entries(row.progress || {}).forEach(([key, value]) => {
+  if (value) {
+    ownedMap[`${row.set_id}-${key}`] = true;
+  }
+});
         const key = `${row.user_id}-${row.set_id}`;
         if (seen[key]) return;
         seen[key] = true;
@@ -125,8 +133,7 @@ Object.entries(set.rarities).forEach(([rarity, count]) => {
   for (let i = 1; i <= count; i++) {
     const cardKey = `${rarity}-${i}`;
 
-    const value = row.progress?.[cardKey];
-    const isOwned = value !== false && value != null;
+    const isOwned = ownedMap[`${row.set_id}-${cardKey}`];
 
     if (isOwned) {
       owned++;
@@ -181,30 +188,21 @@ if (owned === totalCardsInSet && totalCardsInSet > 0) {
     <div
   className="min-h-screen"
   style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
-    linear-gradient(to bottom, #faf7ef, #f4efe4)
-  `,
-  backgroundSize: `
-    24px 24px,
-    cover,
-    cover
-  `,
-}}
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
       <KayouHeader />
 
 <div className="container py-8 overflow-visible">
 
   <div className="text-center mb-6">
-  <h1 className="text-2xl font-bold text-[#3b2a1a]">
-    Top KayouUS Collectors
-  </h1>
-
-  <p className="text-sm text-[#5c4022] mt-2 max-w-xl mx-auto">
-    Below are the top twelve collectors registered on MLPEKAYOU. These are the twelve people on MLPEKAYOU who are the closest to mastering every release of every set.
-  </p>
+  <img
+  src={leaderboardBadge}
+  alt="KayouUS Top Collectors"
+  className="mx-auto h-16 sm:h-20 md:h-24 object-contain"
+/>
 </div>
 
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -392,16 +390,14 @@ if (owned === totalCardsInSet && totalCardsInSet > 0) {
         </div>
 <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
-          <p className="mb-1 sm:mb-1.5">
-            This website is not run or owned by Kayou.
-          </p>
+          <p>This website is not run or owned by Kayou.</p>
 
-          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+          <p className="text-[7px] sm:text-[8px] italic">
             All rights to respective owners. All rights to Kayou.
           </p>
 
-          <p className="mb-2 sm:mb-2.5">
-            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          <p>
+            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
           </p>
 
           <img

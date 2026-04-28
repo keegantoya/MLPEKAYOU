@@ -4,90 +4,24 @@ export default function Selling() {
   return (
     <div
   className="min-h-screen text-neutral-800"
-  style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
-    linear-gradient(to bottom, #faf7ef, #f4efe4)
-  `,
-  backgroundSize: `
-    24px 24px,
-    cover,
-    cover
-  `,
-}}
+   style={{
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
       <KayouHeader />
 
       <main className="p-6 max-w-6xl mx-auto">
 
         {/* Main Title */}
-        <h1 className="text-3xl font-bold text-center mb-10 text-[#3b2a1a]">
-  Selling and Buying Kayou Cards
-</h1>
-
-        {/* Two Column Layout */}
-        <div className="grid md:grid-cols-2 gap-12">
-
-          {/* LEFT SIDE */}
-          <div className="text-center flex flex-col justify-center h-full">
-
-            <h2 className="text-2xl font-bold mb-3">
-              Buying Sealed Product
-            </h2>
-
-            <p className="text-neutral-600 mb-6 leading-relaxed">
-              Never buy sealed product unless it comes from a fully verified source. 
-              Many people will buy boxes, open them and remove the hits, then reseal 
-              them expertly and sell you a bad box for full price or more. This is a 
-              common practice in the Chinese Kayou market and will eventually show 
-              its face in the Western market. Here are some verified sources for you -
-            </p>
-
-            <div className="flex justify-center gap-3 flex-wrap">
-
-              <a
-                href="https://stonestradingco.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-full text-black font-medium shadow-sm transition hover:shadow-md"
-                style={{
-                  background: "linear-gradient(180deg, #fde047 0%, #facc15 50%, #eab308 100%)"
-                }}
-              >
-                Stone
-              </a>
-
-              <a
-                href="https://shop.kayouofficial.com/us"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-full text-black font-medium shadow-sm transition hover:shadow-md"
-                style={{
-                  background: "linear-gradient(180deg, #fde047 0%, #facc15 50%, #eab308 100%)"
-                }}
-              >
-                KayouUS
-              </a>
-
-              <a
-                href="https://crossingtcg.com/collections/kayou"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-full text-black font-medium shadow-sm transition hover:shadow-md"
-                style={{
-                  background: "linear-gradient(180deg, #fde047 0%, #facc15 50%, #eab308 100%)"
-                }}
-              >
-                CrossingTCG
-              </a>
-
-            </div>
-
-          </div>
-
+        <img
+  src="/src/assets/avatars/sellingbadge.png"
+  alt="Selling and Buying"
+  className="mx-auto h-16 sm:h-20 md:h-24 object-contain mb-10"
+/>
           {/* RIGHT SIDE */}
-          <div>
+          <div className="max-w-2xl mx-auto text-center">
 
             <h2 className="text-2xl font-bold text-center mb-4">
               Pricing Guide
@@ -191,7 +125,6 @@ export default function Selling() {
 
           </div>
 
-        </div>
 
         {/* Edition Pricing Tables */}
         <div className="mt-12 grid md:grid-cols-4 gap-6">
@@ -200,11 +133,11 @@ export default function Selling() {
 
           <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Star Edition One</h3>
-            <div className="flex justify-between text-sm text-neutral-700"><span>USR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>AR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>OR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>BP</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>◇AR</span><span>NOT YET RELEASED</span></div>
+            <div className="flex justify-between text-sm text-neutral-700"><span>USR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>AR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>OR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>BP</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>◇AR</span><span>UNK</span></div>
           </div>
           <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Moon Edition One</h3>
@@ -230,13 +163,13 @@ export default function Selling() {
 
           <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Moon Edition Three</h3>
-            <div className="flex justify-between text-sm text-neutral-700"><span>LSR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>SGR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>ZR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN ZR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>SC</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN SC</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>◇ZR</span><span>NOT YET RELEASED</span></div>
+            <div className="flex justify-between text-sm text-neutral-700"><span>LSR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>SGR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>ZR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN ZR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>SC</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN SC</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>◇ZR</span><span>UNK</span></div>
           </div>
 
           <div className="border rounded-lg p-4 bg-neutral-50">
@@ -248,9 +181,10 @@ export default function Selling() {
 
           <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Rainbow Edition Two</h3>
-            <div className="flex justify-between text-sm text-neutral-700"><span>TGR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>USR</span><span>NOT YET RELEASED</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>XR</span><span>NOT YET RELEASED</span></div>
+            <div className="flex justify-between text-sm text-neutral-700"><span>TGR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>USR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>XR</span><span>UNK</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN XR</span><span>UNK</span></div>
           </div>
 
           <div className="border rounded-lg p-4 bg-neutral-50">
@@ -285,16 +219,14 @@ export default function Selling() {
       </main>
 <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
-          <p className="mb-1 sm:mb-1.5">
-            This website is not run or owned by Kayou.
-          </p>
+          <p>This website is not run or owned by Kayou.</p>
 
-          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+          <p className="text-[7px] sm:text-[8px] italic">
             All rights to respective owners. All rights to Kayou.
           </p>
 
-          <p className="mb-2 sm:mb-2.5">
-            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          <p>
+            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
           </p>
 
           <img

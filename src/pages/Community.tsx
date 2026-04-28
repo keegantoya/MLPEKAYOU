@@ -46,7 +46,11 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
   "5": {
     username: "Keegan (Owner)",
     avatar_url: "avatar002.jpg"
-  }
+  },
+  "8": {
+  username: "Keegan (Owner)",
+  avatar_url: "avatar002.jpg"
+}
 };
 
 const isoSets = [
@@ -223,17 +227,10 @@ useEffect(() => {
     <div
   className="min-h-screen"
   style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
-    linear-gradient(to bottom, #faf7ef, #f4efe4)
-  `,
-  backgroundSize: `
-    24px 24px,
-    cover,
-    cover
-  `,
-}}
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
 
       <KayouHeader />
@@ -241,9 +238,11 @@ useEffect(() => {
       <div className="container py-8">
 
         <div className="text-center mb-8 max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold mb-2">
-            Community Leaderboards
-          </h1>
+          <img
+  src="/src/assets/avatars/setleaderboardsbadge.png"
+  alt="Set Leaderboards"
+  className="mx-auto h-12 sm:h-14 md:h-16 object-contain mb-2"
+/>
 
           <p className="text-sm text-muted-foreground">
            If you are the first user of MLPEKAYOU to master set a US set, send proof to the owner in the Discord and your image and name will appear on that set. This is done manually, not automatically, to ensure validity.
@@ -299,16 +298,14 @@ useEffect(() => {
           </div>
 <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
-          <p className="mb-1 sm:mb-1.5">
-            This website is not run or owned by Kayou.
-          </p>
+          <p>This website is not run or owned by Kayou.</p>
 
-          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+          <p className="text-[7px] sm:text-[8px] italic">
             All rights to respective owners. All rights to Kayou.
           </p>
 
-          <p className="mb-2 sm:mb-2.5">
-            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          <p>
+            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
           </p>
 
           <img

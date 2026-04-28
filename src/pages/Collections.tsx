@@ -6,6 +6,7 @@ import { loadUserProgress } from "@/lib/loadProgress";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import collectionsBanner from "@/assets/avatars/kayouuscollectionsbanner.png";
 
 type Collection = {
   id: string;
@@ -16,6 +17,7 @@ type Collection = {
   category: string;
   progress?: number;
   collectedCards?: number;
+  released: boolean;
 };
 
 const collections: Collection[] = [
@@ -26,6 +28,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/moon-fe.jpg",
     totalCards: 186,
     category: "eternal-moon",
+     released: true,
   },
    {
     id: "5",
@@ -34,6 +37,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/rainbow1thumbnail.jpg",
     totalCards: 146,
     category: "rainbow",
+    released: true,
   },
   {
     id: "7",
@@ -42,6 +46,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/fme01TN.jpg",
     totalCards: 127,
     category: "fun-moments",
+    released: true,
   },
   {
     id: "2",
@@ -50,6 +55,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/moon-se.jpg",
     totalCards: 189,
     category: "eternal-moon",
+    released: true,
   },
   {
     id: "8",
@@ -58,6 +64,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/fme02TN.jpg",
     totalCards: 136,
     category: "fun-moments",
+    released: true,
   },
   {
     id: "tcg",
@@ -66,6 +73,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
     totalCards: 191,
     category: "tcg",
+    released: true,
   },
   {
     id: "friendship-begins",
@@ -74,6 +82,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/friendship-begins-thumbnail.jpg",
     totalCards: 191,
     category: "tcg",
+    released: true,
   },
   {
     id: "3",
@@ -82,6 +91,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/moon-te.jpg",
     totalCards: 290,
     category: "eternal-moon",
+    released: false,
   },
   {
     id: "11",
@@ -90,6 +100,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/fme03TN.jpg",
     totalCards: 148,
     category: "fun-moments",
+    released: true,
   },
   {
     id: "4",
@@ -98,6 +109,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/s1-thumbnail.jpg",
     totalCards: 105,
     category: "star",
+    released: false,
   },
   {
     id: "6",
@@ -106,6 +118,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/rainbow2thumbnail.jpg",
     totalCards: 170,
     category: "rainbow",
+    released: false,
   },
   {
     id: "9",
@@ -114,14 +127,16 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/promos-thumbnail.jpg",
     totalCards: 5,
     category: "promos",
+    released: true,
   },
   {
     id: "10",
-    title: "Serialized & Limited",
+    title: "Limited",
     setName: "Cards",
     imageUrl: "/thumbnails/promos-thumbnail.jpg",
     totalCards: 1,
     category: "serialized",
+    released: true,
   }
 ];
 
@@ -199,24 +214,18 @@ if (!user) {
   }, []);
 
   const filtered =
-    activeCategory === "all"
-      ? sets
-      : sets.filter((c) => c.category === activeCategory);
+  (activeCategory === "all"
+    ? sets
+    : sets.filter((c) => c.category === activeCategory)
+  ).filter((c) => c.released);
 
   return (
     <div
   className="min-h-screen relative overflow-hidden"
   style={{
-    backgroundImage: `
-      radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
-      radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
-      linear-gradient(to bottom, #e2d3b0, #cbb892)
-    `,
-    backgroundSize: `
-      20px 20px,
-      cover,
-      cover
-    `,
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
   }}
 >
       <KayouHeader />
@@ -224,7 +233,7 @@ if (!user) {
       <div className="container py-8 flex gap-8">
   
   {/* Sidebar wrapper */}
-  <div className="hidden md:block bg-[#3b2a1a]/70 backdrop-blur-xl rounded-xl p-4 text-white border border-[#8b6a3e]/30">
+  <div className="hidden md:block p-4">
   <CatalogSidebar
     activeCategory={activeCategory}
     onCategoryChange={setActiveCategory}
@@ -233,39 +242,41 @@ if (!user) {
 
   <main className="flex-1">
 
-          <div className="mb-4">
-            <button
+          <div className="mb-6 relative flex items-center">
+
+  {/* BACK BUTTON (LEFT) */}
+  <button
   onClick={() => navigate(-1)}
-  className="flex items-center gap-2 text-sm text-[#3b2a1a] hover:text-black"
+  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
 >
-  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[#3b2a1a] hover:bg-[#2a1e12] transition">
-    <ArrowLeft className="h-4 w-4 text-[#f5e6c8]" />
-  </div>
-  Back
+  <ArrowLeft className="h-4 w-4 text-[#f5e6a8]" />
+  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+  </span>
 </button>
-          </div>
 
-          <div className="mb-6">
-
-  <div className="flex items-center justify-between">
-    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[#3b2a1a]">
-      {activeCategory === "all"
-        ? "All Collections"
-        : filtered[0]?.title || "Collections"}
-    </h1>
-
-    <span className="text-sm text-[#3b2a1a] tracking-wide">
-      {filtered.length} {filtered.length === 1 ? "set" : "sets"}
-    </span>
+  {/* CENTERED BANNER */}
+  <div className="absolute left-1/2 -translate-x-1/2">
+  <img
+    src={collectionsBanner}
+    alt="All Collections"
+    className="h-20 md:h-24 lg:h-28 object-contain"
+  />
   </div>
+
+  {/* RIGHT SIDE COUNT */}
+  <div className="ml-auto text-sm text-[#555] tracking-wide">
+    {filtered.length} {filtered.length === 1 ? "set" : "sets"}
+  </div>
+
+</div>
+
 
   {activeCategory === "all" && (
-    <p className="mt-2 text-sm md:text-base text-[#5c4228] leading-relaxed">
-      Sets are updated as KayouUS sends the files to place into them. They are working very hard to help with this website and all of their efforts are deeply appreciated. Sets below will display in release order.
+    <p className="mt-4 mb-6 text-sm md:text-base text-[#555] leading-relaxed">
+      Sets will appear here in release order. Promotional cards will always appear at the bottom. If a set is released but not yet available, it is because I am still waiting on Kayou.
     </p>
   )}
 
-</div>
           {activeCategory === "limited" ? (
             <div className="flex items-center justify-center py-20">
               <p className="text-yellow-500 text-center max-w-xl leading-relaxed">
@@ -312,39 +323,36 @@ if (!user) {
           <CollectionCard {...col} />
         </div>
 
-        {/* NOT COLLECTING */}
-        {isHidden && !isUnreleased && !isWaiting && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-           <div className="bg-yellow-400/90 text-black text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest">
-              NOT COLLECTING
-            </div>
-          </div>
-        )}
-
-        {/* UNRELEASED */}
-        {isUnreleased && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-           <div className="bg-yellow-400/90 text-black text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest">
-              UNRELEASED
-            </div>
-          </div>
-        )}
+        {/* SET HIDDEN */}
+{isHidden && !isUnreleased && !isWaiting && (
+  <div className="absolute inset-0 flex items-center justify-center translate-y-5 pointer-events-none">
+    <div className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center border border-[#d4af37]/60">
+      YOU ARE NOT COLLECTING THIS SET
+    </div>
+  </div>
+)}
 
         {/* WAITING ON KAYOU */}
-        {isWaiting && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="bg-yellow-400/90 text-black text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center">
-              WAITING ON KAYOUUS
-            </div>
-          </div>
-        )}
+{(isUnreleased || isWaiting) && (
+  <div className="absolute inset-0 flex items-center justify-center translate-y-5 pointer-events-none">
+    <div className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center border border-[#d4af37]/60">
+      WAITING ON KAYOU
+    </div>
+  </div>
+)}
 
         {/* MASTERSET */}
 {isMastered && !isHidden && !isUnreleased && !isWaiting && (
-  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-    <div className="bg-green-500/85 text-white text-[10px] font-semibold px-3 py-1.5 rounded-md shadow tracking-wide text-center max-w-[90%]">
-      CONGRATULATIONS ON THE MASETERSET
-    </div>
+  <div className="absolute inset-0 flex items-center justify-center translate-y-5 pointer-events-none">
+    <div
+  className="text-[11px] sm:text-[10px] md:text-[10px] font-semibold px-7 py-3 sm:px-3 sm:py-1.5 rounded-md shadow tracking-wide text-center flex items-center justify-center border border-[#5a3e84]/50"
+  style={{
+    background: "linear-gradient(90deg, #f5e6a8 0%, #d4af37 40%, #b8962e 60%, #f5e6a8 100%)",
+    color: "#3b2a1a"
+  }}
+>
+  <span className="block text-center w-full">MASTERED</span>
+</div>
   </div>
 )}
 
@@ -359,16 +367,14 @@ if (!user) {
 
       <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
-          <p className="mb-1 sm:mb-1.5">
-            This website is not run or owned by Kayou.
-          </p>
+          <p>This website is not run or owned by Kayou.</p>
 
-          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+          <p className="text-[7px] sm:text-[8px] italic">
             All rights to respective owners. All rights to Kayou.
           </p>
 
-          <p className="mb-2 sm:mb-2.5">
-            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          <p>
+            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
           </p>
 
           <img

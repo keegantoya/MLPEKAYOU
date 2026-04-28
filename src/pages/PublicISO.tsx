@@ -149,29 +149,23 @@ setSelectedRarity(null);
     <div
   className="min-h-screen"
   style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
-    linear-gradient(to bottom, #faf7ef, #f4efe4)
-  `,
-  backgroundSize: `
-    24px 24px,
-    cover,
-    cover
-  `,
-}}
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
       <KayouHeader />
 
       <div className="container py-8">
 
-        <h1 className="text-3xl font-bold text-center mb-2">
-          All ISOs
-        </h1>
-
-        <p className="text-center text-muted-foreground mb-8">
-         Only people with their Discord usernames saved to their profile will appear if they are missing cards. They will only appear on high-tier rarity cards if they have any progress on the set. When searching for somepony, you must search their MLPEKAYOU username, not their Discord username.
-        </p>
+       <img
+  src="/src/assets/avatars/allisosbadge.png"
+  alt="All ISOs"
+  className="mx-auto h-10 sm:h-14 md:h-16 object-contain mb-2"
+/>
+        <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto text-center mb-8">
+  Only users with a saved Discord and missing cards will appear here. Search using their MLPEKAYOU username.
+</p>
 
         <div className="max-w-md mx-auto mb-8 relative">
   <input

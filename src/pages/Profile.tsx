@@ -156,7 +156,14 @@ if (isHeiManTou) {
     return <div className="container mx-auto p-6">Please log in</div>;
   }
 
-  return (
+   return (
+  <div
+    className="min-h-screen"
+    style={{
+      backgroundColor: "#e9e2f3",
+      backgroundSize: "26px 26px",
+    }}
+  >
     <div className="container mx-auto p-6 max-w-6xl">
       <button
         onClick={() => navigate(-1)}
@@ -268,8 +275,9 @@ if (isHeiManTou) {
   </div>
 
 </div>
-    </div>
-  );
+        </div>
+  </div>
+);
 };
 
 export default Profile;

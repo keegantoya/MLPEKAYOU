@@ -52,6 +52,8 @@ export default function MyTradesSets() {
 
   const [progressMap, setProgressMap] = useState<Record<string, any>>({});
   const [tradeCards, setTradeCards] = useState<Record<string, boolean>>({});
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
   const load = async (userOverride?: any) => {
@@ -66,6 +68,7 @@ export default function MyTradesSets() {
     if (!user) {
       setProgressMap({});
       setTradeCards({});
+      setQuantities({});
       return;
     }
 
@@ -95,12 +98,25 @@ export default function MyTradesSets() {
     });
 
     setTradeCards(tradeMap);
+
+    // 🔹 LOAD QUANTITIES
+    const { data: qtyData } = await supabase
+      .from("card_quantity")
+      .select("*")
+      .eq("set_id", setId)
+      .eq("user_id", user.id);
+
+    const qtyMap: Record<string, number> = {};
+    qtyData?.forEach((row: any) => {
+      qtyMap[row.card_key] = row.quantity;
+    });
+
+    setQuantities(qtyMap);
   };
 
   // initial load
   load();
 
-  // 🔥 THE FIX
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -109,6 +125,29 @@ export default function MyTradesSets() {
 
   return () => subscription.unsubscribe();
 }, [setId]);
+
+const changeQuantity = async (cardKey: string, delta: number) => {
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  if (!user) return;
+
+  const current = quantities[cardKey] || 1;
+  const next = Math.max(1, current + delta);
+
+  await supabase
+    .from("card_quantity")
+    .upsert({
+      user_id: user.id,
+      set_id: setId,
+      card_key: cardKey,
+      quantity: next
+    });
+
+  setQuantities((prev) => ({
+    ...prev,
+    [cardKey]: next
+  }));
+};
 
   const toggleTrade = async (cardKey: string) => {
     const { data } = await supabase.auth.getSession();
@@ -187,8 +226,14 @@ if (!set) {
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold mb-2">{set.name}</h1>
           <p className="text-gray-500 text-sm max-w-xl mx-auto">
-            Any cards you do not have collected will not appear here, and will not be available to be marked for trade.
+            Only cards you have collected can be marked for trade, which can be done by simply tapping the card. If you'd like to track your duplicates, there is a private inventory function. Nopony else can see your inventory.
           </p>
+          <button
+  onClick={() => setEditMode(!editMode)}
+  className="mt-3 px-3 py-1 rounded-lg bg-[#5a3e84] text-[#f5e6a8] border border-[#d4af37] text-sm font-semibold shadow hover:brightness-110"
+>
+  {editMode ? "Done Editing" : "Edit Inventory"}
+</button>
         </div>
 
         {ownedCards.length === 0 ? (
@@ -206,15 +251,39 @@ if (!set) {
                   key={key}
                   onClick={() => toggleTrade(key)}
                   className={`relative rounded-xl p-[2px] cursor-pointer ${
-                    isTrade
-                      ? "border-2 border-green-500"
-                      : "border border-gray-300"
-                  }`}
+  isTrade ? "border-2 border-green-500" : ""
+}`}
                 >
                   <img
                     src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
                     className="rounded-lg w-full"
                   />
+                  <div
+  onClick={(e) => e.stopPropagation()}
+  className="absolute bottom-1 right-1 flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow"
+>
+  {editMode && (
+    <button
+      onClick={() => changeQuantity(key, -1)}
+      className="px-1 leading-none hover:text-[#ffd700]"
+    >
+      −
+    </button>
+  )}
+
+  <span className="px-1 font-semibold">
+    {quantities[key] || 1}
+  </span>
+
+  {editMode && (
+    <button
+      onClick={() => changeQuantity(key, 1)}
+      className="px-1 leading-none hover:text-[#ffd700]"
+    >
+      +
+    </button>
+  )}
+</div>
 
                   {isTrade && (
                     <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow">

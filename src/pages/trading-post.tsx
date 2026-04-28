@@ -155,27 +155,21 @@ const handleSaveDiscord = async () => {
     <div
   className="min-h-screen"
   style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
-    linear-gradient(to bottom, #faf7ef, #f4efe4)
-  `,
-  backgroundSize: `
-    24px 24px,
-    cover,
-    cover
-  `,
-}}
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
       <KayouHeader />
 
       <div className="container py-8">
 
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold">
-            Trading Post
-          </h1>
-
+          <img
+  src="/src/assets/avatars/tradingpostbadge.png"
+  alt="Trading Post"
+  className="mx-auto h-10 sm:h-14 md:h-16 object-contain mb-2"
+/>
           <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
            Only people with their Discord usernames saved to their profile will appear if they have cards for trade. When searching for a trader, you must search their MLPEKAYOU username, not their Discord username.
           </p>

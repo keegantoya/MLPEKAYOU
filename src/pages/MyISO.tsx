@@ -158,17 +158,10 @@ const MyISO = () => {
     <div
   className="min-h-screen"
   style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
-    linear-gradient(to bottom, #faf7ef, #f4efe4)
-  `,
-  backgroundSize: `
-    24px 24px,
-    cover,
-    cover
-  `,
-}}
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
       <KayouHeader />
 
@@ -178,22 +171,27 @@ const MyISO = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-3">
   
   <div>
-    <h1 className="text-2xl font-bold">
-      My ISO
-    </h1>
+    <img
+  src="/src/assets/avatars/personaliso.png"
+  alt="Personal ISO"
+  className="mx-auto h-14 sm:h-16 md:h-20 object-contain"
+/>
     
-    <p className="text-sm text-black mt-1">
-      Your ISO is built from cards that you do not flip around. These cards appear publicly in "All ISOs" and anyone can see your ISO by searching your MLPEKAYOU username. Simply click "Hide Sets" if you do not want to see, and do not want others to see, sets you do not wish to collect.
-    </p>
+  
   </div>
 
   <div className="relative">
     <button
-      onClick={() => setShowDropdown(!showDropdown)}
-      className="text-sm px-3 py-1 rounded-lg bg-white border shadow-sm hover:bg-gray-100 transition"
-    >
-      Hide Sets
-    </button>
+  onClick={() => setShowDropdown(!showDropdown)}
+  className="whitespace-nowrap text-sm px-4 py-1.5 rounded-lg 
+             bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] 
+             text-[#f5e6a8] font-semibold 
+             border border-[#d4af37]/60 
+             shadow-sm hover:shadow-md hover:scale-[1.02] 
+             transition"
+>
+  Hide Sets
+</button>
 
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-80 bg-background border rounded-xl shadow-lg p-4 z-50">

@@ -38,6 +38,7 @@ import FunMoments3 from "./pages/FunMoments3";
 import PublicISO from "@/pages/PublicISO";
 import PublicISOSet from "@/pages/PublicISOSet";
 import RequireAuth from "./components/RequireAuth";
+import FAQ from "@/pages/FAQ";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,7 @@ const AppRoutes = () => {
       <Route path="*" element={<NotFound />} />
       <Route path="/my-trades/:setId" element={<MyTradesSets />} />
       <Route path="/about" element={<AboutMe />} />
+      <Route path="/faq" element={<FAQ />} />
      <Route
   path="/my-trades/view/:setId"
   element={

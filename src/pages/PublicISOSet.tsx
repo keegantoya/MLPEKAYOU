@@ -228,17 +228,10 @@ allCards.forEach((card) => {
     <div
   className="min-h-screen"
   style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 70%, rgba(0,0,0,0.08)),
-    linear-gradient(to bottom, #faf7ef, #f4efe4)
-  `,
-  backgroundSize: `
-    24px 24px,
-    cover,
-    cover
-  `,
-}}
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
       <KayouHeader />
 
@@ -252,7 +245,7 @@ allCards.forEach((card) => {
           Back to All ISOs
         </button>
 
-        <h1 className="text-3xl font-bold text-center mb-6">
+        <h1 className="text-3xl font-bold text-center mb-6 text-[#d4af37] [text-shadow:1px_1px_0_#5a3e84,-1px_1px_0_#5a3e84,1px_-1px_0_#5a3e84,-1px_-1px_0_#5a3e84]">
           {set?.name}
         </h1>
 

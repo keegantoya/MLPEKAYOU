@@ -171,28 +171,23 @@ const MyProgress = () => {
   return (
     <div
   className="min-h-screen flex flex-col"
-  style={{
-  backgroundImage: `
-    radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
-    radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
-    linear-gradient(to bottom, #e2d3b0, #cbb892)
-  `,
-  backgroundSize: `
-    16px 16px,
-    cover,
-    cover
-  `,
-}}
+   style={{
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
+  }}
 >
       <KayouHeader />
 
       <div className="container py-8 flex-1">
-        <h1 className="text-2xl font-bold mb-2 text-[#3b2a1a]">
-  My Progress
-</h1>
+        <img
+  src="/src/assets/avatars/myprogressbadge.png"
+  alt="My Progress"
+  className="mx-auto h-14 sm:h-16 md:h-20 object-contain mb-2"
+/>
 
-<p className="text-[#5c4022] text-sm sm:text-base mb-6 max-w-xl">
- All progress updates based on the cards you flip. Progress is saved to your account and accessible on any device.
+<p className="text-[#5c4022] text-sm sm:text-base mb-6 max-w-xl mx-auto text-center">
+ All progress updates based on the cards you own. Progress is saved to your account and accessible on any device.
 </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -216,16 +211,17 @@ const MyProgress = () => {
 
   {isHidden && (
     <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-      <div className="bg-black/70 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md">
-        Not Collecting
+      <div className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/60 text-[10px] sm:text-xs px-2 py-1 rounded-md">
+        SET HIDDEN
       </div>
     </div>
   )}
 
   <button
+  
     onClick={() => route && navigate(route)}
     className={`
-      w-full bg-[#8b6a3e] rounded-xl p-4 shadow-sm text-left transition
+      w-full bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/40 rounded-xl p-4 shadow-sm text-left transition
       ${isReleased
         ? "hover:shadow-md hover:scale-[1.01] cursor-pointer"
         : "opacity-60 cursor-not-allowed"
@@ -234,30 +230,42 @@ const MyProgress = () => {
     `}
   >
     {isMastered && (
-  <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-    <div className="bg-emerald-500/90 text-white text-[10px] font-semibold px-2 py-1 rounded-md shadow-md tracking-wide text-center">
-  MASTERSET COMPLETE
-</div>
+  <div className="absolute inset-0 bg-[#3b2a6a]/70 rounded-xl pointer-events-none" />
+)}
+    {isMastered && (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <div
+      className="text-[11px] sm:text-[10px] md:text-[10px] font-semibold px-7 py-3 sm:px-3 sm:py-1.5 rounded-md shadow tracking-wide text-center flex items-center justify-center border border-[#5a3e84]/50"
+      style={{
+        background: "linear-gradient(90deg, #f5e6a8 0%, #d4af37 40%, #b8962e 60%, #f5e6a8 100%)",
+        color: "#3b2a1a"
+      }}
+    >
+      <span className="block text-center w-full">MASTERED</span>
+    </div>
   </div>
 )}
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-white/80">
+                    <span className="font-medium text-[#f5e6a8]">
                       {set.name}
                     </span>
 
-                    <span className="text-xs text-white/80">
+                    <span className="text-xs text-[#f5e6a8]">
                       {percent}%
                     </span>
                   </div>
 
-                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-  className="h-full bg-primary transition-all"
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
+                  <div className="w-full h-2 bg-[#3b2a1a]/40 rounded-full overflow-hidden">
+  <div
+    className="h-full transition-all"
+    style={{
+      width: `${percent}%`,
+      background: "linear-gradient(90deg, #f5e6a8 0%, #d4af37 40%, #b8962e 60%, #f5e6a8 100%)"
+    }}
+  />
+</div>
 
-                  <div className="text-xs text-white/80 mt-2">
+                  <div className="text-xs text-[#f5e6a8] mt-2">
                     {owned} / {set.total}
                   </div>
                 </button>
@@ -265,18 +273,16 @@ const MyProgress = () => {
             );
           })}
         </div>
-        <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
+       <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
-          <p className="mb-1 sm:mb-1.5">
-            This website is not run or owned by Kayou.
-          </p>
+          <p>This website is not run or owned by Kayou.</p>
 
-          <p className="text-[7px] sm:text-[8px] italic mb-1 sm:mb-1.5">
+          <p className="text-[7px] sm:text-[8px] italic">
             All rights to respective owners. All rights to Kayou.
           </p>
 
-          <p className="mb-2 sm:mb-2.5">
-            This is a fan-made collector tool that generates zero profit and will not run ads. Ever.
+          <p>
+            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
           </p>
 
           <img

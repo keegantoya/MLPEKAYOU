@@ -1,18 +1,15 @@
 import {
   Menu,
-  User,
   Home,
   BarChart,
   Trophy,
   Medal,
-  LogOut,
   Tag,
-  Settings,
   ArrowLeftRight,
   Users,
   List,
   Grid,
-   Layers
+  Layers
 } from "lucide-react";
 
 import { Button } from "./ui/button";
@@ -24,6 +21,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useRef } from "react";
 
 import logo from "@/assets/avatars/mlpekayouwiki.png";
 
@@ -104,6 +102,8 @@ const KayouHeader = () => {
   const [showResetSent, setShowResetSent] = useState(false);
   const [showTradesMenu, setShowTradesMenu] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
+  const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
 const getProfile = async (userId: string) => {
 
@@ -115,6 +115,21 @@ const getProfile = async (userId: string) => {
 
   setProfile(data);
 };
+
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setShowIsoMenu(false);
+      setShowTradesMenu(false);
+      setShowLeaderboardMenu(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
   useEffect(() => {
     const getSession = async () => {
@@ -256,7 +271,7 @@ const handleForgotPassword = async () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-[#3b2a1a]/70 backdrop-blur-2xl border-b border-white/10 text-white shadow-sm">
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8] shadow-md">
   <div className="w-full flex h-20 items-center px-2 sm:px-4 relative justify-between">
 
     {/* LEFT SIDE */}
@@ -266,7 +281,7 @@ const handleForgotPassword = async () => {
   <Button
     variant="ghost"
     size="icon"
-    className="hidden sm:flex text-[#f5e6c8] hover:bg-[#6b4f2a]/40 hover:text-white"
+    className="hidden sm:flex text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
     onClick={() => navigate("/profile")}
   >
     <img
@@ -295,7 +310,7 @@ const handleForgotPassword = async () => {
   <img
     src="/website-assets/tiktoklogo.png"
     alt="TikTok"
-    className="h-10 w-auto"
+    className="h-12 w-auto"
   />
 </button>
 
@@ -306,7 +321,7 @@ const handleForgotPassword = async () => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-[#b48ec2]/40"
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -317,7 +332,7 @@ const handleForgotPassword = async () => {
 
               <Button
   variant="ghost"
-  className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10"
+  className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10"
   onClick={() => {
     navigate("/profile");
     setOpen(false);
@@ -332,55 +347,67 @@ const handleForgotPassword = async () => {
 </Button>
 
   {/* MENU BUTTONS */}
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/"); setOpen(false); }}>
     <Home className="h-4 w-4 mr-2" />
     Home
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/collections"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/collections"); setOpen(false); }}>
     <Grid className="h-4 w-4 mr-2" />
     Collections
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-progress"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-progress"); setOpen(false); }}>
     <BarChart className="h-4 w-4 mr-2" />
     My Progress
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-iso"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-iso"); setOpen(false); }}>
     <List className="h-4 w-4 mr-2" />
     My ISO
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-trades"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-trades"); setOpen(false); }}>
     <Layers className="h-4 w-4 mr-2" />
-    My Trades
+    My Inventory
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/public-iso"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/public-iso"); setOpen(false); }}>
   <Users className="h-4 w-4 mr-2" />
   Open ISOs
 </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/trading-post"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/trading-post"); setOpen(false); }}>
     <ArrowLeftRight className="h-4 w-4 mr-2" />
     Open Trades
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/community"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/community"); setOpen(false); }}>
     <Trophy className="h-4 w-4 mr-2" />
     Community
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/leaderboard"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/leaderboard"); setOpen(false); }}>
     <Medal className="h-4 w-4 mr-2" />
     Leaderboard
   </Button>
 
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 hover:text-white focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/selling"); setOpen(false); }}>
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/selling"); setOpen(false); }}>
     <Tag className="h-4 w-4 mr-2" />
     Selling
   </Button>
+
+  <Button
+  variant="ghost"
+  className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10"
+  onClick={() => {
+    navigate("/faq");
+    setOpen(false);
+  }}
+>
+  <List className="h-4 w-4 mr-2" />
+  FAQ
+</Button>
 
   <div className="border-t my-3" />
 
@@ -452,10 +479,6 @@ const handleForgotPassword = async () => {
         className="h-[32px] sm:h-[40px] md:h-[46px] cursor-pointer"
         onClick={() => navigate("/")}
       />
-
-      <span className="text-yellow-400 font-black text-lg sm:text-xl md:text-2xl">
-        BETA
-      </span>
     </div>
 
    {/* RIGHT SIDE */}
@@ -465,7 +488,7 @@ const handleForgotPassword = async () => {
   <>
     <Button
   variant="ghost"
-  className="text-white hover:bg-white/10"
+  className="text-white hover:bg-[#b48ec2]/40"
   onClick={() => {
     handleLogout();
     setOpen(false);
@@ -480,7 +503,7 @@ const handleForgotPassword = async () => {
   <>
     <Button
       variant="ghost"
-      className="text-white hover:bg-white/10"
+      className="text-white hover:bg-[#b48ec2]/40"
       onClick={() => {
         setAuthMode("login");
         setShowLogin(true);
@@ -490,7 +513,7 @@ const handleForgotPassword = async () => {
     </Button>
 
     <Button
-      className="bg-yellow-400 text-black"
+      className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
       onClick={() => {
         setAuthMode("signup");
         setShowLogin(true);
@@ -506,26 +529,29 @@ const handleForgotPassword = async () => {
   </div>
 </header>
 
-       <div className="hidden sm:block sticky top-16 z-40 bg-[#4a3420]/75 backdrop-blur-xl border-b border-white/10 backdrop-saturate-150 text-white">
-  <div className="w-full px-4 py-2 flex justify-center gap-2">
+      <div className="hidden sm:block sticky top-16 z-40 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8]">
+  <div
+  ref={menuRef}
+  className="w-full px-4 py-2 flex justify-center gap-2"
+>
 
   <Button
   variant="ghost"
-  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
   onClick={() => navigate("/")}
 >
   Home
 </Button>
  <Button
   variant="ghost"
-  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
   onClick={() => navigate("/collections")}
 >
   Collections
 </Button>
   <Button
   variant="ghost"
-  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
   onClick={() => navigate("/my-progress")}
 >
   Progress
@@ -534,17 +560,21 @@ const handleForgotPassword = async () => {
  <div className="relative">
   <Button
     variant="ghost"
-    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a]"
-    onClick={() => setShowIsoMenu(!showIsoMenu)}
+    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
+    onClick={() => {
+  setShowIsoMenu(!showIsoMenu);
+  setShowTradesMenu(false);
+  setShowLeaderboardMenu(false);
+}}
   >
     ISO ▾
   </Button>
 
   {showIsoMenu && (
-    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#3b2a1a]/95 backdrop-blur-xl border border-[#8b6a3e]/30 rounded-2xl shadow-xl z-50">
+    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
       
       <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
         onClick={() => {
           navigate("/my-iso");
           setShowIsoMenu(false);
@@ -554,7 +584,7 @@ const handleForgotPassword = async () => {
       </button>
 
       <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
         onClick={() => {
           navigate("/public-iso");
           setShowIsoMenu(false);
@@ -570,27 +600,31 @@ const handleForgotPassword = async () => {
 <div className="relative">
   <Button
     variant="ghost"
-    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a]"
-    onClick={() => setShowTradesMenu(!showTradesMenu)}
+    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
+    onClick={() => {
+  setShowTradesMenu(!showTradesMenu);
+  setShowIsoMenu(false);
+  setShowLeaderboardMenu(false);
+}}
   >
     Trades ▾
   </Button>
 
   {showTradesMenu && (
-   <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#3b2a1a]/95 backdrop-blur-xl border border-[#8b6a3e]/30 rounded-2xl shadow-xl z-50">
+   <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
       
       <button
-  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
   onClick={() => {
     navigate("/my-trades");
     setShowTradesMenu(false);
   }}
 >
-  My Trades
+  My Inventory
 </button>
 
 <button
-  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6c8] hover:bg-[#f0e2c2]/60 hover:text-[#3b2a1a] transition-colors"
+  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
   onClick={() => {
     navigate("/trading-post");
     setShowTradesMenu(false);
@@ -602,26 +636,59 @@ const handleForgotPassword = async () => {
     </div>
   )}
 </div>
+  <div className="relative">
+  <Button
+    variant="ghost"
+    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
+    onClick={() => {
+  setShowLeaderboardMenu(!showLeaderboardMenu);
+  setShowIsoMenu(false);
+  setShowTradesMenu(false);
+}}
+  >
+    Leaderboards ▾
+  </Button>
+
+  {showLeaderboardMenu && (
+    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
+      
+      <button
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
+        onClick={() => {
+          navigate("/community");
+          setShowLeaderboardMenu(false);
+        }}
+      >
+        US Sets Leaderboards
+      </button>
+
+      <button
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
+        onClick={() => {
+          navigate("/leaderboard");
+          setShowLeaderboardMenu(false);
+        }}
+      >
+        US Top Collectors
+      </button>
+
+    </div>
+  )}
+</div>
   <Button
   variant="ghost"
-  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
-  onClick={() => navigate("/community")}
->
-  Community Progress
-</Button>
-  <Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
-  onClick={() => navigate("/leaderboard")}
->
-  KayouUS Leaderboard
-</Button>
-  <Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6c8] hover:bg-[#f0e2c2]/70 hover:text-[#3b2a1a] transition-colors"
+  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
   onClick={() => navigate("/selling")}
 >
   Selling
+</Button>
+
+<Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
+  onClick={() => navigate("/faq")}
+>
+  FAQ
 </Button>
 
 </div>
@@ -639,11 +706,14 @@ const handleForgotPassword = async () => {
 
 </div>
 
-    <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-14 flex flex-col min-h-[260px]">
+    <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
 
-      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
-        <img src={logo} className="h-12" />
-      </div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+  <img
+    src={logo}
+    className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
+  />
+</div>
 
       <div className="text-center mb-6 text-gray-700">
         <div className="text-lg font-semibold mb-2">
@@ -670,7 +740,7 @@ const handleForgotPassword = async () => {
 </Button>
 
         <Button
-          className="bg-yellow-400 text-black"
+          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
           onClick={() => {
             setAuthMode("signup");
             setShowMobilePrompt(false);
@@ -761,11 +831,14 @@ const handleForgotPassword = async () => {
       ))}
     </div>
 
-    <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-14 flex flex-col min-h-[260px]">
+    <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
 
-      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
-        <img src={logo} className="h-12" />
-      </div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+  <img
+    src={logo}
+    className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
+  />
+</div>
 
       <div className="text-center mb-6 text-gray-700">
 
@@ -790,7 +863,7 @@ const handleForgotPassword = async () => {
 
       <div className="flex justify-center">
         <Button
-          className="bg-yellow-400 text-black"
+          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
           onClick={() => setShowSignupSuccess(false)}
         >
           Got it!
@@ -812,11 +885,14 @@ const handleForgotPassword = async () => {
       ))}
     </div>
 
-    <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-14 flex flex-col min-h-[260px]">
+    <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
 
-      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
-        <img src={logo} className="h-12" />
-      </div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+  <img
+    src={logo}
+    className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
+  />
+</div>
 
       <div className="text-center mb-6 text-gray-700">
 
@@ -833,7 +909,7 @@ const handleForgotPassword = async () => {
 
       <div className="flex justify-center">
         <Button
-          className="bg-yellow-400 text-black"
+          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
           onClick={() => setShowResetSent(false)}
         >
           Got it
@@ -857,11 +933,14 @@ const handleForgotPassword = async () => {
 
 </div>
 
-          <div className="relative w-[92%] max-w-md bg-white rounded-2xl shadow-2xl p-6 pt-14 pb-12 flex flex-col min-h-[260px]">
+          <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-12 flex flex-col ">
 
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-700 rounded-full shadow-lg px-5 py-2">
-              <img src={logo} className="h-12" />
-            </div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+  <img
+    src={logo}
+    className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
+  />
+</div>
 
             <div className="text-center mb-5 text-gray-700">
               {loginStep === "email" ? (
@@ -944,7 +1023,7 @@ const handleForgotPassword = async () => {
               </Button>
 
               <Button
-                className="bg-yellow-400 text-black"
+                className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
                 onClick={() => {
                   if (loginStep === "email") {
                     setLoginStep("password");

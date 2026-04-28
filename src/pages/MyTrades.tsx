@@ -3,6 +3,8 @@ import CollectionCard from "@/components/CollectionCard";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import inventoryBadge from "@/assets/avatars/inventorybadge.png";
+
 
 export default function MyTrades() {
   const navigate = useNavigate();
@@ -111,32 +113,30 @@ export default function MyTrades() {
       <div
   className="min-h-screen p-4 sm:p-6"
   style={{
-    backgroundImage: `
-      radial-gradient(rgba(92, 64, 34, 0.12) 1px, transparent 1px),
-      radial-gradient(circle at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35)),
-      linear-gradient(to bottom, #e2d3b0, #cbb892)
-    `,
-    backgroundSize: `
-      20px 20px,
-      cover,
-      cover
-    `,
+    backgroundColor: "#e9e2f3",
+    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
+    backgroundSize: "26px 26px",
   }}
 >
         <div className="max-w-4xl mx-auto text-center">
 
           <div className="mb-6">
-  <h1 className="text-2xl sm:text-3xl font-bold text-[#3b2a1a]">
-    My Trades
-  </h1>
+
+  <img
+    src={inventoryBadge}
+    alt="My Inventory"
+    className="mx-auto h-14 sm:h-16 md:h-20 object-contain mb-2"
+  />
 
   <p className="text-[#5c4022] text-sm sm:text-base mt-2 max-w-xl mx-auto">
-    All cards you own will appear here, and you can mark them for trade. You must have your Discord username set in your profile to appear publicly on the trading boards.
+    All cards you own will appear here. You can mark them for trade and update your personal inventory of duplicates. Duplicates will not be public information.
   </p>
+
 </div>
 
+
           {/* COLLECTIONS */}
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-6">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] justify-items-center gap-4 mt-6">
             {collections
               .filter((col) => !hiddenSets.includes(col.id))
               .map((col) => (
@@ -154,12 +154,14 @@ export default function MyTrades() {
           <div className="my-10 border-t border-gray-300" />
 
           {/* TRADE SETS */}
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4">
-            Here are all of the cards you have marked for trade.
-          </h2>
+          <img
+  src="/src/assets/avatars/mytradesbadge.png"
+  alt="My Trades"
+  className="mx-auto h-10 sm:h-14 md:h-16 object-contain"
+/>
 
           {tradeSets.length > 0 ? (
-  <div className="flex flex-wrap justify-center gap-4">
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-items-center">
     {collections
       .filter((col) =>
         tradeSets.includes(String(col.id).trim())
@@ -168,7 +170,7 @@ export default function MyTrades() {
         <button
           key={col.id}
           onClick={() => navigate(`/my-trades/view/${col.id}`)}
-          className="px-4 py-2 bg-pink-200 text-pink-800 rounded-lg hover:bg-pink-300 transition"
+          className="px-4 py-2 bg-[#5a3e84] text-[#f5e6a8] border border-[#d4af37] rounded-lg hover:brightness-110 transition shadow"
         >
           {col.title} ({col.setName})
         </button>
