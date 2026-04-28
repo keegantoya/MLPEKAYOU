@@ -1,7 +1,8 @@
 import KayouHeader from "@/components/KayouHeader";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase"
+import { supabase } from "@/lib/supabase";
+import tradingPostBadge from "@/assets/avatars/tradingpostbadge.png";
 
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", released: true },
@@ -166,7 +167,7 @@ const handleSaveDiscord = async () => {
 
         <div className="text-center mb-6">
           <img
-  src="/src/assets/avatars/tradingpostbadge.png"
+  src={tradingPostBadge}
   alt="Trading Post"
   className="mx-auto h-10 sm:h-14 md:h-16 object-contain mb-2"
 />

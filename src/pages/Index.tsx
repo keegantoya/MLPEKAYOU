@@ -8,6 +8,16 @@ import FunMoments3Poster from "@/assets/avatars/FunMoments3Poster.png";
 import Star1Poster from "@/assets/avatars/Star1poster.png";
 import { supabase } from "@/lib/supabase";
 
+const sets = [
+  { id: "9", rarities: { PR: 5 } },
+  { id: "1", rarities: { R:30, SR:20, SSR:54, HR:36, UR:16, LSR:15, SGR:8, SC:7 }},
+  { id: "5", rarities: { R:30, SR:15, FR:18, TR:12, TGR:8, MTR:18, SSR:15, UR:15, USR:8, XR:7 }},
+  { id: "7", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 }},
+  { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }},
+  { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
+  { id: "10", rarities: { LC: 1 } }
+];
+
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
@@ -78,25 +88,50 @@ useEffect(() => {
 
     const { data: progress } = await supabase
       .from("collection_progress")
-      .select("progress")
+      .select("*")
       .eq("user_id", user.id);
 
     let ownedCount = 0;
     let completedCount = 0;
 
-    (progress || []).forEach((row: any) => {
-      const cards = row.progress || {};
-      const values = Object.values(cards);
+    const progressMap = new Map(
+      (progress || []).map((row: any) => [String(row.set_id), row])
+    );
 
-      const ownedCards = values.filter(Boolean).length;
-      const totalCards = values.length;
+    const sets = [
+      { id: "9", rarities: { PR: 5 } },
+      { id: "1", rarities: { R:30, SR:20, SSR:54, HR:36, UR:16, LSR:15, SGR:8, SC:7 }},
+      { id: "5", rarities: { R:30, SR:15, FR:18, TR:12, TGR:8, MTR:18, SSR:15, UR:15, USR:8, XR:7 }},
+      { id: "7", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 }},
+      { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }},
+      { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
+      { id: "10", rarities: { LC: 1 } }
+    ];
 
-      if (ownedCards > 0) {
-        ownedCount += ownedCards;
-      }
+    sets.forEach((set) => {
+      const found = progressMap.get(set.id);
 
-      if (totalCards > 0 && ownedCards > 0 && ownedCards === totalCards) {
-        completedCount += 1;
+      if (!found?.progress || !set.rarities) return;
+
+      let owned = 0;
+      let total = 0;
+
+      Object.entries(set.rarities).forEach(([rarity, count]) => {
+        total += count;
+
+        for (let i = 1; i <= count; i++) {
+          const key = `${rarity}-${i}`;
+          if (found.progress[key]) owned++;
+        }
+      });
+
+      ownedCount += owned;
+
+      // skip promo and limited
+      if (set.id === "9" || set.id === "10") return;
+
+      if (total > 0 && owned === total) {
+        completedCount++;
       }
     });
 
@@ -112,10 +147,8 @@ useEffect(() => {
     });
   };
 
-  // INITIAL LOAD
   loadStats();
 
-  // 🔥 THIS IS THE ONLY NEW PART
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {

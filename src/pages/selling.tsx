@@ -1,4 +1,5 @@
 import KayouHeader from "@/components/KayouHeader";
+import sellingBadge from "@/assets/avatars/sellingbadge.png";
 
 export default function Selling() {
   return (
@@ -16,7 +17,7 @@ export default function Selling() {
 
         {/* Main Title */}
         <img
-  src="/src/assets/avatars/sellingbadge.png"
+  src={sellingBadge}
   alt="Selling and Buying"
   className="mx-auto h-16 sm:h-20 md:h-24 object-contain mb-10"
 />

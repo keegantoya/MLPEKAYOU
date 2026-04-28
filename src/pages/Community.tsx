@@ -11,6 +11,7 @@ import avatar005 from "@/assets/avatars/avatar005.jpg";
 import avatar006 from "@/assets/avatars/avatar006.jpg";
 import avatar007 from "@/assets/avatars/avatar007.jpg";
 import avatar008 from "@/assets/avatars/avatar008.jpg";
+import setLeaderboardsBadge from "@/assets/avatars/setleaderboardsbadge.png";
 
 const avatarMap: Record<string, string> = {
   "avatar001.jpg": avatar001,
@@ -239,7 +240,7 @@ useEffect(() => {
 
         <div className="text-center mb-8 max-w-3xl mx-auto">
           <img
-  src="/src/assets/avatars/setleaderboardsbadge.png"
+  src={setLeaderboardsBadge}
   alt="Set Leaderboards"
   className="mx-auto h-12 sm:h-14 md:h-16 object-contain mb-2"
 />

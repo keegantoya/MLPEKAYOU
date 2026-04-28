@@ -2,6 +2,7 @@ import KayouHeader from "@/components/KayouHeader";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import allIsosBadge from "@/assets/avatars/allisosbadge.png";
 
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", released: true },
@@ -159,7 +160,7 @@ setSelectedRarity(null);
       <div className="container py-8">
 
        <img
-  src="/src/assets/avatars/allisosbadge.png"
+  src={allIsosBadge}
   alt="All ISOs"
   className="mx-auto h-10 sm:h-14 md:h-16 object-contain mb-2"
 />

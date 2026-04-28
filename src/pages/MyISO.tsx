@@ -173,7 +173,7 @@ const MyISO = () => {
   
   <div>
     <img
-  src="/src/assets/avatars/personaliso.png"
+  src={myProgressBadge}
   alt="Personal ISO"
   className="mx-auto h-14 sm:h-16 md:h-20 object-contain"
 />
