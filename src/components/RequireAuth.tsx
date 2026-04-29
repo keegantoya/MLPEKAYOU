@@ -28,7 +28,6 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
     return null;
   }
 
-  // 🔒 Not logged in → show modal instead of full page
   if (!user) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -57,6 +56,5 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
     );
   }
 
-  // ✅ Logged in → show page
   return <>{children}</>;
 }

@@ -181,7 +181,7 @@ const handleSaveDiscord = async () => {
   >
     <div>Terry Davis is the only reason the Trading Post still exists.</div>
     <div className="text-[9px] opacity-80">
-      It kept breaking and I almost scrapped it Everypony thank Terry Davis.
+      It kept breaking and I almost scrapped it. Everypony thank Terry Davis.
     </div>
   </div>
 </div>

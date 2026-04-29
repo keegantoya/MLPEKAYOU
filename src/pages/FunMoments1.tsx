@@ -214,7 +214,7 @@ const FunMoments1 = () => {
     <img
       key={i}
       src={watermark}
-      className="absolute opacity-30 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
+      className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
       style={{ top: `${i * 25 - 20}%` }}
     />
   ))}

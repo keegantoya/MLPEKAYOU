@@ -71,17 +71,12 @@ const CollectionCard = ({
   </div>
 )}
 </div>
-
-      {/* IMAGE + PROGRESS BAR */}
       <div className="relative rounded-xl overflow-hidden">
         <img
   src={imageUrl}
   alt={setName || title}
   className="w-full aspect-square object-cover rounded-xl"
 />
-
-        {/* PROGRESS BAR INSIDE IMAGE */}
-
         {showProgress && progress < 100 && (
   <>
     <div className="absolute bottom-2 right-2 text-[10px] font-semibold text-white bg-black/50 px-1.5 py-0.5 rounded">

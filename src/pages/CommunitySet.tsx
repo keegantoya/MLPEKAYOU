@@ -78,7 +78,7 @@ const medals = ["🥇", "🥈", "🥉"];
 const forcedStillCollecting = [""];
 
 const manualPlacements: Record<string, string[]> = {
-  "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"] // order = 1st, 2nd, 3rd...
+  "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"],
 };
 
 const CommunitySet = () => {
