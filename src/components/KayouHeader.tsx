@@ -724,7 +724,7 @@ const handleForgotPassword = async () => {
   </div>
 
   <div className="text-sm text-gray-500">
-   If you are saving them to use for an ISO post, that is not a concern. If you are saving them to use on your own public website or domain, please refrain. Reach out to me and I will guide you to the channels to get access and permission yourself instead of stealing images. I do not want to have to incorporate watermarks again.
+   If you are saving them to use for an ISO post, that is not a concern. If you are saving them to use on your own public website or domain, please refrain. Reach out to me and I will guide you to the channels to get access and permission yourself instead of stealing images.
   </div>
 
 </div>
