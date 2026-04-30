@@ -358,6 +358,14 @@ const FAQ = () => {
   </span>
   .)
 </p>
+<p className="mb-4 text-sm text-[#5c4022]">
+  See true fake cards below.
+        </p>
+        <img
+  src="/website-assets/fakecardxp4.png"
+  alt="Straight up fake cards"
+  className="w-full h-auto mt-4 rounded-lg"
+/>
       </>
     )
   },
