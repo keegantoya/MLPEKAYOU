@@ -23,7 +23,7 @@ import FantasyWonderland from "./pages/Fantasy-Wonderland";
 import FunMoments2 from "./pages/FunMoments2";
 import FunMoments1 from "./pages/FunMoments1";
 import Promos from "./pages/promos";
-import FriendshipBegins from "./pages/friendship-begins";
+import FriendshipsBegin from "./pages/friendshipsbegin";
 import Selling from "@/pages/selling";
 import LimitedCards from "@/pages/limited-cards";
 import PasswordReset from "./pages/password-reset";
@@ -118,7 +118,7 @@ const AppRoutes = () => {
       <Route path="/fun-moments-1" element={<FunMoments1 />} />
       <Route path="/password-reset" element={<PasswordReset />} />
       <Route path="/promos" element={<Promos />} />
-      <Route path="/friendship-begins" element={<FriendshipBegins />} />
+      <Route path="/friendshipsbegin" element={<FriendshipsBegin />} />
       <Route path="/selling" element={<Selling />} />
       <Route path="/limited-cards" element={<LimitedCards />} />
       <Route path="/trading-post" element={<TradingPost />} />

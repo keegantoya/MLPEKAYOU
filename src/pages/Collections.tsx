@@ -4,7 +4,7 @@ import CatalogSidebar from "@/components/CatalogSidebar";
 import CollectionCard from "@/components/CollectionCard";
 import { loadUserProgress } from "@/lib/loadProgress";
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import collectionsBanner from "@/assets/avatars/kayouuscollectionsbanner.png";
 
@@ -150,10 +150,19 @@ const unreleasedSetIds = [
 ];
 
 const Collections = () => {
-  const [activeCategory, setActiveCategory] = useState("all");
+  const location = useLocation();
+  const [activeCategory, setActiveCategory] = useState(
+  location.state?.category || "all"
+);
   const [sets, setSets] = useState<Collection[]>([]);
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (location.state?.category) {
+      setActiveCategory(location.state.category);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const load = async (userOverride?: any) => {

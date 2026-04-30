@@ -5,8 +5,14 @@ import authentic2 from "@/faq-assets/authenticseal2.jpg";
 import fake1 from "@/faq-assets/fakeseal.png";
 import fake2 from "@/faq-assets/fakeseal2.png";
 import faqBadge from "@/assets/avatars/faqbadge.png";
+import { useNavigate } from "react-router-dom";
 
-const sections = [
+const FAQ = () => {
+  const [active, setActive] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const sections = [
   {
     title: "General",
     content: (
@@ -234,11 +240,128 @@ const sections = [
       </>
     )
   },
-];
+  {
+    title: "Are my Cards Fake?",
+    content: (
+      <>
+        <h2 className="font-semibold mb-2">"Are My Cards Fake?"</h2>
+        <p className="mb-4 text-sm text-[#5c4022]">
+          Lately on the r/MLPKAYOU subreddit, this seems to be the most popular question among those who are not well versed in Kayou products. I will answer your questions here.
+        </p>
 
-const FAQ = () => {
-  const [active, setActive] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
+        <h2 className="font-semibold mb-2">U.S. Cards - Are these fake?</h2>
+        <p className="mb-4 text-sm text-[#5c4022]">
+          Many people have posted two identical cards side-by-side, but noted the difference in codes and the card's texture. This has been raising the question - is my card fake? Why is one sparklier than the other?
+          First, let's take a look at the card codes. In the United States, the following codes correspond with these CCG sets:
+        </p>
+        <p
+  onClick={() =>
+    navigate("/collections", { state: { category: "fun-moments" } })
+  }
+    className="w-full mb-3 px-4 py-2 rounded-lg text-sm font-semibold text-[#3b2a1a]
+             border border-[#d4af37]/60 shadow-md transition
+             bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]
+             hover:brightness-110 active:scale-[0.98]"
+>
+  FME - Fun Moments Edition
+</p>
+        <p
+  onClick={() =>
+    navigate("/collections", { state: { category: "rainbow" } })
+  }
+    className="w-full mb-3 px-4 py-2 rounded-lg text-sm font-semibold text-[#3b2a1a]
+             border border-[#d4af37]/60 shadow-md transition
+             bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]
+             hover:brightness-110 active:scale-[0.98]"
+>
+  RBE - Rainbow Edition
+</p>
+        <p
+  onClick={() =>
+    navigate("/collections", { state: { category: "eternal-moon" } })
+  }
+    className="w-full mb-3 px-4 py-2 rounded-lg text-sm font-semibold text-[#3b2a1a]
+             border border-[#d4af37]/60 shadow-md transition
+             bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]
+             hover:brightness-110 active:scale-[0.98]"
+>
+  MLPME - My Little Pony Moon Edition
+</p>
+        <p
+  onClick={() =>
+    navigate("/collections", { state: { category: "star" } })
+  }
+    className="w-full mb-3 px-4 py-2 rounded-lg text-sm font-semibold text-[#3b2a1a]
+             border border-[#d4af37]/60 shadow-md transition
+             bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]
+             hover:brightness-110 active:scale-[0.98]"
+>
+  MLPSE - My Little Pony Star Edition
+</p>
+        <p className="mb-4 text-sm text-[#5c4022]">
+          Any number that follows that code (MLPME01, RBE02, FME03, etc...) simply tells you what volume that set is. For example, FME03 represents 'Fun Moments Edition 3.' 
+        </p>
+        <h2 className="font-semibold mb-2">My cards are identical but different?</h2>
+        <p className="mb-4 text-sm text-[#5c4022]">
+          This seems to be where all of the newer collectors on r/MLPKAYOU are thinking they have purchased counterfeit cards. Below is images of the same card, but from two different sets.
+        </p>
+        <img
+  src="/website-assets/fakecardxp1.png"
+  alt="Example of similar cards from different sets"
+  className="w-full h-auto mt-4 rounded-lg"
+/>
+<p className="mb-4 text-sm text-[#5c4022]">
+        </p>
+<p className="mb-4 text-sm text-[#5c4022]">
+          Upon first glance, you would think these two cards are identical - but in print, they are not. Looking in the upper right-hand corner, you will see two different identification codes. One card is a Fun Moments card, and one is a Moon Edition card. Here art pictures of the cards from my personal collection, where you can see the differences.
+        </p>
+        <img
+  src="/website-assets/fakecardxp2.png"
+  alt="Example of similar cards from different sets"
+  className="w-full h-auto mt-4 rounded-lg"
+/>
+<p className="mb-4 text-sm text-[#5c4022]">
+        </p>
+<p className="mb-4 text-sm text-[#5c4022]">
+          Rest assured that both cards in this image are real. The card on the left holds significantly more detail than the card on the right despite them being the same card.
+          </p>
+          <p className="mb-4 text-sm text-[#5c4022]">
+          Why? Because the card on the left comes from the Moon Editions, a set that is much more expensive than the card on the right, which comes from the Fun Moments Editions. A box of moon has higher quality prints due to the box price, and Fun Moments is the budget set version, which utilizes reprints with less expensive qualities to make a cheaper box.
+          </p>
+          <p className="mb-4 text-sm text-[#5c4022]">
+            This applies to the Chinese sets. Their version of Moon Edition will begin with "HY," and the identical card to the one above will be "HY08-SR-001." The identical Fun Moments card will be in their Shadow set, with the code "QY05-SR-001."
+        </p>
+        <p className="mb-4 text-sm text-[#5c4022]">
+          Upon first glance, you would think these two cards are identical - but in print, they are not. Looking in the upper right-hand corner, you will see two different identification codes. One card is a Fun Moments card, and one is a Moon Edition card. Here art pictures of the cards from my personal collection, where you can see the differences.
+        </p>
+        <img
+  src="/website-assets/fakecardxp3.png"
+  alt="Example of similar cards from different sets but Chinese"
+  className="w-full h-auto mt-4 rounded-lg"
+/>
+<p className="mb-4 text-sm text-[#5c4022]">
+        </p>
+        <p className="mb-4 text-sm text-[#5c4022]">
+          Most fake cards you find are going to be Chinese, as the Western market has only seen scalpers thus far, not fakes. There is no benefit in these distributors who reseal Chinese boxes to plant fakes unless they are higher rarity cards, as the cost to reprint a fake cannot be justified with such a low tier card.
+        </p>
+        <p className="mb-2 text-sm text-[#5c4022]">
+  The only time you will see genuine fakes is with cards like CR, ZR, SC, and ⬦ZR. These are the most profitable cards to turn into fakes for selling purposes. If you find a fake of a lower tier card, it is most likely a fake box, which is only an option in Chinese and often something people fall victim to on Aliexpress.
+</p>
+
+<p className="mb-4 text-sm font-semibold text-[#5c4022]">
+  (PSA: KAYOUUS ASKS THAT YOU PLEASE AVOID ALIEXPRESS AT ALL COSTS! THE PLATFORM IS FULL OF NOTHING BUT RESEALED PRODUCT. IF YOU ARE LOOKING FOR REPUTABLE SOURCES TO BUY FROM, SEE{" "}
+  <span
+    onClick={() => setActive(3)}
+    className="text-[#5a3e84] cursor-pointer hover:underline"
+  >
+    HERE
+  </span>
+  .)
+</p>
+      </>
+    )
+  },
+];
 
   return (
     <div
