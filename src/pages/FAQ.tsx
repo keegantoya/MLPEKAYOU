@@ -331,9 +331,6 @@ const FAQ = () => {
           <p className="mb-4 text-sm text-[#5c4022]">
             This applies to the Chinese sets. Their version of Moon Edition will begin with "HY," and the identical card to the one above will be "HY08-SR-001." The identical Fun Moments card will be in their Shadow set, with the code "QY05-SR-001."
         </p>
-        <p className="mb-4 text-sm text-[#5c4022]">
-          Upon first glance, you would think these two cards are identical - but in print, they are not. Looking in the upper right-hand corner, you will see two different identification codes. One card is a Fun Moments card, and one is a Moon Edition card. Here art pictures of the cards from my personal collection, where you can see the differences.
-        </p>
         <img
   src="/website-assets/fakecardxp3.png"
   alt="Example of similar cards from different sets but Chinese"
