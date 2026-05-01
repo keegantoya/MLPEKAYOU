@@ -33,6 +33,13 @@ import avatar005 from "@/assets/avatars/avatar005.jpg";
 import avatar006 from "@/assets/avatars/avatar006.jpg";
 import avatar007 from "@/assets/avatars/avatar007.jpg";
 import avatar008 from "@/assets/avatars/avatar008.jpg";
+import avatar009 from "@/assets/avatars/avatar009.jpg";
+import avatar010 from "@/assets/avatars/avatar010.jpg";
+import avatar011 from "@/assets/avatars/avatar011.jpg";
+import avatar012 from "@/assets/avatars/avatar012.jpg";
+import avatar013 from "@/assets/avatars/avatar013.jpg";
+import avatar014 from "@/assets/avatars/avatar014.jpg";
+import avatar015 from "@/assets/avatars/avatar015.jpg";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
 
 const generateUsername = () => {
@@ -64,6 +71,13 @@ const avatarMap: Record<string, string> = {
   "avatar006.jpg": avatar006,
   "avatar007.jpg": avatar007,
   "avatar008.jpg": avatar008,
+  "avatar009.jpg": avatar009,
+  "avatar010.jpg": avatar010,
+  "avatar011.jpg": avatar011,
+  "avatar012.jpg": avatar012,
+  "avatar013.jpg": avatar013,
+  "avatar014.jpg": avatar014,
+  "avatar015.jpg": avatar015,
 };
 
 const getAvatar = (avatar?: string, username?: string) => {

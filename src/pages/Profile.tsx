@@ -11,6 +11,13 @@ import avatar005 from "../assets/avatars/avatar005.jpg";
 import avatar006 from "../assets/avatars/avatar006.jpg";
 import avatar007 from "../assets/avatars/avatar007.jpg";
 import avatar008 from "../assets/avatars/avatar008.jpg";
+import avatar009 from "../assets/avatars/avatar009.jpg";
+import avatar010 from "../assets/avatars/avatar010.jpg";
+import avatar011 from "../assets/avatars/avatar011.jpg";
+import avatar012 from "../assets/avatars/avatar012.jpg";
+import avatar013 from "../assets/avatars/avatar013.jpg";
+import avatar014 from "../assets/avatars/avatar014.jpg";
+import avatar015 from "../assets/avatars/avatar015.jpg";
 import heimantouAvatar from "../assets/avatars/heimantouavatar.png";
 
 const avatars = [
@@ -22,10 +29,17 @@ const avatars = [
   { name: "Avatar 006", file: "avatar006", src: avatar006 },
   { name: "Avatar 007", file: "avatar007", src: avatar007 },
   { name: "Avatar 008", file: "avatar008", src: avatar008 },
+  { name: "Avatar 009", file: "avatar009", src: avatar009 },
+  { name: "Avatar 010", file: "avatar010", src: avatar010 },
+  { name: "Avatar 011", file: "avatar011", src: avatar011 },
+  { name: "Avatar 012", file: "avatar012", src: avatar012 },
+  { name: "Avatar 013", file: "avatar013", src: avatar013 },
+  { name: "Avatar 014", file: "avatar014", src: avatar014 },
+  { name: "Avatar 015", file: "avatar015", src: avatar015 },
 ];
 
 const bannedWords = [
-  "admin", "administrator", "mod", "moderator", "owner", "staff", "support",
+  "admin", "administrator", "mod", "moderator", "Owner", "staff", "support",
   "fuck", "shit", "bitch", "asshole", "dick", "cock", "pussy", "vagina",
   "fag", "faggot", "nigger", "nigga", "niglet",
   "rape", "rapist", "molest", "pedo", "pedophile", "epstein", "trump"
@@ -257,19 +271,28 @@ if (isHeiManTou) {
 
   {/* RIGHT SIDE */}
   <div>
-    <h2 className="font-semibold mb-3">Choose Avatar! Have an idea for more? Message me on Discord!</h2>
+    <h2 className="font-semibold mb-3">The avatar you choose will display for everyone on MLPEKAYOU.</h2>
 
-    <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 justify-items-center">
       {avatars.map((a) => (
         <button
-          key={a.file}
-          onClick={() => handleAvatarSelect(a.file)}
-          className={`border rounded-lg p-2 ${
-            avatar === a.file ? "border-primary" : ""
-          }`}
-        >
-          <img src={a.src} className="rounded-lg" />
-        </button>
+  key={a.file}
+  onClick={() => handleAvatarSelect(a.file)}
+  className="flex items-center justify-center"
+>
+  <div
+    className={`w-24 h-24 rounded-full overflow-hidden transition-all duration-200
+      ${avatar === a.file
+        ? "ring-4 ring-[#c4b5fd] scale-105"
+        : "hover:scale-105"
+      }`}
+  >
+    <img
+      src={a.src}
+      className="w-full h-full object-cover"
+    />
+  </div>
+</button>
       ))}
     </div>
   </div>

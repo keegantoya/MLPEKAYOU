@@ -12,6 +12,13 @@ import avatar005 from "@/assets/avatars/avatar005.jpg";
 import avatar006 from "@/assets/avatars/avatar006.jpg";
 import avatar007 from "@/assets/avatars/avatar007.jpg";
 import avatar008 from "@/assets/avatars/avatar008.jpg";
+import avatar009 from "@/assets/avatars/avatar009.jpg";
+import avatar010 from "@/assets/avatars/avatar010.jpg";
+import avatar011 from "@/assets/avatars/avatar011.jpg";
+import avatar012 from "@/assets/avatars/avatar012.jpg";
+import avatar013 from "@/assets/avatars/avatar013.jpg";
+import avatar014 from "@/assets/avatars/avatar014.jpg";
+import avatar015 from "@/assets/avatars/avatar015.jpg";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
 
 const avatarMap: Record<string, string> = {
@@ -23,6 +30,13 @@ const avatarMap: Record<string, string> = {
   "avatar006.jpg": avatar006,
   "avatar007.jpg": avatar007,
   "avatar008.jpg": avatar008,
+  "avatar009.jpg": avatar009,
+  "avatar010.jpg": avatar010,
+  "avatar011.jpg": avatar011,
+  "avatar012.jpg": avatar012,
+  "avatar013.jpg": avatar013,
+  "avatar014.jpg": avatar014,
+  "avatar015.jpg": avatar015,
 };
 
 const sets: Record<string, { name: string; total: number }> = {
@@ -307,14 +321,14 @@ setTradeCards(trades || []);
   {collectors.map((user, index) => (
     <div
       key={index}
-      className="flex justify-between items-center text-sm"
+      className="flex items-center justify-between text-base py-1"
     >
       <div className="flex items-center gap-2">
         <span>#{index + 1}</span>
 
         <img
   src={getAvatar(user.avatar, user.username)}
-  className="w-6 h-6 rounded-full"
+  className="w-10 h-10 rounded-full"
 />
 
         <span>
@@ -324,7 +338,7 @@ setTradeCards(trades || []);
 
       <div className="relative">
 
-        <span>
+        <span className="text-base font-medium">
   {user.owned} / {set.total}
 </span>
       </div>
@@ -344,20 +358,20 @@ setTradeCards(trades || []);
                   key={index}
                   className="flex items-center justify-between text-sm"
                 >
-                  <div className="flex items-center gap-2">
-                    <span>
-                      {medals[index] || "🏅"}
-                    </span>
-
-                    <img
-  src={getAvatar(user.avatar, user.username)}
-  className="w-6 h-6 rounded-full"
-/>
-
-                    <span>
-  {user.username}
+                  <div className="flex items-center gap-3">
+  <span className="text-lg">
+  {medals[index] || "🏅"}
 </span>
-                  </div>
+
+  <img
+    src={getAvatar(user.avatar, user.username)}
+    className="w-10 h-10 rounded-full"
+  />
+
+  <span className="text-base font-semibold">
+    {user.username}
+  </span>
+</div>
                 </div>
               ))}
 

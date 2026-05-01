@@ -35,8 +35,8 @@ const CollectionCard = ({
     case "tcg":
       return "/fantasy-wonderland";
 
-    case "friendship-begins":
-      return "/friendship-begins";
+    case "friendshipsbegin":
+      return "/friendshipsbegin";
 
     case "9":
       return "/promos";

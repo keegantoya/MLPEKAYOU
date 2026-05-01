@@ -345,6 +345,87 @@ useEffect(() => {
 
 </div>
 
+{/* GIVEAWAY DIVIDER SECTION */}
+<div className="mt-6 flex flex-col items-center px-4">
+
+  {/* MAIN IMAGE */}
+  <img
+  src="/website-assets/giveaway005.png"
+  alt="Giveaway"
+  className="w-full max-w-4xl rounded-lg shadow-md border border-[#d4af37]"
+/>
+
+  {/* DIVIDER */}
+ <img
+  src="/website-assets/kayoudivider.png"
+  alt="Divider"
+  className="w-40 my-3 opacity-90"
+ />
+
+ {/* TEXT CONTENT */}
+<div className="text-center max-w-2xl">
+
+  {/* GOLD TITLE */}
+ <h2 className="text-xl sm:text-2xl font-bold mb-2 bg-gradient-to-b from-[#fff3b0] via-[#ffd700] to-[#d4af37] bg-clip-text text-transparent drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] tracking-wide">
+  ACTIVE GIVEAWAY
+</h2>
+
+  {/* PARAGRAPH */}
+ <p className="text-sm text-[#5a3e84] leading-relaxed">
+  1. Follow{" "}
+  <a
+    href="https://www.tiktok.com/@keanaex"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="bg-[#e0d4f7] text-[#3b2a6d] px-2 py-[2px] rounded-md font-medium hover:bg-[#cbbaf0] transition-colors"
+  >
+    keanaex
+  </a>{" "}
+  on TikTok.
+</p>
+<p className="text-sm text-[#5a3e84] leading-relaxed">
+  2. Join{" "}
+  <a
+    href="https://discord.gg/fb7cHz4kdD"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="bg-[#e0d4f7] text-[#3b2a6d] px-2 py-[2px] rounded-md font-medium hover:bg-[#cbbaf0] transition-colors"
+  >
+    MLPEKAYOU Discord server
+  </a>
+  .
+</p>
+<p className="text-sm text-[#5a3e84] leading-relaxed">
+  3. Open{" "}
+  <a
+    href="https://discord.gg/JfH3nUXgt"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="bg-[#e0d4f7] text-[#3b2a6d] px-2 py-[2px] rounded-md font-medium hover:bg-[#cbbaf0] transition-colors"
+  >
+    #my-favorite-set
+  </a>{" "}
+  in card channels.
+</p>
+<p className="text-sm text-[#5a3e84] leading-relaxed">
+4. Tell me your favorite Kayou MLP set of all time.
+</p>
+<p className="text-sm text-[#5a3e84] leading-relaxed">
+  5. Click "Enter Giveaway" in{" "}
+  <a
+    href="https://discord.gg/6EPX3Xn2Z"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="bg-[#e0d4f7] text-[#3b2a6d] px-2 py-[2px] rounded-md font-medium hover:bg-[#cbbaf0] transition-colors"
+  >
+    #giveaways
+  </a>
+  .
+</p>
+</div>
+
+</div>
+
 {topCollector && (
   <div className="mt-4 flex justify-center">
     <div className="relative w-full max-w-xl sm:max-w-2xl px-3 py-2 sm:px-6 sm:py-4 rounded-xl border-2 border-[#b8962e] shadow-lg text-center

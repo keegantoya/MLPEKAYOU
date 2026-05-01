@@ -11,6 +11,13 @@ import avatar005 from "@/assets/avatars/avatar005.jpg";
 import avatar006 from "@/assets/avatars/avatar006.jpg";
 import avatar007 from "@/assets/avatars/avatar007.jpg";
 import avatar008 from "@/assets/avatars/avatar008.jpg";
+import avatar009 from "@/assets/avatars/avatar009.jpg";
+import avatar010 from "@/assets/avatars/avatar010.jpg";
+import avatar011 from "@/assets/avatars/avatar011.jpg";
+import avatar012 from "@/assets/avatars/avatar012.jpg";
+import avatar013 from "@/assets/avatars/avatar013.jpg";
+import avatar014 from "@/assets/avatars/avatar014.jpg";
+import avatar015 from "@/assets/avatars/avatar015.jpg";
 
 const avatarMap: Record<string, string> = {
   "avatar001.jpg": avatar001,
@@ -21,6 +28,13 @@ const avatarMap: Record<string, string> = {
   "avatar006.jpg": avatar006,
   "avatar007.jpg": avatar007,
   "avatar008.jpg": avatar008,
+  "avatar009.jpg": avatar009,
+  "avatar010.jpg": avatar010,
+  "avatar011.jpg": avatar011,
+  "avatar012.jpg": avatar012,
+  "avatar013.jpg": avatar013,
+  "avatar014.jpg": avatar014,
+  "avatar015.jpg": avatar015,
 };
 
 const sets = [
@@ -77,6 +91,26 @@ const Leaderboard = () => {
         .from("collection_progress_raw")
         .select("*");
 
+        const mergedProgress: Record<string, any> = {};
+
+progress?.forEach((row: any) => {
+  const key = `${row.user_id}-${row.set_id}`;
+
+  if (!mergedProgress[key]) {
+    mergedProgress[key] = {
+      user_id: row.user_id,
+      set_id: row.set_id,
+      progress: {}
+    };
+  }
+
+  Object.entries(row.progress || {}).forEach(([card, value]) => {
+    if (value) {
+      mergedProgress[key].progress[card] = true;
+    }
+  });
+});
+        
       const { data: profiles } = await supabase
         .from("profiles")
         .select("*");
@@ -89,26 +123,22 @@ profiles?.forEach((p: any) => {
   };
 });
       const totals: Record<string, any> = {};
-      const seen: Record<string, boolean> = {};
 
-      progress?.forEach((row: any) => {
+      Object.values(mergedProgress).forEach((row: any) => {
         const ownedMap: Record<string, boolean> = {};
 
 Object.entries(row.progress || {}).forEach(([key, value]) => {
   if (value) {
-    ownedMap[`${row.set_id}-${key}`] = true;
+    ownedMap[key] = true;
   }
 });
-        const key = `${row.user_id}-${row.set_id}`;
-        if (seen[key]) return;
-        seen[key] = true;
 
         const set = sets.find(s => s.id === String(row.set_id));
 if (!set) return;
 
 const id = row.user_id;
 
-// ✅ Always create user FIRST
+
 if (!totals[id]) {
   totals[id] = {
     id,
@@ -120,7 +150,6 @@ if (!totals[id]) {
   };
 }
 
-// ✅ Check if this set is hidden
 const isHidden = profileMap[id]?.hiddenSets?.includes(String(row.set_id));
 
         let owned = 0;
@@ -133,7 +162,7 @@ Object.entries(set.rarities).forEach(([rarity, count]) => {
   for (let i = 1; i <= count; i++) {
     const cardKey = `${rarity}-${i}`;
 
-    const isOwned = ownedMap[`${row.set_id}-${cardKey}`];
+    const isOwned = ownedMap[cardKey] === true;
 
     if (isOwned) {
       owned++;
@@ -165,9 +194,9 @@ if (owned === totalCardsInSet && totalCardsInSet > 0) {
       });
 
       const sorted = Object.values(totals)
-  .filter((user: any) => user.username !== "HeiManTou (Chinese Collector)") // 🚫 REMOVE THIS USER
+  .filter((user: any) => user.username !== "HeiManTou (Chinese Collector)") // THIS REMOVES HEIMANTOU SMH
   .sort((a: any, b: any) => b.total - a.total)
-  .slice(0, 12); // ✅ TOP 12
+  .slice(0, 12); 
 
       setLeaders(sorted);
     };
@@ -234,7 +263,7 @@ if (owned === totalCardsInSet && totalCardsInSet > 0) {
     className="w-10 h-10 rounded-full"
   />
 
-  {/* ✨ SPARKLES ATTACHED TO AVATAR */}
+  {/* SPARKLES ATTACHED TO AVATAR */}
   <>
     {/* 🥇 #1 */}
     {index === 0 && (
@@ -290,7 +319,7 @@ if (owned === totalCardsInSet && totalCardsInSet > 0) {
 )}
   </>
 
-  {/* 🎀 RIBBON */}
+  {/* RIBBON */}
   {index < 3 && (
   <div className="absolute -top-1 -right-2 flex flex-col items-center">
     
