@@ -408,7 +408,7 @@ useEffect(() => {
   in card channels.
 </p>
 <p className="text-sm text-[#5a3e84] leading-relaxed">
-4. Tell me your favorite Kayou MLP set of all time.
+4. Tell me your favorite Kayou MLP set of all time & your TikTok username.
 </p>
 <p className="text-sm text-[#5a3e84] leading-relaxed">
   5. Click "Enter Giveaway" in{" "}
