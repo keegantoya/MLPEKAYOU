@@ -76,18 +76,6 @@ const Collection = () => {
     loadProgress();
   }, [id]);
 
-useEffect(() => {
-  if (!loaded) return;
-
-  const total = cards.length;
-  const owned = Object.values(flipped).filter(Boolean).length;
-
-  if (total > 0 && owned === total) {
-    fireConfetti();
-    setCelebrated(true);
-  }
-}, [flipped, loaded, celebrated]);
-
   // SAVE PROGRESS ( RELOAD AFTER LOGIN )
   useEffect(() => {
   const loadProgress = async (userOverride?: any) => {
@@ -205,6 +193,18 @@ useEffect(() => {
       number: i + 1
     }))
   );
+
+  useEffect(() => {
+  if (!loaded) return;
+
+  const total = cards.length;
+  const owned = Object.values(flipped).filter(Boolean).length;
+
+  if (total > 0 && owned === total) {
+    fireConfetti();
+    setCelebrated(true);
+  }
+}, [flipped, loaded, celebrated]);
 
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";

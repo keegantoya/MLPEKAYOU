@@ -28,6 +28,10 @@ export default function Selling() {
               Pricing Guide
             </h2>
 
+<p className="text-base text-center text-neutral-600 mb-4">
+  The below prices are set by a council of collectors. They are based on the hit rates and box prices. These are the suggested guidelines to avoid an extremely inflated market like Pokemon, and keep MLP Kayou accessible and collectible for all.
+</p>
+
             <div className="space-y-4">
 
               {/* Lower Tier */}
@@ -68,10 +72,18 @@ export default function Selling() {
 
                   <div className="flex justify-between">
                     <span>
-                      <span className="font-semibold">Fantasy Wonderland</span> - C, U, SR, SPR
+                      <span className="font-semibold">TCG Boxes</span> - C, U, SR, SPR, ER
                     </span>
                     <span className="text-[10px] sm:text-sm">Not Valuable</span>
                   </div>
+
+                  <div className="flex justify-between">
+                    <span>
+                      <span className="font-semibold">Starter Decks</span> - C, U, SR, SPR, ER
+                    </span>
+                    <span className="text-[10px] sm:text-sm">Not Valuable</span>
+                  </div>
+                  
 
                 </div>
               </div>
@@ -104,6 +116,7 @@ export default function Selling() {
                     </span>
                     <span className="text-[10px] sm:text-sm">Valuable</span>
                   </div>
+                  
 
                   <div className="flex justify-between">
   <span>
@@ -113,9 +126,15 @@ export default function Selling() {
 </div>
 
 <div className="flex justify-between">
-  <span className="w-[80%]">
-    <span className="font-semibold">Fantasy Wonderland</span> - GR, CR, RR, ※ER, ※GR, ※SPR, ※CR, ※RR
-  </span>
+ <span>
+  <span className="font-semibold">Fantasy Wonderland</span> - GR, CR, RR, ※ER, ※GR, ※SPR, ※CR, ※RR
+</span>
+  <span className="text-[10px] sm:text-sm">Valuable</span>
+</div>
+<div className="flex justify-between">
+ <span>
+  <span className="font-semibold">Starter Decks</span> - GR, CR, ※CR, ※RR
+</span>
   <span className="text-[10px] sm:text-sm">Valuable</span>
 </div>
 
@@ -145,8 +164,8 @@ export default function Selling() {
 
             <div className="space-y-1 text-xs text-neutral-700">
               <div className="flex justify-between text-sm text-neutral-700"><span>LSR</span><span>$5</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>SGR</span><span>$10</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>SC</span><span>$55</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>SGR</span><span>$15</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>SC</span><span>$70</span></div>
               <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN SC</span><span>$200</span></div>
             </div>
           </div>
@@ -205,14 +224,22 @@ export default function Selling() {
 
           <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Fantasy Wonderland</h3>
-            <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>UNK</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>UNK</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>RR</span><span>UNK</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>UNK</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※GR</span><span>UNK</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※SPR</span><span>UNK</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>UNK</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>UNK</span></div>
+            <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>$5</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$8</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>RR</span><span>$15</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>$20</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※GR</span><span>$25</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※SPR</span><span>$30</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$50</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$70</span></div>
+          </div>
+
+          <div className="border rounded-lg p-4 bg-neutral-50">
+            <h3 className="font-bold mb-2">Friendships Begin</h3>
+            <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>$20</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$25</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$30</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$40</span></div>
           </div>
 
         </div>

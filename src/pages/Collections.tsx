@@ -76,9 +76,9 @@ const collections: Collection[] = [
     released: true,
   },
   {
-    id: "friendship-begins",
-    title: "Friendship",
-    setName: "Begins",
+    id: "friendshipsbegin",
+    title: "Friendships",
+    setName: "Begin",
     imageUrl: "/thumbnails/friendship-begins-thumbnail.jpg",
     totalCards: 191,
     category: "tcg",
@@ -137,7 +137,16 @@ const collections: Collection[] = [
     totalCards: 1,
     category: "serialized",
     released: true,
-  }
+  },
+  {
+  id: "tcgpromos",
+  title: "TCG",
+  setName: "Promos",
+  imageUrl: "/thumbnails/tcgpromosthumbnail.jpg",
+  totalCards: 6,
+  category: "tcg",
+  released: true,
+}
 ];
 
 const unreleasedSetIds = [
@@ -145,7 +154,7 @@ const unreleasedSetIds = [
   "4",  // Star 1
   "3",  // Moon 3
   "tcg", // Fantasy Wonderland
-  "friendship-begins", // Self explanatory
+  "friendshipbegins", // Self explanatory
   "6",  // Rainbow 2
 ];
 
@@ -184,31 +193,49 @@ if (!user) {
         return;
       }
 
-      const progress = await loadUserProgress();
+      const { data: rawData } = await supabase
+  .from("collection_progress_raw")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("iso_hidden_sets")
-        .eq("id", user.id)
-        .single();
+const progressMap: Record<string, number> = {};
 
-      setHiddenSets(profile?.iso_hidden_sets || []);
+rawData?.forEach((row: any) => {
+  const count = Object.values(row.progress || {}).filter(Boolean).length;
 
-      const updated = collections.map((set) => {
-        const collected = progress[set.id] || 0;
-        const percent =
-          set.totalCards > 0
-            ? Math.round((collected / set.totalCards) * 100)
-            : 0;
+  if (row.set_id === "FW") {
+    progressMap["tcg"] = count;
+  } else if (row.set_id === "SD") {
+    progressMap["friendshipsbegin"] = count;
+  } else {
+    progressMap[row.set_id] = count;
+  }
+});
 
-        return {
-          ...set,
-          collectedCards: collected,
-          progress: percent,
-        };
-      });
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("iso_hidden_sets")
+  .eq("id", user.id)
+  .single();
 
-      setSets(updated);
+setHiddenSets(profile?.iso_hidden_sets || []);
+
+const updated = collections.map((set) => {
+  const collected = progressMap[set.id] || 0;
+
+  const percent =
+    set.totalCards > 0
+      ? Math.round((collected / set.totalCards) * 100)
+      : 0;
+
+  return {
+    ...set,
+    collectedCards: collected,
+    progress: percent,
+  };
+});
+
+setSets(updated);
     };
 
     load();
@@ -305,12 +332,12 @@ if (!user) {
       "11", // Fun Moments 3
       "4",  // Star 1
       "3",  // Moon 3
-      "friendship-begins",
+      "friendshipbegins",
       "6",  // Rainbow 2
     ];
 
     const waitingOnKayouIds = [
-      "tcg", // Friendship Begins
+      
     ];
 
     const isUnreleased = unreleasedSetIds.includes(col.id);

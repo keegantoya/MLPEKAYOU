@@ -6,6 +6,7 @@ import FriendshipsBeginPoster from "@/assets/avatars/FriendshipsBeginPoster.png"
 import FantasyWonderlandPoster from "@/assets/avatars/FantasyWonderlandPoster.png";
 import FunMoments3Poster from "@/assets/avatars/FunMoments3Poster.png";
 import Star1Poster from "@/assets/avatars/Star1poster.png";
+import tcgAppBanner from "@/assets/website-assets/tcgapp.png";
 import { supabase } from "@/lib/supabase";
 
 const sets = [
@@ -134,7 +135,94 @@ useEffect(() => {
         completedCount++;
       }
     });
+    
+    const { data: sdProgress } = await supabase
+  .from("collection_progress_raw")
+  .select("progress")
+  .eq("user_id", user.id)
+  .eq("set_id", "SD"); // THIS LINE PREVENTS DOUBLE COUNTING
 
+const mergedSD: Record<string, boolean> = {};
+
+(sdProgress || []).forEach((row: any) => {
+  Object.entries(row.progress || {}).forEach(([k, v]) => {
+    if (v === true) mergedSD[k] = true;
+  });
+});
+
+const owned = Object.keys(mergedSD).filter(key => {
+  const raw = key.replace("STARTER-", "").replace("BONUS-", "");
+  return raw.startsWith("SD01");
+}).length;
+
+ownedCount += owned;
+
+const { data: fwProgress } = await supabase
+  .from("collection_progress_raw")
+  .select("progress")
+  .eq("user_id", user.id)
+  .eq("set_id", "FW");
+
+  const { data: tcgPromos } = await supabase
+  .from("collection_progress_raw")
+  .select("progress")
+  .eq("user_id", user.id)
+  .eq("set_id", "tcgpromos");
+
+const tcgRow = tcgPromos?.[0];
+
+if (tcgRow) {
+  const owned = Object.values(tcgRow.progress || {}).filter(Boolean).length;
+  ownedCount += owned;
+}
+
+const fwRow = fwProgress?.[0];
+
+if (fwRow) {
+
+  const STRUCTURE = [
+    { prefix: "BP01C", count: 48 },
+    { prefix: "BP01U", count: 18 },
+    { prefix: "BP01ER", count: 6 },
+    { prefix: "BP01SR", count: 14 },
+    { prefix: "BP01SPR", count: 28 },
+    { prefix: "BP01GR", count: 12 },
+    { prefix: "BP01CR", count: 12 },
+    { prefix: "BP01RR", count: 6 },
+    { prefix: "BP01PSPR", count: 11 },
+    { prefix: "BP01PGR", count: 6 },
+    { prefix: "BP01PCR", count: 12 },
+    { prefix: "BP01PRR", count: 6 },
+  ];
+
+  const validKeys = new Set(
+    STRUCTURE.flatMap(({ prefix, count }) => {
+
+      if (prefix === "BP01ER") {
+        return Array.from({ length: 6 }, (_, i) =>
+          `BP01ER${String(i + 7).padStart(2, "0")}`
+        );
+      }
+
+      if (prefix === "BP01PSPR") {
+        return [1,2,3,5,7,8,9,12,13,18,21].map(n =>
+          `BP01PSPR${String(n).padStart(2, "0")}`
+        );
+      }
+
+      return Array.from({ length: count }, (_, i) =>
+        `${prefix}${String(i + 1).padStart(2, "0")}`
+      );
+    })
+  );
+
+  const owned = Object.entries(fwRow.progress || {}).filter(
+    ([key, val]) => val && validKeys.has(key)
+  ).length;
+
+  ownedCount += owned;
+}
+    
     const { data: trades } = await supabase
       .from("for_trade")
       .select("id")
@@ -224,7 +312,7 @@ useEffect(() => {
     </div>
 
     {/* CAROUSEL */}
-    <div className="relative w-full max-w-4xl overflow-hidden rounded-lg shadow-md">
+    <div className="relative w-full max-w-4xl h-[400px] overflow-hidden rounded-lg shadow-md">
 
       <img
         src={images[currentIndex]}

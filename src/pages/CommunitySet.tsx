@@ -47,7 +47,9 @@ const sets: Record<string, { name: string; total: number }> = {
   "5": { name: "Rainbow First Edition", total: 146 },
   "6": { name: "Rainbow Second Edition", total: 170 },
   "7": { name: "Fun Moments First Edition", total: 127 },
-  "8": { name: "Fun Moments Second Edition", total: 136 }
+  "8": { name: "Fun Moments Second Edition", total: 136 },
+  "friendshipsbegin": { name: "Friendships Begin", total: 194 },
+  "fantasywonderland": { name: "Fantasy Wonderland", total: 191 },
 };
 
 const isoSets = [
@@ -85,7 +87,36 @@ const isoSets = [
     folder: "fun-moments-two",
     prefix: "FM2",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR:9, CR: 12 }
+    
+  },
+  {
+    id: "friendshipsbegin",
+    name: "Friendships Begin",
+    folder: "friendshipsbegin",
+    prefix: "SD01",
+    rarities: {}
+  },
+  {
+  id: "fantasywonderland",
+  name: "Fantasy Wonderland",
+  folder: "fantasywonderland",
+  prefix: "BP01",
+  rarities: {
+    C: 48,
+    U: 18,
+    ER: 6,
+    SR: 14,
+    SPR: 28,
+    GR: 12,
+    CR: 12,
+    RR: 6,
+    PER: 6,
+    PSPR: 11,
+    PGR: 6,
+    PCR: 12,
+    PRR: 6
   }
+}
 ];
 
 const medals = ["🥇", "🥈", "🥉"];
@@ -117,7 +148,14 @@ const CommunitySet = () => {
       const { data: progress } = await supabase
         .from("collection_progress_raw")
         .select("*")
-        .eq("set_id", id);
+        .eq(
+  "set_id",
+  id === "friendshipsbegin"
+    ? "SD"
+    : id === "fantasywonderland"
+    ? "FW"
+    : id
+);
 
       const { data: profiles } = await supabase
         .from("profiles")
@@ -135,26 +173,87 @@ const finished: any[] = [];
 
 progress.forEach((row: any) => {
 
+ let owned = 0;
+
+// 🔥 SPECIAL CASE — FRIENDSHIPS BEGIN
+if (id === "friendshipsbegin") {
+
+  const BONUS_STRUCTURE = [
+    { prefix: "SD01C", count: 9 },
+    { prefix: "SD01U", count: 7 },
+    { prefix: "SD01SR", count: 6 },
+    { prefix: "SD01SPR", count: 10 },
+    { prefix: "SD01GR", count: 6 },
+    { prefix: "SD01CR", count: 6 },
+    { prefix: "SD01ER", count: 6 },
+    { prefix: "SD01PER", count: 12 },
+    { prefix: "SD01PRR", count: 6 },
+  ];
+
+ const getDeckCards = (deckCode: string) => {
+  const cards: string[] = [];
+
+  const deckLetter = deckCode.slice(-1);
+  const deckIndex = deckLetter.charCodeAt(0) - 64;
+
+  const add = (rarity: string, count: number) => {
+    for (let i = 1; i <= count; i++) {
+      cards.push(`${deckCode}${rarity}${String(i).padStart(2, "0")}`);
+    }
+  };
+
+  add("C", 9);
+  add("U", 4);
+  add("SR", 2);
+
+  // ER (no deck letter)
+  cards.push(`SD01ER${String(deckIndex).padStart(2, "0")}`);
+
+  add("SPR", 4);
+
+  // RR (no deck letter)
+  cards.push(`SD01RR${String(deckIndex).padStart(2, "0")}`);
+
+  return cards;
+};
+
+const starterDecks = ["SD01A","SD01B","SD01C","SD01D","SD01E","SD01F"];
+
+starterDecks.forEach((deck) => {
+  const cards = getDeckCards(deck);
+
+  cards.forEach((cardKey) => {
+    const stateKey = `STARTER-${cardKey}`;
+
+    if (row.progress?.[stateKey]) {
+      owned++;
+    }
+  });
+});
+
+  // BONUS PACKS (68 cards)
+  BONUS_STRUCTURE.forEach(({ prefix, count }) => {
+  for (let i = 1; i <= count; i++) {
+    const key = `${prefix}${String(i).padStart(2, "0")}`;
+    const stateKey = `BONUS-${key}`;
+
+    if (row.progress?.[stateKey]) {
+      owned++;
+    }
+  }
+});
+
+} else {
+
+  // ✅ NORMAL SETS (unchanged)
   const isoSet = isoSets.find(s => s.id === id);
   if (!isoSet) return;
 
-  let owned = 0;
+owned = Object.values(row.progress || {}).filter((v: any) =>
+  v === true || v?.owned === true
+).length;
 
-  Object.entries(isoSet.rarities).forEach(([rarity, count]) => {
-    for (let i = 1; i <= count; i++) {
-
-      const key = `${rarity}-${i}`;
-      const value = row.progress?.[key];
-
-      const isOwned =
-        value === true ||
-        value?.owned === true;
-
-      if (isOwned) {
-        owned++;
-      }
-    }
-  });
+}
 
   const user = {
     id: row.user_id,

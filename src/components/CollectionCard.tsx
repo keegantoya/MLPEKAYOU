@@ -52,6 +52,8 @@ const CollectionCard = ({
 
     case "11":
       return "/fun-moments-3";
+    case "tcgpromos":
+      return "/tcgpromos";
     default:
       return `/collection/${id}`;
   }

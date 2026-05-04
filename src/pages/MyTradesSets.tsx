@@ -39,7 +39,35 @@ const sets = [
     folder: "fun-moments-two",
     prefix: "FM2",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
-  }
+  },
+  {
+    id: "9",
+    name: "Promotional Cards",
+    folder: "promos",
+    prefix: "PR",
+    rarities: { PR: 5 }
+  },
+  {
+  id: "FW",
+  name: "Fantasy Wonderland",
+  folder: "fantasy-wonderland",
+  prefix: "FW",
+  rarities: {}
+},
+{
+  id: "friendshipsbegin",
+  name: "Friendships Begin",
+  folder: "friendshipsbegin",
+  prefix: "SD01",
+  rarities: {}
+},
+{
+  id: "tcgpromos",
+  name: "TCG Promos",
+  folder: "tcgpromos",
+  prefix: "RR",
+  rarities: { PR: 6 }
+},
 ];
 
 export default function MyTradesSets() {
@@ -55,6 +83,7 @@ export default function MyTradesSets() {
   const [tradeCards, setTradeCards] = useState<Record<string, boolean>>({});
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [editMode, setEditMode] = useState(false);
+  const [activeDeck, setActiveDeck] = useState<number | null>(null);
 
   useEffect(() => {
   const load = async (userOverride?: any) => {
@@ -197,19 +226,112 @@ if (!set) {
   );
 }
 
-  const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+  let cards: any[] = [];
+
+if (set.id === "friendshipsbegin") {
+
+  const BONUS_STRUCTURE = [
+    { prefix: "SD01C", count: 9 },
+    { prefix: "SD01U", count: 7 },
+    { prefix: "SD01SR", count: 6 },
+    { prefix: "SD01SPR", count: 10 },
+    { prefix: "SD01GR", count: 6 },
+    { prefix: "SD01CR", count: 6 },
+    { prefix: "SD01ER", count: 6 },
+    { prefix: "SD01PER", count: 12 },
+    { prefix: "SD01PRR", count: 6 },
+  ];
+
+  BONUS_STRUCTURE.forEach(({ prefix, count }) => {
+  for (let i = 1; i <= count; i++) {
+
+    let actualIndex = i;
+
+    if (prefix === "SD01PER") {
+      actualIndex = i + 6; // shift to 07–18
+    }
+
+    const num = String(actualIndex).padStart(2, "0");
+
+    cards.push({
+      key: `${prefix}${num}`,
+      image: `/friendships-begin/${prefix}${num}.png`
+    });
+  }
+});
+
+  } else if (set.id === "FW") {
+
+  const FW_STRUCTURE = [
+    { prefix: "BP01C", count: 48 },
+    { prefix: "BP01U", count: 18 },
+    { prefix: "BP01ER", count: 6 },
+    { prefix: "BP01SR", count: 14 },
+    { prefix: "BP01SPR", count: 28 },
+    { prefix: "BP01GR", count: 12 },
+    { prefix: "BP01CR", count: 12 },
+    { prefix: "BP01RR", count: 6 },
+    { prefix: "BP01PER", count: 6 },
+    { prefix: "BP01PSPR", count: 11 },
+    { prefix: "BP01PGR", count: 6 },
+    { prefix: "BP01PCR", count: 12 },
+    { prefix: "BP01PRR", count: 6 },
+  ];
+
+  FW_STRUCTURE.forEach(({ prefix, count }) => {
+    for (let i = 1; i <= count; i++) {
+      const num = String(i).padStart(2, "0");
+
+      cards.push({
+  key: `${prefix}${num}`,
+  image:
+    prefix === "BP01ER"
+      ? `/fantasy-wonderland/SD01ER${num}.png`
+      : prefix === "BP01PER"
+      ? `/fantasy-wonderland/SD01PER${num}.png`
+      : `/fantasy-wonderland/${prefix}${num}.png`
+});
+    }
+  });
+
+} else if (set.id === "tcgpromos") {
+
+  for (let i = 1; i <= 6; i++) {
+    const num = String(i).padStart(2, "0");
+
+    cards.push({
+      key: `RR${num}`,
+      image: `/tcgpromos/RR${num}.png`
+    });
+  }
+
+} else {
+
+  cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
     Array.from({ length: count as number }, (_, i) => ({
       rarity,
-      number: i + 1
+      number: i + 1,
+      key: `${rarity}-${i + 1}`
     }))
   );
 
-  const progress = progressMap[set.id] || {};
+}
 
-  const ownedCards = cards.filter(card => {
-    const key = `${card.rarity}-${card.number}`;
-    return progress[key];
-  });
+  const progress =
+  set.id === "friendshipsbegin"
+    ? progressMap["SD"] || {}
+    : progressMap[set.id] || {};
+
+const ownedBonusCards = cards.filter(card => 
+  progress[card.key] || progress[`BONUS-${card.key}`]
+);
+
+const hasStarterDeck = set.id === "friendshipsbegin" &&
+  ["SD01A","SD01B","SD01C","SD01D","SD01E","SD01F"].some(deck =>
+    Array.from({ length: 21 }).some((_, i) =>
+      progress[`${deck}-${i + 1}`]
+    )
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -227,8 +349,11 @@ if (!set) {
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold mb-2">{set.name}</h1>
           <p className="text-gray-500 text-sm max-w-xl mx-auto">
-            Only cards you have collected can be marked for trade, which can be done by simply tapping the card. If you'd like to track your duplicates, there is a private inventory function. Nopony else can see your inventory.
-          </p>
+  {set.id === "friendshipsbegin"
+    ? "Starter Deck cards cannot be traded, but you can still edit your inventory. Only Bonus Pack cards may be marked for trade."
+    : "Only cards you have collected can be marked for trade, which can be done by simply tapping the card. If you'd like to track your duplicates, there is a private inventory function. Nopony else can see your inventory."
+  }
+</p>
           <button
   onClick={() => setEditMode(!editMode)}
   className="mt-3 px-3 py-1 rounded-lg bg-[#5a3e84] text-[#f5e6a8] border border-[#d4af37] text-sm font-semibold shadow hover:brightness-110"
@@ -237,26 +362,121 @@ if (!set) {
 </button>
         </div>
 
-        {ownedCards.length === 0 ? (
+        {(set.id === "friendshipsbegin"
+  ? ownedBonusCards.length === 0 && !hasStarterDeck
+  : ownedBonusCards.length === 0
+) ? (
           <div className="text-center text-gray-500">
             You don’t own any cards in this set.
           </div>
         ) : (
+            <>
+
+{set.id === "friendshipsbegin" && (
+      <div className="mb-6">
+
+        <h2 className="text-center text-sm text-[#5c4022] mb-4">
+          Starter Decks
+        </h2>
+
+        <div className="flex flex-wrap justify-center gap-4">
+          {[
+  { code: "SD01A", name: "Twilight Sparkle", img: "/starter-decks-boxes/SDTWILIGHT.png" },
+  { code: "SD01B", name: "Fluttershy", img: "/starter-decks-boxes/SDFLUTTERSHY.png" },
+  { code: "SD01C", name: "Pinkie Pie", img: "/starter-decks-boxes/SDPINKIEPIE.png" },
+  { code: "SD01D", name: "Applejack", img: "/starter-decks-boxes/SDAPPLEJACK.png" },
+  { code: "SD01E", name: "Rainbow Dash", img: "/starter-decks-boxes/SDRAINBOWDASH.png" },
+  { code: "SD01F", name: "Rarity", img: "/starter-decks-boxes/SDRARITY.png" },
+].filter((deck) =>
+  Object.keys(progress).some(key =>
+    key.startsWith(`STARTER-${deck.code}`)
+  )
+).map((deck, i) => {
+
+  const isActive = activeDeck === i;
+
+  return (
+    <div
+  key={deck.code}
+  onClick={(e) => e.stopPropagation()}
+  className={`cursor-pointer p-2 rounded-2xl transition flex flex-col items-center ${
+    isActive
+      ? "scale-105 bg-purple-100 shadow-md"
+      : "opacity-80 hover:opacity-100"
+  }`}
+>
+      <div className="relative">
+  <img
+    src={deck.img}
+    className="h-28 sm:h-32 md:h-36 object-contain rounded-xl"
+  />
+
+  {/* INVENTORY CONTROL */}
+  <div
+    onClick={(e) => e.stopPropagation()}
+    className="absolute bottom-1 right-1 flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-2 py-[2px] border border-[#d4af37] shadow"
+  >
+    {editMode && (
+      <button
+        onClick={() => changeQuantity(deck.code, -1)}
+        className="px-1"
+      >
+        −
+      </button>
+    )}
+
+    <span className="px-1 font-semibold">
+      {quantities[deck.code] || 1}
+    </span>
+
+    {editMode && (
+      <button
+        onClick={() => changeQuantity(deck.code, 1)}
+        className="px-1"
+      >
+        +
+      </button>
+    )}
+  </div>
+</div>
+
+      <p className="text-xs text-center mt-1 text-gray-600">
+        {deck.name}
+      </p>
+    </div>
+  );
+})}
+        </div>
+
+      </div>    
+    )}
+
+
           <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-            {ownedCards.map((card) => {
-              const key = `${card.rarity}-${card.number}`;
+            {ownedBonusCards.map((card) => {
+              const key = card.key;
               const isTrade = tradeCards[key];
+              const isStarterDeck =
+  set.id === "friendshipsbegin" && key.includes("-");
 
               return (
                 <div
                   key={key}
-                  onClick={() => toggleTrade(key)}
-                  className={`relative rounded-xl p-[2px] cursor-pointer ${
+                  onClick={() => {
+  if (!isStarterDeck) toggleTrade(key);
+}}
+                  className={`relative rounded-xl p-[2px] ${isStarterDeck ? "" : "cursor-pointer"} ${
   isTrade ? "border-2 border-green-500" : ""
 }`}
                 >
                   <img
-                    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`}
+                    src={
+  set.id === "9"
+  ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+  : set.id === "tcgpromos"
+  ? `/tcgpromos/${card.key}.png`
+  : card.image || `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+}
                     className="rounded-lg w-full"
                   />
 
@@ -309,6 +529,7 @@ if (!set) {
               );
             })}
           </div>
+          </>
         )}
       </div>
     </div>

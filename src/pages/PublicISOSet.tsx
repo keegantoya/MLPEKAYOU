@@ -13,12 +13,17 @@ type TradeCard = {
 };
 
 const sets: Record<string, any> = {
-  "1": { name: "Eternal Moon First Edition" },
-  "2": { name: "Eternal Moon Second Edition" },
-  "5": { name: "Rainbow First Edition" },
-  "7": { name: "Fun Moments First Edition" },
-  "9": { name: "Promos" },
-  "10": { name: "Serialized & Limited" }
+  "1": { name: "ETERNAL MOON FIRST EDITION" },
+  "2": { name: "ETERNAL MOON SECOND EDITION" },
+  "5": { name: "RAINBOW FIRST EDITION" },
+  "7": { name: "FUN MOMENTS FIRST EDITION" },
+
+  "9": { name: "PROMOTIONAL CARDS" },
+  "TCG_PROMOS": { name: "TCG PROMOS" },
+  "10": { name: "LIMITED CARDS" },
+
+  "FW": { name: "FANTASY WONDERLAND" },
+  "friendshipsbegin": { name: "FRIENDSHIPS BEGIN" },
 };
 
 const rarityMap: Record<string, string[]> = {
@@ -27,8 +32,13 @@ const rarityMap: Record<string, string[]> = {
   "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
   "7": ["N","SN","R","SR","SSR","UR","CR"],
   "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR" ],
+
   "9": ["PR"],
-  "10": ["LC"]
+  "TCG_PROMOS": ["PR"],
+  "10": ["LC"],
+
+  "FW": ["C","U","ER","SR","SPR", "GR", "CR", "RR", "PER", "PSPR", "PGR", "PCR", "PRR" ], 
+  "friendshipsbegin": ["C", "U", "SR", "SPR", "ER", "GR", "CR", "PER", "PRR" ], 
 };
 
 const setConfigs: Record<string, any> = {
@@ -47,13 +57,9 @@ const setConfigs: Record<string, any> = {
   "8": {
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
   },
-
-  // ✅ PROMOS (set_id = 9)
   "9": {
     rarities: { PR: 5 }
   },
-
-  // ✅ LIMITED (set_id = 10)
   "10": {
     rarities: { LC: 1 }
   }
@@ -61,6 +67,11 @@ const setConfigs: Record<string, any> = {
 
 export default function PublicISOSet() {
   const { setId } = useParams();
+const isPromoSet =
+  setId === "9" ||
+  setId === "10" ||
+  setId === "TCG_PROMOS" ||
+  setId?.toLowerCase() === "tcg_promos";
   const navigate = useNavigate();
 
   const [groupedISO, setGroupedISO] = useState<Record<string, TradeCard[]>>({});
@@ -68,6 +79,8 @@ export default function PublicISOSet() {
   const [tradingProfiles, setTradingProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selectedRarity, setSelectedRarity] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     if (!setId) return;
@@ -75,11 +88,18 @@ export default function PublicISOSet() {
     const load = async () => {
       setLoading(true);
 
-      const { data: progress } = await supabase
-        .from("collection_progress_raw")
-        .select("*")
-        .eq("set_id", Number(setId))
-        .range(0, 5000);
+const normalizedSetId =
+  setId === "friendshipsbegin"
+    ? "SD"
+    : setId?.toLowerCase() === "tcg_promos"
+    ? "tcgpromos"
+    : setId;
+
+const { data: progress } = await supabase
+  .from("collection_progress_raw")
+  .select("*")
+  .eq("set_id", normalizedSetId)
+  .range(0, 5000);
 
       const { data: profileData } = await supabase
   .from("profiles")
@@ -106,34 +126,133 @@ export default function PublicISOSet() {
         if (!isoMap[userId]) isoMap[userId] = [];
 
         const progressData = row.progress || {};
-        const config = setConfigs[row.set_id];
+       const config = setConfigs[row.set_id];
 
-        if (!config) return;
+if (
+  !config &&
+  row.set_id !== "SD" &&
+  row.set_id !== "FW" &&
+  row.set_id !== "tcgpromos"
+) return;
+        let allCards: any[] = [];
 
-        const allCards = Object.entries(config.rarities).flatMap(([rarity, count]) =>
-          Array.from({ length: count as number }, (_, i) => ({
-            rarity,
-            number: i + 1
-          }))
-        );
+if (row.set_id === "SD") {
+
+  const BONUS_STRUCTURE = [
+    { prefix: "SD01C", count: 9 },
+    { prefix: "SD01U", count: 7 },
+    { prefix: "SD01SR", count: 6 },
+    { prefix: "SD01SPR", count: 10 },
+    { prefix: "SD01GR", count: 6 },
+    { prefix: "SD01CR", count: 6 },
+    { prefix: "SD01ER", count: 6 },
+    { prefix: "SD01PER", count: 12 },
+    { prefix: "SD01PRR", count: 6 },
+  ];
+
+  BONUS_STRUCTURE.forEach(({ prefix, count }) => {
+  for (let i = 1; i <= count; i++) {
+
+    let actualIndex = i;
+
+    // ✅ MATCH YOUR MAIN SET LOGIC
+    if (prefix === "SD01PER") {
+      actualIndex = i + 6; // 01–12 → 07–18 (we'll cap next)
+      if (actualIndex > 18) continue;
+    }
+
+    const num = String(actualIndex).padStart(2, "0");
+
+    allCards.push({
+      rarity: prefix.replace("SD01", ""),
+      number: actualIndex,
+      key: `${prefix}${num}`
+    });
+  }
+});
+
+}
+else if (row.set_id === "FW") {
+
+  const FW_STRUCTURE = [
+    { prefix: "BP01C", count: 48 },
+    { prefix: "BP01U", count: 18 },
+    { prefix: "BP01ER", count: 6 },
+    { prefix: "BP01SR", count: 14 },
+    { prefix: "BP01SPR", count: 28 },
+    { prefix: "BP01GR", count: 12 },
+    { prefix: "BP01CR", count: 12 },
+    { prefix: "BP01RR", count: 6 },
+    { prefix: "BP01PER", count: 6 },
+    { prefix: "BP01PSPR", count: 11 },
+    { prefix: "BP01PGR", count: 6 },
+    { prefix: "BP01PCR", count: 12 },
+    { prefix: "BP01PRR", count: 6 },
+  ];
+
+  FW_STRUCTURE.forEach(({ prefix, count }) => {
+    for (let i = 1; i <= count; i++) {
+      allCards.push({
+        rarity: prefix.replace("BP01", ""),
+        number: i,
+        key: `${prefix}${String(i).padStart(2,"0")}`
+      });
+    }
+  });
+
+}
+else if (row.set_id === "tcgpromos") {
+
+  for (let i = 1; i <= 6; i++) {
+    allCards.push({
+      rarity: "PR",
+      number: i,
+      key: `RR${String(i).padStart(2, "0")}`
+    });
+  }
+
+}
+else {
+
+  const config = setConfigs[row.set_id];
+  if (!config) return;
+
+  allCards = Object.entries(config.rarities).flatMap(([rarity, count]) =>
+    Array.from({ length: count as number }, (_, i) => ({
+      rarity,
+      number: i + 1
+    }))
+  );
+
+}
 allCards.forEach((card) => {
-  const key = `${card.rarity}-${card.number}`;
-  const value = progressData[key];
+ const key = card.key || `${card.rarity}-${card.number}`;
+
+const actualKey = key;
+
+const value = progressData[actualKey];
 
   const isOwned =
     value === true ||
     value?.owned === true;
 
   if (isOwned) {
-    if (!ownedByRarity[card.rarity]) {
-      ownedByRarity[card.rarity] = new Set();
+    const rarity = card.rarity;
+
+    if (!ownedByRarity[rarity]) {
+      ownedByRarity[rarity] = new Set();
     }
-    ownedByRarity[card.rarity].add(userId);
+
+    ownedByRarity[rarity].add(userId);
   }
 });
+
 allCards.forEach((card) => {
-  const key = `${card.rarity}-${card.number}`;
-  const value = progressData[key];
+const key = card.key || `${card.rarity}-${card.number}`;
+
+const actualKey = key;
+
+const value = progressData[actualKey];
 
   const isOwned =
     value === true ||
@@ -154,31 +273,86 @@ allCards.forEach((card) => {
       rarity === "UGR" ||
       rarity === "XR";
 
+
     const hasOwnedInRarity =
       ownedByRarity[rarity]?.has(userId);
 
     const hasAnyProgress =
       Object.keys(progressData).length > 0;
 
-    if (
-  // ANDY PRICE PROMO
-  (isLimited && hasDiscord) ||
+// ✅ SD (unchanged)
+if (row.set_id === "SD") {
 
-  // ULTRA RARE CARDS (ZR, SC, <>ZR)
-  (isUltraRare && hasAnyProgress) ||
+  const isSpecial = rarity === "PER" || rarity === "PRR";
 
-  // COMMON CARDS (R, SR, SSR, UR, SGR, LSR, HR, ETC...)
-  (!isUltraRare && !isLimited && hasOwnedInRarity)
-) {
-      isoMap[userId].push({
-        id: `${userId}-${row.set_id}-${key}`,
-        user_id: userId,
-        set_id: row.set_id,
-        card_key: key
-      });
-    }
+  if (
+    (isSpecial && hasAnyProgress) ||
+    (!isSpecial && hasAnyProgress)
+  ) {
+    isoMap[userId].push({
+      id: `${userId}-${row.set_id}-${key}`,
+      user_id: userId,
+      set_id: row.set_id,
+      card_key: key
+    });
   }
-});
+
+}
+// ✅ FW (treat same as SD logic, BUT uses its own keys)
+else if (row.set_id === "FW") {
+
+  if (hasAnyProgress) {
+    isoMap[userId].push({
+      id: `${userId}-${row.set_id}-${key}`,
+      user_id: userId,
+      set_id: row.set_id,
+      card_key: key
+    });
+  }
+
+}
+else if (row.set_id === "tcgpromos") {
+
+  if (hasAnyProgress) {
+    isoMap[userId].push({
+      id: `${userId}-${row.set_id}-${key}`,
+      user_id: userId,
+      set_id: row.set_id,
+      card_key: key
+    });
+  }
+
+}
+
+else {
+
+  if (
+    (rarity === "LC" && hasDiscord) ||
+
+    (
+      rarity === "SC" ||
+      rarity === "ZR" ||
+      rarity === "SHINING ZR" ||
+      rarity === "USR" ||
+      rarity === "CR" ||
+      rarity === "UGR" ||
+      rarity === "XR"
+    ) && hasAnyProgress ||
+
+    (![
+      "SC","ZR","SHINING ZR","USR","CR","UGR","XR","LC"
+    ].includes(rarity) && hasOwnedInRarity)
+  ) {
+    isoMap[userId].push({
+      id: `${userId}-${row.set_id}-${key}`,
+      user_id: userId,
+      set_id: row.set_id,
+      card_key: key
+    });
+  }
+
+}
+}});
       });
 
       setProfiles(profileMap);
@@ -191,14 +365,21 @@ allCards.forEach((card) => {
   }, [setId]);
 
   const getCardImage = (card: TradeCard) => {
+if (card.set_id === "SD") {
+  return `/friendships-begin/${card.card_key}.png`;
+}
+  if (card.set_id === "FW") {
+    return `/cards/fantasywonderland/${card.card_key}.jpg`;
+  }
   const [rarity, number] = card.card_key.split("-");
 
-  // ✅ PROMOS (set_id = 9)
+  if (card.set_id === "tcgpromos") {
+  return `/tcgpromos/${card.card_key}.png`;
+}
   if (card.set_id === "9") {
     return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
   }
 
-  // ✅ SERIALIZED / LIMITED (set_id = 10)
   if (card.set_id === "10") {
     return `/serialized-limited-cards/andypricepromo.jpg`;
   }
@@ -246,33 +427,52 @@ allCards.forEach((card) => {
           Back to All ISOs
         </button>
 
-        <h1 className="text-3xl font-bold text-center mb-6 text-[#d4af37] [text-shadow:1px_1px_0_#5a3e84,-1px_1px_0_#5a3e84,1px_-1px_0_#5a3e84,-1px_-1px_0_#5a3e84]">
+        <h1 className="block w-fit mx-auto mb-6 px-6 py-2
+  rounded-lg
+  bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84]
+  border border-[#d4af37]/40
+  font-bold text-2xl sm:text-3xl tracking-wide
+  text-[#f5e6a8]
+  [text-shadow:1px_1px_0_#3b2a6a,-1px_-1px_0_#ffffff40]
+  shadow-sm">
           {set?.name}
         </h1>
 
-        {setId && rarityMap[setId] && (
+        {!isPromoSet && setId && rarityMap[setId] && (
           <>
             <div className="flex flex-wrap gap-2 mb-6 justify-center">
               {rarityMap[setId].map((rarity) => (
                 <button
   key={rarity}
-  onClick={() =>
-    setSelectedRarity(
-      selectedRarity === rarity ? null : rarity
-    )
-  }
-  className={`px-3 py-1 text-xs border rounded bg-white text-black shadow-sm ${
+  onClick={() => {
+  const newRarity =
+    selectedRarity === rarity ? null : rarity;
+
+  setSelectedRarity(newRarity);
+  setPage(1);
+}}
+  className={`px-4 py-1.5 text-xs font-medium rounded-full border border-gray-300 bg-white/80 backdrop-blur-sm text-gray-800 shadow-sm transition-all duration-150 ${
   selectedRarity === rarity
-    ?  "bg-yellow-400 text-black border-yellow-500"
-    : "hover:bg-gray-100"
+  ? "bg-[#d4af37] text-black border-[#d4af37] shadow-md scale-105"
+  : "hover:bg-gray-100 hover:shadow-sm hover:scale-105"
 }`}
 >
   {rarity === "SHINING ZR"
   ? "⬦ZR"
-   : rarity === "SN"
+  : rarity === "SN"
   ? "⬦N"
   : rarity === "LC"
   ? "PR"
+  : rarity === "PER"
+  ? "※ER"
+  : rarity === "PRR"
+  ? "※RR"
+   : rarity === "PCR"
+  ? "※CR"
+   : rarity === "PGR"
+  ? "※GR"
+   : rarity === "PSPR"
+  ? "※SPR"
   : rarity}
 </button>
               ))}
@@ -289,109 +489,206 @@ allCards.forEach((card) => {
         {loading && <div className="text-center">Loading...</div>}
 
         {!loading && (
-          <div className="space-y-6">
-  {Object.entries(groupedISO)
-    .sort(([userIdA, cardsA], [userIdB, cardsB]) => {
+  <>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {Object.entries(groupedISO)
+  .map(([userId, cards]) => {
 
-      const hasDiscordA = !!tradingProfiles[userIdA];
-      const hasDiscordB = !!tradingProfiles[userIdB];
+    const filteredCards = isPromoSet
+  ? cards
+  : selectedRarity
+  ? cards.filter(c => {
 
-      // PRIORITY 1: Discord users first
-      if (hasDiscordA !== hasDiscordB) {
-        return hasDiscordA ? -1 : 1;
-      }
+      const getRarity = (key: string) => {
 
-      // PRIORITY 2: Fewest missing cards (correct parsing)
-      const getCount = (cards: TradeCard[]) => {
-        if (!selectedRarity) return cards.length;
+        if (key.startsWith("RR")) return "PR";
 
-        return cards.filter(c => {
-          const [rarity] = c.card_key.split("-");
-          return rarity.trim() === selectedRarity;
-        }).length;
+        if (key.startsWith("SD01")) {
+          const match = key.match(/SD01([A-Z]+)\d+/);
+          return match ? match[1] : "";
+        }
+
+        if (key.startsWith("BP01")) {
+          const match = key.match(/BP01([A-Z]+)\d+/);
+          return match ? match[1] : "";
+        }
+
+        if (key.includes("-")) {
+          return key.split("-")[0];
+        }
+
+        return "";
       };
 
-      const countA = getCount(cardsA);
-      const countB = getCount(cardsB);
-
-      if (countA !== countB) {
-        return countA - countB;
-      }
-
-      // Stable fallback
-      return userIdA.localeCompare(userIdB);
+      return getRarity(c.card_key) === selectedRarity;
     })
-    .map(([userId, cards]) => {
+  : [];
 
-      const filteredCards = selectedRarity
-        ? cards.filter(c => {
-            const [rarity] = c.card_key.split("-");
-            return rarity.trim() === selectedRarity;
-          })
-        : [];
+    return {
+      userId,
+      cards,
+      filteredCards
+    };
+  })
+  .filter(entry => entry.filteredCards.length > 0)
+  .sort((a, b) => {
 
-      if (!selectedRarity || filteredCards.length === 0) return null;
+    const hasDiscordA = !!tradingProfiles[a.userId];
+    const hasDiscordB = !!tradingProfiles[b.userId];
 
-      return (
-        <div key={userId} className="border rounded-xl p-4 bg-card">
+    if (hasDiscordA !== hasDiscordB) {
+      return hasDiscordA ? -1 : 1;
+    }
 
-          <div className="font-semibold mb-1">
-            {profiles[userId]?.username || userId}
+    if (a.filteredCards.length !== b.filteredCards.length) {
+      return a.filteredCards.length - b.filteredCards.length;
+    }
 
-            {tradingProfiles[userId] && (
-              <span className="ml-2 text-green-500 text-xs">●</span>
-            )}
+    return a.userId.localeCompare(b.userId);
+  })
+  .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  .map(({ userId, filteredCards }) => {
 
-            <span className="text-xs text-muted-foreground ml-2">
-              ({filteredCards.length} missing)
-            </span>
-          </div>
+    if (!selectedRarity && !isPromoSet) return null;
 
-          {tradingProfiles[userId] && (
-            <div className="text-xs text-muted-foreground mb-3">
-              Discord:{" "}
-              <span className="text-foreground font-medium">
-                {tradingProfiles[userId]}
-              </span>
-            </div>
-          )}
+    return (
+      <div key={userId} className="border rounded-xl p-4 bg-card w-full">
 
-          <div className="grid gap-2 grid-cols-4 sm:grid-cols-6">
-            {filteredCards
-              .sort((a, b) => {
-                const numA = parseInt(a.card_key.split("-")[1]);
-                const numB = parseInt(b.card_key.split("-")[1]);
-                return numA - numB;
-              })
-              .map((card) => (
-  <div key={card.id} className="relative">
-    
-    <img
-      src={getCardImage(card)}
-      className="w-full rounded-md"
-    />
- <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
-</div>
+    <div className="font-semibold mb-1">
+      {profiles[userId]?.username || userId}
+
+      {tradingProfiles[userId] && (
+        <span className="ml-2 text-green-500 text-xs">●</span>
+      )}
+
+      <span className="text-xs text-muted-foreground ml-2">
+        ({filteredCards.length} missing)
+      </span>
     </div>
-  </div>
-))}
+
+    {tradingProfiles[userId] && (
+      <div className="text-xs text-muted-foreground mb-3">
+        Discord:{" "}
+        <span className="text-foreground font-medium">
+          {tradingProfiles[userId]}
+        </span>
+      </div>
+    )}
+
+    <div className="grid gap-2 grid-cols-4 sm:grid-cols-6">
+      {filteredCards
+        .sort((a, b) => {
+          const getNumber = (key: string) => {
+            if (!key.includes("-")) {
+              const match = key.match(/(\d+)$/);
+              return match ? parseInt(match[1]) : 0;
+            }
+            return parseInt(key.split("-")[1]);
+          };
+
+          const numA = getNumber(a.card_key);
+          const numB = getNumber(b.card_key);
+          return numA - numB;
+        })
+        .map((card) => (
+          <div key={card.id} className="relative">
+
+            <img
+              src={getCardImage(card)}
+              className="w-full rounded-md"
+            />
+
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {[...Array(5)].map((_, i) => (
+                  <img
+                    key={i}
+                    src={watermark}
+                    className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
+                    style={{ top: `${i * 25 - 20}%` }}
+                  />
+                ))}
+              </div>
+            </div>
+
           </div>
+        ))}
+    </div>
 
-        </div>
-      );
-    })}
-</div>
-        )}
+  </div>
+);
+        })}
+    </div>
 
+{(selectedRarity || isPromoSet) && (() => {
+
+  const totalResults = Object.entries(groupedISO)
+    .map(([userId, cards]) => {
+      const filteredCards = cards.filter(c => {
+const getRarity = (key: string) => {
+
+  // ✅ TCG PROMOS
+  if (key.startsWith("RR")) {
+    return "PR";
+  }
+
+  // SD (Friendships Begin)
+  if (key.startsWith("SD01")) {
+    const match = key.match(/SD01([A-Z]+)\d+/);
+    return match ? match[1] : "";
+  }
+
+  // FW (Fantasy Wonderland)
+  if (key.startsWith("BP01")) {
+    const match = key.match(/BP01([A-Z]+)\d+/);
+    return match ? match[1] : "";
+  }
+
+  // Normal sets
+  if (key.includes("-")) {
+    return key.split("-")[0];
+  }
+
+  return "";
+};
+        return getRarity(c.card_key) === selectedRarity;
+      });
+
+      return filteredCards.length > 0 ? userId : null;
+    })
+    .filter(Boolean).length;
+
+  const maxPage = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
+
+  return (
+    <div className="flex justify-center gap-4 mt-6">
+
+      <button
+        onClick={() => setPage(p => Math.max(1, p - 1))}
+        disabled={page === 1}
+        className="px-4 py-2 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        Back
+      </button>
+
+      <span className="text-sm flex items-center">
+        Page {page} / {maxPage}
+      </span>
+
+      <button
+        onClick={() => setPage(p => Math.min(p + 1, maxPage))}
+        disabled={page >= maxPage}
+        className="px-4 py-2 bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+
+    </div>
+  );
+
+})()}
+  </>
+)}
       </div>
     </div>
   );

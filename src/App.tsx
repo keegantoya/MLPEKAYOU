@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 import Profile from "./pages/Profile";
 import Index from "./pages/Index";
 import Collections from "./pages/Collections";
-import Collection from "./pages/Collection";
+import Collection from "@/pages/Collection";
 import MyProgress from "./pages/MyProgress";
 import MyISO from "./pages/MyISO";
 import Community from "./pages/Community";
@@ -23,6 +23,7 @@ import FantasyWonderland from "./pages/Fantasy-Wonderland";
 import FunMoments2 from "./pages/FunMoments2";
 import FunMoments1 from "./pages/FunMoments1";
 import Promos from "./pages/promos";
+import TCGPromos from "./pages/tcgpromos";
 import FriendshipsBegin from "./pages/friendshipsbegin";
 import Selling from "@/pages/selling";
 import LimitedCards from "@/pages/limited-cards";
@@ -39,6 +40,7 @@ import PublicISO from "@/pages/PublicISO";
 import PublicISOSet from "@/pages/PublicISOSet";
 import RequireAuth from "./components/RequireAuth";
 import FAQ from "@/pages/FAQ";
+import MyProgressTCG from "./pages/MyProgressTCG";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +120,7 @@ const AppRoutes = () => {
       <Route path="/fun-moments-1" element={<FunMoments1 />} />
       <Route path="/password-reset" element={<PasswordReset />} />
       <Route path="/promos" element={<Promos />} />
+      <Route path="/tcgpromos" element={<TCGPromos />} />
       <Route path="/friendshipsbegin" element={<FriendshipsBegin />} />
       <Route path="/selling" element={<Selling />} />
       <Route path="/limited-cards" element={<LimitedCards />} />
@@ -127,6 +130,14 @@ const AppRoutes = () => {
       <Route path="/my-trades/:setId" element={<MyTradesSets />} />
       <Route path="/about" element={<AboutMe />} />
       <Route path="/faq" element={<FAQ />} />
+      <Route
+  path="/progress-tcg"
+  element={
+    <RequireAuth>
+      <MyProgressTCG />
+    </RequireAuth>
+  }
+/>
      <Route
   path="/my-trades/view/:setId"
   element={

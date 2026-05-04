@@ -117,6 +117,7 @@ const KayouHeader = () => {
   const [showTradesMenu, setShowTradesMenu] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
+  const [showProgressMenu, setShowProgressMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
 const getProfile = async (userId: string) => {
@@ -136,6 +137,7 @@ useEffect(() => {
       setShowIsoMenu(false);
       setShowTradesMenu(false);
       setShowLeaderboardMenu(false);
+      setShowProgressMenu(false);
     }
   };
 
@@ -371,7 +373,12 @@ const handleForgotPassword = async () => {
 
   <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-progress"); setOpen(false); }}>
     <BarChart className="h-4 w-4 mr-2" />
-    My Progress
+    CCG Progress
+  </Button>
+
+  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/progress-tcg"); setOpen(false); }}>
+    <BarChart className="h-4 w-4 mr-2" />
+    TCG Progress
   </Button>
 
   <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-iso"); setOpen(false); }}>
@@ -561,13 +568,46 @@ const handleForgotPassword = async () => {
 >
   Collections
 </Button>
+  <div className="relative">
   <Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => navigate("/my-progress")}
->
-  Progress
-</Button>
+    variant="ghost"
+    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
+    onClick={() => {
+      setShowProgressMenu(!showProgressMenu);
+      setShowIsoMenu(false);
+      setShowTradesMenu(false);
+      setShowLeaderboardMenu(false);
+    }}
+  >
+    Progress ▾
+  </Button>
+
+  {showProgressMenu && (
+    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
+
+      <button
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
+        onClick={() => {
+          navigate("/my-progress");
+          setShowProgressMenu(false);
+        }}
+      >
+        CCG Progress
+      </button>
+
+      <button
+        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
+        onClick={() => {
+          navigate("/progress-tcg");
+          setShowProgressMenu(false);
+        }}
+      >
+        TCG Progress
+      </button>
+
+    </div>
+  )}
+</div>
 
  <div className="relative">
   <Button

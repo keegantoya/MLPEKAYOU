@@ -30,13 +30,21 @@ export default function MyTradesView() {
       const user = data.session?.user;
       if (!user) return;
 
-      const { data: trades } = await supabase
+  const { data: trades } = await supabase
   .from("for_trade")
   .select("*")
-  .eq("user_id", user.id)
-  .eq("set_id", setId);
+  .eq("user_id", user.id);
 
-      setCards(trades || []);
+      const filtered = (trades || []).filter((card) => {
+  // Friendships Begin (bonus + starters all live under same set_id)
+  if (setId === "SD_BONUS" || setId === "SD_STARTERS") {
+    return card.set_id === "friendshipsbegin";
+  }
+
+  return String(card.set_id) === String(setId);
+});
+
+setCards(filtered);
       setLoading(false);
     };
 
@@ -49,22 +57,51 @@ const getRarityCode = (rarity: string) => {
 };
 
   const getCardImage = (card: TradeCard) => {
-    const [rarityRaw, number] = card.card_key.split("-");
-    const rarity = getRarityCode(rarityRaw);
 
-    const config: any = {
-      "1": { folder: "first-edition-moon", prefix: "M1" },
-      "2": { folder: "second-edition-moon", prefix: "M2" },
-      "5": { folder: "rainbow-one", prefix: "R1" },
-      "7": { folder: "fun-moments-one", prefix: "FM1" },
-      "8": { folder: "fun-moments-two", prefix: "FM2" },
-    };
+ if (card.set_id === "friendshipsbegin") {
+  return `/friendships-begin/${card.card_key}.png`;
+}
 
-    const c = config[card.set_id];
-    if (!c) return "";
+if (card.set_id === "FW") {
 
-    return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+  const num = card.card_key.slice(-2);
+
+  if (card.card_key.startsWith("BP01ER")) {
+    return `/fantasy-wonderland/SD01ER${num}.png`;
+  }
+
+  if (card.card_key.startsWith("BP01PER")) {
+    return `/fantasy-wonderland/SD01PER${num}.png`;
+  }
+
+  return `/fantasy-wonderland/${card.card_key}.png`;
+}
+
+  if (card.set_id === "9") {
+    const number = card.card_key.split("-")[1];
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+  }
+
+  if (card.set_id === "tcgpromos") {
+  return `/tcgpromos/${card.card_key}.png`;
+}
+
+  const [rarityRaw, number] = card.card_key.split("-");
+  const rarity = getRarityCode(rarityRaw);
+
+  const config: any = {
+    "1": { folder: "first-edition-moon", prefix: "M1" },
+    "2": { folder: "second-edition-moon", prefix: "M2" },
+    "5": { folder: "rainbow-one", prefix: "R1" },
+    "7": { folder: "fun-moments-one", prefix: "FM1" },
+    "8": { folder: "fun-moments-two", prefix: "FM2" },
   };
+
+  const c = config[card.set_id];
+  if (!c) return "";
+
+  return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+};
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,13 +135,9 @@ const getRarityCode = (rarity: string) => {
       .sort((a, b) => {
         const [rarityA, numA] = a.card_key.split("-");
         const [rarityB, numB] = b.card_key.split("-");
-
-        // sort by rarity first
         if (rarityA !== rarityB) {
           return rarityA.localeCompare(rarityB);
         }
-
-        // then by number
         return parseInt(numA) - parseInt(numB);
       })
       .map((card) => (

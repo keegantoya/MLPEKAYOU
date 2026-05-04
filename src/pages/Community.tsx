@@ -44,9 +44,28 @@ const sets = [
   { id: "7", name: "Fun Moments First Edition", total: 127 },
   { id: "2", name: "Eternal Moon Second Edition", total: 189 },
   { id: "8", name: "Fun Moments Second Edition", total: 136 },
-  { id: "3", name: "Eternal Moon Third Edition", total: 290 },
-  { id: "4", name: "Star First Edition", total: 105 },
-  { id: "6", name: "Rainbow Second Edition", total: 170 },
+  { id: "friendshipsbegin", name: "Friendships Begin", total: 194 },
+  {
+  id: "fantasywonderland",
+  name: "Fantasy Wonderland",
+  folder: "fantasywonderland",
+  prefix: "BP01",
+  rarities: {
+    C: 48,
+    U: 18,
+    ER: 6,
+    SR: 14,
+    SPR: 28,
+    GR: 12,
+    CR: 12,
+    RR: 6,
+    PER: 6,
+    PSPR: 11,
+    PGR: 6,
+    PCR: 12,
+    PRR: 6
+  }
+}
 ];
 
 const manualFirstFinishers: Record<string, { username: string; avatar_url?: string }> = {
@@ -60,11 +79,11 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
   },
   "5": {
     username: "Keegan (Owner)",
-    avatar_url: "avatar013.jpg"
+    avatar_url: "avatar006.jpg"
   },
   "8": {
   username: "Keegan (Owner)",
-  avatar_url: "avatar013.jpg"
+  avatar_url: "avatar006.jpg"
 }
 };
 
@@ -150,6 +169,15 @@ const isoSets = [
       UR: 10,
       UGR: 9,
       CR: 12
+    }
+  },
+  {
+    id: "friendshipsbegin",
+    name: "Friendships Begin",
+    folder: "friendshipsbegin",
+    prefix: "SD01",
+    rarities: {
+  
     }
   }
 ];
@@ -252,7 +280,7 @@ useEffect(() => {
 
       <div className="container py-8">
 
-        <div className="text-center mb-8 max-w-3xl mx-auto">
+        <div className="text-center mb-4 max-w-3xl mx-auto">
           <img
   src={setLeaderboardsBadge}
   alt="Set Leaderboards"
@@ -260,57 +288,113 @@ useEffect(() => {
 />
 
           <p className="text-sm text-muted-foreground">
-           If you are the first user of MLPEKAYOU to master set a US set, send proof to the owner in the Discord and your image and name will appear on that set. This is done manually, not automatically, to ensure validity.
+           If you are the first person to finish a set, you must send proof to Keegan to be manually inserted.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div className="flex items-center gap-6 my-4">
+  <div className="flex-1 h-px bg-gray-300/50" />
 
-          {sets
-            .filter((set) => ["1", "5", "2", "7", "8"].includes(set.id))
-            .map((set) => (
+  <img
+    src="/website-assets/CCGBANNER.png"
+    alt="CCG"
+    className="h-16 sm:h-18 md:h-20 object-contain"
+  />
 
-            <button
-              key={set.id}
-              onClick={() => navigate(`/community/${set.id}`)}
-              className="relative bg-card border rounded-xl p-5 shadow-sm text-left hover:border-primary hover:shadow-md transition"
-            >
+  <div className="flex-1 h-px bg-gray-300/50" />
+</div>
 
-              <h2 className="font-semibold mb-2">
-                {set.name}
-              </h2>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+  {sets
+    .filter((set) => ["4", "1", "2", "3", "5", "6", "7", "8"].includes(set.id))
+    .map((set) => (
 
-              <div className="text-sm text-muted-foreground">
-                View leaderboard →
+      <button
+        key={set.id}
+        onClick={() => navigate(`/community/${set.id}`)}
+        className="relative bg-card border rounded-xl p-5 shadow-sm text-left hover:border-primary hover:shadow-md transition"
+      >
+        <h2 className="font-semibold mb-2">
+          {set.name}
+        </h2>
+
+        <div className="text-sm text-muted-foreground">
+          View leaderboard →
+        </div>
+
+        {firstFinishers[String(set.id)] && (
+          <div className="absolute top-3 right-3 flex flex-col items-center">
+            <div className="relative w-14 h-14">
+              <img
+                src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
+                className="w-14 h-14 rounded-full border-2 border-background shadow-lg"
+              />
+
+              <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+                #1
               </div>
+            </div>
 
-              {firstFinishers[String(set.id)] && (
-                <div className="absolute top-3 right-3 flex flex-col items-center">
-                  <div className="relative w-14 h-14">
-
-                    <img
-                      src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
-                      className="w-14 h-14 rounded-full border-2 border-background shadow-lg"
-                    />
-
-                    <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
-                      #1
-                    </div>
-
-                  </div>
-
-                  <div className="font-semibold text-xs mt-1 text-center">
-                    {firstFinishers[String(set.id)]?.username}
-                  </div>
-
-                </div>
-              )}
-
-            </button>
-
-          ))}
-
+            <div className="font-semibold text-xs mt-1 text-center">
+              {firstFinishers[String(set.id)]?.username}
+            </div>
           </div>
+        )}
+      </button>
+  ))}
+</div>
+
+<div className="flex items-center gap-6 my-4">
+  <div className="flex-1 h-px bg-gray-300/50" />
+
+  <img
+    src="/website-assets/TCGBANNER.png"
+    alt="TCG"
+    className="h-16 sm:h-18 md:h-20 object-contain"
+  />
+
+  <div className="flex-1 h-px bg-gray-300/50" />
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+  {sets
+    .filter((set) => ["fantasywonderland", "friendshipsbegin"].includes(set.id))
+    .map((set) => (
+
+      <button
+        key={set.id}
+        onClick={() => navigate(`/community/${set.id}`)}
+        className="relative bg-card border rounded-xl p-5 shadow-sm text-left hover:border-primary hover:shadow-md transition"
+      >
+        <h2 className="font-semibold mb-2">
+          {set.name}
+        </h2>
+
+        <div className="text-sm text-muted-foreground">
+          View leaderboard →
+        </div>
+
+        {firstFinishers[String(set.id)] && (
+          <div className="absolute top-3 right-3 flex flex-col items-center">
+            <div className="relative w-14 h-14">
+              <img
+                src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
+                className="w-14 h-14 rounded-full border-2 border-background shadow-lg"
+              />
+
+              <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+                #1
+              </div>
+            </div>
+
+            <div className="font-semibold text-xs mt-1 text-center">
+              {firstFinishers[String(set.id)]?.username}
+            </div>
+          </div>
+        )}
+      </button>
+  ))}
+</div>
 <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
           <p>This website is not run or owned by Kayou.</p>

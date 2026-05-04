@@ -4,6 +4,40 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import tradingPostBadge from "@/assets/avatars/tradingpostbadge.png";
 
+import avatar001 from "@/assets/avatars/avatar001.jpg";
+import avatar002 from "@/assets/avatars/avatar002.jpg";
+import avatar003 from "@/assets/avatars/avatar003.jpg";
+import avatar004 from "@/assets/avatars/avatar004.jpg";
+import avatar005 from "@/assets/avatars/avatar005.jpg";
+import avatar006 from "@/assets/avatars/avatar006.jpg";
+import avatar007 from "@/assets/avatars/avatar007.jpg";
+import avatar008 from "@/assets/avatars/avatar008.jpg";
+import avatar009 from "@/assets/avatars/avatar009.jpg";
+import avatar010 from "@/assets/avatars/avatar010.jpg";
+import avatar011 from "@/assets/avatars/avatar011.jpg";
+import avatar012 from "@/assets/avatars/avatar012.jpg";
+import avatar013 from "@/assets/avatars/avatar013.jpg";
+import avatar014 from "@/assets/avatars/avatar014.jpg";
+import avatar015 from "@/assets/avatars/avatar015.jpg";
+
+const avatarMap: Record<string, string> = {
+  avatar001,
+  avatar002,
+  avatar003,
+  avatar004,
+  avatar005,
+  avatar006,
+  avatar007,
+  avatar008,
+  avatar009,
+  avatar010,
+  avatar011,
+  avatar012,
+  avatar013,
+  avatar014,
+  avatar015,
+};
+
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", released: true },
   { id: "5", name: "Rainbow First Edition", released: true },
@@ -13,8 +47,15 @@ const sets = [
   { id: "3", name: "Eternal Moon Third Edition", released: false },
   { id: "4", name: "Star First Edition", released: false },
   { id: "6", name: "Rainbow Second Edition", released: false },
-  { id: "9", name: "Promos", released: true },
-  { id: "10", name: "Serialized & Limited Cards", released: true }
+  { id: "9", name: "CCG Promos", released: true },
+  { id: "10", name: "Serialized & Limited Cards", released: true },
+  { id: "FW", name: "Fantasy Wonderland", released: true },
+  { id: "friendshipsbegin", name: "Friendships Begin", released: true },
+  {
+  id: "tcgpromos",
+  name: "TCG Promos",
+  released: true
+},
 ];
 
 const getCardImage = (card: any) => {
@@ -23,9 +64,17 @@ const getCardImage = (card: any) => {
   if (set_id === "9") {
     return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
   }
-
+  if (set_id === "tcgpromos") {
+  return `/tcgpromos/RR${String(number).padStart(2, "0")}.png`;
+}
   if (set_id === "10") {
     return `/serialized-limited-cards/andypricepromo.jpg`;
+  }
+  if (set_id === "FW") {
+    return `/cards/fantasywonderland/BP01${rarity}${String(number).padStart(2, "0")}.jpg`;
+  }
+  if (set_id === "friendshipsbegin" || set_id === "SD") {
+    return `/cards/friendshipsbegin/SD01${rarity}${String(number).padStart(2, "0")}.jpg`;
   }
 
   const config: any = {
@@ -86,7 +135,7 @@ const handleSearch = async (value: string) => {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, username")
+    .select("id, username, avatar_url")
     .ilike("username", `%${value}%`)
     .limit(10);
 
@@ -103,20 +152,37 @@ const loadUserTrades = async (user: any) => {
 
   const grouped: Record<string, Record<string, any[]>> = {};
 
-  (trades || []).forEach((card: any) => {
-    const [rarity, number] = card.card_key.split("-");
+(trades || []).forEach((card: any) => {
+  let rarity = "";
+  let number = 0;
 
-    if (!grouped[card.set_id]) grouped[card.set_id] = {};
-    if (!grouped[card.set_id][rarity]) {
-      grouped[card.set_id][rarity] = [];
-    }
+  const key = card.card_key;
 
-    grouped[card.set_id][rarity].push({
-      set_id: card.set_id,
-      rarity,
-      number: parseInt(number)
-    });
+  // DASH FORMAT (SR-012)
+  if (key.includes("-")) {
+    const parts = key.split("-");
+    rarity = parts[0];
+    number = parseInt(parts[1]);
+  }
+
+  else {
+    const cleaned = key.replace("SD01", "").replace("BP01", "");
+
+    rarity = cleaned.replace(/\d+/g, "");
+    number = parseInt(cleaned.replace(/[A-Z]+/g, ""));
+  }
+
+  if (!grouped[card.set_id]) grouped[card.set_id] = {};
+  if (!grouped[card.set_id][rarity]) {
+    grouped[card.set_id][rarity] = [];
+  }
+
+  grouped[card.set_id][rarity].push({
+    set_id: card.set_id,
+    rarity,
+    number
   });
+});
 
   setUserTrades(grouped);
   setSelectedSet(null);
@@ -190,113 +256,138 @@ const handleSaveDiscord = async () => {
           </p>
         </div>
 
-        <div className="max-w-md mx-auto mb-6 relative">
+        <div
+  className="max-w-md mx-auto mb-4 relative"
+>
   <input
     type="text"
-    placeholder="Search traders..."
+    placeholder="Search for a user..."
     value={search}
     onChange={(e) => handleSearch(e.target.value)}
-    className="w-full border rounded-lg px-3 py-2 text-sm"
+    className="w-full rounded-full border border-gray-300 px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
   />
 
   {results.length > 0 && (
-    <div className="absolute w-full bg-background border rounded-lg mt-1 shadow-lg z-50">
-      {results.map((user) => (
-        <div
-          key={user.id}
-          onClick={() => loadUserTrades(user)}
-          className="px-3 py-2 text-sm hover:bg-accent cursor-pointer"
-        >
-          {user.username}
-        </div>
-      ))}
+    <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-[999] overflow-hidden">
+      {results.map((user, index) => (
+  <div
+    key={user.id}
+    onClick={() => {
+      loadUserTrades(user);
+      setResults([]);
+      setSearch("");
+    }}
+    className={`flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 transition
+      ${index !== results.length - 1 ? "border-b border-gray-100" : ""}`}
+  >
+    <img
+      src={avatarMap[user.avatar_url] || avatar001}
+      className="w-8 h-8 rounded-full object-cover border"
+    />
+
+    <span>{user.username}</span>
+  </div>
+))}
     </div>
   )}
 </div>
 
         {/* SET GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sets
-  .filter(set => set.released)
-  .map((set) => (
-            <button
-              key={set.id}
-              onClick={() => {
-                if (set.released) {
-                  navigate(`/trading-post/${set.id}`);
-                }
-              }}
-              className={`
-                relative w-full rounded-xl border p-4 shadow-sm text-left transition
-                ${set.released
-                  ? "bg-card hover:shadow-md hover:scale-[1.01] cursor-pointer"
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
-                }
-              `}
-            >
+        {(() => {
+  const ccg = sets.filter(s =>
+    s.released && ["1", "2", "5", "7", "8"].includes(s.id)
+  );
 
-              {/* 🔒 OVERLAY LABEL */}
-              {!set.released && (
-                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                 <div className="text-black text-base md:text-lg font-extrabold uppercase tracking-wide drop-shadow-sm">
-                    {set.id === "8"
-                      ? "WAITING FOR FILES FROM KAYOUUS"
-                      : "SET NOT YET RELEASED"}
-                  </div>
-                </div>
-              )}
+const tcg = sets.filter(s =>
+  s.released && (
+    s.id === "FW" ||
+    s.id === "friendshipsbegin"
+  )
+);
 
-              {/* CONTENT */}
-              <div className="font-medium text-sm">
-                {set.name}
-              </div>
+  const promos = sets.filter(s =>
+  s.released && (
+    s.id === "9" ||
+    s.id === "tcgpromos"
+  )
+);
 
-              <div className="text-xs text-muted-foreground mt-2">
-                View trades
-              </div>
+  const renderSet = (set: any) => (
+    <button
+      key={set.id}
+      onClick={() => navigate(`/trading-post/${set.id}`)}
+      className="relative rounded-xl border p-4 cursor-pointer transition bg-white shadow-sm hover:bg-gray-100"
+    >
+      <div className="font-semibold mb-2">
+  {set.name}
+</div>
 
-            </button>
-          ))}
-        </div>
+<div className="text-sm text-muted-foreground">
+  View trades
+</div>
+    </button>
+  );
 
-        {selectedUser && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-  <div className="bg-background p-6 rounded-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto">
+  return (
+    <div className="space-y-12">
 
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-lg font-semibold">
-        {selectedUser.username}'s Trades
-      </h2>
+      {ccg.length > 0 && (
+  <div className="my-10 border-t border-gray-300 text-center relative">
+    <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#e9e2f3] px-3 text-sm text-gray-600">
+      Collectible Card Game
+    </span>
+  </div>
+)}
 
-      <button
-        onClick={() => setSelectedUser(null)}
-        className="text-sm text-muted-foreground"
-      >
-        Close
-      </button>
+      {/* CCG */}
+      {ccg.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {ccg.map(renderSet)}
+          </div>
+        </>
+      )}
+
+      {tcg.length > 0 && (
+  <div className="my-10 border-t border-gray-300 text-center relative">
+    <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#e9e2f3] px-3 text-sm text-gray-600">
+      Trading Card Game
+    </span>
+  </div>
+)}
+
+      {/* TCG */}
+      {tcg.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tcg.map(renderSet)}
+          </div>
+        </>
+      )}
+
+{promos.length > 0 && (
+  <div className="my-10 border-t border-gray-300 text-center relative">
+    <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#e9e2f3] px-3 text-sm text-gray-600">
+      Promotional Cards
+    </span>
+  </div>
+)}
+
+      {/* PROMOS */}
+      {promos.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {promos.map(renderSet)}
+          </div>
+        </>
+      )}
+
     </div>
-
-    {/* SETS */}
-    {!selectedSet && (
-      <div className="space-y-2">
-        {Object.keys(userTrades).map((setId) => {
-          const setInfo = sets.find(s => s.id === setId);
-
-          return (
-            <div
-              key={setId}
-              onClick={() => setSelectedSet(setId)}
-              className="border rounded p-3 cursor-pointer hover:bg-accent text-sm"
-            >
-              {setInfo?.name || setId}
-            </div>
-          );
-        })}
-      </div>
-    )}
+);
+})()}
 
     {/* RARITIES */}
-    {selectedSet && !selectedRarity && (
+    {selectedUser && selectedSet && !selectedRarity && (
       <div>
         <button
           onClick={() => setSelectedSet(null)}
@@ -320,7 +411,7 @@ const handleSaveDiscord = async () => {
     )}
 
     {/* CARDS */}
-    {selectedSet && selectedRarity && (
+    {selectedUser && selectedSet && selectedRarity && (
       <div>
         <button
           onClick={() => setSelectedRarity(null)}
@@ -341,11 +432,118 @@ const handleSaveDiscord = async () => {
       </div>
     )}
 
-  </div>
+            </div>
+
+{selectedUser && (
+  <div className="fixed inset-0 z-50">
+
+    {/* BACKDROP */}
+    <div
+      className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+      onClick={() => setSelectedUser(null)}
+    />
+
+    {/* MODAL WRAPPER */}
+    <div className="relative flex items-center justify-center min-h-screen p-4">
+
+      {/* MODAL CONTENT */}
+      <div className="w-full max-w-3xl max-h-[85vh] overflow-y-auto
+        bg-white/90 backdrop-blur-md
+        border border-gray-200
+        rounded-2xl shadow-2xl
+        p-6">
+
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-6 border-b pb-3">
+
+          <div className="flex items-center gap-3">
+            <img
+              src={avatarMap[selectedUser.avatar_url] || avatar001}
+              className="w-10 h-10 rounded-full object-cover border"
+            />
+
+            <h2 className="text-lg font-semibold">
+              {selectedUser.username}'s Trades
+            </h2>
+          </div>
+
+          <button
+            onClick={() => setSelectedUser(null)}
+            className="text-sm px-3 py-1 rounded-full border border-gray-300 hover:bg-gray-100 transition"
+          >
+            Close
+          </button>
+        </div>
+
+        {/* LEVEL 1 — SETS */}
+        {!selectedSet && (
+          <div className="grid grid-cols-2 gap-3">
+            {Object.keys(userTrades).map((setId) => {
+              const setInfo = sets.find(s => s.id === setId);
+
+              return (
+                <div
+                  key={setId}
+                  onClick={() => setSelectedSet(setId)}
+                  className="border rounded-xl p-3 cursor-pointer bg-white shadow-sm hover:bg-gray-100 transition text-sm"
+                >
+                  {setInfo?.name || setId}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* LEVEL 2 — RARITIES */}
+        {selectedSet && !selectedRarity && (
+          <div>
+            <button
+              onClick={() => setSelectedSet(null)}
+              className="text-xs mb-3 text-muted-foreground"
+            >
+              ← Back to Sets
+            </button>
+
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(userTrades[selectedSet] || {}).map((rarity) => (
+                <button
+                  key={rarity}
+                  onClick={() => setSelectedRarity(rarity)}
+                  className="px-3 py-1 text-xs border rounded-full hover:bg-gray-100 transition"
+                >
+                  {rarity}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* LEVEL 3 — CARDS */}
+        {selectedSet && selectedRarity && (
+          <div>
+            <button
+              onClick={() => setSelectedRarity(null)}
+              className="text-xs mb-3 text-muted-foreground"
+            >
+              ← Back to Rarities
+            </button>
+
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {(userTrades[selectedSet]?.[selectedRarity] || []).map((card, i) => (
+                <img
+                  key={i}
+                  src={getCardImage(card)}
+                  className="w-full rounded-md"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
   </div>
 )}
-
-            </div>
 
     </div>
   );

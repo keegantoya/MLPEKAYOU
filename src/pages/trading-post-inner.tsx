@@ -19,11 +19,33 @@ const rarityMap: Record<string, string[]> = {
   "7": ["N","SN","R","SR","SSR","UR","CR"],
   "8": ["N", "SN","R","SR","SSR","UR","UGR","CR"],
   "9": ["PR"],
-  "10": ["LC"]
+  "10": ["LC"],
+  "tcgpromos": ["PR"],
+  "friendshipsbegin": ["C", "U", "SR", "SPR", "ER", "GR", "CR", "PER", "PRR"],
+  "FW": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
 };
 
 const getCardImage = (card: TradeCard) => {
   const [rarity, number] = card.card_key.split("-");
+
+if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
+  return `/friendships-begin/${card.card_key}.png`;
+}
+
+if (card.set_id === "FW") {
+
+  const num = card.card_key.slice(-2);
+
+  if (card.card_key.startsWith("BP01ER")) {
+    return `/fantasy-wonderland/SD01ER${num}.png`;
+  }
+
+  if (card.card_key.startsWith("BP01PER")) {
+    return `/fantasy-wonderland/SD01PER${num}.png`;
+  }
+
+  return `/fantasy-wonderland/${card.card_key}.png`;
+}
 
   if (card.set_id === "9") {
     return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
@@ -32,6 +54,9 @@ const getCardImage = (card: TradeCard) => {
   if (card.set_id === "10") {
     return `/serialized-limited-cards/andypricepromo.jpg`;
   }
+  if (card.set_id === "tcgpromos") {
+  return `/tcgpromos/${card.card_key}.png`;
+}
 
   const config: any = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
@@ -69,7 +94,10 @@ export default function TradingPostInner() {
   "2": "Eternal Moon: Second Edition",
   "8": "Fun Moments: Second Edition",
   "9": "Promo Cards",
-  "10": "Serialized & Limited Cards"
+  "10": "Serialized & Limited Cards",
+  "friendshipsbegin": "Friendships Begin",
+  "FW": "Fantasy Wonderland",
+  "tcgpromos": "TCG Promos",
 };
 
   useEffect(() => {
@@ -83,16 +111,17 @@ let from = 0;
 const pageSize = 1000;
 
 while (true) {
-  let query = supabase
-    .from("for_trade")
-    .select("*")
-    .eq("set_id", Number(setId))
-    .order("id", { ascending: false })
-    .range(from, from + pageSize - 1);
+let query = supabase
+  .from("for_trade")
+  .select("*")
+  .order("id", { ascending: false })
+  .range(from, from + pageSize - 1);
 
-  if (selectedRarity) {
-    query = query.like("card_key", `${selectedRarity}-%`);
-  }
+if (setId === "friendshipsbegin" || setId === "SD") {
+  query = query.eq("set_id", setId);
+} else {
+  query = query.eq("set_id", setId);
+}
 
   const { data } = await query;
 
@@ -131,7 +160,6 @@ const trades = allTrades;
     tradeMap[card.user_id].push(card);
   });
 
-  // 🔥 FORCE STATE RESET (THIS IS THE REAL FIX)
   setGroupedTrades({});
   setTimeout(() => {
     setProfiles(profileMap);
@@ -177,7 +205,14 @@ const trades = allTrades;
           Back to Trading Post
         </button>
 
-        <h1 className="text-3xl font-bold text-center mb-6 text-[#d4af37] [text-shadow:1px_1px_0_#5a3e84,-1px_1px_0_#5a3e84,1px_-1px_0_#5a3e84,-1px_-1px_0_#5a3e84]">
+        <h1 className="block w-fit mx-auto mb-6 px-6 py-2
+  rounded-lg
+  bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84]
+  border border-[#d4af37]/40
+  font-bold text-2xl sm:text-3xl tracking-wide
+  text-[#f5e6a8]
+  [text-shadow:1px_1px_0_#3b2a6a,-1px_-1px_0_#ffffff40]
+  shadow-sm">
   {setNames[setId || ""] || `Set ${setId}`}
 </h1>
 
@@ -193,19 +228,25 @@ const trades = allTrades;
                       selectedRarity === rarity ? null : rarity
                     )
                   }
-                  className={`px-3 py-1 text-xs border rounded bg-white text-black shadow-sm ${
-                    selectedRarity === rarity
-                      ? "bg-yellow-400 text-black border-yellow-500"
-                      : "hover:bg-gray-100"
-                  }`}
+                  className={`px-4 py-1.5 text-xs font-medium rounded-full border border-gray-300 bg-white/80 backdrop-blur-sm text-gray-800 shadow-sm transition-all duration-150 ${
+  selectedRarity === rarity
+    ? "bg-[#d4af37] text-black border-[#d4af37] shadow-md scale-105"
+    : "hover:bg-gray-100 hover:shadow-sm hover:scale-105"
+}`}
                 >
-                  {rarity === "SHINING ZR"
-                    ? "⬦ZR"
-                    : rarity === "SN"
-                    ? "⬦N"
-                    : rarity === "LC"
-                    ? "PR"
-                    : rarity}
+                 {(() => {
+  if (rarity === "SHINING ZR") return "⬦ZR";
+  if (rarity === "SN") return "⬦N";
+  if (rarity === "LC") return "PR";
+  if (
+    (setId === "FW" || setId === "friendshipsbegin") &&
+    rarity.startsWith("P")
+  ) {
+    return `※${rarity.slice(1)}`;
+  }
+
+  return rarity;
+})()}
                 </button>
               ))}
             </div>
@@ -221,7 +262,7 @@ const trades = allTrades;
         {loading && <div className="text-center">Loading...</div>}
 
         {!loading && (
-          <div className="space-y-6">
+          <div className="space-y-6 max-w-5xl mx-auto">
 
             {Object.entries(groupedTrades)
               .sort(([userIdA, cardsA], [userIdB, cardsB]) => {
@@ -233,15 +274,29 @@ const trades = allTrades;
                   return hasDiscordA ? -1 : 1;
                 }
 
-                const getRarity = (key: string) => key.split("-")[0].trim();
+const getRarity = (key: string) => {
 
-const countA = selectedRarity
-  ? cardsA.filter(c => c.card_key.split("-")[0].trim() === selectedRarity).length
-  : 0;
+  if (key.startsWith("RR")) return "PR";
 
-const countB = selectedRarity
-  ? cardsB.filter(c => c.card_key.split("-")[0].trim() === selectedRarity).length
-  : 0;
+  if (setId === "friendshipsbegin") {
+    const match = key.match(/SD01([A-Z]+)\d+/);
+    return match ? match[1] : "";
+  }
+
+  if (setId === "FW") {
+    const match = key.match(/BP01([A-Z]+)\d+/);
+    return match ? match[1] : "";
+  }
+
+  if (key.includes("-")) {
+    return key.split("-")[0].trim();
+  }
+
+  return "";
+};
+
+const countA = selectedRarity ? cardsA.filter(c => getRarity(c.card_key) === selectedRarity).length : 0;
+const countB = selectedRarity ? cardsB.filter(c => getRarity(c.card_key) === selectedRarity).length : 0;
 
                 return countA - countB;
               })
@@ -251,16 +306,29 @@ const countB = selectedRarity
 
                 if (!selectedRarity) return null;
 
-                const getRarity = (key: string) => key.split("-")[0].trim();
-
 const filteredCards = cards.filter(c => {
+
+  // ✅ TCG PROMOS FIX
+  if (c.card_key.startsWith("RR")) {
+    return selectedRarity === "PR";
+  }
+
+  if (setId === "friendshipsbegin") {
+    const match = c.card_key.match(/SD01([A-Z]+)\d+/);
+    return match && match[1] === selectedRarity;
+  }
+
+  if (setId === "FW") {
+    const match = c.card_key.match(/BP01([A-Z]+)\d+/);
+    return match && match[1] === selectedRarity;
+  }
+
   return c.card_key.split("-")[0].trim() === selectedRarity;
 });
-
                 if (filteredCards.length === 0) return null;
 
                 return (
-                  <div key={userId} className="border rounded-xl p-4 bg-card">
+                  <div key={userId} className="border rounded-xl p-4 bg-card w-full shadow-sm">
 
                     {/* USER HEADER */}
                     <div className="font-semibold mb-1">
@@ -289,10 +357,23 @@ const filteredCards = cards.filter(c => {
                     <div className="grid gap-2 grid-cols-4 sm:grid-cols-6">
                       {filteredCards
                         .sort((a, b) => {
-                          const numA = parseInt(a.card_key.split("-")[1]);
-                          const numB = parseInt(b.card_key.split("-")[1]);
-                          return numA - numB;
-                        })
+  if (setId === "friendshipsbegin") {
+    return a.card_key.localeCompare(b.card_key);
+  }
+
+  const getNum = (key: string) => {
+    // handles RR01 (no dash)
+    if (!key.includes("-")) {
+      const match = key.match(/(\d+)$/);
+      return match ? parseInt(match[1]) : 0;
+    }
+
+    // handles normal SR-012
+    return parseInt(key.split("-")[1]);
+  };
+
+  return getNum(a.card_key) - getNum(b.card_key);
+})
                         .map((card) => (
   <div key={card.id} className="relative">
     

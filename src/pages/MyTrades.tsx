@@ -22,7 +22,6 @@ export default function MyTrades() {
       user = data.session?.user;
     }
 
-    // 🔴 handle logged-out state properly
     if (!user) {
       setHiddenSets([]);
       setTradeSets([]);
@@ -105,6 +104,38 @@ export default function MyTrades() {
       totalCards: 136,
       category: "fun-moments",
     },
+    {
+  id: "FW",
+  title: "Fantasy",
+  setName: "Wonderland",
+  imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
+  totalCards:  191,
+  category: "fantasy-wonderland",
+},
+{
+  id: "friendshipsbegin",
+  title: "Friendships",
+  setName: "Begin",
+  imageUrl: "/thumbnails/friendship-begins-thumbnail.jpg",
+  totalCards: 194,
+  category: "friendships-begin",
+},
+{
+  id: "9",
+  title: "Promotional",
+  setName: "Cards",
+  imageUrl: "/thumbnails/promos-thumbnail.jpg",
+  totalCards: 5,
+  category: "promo-cards",
+},
+{
+  id: "tcgpromos",
+  title: "TCG",
+  setName: "Promos",
+  imageUrl: "/thumbnails/tcgpromosthumbnail.jpg",
+  totalCards: 6,
+  category: "tcgpromos",
+},
   ];
 
   return (
@@ -173,7 +204,11 @@ export default function MyTrades() {
           onClick={() => navigate(`/my-trades/view/${col.id}`)}
           className="px-4 py-2 bg-[#5a3e84] text-[#f5e6a8] border border-[#d4af37] rounded-lg hover:brightness-110 transition shadow"
         >
-          {col.title} ({col.setName})
+          {col.setName
+  ? (["friendshipsbegin", "FW", "9"].includes(col.id)
+      ? `${col.title} ${col.setName}`
+      : `${col.title} (${col.setName})`)
+  : col.title}
         </button>
       ))}
   </div>

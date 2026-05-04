@@ -104,7 +104,7 @@ const FunMoments2 = () => {
     saveProgress();
   }, [flipped, loaded]);
 
-// ✅ PREVENT SPAM
+// PREVENT SPAM
 const [celebrated, setCelebrated] = useState(false);
 
 const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
@@ -114,7 +114,7 @@ const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
     }))
   );
 
-// ✅ TRIGGER CONFETTI (CORRECT LOGIC)
+// TRIGGER CONFETTI
 useEffect(() => {
   if (!loaded || celebrated) return;
 
@@ -122,7 +122,7 @@ useEffect(() => {
   const owned = Object.values(flipped).filter(Boolean).length;
 
   if (total > 0 && owned === total) {
-    fireConfetti(); // ✅ THIS IS WHAT YOU WERE MISSING
+    fireConfetti();
     setCelebrated(true);
   }
 }, [flipped, loaded, celebrated, cards.length]);
