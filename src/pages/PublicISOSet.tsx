@@ -368,9 +368,35 @@ else {
 if (card.set_id === "SD") {
   return `/friendships-begin/${card.card_key}.png`;
 }
-  if (card.set_id === "FW") {
-    return `/cards/fantasywonderland/${card.card_key}.jpg`;
+if (card.set_id === "FW") {
+  const key = card.card_key;
+
+  // ✅ ER FIX
+  if (key.startsWith("BP01ER")) {
+    const num = parseInt(key.slice(-2)) + 6;
+    return `/fantasy-wonderland/SD01ER${String(num).padStart(2, "0")}.png`;
   }
+
+  // ✅ PER FIX
+  if (key.startsWith("BP01PER")) {
+    const num = parseInt(key.slice(-2)) + 6;
+    return `/fantasy-wonderland/SD01PER${String(num).padStart(2, "0")}.png`;
+  }
+
+  // ✅ PSPR FIX (non-linear)
+  if (key.startsWith("BP01PSPR")) {
+    const PSPR = [1,2,3,5,7,8,9,12,13,18,21];
+    const index = parseInt(key.slice(-2)) - 1;
+    const real = PSPR[index];
+
+    if (!real) return ""; // skip invalid ones
+
+    return `/fantasy-wonderland/BP01PSPR${String(real).padStart(2,"0")}.png`;
+  }
+
+  // ✅ everything else
+  return `/fantasy-wonderland/${key}.png`;
+}
   const [rarity, number] = card.card_key.split("-");
 
   if (card.set_id === "tcgpromos") {

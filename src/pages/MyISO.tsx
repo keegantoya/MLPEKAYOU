@@ -125,21 +125,13 @@ setHiddenSetsTCG([]);
       });
     });
 
-    const { data: fwProgress } = await supabase
-  .from("collection_progress_raw")
-  .select("progress")
-  .eq("user_id", user.id)
-  .eq("set_id", "FW");
-
-const fwRow = fwProgress?.[0];
-
-if (fwRow?.progress) {
-  Object.entries(fwRow.progress).forEach(([key, value]) => {
+ progress?.forEach((set: any) => {
+  Object.entries(set.progress || {}).forEach(([key, value]) => {
     if (value) {
-      allOwned[`FW-${key}`] = true;
+      allOwned[`${set.set_id}-${key}`] = true;
     }
   });
-}
+});
 
     setOwned(allOwned);
 
@@ -468,16 +460,44 @@ const getRarityCode = (rarity: string) => {
         { prefix: "BP01PRR", count: 6 },
       ].flatMap(({ prefix, count }) =>
         Array.from({ length: count }, (_, i) => {
-          const key = `${prefix}${String(i + 1).padStart(2, "0")}`;
+          let num = i + 1;
+
+// FIX ER
+if (prefix === "BP01ER") {
+  num = i + 7;
+}
+
+// FIX PER
+if (prefix === "BP01PER") {
+  num = i + 7;
+}
+
+let key = `${prefix}${String(num).padStart(2, "0")}`;
+
+// FIX PSPR ONLY
+if (prefix === "BP01PSPR") {
+  const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
+  const realNum = PSPR_NUMBERS[i];
+
+  if (!realNum) return null;
+
+  key = `BP01PSPR${String(realNum).padStart(2, "0")}`;
+}
 
           if (owned[`FW-${key}`]) return null;
 
           return (
             <div key={key} className="relative w-[90px]">
               <img
-                src={`/cards/fantasywonderland/${key}.jpg`}
-                className="rounded-lg w-full"
-              />
+  src={
+    key.startsWith("BP01ER")
+      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+      : key.startsWith("BP01PER")
+      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
+      : `/fantasy-wonderland/${key}.png`
+  }
+  className="rounded-lg w-full"
+/>
 
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 {[...Array(5)].map((_, i) => (
@@ -491,6 +511,10 @@ const getRarityCode = (rarity: string) => {
               </div>
             </div>
           );
+        
+        
+        
+        
         })
       )}
     </div>
