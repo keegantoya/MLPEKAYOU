@@ -260,13 +260,6 @@ const handleForgotPassword = async () => {
     return;
   }
 
-  if (data.user) {
-    await supabase.from("profiles").insert({
-      id: data.user.id,
-      username,
-    });
-  }
-
   setNewUsername(username);
   setShowLogin(false);
   setShowSignupSuccess(true);
