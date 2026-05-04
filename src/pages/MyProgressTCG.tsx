@@ -190,6 +190,7 @@ const STRUCTURE = [
   { prefix: "BP01GR", count: 12 },
   { prefix: "BP01CR", count: 12 },
   { prefix: "BP01RR", count: 6 },
+  { prefix: "BP01PER", count: 12 },
   { prefix: "BP01PSPR", count: 11 },
   { prefix: "BP01PGR", count: 6 },
   { prefix: "BP01PCR", count: 12 },
