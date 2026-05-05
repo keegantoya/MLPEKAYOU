@@ -207,7 +207,6 @@ if (set.id === "SD") {
     if (set.id === "SD") {
       let hasStarter = false;
       let hasBonus = false;
-  // COUNT ALL SD CARDS
 Object.entries(ownedMap).forEach(([cardKey, value]) => {
   if (value !== true) return;
 
@@ -215,7 +214,6 @@ const rawKey = cardKey.replace("STARTER-", "").replace("BONUS-", "");
 
 if (rawKey.startsWith("SD01")) {
 
-    // detect starter decks
     if (
   rawKey.startsWith("SD01A") ||
   rawKey.startsWith("SD01B") ||
@@ -391,14 +389,21 @@ totalCardsInSet = FW_CARDS.length;
 
 const validSet = new Set(FW_CARDS);
 
+const progressData = row?.progress || {};
+
+const validKeys = new Set(FW_CARDS);
+
+// COUNT OWNED (same as your working page)
+Object.entries(progressData).forEach(([key, val]) => {
+  if (val && validKeys.has(key)) {
+    owned++;
+    hasAny = true;
+  }
+});
+
+// BUILD MISSING LIST
 FW_CARDS.forEach((key) => {
-
-if (ownedMap[key] && validSet.has(key)) {
-  owned++;
-  hasAny = true;
-}
-
-  if (!isHidden && hasAny) {
+  if (!isHidden && hasAny && !progressData[key]) {
 
     let rarity = key.replace("BP01", "").replace(/[0-9]/g, "");
     let displayRarity = rarity;
@@ -430,7 +435,6 @@ if (ownedMap[key] && validSet.has(key)) {
 
     missingCards.push(`${set.name} • ${formatted}`);
   }
-
 });
 
 } else if (set.id === "tcgpromos") {
