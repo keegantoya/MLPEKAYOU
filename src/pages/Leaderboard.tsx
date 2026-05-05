@@ -203,13 +203,13 @@ if (rawKey.startsWith("SD01")) {
 
     // detect starter decks
     if (
-      cardKey.startsWith("SD01A") ||
-      cardKey.startsWith("SD01B") ||
-      cardKey.startsWith("SD01C") ||
-      cardKey.startsWith("SD01D") ||
-      cardKey.startsWith("SD01E") ||
-      cardKey.startsWith("SD01F")
-    ) {
+  rawKey.startsWith("SD01A") ||
+  rawKey.startsWith("SD01B") ||
+  rawKey.startsWith("SD01C") ||
+  rawKey.startsWith("SD01D") ||
+  rawKey.startsWith("SD01E") ||
+  rawKey.startsWith("SD01F")
+) {
       hasStarter = true;
     } else {
       // everything else SD01 = bonus
@@ -306,11 +306,16 @@ if (!hideBonus) {
     }
 
     const num = String(actualIndex).padStart(2, "0");
-    const key = `BONUS-${prefix}${num}`;
+    const key = `${prefix}${num}`;
 
-    if (ownedMap[key]) {
-      continue;
-    }
+const isOwned =
+  ownedMap[key] === true ||
+  ownedMap[`BONUS-${key}`] === true ||
+  ownedMap[`STARTER-${key}`] === true;
+
+if (isOwned) {
+  continue;
+}
 
     if (!isHidden && hasBonus) {
 
@@ -425,10 +430,14 @@ if (ownedMap[key] && validSet.has(key)) {
   for (let i = 1; i <= 6; i++) {
     const key = `RR${String(i).padStart(2, "0")}`;
 
-    if (ownedMap[key]) {
-      owned++;
-      hasAny = true;
-    } else if (!isHidden && hasAny && owned < totalCardsInSet) {
+    const isOwned =
+  ownedMap[key] ||
+  ownedMap[`BONUS-${key}`];
+
+if (isOwned) {
+  owned++;
+  hasAny = true;
+} else if (!isHidden && hasAny && owned < totalCardsInSet) {
       missingCards.push(`${set.name} • ${key}`);
     }
   }

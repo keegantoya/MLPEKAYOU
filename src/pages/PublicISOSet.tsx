@@ -230,7 +230,9 @@ allCards.forEach((card) => {
 
 const actualKey = key;
 
-const value = progressData[actualKey];
+const value =
+  progressData[actualKey] ??
+  progressData[`BONUS-${actualKey}`];
 
   const isOwned =
     value === true ||
@@ -252,7 +254,9 @@ const key = card.key || `${card.rarity}-${card.number}`;
 
 const actualKey = key;
 
-const value = progressData[actualKey];
+const value =
+  progressData[actualKey] ??
+  progressData[`BONUS-${actualKey}`];
 
   const isOwned =
     value === true ||

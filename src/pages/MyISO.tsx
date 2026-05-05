@@ -115,12 +115,19 @@ setHiddenSetsTCG([]);
       .select("*")
       .eq("user_id", user.id);
 
+
+      
     const allOwned: Record<string, boolean> = {};
 
     progress?.forEach((set: any) => {
       Object.entries(set.progress || {}).forEach(([key, value]) => {
         if (value) {
-          allOwned[`${set.set_id}-${key}`] = true;
+          if (set.set_id === "SD") {
+  allOwned[`SD-${key}`] = true;
+  allOwned[`SD-BONUS-${key}`] = true;
+} else {
+  allOwned[`${set.set_id}-${key}`] = true;
+}
         }
       });
     });
@@ -302,7 +309,12 @@ const getRarityCode = (rarity: string) => {
   ) : (
   <>
 
-  {mode === "TCG" && (
+{mode === "TCG" &&
+  Array.from({ length: 6 }, (_, i) => {
+    const key = `RR${String(i + 1).padStart(2, "0")}`;
+    return owned[`tcgpromos-${key}`];
+  }).every(Boolean) === false && (
+
   <div className="border rounded-xl p-4 bg-card mb-6">
     <h2 className="text-sm md:text-base font-semibold mb-3">
       TCG Promos
@@ -312,7 +324,7 @@ const getRarityCode = (rarity: string) => {
       {Array.from({ length: 6 }, (_, i) => {
         const num = i + 1;
         const key = `RR${String(num).padStart(2, "0")}`;
-        const stateKey = `PR-${key}`;
+        const stateKey = `tcgpromos-${key}`;
 
         if (owned[stateKey]) return null;
 
@@ -322,17 +334,6 @@ const getRarityCode = (rarity: string) => {
               src={`/tcgpromos/${key}.png`}
               className="rounded-lg w-full"
             />
-
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(5)].map((_, i) => (
-                <img
-                  key={i}
-                  src={watermark}
-                  className="absolute opacity-20 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-                  style={{ top: `${i * 25 - 20}%` }}
-                />
-              ))}
-            </div>
           </div>
         );
       })}
@@ -340,43 +341,33 @@ const getRarityCode = (rarity: string) => {
   </div>
 )}
   {/* STARTER DECKS */}
-{mode === "TCG" && !hiddenSetsTCG.includes("SD_STARTERS") && (
-    <div className="border rounded-xl p-4 bg-card mb-6">
-      <h2 className="text-sm md:text-base font-semibold mb-3">
-        Friendships Begin — Starter Decks
-      </h2>
+{mode === "TCG" &&
+ !hiddenSetsTCG.includes("SD_STARTERS") &&
+ Object.keys(owned).filter(k => k.includes("SD01")).length < 126 && (
 
-      <div className="flex flex-wrap gap-4 justify-center">
-        {[
-          { code: "SD01A", src: "/starter-decks-boxes/SDTWILIGHT.png" },
-          { code: "SD01B", src: "/starter-decks-boxes/SDFLUTTERSHY.png" },
-          { code: "SD01C", src: "/starter-decks-boxes/SDPINKIEPIE.png" },
-          { code: "SD01D", src: "/starter-decks-boxes/SDAPPLEJACK.png" },
-          { code: "SD01E", src: "/starter-decks-boxes/SDRAINBOWDASH.png" },
-          { code: "SD01F", src: "/starter-decks-boxes/SDRARITY.png" },
-        ].map((deck) => {
-          let complete = true;
+  <div className="border rounded-xl p-4 bg-card mb-6">
+    <h2 className="text-sm md:text-base font-semibold mb-3">
+      Friendships Begin — Starter Decks
+    </h2>
 
-          for (let i = 1; i <= 21; i++) {
-            if (!owned[`SD-${deck.code}-${i}`]) {
-              complete = false;
-              break;
-            }
-          }
-
-          if (complete) return null;
-
-          return (
-            <img
-              key={deck.code}
-              src={deck.src}
-              className="h-20 sm:h-24 object-contain rounded-xl opacity-90"
-            />
-          );
-        })}
-      </div>
+    <div className="flex flex-wrap gap-4 justify-center">
+      {[
+        { code: "SD01A", src: "/starter-decks-boxes/SDTWILIGHT.png" },
+        { code: "SD01B", src: "/starter-decks-boxes/SDFLUTTERSHY.png" },
+        { code: "SD01C", src: "/starter-decks-boxes/SDPINKIEPIE.png" },
+        { code: "SD01D", src: "/starter-decks-boxes/SDAPPLEJACK.png" },
+        { code: "SD01E", src: "/starter-decks-boxes/SDRAINBOWDASH.png" },
+        { code: "SD01F", src: "/starter-decks-boxes/SDRARITY.png" },
+      ].map((deck) => (
+        <img
+          key={deck.code}
+          src={deck.src}
+          className="h-20 sm:h-24 object-contain rounded-xl opacity-90"
+        />
+      ))}
     </div>
-  )}
+  </div>
+)}
 
  {/* BONUS PACKS */}
 {mode === "TCG" && !hiddenSetsTCG.includes("SD_BONUS") && (
@@ -407,9 +398,9 @@ const getRarityCode = (rarity: string) => {
 
           const num = String(actualIndex).padStart(2, "0");
           const key = `${prefix}${num}`;
-          const stateKey = `SD-${key}`;
+          const stateKey = `SD-BONUS-${key}`;
 
-          if (owned[stateKey]) return null;
+if (owned[stateKey]) return null;
 
           return (
             <div key={key} className="relative w-[90px]">
