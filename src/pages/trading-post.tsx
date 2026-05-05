@@ -38,6 +38,14 @@ const avatarMap: Record<string, string> = {
   avatar015,
 };
 
+const rarityDisplayMap: Record<string, string> = {
+  PER: "※ER",
+  PSPR: "※SPR",
+  PGR: "※GR",
+  PCR: "※CR",
+  PRR: "※RR",
+};
+
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", released: true },
   { id: "5", name: "Rainbow First Edition", released: true },
@@ -70,12 +78,22 @@ const getCardImage = (card: any) => {
   if (set_id === "10") {
     return `/serialized-limited-cards/andypricepromo.jpg`;
   }
-  if (set_id === "FW") {
-    return `/cards/fantasywonderland/BP01${rarity}${String(number).padStart(2, "0")}.jpg`;
+if (set_id === "FW") {
+  const key = `BP01${rarity}${String(number).padStart(2, "0")}`;
+
+  if (key.startsWith("BP01ER")) {
+    return `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`;
   }
+
+  if (key.startsWith("BP01PER")) {
+    return `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`;
+  }
+
+  return `/fantasy-wonderland/${key}.png`;
+}
   if (set_id === "friendshipsbegin" || set_id === "SD") {
-    return `/cards/friendshipsbegin/SD01${rarity}${String(number).padStart(2, "0")}.jpg`;
-  }
+  return `/friendships-begin/SD01${rarity}${String(number).padStart(2, "0")}.png`;
+}
 
   const config: any = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
@@ -403,7 +421,7 @@ const tcg = sets.filter(s =>
               onClick={() => setSelectedRarity(rarity)}
               className="px-3 py-1 text-xs border rounded"
             >
-              {rarity}
+             {rarityDisplayMap[rarity] || rarity}
             </button>
           ))}
         </div>
@@ -511,7 +529,7 @@ const tcg = sets.filter(s =>
                   onClick={() => setSelectedRarity(rarity)}
                   className="px-3 py-1 text-xs border rounded-full hover:bg-gray-100 transition"
                 >
-                  {rarity}
+                  {rarityDisplayMap[rarity] || rarity}
                 </button>
               ))}
             </div>

@@ -90,12 +90,21 @@ const getCardImage = (card: any) => {
 
   // ✅ FANTASY WONDERLAND
 if (set_id === "FW") {
-  return `/cards/fantasywonderland/BP01${rarity}${String(number).padStart(2, "0")}.jpg`;
-}
+  const key = `BP01${rarity}${String(number).padStart(2, "0")}`;
 
+  if (key.startsWith("BP01ER")) {
+    return `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`;
+  }
+
+  if (key.startsWith("BP01PER")) {
+    return `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`;
+  }
+
+  return `/fantasy-wonderland/${key}.png`;
+}
 // ✅ FRIENDSHIPS BEGIN
-if (set_id === "SD" || set_id === "friendshipsbegin") {
-  return `/cards/friendshipsbegin/SD01${rarity}${String(number).padStart(2, "0")}.jpg`;
+if (set_id === "friendshipsbegin") {
+  return `/friendships-begin/SD01${rarity}${String(number).padStart(2, "0")}.png`;
 }
 
   // DEFAULT SETS
@@ -165,7 +174,7 @@ const loadUserISO = async (user: any) => {
   setSelectedUser(user);
 
   const { data: progress } = await supabase
-    .from("collection_progress_raw")
+    .from("collection_progress")
     .select("*")
     .eq("user_id", user.id);
 
@@ -196,18 +205,42 @@ if (row.set_id === "FW") {
   ];
 
   FW_STRUCTURE.forEach(({ prefix, count }) => {
-    for (let i = 1; i <= count; i++) {
+    for (let i = 0; i < count; i++) {
+      let num = i + 1;
+
+      // 🔥 ER starts at 07
+      if (prefix === "BP01ER") {
+        num = i + 7;
+      }
+
+      // 🔥 PER starts at 07
+      if (prefix === "BP01PER") {
+        num = i + 7;
+      }
+
+      let finalNumber = num;
+
+      // 🔥 PSPR is non-linear
+      if (prefix === "BP01PSPR") {
+        const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
+        const realNum = PSPR_NUMBERS[i];
+
+        if (!realNum) continue;
+
+        finalNumber = realNum;
+      }
+
       allCards.push({
         rarity: prefix.replace("BP01", ""),
-        number: i,
-        set_id: row.set_id
+        number: finalNumber,
+        set_id: "FW"
       });
     }
   });
 }
 
 // ✅ FRIENDSHIPS BEGIN (SD)
-else if (row.set_id === "friendshipsbegin" || row.set_id === "SD") {
+else if (row.set_id === "SD") {
   const SD_STRUCTURE = [
     { prefix: "SD01C", count: 9 },
     { prefix: "SD01U", count: 7 },
@@ -220,15 +253,23 @@ else if (row.set_id === "friendshipsbegin" || row.set_id === "SD") {
     { prefix: "SD01PRR", count: 6 },
   ];
 
-  SD_STRUCTURE.forEach(({ prefix, count }) => {
-    for (let i = 1; i <= count; i++) {
-      allCards.push({
-        rarity: prefix.replace("SD01", ""),
-        number: i,
-        set_id: row.set_id
-      });
+SD_STRUCTURE.forEach(({ prefix, count }) => {
+  for (let i = 1; i <= count; i++) {
+    let actualNumber = i;
+
+    // 🔥 FIX PER
+    if (prefix === "SD01PER") {
+      actualNumber = i + 6; // 7–18 originally
+      if (actualNumber > 16) continue; // cap at 16
     }
-  });
+
+    allCards.push({
+      rarity: prefix.replace("SD01", ""),
+      number: actualNumber,
+      set_id: "friendshipsbegin"
+    });
+  }
+});
 }
 
 // ✅ NORMAL CCG
@@ -244,12 +285,27 @@ else {
   );
 }
     allCards.forEach((card) => {
-      const key = `${card.rarity}-${card.number}`;
-      const value = progressData[key];
+      let key = "";
 
-      const isOwned =
-        value === true ||
-        value?.owned === true;
+if (card.set_id === "FW") {
+  key = `BP01${card.rarity}${String(card.number).padStart(2, "0")}`;
+}
+else if (card.set_id === "friendshipsbegin" || card.set_id === "SD") {
+  key = `SD01${card.rarity}${String(card.number).padStart(2, "0")}`;
+}
+else {
+  key = `${card.rarity}-${card.number}`;
+}
+      let value = progressData[key];
+
+if (card.set_id === "friendshipsbegin") {
+  const bonus = progressData[`BONUS-${key}`];
+const starter = progressData[`STARTER-${key}`];
+
+  value = bonus === true || starter === true;
+}
+
+const isOwned = value === true;
 
       if (!isOwned) {
         isoCards.push(card);
