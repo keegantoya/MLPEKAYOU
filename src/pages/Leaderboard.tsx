@@ -171,7 +171,21 @@ profiles?.forEach((p: any) => {
 
   sets.forEach((set) => {
 
-let row = mergedProgress[`${userId}-${set.id}`] || { progress: {} };
+let row = { progress: {} as Record<string, boolean> };
+
+if (set.id === "SD") {
+  const base = mergedProgress[`${userId}-SD`] || { progress: {} };
+  const bonus = mergedProgress[`${userId}-SD_BONUS`] || { progress: {} };
+  const starters = mergedProgress[`${userId}-SD_STARTERS`] || { progress: {} };
+
+  row.progress = {
+    ...base.progress,
+    ...bonus.progress,
+    ...starters.progress
+  };
+} else {
+  row = mergedProgress[`${userId}-${set.id}`] || { progress: {} };
+}
 
     const ownedMap: Record<string, boolean> = {};
     if (row?.progress) {
@@ -212,11 +226,9 @@ if (rawKey.startsWith("SD01")) {
 ) {
       hasStarter = true;
     } else {
-      // everything else SD01 = bonus
       hasBonus = true;
     }
 
-    // SKIP BONUS IF HIDDEN
     if (hideBonus && !cardKey.includes("SD01A") &&
         !cardKey.includes("SD01B") &&
         !cardKey.includes("SD01C") &&
@@ -308,11 +320,9 @@ if (!hideBonus) {
     const num = String(actualIndex).padStart(2, "0");
     const key = `${prefix}${num}`;
 
-const isOwned =
-  ownedMap[key] === true ||
-  ownedMap[`BONUS-${key}`] === true ||
-  ownedMap[`STARTER-${key}`] === true;
-
+const isOwned = Object.keys(ownedMap).some(k =>
+  k.endsWith(key)
+);
 if (isOwned) {
   continue;
 }
@@ -504,9 +514,6 @@ if (
   };
 
   return (
-
-
-    
     <div
   className="min-h-screen"
   style={{
