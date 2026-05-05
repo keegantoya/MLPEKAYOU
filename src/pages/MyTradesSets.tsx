@@ -278,21 +278,30 @@ if (set.id === "friendshipsbegin") {
     { prefix: "BP01PRR", count: 6 },
   ];
 
-  FW_STRUCTURE.forEach(({ prefix, count }) => {
-    for (let i = 1; i <= count; i++) {
-      const num = String(i).padStart(2, "0");
+ FW_STRUCTURE.forEach(({ prefix, count }) => {
+  if (prefix === "BP01ER") {
+    for (let i = 0; i < 6; i++) {
+      const num = String(i + 7).padStart(2, "0");
 
       cards.push({
-  key: `${prefix}${num}`,
-  image:
-    prefix === "BP01ER"
-      ? `/fantasy-wonderland/SD01ER${num}.png`
-      : prefix === "BP01PER"
-      ? `/fantasy-wonderland/SD01PER${num}.png`
-      : `/fantasy-wonderland/${prefix}${num}.png`
-});
+        key: `BP01ER${num}`,
+        image: `/fantasy-wonderland/SD01ER${num}.png`
+      });
     }
-  });
+    return;
+  }
+  for (let i = 1; i <= count; i++) {
+    const num = String(i).padStart(2, "0");
+
+    cards.push({
+      key: `${prefix}${num}`,
+      image:
+        prefix === "BP01PER"
+          ? `/fantasy-wonderland/SD01PER${num}.png`
+          : `/fantasy-wonderland/${prefix}${num}.png`
+    });
+  }
+});
 
 } else if (set.id === "tcgpromos") {
 
