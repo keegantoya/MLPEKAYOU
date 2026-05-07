@@ -26,6 +26,7 @@ const sets = [
 { id: "5", name: "Rainbow First Edition", released: true, type: "ccg" },
 { id: "7", name: "Fun Moments First Edition", released: true, type: "ccg" },
 { id: "8", name: "Fun Moments Second Edition", released: true, type: "ccg" },
+//{ id: "3", name: "Eternal Moon Third Edition", released: true, type: "ccg" },//
 
 { id: "9", name: "CCG Promos", released: true, type: "ccg_promo" },
 { id: "10", name: "Limited Promos", released: true, type: "limited" },
@@ -39,6 +40,7 @@ const sets = [
 const rarityDisplayMap: Record<string, string> = {
   "SN": "⬦N",
   "SHINING ZR": "⬦ZR",
+  "SZR": "⬦ZR",
   "LC": "PR",
   "PER": "※ER",
   "PSPR": "※SPR",
@@ -71,6 +73,7 @@ const setConfigs: Record<string, any> = {
   "5": { rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 } },
   "7": { rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
   "8": { rarities: { N: 20, SN: 20, R:35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
+ // "3": { rarities: { R: 60, SR: 40, SSR: 40, HR: 60, LSR: 32, UR: 18, SGR: 16, ZR: 14, SC: 7, SZR: 3 } },
   "9": { rarities: { PR: 5 } },
   "10": { rarities: { LC: 1 } }
 };
@@ -113,6 +116,7 @@ if (set_id === "friendshipsbegin") {
     "2": { folder: "second-edition-moon", prefix: "M2" },
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
+    "3": { folder: "third-edition-moon", prefix: "M3" },
   };
 
   const c = config[set_id];
@@ -197,7 +201,7 @@ if (row.set_id === "FW") {
     { prefix: "BP01GR", count: 12 },
     { prefix: "BP01CR", count: 12 },
     { prefix: "BP01RR", count: 6 },
-    { prefix: "BP01PER", count: 6 },
+    { prefix: "BP01PER", count: 12 },
     { prefix: "BP01PSPR", count: 11 },
     { prefix: "BP01PGR", count: 6 },
     { prefix: "BP01PCR", count: 12 },
@@ -210,11 +214,6 @@ if (row.set_id === "FW") {
 
       // 🔥 ER starts at 07
       if (prefix === "BP01ER") {
-        num = i + 7;
-      }
-
-      // 🔥 PER starts at 07
-      if (prefix === "BP01PER") {
         num = i + 7;
       }
 
@@ -357,7 +356,7 @@ setSelectedRarity(null);
     placeholder="Search for a user..."
     value={search}
     onChange={(e) => handleSearch(e.target.value)}
-    className="w-full rounded-full border border-gray-300 px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
+    className="w-full rounded-full border border-gray-300 px-4 py-2 text-base sm:text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
   />
 
   {results.length > 0 && (
@@ -611,15 +610,31 @@ setSelectedRarity(null);
               ← Back to Rarities
             </button>
 
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-              {(userISO[selectedSet]?.[selectedRarity] || []).map((card, i) => (
-                <img
-                  key={i}
-                  src={getCardImage(card)}
-                  className="w-full rounded-md hover:scale-105 transition"
-                />
-              ))}
-            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 [grid-auto-flow:dense]">
+  {(userISO[selectedSet]?.[selectedRarity] || []).map((card, i) => {
+
+    const isDoubleCard =
+      selectedSet === "3" &&
+      card.rarity === "SZR" &&
+      card.number === 1;
+
+    return (
+      <div
+        key={i}
+        className={`relative ${
+          isDoubleCard
+            ? "col-span-2 aspect-[10/7]"
+            : "aspect-[5/7]"
+        }`}
+      >
+        <img
+          src={getCardImage(card)}
+          className="w-full h-full object-cover rounded-md hover:scale-105 transition"
+        />
+      </div>
+    );
+  })}
+</div>
           </div>
         )}
 

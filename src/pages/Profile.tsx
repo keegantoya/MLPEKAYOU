@@ -56,7 +56,6 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [discord, setDiscord] = useState("");
   const [savingDiscord, setSavingDiscord] = useState(false);
-  const [discordLocked, setDiscordLocked] = useState(false);
   const [isHeiManTou, setIsHeiManTou] = useState(false);
 
   useEffect(() => {
@@ -85,9 +84,8 @@ setAvatar(savedAvatar);
         .single();
 
       if (profileData?.discord_username) {
-        setDiscord(profileData.discord_username);
-          setDiscordLocked(true);
-      }
+  setDiscord(profileData.discord_username);
+}
     }
   };
 
@@ -233,17 +231,12 @@ if (isHeiManTou) {
 
         <div className="flex gap-2 max-w-md">
           <input
-            type="text"
-            placeholder="Enter Discord username"
-            value={discord}
-            disabled={discordLocked}
+  type="text"
+  placeholder="Enter Discord username"
+  value={discord}
             onChange={(e) => setDiscord(e.target.value)}
-            className={`w-full border rounded-lg px-3 py-2 ${
-              discordLocked ? "bg-muted text-muted-foreground cursor-not-allowed" : ""
-            }`}
+            className="w-full border rounded-lg px-3 py-2"
           />
-
-          {!discordLocked && (
             <button
               onClick={async () => {
                 if (!discord.trim()) return;
@@ -256,14 +249,12 @@ if (isHeiManTou) {
                 });
 
                 setSavingDiscord(false);
-                setDiscordLocked(true);
               }}
               disabled={savingDiscord}
               className="px-4 py-2 bg-primary text-white rounded-lg"
             >
               {savingDiscord ? "Saving..." : "Save"}
             </button>
-          )}
         </div>
       </div>
     </div>
@@ -296,6 +287,18 @@ if (isHeiManTou) {
       ))}
     </div>
   </div>
+
+  <div className="sm:hidden mt-8 flex justify-center">
+  <button
+    onClick={async () => {
+      await supabase.auth.signOut();
+      navigate("/");
+    }}
+    className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 shadow-md hover:brightness-110"
+  >
+    Logout
+  </button>
+</div>
 
 </div>
         </div>

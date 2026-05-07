@@ -81,7 +81,7 @@ const sets = [
     GR: 12,
     CR: 12,
     RR: 6,
-    PER: 6,
+    PER: 12,
     PSPR: 11,
     PGR: 6,
     PCR: 12,
@@ -95,7 +95,7 @@ const sets = [
   },
   {
     id: "10",
-    name: "Serialized & Limited Cards",
+    name: "Andy Price Promo",
     rarities: { LC: 1 }
   },
   {
@@ -107,12 +107,25 @@ const sets = [
 
 const rarityDisplayMap: Record<string, string> = {
   "SHINING ZR": "⬦ZR",
+  "SZR": "⬦ZR",
   "SN": "⬦N",
 };
 
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState<any[]>([]);
-  const [openProfile, setOpenProfile] = useState<string | null>(null);
+const [openProfile, setOpenProfile] = useState<string | null>(null);
+const [openSet, setOpenSet] = useState<Record<string, string | null>>({});
+useEffect(() => {
+  if (openProfile) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "auto";
+  }
+
+  return () => {
+    document.body.style.overflow = "auto";
+  };
+}, [openProfile]);
 
   useEffect(() => {
     const load = async () => {
@@ -143,6 +156,9 @@ progress?.forEach((row: any) => {
       const { data: profiles } = await supabase
         .from("profiles")
         .select("*");
+        const { data: tradingData } = await supabase
+  .from("trading_profiles")
+  .select("*");
 
       const profileMap: Record<string, any> = {};
 profiles?.forEach((p: any) => {
@@ -151,6 +167,11 @@ profiles?.forEach((p: any) => {
     hiddenSets: p.iso_hidden_sets || []
   };
 });
+const tradingMap: Record<string, string> = {};
+
+(tradingData || []).forEach((p: any) => {
+  tradingMap[p.user_id] = p.discord_username;
+});
       const totals: Record<string, any> = {};
 
       Object.keys(profileMap).forEach((userId) => {
@@ -158,15 +179,16 @@ profiles?.forEach((p: any) => {
 
   if (!totals[userId]) {
     totals[userId] = {
-      id: userId,
-      username: profile?.username || "Anonymous",
-      avatar: profile?.avatar_url,
-      total: 0,
-      missing: [] as string[],
-      hiddenSets: profile?.hiddenSets || [],
-      mastered: [],
-      notStarted: []
-    };
+  id: userId,
+  username: profile?.username || "Anonymous",
+  avatar: profile?.avatar_url,
+  discord_username: tradingMap[userId] || null,
+  total: 0,
+  missing: [] as string[],
+  hiddenSets: profile?.hiddenSets || [],
+  mastered: [],
+  notStarted: []
+};
   }
 
   sets.forEach((set) => {
@@ -286,7 +308,6 @@ if (!anyStarterOwned && !hideStarters) {
   totals[userId].notStarted.push("Friendships Begin — Character Starter Decks");
 }
 
-  // BONUS PACK ISO (CORRECT KEYS)
 if (!hideBonus) {
 
   if (!hasBonus) {
@@ -310,7 +331,6 @@ if (!hideBonus) {
 
     let actualIndex = i;
 
-    // match your real PER offset
     if (prefix === "SD01PER") {
       actualIndex = i + 6;
     }
@@ -331,12 +351,24 @@ if (isOwned) {
       let displayRarity = rarity;
       let special = false;
 
-      if (rarity === "PER") {
-        displayRarity = "ER";
-        special = true;
-      }
+      if (rarity.startsWith("P")) {
+  special = true;
+  displayRarity = rarity.slice(1);
+}
 
-      const formatted = `${special ? "※" : ""}SD01-${displayRarity}${num}`;
+if (rarity === "PER") {
+  displayRarity = "ER";
+  special = true;
+}
+
+      let formattedRarity = displayRarity;
+
+if (rarityDisplayMap[formattedRarity]) {
+  formattedRarity = rarityDisplayMap[formattedRarity];
+}
+const prefixMark = special ? "※" : "";
+
+const formatted = `${prefixMark}${formattedRarity}-${num}`;
 
       missingCards.push(`${set.name} • ${formatted}`);
     }
@@ -393,7 +425,6 @@ const progressData = row?.progress || {};
 
 const validKeys = new Set(FW_CARDS);
 
-// COUNT OWNED (same as your working page)
 Object.entries(progressData).forEach(([key, val]) => {
   if (val && validKeys.has(key)) {
     owned++;
@@ -401,37 +432,46 @@ Object.entries(progressData).forEach(([key, val]) => {
   }
 });
 
-// BUILD MISSING LIST
 FW_CARDS.forEach((key) => {
   if (!isHidden && hasAny && !progressData[key]) {
 
-    let rarity = key.replace("BP01", "").replace(/[0-9]/g, "");
-    let displayRarity = rarity;
-    let special = false;
+let rarity = key.replace("BP01", "").replace(/[0-9]/g, "");
+let displayRarity = rarity;
+let special = false;
 
-    if (rarity === "PER") {
-      displayRarity = "ER";
-      special = true;
-    }
-    if (rarity === "PSPR") {
-      displayRarity = "SPR";
-      special = true;
-    }
-    if (rarity === "PGR") {
-      displayRarity = "GR";
-      special = true;
-    }
-    if (rarity === "PCR") {
-      displayRarity = "CR";
-      special = true;
-    }
-    if (rarity === "PRR") {
-      displayRarity = "RR";
-      special = true;
-    }
+// ✅ ANY rarity starting with P becomes special
+if (rarity.startsWith("P")) {
+  special = true;
+  displayRarity = rarity.slice(1); // REMOVE the P
+}
 
-    const num = key.slice(-2);
-    const formatted = `${special ? "※" : ""}BP01-${displayRarity}${num}`;
+// ✅ PER is still special but maps to ER
+if (rarity === "PER") {
+  displayRarity = "ER";
+  special = true;
+}
+let formattedRarity = displayRarity;
+
+if (rarityDisplayMap[formattedRarity]) {
+  formattedRarity = rarityDisplayMap[formattedRarity];
+}
+
+const prefixMark = special ? "※" : "";
+
+const num = key.slice(-2);
+
+const rawNum = parseInt(num);
+
+let displayNum = rawNum;
+let variant = "";
+
+// CORRECT PER LOGIC (alternating)
+if (rarity === "PER") {
+  displayNum = Math.ceil(rawNum / 2);
+  variant = rawNum % 2 === 1 ? "(Day)" : "(Night)";
+}
+
+const formatted = `${prefixMark}${formattedRarity}-${String(displayNum).padStart(2,"0")} ${variant}`;
 
     missingCards.push(`${set.name} • ${formatted}`);
   }
@@ -474,7 +514,8 @@ if (isOwned) {
           displayRarity = rarityDisplayMap[displayRarity];
         }
 
-        missingCards.push(`${set.name} • ${displayRarity}-${i}`);
+        const padded = String(i).padStart(3, "0");
+missingCards.push(`${set.name} • ${displayRarity}-${padded}`);
       }
     }
   });
@@ -517,6 +558,22 @@ if (
     return avatarMap[file] || avatar001;
   };
 
+  const groupMissingBySet = (missing: string[]) => {
+  const grouped: Record<string, string[]> = {};
+
+  missing.forEach((entry) => {
+    const [setName, rest] = entry.split(" • ");
+
+    if (!grouped[setName]) {
+      grouped[setName] = [];
+    }
+
+    grouped[setName].push(rest);
+  });
+
+  return grouped;
+};
+
   return (
     <div
   className="min-h-screen"
@@ -538,7 +595,7 @@ if (
 />
 </div>
 
-<div className="mb-20">
+<div className="mb-30">
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {leaders.map((user, index) => {
             const isOpen = openProfile === user.id;
@@ -547,7 +604,7 @@ if (
               <div
   key={index}
   className={`relative bg-white border border-gray-200 rounded-2xl p-5 cursor-pointer transition
-  ${isOpen ? "z-50 shadow-2xl" : "z-0 shadow-md hover:shadow-xl hover:-translate-y-0.5"}
+  ${isOpen ? "z-50 shadow-2xl" : "z-0 shadow-md hover:shadow-xl"}
 `}
   onClick={() =>
     setOpenProfile(isOpen ? null : user.id)
@@ -666,105 +723,176 @@ if (
                   </div>
                 </div>
 
-                {/* ✅ POPUP */}
                 {isOpen && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[95%] bg-white border border-gray-200 rounded-xl p-4 shadow-2xl z-20">
-                    <div className="text-sm">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    
+    {/* BACKDROP CLICK CLOSE */}
+    <div
+      className="absolute inset-0"
+      onClick={() => setOpenProfile(null)}
+    />
 
-                      <div className="text-xs text-muted-foreground leading-snug mb-2">
-  These are the cards this user is missing from all released sets.
-</div>
+    {/* MODAL BOX */}
+    <div className="relative w-[90%] max-w-lg max-h-[85vh] overflow-y-auto bg-white border border-gray-200 rounded-xl p-4 shadow-2xl">
 
-{user.mastered?.length > 0 && (
-  <div className="text-xs text-emerald-600 font-medium mb-2 space-y-1">
-    {user.mastered.map((setName: string, i: number) => {
+      {/* CLOSE BUTTON */}
+      <button
+        className="absolute top-2 right-3 text-sm font-bold"
+        onClick={() => setOpenProfile(null)}
+      >
+        ✕
+      </button>
 
-      if (setName === "Serialized & Limited Cards") {
-        return (
-          <div key={i}>
-            {user.username} has the Andy Price promo.
-          </div>
-        );
-      }
+      <div className="text-sm">
+        <div className="flex items-center gap-3 mb-1">
 
-      return (
-        <div key={i}>
-          {user.username} has completed {setName}.
-        </div>
-      );
-    })}
-  </div>
-)}
+  <img
+    src={getAvatar(user.avatar)}
+    className="w-10 h-10 rounded-full"
+  />
 
-{user.hiddenSets.length > 0 && (
-  <div className="text-xs text-red-500 mb-2">
-    {user.hiddenSets.map((setId: string, i: number) => {
-      let name = sets.find(s => s.id === setId)?.name;
+  <div className="leading-tight">
+    <div className="font-semibold text-sm">
+      {user.username}
+    </div>
 
-if (setId === "SD_STARTERS") {
-  name = "Friendships Begin — Starter Decks";
-}
-
-if (setId === "SD_BONUS") {
-  name = "Friendships Begin — Bonus Packs";
-}
-
-return (
-  <div key={i}>
-    {user.username} is not collecting {name}.
-  </div>
-);
-    })}
-  </div>
-)}
-{user.notStarted?.length > 0 && (
-  <div className="text-xs text-muted-foreground italic mb-2">
-    {user.notStarted.map((setName: string, i: number) => {
-
-  if (setName === "Serialized & Limited Cards") {
-    return (
-      <div key={i}>
-        {user.username} does not yet have the Andy Price promo.
+    {user.discord_username && (
+      <div className="text-xs text-muted-foreground">
+        My Discord is {user.discord_username}! Reach out to me if you have my ISOs!
       </div>
-    );
-  }
-
-  return (
-    <div key={i}>
-      {user.username} has not yet started collecting {setName}.
-    </div>
-  );
-})}
+    )}
   </div>
-)}
 
-                      <div className="font-semibold mb-1">
-                        {user.username}
-                      </div>
-
-                      <div className="max-h-40 overflow-y-auto text-xs space-y-1">
-  {user.missing.length === 0 ? (
-    <div className="text-green-500 font-semibold">
-      ✅ 100% Complete
-    </div>
-  ) : (
-    user.missing.map((card: string, i: number) => {
-  const [setName, rest] = card.split(" • ");
-
-  return (
-    <div key={i} className="text-muted-foreground">
-      <span className="font-semibold">{setName}</span>
-      {" • "}
-      {rest}
-    </div>
-  );
-})
-  )}
 </div>
 
-                    </div>
+        {/* COMPLETED */}
+        {user.mastered?.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 h-px bg-[#5a3e84]/40" />
+              <div className="text-[10px] font-semibold text-[#5a3e84] uppercase tracking-wide whitespace-nowrap">
+                {user.username}'s completed sets.
+              </div>
+              <div className="flex-1 h-px bg-[#5a3e84]/40" />
+            </div>
+
+            <div className="text-xs text-emerald-600 font-medium mb-2 space-y-1">
+              {user.mastered.map((setName: string, i: number) => {
+                if (setName === "Serialized & Limited Cards") {
+                  return <div key={i}>Has Andy Price promo</div>;
+                }
+                return <div key={i}>Completed {setName}</div>;
+              })}
+            </div>
+          </>
+        )}
+
+        {/* NOT COLLECTING */}
+        {user.hiddenSets.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 h-px bg-[#5a3e84]/40" />
+              <div className="text-[10px] font-semibold text-[#5a3e84] uppercase tracking-wide whitespace-nowrap">
+                NOT COLLECTING
+              </div>
+              <div className="flex-1 h-px bg-[#5a3e84]/40" />
+            </div>
+
+            <div className="text-xs text-red-500 mb-2">
+              {user.hiddenSets.map((setId: string, i: number) => {
+                let name = sets.find(s => s.id === setId)?.name;
+
+                if (setId === "SD_STARTERS") {
+                  name = "Friendships Begin — Starter Decks";
+                }
+                if (setId === "SD_BONUS") {
+                  name = "Friendships Begin — Bonus Packs";
+                }
+
+                return <div key={i}>{name}</div>;
+              })}
+            </div>
+          </>
+        )}
+
+        {/* NOT STARTED */}
+        {user.notStarted?.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 h-px bg-[#5a3e84]/40" />
+              <div className="text-[10px] font-semibold text-[#5a3e84] uppercase tracking-wide whitespace-nowrap">
+                NOT STARTED
+              </div>
+              <div className="flex-1 h-px bg-[#5a3e84]/40" />
+            </div>
+
+            <div className="text-xs text-muted-foreground mb-2">
+              {user.notStarted.map((setName: string, i: number) => (
+                <div key={i}>{setName}</div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* MISSING HEADER */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 h-px bg-[#5a3e84]/40" />
+          <div className="text-[10px] font-semibold text-[#5a3e84] uppercase tracking-wide whitespace-nowrap">
+            {user.username}'s missing cards
+          </div>
+          <div className="flex-1 h-px bg-[#5a3e84]/40" />
+        </div>
+
+        {/* MISSING CARDS */}
+        {(() => {
+          const grouped = groupMissingBySet(user.missing);
+
+          return user.missing.length === 0 ? (
+            <div className="text-green-500 font-semibold">
+              ✅ 100% Complete
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {Object.entries(grouped).map(([setName, cards]) => {
+                const isOpenSet = openSet[user.id] === setName;
+
+                return (
+                  <div key={setName}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenSet((prev) => ({
+                          ...prev,
+                          [user.id]: isOpenSet ? null : setName
+                        }));
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-md text-xs font-semibold border border-[#b9a3e3]/60 shadow-sm"
+                      style={{
+                        background: "linear-gradient(90deg, #f5f0ff 0%, #e6dbff 40%, #d6c8ff 60%, #f5f0ff 100%)",
+                        color: "#2f1f4a"
+                      }}
+                    >
+                      {setName}
+                    </button>
+
+                    {isOpenSet && (
+                      <div className="mt-1 ml-2 space-y-1 text-xs text-muted-foreground max-h-40 overflow-y-auto">
+                        {cards.map((card, i) => (
+                          <div key={i}>{card}</div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                );
+              })}
+            </div>
+          );
+        })()}
+
+      </div>
+    </div>
+  </div>
+)}
 
               </div>
             );

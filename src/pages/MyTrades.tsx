@@ -53,7 +53,6 @@ export default function MyTrades() {
   // initial load
   loadData();
 
-  // 🔥 THIS IS THE FIX (same as your other pages)
   const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -182,15 +181,18 @@ export default function MyTrades() {
               ))}
           </div>
 
-          {/* DIVIDER */}
-          <div className="my-10 border-t border-gray-300" />
-
-          {/* TRADE SETS */}
-          <img
-  src={myTradesBadge}
-  alt="My Trades"
-  className="mx-auto h-10 sm:h-14 md:h-16 object-contain"
-/>
+         {/* DIVIDER WITH MY TRADES */}
+<div className="flex items-center my-10">
+  <div className="flex-grow border-t border-gray-300" />
+  
+  <img
+    src={myTradesBadge}
+    alt="My Trades"
+    className="mx-4 h-10 sm:h-14 md:h-16 object-contain"
+  />
+  
+  <div className="flex-grow border-t border-gray-300" />
+</div>
 
           {tradeSets.length > 0 ? (
   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-items-center">

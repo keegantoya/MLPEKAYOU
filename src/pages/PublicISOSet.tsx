@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import KayouHeader from "@/components/KayouHeader";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 type TradeCard = {
   id: string;
@@ -17,6 +16,7 @@ const sets: Record<string, any> = {
   "2": { name: "ETERNAL MOON SECOND EDITION" },
   "5": { name: "RAINBOW FIRST EDITION" },
   "7": { name: "FUN MOMENTS FIRST EDITION" },
+   "3": { name: "ETERNAL MOON THIRD EDITION" },
 
   "9": { name: "PROMOTIONAL CARDS" },
   "TCG_PROMOS": { name: "TCG PROMOS" },
@@ -32,6 +32,7 @@ const rarityMap: Record<string, string[]> = {
   "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
   "7": ["N","SN","R","SR","SSR","UR","CR"],
   "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR" ],
+  "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
 
   "9": ["PR"],
   "TCG_PROMOS": ["PR"],
@@ -57,6 +58,20 @@ const setConfigs: Record<string, any> = {
   "8": {
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
   },
+  "3": {
+  rarities: {
+    R: 60,
+    SR: 40,
+    SSR: 40,
+    HR: 60,
+    LSR: 32,
+    UR: 18,
+    SGR: 16,
+    ZR: 14,
+    SC: 7,
+    SZR: 3
+  }
+},
   "9": {
     rarities: { PR: 5 }
   },
@@ -177,28 +192,30 @@ else if (row.set_id === "FW") {
   const FW_STRUCTURE = [
     { prefix: "BP01C", count: 48 },
     { prefix: "BP01U", count: 18 },
-    { prefix: "BP01ER", count: 6 },
+    { prefix: "BP01ER", count: 6, start: 7 },
     { prefix: "BP01SR", count: 14 },
     { prefix: "BP01SPR", count: 28 },
     { prefix: "BP01GR", count: 12 },
     { prefix: "BP01CR", count: 12 },
     { prefix: "BP01RR", count: 6 },
-    { prefix: "BP01PER", count: 6 },
+    { prefix: "BP01PER", count: 12 },
     { prefix: "BP01PSPR", count: 11 },
     { prefix: "BP01PGR", count: 6 },
     { prefix: "BP01PCR", count: 12 },
     { prefix: "BP01PRR", count: 6 },
   ];
 
-  FW_STRUCTURE.forEach(({ prefix, count }) => {
-    for (let i = 1; i <= count; i++) {
-      allCards.push({
-        rarity: prefix.replace("BP01", ""),
-        number: i,
-        key: `${prefix}${String(i).padStart(2,"0")}`
-      });
-    }
-  });
+FW_STRUCTURE.forEach(({ prefix, count, start = 1 }) => {
+  for (let i = 0; i < count; i++) {
+    const num = i + start;
+
+    allCards.push({
+      rarity: prefix.replace("BP01", ""),
+      number: num,
+      key: `${prefix}${String(num).padStart(2,"0")}`
+    });
+  }
+});
 
 }
 else if (row.set_id === "tcgpromos") {
@@ -330,23 +347,10 @@ else if (row.set_id === "tcgpromos") {
 
 else {
 
-  if (
-    (rarity === "LC" && hasDiscord) ||
-
-    (
-      rarity === "SC" ||
-      rarity === "ZR" ||
-      rarity === "SHINING ZR" ||
-      rarity === "USR" ||
-      rarity === "CR" ||
-      rarity === "UGR" ||
-      rarity === "XR"
-    ) && hasAnyProgress ||
-
-    (![
-      "SC","ZR","SHINING ZR","USR","CR","UGR","XR","LC"
-    ].includes(rarity) && hasOwnedInRarity)
-  ) {
+if (
+  (rarity === "LC" && hasDiscord) ||
+  hasAnyProgress
+) {
     isoMap[userId].push({
       id: `${userId}-${row.set_id}-${key}`,
       user_id: userId,
@@ -374,20 +378,13 @@ if (card.set_id === "SD") {
 }
 if (card.set_id === "FW") {
   const key = card.card_key;
+if (key.startsWith("BP01ER")) {
+  return `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`;
+}
+ if (key.startsWith("BP01PER")) {
+  return `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`;
+}
 
-  // ✅ ER FIX
-  if (key.startsWith("BP01ER")) {
-    const num = parseInt(key.slice(-2)) + 6;
-    return `/fantasy-wonderland/SD01ER${String(num).padStart(2, "0")}.png`;
-  }
-
-  // ✅ PER FIX
-  if (key.startsWith("BP01PER")) {
-    const num = parseInt(key.slice(-2)) + 6;
-    return `/fantasy-wonderland/SD01PER${String(num).padStart(2, "0")}.png`;
-  }
-
-  // ✅ PSPR FIX (non-linear)
   if (key.startsWith("BP01PSPR")) {
     const PSPR = [1,2,3,5,7,8,9,12,13,18,21];
     const index = parseInt(key.slice(-2)) - 1;
@@ -421,6 +418,7 @@ if (card.set_id === "FW") {
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
     "8": { folder: "fun-moments-two", prefix: "FM2" },
+    "3": { folder: "third-edition-moon", prefix: "M3" },
   };
 
   const c = config[card.set_id];
@@ -457,16 +455,31 @@ if (card.set_id === "FW") {
           Back to All ISOs
         </button>
 
-        <h1 className="block w-fit mx-auto mb-6 px-6 py-2
-  rounded-lg
-  bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84]
-  border border-[#d4af37]/40
-  font-bold text-2xl sm:text-3xl tracking-wide
-  text-[#f5e6a8]
-  [text-shadow:1px_1px_0_#3b2a6a,-1px_-1px_0_#ffffff40]
-  shadow-sm">
-          {set?.name}
-        </h1>
+        <h1
+  className="
+    block
+    w-full
+    sm:w-fit
+    mx-auto
+    mb-6
+    px-4 sm:px-6
+    py-2
+    text-center
+    rounded-lg
+    bg-gradient-to-b
+    from-[#7c5aa6]
+    to-[#5a3e84]
+    border border-[#d4af37]/40
+    font-bold
+    text-xl sm:text-3xl
+    tracking-wide
+    text-[#f5e6a8]
+    [text-shadow:1px_1px_0_#3b2a6a,-1px_-1px_0_#ffffff40]
+    shadow-sm
+  "
+>
+  {set?.name}
+</h1>
 
         {!isPromoSet && setId && rarityMap[setId] && (
           <>
@@ -488,6 +501,8 @@ if (card.set_id === "FW") {
 }`}
 >
   {rarity === "SHINING ZR"
+  ? "⬦ZR"
+   : rarity === "SZR"
   ? "⬦ZR"
   : rarity === "SN"
   ? "⬦N"
@@ -605,7 +620,7 @@ if (card.set_id === "FW") {
       </div>
     )}
 
-    <div className="grid gap-2 grid-cols-4 sm:grid-cols-6">
+    <div className="grid gap-2 grid-cols-4 sm:grid-cols-6 [grid-auto-flow:dense]">
       {filteredCards
         .sort((a, b) => {
           const getNumber = (key: string) => {
@@ -620,30 +635,29 @@ if (card.set_id === "FW") {
           const numB = getNumber(b.card_key);
           return numA - numB;
         })
-        .map((card) => (
-          <div key={card.id} className="relative">
+        .map((card) => {
+  const isDoubleCard =
+    card.set_id === "3" &&
+    card.card_key === "SZR-1";
+
+  return (
+    <div
+      key={card.id}
+      className={`relative ${
+        isDoubleCard
+          ? "col-span-2 aspect-[10/7]"
+          : ""
+      }`}
+    >
 
             <img
               src={getCardImage(card)}
               className="w-full rounded-md"
-            />
-
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {[...Array(5)].map((_, i) => (
-                  <img
-                    key={i}
-                    src={watermark}
-                    className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-                    style={{ top: `${i * 25 - 20}%` }}
-                  />
-                ))}
-              </div>
-            </div>
-
-          </div>
-        ))}
-    </div>
+             />
+        </div>
+      );
+    })}
+</div>
 
   </div>
 );

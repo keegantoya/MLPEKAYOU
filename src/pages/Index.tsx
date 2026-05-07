@@ -15,6 +15,7 @@ const sets = [
   { id: "5", rarities: { R:30, SR:15, FR:18, TR:12, TGR:8, MTR:18, SSR:15, UR:15, USR:8, XR:7 }},
   { id: "7", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 }},
   { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }},
+  { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, "SZR":1 }},
   { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
   { id: "10", rarities: { LC: 1 } }
 ];
@@ -105,6 +106,7 @@ useEffect(() => {
       { id: "5", rarities: { R:30, SR:15, FR:18, TR:12, TGR:8, MTR:18, SSR:15, UR:15, USR:8, XR:7 }},
       { id: "7", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 }},
       { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }},
+      { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, "SZR":1 }},
       { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
       { id: "10", rarities: { LC: 1 } }
     ];
@@ -297,7 +299,7 @@ useEffect(() => {
 >
       <KayouHeader />
 
-      <section className="w-full pt-4 pb-2">
+      <section className="w-full pt-0 sm:pt-4 pb-2">
   <div className="max-w-7xl mx-auto flex items-center justify-center gap-6">
 
     {/* LEFT PANEL */}
@@ -313,12 +315,12 @@ useEffect(() => {
     </div>
 
     {/* CAROUSEL */}
-    <div className="relative w-full max-w-4xl h-[400px] overflow-hidden rounded-lg shadow-md">
+    <div className="relative w-full max-w-4xl h-[220px] sm:h-[300px] md:h-[400px] overflow-hidden rounded-lg shadow-md">
 
       <img
         src={images[currentIndex]}
         alt="Carousel"
-        className="w-full object-cover transition duration-700 ease-in-out"
+        className="w-full h-full object-cover transition duration-700 ease-in-out"
       />
 
       {/* LEFT */}
@@ -431,6 +433,36 @@ useEffect(() => {
     <div className="text-xs">Cards for Trade</div>
     <div className="text-lg font-bold">{stats.trades}</div>
   </div>
+
+</div>
+
+{/* MOBILE SOCIALS */}
+
+<div className="lg:hidden mt-5 flex items-center justify-center gap-6 px-4">
+
+  <a
+    href="https://discord.gg/mlpekayou"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <img
+      src="/website-assets/discordlogo.png"
+      alt="Discord"
+      className="h-12 w-auto drop-shadow-md"
+    />
+  </a>
+
+  <a
+    href="https://www.tiktok.com/@keanaex"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <img
+      src="/website-assets/tiktoklogo.png"
+      alt="TikTok"
+      className="h-14 w-auto drop-shadow-md"
+    />
+  </a>
 
 </div>
 

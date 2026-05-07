@@ -2,7 +2,6 @@ import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 
 const FriendshipBegins = () => {
@@ -10,6 +9,32 @@ const FriendshipBegins = () => {
   const [loaded, setLoaded] = useState(false);
   const [celebrated, setCelebrated] = useState(false);
   const [activeDeck, setActiveDeck] = useState<number | null>(null);
+
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+const rarityButtonNames: Record<string, string> = {
+  SD01C: "C",
+  SD01U: "U",
+  SD01SR: "SR",
+  SD01SPR: "SPR",
+  SD01GR: "GR",
+  SD01CR: "CR",
+  SD01ER: "ER",
+  SD01PER: "※ER",
+  SD01PRR: "※RR"
+};
+
+const rarityContainerNames: Record<string, string> = {
+  SD01C: "COMMON CARDS",
+  SD01U: "UNCOMMON CARDS",
+  SD01SR: "SILVER RARE CARDS",
+  SD01SPR: "SAPPHIRE RARE CARDS",
+  SD01GR: "GOLD RARE CARDS",
+  SD01CR: "COLORFUL RARE CARDS",
+  SD01ER: "EMERALD RARE CARDS",
+  SD01PER: "※EMERALD RARE",
+  SD01PRR: "※RUBY RARE"
+};
 
   const fireConfetti = () => {
     confetti({
@@ -234,39 +259,43 @@ const getDeckCards = (deckCode: string) => {
 
       <div className="container py-8">
 
-        {/* HEADER */}
-        <div className="mb-6 flex items-center px-2">
-          <button
-            onClick={() => window.history.back()}
-            className="text-sm text-amber-900 hover:text-amber-700 mr-3 whitespace-nowrap"
-          >
-            ← Back
-          </button>
+       {/* HEADER */}
+<div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-0 mb-8 mt-6 sm:mt-0">
 
-          <h1 className="text-lg font-semibold text-center flex-1">
-            {set.name}
-          </h1>
-        </div>
+  {/* Back Button */}
+  <button
+    onClick={() => window.history.back()}
+    className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+  >
+    <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+      ← Back
+    </span>
+  </button>
 
-        {/* DESCRIPTION */}
-        <div className="text-center text-sm md:text-base text-gray-500 max-w-3xl md:max-w-5xl mx-auto mt-2 px-4 space-y-3">
-  <p>
-    Below you will find checklists for all starter decks and bonus packs.
-  </p>
+  {/* Center Content */}
+  <div className="flex-1 text-center">
 
-  <p>
-    Each starter decks contains every card listed in that deck.
-  </p>
+    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
+      {set.name}
+    </h1>
 
-  <p>
-    Due to their abundance, starter decks themselves will not be available for trade or ISO.
-  </p>
+    <div className="flex items-center justify-center gap-2 sm:gap-4 mt-5 mb-1">
+      <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
 
-  <p>
-    Bonus pack cards will be available for trade and ISO. 
-  </p>
-  <div className="text-center text-sm md:text-base text-gray-500 max-w-3xl md:max-w-5xl mx-auto mt-2 mb-6 px-4 space-y-3">
-</div>
+      <span className="text-[10px] sm:text-xs tracking-[0.18em] sm:tracking-[0.3em] font-semibold text-[#8b6a2b] uppercase text-center">
+        SD01
+      </span>
+
+      <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
+    </div>
+
+    <div className="text-sm md:text-base text-[#555] max-w-3xl mx-auto leading-relaxed px-4 space-y-3">
+
+    </div>
+
+  </div>
+
+  <div className="hidden sm:block w-[72px]" />
 </div>
 
         {!loaded ? (
@@ -298,9 +327,9 @@ const getDeckCards = (deckCode: string) => {
 }`}
         >
           <img
-            src={starterDeckImages[i + 1]}
-            className="h-20 sm:h-24 object-contain rounded-xl"
-          />
+  src={starterDeckImages[i + 1]}
+  className="h-20 sm:h-24 w-20 sm:w-24 object-contain object-center mx-auto rounded-xl"
+/>
 
           <p className="text-xs text-center mt-1 text-gray-600">
             {deck.name}
@@ -313,180 +342,231 @@ const getDeckCards = (deckCode: string) => {
 
 {/* OPEN DECK (UNDER THE ROW) */}
 {activeDeck !== null && (
-  <div className="mb-10">
+  <div className="mb-10 rounded-3xl border border-[#d4af37]/40 bg-gradient-to-br from-white/80 to-[#f6f0ff]/70 backdrop-blur-sm shadow-lg p-4 sm:p-6">
 
-    <h2 className="text-center text-sm text-[#5c4022] mb-4">
-      {starterDeckGroups[activeDeck].name} Starter Deck
-    </h2>
-    <div className="flex justify-center mb-4">
-  <button
-onClick={() => {
-  const updated = { ...flipped };
-  const deck = starterDeckGroups[activeDeck];
+    {/* TITLE */}
+    <div className="text-center mb-5">
 
-const cards = getDeckCards(deck.code);
+      <h2 className="text-lg sm:text-xl font-bold text-[#5a3e84]">
+        {starterDeckGroups[activeDeck].name} Starter Deck
+      </h2>
 
-const isComplete = cards.every((key) => flipped[`STARTER-${key}`]);
-const shouldComplete = !isComplete;
+    </div>
 
-cards.forEach((key) => {
-  updated[`STARTER-${key}`] = shouldComplete;
-});
+    {/* COMPLETE BUTTON */}
+    <div className="flex justify-center mb-6">
+      <button
+        onClick={() => {
+          const updated = { ...flipped };
+          const deck = starterDeckGroups[activeDeck];
 
-  setFlipped(updated);
-}}
-    className="text-xs sm:text-sm px-4 py-2 rounded-xl bg-purple-100 hover:bg-purple-200 transition shadow-sm"
-  >
-    CLICK HERE IF YOU OWN THE FULL DECK
-  </button>
-</div>
+          const cards = getDeckCards(deck.code);
 
-    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-{getDeckCards(starterDeckGroups[activeDeck].code).map((key) => {
-  const stateKey = `STARTER-${key}`;
+          const isComplete = cards.every(
+            (key) => flipped[`STARTER-${key}`]
+          );
 
-  return (
-    <div
-      key={key}
-      className="aspect-[5/7] cursor-pointer perspective relative"
-      onClick={() => toggleFlip(stateKey)}
-    >
-      <div
-        className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-          flipped[stateKey] ? "rotate-y-180" : ""
-        }`}
+          const shouldComplete = !isComplete;
+
+          cards.forEach((key) => {
+            updated[`STARTER-${key}`] = shouldComplete;
+          });
+
+          setFlipped(updated);
+        }}
+        className="text-xs sm:text-sm px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/50 shadow-md hover:brightness-110 transition"
       >
-        {/* FRONT */}
-        <img
-          src={`/friendships-begin/${key}.png`}
-          className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-        />
-
-{/* BACK */}
-<img
-  src={
-    // C06–C09 (deck-specific)
-    key.includes("C06") ||
-    key.includes("C07") ||
-    key.includes("C08") ||
-    key.includes("C09")
-      ? `/tcg-card-backs/${key}BACK.png`
-
-      // RR (starter decks)
-      : key.startsWith("SD01RR")
-        ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.png`
-
-        // ER (ALL ER, but NOT PER)
-        : key.includes("ER") && !key.includes("PER")
-          ? `/tcg-card-backs/SCENECARDBACK.png`
-
-          // default
-          : "/card-backs/tcgdefaultback.png"
-  }
-  className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-/>
-{/* WATERMARK */}
-<div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
-</div>
-      </div>
+        MARK FULL DECK COMPLETE
+      </button>
     </div>
-  );
-})}
+
+    {/* CARD GRID */}
+    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      {getDeckCards(starterDeckGroups[activeDeck].code).map((key) => {
+        const stateKey = `STARTER-${key}`;
+
+        return (
+          <div
+            key={key}
+            className="aspect-[5/7] cursor-pointer perspective relative hover:scale-[1.02] transition-transform"
+            onClick={() => toggleFlip(stateKey)}
+          >
+            <div
+              className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+                flipped[stateKey] ? "rotate-y-180" : ""
+              }`}
+            >
+
+              {/* FRONT */}
+              <img
+                src={`/friendships-begin/${key}.png`}
+                className="absolute w-full h-full object-cover rounded-xl backface-hidden shadow-md"
+              />
+
+              {/* BACK */}
+              <img
+                src={
+                  key.includes("C06") ||
+                  key.includes("C07") ||
+                  key.includes("C08") ||
+                  key.includes("C09")
+                    ? `/tcg-card-backs/${key}BACK.png`
+                    : key.startsWith("SD01RR")
+                    ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.png`
+                    : key.includes("ER") && !key.includes("PER")
+                    ? `/tcg-card-backs/SCENECARDBACK.png`
+                    : "/card-backs/tcgdefaultback.png"
+                }
+                className="absolute w-full h-full object-cover rounded-xl rotate-y-180 backface-hidden shadow-md"
+              />
+
+            </div>
+          </div>
+        );
+      })}
     </div>
+
   </div>
 )}
-            {sections.slice(0, 1).map((section, sectionIndex) => {
-              return (
-                <div key={sectionIndex}>
 
-                  {/* STARTER DECK IMAGE (ALL SECTIONS) */}
-<div className="flex justify-center mb-2">
+{/* BONUS PACK DIVIDER */}
+<div className="flex items-center justify-center gap-3 sm:gap-5 mt-10 mb-6">
+
+  <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px] sm:max-w-[180px]" />
+
   <img
-    src={starterDeckImages[sectionIndex]}
-    alt={section.title}
-    className="h-20 sm:h-28 object-contain"
+    src="/starter-decks-boxes/SDBONUSPACKS.png"
+    alt="Bonus Packs"
+    className="h-16 sm:h-20 object-contain drop-shadow-md"
   />
+
+  <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px] sm:max-w-[180px]" />
+
 </div>
 
 
-                  {/* SECTION TITLE */}
-                  <h2 className="text-center text-xs sm:text-sm text-[#5c4022] mb-3 mt-4 tracking-wide">
-                    {section.title}
-                  </h2>
+{/* BONUS PACK RARITY BUTTONS */}
+<div className="flex flex-wrap justify-center gap-2 mt-2 mb-10">
+  {BONUS_STRUCTURE.map(({ prefix, count }) => {
+    const complete = (() => {
+      for (let i = 1; i <= count; i++) {
+        let actualIndex = i;
 
-                  {/* GRID */}
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                    {BONUS_STRUCTURE.flatMap(({ prefix, count }) =>
-  Array.from({ length: count }, (_, i) => {
-    let actualIndex = i + 1;
+        if (prefix === "SD01PER") {
+          actualIndex = i + 6;
+        }
 
-    if (prefix === "SD01PER") {
-      actualIndex = i + 7;
-      if (actualIndex > 118) return null;
-    }
+        const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
+        if (!flipped[`BONUS-${key}`]) return false;
+      }
+      return true;
+    })();
 
-    const num = String(actualIndex).padStart(2, "0");
-    const key = `${prefix}${num}`;
-    const stateKey = `BONUS-${key}`;
-    const isFlipped = flipped[stateKey];
-
+    
     return (
-      <div
-        key={key}
-        className="aspect-[5/7] cursor-pointer perspective relative"
-        onClick={() => toggleFlip(stateKey)}
-      >
-        <div
-          className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-            isFlipped ? "rotate-y-180" : ""
+      <button
+        key={prefix}
+        onClick={() => {
+          const el = document.getElementById(`rarity-${prefix}`);
+          if (!el) return;
+
+          const yOffset = -80;
+          const y =
+            el.getBoundingClientRect().top +
+            window.pageYOffset +
+            yOffset;
+
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }}
+        className={`px-3 py-1 text-xs md:text-sm rounded-full border transition-all
+          ${
+            complete
+              ? "bg-[#5a3e84] text-white border-[#5a3e84]"
+              : "border-[#d4af37] text-[#5a3e84] hover:bg-[#f5e6ff]"
           }`}
-        >
-          <img
-            src={`/friendships-begin/${key}.png`}
-            className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-          />
-
-          <img
-  src={
-    key.startsWith("SD01ER") || key.startsWith("SD01PER")
-      ? "/tcg-card-backs/SCENECARDBACK.png"
-
-      : key.startsWith("SD01PRR")
-        ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`
-
-        : getCardBack()
-  }
-  className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-/>
-          {/* WATERMARK */}
-<div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
-</div>
-        </div>
-      </div>
+      >
+        {rarityButtonNames[prefix]}
+      </button>
     );
-  }).filter(Boolean)
-)}
-                  </div>
+  })}
+</div>
 
+{/* BONUS PACK RARITY SECTIONS */}
+{BONUS_STRUCTURE.map(({ prefix, count }) => (
+  <div key={prefix} id={`rarity-${prefix}`} className="mb-10">
+
+    <div className="relative bg-white border border-gray-200 rounded-xl p-3 md:p-4 pt-8">
+
+      {/* COLLAPSE BUTTON */}
+      <button
+        onClick={() =>
+          setCollapsed((prev) => ({
+            ...prev,
+            [prefix]: !prev[prefix],
+          }))
+        }
+        className="absolute -top-2 -right-2 text-xs px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 shadow-sm"
+      >
+        {collapsed[prefix] ? "+" : "−"}
+      </button>
+
+      {/* TITLE */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-xs md:text-sm font-semibold text-gray-700">
+        {rarityContainerNames[prefix]}
+      </div>
+
+      {!collapsed[prefix] && (
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {Array.from({ length: count }, (_, i) => {
+            let actualIndex = i + 1;
+
+            if (prefix === "SD01PER") {
+              actualIndex = i + 7;
+              if (actualIndex > 118) return null;
+            }
+
+            const num = String(actualIndex).padStart(2, "0");
+            const key = `${prefix}${num}`;
+            const stateKey = `BONUS-${key}`;
+            const isFlipped = flipped[stateKey];
+
+            return (
+              <div
+                key={key}
+                className="aspect-[5/7] cursor-pointer perspective relative"
+                onClick={() => toggleFlip(stateKey)}
+              >
+                <div
+                  className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+                    isFlipped ? "rotate-y-180" : ""
+                  }`}
+                >
+                  {/* FRONT */}
+                  <img
+                    src={`/friendships-begin/${key}.png`}
+                    className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+                  />
+
+                  {/* BACK */}
+                  <img
+                    src={
+                      key.startsWith("SD01ER") || key.startsWith("SD01PER")
+                        ? "/tcg-card-backs/SCENECARDBACK.png"
+                        : key.startsWith("SD01PRR")
+                          ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`
+                          : getCardBack()
+                    }
+                    className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+                  />
                 </div>
-              );
-            })}
+              </div>
+            );
+          }).filter(Boolean)}
+        </div>
+      )}
+    </div>
+  </div>
+))}
 
           </div>
         )}

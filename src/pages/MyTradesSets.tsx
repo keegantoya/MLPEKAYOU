@@ -2,7 +2,6 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 const sets = [
   {
@@ -39,6 +38,13 @@ const sets = [
     folder: "fun-moments-two",
     prefix: "FM2",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
+  },
+  {
+    id: "3",
+    name: "Eternal Moon: Third Edition",
+    folder: "third-edition-moon",
+    prefix: "M3",
+    rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, "SZR": 3 }
   },
   {
     id: "9",
@@ -79,6 +85,7 @@ export default function MyTradesSets() {
   return rarity;
 };
 
+  const [collapsedRarities, setCollapsedRarities] = useState<Record<string, boolean>>({});
   const [progressMap, setProgressMap] = useState<Record<string, any>>({});
   const [tradeCards, setTradeCards] = useState<Record<string, boolean>>({});
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -342,6 +349,56 @@ const hasStarterDeck = set.id === "friendshipsbegin" &&
     )
   );
 
+const rarityOrders: Record<string, string[]> = {
+
+  // Eternal Moon
+  "1": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
+  "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
+  "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
+
+  // Rainbow
+  "5": ["R","SR","FR","TR","TGR","MTR","SSR","UR","USR","XR"],
+
+  // Fun Moments
+  "7": ["N","SN","R","SR","SSR","UR","CR"],
+  "8": ["N","SN","R","SR","SSR","UR","UGR","CR"],
+
+  // Fantasy Wonderland
+  "FW": [
+    "C",
+    "U",
+    "ER",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "RR",
+    "※ER",
+    "※SPR",
+    "※GR",
+    "※CR",
+    "※RR"
+  ],
+
+  // Friendships Begin
+  "friendshipsbegin": [
+    "C",
+    "U",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "ER",
+    "※ER",
+    "※RR"
+  ],
+
+  // Promos
+  "9": ["PR"],
+  "tcgpromos": ["PR"]
+
+};
+
   return (
     <div className="min-h-screen bg-background">
       <KayouHeader />
@@ -461,83 +518,184 @@ const hasStarterDeck = set.id === "friendshipsbegin" &&
     )}
 
 
-          <div className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-            {ownedBonusCards.map((card) => {
-              const key = card.key;
-              const isTrade = tradeCards[key];
-              const isStarterDeck =
-  set.id === "friendshipsbegin" && key.includes("-");
+          <div className="space-y-8">
 
-              return (
-                <div
-                  key={key}
-                  onClick={() => {
-  if (!isStarterDeck) toggleTrade(key);
-}}
-                  className={`relative rounded-xl p-[2px] ${isStarterDeck ? "" : "cursor-pointer"} ${
-  isTrade ? "border-2 border-green-500" : ""
-}`}
-                >
-                  <img
-                    src={
-  set.id === "9"
-  ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
-  : set.id === "tcgpromos"
-  ? `/tcgpromos/${card.key}.png`
-  : card.image || `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+  {Object.entries(
+    ownedBonusCards.reduce((acc: Record<string, any[]>, card) => {
+
+      let rarity = card.rarity || "OTHER";
+
+      // TCG parsing
+      if (
+  set.id === "FW" ||
+  set.id === "friendshipsbegin" ||
+  set.id === "tcgpromos"
+) {
+
+        const match = card.key.match(
+          /(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|SSR|ZR|HR|LSR|SGR|SZR|UR|R|U|C)/
+        );
+
+        rarity = match?.[0] || "OTHER";
+
+        if (set.id === "tcgpromos") {
+  rarity = "PR";
 }
-                    className="rounded-lg w-full"
-                  />
 
-                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
-</div>
-    </div>
-                  
+        if (rarity === "PER") rarity = "※ER";
+        if (rarity === "PSPR") rarity = "※SPR";
+        if (rarity === "PCR") rarity = "※CR";
+        if (rarity === "PRR") rarity = "※RR";
+        if (rarity === "PGR") rarity = "※GR";
+      }
+
+      if (!acc[rarity]) {
+        acc[rarity] = [];
+      }
+
+      acc[rarity].push(card);
+
+      return acc;
+
+    }, {})
+  )
+    .sort(([a], [b]) => {
+      const currentOrder = rarityOrders[set.id] || [];
+
+const indexA = currentOrder.indexOf(a);
+const indexB = currentOrder.indexOf(b);
+
+      return indexB - indexA;
+    })
+    .map(([rarity, rarityCards]: [string, any[]]) => {
+
+      const collapseKey = `${set.id}-${rarity}`;
+      const isCollapsed = collapsedRarities[collapseKey];
+
+      return (
+
+        <div key={rarity}>
+
+          {/* HEADER */}
+          <button
+            onClick={() =>
+              setCollapsedRarities((prev) => ({
+                ...prev,
+                [collapseKey]: !prev[collapseKey],
+              }))
+            }
+            className="relative w-full flex items-center justify-center gap-3 mb-3 group"
+          >
+
+            <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
+
+            <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+              {rarity}
+            </span>
+
+            <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
+
+            <div className="absolute right-0 text-[#8b6a2b] text-sm">
+              {isCollapsed ? "+" : "−"}
+            </div>
+
+          </button>
+
+          {!isCollapsed && (
+
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+
+              {rarityCards.map((card) => {
+
+                const key = card.key;
+                const isTrade = tradeCards[key];
+
+                const isStarterDeck =
+                  set.id === "friendshipsbegin" &&
+                  key.includes("-");
+
+                const isDoubleCard =
+                  set.id === "moon3hidden" &&
+                  card.rarity === "SZR" &&
+                  card.number === 1;
+
+                return (
+
                   <div
-  onClick={(e) => e.stopPropagation()}
-  className="absolute bottom-1 right-1 flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow"
->
-  {editMode && (
-    <button
-      onClick={() => changeQuantity(key, -1)}
-      className="px-1 leading-none hover:text-[#ffd700]"
-    >
-      −
-    </button>
-  )}
+                    key={key}
+                    onClick={() => {
+                      if (!isStarterDeck) toggleTrade(key);
+                    }}
+                    className={`relative rounded-xl p-[2px] ${
+                      isStarterDeck ? "" : "cursor-pointer"
+                    } ${
+                      isTrade ? "border-2 border-green-500" : ""
+                    } ${
+                      isDoubleCard
+                        ? "col-span-2 aspect-[10/7]"
+                        : "aspect-[5/7]"
+                    }`}
+                  >
 
-  <span className="px-1 font-semibold">
-    {quantities[key] || 1}
-  </span>
+                    <img
+                      src={
+                        set.id === "9"
+                          ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+                          : set.id === "tcgpromos"
+                          ? `/tcgpromos/${card.key}.png`
+                          : card.image ||
+                            `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+                      }
+                      className="rounded-lg w-full"
+                    />
 
-  {editMode && (
-    <button
-      onClick={() => changeQuantity(key, 1)}
-      className="px-1 leading-none hover:text-[#ffd700]"
-    >
-      +
-    </button>
-  )}
-</div>
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute bottom-1 right-1 flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow"
+                    >
 
-                  {isTrade && (
-                    <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow">
-                      ✓
+                      {editMode && (
+                        <button
+                          onClick={() => changeQuantity(key, -1)}
+                          className="px-1 leading-none hover:text-[#ffd700]"
+                        >
+                          −
+                        </button>
+                      )}
+
+                      <span className="px-1 font-semibold">
+                        {quantities[key] || 1}
+                      </span>
+
+                      {editMode && (
+                        <button
+                          onClick={() => changeQuantity(key, 1)}
+                          className="px-1 leading-none hover:text-[#ffd700]"
+                        >
+                          +
+                        </button>
+                      )}
+
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+
+                    {isTrade && (
+                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow">
+                        ✓
+                      </div>
+                    )}
+
+                  </div>
+                );
+              })}
+
+            </div>
+          )}
+
+        </div>
+      );
+    })}
+
+</div>
           </>
         )}
       </div>

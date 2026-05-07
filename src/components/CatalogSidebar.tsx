@@ -10,11 +10,11 @@ const categories: Category[] = [
   { name: "All Collections", slug: "all", count: 0 },
   { name: "Eternal Moon", slug: "eternal-moon", count: 3 },
   { name: "Star", slug: "star", count: 1 },
-  { name: "Rainbow", slug: "rainbow", count: 2 },
+  { name: "Rainbow", slug: "rainbow", count: 1 },
   { name: "Fun Moments", slug: "fun-moments", count: 2 },
-  { name: "Trading Card Game", slug: "tcg", count: 3 },
-  { name: "Promotional Cards", slug: "promos", count: 5 },
-  { name: "Serialized/Limited", slug: "serialized", count: 1 },
+  { name: "Trading Card Game", slug: "tcg", count: 2 },
+  { name: "Promotional Cards", slug: "promos", count: 3 },
+  { name: "Other Kayou Merch", slug: "merch", count: 3 },
 ];
 
 interface CatalogSidebarProps {

@@ -101,6 +101,10 @@ const KayouHeader = () => {
  const [avatarSrc, setAvatarSrc] = useState<string | null>(() => {
   return sessionStorage.getItem("avatar");
 });
+const [showMobileLeaderboardMenu, setShowMobileLeaderboardMenu] = useState(false);
+const [showMobileHomeMenu, setShowMobileHomeMenu] = useState(false);
+const [showMobileProgressMenu, setShowMobileProgressMenu] = useState(false);
+const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -178,7 +182,7 @@ useEffect(() => {
     return () => subscription.unsubscribe();
   }, []);
 
- useEffect(() => {
+useEffect(() => {
   const hasSeen = localStorage.getItem("seenAnnouncement");
 
   if (!hasSeen) {
@@ -278,11 +282,54 @@ const handleForgotPassword = async () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8] shadow-md">
-  <div className="w-full flex h-20 items-center px-2 sm:px-4 relative justify-between">
-
+<header
+  className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8] shadow-md ${
+    !window.matchMedia('(display-mode: standalone)').matches
+      ? 'top-0'
+      : 'top-0'
+  }`}
+>
+ <div
+  className="w-full flex sm:h-20 items-center px-2 sm:px-4 relative justify-between"
+style={{
+  height: window.innerWidth < 640
+    ? `calc(44px + env(safe-area-inset-top))`
+    : `80px`,
+  paddingTop: window.innerWidth < 640
+    ? `env(safe-area-inset-top)`
+    : `0px`
+}}
+>
     {/* LEFT SIDE */}
-    <div className="flex items-center gap-3">
+    {/* LEFT SIDE */}
+<div className="flex items-center gap-3 min-w-[70px]">
+
+  {/* MOBILE PROFILE / LOGIN */}
+  <div className="sm:hidden">
+    {user ? (
+      <button
+        onClick={() => navigate("/profile")}
+        className="flex items-center"
+      >
+        <img
+  src={avatarSrc || avatar001}
+  alt="avatar"
+  className="-mt-5 h-11 w-11 rounded-full object-cover border-2 border-white/30 shadow-md"
+/>
+      </button>
+    ) : (
+      <Button
+  size="sm"
+  className="h-8 px-3 text-xs bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
+  onClick={() => {
+    setAuthMode("login");
+    setShowLogin(true);
+  }}
+>
+  Login
+</Button>
+    )}
+  </div>
 
       {user && (
   <Button
@@ -321,170 +368,10 @@ const handleForgotPassword = async () => {
   />
 </button>
 
-      {/* MOBILE ONLY MENU */}
-      <div className="sm:hidden">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-[#b48ec2]/40"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-
-          <SheetContent side="left" className="w-64 p-4 bg-neutral-900/40 backdrop-blur-xl backdrop-saturate-150 text-white border-r border-white/10">
-            <div className="flex flex-col gap-2 mt-8">
-
-              <Button
-  variant="ghost"
-  className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10"
-  onClick={() => {
-    navigate("/profile");
-    setOpen(false);
-  }}
->
-  <img
-    src={avatarSrc || avatar001}
-    alt="avatar"
-    className="h-5 w-5 rounded-full object-cover mr-2 border border-white/30"
-  />
-  Profile
-</Button>
-
-  {/* MENU BUTTONS */}
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/"); setOpen(false); }}>
-    <Home className="h-4 w-4 mr-2" />
-    Home
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/collections"); setOpen(false); }}>
-    <Grid className="h-4 w-4 mr-2" />
-    Collections
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-progress"); setOpen(false); }}>
-    <BarChart className="h-4 w-4 mr-2" />
-    CCG Progress
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/progress-tcg"); setOpen(false); }}>
-    <BarChart className="h-4 w-4 mr-2" />
-    TCG Progress
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-iso"); setOpen(false); }}>
-    <List className="h-4 w-4 mr-2" />
-    My ISO
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/my-trades"); setOpen(false); }}>
-    <Layers className="h-4 w-4 mr-2" />
-    My Inventory
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/public-iso"); setOpen(false); }}>
-  <Users className="h-4 w-4 mr-2" />
-  Open ISOs
-</Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/trading-post"); setOpen(false); }}>
-    <ArrowLeftRight className="h-4 w-4 mr-2" />
-    Open Trades
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/community"); setOpen(false); }}>
-    <Trophy className="h-4 w-4 mr-2" />
-    Community
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/leaderboard"); setOpen(false); }}>
-    <Medal className="h-4 w-4 mr-2" />
-    Leaderboard
-  </Button>
-
-  <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10" onClick={() => { navigate("/selling"); setOpen(false); }}>
-    <Tag className="h-4 w-4 mr-2" />
-    Selling
-  </Button>
-
-  <Button
-  variant="ghost"
-  className="w-full justify-start text-white hover:bg-[#b48ec2]/40 hover:text-[#f5e6a8] focus:bg-white/10 active:bg-white/10"
-  onClick={() => {
-    navigate("/faq");
-    setOpen(false);
-  }}
->
-  <List className="h-4 w-4 mr-2" />
-  FAQ
-</Button>
-
-  <div className="border-t my-3" />
-
-{/* ACTIONS (MOBILE) */}
-<div className="flex flex-col gap-3">
-
-  {!user && (
-    <>
-      <Button
-        className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
-        onClick={() => {
-          setAuthMode("login");
-          setShowLogin(true);
-          setOpen(false);
-        }}
-      >
-        LOGIN
-      </Button>
-
-      <Button
-        className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
-        onClick={() => {
-          setAuthMode("signup");
-          setShowLogin(true);
-          setOpen(false);
-        }}
-      >
-        CREATE AN ACCOUNT
-      </Button>
-    </>
-  )}
-
-  {/* DISCORD */}
-  <Button
-    className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
-    onClick={() => {
-      window.open("https://discord.gg/fb7cHz4kdD", "_blank");
-      setOpen(false);
-    }}
-  >
-    DISCORD
-  </Button>
-
-  {/* TIKTOK */}
-  <Button
-    className="w-full justify-start bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold shadow-sm hover:bg-white/20 transition-all"
-    onClick={() => {
-      window.open("https://www.tiktok.com/@keanaex", "_blank");
-      setOpen(false);
-    }}
-  >
-    TIKTOK
-  </Button>
-
 </div>
-
-</div>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-    </div>
 
     {/* CENTER LOGO */}
-    <div className="flex-1 flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2 items-center gap-2">
+    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center gap-2">
       <img
         src={logo}
         alt="MLP Kayou Wiki"
@@ -539,9 +426,19 @@ const handleForgotPassword = async () => {
 </div>
 
   </div>
+
+{/* MOBILE FAQ BUTTON */}
+<div className="sm:hidden absolute right-3 bottom-2">
+  <button
+    onClick={() => navigate("/faq")}
+    className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] text-lg font-bold shadow-sm"
+  >
+    ?
+  </button>
+</div>
 </header>
 
-      <div className="hidden sm:block sticky top-16 z-40 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8]">
+      <div className="hidden sm:block fixed top-20 left-0 right-0 z-[9999] bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8]">
   <div
   ref={menuRef}
   className="w-full px-4 py-2 flex justify-center gap-2"
@@ -763,16 +660,20 @@ const handleForgotPassword = async () => {
      <div className="text-center mb-6 text-gray-700">
   
   <div className="text-lg font-semibold mb-2 text-red-500 text-center">
-    Important Notice
+    MLPEKAYOU UPDATE NOTICE
   </div>
 
   <div className="text-sm text-gray-700 mb-4">
-    All card assets, front and back, were obtained by gaining direct access and permission from Kayou US. Please do not take these images for use other than personal.
+    The mobile version of this website has recieved a large update that may not longer be visually compatible with browsers.
   </div>
 
-  <div className="text-sm text-gray-500">
-   If you are saving them to use for an ISO post, that is not a concern. If you are saving them to use on your own public website or domain, please refrain. Reach out to me and I will guide you to the channels to get access and permission yourself instead of stealing images.
-  </div>
+<div className="text-sm text-gray-500 mb-3">
+  iPhone users: In the bottom right corner on Safari, hit "...", click "Share", "View More", and "Add to homescreen."
+</div>
+
+<div className="text-sm text-gray-500">
+  All other mobile devices: Find "..." in the top right corner, and select "Add to Home Screen."
+</div>
 
 </div>
 
@@ -1045,36 +946,274 @@ const handleForgotPassword = async () => {
     Forgot your password? Request a reset here.
   </button>
 )}
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => setShowLogin(false)}
-              >
-                Cancel
-              </Button>
+<div className="flex justify-between items-center gap-2">
 
-              <Button
-                className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
-                onClick={() => {
-  if (loginStep === "email") {
-    setLoginStep("password");
-  } else {
-    authMode === "login"
-      ? handleLoginSubmit()
-      : handleSignupSubmit();
-  }
-}}
-              >
-                Continue
-              </Button>
+  {/* MOBILE CREATE ACCOUNT */}
+  <div className="sm:hidden">
+    {authMode === "login" && (
+<Button
+  className="h-8 px-3 rounded-xl bg-gradient-to-r from-pink-400 to-pink-500 text-white border border-pink-200/40 shadow-md hover:brightness-110"
+        onClick={() => {
+          setAuthMode("signup");
+          setLoginStep("email");
+          setLoginError("");
+        }}
+      >
+        Create Account
+      </Button>
+    )}
 
-            </div>
+    {authMode === "signup" && (
+<Button
+  variant="ghost"
+  className="text-pink-500 hover:text-pink-400 hover:bg-transparent"
+        onClick={() => {
+          setAuthMode("login");
+          setLoginStep("email");
+          setLoginError("");
+        }}
+      >
+        Back to Login
+      </Button>
+    )}
+  </div>
+
+  <div className="flex gap-2 ml-auto">
+
+    <Button
+      variant="ghost"
+      onClick={() => setShowLogin(false)}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110 hover:bg-[#e8e8e0]"
+      onClick={() => {
+        if (loginStep === "email") {
+          setLoginStep("password");
+        } else {
+          authMode === "login"
+            ? handleLoginSubmit()
+            : handleSignupSubmit();
+        }
+      }}
+    >
+      Continue
+    </Button>
+
+  </div>
+
+</div>
           </div>
 
         </div>
-      )}
-    </>
-  );
+)}
+
+{/* MOBILE BOTTOM NAV */}
+<div
+  className="sm:hidden fixed bottom-0 left-0 right-0 z-[999] 
+  bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] 
+  border-t border-[#d4af37]/40
+  flex justify-around items-center
+  shadow-[0_-4px_16px_rgba(0,0,0,0.5)]"
+  style={{
+  height: "calc(58px + env(safe-area-inset-bottom))",
+  paddingBottom: "max(env(safe-area-inset-bottom), 4px)"
+}}
+>
+
+<div className="relative">
+
+  <button
+    onClick={() => {
+  setShowMobileIsoMenu(false);
+  setShowMobileLeaderboardMenu(false);
+  setShowMobileHomeMenu(false);
+
+  setShowMobileProgressMenu(!showMobileProgressMenu);
+}}
+    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
+  >
+    <Grid className="h-6 w-6" />
+  </button>
+
+{showMobileProgressMenu && (
+  <div className="absolute bottom-14 left-0 w-44 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
+
+ <button
+      className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
+      onClick={() => {
+        navigate("/my-iso");
+        setShowMobileProgressMenu(false);
+      }}
+    >
+      MY ISO
+    </button>
+
+    <button
+      className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
+      onClick={() => {
+        navigate("/my-progress");
+        setShowMobileProgressMenu(false);
+      }}
+    >
+      CCG PROGRESS
+    </button>
+
+    <button
+      className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
+      onClick={() => {
+        navigate("/progress-tcg");
+        setShowMobileProgressMenu(false);
+      }}
+    >
+      TCG PROGRESS
+    </button>
+
+  </div>
+)}
+
+</div>
+
+<div className="relative">
+
+  <button
+    onClick={() => {
+  setShowMobileProgressMenu(false);
+  setShowMobileLeaderboardMenu(false);
+  setShowMobileHomeMenu(false);
+  setShowMobileIsoMenu(!showMobileIsoMenu);
+}}
+    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
+  >
+    <List className="h-6 w-6" />
+  </button>
+
+  {showMobileIsoMenu && (
+    <div className="absolute bottom-14 left-0 w-44 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
+
+      <button
+        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10"
+        onClick={() => {
+          navigate("/public-iso");
+          setShowMobileIsoMenu(false);
+        }}
+      >
+        ALL ISO
+      </button>
+
+      <button
+        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
+        onClick={() => {
+          navigate("/trading-post");
+          setShowMobileIsoMenu(false);
+        }}
+      >
+        ALL TRADES
+      </button>
+
+    </div>
+  )}
+
+</div>
+
+  <button
+    onClick={() => navigate("/my-trades")}
+    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
+  >
+    <Layers className="h-6 w-6" />
+  </button>
+
+<div className="relative">
+
+  <button
+    onClick={() => {
+  setShowMobileProgressMenu(false);
+  setShowMobileIsoMenu(false);
+  setShowMobileHomeMenu(false);
+  setShowMobileLeaderboardMenu(!showMobileLeaderboardMenu);
+}}
+    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
+  >
+    <Medal className="h-6 w-6" />
+  </button>
+
+  {showMobileLeaderboardMenu && (
+    <div className="absolute bottom-14 right-0 w-44 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
+
+      <button
+        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10"
+        onClick={() => {
+          navigate("/leaderboard");
+          setShowMobileLeaderboardMenu(false);
+        }}
+      >
+        TOP COLLECTORS
+      </button>
+
+      <button
+        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
+        onClick={() => {
+          navigate("/community");
+          setShowMobileLeaderboardMenu(false);
+        }}
+      >
+        LEADERBOARDS
+      </button>
+
+    </div>
+  )}
+
+</div>
+
+<div className="relative">
+
+  <button
+    onClick={() => {
+  setShowMobileProgressMenu(false);
+  setShowMobileIsoMenu(false);
+  setShowMobileLeaderboardMenu(false);
+  setShowMobileHomeMenu(!showMobileHomeMenu);
+}}
+    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
+  >
+    <Home className="h-6 w-6" />
+  </button>
+
+  {showMobileHomeMenu && (
+    <div className="absolute bottom-14 right-0 w-40 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
+
+      <button
+        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10"
+        onClick={() => {
+          navigate("/");
+          setShowMobileHomeMenu(false);
+        }}
+      >
+        HOMEPAGE
+      </button>
+
+      <button
+        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
+        onClick={() => {
+          navigate("/collections");
+          setShowMobileHomeMenu(false);
+        }}
+      >
+        KAYOUUS SETS
+      </button>
+
+    </div>
+  )}
+
+</div>
+
+</div>
+</>
+);
 };
+
+
 
 export default KayouHeader;

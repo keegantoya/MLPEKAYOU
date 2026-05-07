@@ -45,7 +45,7 @@ const sets = [
     id: "3",
     name: "Eternal Moon Third Edition",
     total: 290,
-    rarities: {}
+    rarities: { R: 60, SR: 40, SSR: 40, HR:60, LSR: 32, UR: 18, SGR: 16, ZR: 14, SC: 7, SZR: 3 }
   },
   {
     id: "11",
@@ -157,7 +157,7 @@ const found = progressMap.get(set.id);
 }, []);
 
 const mainSets = sets.filter((s) =>
-  ["1", "5", "7", "2", "8"].includes(s.id)
+  ["1", "5", "7", "2", "3", "8"].includes(s.id)
 );
 
 const promoSets = sets.filter((s) =>
@@ -196,7 +196,7 @@ const promoSets = sets.filter((s) =>
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {sets
     .filter((set) =>
-      ["1", "5", "7", "2", "8"].includes(set.id) &&
+      ["1", "5", "7", "2", "3", "8"].includes(set.id) &&
       releasedRoutes[set.id]
     )
     .map((set) => {
@@ -373,25 +373,6 @@ const promoSets = sets.filter((s) =>
       );
     })}
 </div>
-       <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
-        <div className="max-w-lg mx-auto">
-          <p>This website is not run or owned by Kayou.</p>
-
-          <p className="text-[7px] sm:text-[8px] italic">
-            All rights to respective owners. All rights to Kayou.
-          </p>
-
-          <p>
-            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
-          </p>
-
-          <img
-            src="/logos/collab-logo.png"
-            alt="MLPEKAYOU x KAYOU"
-            className="mx-auto h-10 sm:h-14 opacity-90"
-          />
-        </div>
-      </footer>
       </div>
     </div>
   );

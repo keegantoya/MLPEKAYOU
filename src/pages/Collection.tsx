@@ -1,16 +1,29 @@
 import { useParams } from "react-router-dom";
 import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
+
+const slugToId: Record<string, string> = {
+  "eternal-moon-one": "1",
+  "eternal-moon-two": "2",
+  "rainbow-one": "5",
+};
 
 const Collection = () => {
-  const { id = "" } = useParams();
+  const navigate = useNavigate();
+  const params = useParams();
+
+const rawId =
+  params.id ||
+  window.location.pathname.replace("/", "");
+const id = slugToId[rawId] || rawId;
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
   const [celebrated, setCelebrated] = useState(false);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const fireConfetti = () => {
   confetti({
@@ -119,7 +132,7 @@ const Collection = () => {
 
   const sets = {
     "1": {
-      name: "Eternal Moon: First Edition",
+      name: "Eternal Moon",
       description: "The first set of Kayou cards to surface in the U.S., found on Target shelves, and the beginning of Kayou's journey to the United States. These cards are now out of print, with less than 200 boxes left in Kayou's stock at this time.",
       folder: "first-edition-moon",
       prefix: "M1",
@@ -136,7 +149,7 @@ const Collection = () => {
     },
 
     "2": {
-      name: "Eternal Moon: Second Edition",
+      name: "Eternal Moon",
       description: "The second Eternal Moon set to populate in the United States, bringing success to Kayou's ventures. This 12-pack box turned into many variants to hit shelves in places likes Target, Walmart, Gamestop, and Best Buy. This series introduced the first 'Collector's Box,' and the first ⬦ZR in the United States.",
       folder: "second-edition-moon",
       prefix: "M2",
@@ -155,7 +168,7 @@ const Collection = () => {
     },
 
     "5": {
-      name: "Rainbow: First Edition",
+      name: "Rainbow",
       description: "Kayou's first rainbow set to come to the United States, sold exclusively online, with significantly improved hit rates when compared to Chinese boxes. When pulling an XR from his box, you will never pull only one. It is always zero or two. This box was only available online.",
       folder: "rainbow-one",
       prefix: "R1",
@@ -175,6 +188,12 @@ const Collection = () => {
   };
 
   const set = sets[id as keyof typeof sets];
+
+  const dividerTextMap: Record<string, string> = {
+  "1": "First Edition",
+  "2": "Second Edition",
+  "5": "First Edition",
+};
 
   if (!set) {
     return (
@@ -352,94 +371,193 @@ if (["TGR","TR","MTR","SSR","USR","XR"].includes(rarity)) {
 
 return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
 };
+
+const rarityButtonNames: Record<string, string> = {
+  R: "R",
+  SR: "SR",
+  SSR: "SSR",
+  HR: "HR",
+  UR: "UR",
+  LSR: "LSR",
+  SGR: "SGR",
+  ZR: "ZR",
+  SC: "SC",
+  "SHINING ZR": "◇ZR",
+  FR: "FR",
+  TR: "TR",
+  TGR: "TGR",
+  MTR: "MTR",
+  USR: "USR",
+  XR: "XR"
+};
+
+const rarityContainerNames: Record<string, string> = {
+  R: "RARE CARDS",
+  SR: "SUPER RARE CARDS",
+  SSR: "SUPER SPARK RARE CARDS",
+  HR: "HOLOGRAPHIC RARE CARDS",
+  UR: "ULTRA RARE CARDS",
+  LSR: "LIMITED SUPER RARE CARDS",
+  SGR: "SECRET GOLD RARE CARDS",
+  ZR: "ZENITH RARE CARDS",
+  SC: "SECRET CARDS",
+  "SHINING ZR": "SHINING ZENITH RARE CARD",
+  FR: "FUN RARE CARDS",
+  TR: "TRANSPARENT RARE CARDS",
+  TGR: "TRANSPARENT GOLDEN RARE CARDS",
+  MTR: "MIRACLE TRANSPARENT RARE CARDS",
+  USR: "ULTRA SPECIAL RARE CARDS",
+  XR: "EXTREME RARE CARDS"
+};
+
   return (
     <div className="min-h-screen bg-white">
       <KayouHeader />
 
       <div className="container py-8">
-        <div className="mb-6 flex items-center px-2">
+{/* HEADER */}
+<div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-0 mb-8 mt-6 sm:mt-0">
 
   {/* Back Button */}
   <button
-    onClick={() => window.history.back()}
-    className="text-sm text-amber-900 hover:text-amber-700 mr-3 whitespace-nowrap"
+    onClick={() => navigate("/collections")}
+    className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
   >
-    ← Back
+    <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+      ← Back
+    </span>
   </button>
 
-  {/* Title */}
-  <h1 className="text-lg font-semibold text-center flex-1">
-    {set.name}
-  </h1>
+  {/* Center Content */}
+  <div className="flex-1 text-center">
 
+    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
+      {set.name}
+    </h1>
+
+    <div className="flex items-center justify-center gap-2 sm:gap-4 my-5">
+      <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
+
+      <span className="text-[10px] sm:text-xs tracking-[0.18em] sm:tracking-[0.3em] font-semibold text-[#8b6a2b] uppercase text-center">
+        {dividerTextMap[id] || "Collection Archive"}
+      </span>
+
+      <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
+    </div>
+
+    <p className="mt-3 text-sm md:text-base text-[#555] max-w-2xl mx-auto leading-relaxed px-2">
+      {set.description}
+    </p>
+
+  </div>
+
+  <div className="hidden sm:block w-[72px]" />
 </div>
+{!loaded ? (
+  <div className="text-center py-16 text-muted-foreground">
+    Loading collection...
+  </div>
+) : (
+  <>
+    {Object.entries(
+      cards.reduce((acc: any, card) => {
+        if (!acc[card.rarity]) acc[card.rarity] = [];
+        acc[card.rarity].push(card);
+        return acc;
+      }, {})
+    ).map(([rarity, group]: any, index) => {
 
-{/* Description */}
-<p className="text-center text-sm md:text-base text-gray-500 max-w-sm md:max-w-2xl mx-auto px-3 mt-2">
-  {set.description}
-</p>
+      return (
+        <div key={rarity} id={`rarity-${rarity}`} className="mt-6 mb-10">
 
-                {!loaded ? (
-          <div className="text-center py-16 text-muted-foreground">
-            Loading collection...
-          </div>
-        ) : (
-<div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            {cards.map((card) => {
-              const key = `${card.rarity}-${card.number}`;
-              const isFlipped = flipped[key];
+          {/* BUTTON ROW */}
+          {index === 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mb-12">
+              {Object.keys(set.rarities).map((r) => {
+                const group = cards.filter(c => c.rarity === r);
+                const done = group.every(c =>
+                  flipped[`${c.rarity}-${c.number}`]
+                );
 
-              return (
-                <div
-                  key={key}
-                  className="aspect-[5/7] cursor-pointer perspective relative"
-                  onClick={() => toggleFlip(key)}
-                >
-                  <div
-                    className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-                      isFlipped ? "rotate-y-180" : ""
-                    }`}
+                return (
+                  <button
+                    key={r}
+                    onClick={() => {
+                      const el = document.getElementById(`rarity-${r}`);
+                      if (!el) return;
+                      const y = el.getBoundingClientRect().top + window.pageYOffset - 80;
+                      window.scrollTo({ top: y, behavior: "smooth" });
+                    }}
+                    className={`px-3 py-1 text-xs md:text-sm rounded-full border
+                      ${done
+                        ? "bg-[#5a3e84] text-white border-[#5a3e84]"
+                        : "border-[#d4af37] text-[#5a3e84] hover:bg-[#f5e6ff]"}
+                    `}
                   >
-                    <img
-                      src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
-                      className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-                    />
- <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-5 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
-</div>
-    </div>
-                    <img
-                      src={getCardBack(card.rarity, card.number)}
-                      className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-                    />
-          
- <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
-</div>
-    </div>
+                    {rarityButtonNames[r] || r}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
-                     </div>
-                </div>
-              );
-            })}
+          {/* CONTAINER */}
+          <div className="relative bg-white border border-gray-200 rounded-xl p-3 md:p-4 pt-8 overflow-visible">
+
+            <button
+              onClick={() =>
+                setCollapsed((prev) => ({
+                  ...prev,
+                  [rarity]: !prev[rarity]
+                }))
+              }
+              className="absolute -top-2 -right-2 text-xs px-2 py-1 rounded border border-gray-300 bg-white shadow-sm"
+            >
+              {collapsed?.[rarity] ? "+" : "−"}
+            </button>
+
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-sm md:text-lg font-semibold text-gray-700">
+              {rarityContainerNames[rarity] || rarity}
+            </div>
+
+            {!collapsed?.[rarity] && (
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                {group.map((card: any) => {
+                  const key = `${card.rarity}-${card.number}`;
+                  const isFlipped = flipped[key];
+
+                  return (
+                    <div
+                      key={key}
+                      className="aspect-[5/7] cursor-pointer perspective relative"
+                      onClick={() => toggleFlip(key)}
+                    >
+                      <div
+                        className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
+                          isFlipped ? "rotate-y-180" : ""
+                        }`}
+                      >
+                        <img
+                          src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
+                          className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+                        />
+                        <img
+                          src={getCardBack(card.rarity, card.number)}
+                          className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
           </div>
-        )}
+        </div>
+      );
+    })}
+  </>
+)}
       </div>
     </div>
   );

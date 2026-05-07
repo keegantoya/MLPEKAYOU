@@ -455,25 +455,6 @@ const FAQ = () => {
 </div>
 
         </div>
-<footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
-        <div className="max-w-lg mx-auto">
-          <p>This website is not run or owned by Kayou.</p>
-
-          <p className="text-[7px] sm:text-[8px] italic">
-            All rights to respective owners. All rights to Kayou.
-          </p>
-
-          <p>
-            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
-          </p>
-
-          <img
-            src="/logos/collab-logo.png"
-            alt="MLPEKAYOU x KAYOU"
-            className="mx-auto h-10 sm:h-14 opacity-90"
-          />
-        </div>
-      </footer>
       </div>
 
   );

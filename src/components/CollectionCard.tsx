@@ -19,10 +19,20 @@ const CollectionCard = ({
   showProgress = true
 }: CollectionCardProps) => {
 
-  const getLink = () => {
+const getLink = () => {
   switch (id) {
+
+    case "1":
+      return "/eternal-moon-one";
+
+    case "2":
+      return "/eternal-moon-two";
+
+    case "5":
+      return "/rainbow-one";
+
     case "3":
-      return "/moon3";
+      return "/eternal-moon-three";
 
     case "4":
     case "star1":
@@ -36,24 +46,29 @@ const CollectionCard = ({
       return "/fantasy-wonderland";
 
     case "friendshipsbegin":
-      return "/friendshipsbegin";
+      return "/friendships-begin";
 
     case "9":
-      return "/promos";
+      return "/promotional-cards";
       
-      case "10":
-  return "/limited-cards";
+    case "10":
+      return "/limited-cards";
 
     case "7":
-      return "/fun-moments-1";
+      return "/fun-moments-one";
 
     case "8":
-      return "/fun-moments-2";
+  return "/fun-moments-two";
 
     case "11":
       return "/fun-moments-3";
+
     case "tcgpromos":
-      return "/tcgpromos";
+      return "/tcg-promos";
+
+      case "OTHERMERCH":
+  return "/other-kayou-merch";
+
     default:
       return `/collection/${id}`;
   }

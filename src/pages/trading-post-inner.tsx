@@ -3,18 +3,19 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 type TradeCard = {
   id: string;
   user_id: string;
   set_id: string;
   card_key: string;
+  actively_trading?: boolean;
 };
 
 const rarityMap: Record<string, string[]> = {
   "1": ["R","SR","SSR","HR","UR","LSR","SGR","SC"],
   "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
+  "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
   "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
   "7": ["N","SN","R","SR","SSR","UR","CR"],
   "8": ["N", "SN","R","SR","SSR","UR","UGR","CR"],
@@ -64,6 +65,7 @@ if (card.set_id === "FW") {
     "7": { folder: "fun-moments-one", prefix: "FM1" },
     "2": { folder: "second-edition-moon", prefix: "M2" },
     "8": { folder: "fun-moments-two", prefix: "FM2" },
+    "3": { folder: "third-edition-moon", prefix: "M3" },
   };
 
   const getRarityCode = (rarity: string) => {
@@ -93,6 +95,7 @@ export default function TradingPostInner() {
   "7": "Fun Moments: First Edition",
   "2": "Eternal Moon: Second Edition",
   "8": "Fun Moments: Second Edition",
+  "3": "Eternal Moon: Third Edition",
   "9": "Promo Cards",
   "10": "Serialized & Limited Cards",
   "friendshipsbegin": "Friendships Begin",
@@ -205,14 +208,29 @@ const trades = allTrades;
           Back to Trading Post
         </button>
 
-        <h1 className="block w-fit mx-auto mb-6 px-6 py-2
-  rounded-lg
-  bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84]
-  border border-[#d4af37]/40
-  font-bold text-2xl sm:text-3xl tracking-wide
-  text-[#f5e6a8]
-  [text-shadow:1px_1px_0_#3b2a6a,-1px_-1px_0_#ffffff40]
-  shadow-sm">
+        <h1
+  className="
+    block
+    w-fit
+    max-w-full
+    mx-auto
+    mb-6
+    px-4 sm:px-6
+    py-2
+    text-center
+    rounded-lg
+    bg-gradient-to-b
+    from-[#7c5aa6]
+    to-[#5a3e84]
+    border border-[#d4af37]/40
+    font-bold
+    text-xl sm:text-3xl
+    tracking-wide
+    text-[#f5e6a8]
+    [text-shadow:1px_1px_0_#3b2a6a,-1px_-1px_0_#ffffff40]
+    shadow-sm
+  "
+>
   {setNames[setId || ""] || `Set ${setId}`}
 </h1>
 
@@ -236,6 +254,7 @@ const trades = allTrades;
                 >
                  {(() => {
   if (rarity === "SHINING ZR") return "⬦ZR";
+   if (rarity === "SZR") return "⬦ZR";
   if (rarity === "SN") return "⬦N";
   if (rarity === "LC") return "PR";
   if (
@@ -354,50 +373,57 @@ const filteredCards = cards.filter(c => {
                     )}
 
                     {/* CARDS */}
-                    <div className="grid gap-2 grid-cols-4 sm:grid-cols-6">
-                      {filteredCards
-                        .sort((a, b) => {
-  if (setId === "friendshipsbegin") {
-    return a.card_key.localeCompare(b.card_key);
-  }
+<div className="grid gap-2 grid-cols-4 sm:grid-cols-6 [grid-auto-flow:dense]">
+  {filteredCards
+    .sort((a, b) => {
+      if (setId === "friendshipsbegin") {
+        return a.card_key.localeCompare(b.card_key);
+      }
 
-  const getNum = (key: string) => {
-    // handles RR01 (no dash)
-    if (!key.includes("-")) {
-      const match = key.match(/(\d+)$/);
-      return match ? parseInt(match[1]) : 0;
-    }
+      const getNum = (key: string) => {
+        if (!key.includes("-")) {
+          const match = key.match(/(\d+)$/);
+          return match ? parseInt(match[1]) : 0;
+        }
 
-    // handles normal SR-012
-    return parseInt(key.split("-")[1]);
-  };
+        return parseInt(key.split("-")[1]);
+      };
 
-  return getNum(a.card_key) - getNum(b.card_key);
-})
-                        .map((card) => (
-  <div key={card.id} className="relative">
-    
-    <img
-      src={getCardImage(card)}
-      className="w-full rounded-md"
-    />
+      return getNum(a.card_key) - getNum(b.card_key);
+    })
+    .map((card) => {
+      const [rarity, number] = card.card_key.split("-");
 
-    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {[...Array(5)].map((_, i) => (
-    <img
-      key={i}
-      src={watermark}
-      className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-      style={{ top: `${i * 25 - 20}%` }}
-    />
-  ))}
+      const isDoubleCard =
+        card.set_id === "3" &&
+        rarity === "SZR" &&
+        Number(number) === 1;
+
+      return (
+        <div
+          key={card.id}
+          className={`relative rounded-md overflow-hidden ${
+            isDoubleCard
+              ? "col-span-2 aspect-[10/7]"
+              : "aspect-[5/7]"
+          }`}
+        >
+          <img
+            src={getCardImage(card)}
+            className="w-full h-full object-cover rounded-md"
+          />
+
+          {card.actively_trading && (
+            <div className="absolute inset-0 bg-purple-900/80 flex items-center justify-center">
+              <span className="text-white text-[9px] sm:text-xs md:text-sm font-bold text-center px-1 leading-tight">
+                ACTIVELY<br />TRADING
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    })}
 </div>
-    </div>
-
-  </div>
-))}
-                    </div>
 
                   </div>
                 );

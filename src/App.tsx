@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabase";
+import ScrollToTop from "@/components/ScrollToTop";
 
 import Profile from "./pages/Profile";
 import Index from "./pages/Index";
@@ -41,6 +42,7 @@ import PublicISOSet from "@/pages/PublicISOSet";
 import RequireAuth from "./components/RequireAuth";
 import FAQ from "@/pages/FAQ";
 import MyProgressTCG from "./pages/MyProgressTCG";
+import OtherKayouMerch from "./pages/Other-Kayou-Merch";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +85,10 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/collections" element={<Collections />} />
       <Route path="/collection/:id" element={<Collection />} />
+<Route path="/eternal-moon-one" element={<Collection />} />
+<Route path="/eternal-moon-two" element={<Collection />} />
+<Route path="/rainbow-one" element={<Collection />} />
+<Route path="/promotional-cards" element={<Promos />} />
       <Route
   path="/my-progress"
   element={
@@ -112,22 +118,27 @@ const AppRoutes = () => {
       <Route path="/community/:id" element={<CommunitySet />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/moon3" element={<Moon3 />} />
+<Route path="/moon3-beta-keegansbuild" element={<Moon3 />} />
       <Route path="/star1" element={<Star1 />} />
       <Route path="/rainbow2" element={<Rainbow2 />} />
       <Route path="/fantasy-wonderland" element={<FantasyWonderland />} />
       <Route path="/fun-moments-2" element={<FunMoments2 />} />
+<Route path="/fun-moments-two" element={<FunMoments2 />} />
       <Route path="/fun-moments-1" element={<FunMoments1 />} />
+<Route path="/fun-moments-one" element={<FunMoments1 />} />
       <Route path="/password-reset" element={<PasswordReset />} />
       <Route path="/promos" element={<Promos />} />
+<Route path="/promotional-cards" element={<Promos />} />
       <Route path="/tcgpromos" element={<TCGPromos />} />
+<Route path="/tcg-promos" element={<TCGPromos />} />
       <Route path="/friendshipsbegin" element={<FriendshipsBegin />} />
+<Route path="/friendships-begin" element={<FriendshipsBegin />} />
       <Route path="/selling" element={<Selling />} />
       <Route path="/limited-cards" element={<LimitedCards />} />
       <Route path="/trading-post" element={<TradingPost />} />
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
-      <Route path="*" element={<NotFound />} />
       <Route path="/my-trades/:setId" element={<MyTradesSets />} />
+      <Route path="/other-kayou-merch" element={<OtherKayouMerch />} />
       <Route path="/about" element={<AboutMe />} />
       <Route path="/faq" element={<FAQ />} />
       <Route
@@ -150,6 +161,7 @@ const AppRoutes = () => {
       <Route path="/public-iso" element={<PublicISO />} />
       <Route path="/public-iso/:setId" element={<PublicISOSet />} />
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
@@ -160,9 +172,17 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+       <BrowserRouter>
+
+  <ScrollToTop />
+
+ <div
+  className="min-h-screen pt-[88px] pb-[100px] sm:pt-[120px] sm:pb-0"
+>
+    <AppRoutes />
+  </div>
+
+</BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );

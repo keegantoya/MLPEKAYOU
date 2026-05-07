@@ -85,7 +85,7 @@ const collections: Collection[] = [
     released: true,
   },
   {
-    id: "3",
+    id: "moon3hidden",
     title: "Eternal Moon",
     setName: "Three",
     imageUrl: "/thumbnails/moon-te.jpg",
@@ -133,9 +133,9 @@ const collections: Collection[] = [
     id: "10",
     title: "Limited",
     setName: "Cards",
-    imageUrl: "/thumbnails/promos-thumbnail.jpg",
+    imageUrl: "/thumbnails/limited-promos-thumbnail.jpg",
     totalCards: 1,
-    category: "serialized",
+    category: "promos",
     released: true,
   },
   {
@@ -144,17 +144,23 @@ const collections: Collection[] = [
   setName: "Promos",
   imageUrl: "/thumbnails/tcgpromosthumbnail.jpg",
   totalCards: 6,
-  category: "tcg",
+  category: "promos",
   released: true,
-}
+},
+{
+    id: "OTHERMERCH",
+    title: "Kayou US",
+    setName: "Non-Card Merch",
+    imageUrl: "/thumbnails/other-merch-tn.jpg",
+    totalCards: 6,
+    category: "merch",
+     released: true,
+  },
 ];
 
 const unreleasedSetIds = [
   "11", // Fun Moments 3
   "4",  // Star 1
-  "3",  // Moon 3
-  "tcg", // Fantasy Wonderland
-  "friendshipbegins", // Self explanatory
   "6",  // Rainbow 2
 ];
 
@@ -204,12 +210,14 @@ rawData?.forEach((row: any) => {
   const count = Object.values(row.progress || {}).filter(Boolean).length;
 
   if (row.set_id === "FW") {
-    progressMap["tcg"] = count;
-  } else if (row.set_id === "SD") {
-    progressMap["friendshipsbegin"] = count;
-  } else {
-    progressMap[row.set_id] = count;
-  }
+  progressMap["tcg"] = count;
+} else if (row.set_id === "SD") {
+  progressMap["friendshipsbegin"] = count;
+} else if (row.set_id === "OTHERMERCH") {
+  progressMap["OTHERMERCH"] = count;
+} else {
+  progressMap[row.set_id] = count;
+}
 });
 
 const { data: profile } = await supabase
@@ -249,10 +257,11 @@ setSets(updated);
     return () => subscription.unsubscribe();
   }, []);
 
-  const filtered =
-  (activeCategory === "all"
-    ? sets
-    : sets.filter((c) => c.category === activeCategory)
+const filtered =
+  (
+    activeCategory === "all"
+      ? sets.filter((c) => c.category !== "merch")
+      : sets.filter((c) => c.category === activeCategory)
   ).filter((c) => c.released);
 
   return (
@@ -265,6 +274,36 @@ setSets(updated);
   }}
 >
       <KayouHeader />
+
+      {/* MOBILE CATEGORY BAR */}
+<div className="md:hidden px-3 pt-16 pb-2 overflow-x-auto scrollbar-hide">
+  <div className="flex gap-2 min-w-max">
+
+    {[
+      { label: "All", value: "all" },
+      { label: "Moon", value: "eternal-moon" },
+      { label: "Rainbow", value: "rainbow" },
+      { label: "Fun", value: "fun-moments" },
+      { label: "TCG", value: "tcg" },
+      { label: "Promos", value: "promos" },
+      { label: "Merch", value: "merch" },
+    ].map((item) => (
+      <button
+        key={item.value}
+        onClick={() => setActiveCategory(item.value)}
+        className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition border
+          ${
+            activeCategory === item.value
+              ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border-[#d4af37]/70"
+              : "bg-white/70 text-[#5a3e84] border-[#d4af37]/30"
+          }`}
+      >
+        {item.label}
+      </button>
+    ))}
+
+  </div>
+</div>
 
       <div className="container py-8 flex gap-8">
   
@@ -282,8 +321,8 @@ setSets(updated);
 
   {/* BACK BUTTON (LEFT) */}
   <button
-  onClick={() => navigate(-1)}
-  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+  onClick={() => navigate("/")}
+  className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
 >
   <ArrowLeft className="h-4 w-4 text-[#f5e6a8]" />
   <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
@@ -291,27 +330,27 @@ setSets(updated);
 </button>
 
   {/* CENTERED BANNER */}
-  <div className="absolute left-1/2 -translate-x-1/2">
+<div className="hidden sm:block absolute left-1/2 -translate-x-1/2">
   <img
     src={collectionsBanner}
     alt="All Collections"
     className="h-20 md:h-24 lg:h-28 object-contain"
   />
-  </div>
+</div>
 
   {/* RIGHT SIDE COUNT */}
-  <div className="ml-auto text-sm text-[#555] tracking-wide">
+  <div className="hidden sm:block ml-auto text-sm text-[#555] tracking-wide">
     {filtered.length} {filtered.length === 1 ? "set" : "sets"}
   </div>
 
 </div>
 
 
-  {activeCategory === "all" && (
-    <p className="mt-4 mb-6 text-sm md:text-base text-[#555] leading-relaxed">
-      Sets will appear here in release order. Promotional cards will always appear at the bottom. If a set is released but not yet available, it is because I am still waiting on Kayou.
-    </p>
-  )}
+{activeCategory === "all" && (
+  <p className="hidden sm:block mt-4 mb-6 text-sm md:text-base text-[#555] leading-relaxed">
+    Sets will appear here in release order. Promotional cards will always appear at the bottom. If a set is released but not yet available, it is because I am still waiting on Kayou.
+  </p>
+)}
 
           {activeCategory === "limited" ? (
             <div className="flex items-center justify-center py-20">
@@ -327,15 +366,6 @@ setSets(updated);
     const isHidden = hiddenSets.includes(col.id);
 
       const isMastered = col.progress === 100;
-
-    const unreleasedSetIds = [
-      "11", // Fun Moments 3
-      "4",  // Star 1
-      "3",  // Moon 3
-      "friendshipbegins",
-      "6",  // Rainbow 2
-    ];
-
     const waitingOnKayouIds = [
       
     ];
@@ -401,7 +431,7 @@ setSets(updated);
         </main>
       </div>
 
-      <footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
+      <footer className="hidden sm:block py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
         <div className="max-w-lg mx-auto">
           <p>This website is not run or owned by Kayou.</p>
 

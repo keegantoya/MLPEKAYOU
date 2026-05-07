@@ -2,7 +2,6 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import myProgressBadge from "@/assets/avatars/personaliso.png";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 const sets = [
   {
@@ -51,11 +50,11 @@ const sets = [
 },
 {
   id: "SD_STARTERS",
-  name: "Friendships Begin — Starter Decks"
+  name: "Friendships Begin - Character Decks"
 },
 {
   id: "SD_BONUS",
-  name: "Friendships Begin — Bonus Packs"
+  name: "Friendships Begin - Bonus Deck"
 },
 {
   id: "FW",
@@ -89,6 +88,7 @@ const [hiddenSetsTCG, setHiddenSetsTCG] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
 const [mode, setMode] = useState<string>("CCG");
+const [collapsedRarities, setCollapsedRarities] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
   const load = async (userOverride?: any) => {
@@ -122,9 +122,8 @@ setHiddenSetsTCG([]);
     progress?.forEach((set: any) => {
       Object.entries(set.progress || {}).forEach(([key, value]) => {
         if (value) {
-          if (set.set_id === "SD") {
+if (set.set_id === "SD") {
   allOwned[`SD-${key}`] = true;
-  allOwned[`SD-BONUS-${key}`] = true;
 } else {
   allOwned[`${set.set_id}-${key}`] = true;
 }
@@ -217,7 +216,8 @@ const getRarityCode = (rarity: string) => {
       <div className="container py-8">
 
         {/* HEADER */}
-        <div className="flex flex-col items-center justify-center mb-8 gap-3 text-center">
+<div className="relative z-40 rounded-3xl border border-[#d4af37]/40 bg-white/70 backdrop-blur-md shadow-lg px-5 py-5 mb-8">
+  <div className="flex flex-col items-center justify-center gap-3 text-center">
   
 <div className="flex flex-col items-center">
     <img
@@ -252,7 +252,7 @@ const getRarityCode = (rarity: string) => {
   
   </div>
 
-  <div className="relative">
+  <div className="relative z-[9999]">
     <button
   onClick={() => setShowDropdown(!showDropdown)}
   className="whitespace-nowrap text-sm px-4 py-1.5 rounded-lg 
@@ -266,41 +266,75 @@ const getRarityCode = (rarity: string) => {
 </button>
 
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-80 bg-background border rounded-xl shadow-lg p-4 z-50">
-
+<div className="fixed top-[185px] left-1/2 -translate-x-1/2 md:absolute md:top-auto md:left-auto md:translate-x-0 md:right-0 mt-2 w-[90vw] max-w-sm bg-white border border-[#d4af37]/40 rounded-2xl shadow-2xl p-4 z-[99999]">
                 <h2 className="font-semibold mb-1">
                   Not wanting to collect every set?
                 </h2>
 
                 <p className="text-sm text-muted-foreground mb-3">
-                  Hide unwanted sets from your personal and public ISOs.
+                  Hide unwanted sets.
                 </p>
 
                 <div className="space-y-2">
-                 {sets.filter(set =>
-  mode === "CCG"
-    ? ["1","2","5","7","8","9","10"].includes(set.id)
-    : ["SD_STARTERS","SD_BONUS","FW"].includes(set.id)
-).map(set => (
-                    <label key={set.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={(mode === "CCG" ? hiddenSetsCCG : hiddenSetsTCG).includes(set.id)}
-                        onChange={() => toggleSet(set.id)}
-                      />
+{sets
+  .filter(set =>
+    mode === "CCG"
+      ? ["1","2","5","7","8","9","10"].includes(set.id)
+      : ["SD_STARTERS","SD_BONUS","FW"].includes(set.id)
+  )
+  .filter(set => {
 
-                      
-                      {set.name}
-                    </label>
-                  ))}
+    // STARTER DECKS (CHARACTER DECKS)
+    if (set.id === "SD_STARTERS") {
+      return Object.keys(owned).filter(k => k.startsWith("SD-")).length < 126;
+    }
+
+    // BONUS PACKS (SEPARATE — DOES NOT USE SD-)
+    if (set.id === "SD_BONUS") {
+      return Object.keys(owned).filter(k => k.startsWith("SD-BONUS-")).length < 68;
+    }
+
+    // FANTASY WONDERLAND
+    if (set.id === "FW") {
+      return Object.keys(owned).filter(k => k.startsWith("FW-")).length < 191;
+    }
+
+    // NORMAL CCG SETS
+    if (set.rarities) {
+      const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+        Array.from({ length: count as number }, (_, i) => ({
+          rarity,
+          number: i + 1
+        }))
+      );
+
+      return cards.some(card => {
+        const key = `${card.rarity}-${card.number}`;
+        return !owned[`${set.id}-${key}`];
+      });
+    }
+
+    return true;
+  })
+  .map(set => (
+    <label key={set.id} className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        checked={(mode === "CCG" ? hiddenSetsCCG : hiddenSetsTCG).includes(set.id)}
+        onChange={() => toggleSet(set.id)}
+      />
+      {set.name}
+    </label>
+  ))}
                 </div>
 
               </div>
             )}
           </div>
         </div>
+        </div>
 
-        {/* ✅ GRID FIX */}
+        {/* GRID FIX */}
 <div>
   {loading ? (
     <div className="text-center py-10 text-muted-foreground">
@@ -320,7 +354,7 @@ const getRarityCode = (rarity: string) => {
       TCG Promos
     </h2>
 
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 gap-2">
       {Array.from({ length: 6 }, (_, i) => {
         const num = i + 1;
         const key = `RR${String(num).padStart(2, "0")}`;
@@ -329,7 +363,7 @@ const getRarityCode = (rarity: string) => {
         if (owned[stateKey]) return null;
 
         return (
-          <div key={key} className="relative w-[90px]">
+          <div key={key} className="relative w-full">
             <img
               src={`/tcgpromos/${key}.png`}
               className="rounded-lg w-full"
@@ -373,57 +407,92 @@ const getRarityCode = (rarity: string) => {
 {mode === "TCG" && !hiddenSetsTCG.includes("SD_BONUS") && (
   <div className="border rounded-xl p-4 bg-card mb-6">
     <h2 className="text-sm md:text-base font-semibold mb-3">
-      Bonus Packs
+      Friendships Begin - Bonus Deck
     </h2>
 
-    <div className="flex flex-wrap gap-2">
-      {[
-        { prefix: "SD01C", count: 9 },
-        { prefix: "SD01U", count: 7 },
-        { prefix: "SD01SR", count: 6 },
-        { prefix: "SD01SPR", count: 10 },
-        { prefix: "SD01GR", count: 6 },
-        { prefix: "SD01CR", count: 6 },
-        { prefix: "SD01ER", count: 6 },
-        { prefix: "SD01PER", count: 12 },
-        { prefix: "SD01PRR", count: 6 },
-      ].flatMap(({ prefix, count }) =>
-        Array.from({ length: count }, (_, i) => {
-          let actualIndex = i + 1;
+<div className="space-y-8">
 
-          if (prefix === "SD01PER") {
-            actualIndex = i + 7;
-            if (actualIndex > 16) return null;
+  {[
+    { prefix: "SD01C", count: 9, label: "COMMON" },
+    { prefix: "SD01U", count: 7, label: "UNCOMMON" },
+    { prefix: "SD01SR", count: 6, label: "SILVER RARE" },
+    { prefix: "SD01SPR", count: 10, label: "SPECIAL RARE" },
+    { prefix: "SD01GR", count: 6, label: "GOLD RARE" },
+    { prefix: "SD01CR", count: 6, label: "COLORFUL RARE" },
+    { prefix: "SD01ER", count: 6, label: "EMERALD RARE" },
+    { prefix: "SD01PER", count: 12, label: "※EMERALD RARE" },
+    { prefix: "SD01PRR", count: 6, label: "※RUBY RARE" },
+  ].map(({ prefix, count, label }) => {
+
+    const collapseKey = `SD_BONUS-${prefix}`;
+    const isCollapsed = collapsedRarities[collapseKey];
+
+    const cards = Array.from({ length: count }, (_, i) => {
+      let actualIndex = i + 1;
+
+      if (prefix === "SD01PER") {
+        actualIndex = i + 7;
+        if (actualIndex > 16) return null;
+      }
+
+      const num = String(actualIndex).padStart(2, "0");
+      const key = `${prefix}${num}`;
+      const stateKey = `SD-BONUS-${key}`;
+
+      if (owned[stateKey]) return null;
+
+      return key;
+    }).filter(Boolean);
+
+    if (cards.length === 0) return null;
+
+    return (
+      <div key={prefix}>
+
+        <button
+          onClick={() =>
+            setCollapsedRarities((prev) => ({
+              ...prev,
+              [collapseKey]: !prev[collapseKey],
+            }))
           }
+          className="relative w-full flex items-center justify-center gap-3 mb-3 group"
+        >
 
-          const num = String(actualIndex).padStart(2, "0");
-          const key = `${prefix}${num}`;
-          const stateKey = `SD-BONUS-${key}`;
+          <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[100px]" />
 
-if (owned[stateKey]) return null;
+          <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+            {label}
+          </span>
 
-          return (
-            <div key={key} className="relative w-[90px]">
-              <img
-                src={`/friendships-begin/${key}.png`}
-                className="rounded-lg w-full"
-              />
+          <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[100px]" />
 
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {[...Array(5)].map((_, i) => (
-                  <img
-                    key={i}
-                    src={watermark}
-                    className="absolute opacity-20 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-                    style={{ top: `${i * 25 - 20}%` }}
-                  />
-                ))}
+          <div className="absolute right-0 text-[#8b6a2b] text-sm">
+            {isCollapsed ? "+" : "−"}
+          </div>
+
+        </button>
+
+        {!isCollapsed && (
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+
+            {cards.map((key) => (
+              <div key={key} className="relative w-full aspect-[5/7]">
+                <img
+                  src={`/friendships-begin/${key}.png`}
+                  className="rounded-xl w-full h-full object-cover shadow-md hover:scale-[1.03] hover:shadow-xl transition"
+                />
               </div>
-            </div>
-          );
-        })
-      )}
-    </div>
+            ))}
+
+          </div>
+        )}
+
+      </div>
+    );
+  })}
+
+</div>
   </div>
 )}
 
@@ -434,86 +503,112 @@ if (owned[stateKey]) return null;
       Fantasy Wonderland
     </h2>
 
-    <div className="flex flex-wrap gap-2">
-      {[
-        { prefix: "BP01C", count: 48 },
-        { prefix: "BP01U", count: 18 },
-        { prefix: "BP01ER", count: 6 },
-        { prefix: "BP01SR", count: 14 },
-        { prefix: "BP01SPR", count: 28 },
-        { prefix: "BP01GR", count: 12 },
-        { prefix: "BP01CR", count: 12 },
-        { prefix: "BP01RR", count: 6 },
-        { prefix: "BP01PER", count: 6 },
-        { prefix: "BP01PSPR", count: 11 },
-        { prefix: "BP01PGR", count: 6 },
-        { prefix: "BP01PCR", count: 12 },
-        { prefix: "BP01PRR", count: 6 },
-      ].flatMap(({ prefix, count }) =>
-        Array.from({ length: count }, (_, i) => {
-          let num = i + 1;
+    <div className="space-y-8">
 
-// FIX ER
-if (prefix === "BP01ER") {
-  num = i + 7;
-}
+  {[
+    { prefix: "BP01C", count: 48, label: "COMMON" },
+    { prefix: "BP01U", count: 18, label: "UNCOMMON" },
+    { prefix: "BP01ER", count: 6, label: "EMERALD RARE" },
+    { prefix: "BP01SR", count: 14, label: "SILVER RARE" },
+    { prefix: "BP01SPR", count: 28, label: "SPECIAL RARE" },
+    { prefix: "BP01GR", count: 12, label: "GOLD RARE" },
+    { prefix: "BP01CR", count: 12, label: "COLORFUL RARE" },
+    { prefix: "BP01RR", count: 6, label: "RUBY RARE" },
+    { prefix: "BP01PER", count: 12, label: "※EMERALD RARE" },
+    { prefix: "BP01PSPR", count: 11, label: "※SPECIAL RARE" },
+    { prefix: "BP01PGR", count: 6, label: "※GOLD RARE" },
+    { prefix: "BP01PCR", count: 12, label: "※COLORFUL RARE" },
+    { prefix: "BP01PRR", count: 6, label: "※RUBY RARE" },
+  ].map(({ prefix, count, label }) => {
 
-// FIX PER
-if (prefix === "BP01PER") {
-  num = i + 7;
-}
+    const collapseKey = `FW-${prefix}`;
+    const isCollapsed = collapsedRarities[collapseKey];
 
-let key = `${prefix}${String(num).padStart(2, "0")}`;
+    const cards = Array.from({ length: count }, (_, i) => {
 
-// FIX PSPR ONLY
-if (prefix === "BP01PSPR") {
-  const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
-  const realNum = PSPR_NUMBERS[i];
+      let num = i + 1;
 
-  if (!realNum) return null;
+      if (prefix === "BP01ER") {
+        num = i + 7;
+      }
 
-  key = `BP01PSPR${String(realNum).padStart(2, "0")}`;
-}
+      let key = `${prefix}${String(num).padStart(2, "0")}`;
 
-          if (owned[`FW-${key}`]) return null;
+      if (prefix === "BP01PSPR") {
+        const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
+        const realNum = PSPR_NUMBERS[i];
 
-          return (
-            <div key={key} className="relative w-[90px]">
-              <img
-  src={
-    key.startsWith("BP01ER")
-      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
-      : key.startsWith("BP01PER")
-      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
-      : `/fantasy-wonderland/${key}.png`
-  }
-  className="rounded-lg w-full"
-/>
+        if (!realNum) return null;
 
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {[...Array(5)].map((_, i) => (
-                  <img
-                    key={i}
-                    src={watermark}
-                    className="absolute opacity-20 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-                    style={{ top: `${i * 25 - 20}%` }}
-                  />
-                ))}
+        key = `BP01PSPR${String(realNum).padStart(2, "0")}`;
+      }
+
+      if (owned[`FW-${key}`]) return null;
+
+      return key;
+
+    }).filter(Boolean);
+
+    if (cards.length === 0) return null;
+
+    return (
+      <div key={prefix}>
+
+        <button
+          onClick={() =>
+            setCollapsedRarities((prev) => ({
+              ...prev,
+              [collapseKey]: !prev[collapseKey],
+            }))
+          }
+          className="relative w-full flex items-center justify-center gap-3 mb-3 group"
+        >
+
+          <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[100px]" />
+
+          <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+            {label}
+          </span>
+
+          <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[100px]" />
+
+          <div className="absolute right-0 text-[#8b6a2b] text-sm">
+            {isCollapsed ? "+" : "−"}
+          </div>
+
+        </button>
+
+        {!isCollapsed && (
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+
+            {cards.map((key) => (
+              <div key={key} className="relative w-full aspect-[5/7]">
+                <img
+                  src={
+                    key.startsWith("BP01ER")
+                      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+                      : key.startsWith("BP01PER")
+                      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
+                      : `/fantasy-wonderland/${key}.png`
+                  }
+                  className="rounded-xl w-full h-full object-cover shadow-md hover:scale-[1.03] hover:shadow-xl transition"
+                />
               </div>
-            </div>
-          );
-        
-        
-        
-        
-        })
-      )}
-    </div>
+            ))}
+
+          </div>
+        )}
+
+      </div>
+    );
+  })}
+
+</div>
   </div>
 )}
 
   {/* MAIN GRID */}
-  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 gap-6">
    {sets
 .filter(set =>
   mode === "CCG" &&
@@ -533,44 +628,116 @@ if (prefix === "BP01PSPR") {
           return !owned[`${set.id}-${key}`];
         });
 
+        const groupedMissing = missing.reduce((acc, card) => {
+  if (!acc[card.rarity]) {
+    acc[card.rarity] = [];
+  }
+
+  acc[card.rarity].push(card);
+
+  return acc;
+}, {} as Record<string, typeof missing>);
+
         if (missing.length === 0) return null;
 
         return (
-          <div key={set.id} className="border rounded-xl p-4 bg-card">
-            <h2 className="text-sm md:text-base font-semibold mb-2">
-              {set.name}
-            </h2>
+          <div key={set.id} className="rounded-3xl border border-[#d4af37]/40 bg-gradient-to-br from-white/80 to-[#f6f0ff]/70 backdrop-blur-sm shadow-lg p-4 sm:p-6">
+            <div className="flex items-center justify-center gap-3 mb-5">
 
-            <div className="flex flex-wrap gap-2">
-              {missing.map((card) => (
-                <div
-                  key={`${card.rarity}-${card.number}`}
-                  className="relative w-[90px]"
-                >
-                  <img
-                    src={
-                      set.id === "9"
-                        ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
-                        : set.id === "10"
-                        ? "/serialized-limited-cards/andypricepromo.jpg"
-                        : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
-                    }
-                    className="rounded-lg w-full"
-                  />
+  <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px]" />
 
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    {[...Array(5)].map((_, i) => (
-                      <img
-                        key={i}
-                        src={watermark}
-                        className="absolute opacity-20 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-                        style={{ top: `${i * 25 - 20}%` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+  <span className="text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+    {set.name}
+  </span>
+
+  <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px]" />
+
+</div>
+
+<div className="space-y-8">
+
+{Object.entries(groupedMissing).map(([rarity, rarityCards]) => {
+
+  const collapseKey = `${set.id}-${rarity}`;
+  const isCollapsed = collapsedRarities[collapseKey];
+
+  return (
+
+    <div key={rarity}>
+
+      {/* RARITY HEADER */}
+      <button
+  onClick={() =>
+    setCollapsedRarities((prev) => ({
+      ...prev,
+      [collapseKey]: !prev[collapseKey],
+    }))
+  }
+  className="relative w-full flex items-center justify-center gap-3 mb-2 group"
+>
+
+        <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[100px]" />
+
+        <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+ {
+  rarity === "LC"
+    ? "PR"
+    : rarity === "SZR"
+    ? "◇ZR"
+    : rarity
+}
+</span>
+
+        <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[100px]" />
+
+        <div className="absolute right-0 text-[#8b6a2b] text-sm group-hover:scale-110 transition">
+  {isCollapsed ? "+" : "−"}
+</div>
+
+      </button>
+
+      {/* CARD GRID */}
+      {!isCollapsed && (
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+
+          {rarityCards.map((card) => {
+            const isDoubleCard =
+              set.id === "moon3hidden" &&
+              card.rarity === "SZR" &&
+              card.number === 1;
+
+            return (
+              <div
+                key={`${card.rarity}-${card.number}`}
+                className={`relative ${
+                  isDoubleCard
+                    ? "col-span-2 aspect-[10/7]"
+                    : "w-full aspect-[5/7]"
+                }`}
+              >
+                <img
+                  src={
+                    set.id === "9"
+                      ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+                      : set.id === "10"
+                      ? "/serialized-limited-cards/andypricepromo.jpg"
+                      : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+                  }
+                  className="rounded-xl w-full h-full object-cover shadow-md hover:scale-[1.03] hover:shadow-xl transition"
+                />
+              </div>
+            );
+          })}
+
+        </div>
+      )}
+
+    </div>
+
+  );
+})}
+
+</div>
           </div>
         );
       })}
@@ -578,8 +745,7 @@ if (prefix === "BP01PSPR") {
 </>
 )}
 </div>
-  
-          
+
         </div>
 
       </div>

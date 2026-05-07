@@ -1,7 +1,6 @@
 import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
 
 const TCGPromos = () => {
 
@@ -141,25 +140,44 @@ const TCGPromos = () => {
 
       <div className="container py-8">
 
-        {/* HEADER */}
-        <div className="relative flex items-center mb-4">
+       {/* HEADER */}
+<div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-0 mb-8 mt-6 sm:mt-0">
 
-          <button
-            onClick={() => window.history.back()}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            ← Back
-          </button>
+  {/* Back Button */}
+  <button
+    onClick={() => window.history.back()}
+    className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+  >
+    <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+      ← Back
+    </span>
+  </button>
 
-          <h1 className="text-lg font-semibold w-full text-right md:text-center">
-            TCG Promo Cards
-          </h1>
+  {/* Center Content */}
+  <div className="flex-1 text-center">
 
-        </div>
+    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
+      TCG Promo Cards
+    </h1>
 
-        <p className="text-center text-sm md:text-base text-gray-500 max-w-sm md:max-w-2xl mx-auto mt-2 px-3">
-  At the moment, these promotional cards are available only at in-person Kayou events. The promotional pack states that they belong to Friendships Begin.
-</p>
+    <div className="flex items-center justify-center gap-2 sm:gap-4 my-5">
+      <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
+
+      <span className="text-[10px] sm:text-xs tracking-[0.18em] sm:tracking-[0.3em] font-semibold text-[#8b6a2b] uppercase text-center">
+        Event Exclusives
+      </span>
+
+      <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
+    </div>
+
+    <p className="mt-3 text-sm md:text-base text-[#555] max-w-2xl mx-auto leading-relaxed px-2">
+These cards come from Kayou US in-person events, and are connected to the Friendships Begin TCG set.
+    </p>
+
+  </div>
+
+  <div className="hidden sm:block w-[72px]" />
+</div>
 
         {!loaded ? (
           <div className="text-center py-16 text-muted-foreground">
@@ -197,17 +215,6 @@ const TCGPromos = () => {
   className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
 />
 
-                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                        {[...Array(5)].map((_, i) => (
-                          <img
-                            key={i}
-                            src={watermark}
-                            className="absolute opacity-10 rotate-[-25deg] w-[140%] left-1/2 -translate-x-1/2"
-                            style={{ top: `${i * 25 - 20}%` }}
-                          />
-                        ))}
-                      </div>
-
                     </div>
                   </div>
 
@@ -217,6 +224,27 @@ const TCGPromos = () => {
 
           </div>
         )}
+
+<div className="mt-10 max-w-3xl mx-4 sm:mx-auto rounded-2xl border border-[#d4af37]/50 bg-gradient-to-br from-white/70 to-white/40 backdrop-blur-md shadow-lg p-4 sm:p-5">
+
+  <h3 className="text-base md:text-lg font-semibold text-[#5a3e84] mb-3 tracking-wide text-center">
+    Boxes Without Promotional Cards
+  </h3>
+
+  <ul className="space-y-2 text-xs sm:text-sm text-gray-700">
+
+    <li className="flex items-start gap-2">
+      <span className="text-[#d4af37] mt-[2px]">✦</span>
+      Friendships Begin Character Boxe Sets
+    </li>
+
+    <li className="flex items-start gap-2">
+      <span className="text-[#d4af37] mt-[2px]">✦</span>
+      Fantasy Wonderland Boxe Sets
+    </li>
+  </ul>
+
+</div>
 
       </div>
     </div>

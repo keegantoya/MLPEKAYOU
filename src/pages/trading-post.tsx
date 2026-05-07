@@ -39,6 +39,7 @@ const avatarMap: Record<string, string> = {
 };
 
 const rarityDisplayMap: Record<string, string> = {
+  SZR: "⬦ZR",
   PER: "※ER",
   PSPR: "※SPR",
   PGR: "※GR",
@@ -52,7 +53,7 @@ const sets = [
   { id: "7", name: "Fun Moments First Edition", released: true },
   { id: "2", name: "Eternal Moon Second Edition", released: true },
   { id: "8", name: "Fun Moments Second Edition", released: true },
-  { id: "3", name: "Eternal Moon Third Edition", released: false },
+  { id: "3", name: "Eternal Moon Third Edition", released: true },
   { id: "4", name: "Star First Edition", released: false },
   { id: "6", name: "Rainbow Second Edition", released: false },
   { id: "9", name: "CCG Promos", released: true },
@@ -101,6 +102,7 @@ if (set_id === "FW") {
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
     "8": { folder: "fun-moments-two", prefix: "FM2" },
+    "3": { folder: "third-edition-moon", prefix: "M3" },
   };
 
   const c = config[set_id];
@@ -282,7 +284,7 @@ const handleSaveDiscord = async () => {
     placeholder="Search for a user..."
     value={search}
     onChange={(e) => handleSearch(e.target.value)}
-    className="w-full rounded-full border border-gray-300 px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
+    className="w-full rounded-full border border-gray-300 px-4 py-2 text-base sm:text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
   />
 
   {results.length > 0 && (
@@ -313,7 +315,7 @@ const handleSaveDiscord = async () => {
         {/* SET GRID */}
         {(() => {
   const ccg = sets.filter(s =>
-    s.released && ["1", "2", "5", "7", "8"].includes(s.id)
+    s.released && ["1", "2", "5", "7", "8", "3"].includes(s.id)
   );
 
 const tcg = sets.filter(s =>
@@ -546,15 +548,31 @@ const tcg = sets.filter(s =>
               ← Back to Rarities
             </button>
 
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-              {(userTrades[selectedSet]?.[selectedRarity] || []).map((card, i) => (
-                <img
-                  key={i}
-                  src={getCardImage(card)}
-                  className="w-full rounded-md"
-                />
-              ))}
-            </div>
+<div className="grid grid-cols-3 sm:grid-cols-5 gap-2 [grid-auto-flow:dense]">
+  {(userTrades[selectedSet]?.[selectedRarity] || []).map((card, i) => {
+
+    const isDoubleCard =
+      selectedSet === "3" &&
+      card.rarity === "SZR" &&
+      card.number === 1;
+
+    return (
+      <div
+        key={i}
+        className={`relative ${
+          isDoubleCard
+            ? "col-span-2 aspect-[10/7]"
+            : "aspect-[5/7]"
+        }`}
+      >
+        <img
+          src={getCardImage(card)}
+          className="w-full h-full object-cover rounded-md"
+        />
+      </div>
+    );
+  })}
+</div>
           </div>
         )}
 

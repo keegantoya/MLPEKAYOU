@@ -271,6 +271,7 @@ newProgress[set.id] = owned;
      const owned = progress[set.id] || 0;
      const isHidden = hiddenSets.includes(set.id);
 const percent = Math.round((owned / set.total) * 100);
+const isMastered = percent === 100;
 const hasStarted = owned > 0;
       const route = releasedRoutes[set.id];
 
@@ -286,14 +287,32 @@ const hasStarted = owned > 0;
     )}
 
     <button
-      onClick={() => navigate(route)}
-      className={`
-        w-full bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84]
+  onClick={() => navigate(route)}
+  className={`
+    relative
+    w-full bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84]
         border border-[#d4af37]/40 rounded-xl p-4 text-left
         transition hover:shadow-md hover:scale-[1.01]
         ${isHidden ? "opacity-40" : ""}
       `}
     >
+      {isMastered && (
+  <div className="absolute inset-0 bg-[#3b2a6a]/70 rounded-xl pointer-events-none" />
+)}
+
+{isMastered && (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <div
+      className="text-[11px] sm:text-[10px] md:text-[10px] font-semibold px-7 py-3 sm:px-3 sm:py-1.5 rounded-md shadow tracking-wide text-center flex items-center justify-center border border-[#5a3e84]/50"
+      style={{
+        background: "linear-gradient(90deg, #f5e6a8 0%, #d4af37 40%, #b8962e 60%, #f5e6a8 100%)",
+        color: "#3b2a1a"
+      }}
+    >
+      <span className="block text-center w-full">MASTERED</span>
+    </div>
+  </div>
+)}
       <div className="flex justify-between mb-2">
         <span className="text-[#f5e6a8]">{set.name}</span>
         <span className="text-xs text-[#f5e6a8]">{percent}%</span>
@@ -333,34 +352,55 @@ const hasStarted = owned > 0;
     .map((set) => {
       const owned = progress[set.id] || 0;
       const percent = Math.round((owned / set.total) * 100);
+      const isMastered = percent === 100;
       const route = releasedRoutes[set.id];
 
       return (
-        <button
-          key={set.id}
-          onClick={() => navigate(route)}
-          className="w-full bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/40 rounded-xl p-4 text-left"
-        >
-          <div className="flex justify-between mb-2">
-            <span className="text-[#f5e6a8]">{set.name}</span>
-            <span className="text-xs text-[#f5e6a8]">{percent}%</span>
-          </div>
+  <button
+    key={set.id}
+    onClick={() => navigate(route)}
+    className="relative w-full bg-gradient-to-b from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/40 rounded-xl p-4 text-left"
+  >
 
-          <div className="w-full h-2 bg-[#3b2a1a]/40 rounded-full overflow-hidden">
-            <div
-              className="h-full"
-              style={{
-                width: `${percent}%`,
-                background: "linear-gradient(90deg, #f5e6a8, #d4af37)",
-              }}
-            />
-          </div>
+    {percent === 100 && (
+      <div className="absolute inset-0 bg-[#3b2a6a]/70 rounded-xl pointer-events-none" />
+    )}
 
-          <div className="text-xs text-[#f5e6a8] mt-2">
-            {owned} / {set.total}
-          </div>
-        </button>
-      );
+    {percent === 100 && (
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div
+  className="text-[11px] sm:text-[10px] md:text-[10px] font-semibold px-7 py-3 sm:px-3 sm:py-1.5 rounded-md shadow tracking-wide text-center flex items-center justify-center border border-[#5a3e84]/50"
+  style={{
+    background: "linear-gradient(90deg, #f5e6a8 0%, #d4af37 40%, #b8962e 60%, #f5e6a8 100%)",
+    color: "#3b2a1a"
+  }}
+>
+  <span className="block text-center w-full">MASTERED</span>
+</div>
+      </div>
+    )}
+
+    <div className="flex justify-between mb-2">
+      <span className="text-[#f5e6a8]">{set.name}</span>
+      <span className="text-xs text-[#f5e6a8]">{percent}%</span>
+    </div>
+
+    <div className="w-full h-2 bg-[#3b2a1a]/40 rounded-full overflow-hidden">
+      <div
+        className="h-full"
+        style={{
+          width: `${percent}%`,
+          background: "linear-gradient(90deg, #f5e6a8, #d4af37)",
+        }}
+      />
+    </div>
+
+    <div className="text-xs text-[#f5e6a8] mt-2">
+      {owned} / {set.total}
+    </div>
+
+  </button>
+);
     })}
 </div>
       </div>

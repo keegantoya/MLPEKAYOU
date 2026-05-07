@@ -112,7 +112,7 @@ export default function Selling() {
 
                   <div className="flex justify-between">
                     <span>
-                      <span className="font-semibold">Fun Moments Editions</span> - UGR, CR
+                      <span className="font-semibold">Fun Moments Editions</span> - UGR, CR, ◇CR
                     </span>
                     <span className="text-[10px] sm:text-sm">Valuable</span>
                   </div>
@@ -133,7 +133,7 @@ export default function Selling() {
 </div>
 <div className="flex justify-between">
  <span>
-  <span className="font-semibold">Starter Decks</span> - GR, CR, ※CR, ※RR
+  <span className="font-semibold">Starter Decks</span> - GR, CR, ※ER, ※CR, ※RR
 </span>
   <span className="text-[10px] sm:text-sm">Valuable</span>
 </div>
@@ -223,6 +223,16 @@ export default function Selling() {
           </div>
 
           <div className="border rounded-lg p-4 bg-neutral-50">
+            <h3 className="font-bold mb-2">Fun Moments Edition Three</h3>
+            <div className="flex justify-between text-sm text-neutral-700"><span>◇N</span><span>$3</span></div>
+            <div className="flex justify-between text-sm text-neutral-700"><span>UGR</span><span>$13</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$13</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>HIDDEN CR</span><span>$40</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>◇CR</span><span>$13</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>These prices are due to the extremely high hit rates in this box set.</span></div>
+          </div>
+
+          <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Fantasy Wonderland</h3>
             <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>$5</span></div>
               <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$8</span></div>
@@ -238,6 +248,7 @@ export default function Selling() {
             <h3 className="font-bold mb-2">Friendships Begin</h3>
             <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>$20</span></div>
               <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$25</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>$20</span></div>
               <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$30</span></div>
               <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$40</span></div>
           </div>

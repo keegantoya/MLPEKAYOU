@@ -90,6 +90,24 @@ const isoSets = [
     
   },
   {
+  id: "3",
+  name: "Eternal Moon: Third Edition",
+  folder: "third-edition-moon",
+  prefix: "M3",
+  rarities: {
+    R: 60,
+    SR: 40,
+    SSR: 40,
+    HR: 60,
+    LSR: 32,
+    UR: 18,
+    SGR: 16,
+    ZR: 14,
+    SC: 7,
+    SZR: 3
+  }
+},
+  {
     id: "friendshipsbegin",
     name: "Friendships Begin",
     folder: "friendshipsbegin",
@@ -110,7 +128,7 @@ const isoSets = [
     GR: 12,
     CR: 12,
     RR: 6,
-    PER: 6,
+    PER: 12,
     PSPR: 11,
     PGR: 6,
     PCR: 12,
@@ -232,9 +250,16 @@ starterDecks.forEach((deck) => {
 });
 
   // BONUS PACKS (68 cards)
-  BONUS_STRUCTURE.forEach(({ prefix, count }) => {
+BONUS_STRUCTURE.forEach(({ prefix, count }) => {
   for (let i = 1; i <= count; i++) {
-    const key = `${prefix}${String(i).padStart(2, "0")}`;
+
+    let actualIndex = i;
+
+    if (prefix === "SD01PER") {
+      actualIndex = i + 6; // MUST match FriendshipBegins
+    }
+
+    const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
     const stateKey = `BONUS-${key}`;
 
     if (row.progress?.[stateKey]) {
