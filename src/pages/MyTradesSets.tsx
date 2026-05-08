@@ -453,12 +453,40 @@ const rarityOrders: Record<string, string[]> = {
   { code: "SD01D", name: "Applejack", img: "/starter-decks-boxes/SDAPPLEJACK.png" },
   { code: "SD01E", name: "Rainbow Dash", img: "/starter-decks-boxes/SDRAINBOWDASH.png" },
   { code: "SD01F", name: "Rarity", img: "/starter-decks-boxes/SDRARITY.png" },
-].filter((deck) =>
-  Object.entries(progress).some(([key, value]) =>
-    key.startsWith(`STARTER-${deck.code}`) &&
-    value === true
-  )
-).map((deck, i) => {
+].filter((deck) => {
+
+  const deckLetter = deck.code.slice(-1);
+  const deckIndex = deckLetter.charCodeAt(0) - 64;
+
+  const requiredCards: string[] = [];
+
+  const add = (rarity: string, count: number) => {
+    for (let i = 1; i <= count; i++) {
+      requiredCards.push(
+        `${deck.code}${rarity}${String(i).padStart(2, "0")}`
+      );
+    }
+  };
+
+  add("C", 9);
+  add("U", 4);
+  add("SR", 2);
+
+  requiredCards.push(
+    `SD01ER${String(deckIndex).padStart(2, "0")}`
+  );
+
+  add("SPR", 4);
+
+  requiredCards.push(
+    `SD01RR${String(deckIndex).padStart(2, "0")}`
+  );
+
+  return requiredCards.every(
+    (key) => progress[`STARTER-${key}`]
+  );
+
+}).map((deck, i) => {
 
   const isActive = activeDeck === i;
 

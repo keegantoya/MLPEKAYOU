@@ -82,6 +82,7 @@ const sets = [
 const MyISO = () => {
   const [username, setUsername] = useState("");
   const [owned, setOwned] = useState<Record<string, boolean>>({});
+const [rawProgress, setRawProgress] = useState<any[]>([]);
 const [hiddenSetsCCG, setHiddenSetsCCG] = useState<string[]>([]);
 const [hiddenSetsTCG, setHiddenSetsTCG] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -140,6 +141,7 @@ if (set.set_id === "SD") {
 });
 
     setOwned(allOwned);
+    setRawProgress(progress || []);
 
 const { data: profile } = await supabase
   .from("profiles")
@@ -377,7 +379,45 @@ const getRarityCode = (rarity: string) => {
   {/* STARTER DECKS */}
 {mode === "TCG" &&
  !hiddenSetsTCG.includes("SD_STARTERS") &&
- Object.keys(owned).filter(k => k.includes("SD01")).length < 126 && (
+ ["SD01A","SD01B","SD01C","SD01D","SD01E","SD01F"].some(deck =>
+  !(
+    (() => {
+      const progressData =
+        rawProgress.find((s: any) => s.set_id === "SD")?.progress || {};
+
+      const deckLetter = deck.slice(-1);
+      const deckIndex = deckLetter.charCodeAt(0) - 64;
+
+      const requiredCards: string[] = [];
+
+      const add = (rarity: string, count: number) => {
+        for (let i = 1; i <= count; i++) {
+          requiredCards.push(
+            `${deck}${rarity}${String(i).padStart(2, "0")}`
+          );
+        }
+      };
+
+      add("C", 9);
+      add("U", 4);
+      add("SR", 2);
+
+      requiredCards.push(
+        `SD01ER${String(deckIndex).padStart(2, "0")}`
+      );
+
+      add("SPR", 4);
+
+      requiredCards.push(
+        `SD01RR${String(deckIndex).padStart(2, "0")}`
+      );
+
+      return requiredCards.every(
+        (key) => progressData[`STARTER-${key}`]
+      );
+    })()
+  )
+) && (
 
   <div className="border rounded-xl p-4 bg-card mb-6">
     <h2 className="text-sm md:text-base font-semibold mb-3">
@@ -385,14 +425,52 @@ const getRarityCode = (rarity: string) => {
     </h2>
 
     <div className="flex flex-wrap gap-4 justify-center">
-      {[
-        { code: "SD01A", src: "/starter-decks-boxes/SDTWILIGHT.png" },
-        { code: "SD01B", src: "/starter-decks-boxes/SDFLUTTERSHY.png" },
-        { code: "SD01C", src: "/starter-decks-boxes/SDPINKIEPIE.png" },
-        { code: "SD01D", src: "/starter-decks-boxes/SDAPPLEJACK.png" },
-        { code: "SD01E", src: "/starter-decks-boxes/SDRAINBOWDASH.png" },
-        { code: "SD01F", src: "/starter-decks-boxes/SDRARITY.png" },
-      ].map((deck) => (
+     {[
+  { code: "SD01A", src: "/starter-decks-boxes/SDTWILIGHT.png" },
+  { code: "SD01B", src: "/starter-decks-boxes/SDFLUTTERSHY.png" },
+  { code: "SD01C", src: "/starter-decks-boxes/SDPINKIEPIE.png" },
+  { code: "SD01D", src: "/starter-decks-boxes/SDAPPLEJACK.png" },
+  { code: "SD01E", src: "/starter-decks-boxes/SDRAINBOWDASH.png" },
+  { code: "SD01F", src: "/starter-decks-boxes/SDRARITY.png" },
+].filter((deck) => {
+
+  const progressData =
+    rawProgress.find((s: any) => s.set_id === "SD")?.progress || {};
+
+  const deckLetter = deck.code.slice(-1);
+  const deckIndex = deckLetter.charCodeAt(0) - 64;
+
+  const requiredCards: string[] = [];
+
+  const add = (rarity: string, count: number) => {
+    for (let i = 1; i <= count; i++) {
+      requiredCards.push(
+        `${deck.code}${rarity}${String(i).padStart(2, "0")}`
+      );
+    }
+  };
+
+  add("C", 9);
+  add("U", 4);
+  add("SR", 2);
+
+  requiredCards.push(
+    `SD01ER${String(deckIndex).padStart(2, "0")}`
+  );
+
+  add("SPR", 4);
+
+  requiredCards.push(
+    `SD01RR${String(deckIndex).padStart(2, "0")}`
+  );
+
+  const complete = requiredCards.every(
+    (key) => progressData[`STARTER-${key}`]
+  );
+
+  return !complete;
+
+}).map((deck) => (
         <img
           key={deck.code}
           src={deck.src}

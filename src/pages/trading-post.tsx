@@ -198,10 +198,11 @@ const loadUserTrades = async (user: any) => {
   }
 
   grouped[card.set_id][rarity].push({
-    set_id: card.set_id,
-    rarity,
-    number
-  });
+  set_id: card.set_id,
+  rarity,
+  number,
+  actively_trading: card.actively_trading
+});
 });
 
   setUserTrades(grouped);
@@ -566,9 +567,17 @@ const tcg = sets.filter(s =>
         }`}
       >
         <img
-          src={getCardImage(card)}
-          className="w-full h-full object-cover rounded-md"
-        />
+  src={getCardImage(card)}
+  className="w-full h-full object-cover rounded-md"
+/>
+
+{card.actively_trading && (
+  <div className="absolute inset-0 rounded-md bg-purple-900/80 flex items-center justify-center">
+    <span className="text-white text-[9px] sm:text-xs md:text-sm font-bold text-center px-1 leading-tight">
+      ACTIVELY<br />TRADING
+    </span>
+  </div>
+)}
       </div>
     );
   })}

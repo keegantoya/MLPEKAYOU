@@ -1049,7 +1049,7 @@ style={{
 
   setShowMobileProgressMenu(!showMobileProgressMenu);
 }}
-    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
+    className="mt-1 flex flex-col items-center text-[#f5e6a8] text-[11px]"
   >
     <Grid className="h-6 w-6" />
   </button>
