@@ -299,7 +299,12 @@ useEffect(() => {
 >
       <KayouHeader />
 
-      <section className="w-full pt-0 sm:pt-4 pb-2">
+      <section
+  className="w-full pb-2"
+  style={{
+    marginTop: "-1px"
+  }}
+>
   <div className="max-w-7xl mx-auto flex items-center justify-center gap-6">
 
     {/* LEFT PANEL */}

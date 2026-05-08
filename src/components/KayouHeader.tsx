@@ -288,16 +288,28 @@ const handleForgotPassword = async () => {
       ? 'top-0'
       : 'top-0'
   }`}
+  style={{
+    WebkitTransform: "translateZ(0)",
+    transform: "translateZ(0)"
+  }}
 >
+  
  <div
-  className="w-full flex sm:h-20 items-center px-2 sm:px-4 relative justify-between"
+  className="w-full flex sm:h-16 items-center px-2 sm:px-4 relative justify-between"
 style={{
   height: window.innerWidth < 640
-    ? `calc(44px + env(safe-area-inset-top))`
-    : `80px`,
-  paddingTop: window.innerWidth < 640
-    ? `env(safe-area-inset-top)`
-    : `0px`
+    ? (
+        window.matchMedia('(display-mode: standalone)').matches
+          ? `calc(44px + env(safe-area-inset-top))`
+          : `52px`
+      )
+    : `64px`,
+
+  paddingTop:
+    window.innerWidth < 640 &&
+    window.matchMedia('(display-mode: standalone)').matches
+      ? `env(safe-area-inset-top)`
+      : `0px`
 }}
 >
     {/* LEFT SIDE */}
@@ -353,7 +365,7 @@ style={{
   <img
     src="/website-assets/discordlogo.png"
     alt="Discord"
-    className="h-10 w-auto"
+    className="h-8 w-auto"
   />
 </button>
 
@@ -438,10 +450,13 @@ style={{
 </div>
 </header>
 
-      <div className="hidden sm:block fixed top-20 left-0 right-0 z-[9999] bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8]">
+     {window.innerWidth >= 640 && (
+  <div
+  className="hidden sm:block fixed top-16 left-0 right-0 z-[9999] bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8]"
+>
   <div
   ref={menuRef}
-  className="w-full px-4 py-2 flex justify-center gap-2"
+  className="w-full px-4 py-1 flex justify-center gap-1"
 >
 
   <Button
@@ -635,6 +650,7 @@ style={{
 
 </div>
 </div>
+)}
 
 {showMobilePrompt && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">

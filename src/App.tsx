@@ -177,7 +177,11 @@ const App = () => {
   <ScrollToTop />
 
  <div
-  className="min-h-screen pt-[88px] pb-[100px] sm:pt-[120px] sm:pb-0"
+  className={`min-h-screen pb-[72px] sm:pt-[120px] sm:pb-0 ${
+  window.matchMedia('(display-mode: standalone)').matches
+    ? 'pt-[88px]'
+    : 'pt-[52px]'
+}`}
 >
     <AppRoutes />
   </div>

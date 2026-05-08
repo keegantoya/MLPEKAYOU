@@ -454,8 +454,9 @@ const rarityOrders: Record<string, string[]> = {
   { code: "SD01E", name: "Rainbow Dash", img: "/starter-decks-boxes/SDRAINBOWDASH.png" },
   { code: "SD01F", name: "Rarity", img: "/starter-decks-boxes/SDRARITY.png" },
 ].filter((deck) =>
-  Object.keys(progress).some(key =>
-    key.startsWith(`STARTER-${deck.code}`)
+  Object.entries(progress).some(([key, value]) =>
+    key.startsWith(`STARTER-${deck.code}`) &&
+    value === true
   )
 ).map((deck, i) => {
 

@@ -6,12 +6,17 @@
 @tailwind utilities;
 
 html,
-body,
-#root {
+body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: linear-gradient(to right, #7c5aa6, #5a3e84);
+  background: #e9e2f3;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100%;
+  background: #e9e2f3;
 }
 @layer base {
   :root {
@@ -203,4 +208,11 @@ body {
     transform: scale(0.3);
     opacity: 0;
   }
+}
+html {
+  background: #e9e2f3 !important;
+}
+
+body {
+  background: #e9e2f3 !important;
 }
