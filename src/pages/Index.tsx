@@ -97,6 +97,41 @@ const toggleLike = async (postId: string) => {
   }
 };
 
+useEffect(() => {
+  const loadLikes = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+
+    // Load all likes to calculate public counts
+    const { data: allLikes, error } = await supabase
+      .from("post_likes")
+      .select("post_id, user_id");
+
+    if (error) {
+      console.error("Error loading likes:", error);
+      return;
+    }
+
+    // Count likes for each post
+    const counts: Record<string, number> = {};
+    const liked: Record<string, boolean> = {};
+
+    allLikes?.forEach((row: any) => {
+      counts[row.post_id] = (counts[row.post_id] || 0) + 1;
+
+      // Mark posts liked by the current user
+      if (user && row.user_id === user.id) {
+        liked[row.post_id] = true;
+      }
+    });
+
+    setLikeCounts(counts);
+    setLikedPosts(liked);
+  };
+
+  loadLikes();
+}, []);
+
   const intervalRef = useRef(null);
 
   useEffect(() => {
