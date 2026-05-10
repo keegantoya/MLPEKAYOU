@@ -105,17 +105,17 @@ if (set_id === "FW") {
 
   return `/fantasy-wonderland/${key}.png`;
 }
-// ✅ FRIENDSHIPS BEGIN
+
 if (set_id === "friendshipsbegin") {
   return `/friendships-begin/SD01${rarity}${String(number).padStart(2, "0")}.png`;
 }
 
-  // DEFAULT SETS
   const config: any = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
     "2": { folder: "second-edition-moon", prefix: "M2" },
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
+    "8": { folder: "fun-moments-two", prefix: "FM2" },
     "3": { folder: "third-edition-moon", prefix: "M3" },
   };
 
@@ -219,7 +219,6 @@ if (row.set_id === "FW") {
 
       let finalNumber = num;
 
-      // 🔥 PSPR is non-linear
       if (prefix === "BP01PSPR") {
         const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
         const realNum = PSPR_NUMBERS[i];
@@ -238,7 +237,6 @@ if (row.set_id === "FW") {
   });
 }
 
-// ✅ FRIENDSHIPS BEGIN (SD)
 else if (row.set_id === "SD") {
   const SD_STRUCTURE = [
     { prefix: "SD01C", count: 9 },
@@ -253,25 +251,25 @@ else if (row.set_id === "SD") {
   ];
 
 SD_STRUCTURE.forEach(({ prefix, count }) => {
-  for (let i = 1; i <= count; i++) {
-    let actualNumber = i;
+  const cards = Array.from({ length: count }, (_, i) => {
+    let actualNumber = i + 1;
 
-    // 🔥 FIX PER
     if (prefix === "SD01PER") {
-      actualNumber = i + 6; // 7–18 originally
-      if (actualNumber > 16) continue; // cap at 16
+      actualNumber = i + 7;
+      if (actualNumber > 18) return null;
     }
 
-    allCards.push({
+    return {
       rarity: prefix.replace("SD01", ""),
       number: actualNumber,
-      set_id: "friendshipsbegin"
-    });
-  }
+      set_id: "friendshipsbegin",
+    };
+  }).filter(Boolean);
+
+  allCards.push(...cards);
 });
 }
 
-// ✅ NORMAL CCG
 else {
   if (!config) return;
 
@@ -515,7 +513,7 @@ setSelectedRarity(null);
       </div>
 
 {selectedUser && (
-  <div className="fixed inset-0 z-50">
+  <div className="fixed inset-0 z-[100000]">
 
     {/* BACKDROP */}
     <div

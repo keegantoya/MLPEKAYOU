@@ -12,6 +12,12 @@ const FriendshipBegins = () => {
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
+const [viewMode, setViewMode] = useState(false);
+const [zoomedCard, setZoomedCard] = useState<string | null>(null);
+const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
+const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+const [isClosingZoom, setIsClosingZoom] = useState(false);
+
 const rarityButtonNames: Record<string, string> = {
   SD01C: "C",
   SD01U: "U",
@@ -79,12 +85,49 @@ const starterDeckGroups = [
   { name: "Rarity", code: "SD01F", start: 106, end: 126 },
 ];
 
-  const toggleFlip = (key: string) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+const toggleFlip = (key: string) => {
+  if (viewMode) {
+    const cleanKey = key.replace(/^STARTER-/, "").replace(/^BONUS-/, "");
+
+    let backSrc = "/card-backs/tcgdefaultback.png";
+
+    // Starter Deck custom backs (C06-C09)
+    if (
+      cleanKey.includes("C06") ||
+      cleanKey.includes("C07") ||
+      cleanKey.includes("C08") ||
+      cleanKey.includes("C09")
+    ) {
+      backSrc = `/tcg-card-backs/${cleanKey}BACK.png`;
+    }
+
+    // RR cards
+    else if (cleanKey.startsWith("SD01RR")) {
+      backSrc = `/tcg-card-backs/SDRR${cleanKey.slice(-2)}BACK.png`;
+    }
+
+    // ER cards (scene card back)
+    else if (cleanKey.includes("ER") && !cleanKey.includes("PER")) {
+      backSrc = "/tcg-card-backs/SCENECARDBACK.png";
+    }
+
+    // PRR cards
+    else if (cleanKey.startsWith("SD01PRR")) {
+      backSrc = `/tcg-card-backs/PRR${cleanKey.slice(-2)}BACK.png`;
+    }
+
+    setZoomedCardFlipped(false);
+    setZoomedCardBack(backSrc);
+    setZoomedCard(`/friendships-begin/${cleanKey}.png`);
+    return;
+  }
+
+  // Normal mode: toggle owned/unowned
+  setFlipped((prev) => ({
+    ...prev,
+    [key]: !prev[key],
+  }));
+};
 
   // LOAD PROGRESS
   useEffect(() => {
@@ -146,6 +189,27 @@ const starterDeckGroups = [
 
     saveProgress();
   }, [flipped, loaded]);
+
+  useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (zoomedCard) {
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+  } else {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  }
+
+  return () => {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  };
+}, [zoomedCard]);
 
   // TOTAL CARDS
   const totalCards = sections.reduce((sum, s) => sum + s.count, 0);
@@ -253,6 +317,10 @@ const getDeckCards = (deckCode: string) => {
   return cards;
 };
 
+const isZoomedLandscape =
+  zoomedCard &&
+  /SD01[A-F].*C0[6-9]/.test(zoomedCard);
+
   return (
     <div className="min-h-screen bg-white">
       <KayouHeader />
@@ -295,7 +363,14 @@ const getDeckCards = (deckCode: string) => {
 
   </div>
 
-  <div className="hidden sm:block w-[72px]" />
+<button
+  onClick={() => setViewMode(!viewMode)}
+  className="self-center sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+>
+  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+    {viewMode ? "Exit View" : "View Set"}
+  </span>
+</button>
 </div>
 
         {!loaded ? (
@@ -393,7 +468,7 @@ const getDeckCards = (deckCode: string) => {
           >
             <div
               className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-                flipped[stateKey] ? "rotate-y-180" : ""
+                (!viewMode && flipped[stateKey]) ? "rotate-y-180" : ""
               }`}
             >
 
@@ -528,13 +603,29 @@ const getDeckCards = (deckCode: string) => {
             const num = String(actualIndex).padStart(2, "0");
             const key = `${prefix}${num}`;
             const stateKey = `BONUS-${key}`;
-            const isFlipped = flipped[stateKey];
+             const isFlipped = !viewMode && flipped[stateKey];
 
             return (
               <div
                 key={key}
                 className="aspect-[5/7] cursor-pointer perspective relative"
-                onClick={() => toggleFlip(stateKey)}
+                onClick={() => {
+  if (viewMode) {
+    setZoomedCardFlipped(false);
+
+const backSrc =
+  key.startsWith("SD01ER") || key.startsWith("SD01PER")
+    ? "/tcg-card-backs/SCENECARDBACK.png"
+    : key.startsWith("SD01PRR")
+      ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`
+      : getCardBack();
+
+setZoomedCardBack(backSrc);
+setZoomedCard(`/friendships-begin/${key}.png`);
+  } else {
+    toggleFlip(stateKey);
+  }
+}}
               >
                 <div
                   className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
@@ -570,7 +661,60 @@ const getDeckCards = (deckCode: string) => {
 
           </div>
         )}
+<div
+  className={`fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-all duration-300 ease-out ${
+    zoomedCard
+      ? "bg-black/70 backdrop-blur-sm opacity-100 pointer-events-auto"
+      : "bg-black/0 opacity-0 pointer-events-none"
+  }`}
+  onClick={() => setZoomedCard(null)}
+>
+  {zoomedCard && (
+    <div
+  className={`relative transition-all duration-300 ${
+    isClosingZoom
+      ? "opacity-0 scale-90"
+      : "opacity-100 scale-100 animate-[zoomIn_0.4s_cubic-bezier(0.22,1,0.36,1)]"
+  }`}
+  style={{ perspective: "1200px" }}
+  onClick={(e) => {
+    e.stopPropagation();
+    setZoomedCardFlipped(!zoomedCardFlipped);
+  }}
+>
+  <div
+    className={`relative transition-transform duration-500 transform-style-preserve-3d ${
+      zoomedCardFlipped ? "rotate-y-180" : ""
+    }`}
+  >
+    {/* FRONT */}
+    <img
+      src={zoomedCard}
+      className={`absolute inset-0 ${
+  isZoomedLandscape
+    ? "rotate-90 max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+    : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+} rounded-2xl shadow-2xl backface-hidden`}
+    />
 
+    {/* BACK */}
+    <img
+  src={zoomedCardBack || "/card-backs/tcgdefaultback.png"}
+  className={`${
+    isZoomedLandscape
+      ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+      : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+  } rounded-2xl shadow-2xl backface-hidden`}
+  style={{
+  transform: isZoomedLandscape
+    ? "rotateY(180deg) rotate(-90deg)"
+    : "rotateY(180deg)",
+}}
+/>
+  </div>
+</div>
+  )}
+</div>
       </div>
     </div>
   );

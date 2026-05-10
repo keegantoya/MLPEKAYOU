@@ -195,7 +195,7 @@ const toggleActive = async () => {
   if (card.set_id === "FW" || card.set_id === "friendshipsbegin") {
 
     const match = card.card_key.match(
-      /(PCR|PSPR|PER|PRR|SPR|GR|CR|RR|SR|ER|SSR|ZR|HR|LSR|SGR|SZR|UR|R|U|C)/
+      /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/
     );
 
     rarity = match?.[0] || "OTHER";

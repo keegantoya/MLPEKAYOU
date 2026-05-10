@@ -268,33 +268,32 @@ useEffect(() => {
   };
 
   return (
-    <div
-  className="min-h-screen"
+ <div
+  className="min-h-screen relative overflow-hidden"
   style={{
-    backgroundColor: "#e9e2f3",
-    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
-    backgroundSize: "26px 26px",
+    background: `
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,0.45), transparent 30%),
+      radial-gradient(circle at 85% 10%, rgba(255,215,0,0.08), transparent 25%),
+      radial-gradient(circle at 50% 80%, rgba(168,85,247,0.08), transparent 35%),
+      linear-gradient(180deg, #f8f4ff 0%, #f1e9ff 50%, #ede3ff 100%)
+    `,
   }}
 >
 
       <KayouHeader />
 
-      <div className="container py-8">
+      <div className="container py-10 max-w-7xl">
 
-        <div className="text-center mb-4 max-w-3xl mx-auto">
+        <div className="text-center mb-10 max-w-3xl mx-auto">
           <img
   src={setLeaderboardsBadge}
   alt="Set Leaderboards"
   className="mx-auto h-12 sm:h-14 md:h-16 object-contain mb-2"
 />
-
-          <p className="text-sm text-muted-foreground">
-           If you are the first person to finish a set, you must send proof to Keegan to be manually inserted.
-          </p>
         </div>
 
 <div className="flex items-center gap-6 my-4">
-  <div className="flex-1 h-px bg-gray-300/50" />
+  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
 
   <img
     src="/website-assets/CCGBANNER.png"
@@ -302,7 +301,7 @@ useEffect(() => {
     className="h-16 sm:h-18 md:h-20 object-contain"
   />
 
-  <div className="flex-1 h-px bg-gray-300/50" />
+  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
 </div>
 
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -313,22 +312,32 @@ useEffect(() => {
       <button
         key={set.id}
         onClick={() => navigate(`/community/${set.id}`)}
-        className="relative bg-card border rounded-xl p-5 shadow-sm text-left hover:border-primary hover:shadow-md transition"
+        className="
+  group relative overflow-hidden
+  rounded-3xl p-6 text-left
+  bg-white/70 backdrop-blur-xl
+  border border-white/60
+  shadow-[0_10px_30px_rgba(76,29,149,0.08)]
+  hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
+  hover:-translate-y-1.5
+  hover:border-yellow-300/60
+  transition-all duration-300
+"
       >
-        <h2 className="font-semibold mb-2">
+        <h2 className="text-lg font-bold text-purple-950 mb-2 pr-24">
           {set.name}
         </h2>
 
-        <div className="text-sm text-muted-foreground">
-          View leaderboard →
-        </div>
+        <div className="text-sm font-medium text-purple-700 group-hover:text-purple-900 transition-colors">
+  View Leaderboard →
+</div>
 
         {firstFinishers[String(set.id)] && (
           <div className="absolute top-3 right-3 flex flex-col items-center">
             <div className="relative w-14 h-14">
               <img
                 src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
-                className="w-14 h-14 rounded-full border-2 border-background shadow-lg"
+                className="w-14 h-14 rounded-full border-4 border-white shadow-xl ring-2 ring-yellow-300/60"
               />
 
               <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
@@ -346,7 +355,7 @@ useEffect(() => {
 </div>
 
 <div className="flex items-center gap-6 my-4">
-  <div className="flex-1 h-px bg-gray-300/50" />
+  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
 
   <img
     src="/website-assets/TCGBANNER.png"
@@ -354,7 +363,7 @@ useEffect(() => {
     className="h-16 sm:h-18 md:h-20 object-contain"
   />
 
-  <div className="flex-1 h-px bg-gray-300/50" />
+  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
 </div>
 
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -365,22 +374,33 @@ useEffect(() => {
       <button
         key={set.id}
         onClick={() => navigate(`/community/${set.id}`)}
-        className="relative bg-card border rounded-xl p-5 shadow-sm text-left hover:border-primary hover:shadow-md transition"
+        className="
+  group relative overflow-hidden
+  rounded-3xl p-6 text-left
+  bg-white/70 backdrop-blur-xl
+  border border-white/60
+  shadow-[0_10px_30px_rgba(76,29,149,0.08)]
+  hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
+  hover:-translate-y-1.5
+  hover:border-yellow-300/60
+  transition-all duration-300
+"
       >
-        <h2 className="font-semibold mb-2">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-purple-100/30 pointer-events-none" />
+        <h2 className="text-lg font-bold text-purple-950 mb-2 pr-24">
           {set.name}
         </h2>
 
-        <div className="text-sm text-muted-foreground">
-          View leaderboard →
-        </div>
+        <div className="text-sm font-medium text-purple-700 group-hover:text-purple-900 transition-colors">
+  View Leaderboard →
+</div>
 
         {firstFinishers[String(set.id)] && (
           <div className="absolute top-3 right-3 flex flex-col items-center">
             <div className="relative w-14 h-14">
               <img
                 src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
-                className="w-14 h-14 rounded-full border-2 border-background shadow-lg"
+                className="w-14 h-14 rounded-full border-4 border-white shadow-xl ring-2 ring-yellow-300/60"
               />
 
               <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
@@ -396,25 +416,27 @@ useEffect(() => {
       </button>
   ))}
 </div>
-<footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
-        <div className="max-w-lg mx-auto">
-          <p>This website is not run or owned by Kayou.</p>
+<footer className="mt-16 px-4 py-8 sm:py-10 text-center text-xs sm:text-sm text-neutral-600">
+  <div className="max-w-xl mx-auto space-y-2">
+    <p className="leading-relaxed">
+      This website is not run or owned by Kayou.
+    </p>
 
-          <p className="text-[7px] sm:text-[8px] italic">
-            All rights to respective owners. All rights to Kayou.
-          </p>
+    <p className="text-[9px] sm:text-[10px] italic text-neutral-500 leading-relaxed">
+      All rights to their respective owners. All rights to Kayou.
+    </p>
 
-          <p>
-            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
-          </p>
+    <p className="leading-relaxed max-w-md mx-auto">
+     This is a fanmade collector tool and generates no profit.
+    </p>
 
-          <img
-            src="/logos/collab-logo.png"
-            alt="MLPEKAYOU x KAYOU"
-            className="mx-auto h-10 sm:h-14 opacity-90"
-          />
-        </div>
-      </footer>
+    <img
+      src="/logos/collab-logo.png"
+      alt="MLPEKAYOU x KAYOU"
+      className="mx-auto mt-4 h-12 sm:h-16 w-auto opacity-90"
+    />
+  </div>
+</footer>
       </div>
     </div>
   );

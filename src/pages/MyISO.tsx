@@ -510,7 +510,7 @@ const getRarityCode = (rarity: string) => {
 
       if (prefix === "SD01PER") {
         actualIndex = i + 7;
-        if (actualIndex > 16) return null;
+        if (actualIndex > 18) return null;
       }
 
       const num = String(actualIndex).padStart(2, "0");

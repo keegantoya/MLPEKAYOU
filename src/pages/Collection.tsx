@@ -20,10 +20,16 @@ const rawId =
   window.location.pathname.replace("/", "");
 const id = slugToId[rawId] || rawId;
 
-  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
-  const [celebrated, setCelebrated] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+const [loaded, setLoaded] = useState(false);
+const [celebrated, setCelebrated] = useState(false);
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+const [viewMode, setViewMode] = useState(false);
+const [zoomedCard, setZoomedCard] = useState<string | null>(null);
+const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
+const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+const [isClosingZoom, setIsClosingZoom] = useState(false);
 
   const fireConfetti = () => {
   confetti({
@@ -33,24 +39,37 @@ const id = slugToId[rawId] || rawId;
   });
 };
 
-  const toggleFlip = async (key: string) => {
+const toggleFlip = async (key: string) => {
+  // View Mode: open the zoomed card instead of marking ownership
+  if (viewMode) {
+    const [rarity, numberStr] = key.split("-");
+    const number = Number(numberStr);
 
-  // 1. Create updated state
+    const frontSrc = `/cards/${set.folder}/${set.prefix}${getRarityCode(
+      rarity
+    )}${String(number).padStart(3, "0")}.jpg`;
+
+    const backSrc = getCardBack(rarity, number);
+
+    setZoomedCardFlipped(false);
+    setZoomedCardBack(backSrc);
+    setZoomedCard(frontSrc);
+    return;
+  }
+
+  // Normal Mode: toggle ownership and save to Supabase
   const newFlipped = {
     ...flipped,
     [key]: !flipped[key]
   };
 
-  // 2. Update UI immediately
   setFlipped(newFlipped);
 
-  // 3. Get current user
   const { data } = await supabase.auth.getSession();
   const user = data.session?.user;
 
   if (!user) return;
 
-  // 4. Save to database
   await supabase
     .from("collection_progress_raw")
     .upsert(
@@ -224,6 +243,27 @@ const id = slugToId[rawId] || rawId;
     setCelebrated(true);
   }
 }, [flipped, loaded, celebrated]);
+
+useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (zoomedCard) {
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+  } else {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  }
+
+  return () => {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  };
+}, [zoomedCard]);
 
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
@@ -410,6 +450,56 @@ const rarityContainerNames: Record<string, string> = {
   XR: "EXTREME RARE CARDS"
 };
 
+const isZoomedLandscape = (() => {
+  if (!zoomedCard) return false;
+
+  // Eternal Moon 1
+  if (set.prefix === "M1") {
+    if (
+      zoomedCard.includes("M1HR008") ||
+      zoomedCard.includes("M1HR009") ||
+      zoomedCard.includes("M1HR010") ||
+      zoomedCard.includes("M1HR018") ||
+      zoomedCard.includes("M1HR019") ||
+      zoomedCard.includes("M1HR021") ||
+      zoomedCard.includes("M1HR023") ||
+      zoomedCard.includes("M1HR027") ||
+      zoomedCard.includes("M1HR032") ||
+      zoomedCard.includes("M1HR034") ||
+      zoomedCard.includes("M1HR036") ||
+      zoomedCard.includes("M1UR016") ||
+      zoomedCard.includes("M1SC007")
+    ) {
+      return true;
+    }
+  }
+
+  // Eternal Moon 2
+  if (set.prefix === "M2") {
+    // HR001–HR022 (all HR except the last 8)
+    if (zoomedCard.includes("M2HR")) {
+      const match = zoomedCard.match(/M2HR(\d{3})/);
+      if (match && Number(match[1]) <= 22) {
+        return true;
+      }
+    }
+
+    if (
+      zoomedCard.includes("M2SC007") ||
+      zoomedCard.includes("M2SZR001")
+    ) {
+      return true;
+    }
+  }
+
+  // Rainbow 1
+  if (set.prefix === "R1") {
+    return false;
+  }
+
+  return false;
+})();
+
   return (
     <div className="min-h-screen bg-white">
       <KayouHeader />
@@ -451,7 +541,14 @@ const rarityContainerNames: Record<string, string> = {
 
   </div>
 
-  <div className="hidden sm:block w-[72px]" />
+  <button
+  onClick={() => setViewMode(!viewMode)}
+  className="self-center sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+>
+  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+    {viewMode ? "Exit View" : "View Set"}
+  </span>
+</button>
 </div>
 {!loaded ? (
   <div className="text-center py-16 text-muted-foreground">
@@ -524,7 +621,7 @@ const rarityContainerNames: Record<string, string> = {
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {group.map((card: any) => {
                   const key = `${card.rarity}-${card.number}`;
-                  const isFlipped = flipped[key];
+                  const isFlipped = !viewMode && flipped[key];
 
                   return (
                     <div
@@ -559,6 +656,52 @@ const rarityContainerNames: Record<string, string> = {
   </>
 )}
       </div>
+
+      {zoomedCard && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setZoomedCard(null)}
+        >
+          <div
+            style={{ perspective: "1200px" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoomedCardFlipped(!zoomedCardFlipped);
+            }}
+          >
+            <div
+              className={`relative transition-transform duration-500 transform-style-preserve-3d ${
+                zoomedCardFlipped ? "rotate-y-180" : ""
+              }`}
+            >
+              {/* FRONT */}
+              <img
+                src={zoomedCard}
+                className={`absolute inset-0 ${
+                  isZoomedLandscape
+                    ? "rotate-90 max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+                    : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+                } rounded-2xl shadow-2xl backface-hidden`}
+              />
+
+              {/* BACK */}
+              <img
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                className={`${
+                  isZoomedLandscape
+                    ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+                    : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+                } rounded-2xl shadow-2xl backface-hidden`}
+                style={{
+                  transform: isZoomedLandscape
+                    ? "rotateY(180deg) rotate(-90deg)"
+                    : "rotateY(180deg)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

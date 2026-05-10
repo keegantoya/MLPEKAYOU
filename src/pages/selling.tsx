@@ -19,17 +19,12 @@ export default function Selling() {
         <img
   src={sellingBadge}
   alt="Selling and Buying"
-  className="mx-auto h-16 sm:h-20 md:h-24 object-contain mb-10"
+  className="mx-auto h-16 sm:h-20 md:h-24 object-contain mb-2"
 />
           {/* RIGHT SIDE */}
           <div className="max-w-2xl mx-auto text-center">
-
-            <h2 className="text-2xl font-bold text-center mb-4">
-              Pricing Guide
-            </h2>
-
 <p className="text-base text-center text-neutral-600 mb-4">
-  The below prices are set by a council of collectors. They are based on the hit rates and box prices. These are the suggested guidelines to avoid an extremely inflated market like Pokemon, and keep MLP Kayou accessible and collectible for all.
+  The below prices are set by a council of collectors. They are based on the hit rates and box prices. These are the suggested guidelines to avoid an extremely inflated market like Pokemon, and keep MLP Kayou accessible and collectible for all. The Pokemon scalpers have already found our pony cards and are inflating the prices in order to turn around a massive profit. Please do not engage with this behavior, and they will eventually move on.
 </p>
 
             <div className="space-y-4">
@@ -241,16 +236,16 @@ export default function Selling() {
               <div className="flex justify-between text-sm text-neutral-700"><span>※GR</span><span>$25</span></div>
               <div className="flex justify-between text-sm text-neutral-700"><span>※SPR</span><span>$30</span></div>
               <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$50</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$70</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$95</span></div>
           </div>
 
           <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Friendships Begin</h3>
             <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>$20</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$25</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>$20</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$30</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$40</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$20</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>$25</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$38</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$65</span></div>
           </div>
 
         </div>

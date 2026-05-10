@@ -265,18 +265,29 @@ const filtered =
   ).filter((c) => c.released);
 
   return (
-    <div
+ <div
   className="min-h-screen relative overflow-hidden"
   style={{
-    backgroundColor: "#e9e2f3",
-    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
-    backgroundSize: "26px 26px",
+    backgroundColor: "#F8F3FF",
+    backgroundImage: `
+      radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
+      radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
+      radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
+      radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
+      linear-gradient(
+        180deg,
+        #FCF9FF 0%,
+        #F8F1FF 35%,
+        #F5EEFF 65%,
+        #FAF6FF 100%
+      )
+    `,
   }}
 >
       <KayouHeader />
 
       {/* MOBILE CATEGORY BAR */}
-<div className="md:hidden px-3 pt-16 pb-2 overflow-x-auto scrollbar-hide">
+<div className="md:hidden px-4 pt-8 pb-2 overflow-x-auto scrollbar-hide">
   <div className="flex gap-2 min-w-max">
 
     {[
@@ -305,7 +316,25 @@ const filtered =
   </div>
 </div>
 
-      <div className="container py-8 flex gap-8">
+{/* Mobile Collections Hero */}
+<div className="md:hidden px-4 pt-4 mb-3">
+  <div className="rounded-3xl bg-white/80 backdrop-blur-sm border border-purple-200 shadow-[0_15px_40px_rgba(95,55,145,0.10)] px-5 py-5 text-center">
+    <h1
+      className="text-3xl font-bold text-[#5B2E86]"
+      style={{
+        fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
+      }}
+    >
+      All Collections
+    </h1>
+
+    <p className="mt-2 text-sm leading-relaxed text-[#7A5A9B]">
+     Master all of these sets to appear on the leaderboard!
+    </p>
+  </div>
+</div>
+
+      <div className="container -mt-5 md:mt-6 pt-0 pb-8 flex gap-8">
   
   {/* Sidebar wrapper */}
   <div className="hidden md:block p-4">
@@ -430,26 +459,6 @@ const filtered =
 
         </main>
       </div>
-
-      <footer className="hidden sm:block py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
-        <div className="max-w-lg mx-auto">
-          <p>This website is not run or owned by Kayou.</p>
-
-          <p className="text-[7px] sm:text-[8px] italic">
-            All rights to respective owners. All rights to Kayou.
-          </p>
-
-          <p>
-            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
-          </p>
-
-          <img
-            src="/logos/collab-logo.png"
-            alt="MLPEKAYOU x KAYOU"
-            className="mx-auto h-10 sm:h-14 opacity-90"
-          />
-        </div>
-      </footer>
 
     </div>
   );

@@ -2,6 +2,7 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import leaderboardBadge from "@/assets/avatars/leaderboardbadge.png";
+import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 
 import avatar001 from "@/assets/avatars/avatar001.jpg";
 import avatar002 from "@/assets/avatars/avatar002.jpg";
@@ -130,27 +131,12 @@ useEffect(() => {
   useEffect(() => {
     const load = async () => {
       const { data: progress } = await supabase
-        .from("collection_progress_raw")
-        .select("*");
-
-        const mergedProgress: Record<string, any> = {};
+  .from("collection_progress_raw")
+  .select("*");
+const mergedProgress: Record<string, any> = {};
 
 progress?.forEach((row: any) => {
-  const key = `${row.user_id}-${row.set_id}`;
-
-  if (!mergedProgress[key]) {
-    mergedProgress[key] = {
-      user_id: row.user_id,
-      set_id: row.set_id,
-      progress: {}
-    };
-  }
-
-  Object.entries(row.progress || {}).forEach(([card, value]) => {
-    if (value) {
-      mergedProgress[key].progress[card] = true;
-    }
-  });
+  mergedProgress[`${row.user_id}-${row.set_id}`] = row;
 });
         
       const { data: profiles } = await supabase
@@ -331,10 +317,9 @@ if (!hideBonus) {
 
     let actualIndex = i;
 
-    if (prefix === "SD01PER") {
-      actualIndex = i + 6;
-    }
-
+if (prefix === "SD01PER") {
+  actualIndex = i + 6;
+}
     const num = String(actualIndex).padStart(2, "0");
     const key = `${prefix}${num}`;
 
@@ -368,7 +353,15 @@ if (rarityDisplayMap[formattedRarity]) {
 }
 const prefixMark = special ? "※" : "";
 
-const formatted = `${prefixMark}${formattedRarity}-${num}`;
+let formatted = `${prefixMark}${formattedRarity}-${num}`;
+
+if (rarity === "PER") {
+  const displayNum = Math.ceil(i / 2) + 6;
+  const variant = i % 2 === 1 ? "(Day)" : "(Night)";
+
+  formatted =
+    `${prefixMark}${formattedRarity}-${String(displayNum).padStart(2, "0")} ${variant}`;
+}
 
       missingCards.push(`${set.name} • ${formatted}`);
     }
@@ -400,18 +393,22 @@ const formatted = `${prefixMark}${formattedRarity}-${num}`;
 
 const FW_CARDS = STRUCTURE.flatMap(({ prefix, count }) => {
 
+  // ER cards are numbered 07–12
   if (prefix === "BP01ER") {
     return Array.from({ length: 6 }, (_, i) =>
       `BP01ER${String(i + 7).padStart(2, "0")}`
     );
   }
 
+  // PSPR uses a custom numbering sequence
   if (prefix === "BP01PSPR") {
-    return [1,2,3,5,7,8,9,12,13,18,21].map(n =>
+    return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map((n) =>
       `BP01PSPR${String(n).padStart(2, "0")}`
     );
   }
 
+  // All other Fantasy Wonderland cards, including PER,
+  // use standard numbering starting at 01.
   return Array.from({ length: count }, (_, i) =>
     `${prefix}${String(i + 1).padStart(2, "0")}`
   );
@@ -430,6 +427,9 @@ Object.entries(progressData).forEach(([key, val]) => {
     owned++;
     hasAny = true;
   }
+  if (val && !validKeys.has(key)) {
+    console.log("Unrecognized Fantasy Wonderland card:", key);
+  }
 });
 
 FW_CARDS.forEach((key) => {
@@ -439,13 +439,11 @@ let rarity = key.replace("BP01", "").replace(/[0-9]/g, "");
 let displayRarity = rarity;
 let special = false;
 
-// ✅ ANY rarity starting with P becomes special
 if (rarity.startsWith("P")) {
   special = true;
   displayRarity = rarity.slice(1); // REMOVE the P
 }
 
-// ✅ PER is still special but maps to ER
 if (rarity === "PER") {
   displayRarity = "ER";
   special = true;
@@ -465,7 +463,6 @@ const rawNum = parseInt(num);
 let displayNum = rawNum;
 let variant = "";
 
-// CORRECT PER LOGIC (alternating)
 if (rarity === "PER") {
   displayNum = Math.ceil(rawNum / 2);
   variant = rawNum % 2 === 1 ? "(Day)" : "(Night)";
@@ -521,7 +518,12 @@ missingCards.push(`${set.name} • ${displayRarity}-${padded}`);
   });
 
 }
-    totals[userId].total += owned;
+if (set.id === sets[sets.length - 1].id) {
+  totals[userId].total = calculateCollectionTotal(
+    userId,
+    Object.values(mergedProgress)
+  );
+}
     totals[userId].missing.push(...missingCards);
 
     if (owned === totalCardsInSet && totalCardsInSet > 0) {
@@ -575,12 +577,15 @@ if (
 };
 
   return (
-    <div
-  className="min-h-screen"
+<div
+  className="min-h-screen relative overflow-hidden"
   style={{
-    backgroundColor: "#e9e2f3",
-    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
-    backgroundSize: "26px 26px",
+    background: `
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,0.45), transparent 30%),
+      radial-gradient(circle at 85% 10%, rgba(255,215,0,0.08), transparent 25%),
+      radial-gradient(circle at 50% 80%, rgba(168,85,247,0.08), transparent 35%),
+      linear-gradient(180deg, #f8f4ff 0%, #f1e9ff 50%, #ede3ff 100%)
+    `,
   }}
 >
       <KayouHeader />
@@ -616,9 +621,9 @@ if (
   }`}
 >
                   {index >= 3 && (
-  <div className="font-bold">
-    #{index + 1}
-  </div>
+<div className="font-bold text-lg text-purple-900">
+  #{index + 1}
+</div>
 )}
 
                   <div className="relative">
@@ -713,11 +718,11 @@ if (
 </div>
 
                   <div>
-                    <div className="font-semibold">
+                    <div className="font-semibold text-purple-950">
                       {user.username}
                     </div>
 
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-purple-600">
                       {user.total} cards
                     </div>
                   </div>
@@ -899,25 +904,6 @@ if (
           })}
         </div>
         </div>
-<footer className="py-4 sm:py-5 text-center text-[10px] sm:text-xs text-black">
-        <div className="max-w-lg mx-auto">
-          <p>This website is not run or owned by Kayou.</p>
-
-          <p className="text-[7px] sm:text-[8px] italic">
-            All rights to respective owners. All rights to Kayou.
-          </p>
-
-          <p>
-            This is a fan-made collector tool that generates zero profit and will not run ads or promote a subscription.
-          </p>
-
-          <img
-            src="/logos/collab-logo.png"
-            alt="MLPEKAYOU x KAYOU"
-            className="mx-auto h-10 sm:h-14 opacity-90"
-          />
-        </div>
-      </footer>
       </div>
     </div>
   );

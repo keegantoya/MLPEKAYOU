@@ -7,15 +7,32 @@ const Promos = () => {
   const setId = "9";
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
-  const [forTrade, setForTrade] = useState<Record<string, boolean>>({});
+const [loaded, setLoaded] = useState(false);
+const [forTrade, setForTrade] = useState<Record<string, boolean>>({});
+
+const [viewMode, setViewMode] = useState(false);
+const [zoomedCard, setZoomedCard] = useState<string | null>(null);
+const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
+const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+const [isClosingZoom, setIsClosingZoom] = useState(false);
 
   const toggleFlip = (key: string) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
+  if (viewMode) {
+    const number = Number(key.split("-")[1]);
+
+    setZoomedCardFlipped(false);
+    setZoomedCardBack("/card-backs/M1R-SR-SGR-SCBACK.jpeg");
+    setZoomedCard(
+      `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`
+    );
+    return;
+  }
+
+  setFlipped((prev) => ({
+    ...prev,
+    [key]: !prev[key]
+  }));
+};
 
   const toggleTrade = async (key: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -137,6 +154,27 @@ const Promos = () => {
     saveProgress();
   }, [flipped, loaded]);
 
+useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (zoomedCard) {
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+  } else {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  }
+
+  return () => {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  };
+}, [zoomedCard]);
+
   const cards = Array.from({ length: 5 }, (_, i) => ({
     number: i + 1
   }));
@@ -184,7 +222,14 @@ const Promos = () => {
 
   </div>
 
-  <div className="hidden sm:block w-[72px]" />
+  <button
+  onClick={() => setViewMode(!viewMode)}
+  className="self-center sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+>
+  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+    {viewMode ? "Exit View" : "View Set"}
+  </span>
+</button>
 </div>
 
         {!loaded ? (
@@ -197,7 +242,7 @@ const Promos = () => {
             {cards.map((card) => {
 
               const key = `PR-${card.number}`;
-              const isFlipped = flipped[key];
+              const isFlipped = !viewMode && flipped[key];
 
               return (
                 <div key={key} className="flex flex-col items-center">
@@ -294,6 +339,42 @@ const Promos = () => {
   </ul>
 
 </div>
+
+      {zoomedCard && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setZoomedCard(null)}
+        >
+          <div
+            style={{ perspective: "1200px" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoomedCardFlipped(!zoomedCardFlipped);
+            }}
+          >
+            <div
+              className={`relative transition-transform duration-500 transform-style-preserve-3d ${
+                zoomedCardFlipped ? "rotate-y-180" : ""
+              }`}
+            >
+              {/* FRONT */}
+              <img
+                src={zoomedCard}
+                className="absolute inset-0 max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
+              />
+
+              {/* BACK */}
+              <img
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                className="max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
+                style={{
+                  transform: "rotateY(180deg)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

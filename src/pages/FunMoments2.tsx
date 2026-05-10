@@ -6,9 +6,15 @@ import confetti from "canvas-confetti";
 
 const FunMoments2 = () => {
   const navigate = useNavigate();
-  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
+const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+const [loaded, setLoaded] = useState(false);
+
+const [viewMode, setViewMode] = useState(false);
+const [zoomedCard, setZoomedCard] = useState<string | null>(null);
+const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
+const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+const [isClosingZoom, setIsClosingZoom] = useState(false);
 
    const fireConfetti = () => {
     confetti({
@@ -44,12 +50,27 @@ const FunMoments2 = () => {
 }
   };
 
-  const toggleFlip = (key: string) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
+const toggleFlip = (key: string) => {
+  if (viewMode) {
+    const [rarity, numberStr] = key.split("-");
+    const number = Number(numberStr);
+
+    const frontSrc =
+      `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+
+    const backSrc = getCardBack(rarity, number);
+
+    setZoomedCardFlipped(false);
+    setZoomedCardBack(backSrc);
+    setZoomedCard(frontSrc);
+    return;
+  }
+
+  setFlipped((prev) => ({
+    ...prev,
+    [key]: !prev[key]
+  }));
+};
 
   // LOAD PROGRESS
   useEffect(() => {
@@ -115,6 +136,27 @@ const FunMoments2 = () => {
 
     saveProgress();
   }, [flipped, loaded]);
+
+useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (zoomedCard) {
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+  } else {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  }
+
+  return () => {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  };
+}, [zoomedCard]);
 
 // PREVENT SPAM
 const [celebrated, setCelebrated] = useState(false);
@@ -192,7 +234,17 @@ if (rarity === "UR") {
   return "/card-backs/M1R-SR-SGR-SCBACK.jpeg";
 };
 
-  return (
+  const isZoomedLandscape =
+  zoomedCard &&
+  (
+    zoomedCard.includes("FM2N") ||
+    zoomedCard.includes("FM2SN") ||
+    zoomedCard.includes("FM2CR010") ||
+    zoomedCard.includes("FM2CR011") ||
+    zoomedCard.includes("FM2CR012")
+  );
+
+return (
     <div className="min-h-screen bg-white">
       <KayouHeader />
 
@@ -239,7 +291,14 @@ if (rarity === "UR") {
 
   </div>
 
-  <div className="hidden sm:block w-[72px]" />
+  <button
+  onClick={() => setViewMode(!viewMode)}
+  className="self-center sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+>
+  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+    {viewMode ? "Exit View" : "View Set"}
+  </span>
+</button>
 </div>
 
 <div className="flex flex-wrap justify-center gap-2 mt-6 mb-12">
@@ -306,7 +365,7 @@ if (rarity === "UR") {
       {Array.from({ length: count as number }, (_, i) => {
         const number = i + 1;
         const key = `${rarity}-${number}`;
-        const isFlipped = flipped[key];
+        const isFlipped = !viewMode && flipped[key];
 
         return (
           <div
@@ -344,6 +403,58 @@ if (rarity === "UR") {
 )}
 
       </div>
+
+      {zoomedCard && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setZoomedCard(null)}
+        >
+          <div
+            style={{ perspective: "1200px" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoomedCardFlipped(!zoomedCardFlipped);
+            }}
+          >
+            <div
+              className={`relative transition-transform duration-500 transform-style-preserve-3d ${
+                zoomedCardFlipped ? "rotate-y-180" : ""
+              }`}
+            >
+              <img
+                src={zoomedCard}
+                className={`absolute inset-0 ${
+                  isZoomedLandscape
+                    ? "rotate-90 max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+                    : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+                } rounded-2xl shadow-2xl backface-hidden`}
+              />
+
+              <img
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                className={`${
+                  isZoomedLandscape
+                    ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+                    : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+                } rounded-2xl shadow-2xl backface-hidden`}
+                style={{
+  transform:
+    zoomedCard &&
+    (
+      zoomedCard.includes("FM2CR010") ||
+      zoomedCard.includes("FM2CR011") ||
+      zoomedCard.includes("FM2CR012")
+    )
+      ? "rotateY(180deg) rotate(90deg)"
+      : isZoomedLandscape
+        ? "rotateY(180deg) rotate(-90deg)"
+        : "rotateY(180deg)",
+}}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

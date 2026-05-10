@@ -283,7 +283,7 @@ const handleForgotPassword = async () => {
   return (
     <>
 <header
-  className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border-b border-[#d4af37]/40 text-[#f5e6a8] shadow-md ${
+  className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-md ${
     !window.matchMedia('(display-mode: standalone)').matches
       ? 'top-0'
       : 'top-0'
@@ -326,7 +326,14 @@ style={{
         <img
   src={avatarSrc || avatar001}
   alt="avatar"
-  className="-mt-5 h-11 w-11 rounded-full object-cover border-2 border-white/30 shadow-md"
+ className="h-11 w-11 rounded-full object-cover r-2 bordeborder-white/30 shadow-md"
+style={{
+  marginTop:
+    window.innerWidth < 640 &&
+    window.matchMedia("(display-mode: standalone)").matches
+      ? "-20px"
+      : "0px"
+}}
 />
       </button>
     ) : (
@@ -439,8 +446,17 @@ style={{
 
   </div>
 
-{/* MOBILE FAQ BUTTON */}
-<div className="sm:hidden absolute right-3 bottom-2">
+  
+
+{/* MOBILE FAQ + SELLING BUTTONS */}
+<div className="sm:hidden absolute right-3 bottom-2 flex items-center gap-2">
+  <button
+    onClick={() => navigate("/selling")}
+    className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] text-lg font-bold shadow-sm"
+  >
+    $
+  </button>
+
   <button
     onClick={() => navigate("/faq")}
     className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] text-lg font-bold shadow-sm"

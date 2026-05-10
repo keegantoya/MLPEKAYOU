@@ -6,16 +6,46 @@ import { supabase } from "@/lib/supabase";
 const FantasyWonderland = () => {
   const navigate = useNavigate();
 
-  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
+const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+const [loaded, setLoaded] = useState(false);
+
+const [viewMode, setViewMode] = useState(false);
+const [zoomedCard, setZoomedCard] = useState<string | null>(null);
+const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
+const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+const [isClosingZoom, setIsClosingZoom] = useState(false);
 
   const toggleFlip = (key: string) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
+  if (viewMode) {
+    let backSrc = "/card-backs/tcgdefaultback.png";
+
+    if (key.startsWith("BP01PRR")) {
+      backSrc = `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`;
+    } else if (key.startsWith("BP01RR")) {
+      backSrc = `/tcg-card-backs/SDRR${key.slice(-2)}BACK.png`;
+    } else if (key.startsWith("BP01ER") || key.startsWith("BP01PER")) {
+      backSrc = "/tcg-card-backs/SCENECARDBACK.png";
+    }
+
+    const frontSrc =
+      key.startsWith("BP01ER")
+        ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+        : key.startsWith("BP01PER")
+        ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
+        : `/fantasy-wonderland/${key}.png`;
+
+    setZoomedCardFlipped(false);
+    setZoomedCardBack(backSrc);
+    setZoomedCard(frontSrc);
+    return;
+  }
+
+  setFlipped((prev) => ({
+    ...prev,
+    [key]: !prev[key]
+  }));
+};
 
   // CARD STRUCTURE
  const STRUCTURE = [
@@ -157,6 +187,31 @@ const rarityContainerNames: Record<string, string> = {
     saveProgress();
   }, [flipped, loaded]);
 
+useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (zoomedCard) {
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+  } else {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  }
+
+  return () => {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  };
+}, [zoomedCard]);
+
+    const isZoomedLandscape =
+  zoomedCard &&
+  /BP01C(2[5-9]|3[0-9]|4[0-8])/.test(zoomedCard);
+
   return (
     <div className="min-h-screen bg-white">
       <KayouHeader />
@@ -194,12 +249,19 @@ const rarityContainerNames: Record<string, string> = {
     </div>
 
     <p className="mt-3 text-sm md:text-base text-[#555] max-w-2xl mx-auto leading-relaxed px-2">
-      Fantasy Wonderland was the first TCG booster pack set to show up in America.
+      Fantasy Wonderland was the first TCG booster pack set to show up in America. I am still waiting on the appropriate card backs for a few of these, so please excuse the discrepencies.
     </p>
 
   </div>
 
-  <div className="hidden sm:block w-[72px]" />
+  <button
+  onClick={() => setViewMode(!viewMode)}
+  className="self-center sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+>
+  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+    {viewMode ? "Exit View" : "View Set"}
+  </span>
+</button>
 </div>
         {!loaded ? (
           <div className="text-center py-16 text-muted-foreground">
@@ -277,7 +339,7 @@ const rarityContainerNames: Record<string, string> = {
   <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {group.map((card: any) => {
             const key = card.key;
-            const isFlipped = flipped[key];
+            const isFlipped = !viewMode && flipped[key];
 
             return (
               <div
@@ -331,6 +393,63 @@ const rarityContainerNames: Record<string, string> = {
         )}
 
       </div>
+
+      {zoomedCard && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setZoomedCard(null)}
+        >
+          <div
+            style={{ perspective: "1200px" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setZoomedCardFlipped(!zoomedCardFlipped);
+            }}
+          >
+            <div
+              className={`relative transition-transform duration-500 transform-style-preserve-3d ${
+                zoomedCardFlipped ? "rotate-y-180" : ""
+              }`}
+            >
+              {/* FRONT */}
+              <img
+                src={zoomedCard}
+                className={`absolute inset-0 ${
+                  isZoomedLandscape
+                    ? "rotate-90 max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+                    : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+                } rounded-2xl shadow-2xl backface-hidden`}
+              />
+
+              {/* BACK */}
+              <img
+                src={zoomedCardBack || "/card-backs/tcgdefaultback.png"}
+                className={`${
+                  isZoomedLandscape
+                    ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+                    : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+                } rounded-2xl shadow-2xl backface-hidden`}
+                style={{
+                  transform: isZoomedLandscape
+                    ? "rotateY(180deg) rotate(-90deg)"
+                    : "rotateY(180deg)",
+                }}
+              />
+              {(isZoomedLandscape || zoomedCard?.includes("BP01RR")) &&
+  zoomedCardFlipped && (
+  <div
+    className="absolute inset-0 flex items-center justify-center px-6 text-center pointer-events-none"
+    style={{ transform: "rotateY(180deg)" }}
+  >
+    <div className="bg-black/70 text-white text-sm sm:text-base px-4 py-3 rounded-xl shadow-lg max-w-xs">
+      Still waiting on the correct card backs from Kayou.
+    </div>
+  </div>
+)}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
