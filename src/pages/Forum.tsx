@@ -107,6 +107,7 @@ const [newComment, setNewComment] = useState("");
 const [showDeleteModal, setShowDeleteModal] = useState(false);
 const [postToDelete, setPostToDelete] = useState<any>(null);
 const [memberCount, setMemberCount] = useState(0);
+const [currentUser, setCurrentUser] = useState<any>(null);
 // User Search
 const [userSearch, setUserSearch] = useState("");
 const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -161,6 +162,7 @@ useEffect(() => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    setCurrentUser(user);
 
     const { data: forumData } = await supabase
       .from("forum_posts")
@@ -1431,18 +1433,19 @@ title="View Profile"
               </div>
 
               {post.id !== "welcome-post" &&
-                !String(post.id).startsWith("news-") &&
-                !String(post.id).startsWith("giveaway-") && (
-                  <button
-                    onClick={() => {
-                      setPostToDelete(post);
-                      setShowDeleteModal(true);
-                    }}
-                    className="text-xs font-semibold text-rose-500 hover:text-rose-600"
-                  >
-                    Delete
-                  </button>
-                )}
+  !String(post.id).startsWith("news-") &&
+  !String(post.id).startsWith("giveaway-") &&
+  post.user_id === currentUser?.id && (
+    <button
+      onClick={() => {
+        setPostToDelete(post);
+        setShowDeleteModal(true);
+      }}
+      className="text-xs font-semibold text-rose-500 hover:text-rose-600"
+    >
+      Delete
+    </button>
+  )}
             </div>
           </div>
         </div>
@@ -1892,9 +1895,10 @@ comments.map((comment) => (
           <button
             onClick={async () => {
               const { error } = await supabase
-                .from("forum_posts")
-                .delete()
-                .eq("id", postToDelete.id);
+  .from("forum_posts")
+  .delete()
+  .eq("id", postToDelete.id)
+  .eq("user_id", currentUser?.id);
 
               if (error) {
                 alert(error.message);
