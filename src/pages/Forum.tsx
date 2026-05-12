@@ -1437,7 +1437,11 @@ title="View Profile"
   !String(post.id).startsWith("giveaway-") &&
   (
     post.user_id === currentUser?.id ||
-    currentUser?.id === "17e57e39-bc0c-44e7-b373-ac34c6690185"
+    [
+      "17e57e39-bc0c-44e7-b373-ac34c6690185",
+      "94a1c998-d040-4dd2-b2fb-5f606287139d",
+      "408a516c-ee80-4ff8-a869-493e1fd5d961",
+    ].includes(currentUser?.id)
   ) && (
     <button
       onClick={() => {
@@ -1613,7 +1617,11 @@ title="View Profile"
       return true;
     }
 
-    return selectedUser?.username === "Keegan";
+    return [
+  "17e57e39-bc0c-44e7-b373-ac34c6690185",
+  "94a1c998-d040-4dd2-b2fb-5f606287139d",
+  "408a516c-ee80-4ff8-a869-493e1fd5d961",
+].includes(currentUser?.id);
   })
   .map((category) => (
     <option key={category} value={category}>
