@@ -1305,7 +1305,7 @@ disabled={savingAvatar}
             CCG Progress
           </div>
           <div className="text-sm text-gray-500">
-            Trarck your CCG progress here.
+            Track your CCG progress here.
           </div>
         </div>
 
