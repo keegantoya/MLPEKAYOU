@@ -1432,10 +1432,13 @@ title="View Profile"
                 </div>
               </div>
 
-              {post.id !== "welcome-post" &&
+{post.id !== "welcome-post" &&
   !String(post.id).startsWith("news-") &&
   !String(post.id).startsWith("giveaway-") &&
-  post.user_id === currentUser?.id && (
+  (
+    post.user_id === currentUser?.id ||
+    currentUser?.id === "17e57e39-bc0c-44e7-b373-ac34c6690185"
+  ) && (
     <button
       onClick={() => {
         setPostToDelete(post);
@@ -1894,11 +1897,10 @@ comments.map((comment) => (
 
           <button
             onClick={async () => {
-              const { error } = await supabase
+const { error } = await supabase
   .from("forum_posts")
   .delete()
-  .eq("id", postToDelete.id)
-  .eq("user_id", currentUser?.id);
+  .eq("id", postToDelete.id);
 
               if (error) {
                 alert(error.message);
