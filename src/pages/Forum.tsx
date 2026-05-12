@@ -1109,8 +1109,8 @@ function groupCardsBySet(cards: any[]) {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         {/* Hero Banner */}
-        <div className="relative mb-8">
-          <div className="relative overflow-visible rounded-[2rem] border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_20px_60px_rgba(168,85,247,0.12)] px-6 sm:px-8 py-8 sm:py-10">
+<div className="relative mb-8 z-[10000]">
+  <div className="relative overflow-visible rounded-[2rem] border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_20px_60px_rgba(168,85,247,0.12)] px-6 sm:px-8 py-8 sm:py-10">
             <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-violet-200/30 to-purple-300/30 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3" />
 
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-8">
@@ -1147,46 +1147,51 @@ function groupCardsBySet(cards: any[]) {
     />
   </div>
 
-  {/* Search Results Dropdown */}
-  {(userSearch.trim() || searchResults.length > 0) && (
-    <div className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-white/60 bg-white/95 backdrop-blur-xl shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto">
-      {searchingUsers ? (
-        <div className="px-4 py-4 text-sm text-slate-500">
-          Searching...
-        </div>
-      ) : searchResults.length > 0 ? (
-        searchResults.map((user) => (
-          <button
-            key={user.id}
-            onClick={() => openUserProfile(user)}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-violet-50 transition-colors text-left"
-          >
-            <img
-              src={
-  avatarMap[String(user.avatar_url || "").trim()] ||
-  avatar001
-}
-              alt={user.username}
-              className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
-            />
+{/* Search Results Dropdown */}
+{(userSearch.trim() || searchResults.length > 0) && (
+  <div
+    className="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-white/60 bg-white/95 backdrop-blur-xl shadow-2xl max-h-96 overflow-y-auto"
+    style={{
+      zIndex: 999999,
+    }}
+  >
+    {searchingUsers ? (
+      <div className="px-4 py-4 text-sm text-slate-500">
+        Searching...
+      </div>
+    ) : searchResults.length > 0 ? (
+      searchResults.map((user) => (
+        <button
+          key={user.id}
+          onClick={() => openUserProfile(user)}
+          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-violet-50 transition-colors text-left"
+        >
+          <img
+            src={
+              avatarMap[String(user.avatar_url || "").trim()] ||
+              avatar001
+            }
+            alt={user.username}
+            className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
+          />
 
-            <div>
-              <div className="font-semibold text-slate-900">
-                {user.username}
-              </div>
-              <div className="text-xs text-slate-500">
-                View profile
-              </div>
+          <div>
+            <div className="font-semibold text-slate-900">
+              {user.username}
             </div>
-          </button>
-        ))
-      ) : (
-        <div className="px-4 py-4 text-sm text-slate-500">
-          No users found.
-        </div>
-      )}
-    </div>
-  )}
+            <div className="text-xs text-slate-500">
+              View profile
+            </div>
+          </div>
+        </button>
+      ))
+    ) : (
+      <div className="px-4 py-4 text-sm text-slate-500">
+        No users found.
+      </div>
+    )}
+  </div>
+)}
 </div>
               </div>
 
@@ -1206,7 +1211,7 @@ function groupCardsBySet(cards: any[]) {
         {/* Layout */}
         <div className="relative z-0 grid grid-cols-1 xl:grid-cols-12 gap-6">
           {/* Left Sidebar */}
-          <aside className="order-2 xl:order-none xl:col-span-3 space-y-6">
+          <aside className="order-1 xl:order-none xl:col-span-3 space-y-6">
             <div className="xl:sticky xl:top-24 space-y-6">
               {/* Categories */}
 <div className="rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
@@ -1254,9 +1259,9 @@ function groupCardsBySet(cards: any[]) {
                 <div className="space-y-4">
                   {[
                     {
-  label: "Members",
-  value: memberCount.toLocaleString(),
-  icon: Users,
+                      label: "Members",
+                      value: memberCount.toLocaleString(),
+                      icon: Users,
                       bg: "bg-pink-50",
                       text: "text-pink-600",
                     },
@@ -1297,194 +1302,190 @@ function groupCardsBySet(cards: any[]) {
             </div>
           </aside>
 
-          {/* Main Feed */}
-          <section className="xl:col-span-6 space-y-6">
+          {/* Right Sidebar */}
+          <aside className="order-2 xl:order-none xl:col-span-3 space-y-6">
+            <div className="xl:sticky xl:top-24">
+              <div className="rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileRules(!showMobileRules)}
+                  className="w-full flex items-center justify-between"
+                >
+                  <h2 className="text-lg font-black text-slate-900">
+                    Community Rules
+                  </h2>
 
-            {/* Empty State */}
-            <div className="space-y-4">
-  <h2 className="text-xl font-black text-slate-900">
-    {selectedCategory}
-  </h2>
+                  <span className="xl:hidden text-2xl font-bold text-slate-500">
+                    {showMobileRules ? "−" : "+"}
+                  </span>
+                </button>
 
-{filteredPosts.map((post) => (
-  <div
-    key={post.id}
-    className={`rounded-[2rem] backdrop-blur-xl p-6 ${
-  post.id === "welcome-post" ||
-  String(post.id).startsWith("news-") ||
-  String(post.id).startsWith("giveaway-")
-    ? "border-2 border-amber-300/70 bg-gradient-to-br from-amber-50 via-white to-purple-50 shadow-[0_20px_60px_rgba(245,158,11,0.18)] ring-1 ring-amber-200/60"
-    : "border border-white/60 bg-white/80 shadow-lg"
-}`}
-  >
-    {/* Post Header */}
-<div className="flex items-start gap-4 mb-4">
-  <img
-src={
-  avatarMap[String(post.author_avatar || "").trim()] ||
-  (typeof post.author_avatar === "string" &&
-  !post.author_avatar.startsWith("avatar")
-    ? post.author_avatar
-    : null) ||
-  avatar001
-}
-    alt={post.author_name || post.author}
-    className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md flex-shrink-0"
-  />
+                <div
+                  className={`mt-5 ${
+                    showMobileRules ? "block" : "hidden"
+                  } xl:block`}
+                >
+                  <ul className="space-y-3">
+                    {[
+                      "Be respectful to everypony.",
+                      "Be honest.",
+                      "Do not spam post.",
+                      "Stay on topic.",
+                      "Do not curse.",
+                      "This website is only for North American English cards.",
+                    ].map((rule, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-3 text-sm text-slate-600"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                          {index + 1}
+                        </div>
+                        <span>{rule}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </aside>
 
-  <div className="flex-1">
-    <div className="flex items-start justify-between gap-3">
-      <div>
-        <h3 className="text-lg font-bold text-slate-900">
-          {post.title}
-        </h3>
+{/* Main Feed */}
+<section className="order-3 xl:order-none xl:col-span-6 space-y-6">
+  <div className="space-y-4">
+    <h2 className="text-xl font-black text-slate-900">
+      {selectedCategory}
+    </h2>
 
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          {(
-  post.id === "welcome-post" ||
-  String(post.id).startsWith("news-") ||
-  String(post.id).startsWith("giveaway-")
-) && (
-  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-950 shadow-sm">
-    ✨ MLPEKAYOU OWNER
-  </span>
-)}
+    {filteredPosts.map((post) => (
+      <div
+        key={post.id}
+        className={`rounded-[2rem] backdrop-blur-xl p-6 ${
+          post.id === "welcome-post" ||
+          String(post.id).startsWith("news-") ||
+          String(post.id).startsWith("giveaway-")
+            ? "border-2 border-amber-300/70 bg-gradient-to-br from-amber-50 via-white to-purple-50 shadow-[0_20px_60px_rgba(245,158,11,0.18)] ring-1 ring-amber-200/60"
+            : "border border-white/60 bg-white/80 shadow-lg"
+        }`}
+      >
+        {/* Post Header */}
+        <div className="flex items-start gap-4 mb-4">
+          <img
+            src={
+              avatarMap[String(post.author_avatar || "").trim()] ||
+              (typeof post.author_avatar === "string" &&
+              !post.author_avatar.startsWith("avatar")
+                ? post.author_avatar
+                : null) ||
+              avatar001
+            }
+            alt={post.author_name || post.author}
+            className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md flex-shrink-0"
+          />
 
-          <p className="text-sm text-slate-500">
-            Posted by {post.author_name || post.author}
+          <div className="flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {post.title}
+                </h3>
+
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  {(post.id === "welcome-post" ||
+                    String(post.id).startsWith("news-") ||
+                    String(post.id).startsWith("giveaway-")) && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-950 shadow-sm">
+                      ✨ MLPEKAYOU OWNER
+                    </span>
+                  )}
+
+                  <p className="text-sm text-slate-500">
+                    Posted by {post.author_name || post.author}
+                  </p>
+                </div>
+              </div>
+
+              {post.id !== "welcome-post" &&
+                !String(post.id).startsWith("news-") &&
+                !String(post.id).startsWith("giveaway-") && (
+                  <button
+                    onClick={() => {
+                      setPostToDelete(post);
+                      setShowDeleteModal(true);
+                    }}
+                    className="text-xs font-semibold text-rose-500 hover:text-rose-600"
+                  >
+                    Delete
+                  </button>
+                )}
+            </div>
+          </div>
+        </div>
+
+        {/* Optional Location */}
+        {post.location && (
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            📍 {post.location}
           </p>
+        )}
+
+        {/* Post Content */}
+        <p className="text-[15px] sm:text-base text-slate-800 leading-7 whitespace-pre-wrap">
+          {post.caption || post.content}
+        </p>
+
+        {/* Post Actions */}
+        <div className="mt-5 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-start gap-8">
+            {/* Like */}
+            <button
+              onClick={() => toggleLike(String(post.id))}
+              className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
+                likedPosts.includes(String(post.id))
+                  ? "text-rose-500"
+                  : "text-slate-500 hover:text-rose-500"
+              }`}
+            >
+              <Heart
+                className="w-5 h-5"
+                fill={
+                  likedPosts.includes(String(post.id))
+                    ? "currentColor"
+                    : "none"
+                }
+              />
+              <span>{likeCounts[String(post.id)] || 0}</span>
+            </button>
+
+            {/* Repost */}
+            <button
+              onClick={() => toggleRepost(String(post.id))}
+              className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
+                repostedPosts.includes(String(post.id))
+                  ? "text-violet-600"
+                  : "text-slate-500 hover:text-violet-600"
+              }`}
+            >
+              <Repeat2 className="w-5 h-5" />
+              <span>{repostCounts[String(post.id)] || 0}</span>
+            </button>
+
+            {/* Comments */}
+            {post.id !== "welcome-post" && (
+              <button
+                onClick={() => openComments(post)}
+                className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-sky-600 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>{commentCounts[String(post.id)] || 0}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
-
-      {post.id !== "welcome-post" &&
-  !String(post.id).startsWith("news-") &&
-  !String(post.id).startsWith("giveaway-") && (
-        <button
-onClick={() => {
-  setPostToDelete(post);
-  setShowDeleteModal(true);
-}}
-          className="text-xs font-semibold text-rose-500 hover:text-rose-600"
-        >
-          Delete
-        </button>
-      )}
-    </div>
+    ))}
   </div>
-</div>
-
-    {/* Optional Location */}
-    {post.location && (
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-        📍 {post.location}
-      </p>
-    )}
-
-    {/* Post Content */}
-    <p className="text-[15px] sm:text-base text-slate-800 leading-7 whitespace-pre-wrap">
-      {post.caption || post.content}
-    </p>
-
-    {/* Post Actions */}
-    <div className="mt-5 pt-4 border-t border-slate-100">
-      <div className="flex items-center justify-start gap-8">
-        {/* Like */}
-        <button
-          onClick={() => toggleLike(String(post.id))}
-          className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
-            likedPosts.includes(String(post.id))
-              ? "text-rose-500"
-              : "text-slate-500 hover:text-rose-500"
-          }`}
-        >
-          <Heart
-            className="w-5 h-5"
-            fill={
-              likedPosts.includes(String(post.id))
-                ? "currentColor"
-                : "none"
-            }
-          />
-          <span>{likeCounts[String(post.id)] || 0}</span>
-        </button>
-
-        {/* Repost */}
-        <button
-          onClick={() => toggleRepost(String(post.id))}
-          className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
-            repostedPosts.includes(String(post.id))
-              ? "text-violet-600"
-              : "text-slate-500 hover:text-violet-600"
-          }`}
-        >
-          <Repeat2 className="w-5 h-5" />
-          <span>{repostCounts[String(post.id)] || 0}</span>
-        </button>
-
-        {/* Comments (hidden on welcome post) */}
-        {post.id !== "welcome-post" && (
-          <button
-            onClick={() => openComments(post)}
-            className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-sky-600 transition-colors"
-          >
-            <MessageCircle className="w-5 h-5" />
-            <span>{commentCounts[String(post.id)] || 0}</span>
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
-))}
-</div>
-          </section>
-
-          {/* Right Sidebar */}
-<aside className="order-1 xl:order-none xl:col-span-3 space-y-6">
-  <div className="xl:sticky xl:top-24">
-    <div className="rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
-      <button
-        type="button"
-        onClick={() => setShowMobileRules(!showMobileRules)}
-        className="w-full flex items-center justify-between"
-      >
-        <h2 className="text-lg font-black text-slate-900">
-          Community Rules
-        </h2>
-
-        <span className="xl:hidden text-2xl font-bold text-slate-500">
-          {showMobileRules ? "−" : "+"}
-        </span>
-      </button>
-
-      <div
-        className={`mt-5 ${
-          showMobileRules ? "block" : "hidden"
-        } xl:block`}
-      >
-        <ul className="space-y-3">
-          {[
-            "Be respectful to everypony.",
-            "Be honest.",
-            "Do not spam post.",
-            "Stay on topic.",
-            "Do not curse.",
-            "This website is only for North American English cards.",
-          ].map((rule, index) => (
-            <li
-              key={index}
-              className="flex items-start gap-3 text-sm text-slate-600"
-            >
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                {index + 1}
-              </div>
-              <span>{rule}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  </div>
-</aside>
+</section>
         </div>
       </main>
     {showCreatePostModal && (
