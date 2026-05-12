@@ -49,10 +49,22 @@ const popupRef = useRef<HTMLDivElement | null>(null);
 });
 
 setCards(filtered);
+const { data: activeCards } = await supabase
+  .from("actively_trading_cards")
+  .select("set_id, card_key")
+  .eq("user_id", user.id);
+
+const activeSet = new Set(
+  (activeCards || []).map(
+    (card) => `${card.set_id}-${card.card_key}`
+  )
+);
+
 const map: Record<string, boolean> = {};
 (filtered || []).forEach((c) => {
-  map[c.id] = (c as any).actively_trading || false;
+  map[c.id] = activeSet.has(`${c.set_id}-${c.card_key}`);
 });
+
 setActiveMap(map);
       setLoading(false);
     };
@@ -140,10 +152,22 @@ const toggleActive = async () => {
 
   const current = activeMap[selectedCard.id];
 
-  await supabase
-    .from("for_trade")
-    .update({ actively_trading: !current })
-    .eq("id", selectedCard.id);
+  if (current) {
+    await supabase
+      .from("actively_trading_cards")
+      .delete()
+      .eq("user_id", selectedCard.user_id)
+      .eq("set_id", selectedCard.set_id)
+      .eq("card_key", selectedCard.card_key);
+  } else {
+    await supabase
+      .from("actively_trading_cards")
+      .insert({
+        user_id: selectedCard.user_id,
+        set_id: selectedCard.set_id,
+        card_key: selectedCard.card_key,
+      });
+  }
 
   setActiveMap((prev) => ({
     ...prev,

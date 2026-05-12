@@ -188,14 +188,25 @@ const trades = allTrades;
   };
 }, [setId]);
   return (
-    <div
-      className="min-h-screen"
-      style={{
-    backgroundColor: "#e9e2f3",
-    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
-    backgroundSize: "26px 26px",
-  }}
-    >
+<div
+  className="min-h-screen relative overflow-hidden"
+    style={{
+  backgroundColor: "#F8F3FF",
+  backgroundImage: `
+    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
+    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
+    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
+    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
+    linear-gradient(
+      180deg,
+      #FCF9FF 0%,
+      #F8F1FF 35%,
+      #F5EEFF 65%,
+      #FAF6FF 100%
+    )
+  `,
+}}
+  >
       <KayouHeader />
 
       <div className="container py-8">

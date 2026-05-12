@@ -5,6 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 
+import moonOneBox from "/set-pictures/moononebox.jpg";
+import moonOnePack from "/set-pictures/moononepack.jpg";
+
+import moonTwoBox from "/set-pictures/moontwobox.jpg";
+import moonTwoPack from "/set-pictures/moontwopack.png";
+import moonTwoBoxTwo from "/set-pictures/moontwoboxtwo.jpg";
+import moonTwoCollectorsBox from "/set-pictures/moontwocollectorsbox.jpg";
+
+import rainbowOneBox from "/set-pictures/rainbowonebox.jpg";
+import rainbowOnePack from "/set-pictures/rainbowonepack.jpg";
+
 const slugToId: Record<string, string> = {
   "eternal-moon-one": "1",
   "eternal-moon-two": "2",
@@ -30,6 +41,7 @@ const [zoomedCard, setZoomedCard] = useState<string | null>(null);
 const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
 const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
 const [isClosingZoom, setIsClosingZoom] = useState(false);
+const [showProductInfo, setShowProductInfo] = useState(false);
 
   const fireConfetti = () => {
   confetti({
@@ -521,9 +533,23 @@ const isZoomedLandscape = (() => {
   {/* Center Content */}
   <div className="flex-1 text-center">
 
-    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
-      {set.name}
-    </h1>
+<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
+  {id === "1" || id === "2" || id === "5" ? (
+    <button
+      onClick={() => setShowProductInfo(true)}
+      className="inline-flex items-center gap-2 hover:text-[#7c5aa6] transition-colors duration-200 cursor-pointer group"
+    >
+      <span>{set.name}</span>
+
+      {/* Info Icon */}
+      <span className="flex items-center justify-center w-6 h-6 rounded-full border border-[#d4af37]/60 text-xs font-bold text-[#8b6a2b] bg-[#fffaf0] group-hover:bg-[#f8f0ff] group-hover:border-[#7c5aa6]/40 group-hover:text-[#5a3e84] transition">
+        i
+      </span>
+    </button>
+  ) : (
+    set.name
+  )}
+</h1>
 
     <div className="flex items-center justify-center gap-2 sm:gap-4 my-5">
       <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
@@ -702,6 +728,272 @@ const isZoomedLandscape = (() => {
           </div>
         </div>
       )}
+{showProductInfo && (id === "1" || id === "2" || id === "5") && (
+  <div
+    className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+    onClick={() => setShowProductInfo(false)}
+  >
+<div
+  className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full relative overflow-hidden"
+  onClick={(e) => e.stopPropagation()}
+>
+  <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
+      {/* Close Button */}
+      <button
+        onClick={() => setShowProductInfo(false)}
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+      >
+        ×
+      </button>
+
+      {/* ========================= MOON 1 ========================= */}
+      {id === "1" && (
+        <>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#5a3e84] text-center mb-8">
+            Eternal Moon — First Edition Products
+          </h2>
+
+          {/* Booster Box */}
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+            <img
+              src={moonOneBox}
+              alt="Eternal Moon First Edition Booster Box"
+              className="w-full max-w-[220px] mx-auto rounded-xl"
+            />
+
+            <div className="text-left">
+              <p className="text-gray-500 leading-relaxed">
+                The only box released of Moon One was a 24-pack box that came
+                with the Amplified Emotions promotional card. It first became
+                available in the U.S. in late October of 2025.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+              <div className="text-sm uppercase tracking-wider text-gray-400">
+                MSRP
+              </div>
+              <div className="text-2xl font-bold text-[#5a3e84]">
+                $95.76
+              </div>
+            </div>
+          </div>
+
+          <div className="my-8 border-t border-gray-200" />
+
+          {/* Booster Pack */}
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+            <img
+              src={moonOnePack}
+              alt="Eternal Moon First Edition Booster Pack"
+              className="w-full max-w-[220px] mx-auto rounded-xl"
+            />
+
+            <div className="text-left">
+              <p className="text-gray-500 leading-relaxed">
+                Individual retail packs could be found on shelves from October
+                of 2025 to March of 2026. After that, they became scarce unless
+                special-ordered online from Kayou US or CrossingTCG.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+              <div className="text-sm uppercase tracking-wider text-gray-400">
+                MSRP
+              </div>
+              <div className="text-2xl font-bold text-[#5a3e84]">
+                $3.99
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ========================= MOON 2 ========================= */}
+      {id === "2" && (
+        <>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#5a3e84] text-center mb-8">
+            Eternal Moon — Second Edition Products
+          </h2>
+
+          {/* 12-Pack Booster Box */}
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+            <img
+              src={moonTwoBox}
+              alt="Eternal Moon Second Edition 12-Pack Booster Box"
+              className="w-full max-w-[220px] mx-auto rounded-xl"
+            />
+
+            <div className="text-left">
+              <p className="text-gray-500 leading-relaxed">
+                The original 12-pack box of Moon Two that launched in the U.S. not long
+                after Moon One, introducing ZR and ◇ZR into the American market.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+              <div className="text-sm uppercase tracking-wider text-gray-400">
+                MSRP
+              </div>
+              <div className="text-2xl font-bold text-[#5a3e84]">
+                $47.88
+              </div>
+            </div>
+          </div>
+
+          <div className="my-8 border-t border-gray-200" />
+
+          {/* Booster Pack */}
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+            <img
+              src={moonTwoPack}
+              alt="Eternal Moon Second Edition Booster Pack"
+              className="w-full max-w-[220px] mx-auto rounded-xl"
+            />
+
+            <div className="text-left">
+              <p className="text-gray-500 leading-relaxed">
+                These single packs showed up at Gamestop, Target, Walmart, and many
+                other in-person markets as Kayou began to plant their feet in the
+                U.S. market.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+              <div className="text-sm uppercase tracking-wider text-gray-400">
+                MSRP
+              </div>
+              <div className="text-2xl font-bold text-[#5a3e84]">
+                $3.99
+              </div>
+            </div>
+          </div>
+
+          <div className="my-8 border-t border-gray-200" />
+
+          {/* Alternate Booster Box */}
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+            <img
+              src={moonTwoBoxTwo}
+              alt="Eternal Moon Second Edition Alternate Booster Box"
+              className="w-full max-w-[220px] mx-auto rounded-xl"
+            />
+
+            <div className="text-left">
+              <p className="text-gray-500 leading-relaxed">
+                A secondary box of Moon Two appeared that had a chance of
+                pulling the Andy Price promo, which only 20 of exist. It is the
+                Twilight Sparkle promo (MLPE-PR-005) with Andy Price's signature
+                in the top left corner.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+              <div className="text-sm uppercase tracking-wider text-gray-400">
+                MSRP
+              </div>
+              <div className="text-2xl font-bold text-[#5a3e84]">
+                $47.88
+              </div>
+            </div>
+          </div>
+
+          <div className="my-8 border-t border-gray-200" />
+
+          {/* Collector's Box */}
+          <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+            <img
+              src={moonTwoCollectorsBox}
+              alt="Eternal Moon Second Edition Collector's Box"
+              className="w-full max-w-[220px] mx-auto rounded-xl"
+            />
+
+            <div className="text-left">
+              <p className="text-gray-500 leading-relaxed">
+                The first collectors' box, appeared only online at Target and
+                in Best Buys. Features five packs of Moon Two. There are no recorded
+                special hit rates for this box that are outstanding from the other
+                boxes.
+                </p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+              <div className="text-sm uppercase tracking-wider text-gray-400">
+                MSRP
+              </div>
+              <div className="text-2xl font-bold text-[#5a3e84]">
+                $24.99
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ========================= RAINBOW 1 ========================= */}
+{id === "5" && (
+  <>
+    <h2 className="text-2xl sm:text-3xl font-bold text-[#5a3e84] text-center mb-8">
+      Rainbow — First Edition Products
+    </h2>
+
+    {/* Booster Box */}
+    <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+      <img
+        src={rainbowOneBox}
+        alt="Rainbow First Edition Booster Box"
+        className="w-full max-w-[220px] mx-auto rounded-xl"
+      />
+
+      <div className="text-left">
+        <p className="text-gray-500 leading-relaxed">
+          The first Rainbow box released as an online-order exclusive from Kayou US
+          or CrossingTCG. This box was never released in-person at any stores, and carried
+          the Power Ponies promotional card.
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+        <div className="text-sm uppercase tracking-wider text-gray-400">
+          MSRP
+        </div>
+        <div className="text-2xl font-bold text-[#5a3e84]">
+          $39.80
+        </div>
+      </div>
+    </div>
+
+    <div className="my-8 border-t border-gray-200" />
+
+    {/* Booster Pack */}
+    <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+      <img
+        src={rainbowOnePack}
+        alt="Rainbow First Edition Booster Pack"
+        className="w-full max-w-[220px] mx-auto rounded-xl"
+      />
+
+      <div className="text-left">
+        <p className="text-gray-500 leading-relaxed">
+          Individual packs were not available for sale.
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+        <div className="text-sm uppercase tracking-wider text-gray-400">
+          MSRP
+        </div>
+        <div className="text-2xl font-bold text-[#5a3e84]">
+          NONE
+        </div>
+      </div>
+    </div>
+  </>
+)}
+
+    </div>
+  </div>
+        </div>
+)}
     </div>
   );
 };

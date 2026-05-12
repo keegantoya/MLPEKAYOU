@@ -112,7 +112,6 @@ useEffect(() => {
       return;
     }
 
-    // Count likes for each post
     const counts: Record<string, number> = {};
     const liked: Record<string, boolean> = {};
 
@@ -414,7 +413,7 @@ useEffect(() => {
   <div className="lg:hidden absolute bottom-8 right-8 text-purple-300/40 text-5xl">❦</div>
 </div>
 
-    <div className="relative z-10 container max-w-7xl mx-auto px-6 py-10">
+    <div className="relative z-10 container max-w-7xl mx-auto px-6 py-10 min-[1024px]:max-[1439px]:scale-90 min-[1024px]:max-[1439px]:origin-top">
       {/* HERO */}
       <section className="grid lg:grid-cols-2 gap-12 items-center mb-12">
         {/* LEFT SIDE */}
@@ -547,22 +546,22 @@ useEffect(() => {
   <img
     src="/website-assets/card design.png"
     alt="Kayou card fan"
-    className="
-      relative
-      z-10
-      w-[320px]
-      sm:w-[520px]
-      lg:w-[760px]
-      max-w-full
-      h-auto
-      translate-y-2
-      sm:translate-y-4
-      lg:translate-y-4
-      lg:translate-x-36
-      drop-shadow-[0_35px_90px_rgba(88,42,135,0.28)]
-      select-none
-      pointer-events-none
-    "
+className="
+  relative
+  z-10
+  w-[min(760px,48vw)]
+  h-auto
+  max-w-full
+  translate-y-2
+  sm:translate-y-4
+  lg:translate-y-4
+  lg:translate-x-0
+  xl:translate-x-12
+  2xl:translate-x-24
+  drop-shadow-[0_35px_90px_rgba(88,42,135,0.28)]
+  select-none
+  pointer-events-none
+"
   />
 </div>
       </section>

@@ -3,12 +3,17 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
+import fantasyWonderlandBox from "/set-pictures/fantasywonderlandbox.jpg";
+import fantasyWonderlandPack from "/set-pictures/fantasywonderlandpack.jpg";
+
 const FantasyWonderland = () => {
   const navigate = useNavigate();
 
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+
+const [showProductInfo, setShowProductInfo] = useState(false);
 
 const [viewMode, setViewMode] = useState(false);
 const [zoomedCard, setZoomedCard] = useState<string | null>(null);
@@ -234,9 +239,18 @@ useEffect(() => {
   {/* Center Content */}
   <div className="flex-1 text-center">
 
-    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
-      Fantasy Wonderland
-    </h1>
+<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
+  <button
+    onClick={() => setShowProductInfo(true)}
+    className="inline-flex items-center gap-2 hover:text-[#7c5aa6] transition-colors duration-200 cursor-pointer group"
+  >
+    <span>Fantasy Wonderland</span>
+
+    <span className="flex items-center justify-center w-6 h-6 rounded-full border border-[#d4af37]/60 text-xs font-bold text-[#8b6a2b] bg-[#fffaf0] group-hover:bg-[#f8f0ff] group-hover:border-[#7c5aa6]/40 group-hover:text-[#5a3e84] transition">
+      i
+    </span>
+  </button>
+</h1>
 
     <div className="flex items-center justify-center gap-2 sm:gap-4 my-5">
       <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
@@ -450,6 +464,86 @@ useEffect(() => {
           </div>
         </div>
       )}
+
+      {showProductInfo && (
+        <div
+          className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowProductInfo(false)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
+              <button
+                onClick={() => setShowProductInfo(false)}
+                className="absolute top-4 right-4 z-10 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+              >
+                ×
+              </button>
+
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#5a3e84] text-center mb-8">
+                Fantasy Wonderland — BP01
+              </h2>
+
+              {/* Booster Box */}
+              <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+                <img
+                  src={fantasyWonderlandBox}
+                  alt="Fantasy Wonderland Booster Box"
+                  className="w-full max-w-[220px] mx-auto rounded-xl"
+                />
+
+                <div className="text-left">
+                  <p className="text-gray-500 leading-relaxed">
+                    Fantasy Wonderland kicked off with live Kayou US events on May 01, 2026.
+                    The box contains 20 booster packs. Though some stores allowed you to buy entire
+                    boxes, the intention was for them to sell only packs.
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+                  <div className="text-sm uppercase tracking-wider text-gray-400">
+                    MSRP
+                  </div>
+                  <div className="text-2xl font-bold text-[#5a3e84]">
+                    $59.80
+                  </div>
+                </div>
+              </div>
+
+              <div className="my-8 border-t border-gray-200" />
+
+              {/* Booster Pack */}
+              <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+                <img
+                  src={fantasyWonderlandPack}
+                  alt="Fantasy Wonderland Booster Pack"
+                  className="w-full max-w-[220px] mx-auto rounded-xl"
+                />
+
+                <div className="text-left">
+                  <p className="text-gray-500 leading-relaxed">
+                    Individual booster packs became available for sale in-person at places
+                    like Gamestop, Walmart, Target, Barnes and Noble, and other local game
+                    stores.
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+                  <div className="text-sm uppercase tracking-wider text-gray-400">
+                    MSRP
+                  </div>
+                  <div className="text-2xl font-bold text-[#5a3e84]">
+                    $2.99
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

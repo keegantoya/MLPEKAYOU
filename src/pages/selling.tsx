@@ -241,11 +241,11 @@ export default function Selling() {
 
           <div className="border rounded-lg p-4 bg-neutral-50">
             <h3 className="font-bold mb-2">Friendships Begin</h3>
-            <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>$20</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$20</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>$25</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$38</span></div>
-              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$65</span></div>
+            <div className="flex justify-between text-sm text-neutral-700"><span>GR</span><span>$10</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>CR</span><span>$12</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※ER</span><span>$20</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※CR</span><span>$25</span></div>
+              <div className="flex justify-between text-sm text-neutral-700"><span>※RR</span><span>$95</span></div>
           </div>
 
         </div>

@@ -155,6 +155,7 @@ const CommunitySet = () => {
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const [tradeCards, setTradeCards] = useState<any[]>([]);
   const [view, setView] = useState<"choice" | "iso" | "trade">("choice");
+  const [showAllFinishers, setShowAllFinishers] = useState(false);
 
   const set = id ? sets[id] : undefined;
 
@@ -408,109 +409,216 @@ setTradeCards(trades || []);
   return (
     <div
   className="min-h-screen"
-  style={{
-    backgroundColor: "#e9e2f3",
-    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
-    backgroundSize: "26px 26px",
-  }}
+    style={{
+  backgroundColor: "#F8F3FF",
+  backgroundImage: `
+    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
+    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
+    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
+    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
+    linear-gradient(
+      180deg,
+      #FCF9FF 0%,
+      #F8F1FF 35%,
+      #F5EEFF 65%,
+      #FAF6FF 100%
+    )
+  `,
+}}
 >
       <KayouHeader />
 
-      <div className="container py-8">
+      <div className="container max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
+  {/* Back Button */}
+  <button
+    onClick={() => navigate("/community")}
+    className="
+      inline-flex items-center gap-2
+      text-sm font-medium text-purple-700
+      hover:text-purple-900
+      mb-4 sm:mb-6
+      transition-colors
+    "
+  >
+    <ArrowLeft className="h-4 w-4" />
+    Back to Community
+  </button>
 
+  {/* Page Header */}
+  <div className="mb-6 sm:mb-8">
+    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-purple-950 leading-tight">
+      {set.name} Leaderboard
+    </h1>
+
+    <p className="mt-2 text-sm sm:text-base text-purple-700/80 max-w-3xl leading-relaxed">
+      This page shows the top 30 collectors still working toward completion,
+      along with everyone who has already finished the set.
+    </p>
+  </div>
+
+  {/* Layout */}
+<div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+  {/* Completed Sets - FIRST */}
+  <div
+    className="
+  xl:col-span-1
+      rounded-3xl
+      bg-white/75 backdrop-blur-xl
+      border border-white/60
+      shadow-[0_12px_35px_rgba(76,29,149,0.08)]
+      p-5 sm:p-6
+    "
+  >
+    <h2 className="text-xl font-bold text-purple-950 mb-5">
+      Completed Sets
+    </h2>
+
+    <div className="space-y-3">
+      {(showAllFinishers ? completed : completed.slice(0, 3)).map(
+        (user, index) => (
+          <div
+            key={index}
+            className="
+              flex items-center gap-3
+              rounded-2xl
+              bg-white/70
+              border border-purple-100
+              px-3 py-3 sm:px-4
+              shadow-sm
+            "
+          >
+            <span className="text-2xl shrink-0">
+              {medals[index] || "🏅"}
+            </span>
+
+            <img
+              src={getAvatar(user.avatar, user.username)}
+              className="
+                w-10 h-10 sm:w-11 sm:h-11
+                rounded-full
+                border-2 border-white
+                shadow
+                shrink-0
+              "
+            />
+
+            <span
+              className="
+                font-semibold
+                text-sm sm:text-base
+                text-purple-950
+                truncate
+              "
+            >
+              {user.username}
+            </span>
+          </div>
+        )
+      )}
+
+      {completed.length > 3 && (
         <button
-          onClick={() => navigate("/community")}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+          onClick={() => setShowAllFinishers(!showAllFinishers)}
+          className="
+            w-full mt-2 py-3
+            rounded-2xl
+            bg-purple-100 hover:bg-purple-200
+            text-sm font-semibold text-purple-800
+            transition-colors
+          "
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Community
+          {showAllFinishers
+            ? "Show Less"
+            : `View All ${completed.length} Finishers`}
         </button>
+      )}
 
-        <h1 className="text-2xl font-bold">
-  {set.name} Leaderboard
-</h1>
-
-<p className="text-sm text-muted-foreground mb-6">
-  This page only shows the top 30 collectors closest to completing the set, and those who have completed it already.
-</p>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          <div className="lg:col-span-2 bg-card border rounded-xl p-4 relative overflow-visible">
-            <h2 className="font-semibold mb-4">
-              Still Collecting
-            </h2>
-            
-            <div className="space-y-2">
-  {collectors.map((user, index) => (
-    <div
-      key={index}
-      className="flex items-center justify-between text-base py-1"
-    >
-      <div className="flex items-center gap-2">
-        <span>#{index + 1}</span>
-
-        <img
-  src={getAvatar(user.avatar, user.username)}
-  className="w-10 h-10 rounded-full"
-/>
-
-        <span>
-  {user.username}
-</span>
-      </div>
-
-      <div className="relative">
-
-        <span className="text-base font-medium">
-  {user.owned} / {set.total}
-</span>
-      </div>
-    </div>
-  ))}
-</div>
-          </div>
-
-          <div className="bg-card border rounded-xl p-4">
-            <h2 className="font-semibold mb-4">
-              Completed Sets
-            </h2>
-
-            <div className="space-y-2">
-              {completed.map((user, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <div className="flex items-center gap-3">
-  <span className="text-lg">
-  {medals[index] || "🏅"}
-</span>
-
-  <img
-    src={getAvatar(user.avatar, user.username)}
-    className="w-10 h-10 rounded-full"
-  />
-
-  <span className="text-base font-semibold">
-    {user.username}
-  </span>
-</div>
-                </div>
-              ))}
-
-              {completed.length === 0 && (
-                <div className="text-muted-foreground text-sm">
-                  No one has completed this set yet
-                </div>
-              )}
-            </div>
-
-          </div>
-
+      {completed.length === 0 && (
+        <div className="text-sm text-purple-700/70 italic">
+          No one has completed this set yet.
         </div>
+      )}
+    </div>
+  </div>
 
-      </div>
+  {/* Still Collecting */}
+  <div
+    className="
+  xl:col-span-2
+      rounded-3xl
+      bg-white/75 backdrop-blur-xl
+      border border-white/60
+      shadow-[0_12px_35px_rgba(76,29,149,0.08)]
+      p-5 sm:p-6
+    "
+  >
+    <h2 className="text-xl font-bold text-purple-950 mb-5">
+      Still Collecting
+    </h2>
+
+    <div className="space-y-3">
+      {collectors.map((user, index) => (
+        <div
+          key={index}
+          className="
+            flex items-center justify-between gap-3
+            rounded-2xl
+            bg-white/70
+            border border-purple-100
+            px-3 py-3 sm:px-4
+            shadow-sm
+          "
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <span
+              className="
+                shrink-0
+                w-8 text-sm font-bold
+                text-purple-700
+              "
+            >
+              #{index + 1}
+            </span>
+
+            <img
+              src={getAvatar(user.avatar, user.username)}
+              className="
+                w-10 h-10 sm:w-11 sm:h-11
+                rounded-full
+                border-2 border-white
+                shadow
+                shrink-0
+              "
+            />
+
+            <span
+              className="
+                font-semibold
+                text-sm sm:text-base
+                text-purple-950
+                truncate
+              "
+            >
+              {user.username}
+            </span>
+          </div>
+
+          <div
+            className="
+              shrink-0
+              text-sm sm:text-base
+              font-bold
+              text-purple-700
+            "
+          >
+            {user.owned} / {set.total}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+</div>
     </div>
   );
 };

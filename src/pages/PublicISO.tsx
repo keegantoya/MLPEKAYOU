@@ -326,23 +326,34 @@ setSelectedSet(null);
 setSelectedRarity(null);
 };
 
-  return (
-    <div
-  className="min-h-screen"
-  style={{
-    backgroundColor: "#e9e2f3",
-    backgroundImage: "radial-gradient(#44444418 1.5px, transparent 1.5px)",
-    backgroundSize: "26px 26px",
-  }}
->
-      <KayouHeader />
+return (
+  <div
+    className="min-h-screen relative overflow-hidden"
+    style={{
+      backgroundColor: "#F8F3FF",
+      backgroundImage: `
+        radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
+        radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
+        radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
+        radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
+        linear-gradient(
+          180deg,
+          #FCF9FF 0%,
+          #F8F1FF 35%,
+          #F5EEFF 65%,
+          #FAF6FF 100%
+        )
+      `,
+    }}
+  >
+    <KayouHeader />
 
-      <div className="container py-8">
+    <div className="container max-w-6xl xl:max-w-[1600px] py-8 sm:py-8 pt-4 sm:pt-8 px-4 sm:px-6 xl:px-10">
 
        <img
   src={allIsosBadge}
   alt="All ISOs"
-  className="mx-auto h-10 sm:h-14 md:h-16 object-contain mb-2"
+  className="mx-auto h-14 sm:h-14 md:h-16 object-contain mb-3 sm:mb-2"
 />
 <div
   ref={searchRef}
@@ -387,15 +398,20 @@ setSelectedRarity(null);
 
 </div>
 
-<p className="text-sm text-muted-foreground mt-1 max-w-xl mx-auto text-center mb-6">
-  Users will appear in order of least need to greatest inside sets. Users can be found by their MLPEKAYOU username.
+<p className="hidden sm:block text-sm text-muted-foreground mt-1 max-w-xl mx-auto text-center mb-6">
+  Users will appear in order of least need to greatest inside sets.
+  Users can be found by their MLPEKAYOU username.
 </p>
 
 {/* DIVIDER */}
-<div className="my-10 border-t border-gray-300 text-center relative">
-  <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#e9e2f3] px-3 text-sm text-gray-600">
+<div className="my-10 flex items-center gap-3">
+  <div className="flex-1 h-px bg-gray-300/60" />
+
+  <span className="text-sm font-medium tracking-tight text-gray-500 whitespace-nowrap">
     Collectible Card Game
   </span>
+
+  <div className="flex-1 h-px bg-gray-300/60" />
 </div>
 
 
@@ -405,30 +421,49 @@ setSelectedRarity(null);
   .filter(set => set.released && set.type === "ccg")
   .map((set) => (
     <button
-      key={set.id}
-      onClick={() => {
-        if (set.released) {
-          navigate(`/public-iso/${set.id}`);
-        }
-      }}
-      className="relative rounded-xl border p-4 cursor-pointer transition bg-white shadow-sm hover:bg-gray-100"
-    >
-      <div className="font-semibold mb-2">
+  key={set.id}
+  onClick={() => navigate(`/public-iso/${set.id}`)}
+  className="w-full text-left transition-all duration-200"
+>
+  {/* MOBILE ONLY REDESIGN */}
+  <div className="sm:hidden relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 backdrop-blur-sm shadow-[0_8px_30px_rgba(0,0,0,0.08)] px-5 py-4">
+    {/* Magical accent bar */}
+    <div className="absolute inset-y-3 left-3 w-1 rounded-full bg-gradient-to-b from-pink-300 via-purple-300 to-yellow-300" />
+
+    <div className="pl-4">
+      <div className="text-base font-semibold text-gray-900 leading-snug">
         {set.name}
       </div>
 
-      <div className="text-sm text-muted-foreground">
-        View ISOs
+      <div className="mt-2 text-sm font-medium text-purple-600">
+        View ISOs →
       </div>
-    </button>
+    </div>
+  </div>
+
+  {/* DESKTOP — ORIGINAL DESIGN UNCHANGED */}
+  <div className="hidden sm:block rounded-xl border p-4 cursor-pointer bg-white shadow-sm hover:bg-gray-100">
+    <div className="font-semibold mb-2">
+      {set.name}
+    </div>
+
+    <div className="text-sm text-muted-foreground">
+      View ISOs
+    </div>
+  </div>
+</button>
 ))}
 </div>
 
 {/* DIVIDER */}
-<div className="my-10 border-t border-gray-300 text-center relative">
-  <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#e9e2f3] px-3 text-sm text-gray-600">
+<div className="my-10 flex items-center gap-3">
+  <div className="flex-1 h-px bg-gray-300/60" />
+
+  <span className="text-sm font-medium tracking-tight text-gray-500 whitespace-nowrap">
     Trading Card Game
   </span>
+
+  <div className="flex-1 h-px bg-gray-300/60" />
 </div>
 
 {/* TCG */}
@@ -437,30 +472,49 @@ setSelectedRarity(null);
   .filter(set => set.released && set.type === "tcg")
   .map((set) => (
     <button
-      key={set.id}
-      onClick={() => {
-        if (set.released) {
-          navigate(`/public-iso/${set.id}`);
-        }
-      }}
-      className="relative rounded-xl border p-4 cursor-pointer transition bg-white shadow-sm hover:bg-gray-100"
-    >
-      <div className="font-semibold mb-2">
+  key={set.id}
+  onClick={() => navigate(`/public-iso/${set.id}`)}
+  className="w-full text-left transition-all duration-200"
+>
+  {/* MOBILE ONLY REDESIGN */}
+  <div className="sm:hidden relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 backdrop-blur-sm shadow-[0_8px_30px_rgba(0,0,0,0.08)] px-5 py-4">
+    {/* Magical accent bar */}
+    <div className="absolute inset-y-3 left-3 w-1 rounded-full bg-gradient-to-b from-pink-300 via-purple-300 to-yellow-300" />
+
+    <div className="pl-4">
+      <div className="text-base font-semibold text-gray-900 leading-snug">
         {set.name}
       </div>
 
-      <div className="text-sm text-muted-foreground">
-        View ISOs
+      <div className="mt-2 text-sm font-medium text-purple-600">
+        View ISOs →
       </div>
-    </button>
+    </div>
+  </div>
+
+  {/* DESKTOP — ORIGINAL DESIGN UNCHANGED */}
+  <div className="hidden sm:block rounded-xl border p-4 cursor-pointer bg-white shadow-sm hover:bg-gray-100">
+    <div className="font-semibold mb-2">
+      {set.name}
+    </div>
+
+    <div className="text-sm text-muted-foreground">
+      View ISOs
+    </div>
+  </div>
+</button>
 ))}
 </div>
 
 {/* DIVIDER */}
-<div className="my-10 border-t border-gray-300 text-center relative">
-  <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-[#e9e2f3] px-3 text-sm text-gray-600">
+<div className="my-10 flex items-center gap-3">
+  <div className="flex-1 h-px bg-gray-300/60" />
+
+  <span className="text-sm font-medium tracking-tight text-gray-500 whitespace-nowrap">
     Promotional Cards
   </span>
+
+  <div className="flex-1 h-px bg-gray-300/60" />
 </div>
 
 {/* PROMOTIONAL CARDS */}
@@ -471,13 +525,37 @@ setSelectedRarity(null);
     .filter(set => set.released && set.type === "limited")
     .map((set) => (
       <button
-        key={set.id}
-        onClick={() => navigate(`/public-iso/${set.id}`)}
-        className="relative rounded-xl border p-4 cursor-pointer transition bg-white shadow-sm hover:bg-gray-100"
-      >
-        <div className="font-semibold mb-2">{set.name}</div>
-        <div className="text-sm text-muted-foreground">View ISOs</div>
-      </button>
+  key={set.id}
+  onClick={() => navigate(`/public-iso/${set.id}`)}
+  className="w-full text-left transition-all duration-200"
+>
+  {/* MOBILE ONLY REDESIGN */}
+  <div className="sm:hidden relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 backdrop-blur-sm shadow-[0_8px_30px_rgba(0,0,0,0.08)] px-5 py-4">
+    {/* Magical accent bar */}
+    <div className="absolute inset-y-3 left-3 w-1 rounded-full bg-gradient-to-b from-pink-300 via-purple-300 to-yellow-300" />
+
+    <div className="pl-4">
+      <div className="text-base font-semibold text-gray-900 leading-snug">
+        {set.name}
+      </div>
+
+      <div className="mt-2 text-sm font-medium text-purple-600">
+        View ISOs →
+      </div>
+    </div>
+  </div>
+
+  {/* DESKTOP — ORIGINAL DESIGN UNCHANGED */}
+  <div className="hidden sm:block rounded-xl border p-4 cursor-pointer bg-white shadow-sm hover:bg-gray-100">
+    <div className="font-semibold mb-2">
+      {set.name}
+    </div>
+
+    <div className="text-sm text-muted-foreground">
+      View ISOs
+    </div>
+  </div>
+</button>
     ))}
 
   {/* 🔹 TCG PROMOS */}
@@ -485,13 +563,37 @@ setSelectedRarity(null);
     .filter(set => set.released && set.type === "tcg_promo")
     .map((set) => (
       <button
-        key={set.id}
-        onClick={() => navigate(`/public-iso/${set.id}`)}
-        className="relative rounded-xl border p-4 cursor-pointer transition bg-white shadow-sm hover:bg-gray-100"
-      >
-        <div className="font-semibold mb-2">{set.name}</div>
-        <div className="text-sm text-muted-foreground">View ISOs</div>
-      </button>
+  key={set.id}
+  onClick={() => navigate(`/public-iso/${set.id}`)}
+  className="w-full text-left transition-all duration-200"
+>
+  {/* MOBILE ONLY REDESIGN */}
+  <div className="sm:hidden relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 backdrop-blur-sm shadow-[0_8px_30px_rgba(0,0,0,0.08)] px-5 py-4">
+    {/* Magical accent bar */}
+    <div className="absolute inset-y-3 left-3 w-1 rounded-full bg-gradient-to-b from-pink-300 via-purple-300 to-yellow-300" />
+
+    <div className="pl-4">
+      <div className="text-base font-semibold text-gray-900 leading-snug">
+        {set.name}
+      </div>
+
+      <div className="mt-2 text-sm font-medium text-purple-600">
+        View ISOs →
+      </div>
+    </div>
+  </div>
+
+  {/* DESKTOP — ORIGINAL DESIGN UNCHANGED */}
+  <div className="hidden sm:block rounded-xl border p-4 cursor-pointer bg-white shadow-sm hover:bg-gray-100">
+    <div className="font-semibold mb-2">
+      {set.name}
+    </div>
+
+    <div className="text-sm text-muted-foreground">
+      View ISOs
+    </div>
+  </div>
+</button>
     ))}
 
   {/* 🔹 CCG PROMOS */}
@@ -499,13 +601,37 @@ setSelectedRarity(null);
     .filter(set => set.released && set.type === "ccg_promo")
     .map((set) => (
       <button
-        key={set.id}
-        onClick={() => navigate(`/public-iso/${set.id}`)}
-        className="relative rounded-xl border p-4 cursor-pointer transition bg-white shadow-sm hover:bg-gray-100"
-      >
-        <div className="font-semibold mb-2">{set.name}</div>
-        <div className="text-sm text-muted-foreground">View ISOs</div>
-      </button>
+  key={set.id}
+  onClick={() => navigate(`/public-iso/${set.id}`)}
+  className="w-full text-left transition-all duration-200"
+>
+  {/* MOBILE ONLY REDESIGN */}
+  <div className="sm:hidden relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 backdrop-blur-sm shadow-[0_8px_30px_rgba(0,0,0,0.08)] px-5 py-4">
+    {/* Magical accent bar */}
+    <div className="absolute inset-y-3 left-3 w-1 rounded-full bg-gradient-to-b from-pink-300 via-purple-300 to-yellow-300" />
+
+    <div className="pl-4">
+      <div className="text-base font-semibold text-gray-900 leading-snug">
+        {set.name}
+      </div>
+
+      <div className="mt-2 text-sm font-medium text-purple-600">
+        View ISOs →
+      </div>
+    </div>
+  </div>
+
+  {/* DESKTOP — ORIGINAL DESIGN UNCHANGED */}
+  <div className="hidden sm:block rounded-xl border p-4 cursor-pointer bg-white shadow-sm hover:bg-gray-100">
+    <div className="font-semibold mb-2">
+      {set.name}
+    </div>
+
+    <div className="text-sm text-muted-foreground">
+      View ISOs
+    </div>
+  </div>
+</button>
     ))}
 
 </div>

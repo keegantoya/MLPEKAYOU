@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import ScrollToTop from "@/components/ScrollToTop";
 
 import Profile from "./pages/Profile";
+import Forum from "@/pages/Forum";
 import Index from "./pages/Index";
 import Collections from "./pages/Collections";
 import Collection from "@/pages/Collection";
@@ -43,6 +44,7 @@ import RequireAuth from "./components/RequireAuth";
 import FAQ from "@/pages/FAQ";
 import MyProgressTCG from "./pages/MyProgressTCG";
 import OtherKayouMerch from "./pages/Other-Kayou-Merch";
+import UserMenu from "@/pages/UserMenu";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +87,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/collections" element={<Collections />} />
       <Route path="/collection/:id" element={<Collection />} />
+      <Route path="/forum" element={<Forum />} />
 <Route path="/eternal-moon-one" element={<Collection />} />
 <Route path="/eternal-moon-two" element={<Collection />} />
 <Route path="/rainbow-one" element={<Collection />} />
@@ -141,6 +144,7 @@ const AppRoutes = () => {
       <Route path="/other-kayou-merch" element={<OtherKayouMerch />} />
       <Route path="/about" element={<AboutMe />} />
       <Route path="/faq" element={<FAQ />} />
+      <Route path="/profile-mobile" element={<UserMenu />} />
       <Route
   path="/progress-tcg"
   element={

@@ -7,9 +7,12 @@ import {
   Tag,
   ArrowLeftRight,
   Users,
+  User,
   List,
   Grid,
-  Layers
+  Layers,
+  Search,
+  Sparkles
 } from "lucide-react";
 
 import { Button } from "./ui/button";
@@ -283,7 +286,7 @@ const handleForgotPassword = async () => {
   return (
     <>
 <header
-  className={`fixed left-0 right-0 z-50 bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-md ${
+  className={`fixed left-0 right-0 z-[20000] bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-md ${
     !window.matchMedia('(display-mode: standalone)').matches
       ? 'top-0'
       : 'top-0'
@@ -316,56 +319,61 @@ style={{
     {/* LEFT SIDE */}
 <div className="flex items-center gap-3 min-w-[70px]">
 
-  {/* MOBILE PROFILE / LOGIN */}
-  <div className="sm:hidden">
-    {user ? (
-      <button
-        onClick={() => navigate("/profile")}
-        className="flex items-center"
-      >
-        <img
-  src={avatarSrc || avatar001}
-  alt="avatar"
- className="h-11 w-11 rounded-full object-cover r-2 bordeborder-white/30 shadow-md"
-style={{
-  marginTop:
-    window.innerWidth < 640 &&
-    window.matchMedia("(display-mode: standalone)").matches
-      ? "-20px"
-      : "0px"
-}}
-/>
-      </button>
-    ) : (
-      <Button
-  size="sm"
-  className="h-8 px-3 text-xs bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
-  onClick={() => {
-    setAuthMode("login");
-    setShowLogin(true);
+{/* MOBILE PROFILE / LOGIN */}
+<div
+  className="sm:hidden flex items-center gap-2"
+  style={{
+    marginTop:
+      window.innerWidth < 640 &&
+      window.matchMedia("(display-mode: standalone)").matches
+        ? "-20px"
+        : "0px"
   }}
 >
-  Login
-</Button>
-    )}
-  </div>
-
-      {user && (
+{user ? (
+  <img
+    src={avatarSrc || avatar001}
+    alt="avatar"
+    className="h-9 w-9 rounded-full object-cover border-2 border-white/30 shadow-md"
+  />
+) : (
   <Button
-    variant="ghost"
-    size="icon"
-    className="hidden sm:flex text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
+    size="sm"
+    className="h-8 px-3 text-xs bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
+    onClick={() => {
+      setAuthMode("login");
+      setShowLogin(true);
+    }}
+  >
+    Login
+  </Button>
+)}
+
+  {/* MOBILE TROPHY FOR LEADERBOARD */}
+  <button
+    onClick={() => navigate("/leaderboard")}
+    className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] shadow-sm"
+  >
+    <Trophy className="h-4 w-4" />
+  </button>
+</div>
+
+{/* DESKTOP PROFILE AVATAR */}
+{user && (
+  <button
+    className="hidden sm:inline-flex items-center justify-center"
     onClick={() => navigate("/profile")}
   >
     <img
       src={avatarSrc || avatar001}
       alt="avatar"
-      className="h-10 w-10 rounded-full object-cover border-2 border-white/30"
+      className="h-10 w-10 rounded-full object-cover border-2 border-white/30 shadow-md"
     />
-  </Button>
+  </button>
 )}
-  {/* DESKTOP DISCORD BUTTON */}
-  <button
+
+{/* DESKTOP DISCORD BUTTON */}
+<button
   className="hidden sm:inline-flex items-center justify-center"
   onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
 >
@@ -482,6 +490,15 @@ style={{
 >
   Home
 </Button>
+
+<Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
+  onClick={() => navigate("/forum")}
+>
+  Forum
+</Button>
+
  <Button
   variant="ghost"
   className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
@@ -530,45 +547,13 @@ style={{
   )}
 </div>
 
- <div className="relative">
-  <Button
-    variant="ghost"
-    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
-    onClick={() => {
-  setShowIsoMenu(!showIsoMenu);
-  setShowTradesMenu(false);
-  setShowLeaderboardMenu(false);
-}}
-  >
-    ISO ▾
-  </Button>
-
-  {showIsoMenu && (
-    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
-      
-      <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-        onClick={() => {
-          navigate("/my-iso");
-          setShowIsoMenu(false);
-        }}
-      >
-        My ISO
-      </button>
-
-      <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-        onClick={() => {
-          navigate("/public-iso");
-          setShowIsoMenu(false);
-        }}
-      >
-        All ISOs
-      </button>
-
-    </div>
-  )}
-</div>
+<Button
+  variant="ghost"
+  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
+  onClick={() => navigate("/my-iso")}
+>
+  ISO
+</Button>
 
 <div className="relative">
   <Button
@@ -1044,203 +1029,100 @@ style={{
 
 {/* MOBILE BOTTOM NAV */}
 <div
-  className="sm:hidden fixed bottom-0 left-0 right-0 z-[999] 
-  bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] 
+  className="sm:hidden fixed bottom-0 left-0 right-0 z-[999]
+  bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84]
   border-t border-[#d4af37]/40
   flex justify-around items-center
   shadow-[0_-4px_16px_rgba(0,0,0,0.5)]"
   style={{
-  height: "calc(58px + env(safe-area-inset-bottom))",
-  paddingBottom: "max(env(safe-area-inset-bottom), 4px)"
-}}
+    height: "calc(58px + env(safe-area-inset-bottom))",
+    paddingBottom: "max(env(safe-area-inset-bottom), 4px)",
+  }}
 >
 
-<div className="relative">
-
+    {/* HOMEPAGE */}
   <button
     onClick={() => {
-  setShowMobileIsoMenu(false);
-  setShowMobileLeaderboardMenu(false);
-  setShowMobileHomeMenu(false);
-
-  setShowMobileProgressMenu(!showMobileProgressMenu);
-}}
-    className="mt-1 flex flex-col items-center text-[#f5e6a8] text-[11px]"
-  >
-    <Grid className="h-6 w-6" />
-  </button>
-
-{showMobileProgressMenu && (
-  <div className="absolute bottom-14 left-0 w-44 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
-
- <button
-      className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
-      onClick={() => {
-        navigate("/my-iso");
-        setShowMobileProgressMenu(false);
-      }}
-    >
-      MY ISO
-    </button>
-
-    <button
-      className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
-      onClick={() => {
-        navigate("/my-progress");
-        setShowMobileProgressMenu(false);
-      }}
-    >
-      CCG PROGRESS
-    </button>
-
-    <button
-      className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
-      onClick={() => {
-        navigate("/progress-tcg");
-        setShowMobileProgressMenu(false);
-      }}
-    >
-      TCG PROGRESS
-    </button>
-
-  </div>
-)}
-
-</div>
-
-<div className="relative">
-
-  <button
-    onClick={() => {
-  setShowMobileProgressMenu(false);
-  setShowMobileLeaderboardMenu(false);
-  setShowMobileHomeMenu(false);
-  setShowMobileIsoMenu(!showMobileIsoMenu);
-}}
-    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
-  >
-    <List className="h-6 w-6" />
-  </button>
-
-  {showMobileIsoMenu && (
-    <div className="absolute bottom-14 left-0 w-44 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
-
-      <button
-        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10"
-        onClick={() => {
-          navigate("/public-iso");
-          setShowMobileIsoMenu(false);
-        }}
-      >
-        ALL ISO
-      </button>
-
-      <button
-        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
-        onClick={() => {
-          navigate("/trading-post");
-          setShowMobileIsoMenu(false);
-        }}
-      >
-        ALL TRADES
-      </button>
-
-    </div>
-  )}
-
-</div>
-
-  <button
-    onClick={() => navigate("/my-trades")}
-    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
-  >
-    <Layers className="h-6 w-6" />
-  </button>
-
-<div className="relative">
-
-  <button
-    onClick={() => {
-  setShowMobileProgressMenu(false);
-  setShowMobileIsoMenu(false);
-  setShowMobileHomeMenu(false);
-  setShowMobileLeaderboardMenu(!showMobileLeaderboardMenu);
-}}
-    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
-  >
-    <Medal className="h-6 w-6" />
-  </button>
-
-  {showMobileLeaderboardMenu && (
-    <div className="absolute bottom-14 right-0 w-44 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
-
-      <button
-        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10"
-        onClick={() => {
-          navigate("/leaderboard");
-          setShowMobileLeaderboardMenu(false);
-        }}
-      >
-        TOP COLLECTORS
-      </button>
-
-      <button
-        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
-        onClick={() => {
-          navigate("/community");
-          setShowMobileLeaderboardMenu(false);
-        }}
-      >
-        LEADERBOARDS
-      </button>
-
-    </div>
-  )}
-
-</div>
-
-<div className="relative">
-
-  <button
-    onClick={() => {
-  setShowMobileProgressMenu(false);
-  setShowMobileIsoMenu(false);
-  setShowMobileLeaderboardMenu(false);
-  setShowMobileHomeMenu(!showMobileHomeMenu);
-}}
-    className="flex flex-col items-center text-[#f5e6a8] text-[11px]"
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
+      navigate("/");
+    }}
+    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
   >
     <Home className="h-6 w-6" />
   </button>
 
-  {showMobileHomeMenu && (
-    <div className="absolute bottom-14 right-0 w-40 bg-[#5a3e84] border border-[#d4af37]/40 rounded-2xl shadow-xl overflow-hidden">
+  {/* COLLECTIONS */}
+  <button
+    onClick={() => {
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
+      navigate("/collections");
+    }}
+    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+  >
+    <Sparkles className="h-6 w-6" />
+  </button>
 
-      <button
-        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10"
-        onClick={() => {
-          navigate("/");
-          setShowMobileHomeMenu(false);
-        }}
-      >
-        HOMEPAGE
-      </button>
+  {/* TRADES */}
+  <button
+    onClick={() => {
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
+      navigate("/trading-post");
+    }}
+    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+  >
+    <ArrowLeftRight className="h-6 w-6" />
+  </button>
 
-      <button
-        className="w-full px-4 py-3 text-sm text-[#f5e6a8] hover:bg-white/10 border-t border-white/10"
-        onClick={() => {
-          navigate("/collections");
-          setShowMobileHomeMenu(false);
-        }}
-      >
-        KAYOUUS SETS
-      </button>
+  {/* ALL ISOS */}
+  <button
+    onClick={() => {
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
+      navigate("/forum");
+    }}
+    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+  >
+    <Search className="h-6 w-6" />
+  </button>
 
-    </div>
-  )}
+  {/* SET LEADERBOARDS */}
+  <button
+    onClick={() => {
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
+      navigate("/community");
+    }}
+    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+  >
+    <Medal className="h-6 w-6" />
+  </button>
 
-</div>
-
+  {/* PROFILE */}
+  <button
+    onClick={() => {
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
+      navigate(window.innerWidth < 640 ? "/profile-mobile" : "/profile");
+    }}
+    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+  >
+    <User className="h-6 w-6" />
+  </button>
 </div>
 </>
 );
