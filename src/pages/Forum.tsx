@@ -14,6 +14,7 @@ import {
   Grid3X3,
   ArrowLeftRight,
   X,
+  BookOpen,
 } from "lucide-react";
 
 import avatar001 from "@/assets/avatars/avatar001.jpg";
@@ -1107,7 +1108,7 @@ function groupCardsBySet(cards: any[]) {
     >
       <KayouHeader />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         {/* Hero Banner */}
 <div className="relative mb-8 z-[10000]">
   <div className="relative overflow-visible rounded-[2rem] border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_20px_60px_rgba(168,85,247,0.12)] px-6 sm:px-8 py-8 sm:py-10">
@@ -1116,9 +1117,20 @@ function groupCardsBySet(cards: any[]) {
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-8">
               <div>
 
-                <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900">
-                  Community Homepage
-                </h1>
+                <div className="flex items-start justify-between gap-4">
+  <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900">
+    Community Homepage
+  </h1>
+
+  <button
+    type="button"
+    onClick={() => setShowMobileRules(true)}
+    className="xl:hidden flex items-center justify-center w-12 h-12 rounded-2xl bg-white/85 border border-white/60 shadow-lg text-slate-700 hover:text-violet-700 hover:bg-violet-50 transition-colors flex-shrink-0"
+    aria-label="View Community Rules"
+  >
+    <BookOpen className="w-5 h-5" />
+  </button>
+</div>
 
                 <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
   Discussions, trades, questions, and more! Find everything you are looking for here in the forum.
@@ -1305,7 +1317,7 @@ function groupCardsBySet(cards: any[]) {
           {/* Right Sidebar */}
           <aside className="order-2 xl:order-none xl:col-span-3 space-y-6">
             <div className="xl:sticky xl:top-24">
-              <div className="rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
+             <div className="hidden xl:block rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
                 <button
                   type="button"
                   onClick={() => setShowMobileRules(!showMobileRules)}
@@ -1332,7 +1344,7 @@ function groupCardsBySet(cards: any[]) {
                       "Do not spam post.",
                       "Stay on topic.",
                       "Do not curse.",
-                      "This website is only for North American English cards.",
+                      "This website is only for English cards. Include your location to differentiate between NA and SEA.",
                     ].map((rule, index) => (
                       <li
                         key={index}
@@ -1370,18 +1382,31 @@ function groupCardsBySet(cards: any[]) {
       >
         {/* Post Header */}
         <div className="flex items-start gap-4 mb-4">
-          <img
-            src={
-              avatarMap[String(post.author_avatar || "").trim()] ||
-              (typeof post.author_avatar === "string" &&
-              !post.author_avatar.startsWith("avatar")
-                ? post.author_avatar
-                : null) ||
-              avatar001
-            }
-            alt={post.author_name || post.author}
-            className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md flex-shrink-0"
-          />
+          <button
+  type="button"
+  onClick={() =>
+    openUserProfile({
+      id: post.user_id,
+      username: post.author_name || post.author,
+      avatar_url: post.author_avatar,
+    })
+  }
+  className="flex-shrink-0"
+>
+  <img
+    src={
+      avatarMap[String(post.author_avatar || "").trim()] ||
+      (typeof post.author_avatar === "string" &&
+      !post.author_avatar.startsWith("avatar")
+        ? post.author_avatar
+        : null) ||
+      avatar001
+    }
+    alt={post.author_name || post.author}
+    className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md cursor-pointer hover:scale-110 hover:ring-4 hover:ring-violet-200 transition-all duration-200"
+title="View Profile"
+  />
+</button>
 
           <div className="flex-1">
             <div className="flex items-start justify-between gap-3">
@@ -1484,12 +1509,63 @@ function groupCardsBySet(cards: any[]) {
         </div>
       </div>
     ))}
+    <div className="py-6 sm:py-8">
+  <div className="flex items-center justify-center gap-3">
+    <div className="h-px flex-1 max-w-[100px] bg-gradient-to-r from-transparent to-slate-300" />
+
+    <span className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-slate-400 whitespace-nowrap">
+      That's all for now!
+    </span>
+
+    <div className="h-px flex-1 max-w-[100px] bg-gradient-to-l from-transparent to-slate-300" />
+  </div>
+</div>
   </div>
 </section>
         </div>
       </main>
-    {showCreatePostModal && (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
+      {/* Mobile Rules Modal */}
+{showMobileRules && (
+  <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 xl:hidden">
+    <div className="w-full max-w-md rounded-[2rem] border border-white/60 bg-white shadow-2xl p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-black text-slate-900">
+          Community Rules
+        </h2>
+
+        <button
+          onClick={() => setShowMobileRules(false)}
+          className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <ul className="space-y-3">
+        {[
+          "Be respectful to everypony.",
+          "Be honest.",
+          "Do not spam post.",
+          "Stay on topic.",
+          "Do not curse.",
+          "This website is only for English cards. Include your location to differentiate between NA and SEA.",
+        ].map((rule, index) => (
+          <li
+            key={index}
+            className="flex items-start gap-3 text-sm text-slate-600"
+          >
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+              {index + 1}
+            </div>
+            <span>{rule}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)}
+   {showCreatePostModal && (
+  <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
     <div className="w-full max-w-2xl rounded-[2rem] bg-white shadow-2xl border border-white/60 p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-black text-slate-900">
