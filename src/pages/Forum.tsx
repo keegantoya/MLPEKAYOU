@@ -73,6 +73,24 @@ const adminOnlyPosts = [
       "(05/10 - 05/15) 15 lucky winners will recieve one sealed in-person event promotional card from Kayou US's new Friendships Begin TCG set.",
     image: avatar006,
   },
+
+  {
+  id: "news-moon3-sc001-preview",
+  title: "Eternal Moon Three",
+  topic: "News & Updates",
+  author_name: "Keegan",
+  author_avatar: "avatar006",
+  caption:
+    "Eternal Moon Three will be coming to MLPEKAYOU on 05/25!",
+  image: avatar006,
+  attached_cards: [
+    {
+      set_id: "3",
+      card_key: "SC-1",
+    },
+  ],
+},
+
 ];
 
 export default function Forum() {
@@ -100,6 +118,9 @@ const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
 const [repostedPosts, setRepostedPosts] = useState<string[]>([]);
 const [repostCounts, setRepostCounts] = useState<Record<string, number>>({});
 const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+const [postCardIndexes, setPostCardIndexes] = useState<Record<string, number>>(
+  {}
+);
 const [showCommentsModal, setShowCommentsModal] = useState(false);
 const [selectedPost, setSelectedPost] = useState<any>(null);
 const [comments, setComments] = useState<any[]>([]);
@@ -143,19 +164,40 @@ const [selectedUserTab, setSelectedUserTab] =
 
   const [collapsedSets, setCollapsedSets] = useState<Record<string, boolean>>({});
 
+  const [selectedCards, setSelectedCards] = useState<
+  { set_id: string; card_key: string }[]
+>([]);
+
+const [showCardPickerModal, setShowCardPickerModal] = useState(false);
+const [cardPickerSet, setCardPickerSet] = useState<string | null>(null);
+const [cardPickerRarity, setCardPickerRarity] = useState<string | null>(null);
+
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
 useEffect(() => {
-  if (showCreatePostModal) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
-  }
+  const lock =
+    showCommentsModal ||
+    showCardPickerModal ||
+    showDeleteModal ||
+    showCreatePostModal ||
+    !!zoomedCard ||
+    showUserModal;
+
+  document.body.style.overflow = lock ? "hidden" : "";
 
   return () => {
     document.body.style.overflow = "";
   };
-}, [showCreatePostModal]);
+}, [
+  showCommentsModal,
+  showCardPickerModal,
+  showDeleteModal,
+  showCreatePostModal,
+  zoomedCard,
+  showUserModal,
+]);
 
 useEffect(() => {
   async function loadPosts() {
@@ -268,7 +310,7 @@ const [posts, setPosts] = useState<any[]>([
     author_name: "Keegan",
     author_avatar: avatar006,
     caption:
-      "Welcome to the MLPEKAYOU Community Homepage. Here, you can discuss with other community members based on the discussion topics to my left. Please read the rules to my right before posting or interacting, as violating these rules will result in a ban without warning.",
+      "Welcome to the MLPEKAYOU Community Homepage. Here, you can discuss with other community members based on the discussion topics to my left. Please read the rules before posting or interacting, as violating these rules will result in a ban without warning.",
   },
 ]);
 const filteredPosts = [...adminOnlyPosts, ...posts].filter(
@@ -442,10 +484,11 @@ const { data: profile } = await supabase
       user.user_metadata?.username ||
       "Anonymous",
     author_avatar: profile?.avatar_url || "avatar001",
-    title: postTitle,
-    caption: postCaption,
-    topic: postCategory,
-    location: postLocation || null,
+    title: postTitle.trim().slice(0, 30),
+caption: postCaption,
+topic: postCategory,
+location: postLocation.trim().slice(0, 15) || null,
+attached_cards: selectedCards,
   });
 
   if (error) {
@@ -454,9 +497,13 @@ const { data: profile } = await supabase
   }
 
   setPostTitle("");
-  setPostCategory("General");
-  setPostCaption("");
-  setPostLocation("");
+setPostCategory("General");
+setPostCaption("");
+setPostLocation("");
+setSelectedCards([]);
+setCardPickerSet(null);
+setCardPickerRarity(null);
+setShowCardPickerModal(false);
 
   setShowCreatePostModal(false);
 
@@ -493,6 +540,7 @@ async function searchUsers(query: string) {
 async function openUserProfile(user: any) {
    setSelectedUserRank(null);
   setSelectedUser(user);
+  setShowCommentsModal(false);
   setShowUserModal(true);
   setSelectedUserTab("trades");
   setCollapsedSets({});
@@ -814,7 +862,7 @@ const sets = [
   { id: "5", rarities: { R:30, SR:15, FR:18, TR:12, TGR:8, MTR:18, SSR:15, UR:15, USR:8, XR:7 } },
   { id: "7", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 } },
   { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 } },
-  { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, SZR:1 } },
+ // { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, SZR:1 } },
   { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 } },
 ];
 
@@ -935,6 +983,223 @@ if (String(card.set_id) === "FW") {
   return `/cards/${c.folder}/${c.prefix}${rarity}${String(
     number
   ).padStart(3, "0")}.jpg`;
+}
+
+const CARD_PICKER_SETS = [
+  { id: "1", name: "Eternal Moon: First Edition" },
+  { id: "2", name: "Eternal Moon: Second Edition" },
+ // { id: "3", name: "Eternal Moon: Third Edition" },
+  { id: "5", name: "Rainbow: First Edition" },
+  { id: "7", name: "Fun Moments: First Edition" },
+  { id: "8", name: "Fun Moments: Second Edition" },
+  { id: "9", name: "Promotional Cards" },
+  { id: "FW", name: "Fantasy Wonderland" },
+  { id: "SD", name: "Friendships Begin" },
+  { id: "tcgpromos", name: "TCG Promos" },
+];
+
+const CARD_PICKER_RARITIES: Record<string, string[]> = {
+  "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
+  "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
+  "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+  "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
+  "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
+  "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
+  "9": ["PR"],
+  "FW": [
+    "C",
+    "U",
+    "ER",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "RR",
+    "※ER",
+    "※SPR",
+    "※GR",
+    "※CR",
+    "※RR",
+  ],
+  "SD": [
+    "C",
+    "U",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "ER",
+    "※ER",
+    "※RR",
+  ],
+  "tcgpromos": ["PR"],
+};
+
+function getCardsForPicker(
+  setId: string,
+  rarity: string
+): { set_id: string; card_key: string }[] {
+  const cards: { set_id: string; card_key: string }[] = [];
+
+  // Fantasy Wonderland
+  if (setId === "FW") {
+    const structures: Record<string, string[]> = {
+      C: Array.from({ length: 48 }, (_, i) => `BP01C${String(i + 1).padStart(2, "0")}`),
+      U: Array.from({ length: 18 }, (_, i) => `BP01U${String(i + 1).padStart(2, "0")}`),
+      ER: Array.from({ length: 6 }, (_, i) => `BP01ER${String(i + 7).padStart(2, "0")}`),
+      SR: Array.from({ length: 14 }, (_, i) => `BP01SR${String(i + 1).padStart(2, "0")}`),
+      SPR: Array.from({ length: 28 }, (_, i) => `BP01SPR${String(i + 1).padStart(2, "0")}`),
+      GR: Array.from({ length: 12 }, (_, i) => `BP01GR${String(i + 1).padStart(2, "0")}`),
+      CR: Array.from({ length: 12 }, (_, i) => `BP01CR${String(i + 1).padStart(2, "0")}`),
+      RR: Array.from({ length: 6 }, (_, i) => `BP01RR${String(i + 1).padStart(2, "0")}`),
+      "※ER": Array.from({ length: 12 }, (_, i) => `BP01PER${String(i + 7).padStart(2, "0")}`),
+      "※SPR": [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
+        (n) => `BP01PSPR${String(n).padStart(2, "0")}`
+      ),
+      "※GR": Array.from({ length: 6 }, (_, i) => `BP01PGR${String(i + 1).padStart(2, "0")}`),
+      "※CR": Array.from({ length: 12 }, (_, i) => `BP01PCR${String(i + 1).padStart(2, "0")}`),
+      "※RR": Array.from({ length: 6 }, (_, i) => `BP01PRR${String(i + 1).padStart(2, "0")}`),
+    };
+
+    return (structures[rarity] || []).map((card_key) => ({
+      set_id: setId,
+      card_key,
+    }));
+  }
+
+  // Friendships Begin
+  if (setId === "SD") {
+    const structures: Record<string, string[]> = {
+      C: Array.from({ length: 9 }, (_, i) => `SD01C${String(i + 1).padStart(2, "0")}`),
+      U: Array.from({ length: 7 }, (_, i) => `SD01U${String(i + 1).padStart(2, "0")}`),
+      SR: Array.from({ length: 6 }, (_, i) => `SD01SR${String(i + 1).padStart(2, "0")}`),
+      SPR: Array.from({ length: 10 }, (_, i) => `SD01SPR${String(i + 1).padStart(2, "0")}`),
+      GR: Array.from({ length: 6 }, (_, i) => `SD01GR${String(i + 1).padStart(2, "0")}`),
+      CR: Array.from({ length: 6 }, (_, i) => `SD01CR${String(i + 1).padStart(2, "0")}`),
+      ER: Array.from({ length: 6 }, (_, i) => `SD01ER${String(i + 1).padStart(2, "0")}`),
+      "※ER": Array.from({ length: 12 }, (_, i) => `SD01PER${String(i + 7).padStart(2, "0")}`),
+      "※RR": Array.from({ length: 6 }, (_, i) => `SD01PRR${String(i + 1).padStart(2, "0")}`),
+    };
+
+    return (structures[rarity] || []).map((card_key) => ({
+      set_id: setId,
+      card_key,
+    }));
+  }
+
+  // TCG Promos
+  if (setId === "tcgpromos") {
+    return Array.from({ length: 6 }, (_, i) => ({
+      set_id: setId,
+      card_key: `RR${String(i + 1).padStart(2, "0")}`,
+    }));
+  }
+
+  // Promotional Cards
+  if (setId === "9") {
+    return Array.from({ length: 5 }, (_, i) => ({
+      set_id: setId,
+      card_key: `PR-${i + 1}`,
+    }));
+  }
+
+  // Standard checklist sets
+  const counts: Record<string, Record<string, number>> = {
+    "1": { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 },
+    "2": {
+      R: 30,
+      SR: 20,
+      SSR: 54,
+      HR: 30,
+      UR: 16,
+      LSR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      "SHINING ZR": 1,
+    },
+    "3": {
+      R: 60,
+      SR: 40,
+      SSR: 40,
+      HR: 60,
+      UR: 18,
+      LSR: 32,
+      SGR: 16,
+      ZR: 14,
+      SC: 7,
+      SZR: 3,
+    },
+    "5": {
+      R: 30,
+      SR: 15,
+      FR: 18,
+      TR: 12,
+      TGR: 8,
+      MTR: 18,
+      SSR: 15,
+      UR: 15,
+      USR: 8,
+      XR: 7,
+    },
+    "7": {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      CR: 12,
+    },
+    "8": {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      UGR: 9,
+      CR: 12,
+    },
+  };
+
+  const count = counts[setId]?.[rarity] || 0;
+
+  return Array.from({ length: count }, (_, i) => ({
+    set_id: setId,
+    card_key: `${rarity}-${i + 1}`,
+  }));
+}
+
+function toggleSelectedCard(card: {
+  set_id: string;
+  card_key: string;
+}) {
+  const exists = selectedCards.some(
+    (c) =>
+      c.set_id === card.set_id &&
+      c.card_key === card.card_key
+  );
+
+  if (exists) {
+    setSelectedCards((prev) =>
+      prev.filter(
+        (c) =>
+          !(
+            c.set_id === card.set_id &&
+            c.card_key === card.card_key
+          )
+      )
+    );
+    return;
+  }
+
+  if (selectedCards.length >= 10) {
+    alert("You may attach up to 10 cards.");
+    return;
+  }
+
+  setSelectedCards((prev) => [...prev, card]);
 }
 
 function getSetName(setId: string) {
@@ -1384,15 +1649,31 @@ function groupCardsBySet(cards: any[]) {
       >
         {/* Post Header */}
         <div className="flex items-start gap-4 mb-4">
-          <button
+<button
   type="button"
-  onClick={() =>
+  onClick={async () => {
+    let userId = post.user_id;
+
+    if (!userId && (post.author_name || post.author) === "Keegan") {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, username, avatar_url")
+        .eq("username", "Keegan")
+        .single();
+
+      if (profile) {
+        openUserProfile(profile);
+        return;
+      }
+    }
+
+    // Normal database posts
     openUserProfile({
-      id: post.user_id,
+      id: userId,
       username: post.author_name || post.author,
       avatar_url: post.author_avatar,
-    })
-  }
+    });
+  }}
   className="flex-shrink-0"
 >
   <img
@@ -1427,8 +1708,12 @@ title="View Profile"
                   )}
 
                   <p className="text-sm text-slate-500">
-                    Posted by {post.author_name || post.author}
-                  </p>
+  {post.id === "welcome-post" ||
+  String(post.id).startsWith("news-") ||
+  String(post.id).startsWith("giveaway-")
+    ? (post.author_name || post.author)
+    : `Posted by ${post.author_name || post.author}`}
+</p>
                 </div>
               </div>
 
@@ -1464,59 +1749,191 @@ title="View Profile"
           </p>
         )}
 
-        {/* Post Content */}
-        <p className="text-[15px] sm:text-base text-slate-800 leading-7 whitespace-pre-wrap">
-          {post.caption || post.content}
-        </p>
+        <div className="mt-1 flex items-start gap-3 sm:gap-6 relative">
+  {/* Caption */}
+  <div className="flex-1 min-w-0">
+    {(() => {
+  const fullText = post.caption || post.content || "";
+  const isLong = fullText.length > 250;
+  const previewText = isLong
+    ? `${fullText.slice(0, 250).trim()}...`
+    : fullText;
 
-        {/* Post Actions */}
-        <div className="mt-5 pt-4 border-t border-slate-100">
-          <div className="flex items-center justify-start gap-8">
-            {/* Like */}
-            <button
-              onClick={() => toggleLike(String(post.id))}
-              className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
-                likedPosts.includes(String(post.id))
-                  ? "text-rose-500"
-                  : "text-slate-500 hover:text-rose-500"
-              }`}
-            >
-              <Heart
-                className="w-5 h-5"
-                fill={
-                  likedPosts.includes(String(post.id))
-                    ? "currentColor"
-                    : "none"
-                }
-              />
-              <span>{likeCounts[String(post.id)] || 0}</span>
-            </button>
+  return (
+    <div>
+      <p className="text-[15px] sm:text-base text-slate-800 leading-7 whitespace-pre-wrap">
+        {previewText}
+      </p>
 
-            {/* Repost */}
-            <button
-              onClick={() => toggleRepost(String(post.id))}
-              className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
-                repostedPosts.includes(String(post.id))
-                  ? "text-violet-600"
-                  : "text-slate-500 hover:text-violet-600"
-              }`}
-            >
-              <Repeat2 className="w-5 h-5" />
-              <span>{repostCounts[String(post.id)] || 0}</span>
-            </button>
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => openComments(post)}
+          className="mt-2 text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+        >
+          View more...
+        </button>
+      )}
+    </div>
+  );
+})()}
+  </div>
 
-            {/* Comments */}
-            {post.id !== "welcome-post" && (
-              <button
-                onClick={() => openComments(post)}
-                className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-sky-600 transition-colors"
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span>{commentCounts[String(post.id)] || 0}</span>
-              </button>
-            )}
-          </div>
+  {/* Attached Cards */}
+  {Array.isArray(post.attached_cards) &&
+    post.attached_cards.length > 0 &&
+    (() => {
+      const cards = post.attached_cards;
+      const currentIndex =
+        postCardIndexes[String(post.id)] || 0;
+      const currentCard =
+        cards[currentIndex % cards.length];
+
+      const previousCard =
+        cards[
+          (currentIndex - 1 + cards.length) %
+            cards.length
+        ];
+
+      const nextCard =
+        cards[
+          (currentIndex + 1) %
+            cards.length
+        ];
+
+return (
+  <div className={`relative z-0 w-24 sm:w-36 flex-shrink-0 pb-6 mt-2 sm:-mt-16 ${
+  post.id === "news-moon3-sc001-preview"
+    ? "min-h-[170px] sm:min-h-[240px] pb-6"
+    : "min-h-[150px] sm:min-h-[220px]"
+}`}>
+          {/* Back Card */}
+          {cards.length > 2 && (
+            <img
+              src={getTradeCardImage(previousCard)}
+              alt=""
+              className="absolute top-4 right-1 w-[92%] rounded-2xl border border-slate-200 shadow-md opacity-35 pointer-events-none"
+              style={{ transform: "rotate(-7deg)" }}
+            />
+          )}
+
+          {/* Middle Card */}
+          {cards.length > 1 && (
+            <img
+              src={getTradeCardImage(nextCard)}
+              alt=""
+              className="absolute top-2 right-1 w-[92%] rounded-2xl border border-slate-200 shadow-md opacity-55 pointer-events-none"
+              style={{ transform: "rotate(6deg)" }}
+            />
+          )}
+
+{/* Main Card */}
+<div className="absolute top-0 right-0 z-10">
+  <img
+    src={getTradeCardImage(currentCard)}
+    alt={currentCard.card_key}
+    className="w-[92%] rounded-2xl border border-slate-200 shadow-xl"
+  />
+</div>
+
+{post.id === "news-moon3-sc001-preview" && (
+  <div className="absolute bottom-1 left-0 right-0 text-center text-[10px] text-slate-400 leading-tight z-20">
+    Open post to view card.
+  </div>
+)}
         </div>
+      );
+    })()}
+</div>
+
+
+{/* Post Actions */}
+<div className="mt-5 pt-4 border-t border-slate-100">
+  <div className="flex items-center justify-start gap-8">
+    {/* Like */}
+    <button
+      onClick={async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          document
+            .querySelector('button[aria-label="Sign In"], button[data-login-button], .sign-in-button')
+            ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+          return;
+        }
+
+        toggleLike(String(post.id));
+      }}
+      className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
+        likedPosts.includes(String(post.id))
+          ? "text-rose-500"
+          : "text-slate-500 hover:text-rose-500"
+      }`}
+    >
+      <Heart
+        className="w-5 h-5"
+        fill={
+          likedPosts.includes(String(post.id))
+            ? "currentColor"
+            : "none"
+        }
+      />
+      <span>{likeCounts[String(post.id)] || 0}</span>
+    </button>
+
+    {/* Repost */}
+    <button
+      onClick={async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          document
+            .querySelector('button[aria-label="Sign In"], button[data-login-button], .sign-in-button')
+            ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+          return;
+        }
+
+        toggleRepost(String(post.id));
+      }}
+      className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
+        repostedPosts.includes(String(post.id))
+          ? "text-violet-600"
+          : "text-slate-500 hover:text-violet-600"
+      }`}
+    >
+      <Repeat2 className="w-5 h-5" />
+      <span>{repostCounts[String(post.id)] || 0}</span>
+    </button>
+
+    {/* Comments */}
+    {post.id !== "welcome-post" && (
+      <button
+        onClick={async () => {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          if (!user) {
+            document
+              .querySelector('button[aria-label="Sign In"], button[data-login-button], .sign-in-button')
+              ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+            return;
+          }
+
+          openComments(post);
+        }}
+        className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-sky-600 transition-colors"
+      >
+        <MessageCircle className="w-5 h-5" />
+        <span>{commentCounts[String(post.id)] || 0}</span>
+      </button>
+    )}
+  </div>
+</div>
       </div>
     ))}
     <div className="py-6 sm:py-8">
@@ -1594,9 +2011,12 @@ title="View Profile"
           Header
         </label>
         <input
-          type="text"
-          value={postTitle}
-          onChange={(e) => setPostTitle(e.target.value)}
+  type="text"
+  value={postTitle}
+  onChange={(e) =>
+    setPostTitle(e.target.value.slice(0, 30))
+  }
+  maxLength={30}
           placeholder="Enter a title..."
           className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
@@ -1606,29 +2026,47 @@ title="View Profile"
         <label className="block text-sm font-bold text-slate-700 mb-2">
           Topic
         </label>
-        <select
-          value={postCategory}
-          onChange={(e) => setPostCategory(e.target.value)}
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-        >
-          {categories
-  .filter((category) => {
-    if (!restrictedCategories.includes(category)) {
-      return true;
-    }
+        <div className="relative w-full">
+  <button
+    type="button"
+    onClick={() => setShowCategoryDropdown((v) => !v)}
+    className="w-full flex items-center justify-between rounded-2xl border border-white/60 bg-white/85 backdrop-blur-xl shadow-sm px-4 py-3 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-violet-400"
+  >
+    {postCategory || "Select a category"}
 
-    return [
-  "17e57e39-bc0c-44e7-b373-ac34c6690185",
-  "94a1c998-d040-4dd2-b2fb-5f606287139d",
-  "408a516c-ee80-4ff8-a869-493e1fd5d961",
-].includes(currentUser?.id);
-  })
-  .map((category) => (
-    <option key={category} value={category}>
-      {category}
-    </option>
-  ))}
-        </select>
+    <svg
+      className="w-5 h-5 text-slate-400"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+        clipRule="evenodd"
+      />
+    </svg>
+  </button>
+
+  {showCategoryDropdown && (
+    <div className="absolute z-50 mt-2 w-full rounded-2xl border border-white/60 bg-white shadow-xl backdrop-blur-xl max-h-64 overflow-y-auto">
+      {categories
+        .filter((c) => !restrictedCategories.includes(c))
+        .map((category) => (
+          <button
+            key={category}
+            type="button"
+            onClick={() => {
+              setPostCategory(category);
+              setShowCategoryDropdown(false);
+            }}
+            className="w-full text-left px-4 py-3 text-slate-700 hover:bg-violet-50 hover:text-violet-700 font-semibold"
+          >
+            {category}
+          </button>
+        ))}
+    </div>
+  )}
+</div>
       </div>
 
       <div className="mb-4">
@@ -1644,14 +2082,56 @@ title="View Profile"
         />
       </div>
 
+<div className="mb-6">
+  <label className="block text-sm font-bold text-slate-700 mb-2">
+    Choose Cards (Optional)
+  </label>
+
+  <button
+    type="button"
+    onClick={() => setShowCardPickerModal(true)}
+    className="w-full rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 px-4 py-3 text-left font-semibold text-slate-700 transition-colors"
+  >
+    Select Cards ({selectedCards.length}/10)
+  </button>
+
+  {selectedCards.length > 0 && (
+    <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+      {selectedCards.map((card, index) => (
+        <div
+          key={`${card.set_id}-${card.card_key}-${index}`}
+          className="relative flex-shrink-0"
+        >
+          <img
+            src={getTradeCardImage(card)}
+            alt={card.card_key}
+            className="w-20 rounded-xl border border-slate-200 shadow-sm"
+          />
+
+          <button
+            type="button"
+            onClick={() => toggleSelectedCard(card)}
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-500 text-white text-xs font-bold shadow hover:bg-rose-600"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
       <div className="mb-6">
         <label className="block text-sm font-bold text-slate-700 mb-2">
           Location (Optional)
         </label>
         <input
-          type="text"
-          value={postLocation}
-          onChange={(e) => setPostLocation(e.target.value)}
+  type="text"
+  value={postLocation}
+  onChange={(e) =>
+    setPostLocation(e.target.value.slice(0, 15))
+  }
+  maxLength={15}
           placeholder="Dallas, TX"
           className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
@@ -1676,8 +2156,9 @@ title="View Profile"
   </div>
 )}
 {showCommentsModal && selectedPost && (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
-    <div className="w-full max-w-3xl rounded-[2rem] bg-white shadow-2xl border border-white/60 p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+  <div className="fixed inset-0 z-[200000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
+    <div className="w-full max-w-3xl rounded-[2rem] bg-white shadow-2xl border border-white/60 p-6 sm:p-8 h-[90vh] overflow-hidden relative">
+     <div className="absolute inset-0 overflow-y-auto px-6 sm:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
       {/* Modal Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-black text-slate-900">
@@ -1700,15 +2181,47 @@ title="View Profile"
 <div className="rounded-3xl border border-slate-200 bg-white p-5 mb-6 shadow-sm">
   {/* Header */}
   <div className="flex items-start gap-3">
-    <img
-      src={
-  avatarMap[String(selectedPost.author_avatar || "").trim()] ||
-  selectedPost.avatar ||
-  avatar001
-}
-      alt={selectedPost.author_name || selectedPost.author}
-      className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md flex-shrink-0"
-    />
+<button
+  type="button"
+  onClick={async () => {
+    let userId = selectedPost.user_id;
+
+    if (
+      !userId &&
+      (selectedPost.author_name || selectedPost.author) === "Keegan"
+    ) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, username, avatar_url")
+        .eq("username", "Keegan")
+        .single();
+
+      if (profile) {
+        openUserProfile(profile);
+        return;
+      }
+    }
+
+    openUserProfile({
+      id: userId,
+      username:
+        selectedPost.author_name || selectedPost.author,
+      avatar_url: selectedPost.author_avatar,
+    });
+  }}
+  className="flex-shrink-0"
+>
+  <img
+    src={
+      avatarMap[String(selectedPost.author_avatar || "").trim()] ||
+      selectedPost.avatar ||
+      avatar001
+    }
+    alt={selectedPost.author_name || selectedPost.author}
+    className="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md cursor-pointer hover:scale-110 hover:ring-4 hover:ring-violet-200 transition-all duration-200"
+    title="View Profile"
+  />
+</button>
 
     <div className="flex-1 min-w-0">
       <p className="font-bold text-slate-900">
@@ -1725,6 +2238,37 @@ title="View Profile"
   <p className="mt-4 text-slate-700 leading-relaxed whitespace-pre-wrap">
     {selectedPost.caption || selectedPost.content}
   </p>
+
+  {Array.isArray(selectedPost?.attached_cards) &&
+  selectedPost.attached_cards.length > 0 && (
+    <div className="mt-5">
+      <div className="grid grid-cols-5 gap-3">
+        {selectedPost.attached_cards.map(
+          (card: any, index: number) => (
+            <button
+              key={`${card.set_id}-${card.card_key}-${index}`}
+              type="button"
+              onClick={() => {
+                setZoomedCard(
+                  getTradeCardImage(card)
+                );
+                setZoomedCardTitle(
+                  card.card_key
+                );
+              }}
+              className="flex-shrink-0 transition-transform hover:scale-105"
+            >
+              <img
+                src={getTradeCardImage(card)}
+                alt={card.card_key}
+                className="w-24 sm:w-32 border border-slate-200 shadow-lg"
+              />
+            </button>
+          )
+        )}
+      </div>
+    </div>
+)}
 
   {/* Actions */}
   <div className="mt-5 pt-4 border-t border-slate-100">
@@ -1803,44 +2347,22 @@ comments.map((comment) => (
             {comment.author_name}
           </p>
 
-          {selectedPost?.user_id === comment.user_id && (
-            <button
-              onClick={async () => {
-                const confirmed = window.confirm(
-                  "Delete this comment permanently?"
-                );
+          
 
-                if (!confirmed) {
-                  return;
-                }
-
-                const { error } = await supabase
-                  .from("forum_comments")
-                  .delete()
-                  .eq("id", comment.id);
-
-                if (error) {
-                  alert(error.message);
-                  return;
-                }
-
-                setComments((prev) =>
-                  prev.filter((c) => c.id !== comment.id)
-                );
-
-                setCommentCounts((prev) => ({
-                  ...prev,
-                  [String(selectedPost.id)]: Math.max(
-                    (prev[String(selectedPost.id)] || 1) - 1,
-                    0
-                  ),
-                }));
-              }}
-              className="text-xs font-semibold text-rose-500 hover:text-rose-600"
-            >
-              Delete
-            </button>
-          )}
+{selectedPost?.user_id === comment.user_id && (
+  <button
+    onClick={() => {
+      setPostToDelete({
+        ...comment,
+        isComment: true,
+      });
+      setShowDeleteModal(true);
+    }}
+    className="relative z-20 text-xs font-semibold text-rose-500 hover:text-rose-600"
+  >
+    Delete
+  </button>
+)}
         </div>
 
         <p className="mt-1 text-sm text-slate-600 leading-relaxed">
@@ -1874,8 +2396,137 @@ comments.map((comment) => (
       </div>
     </div>
   </div>
+</div>
 )}
- {showDeleteModal && postToDelete && (
+
+{showCardPickerModal && (
+  <div className="fixed inset-0 z-[250000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
+    <div className="w-full max-w-6xl rounded-[2rem] bg-white shadow-2xl border border-white/60 p-6 max-h-[90vh] overflow-hidden">
+      <div className="h-full max-h-[calc(90vh-3rem)] overflow-y-auto pr-2">     
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-black text-slate-900">
+          Choose Cards
+        </h2>
+
+        <button
+          type="button"
+          onClick={() => setShowCardPickerModal(false)}
+          className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Step 1: Sets */}
+      {!cardPickerSet && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {CARD_PICKER_SETS.map((set) => (
+            <button
+              key={set.id}
+              type="button"
+              onClick={() => setCardPickerSet(set.id)}
+              className="rounded-2xl border border-slate-200 bg-slate-50 hover:bg-violet-50 hover:border-violet-300 px-4 py-4 text-left font-semibold text-slate-700 transition-colors"
+            >
+              {set.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Step 2: Rarities */}
+      {cardPickerSet && !cardPickerRarity && (
+        <>
+          <button
+            type="button"
+            onClick={() => setCardPickerSet(null)}
+            className="mb-4 text-sm font-semibold text-violet-600 hover:text-violet-700"
+          >
+            ← Back to Sets
+          </button>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {(CARD_PICKER_RARITIES[cardPickerSet] || []).map((rarity) => (
+  <button
+    key={rarity}
+    type="button"
+    onClick={() => setCardPickerRarity(rarity)}
+    className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+      cardPickerRarity === rarity
+        ? "bg-violet-600 text-white"
+        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+    }`}
+  >
+    {rarity === "SHINING ZR"
+      ? "◇ZR"
+      : rarity === "SZR"
+      ? "◇ZR"
+      : rarity === "SN"
+      ? "◇N"
+      : rarity}
+  </button>
+))}
+          </div>
+        </>
+      )}
+
+      {/* Step 3: Cards */}
+      {cardPickerSet && cardPickerRarity && (
+        <>
+          <button
+            type="button"
+            onClick={() => setCardPickerRarity(null)}
+            className="mb-4 text-sm font-semibold text-violet-600 hover:text-violet-700"
+          >
+            ← Back to Rarities
+          </button>
+
+          <div className="mb-4 text-sm font-semibold text-slate-500">
+            {selectedCards.length} / 10 selected
+          </div>
+
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            {getCardsForPicker(cardPickerSet, cardPickerRarity).map((card) => {
+              const isSelected = selectedCards.some(
+                (c) =>
+                  c.set_id === card.set_id &&
+                  c.card_key === card.card_key
+              );
+
+              return (
+                <button
+                  key={`${card.set_id}-${card.card_key}`}
+                  type="button"
+                  onClick={() => toggleSelectedCard(card)}
+                  className={`relative rounded-2xl overflow-hidden border-4 transition-all ${
+                    isSelected
+                      ? "border-violet-500 shadow-lg scale-105"
+                      : "border-transparent hover:border-violet-200"
+                  }`}
+                >
+                  <img
+                    src={getTradeCardImage(card)}
+                    alt={card.card_key}
+                    className="w-full rounded-xl"
+                  />
+
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold shadow">
+                      ✓
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+        </div>
+)}
+
+{showDeleteModal && postToDelete && (
   <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
     <div className="w-full max-w-md rounded-[2rem] bg-white border border-white/60 shadow-2xl p-8">
       <div className="text-center">
@@ -1884,12 +2535,13 @@ comments.map((comment) => (
         </div>
 
         <h2 className="text-2xl font-black text-slate-900">
-          Delete Post?
+          {postToDelete.isComment ? "Delete Comment?" : "Delete Post?"}
         </h2>
 
         <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-          This will permanently remove this post, along with all
-          comments, likes, and reposts. This action cannot be undone.
+          {postToDelete.isComment
+            ? "This comment will be permanently removed. This action cannot be undone."
+            : "This will permanently remove this post, along with all comments, likes, and reposts. This action cannot be undone."}
         </p>
 
         <div className="mt-6 flex gap-3">
@@ -1905,21 +2557,48 @@ comments.map((comment) => (
 
           <button
             onClick={async () => {
-const { error } = await supabase
-  .from("forum_posts")
-  .delete()
-  .eq("id", postToDelete.id);
+              if (postToDelete.isComment) {
+                const { error } = await supabase
+                  .from("forum_comments")
+                  .delete()
+                  .eq("id", postToDelete.id);
 
-              if (error) {
-                alert(error.message);
-                return;
+                if (error) {
+                  alert(error.message);
+                  return;
+                }
+
+                setComments((prev) =>
+                  prev.filter((c) => c.id !== postToDelete.id)
+                );
+
+                if (selectedPost) {
+                  setCommentCounts((prev) => ({
+                    ...prev,
+                    [String(selectedPost.id)]: Math.max(
+                      (prev[String(selectedPost.id)] || 1) - 1,
+                      0
+                    ),
+                  }));
+                }
+              } else {
+                const { error } = await supabase
+                  .from("forum_posts")
+                  .delete()
+                  .eq("id", postToDelete.id);
+
+                if (error) {
+                  alert(error.message);
+                  return;
+                }
+
+                setPosts((prev) =>
+                  prev.filter((p) => p.id !== postToDelete.id)
+                );
+
+                setShowCommentsModal(false);
               }
 
-              setPosts((prev) =>
-                prev.filter((p) => p.id !== postToDelete.id)
-              );
-
-              setShowCommentsModal(false);
               setShowDeleteModal(false);
               setPostToDelete(null);
             }}
@@ -2129,7 +2808,7 @@ const { error } = await supabase
 {/* Card Zoom Modal */}
 {zoomedCard && (
   <div
-    className="fixed inset-0 z-[40000] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+    className="fixed inset-0 z-[99999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
     onClick={() => {
       setZoomedCard(null);
       setZoomedCardTitle("");

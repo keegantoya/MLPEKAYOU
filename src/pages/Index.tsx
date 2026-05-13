@@ -43,6 +43,11 @@ const Index = () => {
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
 
+  const [comments, setComments] = useState<Record<string, any[]>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
+
   const [stats, setStats] = useState({
   owned: 0,
   completed: 0,
@@ -97,6 +102,113 @@ const toggleLike = async (postId: string) => {
   }
 };
 
+const loadComments = async () => {
+  // Load all comments
+  const { data: commentRows, error: commentsError } = await supabase
+    .from("post_comments")
+    .select(`
+      id,
+      post_id,
+      comment,
+      created_at,
+      user_id
+    `)
+    .order("created_at", { ascending: true });
+
+  if (commentsError) {
+    console.error("Error loading comments:", commentsError);
+    return;
+  }
+
+  // Collect unique user IDs
+  const userIds = [
+    ...new Set(
+      (commentRows || [])
+        .map((row: any) => row.user_id)
+        .filter(Boolean)
+    ),
+  ];
+
+  // Load usernames from profiles
+  const profileMap: Record<string, string> = {};
+
+  if (userIds.length > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, username")
+      .in("id", userIds);
+
+    if (profilesError) {
+      console.error("Error loading profiles:", profilesError);
+    } else {
+      profiles?.forEach((profile: any) => {
+        profileMap[profile.id] = profile.username || "Anonymous";
+      });
+    }
+  }
+
+  // Group comments by post_id and attach usernames
+  const grouped: Record<string, any[]> = {};
+
+  (commentRows || []).forEach((row: any) => {
+    if (!grouped[row.post_id]) {
+      grouped[row.post_id] = [];
+    }
+
+    grouped[row.post_id].push({
+      ...row,
+      profiles: {
+        username: profileMap[row.user_id] || "Anonymous",
+      },
+    });
+  });
+
+  setComments(grouped);
+};
+
+const submitComment = async (postId: string) => {
+  const text = (commentInputs[postId] || "").trim();
+
+  if (!text) return;
+
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+
+  if (!user) {
+    navigate("/auth");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("post_comments")
+    .insert({
+      post_id: postId,   // text column, so "star1" is valid
+      user_id: user.id,
+      comment: text,
+    });
+
+  if (error) {
+    console.error("Error posting comment:", error);
+    alert(error.message);
+    return;
+  }
+
+  // Clear the input box
+  setCommentInputs((prev) => ({
+    ...prev,
+    [postId]: "",
+  }));
+
+  // Reload comments so the new one appears immediately
+  await loadComments();
+};
+
+
+const openComments = (post: any) => {
+  setSelectedPost(post);
+  setShowCommentsModal(true);
+};
+
 useEffect(() => {
   const loadLikes = async () => {
     const { data } = await supabase.auth.getSession();
@@ -129,6 +241,7 @@ useEffect(() => {
   };
 
   loadLikes();
+  loadComments();
 }, []);
 
   const intervalRef = useRef(null);
@@ -822,7 +935,16 @@ before:pointer-events-none">
       : "text-[#6B3FA2]"
   }`}
 />
-            <MessageCircle className="w-6 h-6 text-[#6B3FA2]" />
+            <button
+  type="button"
+  onClick={() => openComments(post)}
+  className="flex items-center gap-1 text-[#6B3FA2] hover:text-[#5B2E86] transition"
+>
+  <MessageCircle className="w-6 h-6" />
+  <span className="text-xs font-semibold">
+    {(comments[post.id] || []).length}
+  </span>
+</button>
             <Send className="w-6 h-6 text-[#6B3FA2]" />
           </div>
 
@@ -833,14 +955,33 @@ before:pointer-events-none">
           {(likeCounts[post.id] || 0).toLocaleString()} likes
         </div>
 
-        <p className="text-sm leading-relaxed text-[#5E467A]">
-          <span className="font-semibold text-[#5B2E86] mr-2">
-            {post.username}
-          </span>
-          {post.caption}
-        </p>
+<p className="text-sm leading-relaxed text-[#5E467A]">
+  <span className="font-semibold text-[#5B2E86] mr-2">
+    {post.username}
+  </span>
+  {post.caption}
+</p>
 
-        <div
+{/* COMMENTS */}
+<div className="mt-3">
+  <button
+    type="button"
+    onClick={() => openComments(post)}
+    className="
+      text-sm
+      font-semibold
+      text-[#8B5CC7]
+      hover:text-[#6B3FA2]
+      transition
+    "
+  >
+    {(comments[post.id] || []).length === 0
+      ? "View comments"
+      : `View all ${(comments[post.id] || []).length} comments`}
+  </button>
+</div>
+
+<div
   className={`mt-3 text-xs uppercase tracking-wide ${
     post.id === "fantasywonderland" || post.id === "friendshipsbegin"
       ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
@@ -863,6 +1004,189 @@ before:pointer-events-none">
       </div>
     </div>
   ))}
+</section>
+
+{/* DESKTOP FACEBOOK-STYLE LANDSCAPE POSTS */}
+<section className="hidden sm:block mt-12">
+  <div className="max-w-5xl mx-auto space-y-6">
+    {[
+      {
+        id: "star1",
+        image: Star1Poster,
+        username: "KAYOU US x MLPEKAYOU",
+        caption:
+          "Star Edition One is now available at CrossingTCG, and for preorder in Kayou US's TikTok shop. This set's box price is $127.84.",
+      },
+      {
+        id: "moon3",
+        image: Moon3Poster,
+        username: "KAYOU US x MLPEKAYOU",
+        caption:
+          "Third Edition Moon comes as a combination of Chinese Moon 9 and 10, featuring gorgeous SC and ZR designs. This box is available from CrossingTCG, or for preorder from Kayou US TikTok shop for $47.88.",
+      },
+      {
+        id: "funmoments3",
+        image: FunMoments3Poster,
+        username: "KAYOU US x MLPEKAYOU",
+        caption:
+          "Fun Moments 3 features the highest hit rate of any Fun Moments set ever! The three box configurations guarantee that you will either receive 3 UGR, 3 CR, or 3 ◇CR! This box retails at $39.80.",
+      },
+      {
+        id: "fantasywonderland",
+        image: FantasyWonderlandPoster,
+        username: "KAYOU US x MLPEKAYOU",
+        caption:
+          "Fantasy Wonderland has made its official US debut! You can find singles at Target, Barnes & Noble, or GameStop. Full boxes can be purchased from CrossingTCG or Kayou US's TikTok shop for $59.80.",
+      },
+      {
+        id: "friendshipsbegin",
+        image: FriendshipsBeginPoster,
+        username: "KAYOU US x MLPEKAYOU",
+        caption:
+          "Friendships Begin celebrates the six main characters with their own starter decks and paper playmat, with a touch of magic in the three bonus packs. You are guaranteed one hit from the bonus packs in every box! Boxes can be found at Target, GameStop, Kayou US, or CrossingTCG for $20 each.",
+      },
+    ].map((post, index) => (
+      <div
+        key={index}
+        className="
+          bg-white/95
+          backdrop-blur-sm
+          rounded-3xl
+          overflow-hidden
+          border border-purple-200
+          shadow-[0_12px_35px_rgba(95,55,145,0.08)]
+        "
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-purple-100">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-yellow-300 p-[2px]">
+            <img
+              src="/website-assets/KayouLogoPFP.png"
+              alt="MLPEKAYOU"
+              className="w-full h-full rounded-full object-cover bg-white"
+            />
+          </div>
+
+          <div className="flex-1">
+            <div className="font-semibold text-sm text-[#5B2E86]">
+              {post.username}
+            </div>
+            <div className="text-xs text-[#A78BCB]">
+              Just now · Public
+            </div>
+          </div>
+        </div>
+
+        {/* Landscape Body */}
+        <div className="grid grid-cols-[320px_1fr]">
+          {/* Left Image Panel */}
+          <div className="bg-[#FAF6FF] p-5 flex items-center justify-center border-r border-purple-100">
+            <img
+              src={post.image}
+              alt={post.caption}
+              className="
+                w-full
+                max-w-[260px]
+                h-auto
+                rounded-2xl
+                shadow-[0_15px_30px_rgba(95,55,145,0.10)]
+              "
+            />
+          </div>
+
+{/* Right Content Panel */}
+<div className="p-6 flex flex-col">
+  {/* Caption */}
+  <p className="text-sm leading-7 text-[#5E467A] mb-5">
+    <span className="font-semibold text-[#5B2E86] mr-2">
+      {post.username}
+    </span>
+    {post.caption}
+  </p>
+
+  {/* Likes */}
+  <div className="text-sm font-semibold text-[#5B2E86] mb-5">
+    {(likeCounts[post.id] || 0).toLocaleString()} likes
+  </div>
+
+  {/* Actions */}
+  <div className="flex items-center gap-4 mb-4">
+    <Heart
+      onClick={() => toggleLike(post.id)}
+      className={`w-6 h-6 cursor-pointer transition ${
+        likedPosts[post.id]
+          ? "fill-[#E85AA8] text-[#E85AA8]"
+          : "text-[#6B3FA2]"
+      }`}
+    />
+
+    <button
+      type="button"
+      onClick={() => openComments(post)}
+      className="flex items-center gap-1 text-[#6B3FA2] hover:text-[#5B2E86] transition"
+    >
+      <MessageCircle className="w-6 h-6" />
+      <span className="text-xs font-semibold">
+        {(comments[post.id] || []).length}
+      </span>
+    </button>
+
+    <Send className="w-6 h-6 text-[#6B3FA2]" />
+    <Bookmark className="w-6 h-6 text-[#6B3FA2] ml-auto" />
+  </div>
+
+  {/* COMMENTS PREVIEW (fixed-height area) */}
+<div className="space-y-3 mb-4 max-h-[88px] overflow-hidden">
+    {(comments[post.id] || []).slice(0, 2).map((comment) => (
+      <div
+        key={comment.id}
+        className="text-sm leading-relaxed text-[#5E467A]"
+      >
+        <span className="font-semibold text-[#5B2E86] mr-2">
+          {comment.profiles?.username || "Anonymous"}
+        </span>
+        {comment.comment}
+      </div>
+    ))}
+
+    {(comments[post.id] || []).length > 2 && (
+      <button
+        type="button"
+        onClick={() => openComments(post)}
+        className="text-sm font-semibold text-[#8B5CC7] hover:text-[#6B3FA2] transition"
+      >
+        View all {(comments[post.id] || []).length} comments
+      </button>
+    )}
+  </div>
+
+  {/* Footer Link - pinned to bottom */}
+  <div
+    className={`mt-auto text-xs uppercase tracking-wide ${
+      post.id === "fantasywonderland" ||
+      post.id === "friendshipsbegin"
+        ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
+        : "text-[#A78BCB]"
+    }`}
+    onClick={() => {
+      if (post.id === "fantasywonderland") {
+        navigate("/fantasy-wonderland");
+      } else if (post.id === "friendshipsbegin") {
+        navigate("/friendships-begin");
+      }
+    }}
+  >
+    {post.id === "moon3"
+      ? "SET CHECKLIST DROPS 05/25"
+      : post.id === "star1" || post.id === "funmoments3"
+      ? "CHECKLIST COMING SOON"
+      : "VIEW SET CHECKLIST"}
+  </div>
+</div>
+        </div>
+      </div>
+    ))}
+  </div>
 </section>
 
     </div>

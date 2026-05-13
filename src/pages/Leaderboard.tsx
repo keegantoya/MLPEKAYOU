@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import leaderboardBadge from "@/assets/avatars/leaderboardbadge.png";
 import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 
+
 import avatar001 from "@/assets/avatars/avatar001.jpg";
 import avatar002 from "@/assets/avatars/avatar002.jpg";
 import avatar003 from "@/assets/avatars/avatar003.jpg";

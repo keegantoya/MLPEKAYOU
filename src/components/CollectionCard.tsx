@@ -32,7 +32,7 @@ const getLink = () => {
       return "/rainbow-one";
 
     case "3":
-      return "/eternal-moon-three";
+  return "/moon3-beta-keegansbuild";
 
     case "4":
     case "star1":
