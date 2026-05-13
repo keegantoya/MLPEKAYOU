@@ -2095,30 +2095,30 @@ return (
     Select Cards ({selectedCards.length}/10)
   </button>
 
-  {selectedCards.length > 0 && (
-    <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-      {selectedCards.map((card, index) => (
-        <div
-          key={`${card.set_id}-${card.card_key}-${index}`}
-          className="relative flex-shrink-0"
-        >
-          <img
-            src={getTradeCardImage(card)}
-            alt={card.card_key}
-            className="w-20 rounded-xl border border-slate-200 shadow-sm"
-          />
+{selectedCards.length > 0 && (
+  <div className="mt-4 flex flex-wrap gap-4">
+    {selectedCards.map((card, index) => (
+      <div
+        key={`${card.set_id}-${card.card_key}-${index}`}
+        className="relative w-24"
+      >
+        <img
+          src={getTradeCardImage(card)}
+          alt={card.card_key}
+          className="w-full h-auto rounded-xl border border-slate-200 shadow-md"
+        />
 
-          <button
-            type="button"
-            onClick={() => toggleSelectedCard(card)}
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-500 text-white text-xs font-bold shadow hover:bg-rose-600"
-          >
-            ×
-          </button>
-        </div>
-      ))}
-    </div>
-  )}
+        <button
+          type="button"
+          onClick={() => toggleSelectedCard(card)}
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-500 text-white text-xs font-bold shadow hover:bg-rose-600 flex items-center justify-center"
+        >
+          ×
+        </button>
+      </div>
+    ))}
+  </div>
+)}
 </div>
 
       <div className="mb-6">
@@ -2485,7 +2485,7 @@ comments.map((comment) => (
             {selectedCards.length} / 10 selected
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 auto-rows-fr">
             {getCardsForPicker(cardPickerSet, cardPickerRarity).map((card) => {
               const isSelected = selectedCards.some(
                 (c) =>
@@ -2500,15 +2500,15 @@ comments.map((comment) => (
                   onClick={() => toggleSelectedCard(card)}
                   className={`relative rounded-2xl overflow-hidden border-4 transition-all ${
                     isSelected
-                      ? "border-violet-500 shadow-lg scale-105"
-                      : "border-transparent hover:border-violet-200"
+  ? "border-violet-500 shadow-lg"
+  : "border-transparent hover:border-violet-200"
                   }`}
                 >
                   <img
-                    src={getTradeCardImage(card)}
-                    alt={card.card_key}
-                    className="w-full rounded-xl"
-                  />
+  src={getTradeCardImage(card)}
+  alt={card.card_key}
+  className="w-full h-full object-cover rounded-xl"
+/>
 
                   {isSelected && (
                     <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold shadow">
@@ -2527,8 +2527,8 @@ comments.map((comment) => (
 )}
 
 {showDeleteModal && postToDelete && (
-  <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
-    <div className="w-full max-w-md rounded-[2rem] bg-white border border-white/60 shadow-2xl p-8">
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60">
+    <div className="relative z-[1000000] bg-white rounded-2xl p-6 shadow-2xl">
       <div className="text-center">
         <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-rose-100 flex items-center justify-center text-3xl">
           🗑️
