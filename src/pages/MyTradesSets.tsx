@@ -177,19 +177,18 @@ trades?.forEach((card: any) => {
   return () => subscription.unsubscribe();
 }, [setId]);
 
-const changeQuantity = async (cardKey: string, delta: number) => {
+const changeQuantity = async (cardKey: string, value: number) => {
   const { data } = await supabase.auth.getSession();
   const user = data.session?.user;
   if (!user) return;
 
-  const current = quantities[cardKey] || 1;
-  const next = Math.max(1, current + delta);
+  const next = Math.max(1, value);
 
   await supabase
     .from("card_quantity")
     .upsert({
       user_id: user.id,
-      set_id: setId,
+      set_id: resolvedSetId,
       card_key: cardKey,
       quantity: next
     });
@@ -601,7 +600,12 @@ const rarityOrders: Record<string, string[]> = {
   >
     {editMode && (
       <button
-        onClick={() => changeQuantity(deck.code, -1)}
+        onClick={() =>
+  changeQuantity(
+    deck.code,
+    (quantities[deck.code] || 1) - 1
+  )
+}
         className="px-1"
       >
         −
@@ -614,7 +618,12 @@ const rarityOrders: Record<string, string[]> = {
 
     {editMode && (
       <button
-        onClick={() => changeQuantity(deck.code, 1)}
+        onClick={() =>
+  changeQuantity(
+    deck.code,
+    (quantities[deck.code] || 1) + 1
+  )
+}
         className="px-1"
       >
         +
@@ -785,46 +794,41 @@ const indexB = currentOrder.indexOf(b);
     <input
   type="text"
   inputMode="numeric"
-  value={quantities[key] === 1 ? "" : String(quantities[key] || "")}
+  value={String(quantities[key] || "")}
   placeholder="1"
   onClick={(e) => e.stopPropagation()}
   onFocus={(e) => e.target.select()}
-  onChange={async (e) => {
-    const raw = e.target.value;
+onChange={(e) => {
+  const raw = e.target.value;
 
-    // Allow the field to be temporarily blank while typing
-    if (raw === "") {
-      setQuantities((prev) => ({
-        ...prev,
-        [key]: 0,
-      }));
-      return;
-    }
+  // Allow temporary blank input while typing
+  if (raw === "") {
+    setQuantities((prev) => ({
+      ...prev,
+      [key]: 0,
+    }));
+    return;
+  }
 
-    const value = Math.max(1, Number(raw) || 1);
-    const current = quantities[key] || 1;
+  const value = Number(raw);
 
-    // Update immediately in the UI
+  if (!isNaN(value)) {
     setQuantities((prev) => ({
       ...prev,
       [key]: value,
     }));
+  }
+}}
+onBlur={async () => {
+  const finalValue = Math.max(1, quantities[key] || 1);
 
-    // Save to database only if the value changed
-    const delta = value - current;
-    if (delta !== 0) {
-      await changeQuantity(key, delta);
-    }
-  }}
-  onBlur={async () => {
-    // If the user leaves the field blank, restore it to 1
-    if (!quantities[key] || quantities[key] < 1) {
-      setQuantities((prev) => ({
-        ...prev,
-        [key]: 1,
-      }));
-    }
-  }}
+  setQuantities((prev) => ({
+    ...prev,
+    [key]: finalValue,
+  }));
+
+  await changeQuantity(key, finalValue);
+}}
   className="w-12 bg-transparent text-center font-semibold outline-none appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 />
   </div>
@@ -832,7 +836,9 @@ const indexB = currentOrder.indexOf(b);
     <div className="flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow">
       {editMode && (
         <button
-          onClick={() => changeQuantity(key, -1)}
+          onClick={() =>
+  changeQuantity(key, (quantities[key] || 1) - 1)
+}
           className="px-1 leading-none hover:text-[#ffd700]"
         >
           −
@@ -845,7 +851,9 @@ const indexB = currentOrder.indexOf(b);
 
       {editMode && (
         <button
-          onClick={() => changeQuantity(key, 1)}
+          onClick={() =>
+  changeQuantity(key, (quantities[key] || 1) + 1)
+}
           className="px-1 leading-none hover:text-[#ffd700]"
         >
           +
