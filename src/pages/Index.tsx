@@ -1,15 +1,20 @@
 import KayouHeader from "@/components/KayouHeader";
 import Moon3Poster from "@/assets/avatars/Moon3Poster.png";
-import FriendshipsBeginPoster from "@/assets/avatars/FriendshipsBeginPoster.png";
-import FantasyWonderlandPoster from "@/assets/avatars/FantasyWonderlandPoster.png";
 import FunMoments3Poster from "@/assets/avatars/FunMoments3Poster.png";
 import Star1Poster from "@/assets/avatars/Star1poster.png";
 import tcgAppBanner from "@/assets/website-assets/tcgapp.png";
+const minisoPoster = "/website-assets/minisocollab.jpg";
+const minisoLogo = "/website-assets/minisologo.jpg";
+const minisoPoster2 = "/website-assets/minisocollab2.png";
+const minisoPoster3 = "/website-assets/minisocollab3.jpg";
+const rainbow2Poster = "/website-assets/rainbow2post.jpg";
 import { supabase } from "@/lib/supabase";
 import heroFront from "/friendships-begin/SD01PRR01.png";
 import heroMiddle from "/cards/third-edition-moon/M3ZR003.jpg";
 import heroBack from "/cards/rainbow-one/R1XR004.jpg";
 import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
+
+import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
 
 import {
   BookOpen,
@@ -26,13 +31,42 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
+import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
+import elementOfLaughter from "/website-assets/elementoflaughter.png";
+
+const VERIFIED_USERS = {
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+      "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+  },
+  "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+};
+
 const Index = () => {
   const navigate = useNavigate();
 
   const images = [
     Moon3Poster,
-    FriendshipsBeginPoster,
-    FantasyWonderlandPoster,
     FunMoments3Poster,
     Star1Poster,
   ];
@@ -47,6 +81,7 @@ const Index = () => {
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [minisoSlide, setMinisoSlide] = useState(0);
 
   const [stats, setStats] = useState({
   owned: 0,
@@ -55,7 +90,11 @@ const Index = () => {
 });
 
 const [activeGiveaway, setActiveGiveaway] = useState<string | null>(null);
-const [topCollector, setTopCollector] = useState<{ username: string; total: number } | null>(null);
+const [topCollector, setTopCollector] = useState<{
+  id: string;
+  username: string;
+  total: number;
+} | null>(null);
 
 const toggleLike = async (postId: string) => {
   const { data } = await supabase.auth.getSession();
@@ -305,6 +344,7 @@ useEffect(() => {
       { id: "7", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 }},
       { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }},
       { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, "SZR":1 }},
+      { id: "11", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR: 9, CR:12, SCR: 12 }},
       { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
       { id: "10", rarities: { LC: 1 } }
     ];
@@ -467,9 +507,10 @@ useEffect(() => {
 
     // Calculate totals using the shared helper
     const totals = userIds.map((userId: string) => ({
-      username: profileMap[userId] || "Anonymous",
-      total: calculateCollectionTotal(userId, progress || []),
-    }));
+  id: userId,
+  username: profileMap[userId] || "Anonymous",
+  total: calculateCollectionTotal(userId, progress || []),
+}));
 
     const sorted = totals
       .filter((user) => user.username !== "HeiManTou (Chinese Collector)")
@@ -587,7 +628,7 @@ useEffect(() => {
           {/* Buttons */}
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <button
-  onClick={() => navigate("/my-trades")}
+  onClick={() => navigate("/inventory")}
   className="
     px-8 py-4 rounded-2xl
     bg-gradient-to-r from-[#7C4BB8] to-[#9C6ADE]
@@ -634,6 +675,29 @@ useEffect(() => {
   "
 >
   Top Kayou US Collectors
+</button>
+<button
+  onClick={() => navigate("/faq")}
+  className="
+    px-8 py-4 rounded-2xl
+    bg-white/90
+    text-[#6A3F9D] font-semibold
+    shadow-sm hover:shadow-md
+    transition
+    relative overflow-hidden
+    border border-[#D8B45A]
+
+    before:content-['']
+    before:absolute
+    before:inset-[3px]
+    before:rounded-[14px]
+    before:border
+    before:border-[#F8E38C]
+    before:shadow-[inset_0_0_0_1px_rgba(255,245,180,0.35)]
+    before:pointer-events-none
+  "
+>
+  MLPEKAYOU TUTORIAL
 </button>
           </div>
         </div>
@@ -765,13 +829,23 @@ before:pointer-events-none">
           </div>
 
           <div
-            className="text-4xl font-bold text-[#5B2E86]"
-            style={{
-              fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
-            }}
-          >
-            {topCollector?.username || "Mari"}
-          </div>
+  className="flex items-center justify-center gap-2 text-4xl font-bold text-[#5B2E86]"
+  style={{
+    fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
+  }}
+>
+  <span>{topCollector?.username}</span>
+
+  {topCollector?.id &&
+    VERIFIED_USERS[topCollector.id] && (
+      <img
+        src={VERIFIED_USERS[topCollector.id].badge}
+        alt={VERIFIED_USERS[topCollector.id].label}
+        title={VERIFIED_USERS[topCollector.id].label}
+        className="w-8 h-8 object-contain flex-shrink-0"
+      />
+    )}
+</div>
 
           <div className="mt-2 text-2xl font-semibold text-[#5B2E86]">
             {(topCollector?.total || 5284).toLocaleString()} cards
@@ -853,12 +927,34 @@ before:pointer-events-none">
 <section className="sm:hidden mt-12 space-y-8">
   {[
     {
+  id: "miniso2",
+  image: minisoPoster3,
+  username: "MINISO x MLPEKAYOU",
+  caption:
+    "Another Miniso x MLPEKayou partnership has arisen! You can find these adorable plushies in Keegan's TikTok Shop Showcase for $45.99 each. (I know they look small here, but they are ridiculously big.)",
+},
+{
+  id: "miniso",
+  image: minisoPoster,
+  images: [minisoPoster, minisoPoster2],
+  username: "MINISO x MLPEKAYOU",
+  caption:
+    "MLPEKayou has now partnered with Miniso on TikTok! These adorable sleeping figures are currently 50% off if bought through TikTok Shop! Also, face reveal! Hi, I'm Keegan!",
+},
+{
+  id: "rainbow2",
+  image: rainbow2Poster,
+  username: "KAYOU US x MLPEKAYOU",
+  caption:
+    "Rainbow Edition Two is coming to the U.S, complete with a U.S. exclusive promotional card. This set will be uploaded once it is obtained from KayouUS.",
+},
+{
   id: "star1",
   image: Star1Poster,
-      username: "KAYOU US x MLPEKAYOU",
-      caption:
-        "Star Edition One is now available at CrossingTCG, and for preorder in Kayou US's TikTok shop. This set's box price is $127.84.",
-    },
+  username: "KAYOU US x MLPEKAYOU",
+  caption:
+    "Star Edition One is now available at CrossingTCG, and for preorder in Kayou US's TikTok shop. This set's box price is $127.84.",
+},
     {
   id: "moon3",
   image: Moon3Poster,
@@ -872,20 +968,6 @@ before:pointer-events-none">
       username: "KAYOU US x MLPEKAYOU",
       caption:
         "Fun Moments 3 features the highest hit rate of any Fun Moments set ever! The three box configurations guarantee that you will either recieve 3 UGR, 3 CR, or 3 ◇CR! This box retails at $39.80.",
-    },
-    {
-  id: "fantasywonderland",
-  image: FantasyWonderlandPoster,
-      username: "KAYOU US x MLPEKAYOU",
-      caption:
-        "Fantasy Wonderland has made its official US debut! You can find singles at Target, Barnes and Noble, or Gamestop. Full boxes can be purchased from CrossingTCG or Kayou US's TikTok shop for $59.80.",
-    },
-    {
-  id: "friendshipsbegin",
-  image: FriendshipsBeginPoster,
-      username: "KAYOU US x MLPEKAYOU",
-      caption:
-        "Friendships Begins celebrates the six main characters with their own starer decks and paper playmat, with a touch of magic in the three bonus packs. You are guaranteed one hit from the bonus packs in every box! Boxes can be found at Target, Gamestop, Kayou US, or CrossingTCG for $20 each.",
     },
   ].map((post, index) => (
     <div
@@ -903,7 +985,7 @@ before:pointer-events-none">
       <div className="flex items-center gap-3 px-4 py-4">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-yellow-300 p-[2px]">
   <img
-    src="/website-assets/KayouLogoPFP.png"
+src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.png"}
     alt="MLPEKAYOU"
     className="w-full h-full rounded-full object-cover bg-white"
   />
@@ -917,11 +999,35 @@ before:pointer-events-none">
       </div>
 
       {/* Image */}
-      <img
-        src={post.image}
-        alt={post.caption}
-        className="w-full h-auto object-cover"
-      />
+      <div className="relative">
+  <img
+    src={
+      post.id === "miniso" && post.images
+        ? post.images[minisoSlide]
+        : post.image
+    }
+    alt={post.caption}
+    className="w-full h-auto object-cover"
+  />
+
+  {post.id === "miniso" && minisoSlide === 0 && (
+    <button
+      onClick={() => setMinisoSlide(1)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 text-white w-10 h-10 rounded-full text-2xl flex items-center justify-center"
+    >
+      ›
+    </button>
+  )}
+
+  {post.id === "miniso" && minisoSlide === 1 && (
+    <button
+      onClick={() => setMinisoSlide(0)}
+      className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 text-white w-10 h-10 rounded-full text-2xl flex items-center justify-center"
+    >
+      ‹
+    </button>
+  )}
+</div>
 
       {/* Actions */}
       <div className="px-4 pt-4 pb-2">
@@ -983,23 +1089,39 @@ before:pointer-events-none">
 
 <div
   className={`mt-3 text-xs uppercase tracking-wide ${
-    post.id === "fantasywonderland" || post.id === "friendshipsbegin"
+    post.id === "miniso" || post.id === "miniso2" ||
+    post.id === "fantasywonderland" ||
+    post.id === "friendshipsbegin"
       ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
       : "text-[#A78BCB]"
   }`}
   onClick={() => {
-    if (post.id === "fantasywonderland") {
+    if (post.id === "miniso") {
+      window.open(
+        "https://www.tiktok.com/@keanaex?_r=1&_t=ZP-96X7XS4ajT4",
+        "_blank"
+      );
+        } else if (post.id === "miniso2") {
+    window.open(
+      "https://www.tiktok.com/t/ZP9Y4tWQwhu2F-SoaSI/",
+      "_blank"
+    );
+    } else if (post.id === "funmoments3") {
+  navigate("/fun-moments-three");
+    } else if (post.id === "fantasywonderland") {
       navigate("/fantasy-wonderland");
     } else if (post.id === "friendshipsbegin") {
       navigate("/friendships-begin");
     }
   }}
 >
-  {post.id === "moon3"
+  {post.id === "miniso" || post.id === "miniso2"
+    ? "Find them in Keegan's TikTok Shop Showcase"
+    : post.id === "moon3"
     ? "SET CHECKLIST DROPS 05/25"
-    : post.id === "star1" || post.id === "funmoments3"
-    ? "CHECKLIST COMING SOON"
-    : "VIEW SET CHECKLIST"}
+    : post.id === "star1" || post.id === "rainbow2"
+? "CHECKLIST COMING SOON"
+: "VIEW SET CHECKLIST"}
 </div>
       </div>
     </div>
@@ -1011,12 +1133,34 @@ before:pointer-events-none">
   <div className="max-w-5xl mx-auto space-y-6">
     {[
       {
-        id: "star1",
-        image: Star1Poster,
-        username: "KAYOU US x MLPEKAYOU",
-        caption:
-          "Star Edition One is now available at CrossingTCG, and for preorder in Kayou US's TikTok shop. This set's box price is $127.84.",
-      },
+  id: "miniso2",
+  image: minisoPoster3,
+  username: "MINISO x MLPEKAYOU",
+  caption:
+    "Another Miniso x MLPEKayou partnership has arisen! You can find these adorable plushies in Keegan's TikTok Shop Showcase for $45.99 each. (I know they look small here, but they are ridiculously big.)",
+},
+      {
+  id: "miniso",
+  image: minisoPoster,
+  images: [minisoPoster, minisoPoster2],
+  username: "MINISO x MLPEKAYOU",
+  caption:
+    "Rainbow Edition Two is coming to the U.S, complete with a U.S. exclusive promotional card. This set will be uploaded once it is obtained from KayouUS.",
+},
+{
+  id: "rainbow2",
+  image: rainbow2Poster,
+  username: "KAYOU US x MLPEKAYOU",
+  caption:
+    "Rainbow Edition Two is coming to the U.S, complete with a U.S. exclusive promotional card. This set will be uploaded once it is obtained from KayouUS.",
+},
+{
+  id: "star1",
+  image: Star1Poster,
+  username: "KAYOU US x MLPEKAYOU",
+  caption:
+    "Star Edition One is now available at CrossingTCG, and for preorder in Kayou US's TikTok shop. This set's box price is $127.84.",
+},
       {
         id: "moon3",
         image: Moon3Poster,
@@ -1030,20 +1174,6 @@ before:pointer-events-none">
         username: "KAYOU US x MLPEKAYOU",
         caption:
           "Fun Moments 3 features the highest hit rate of any Fun Moments set ever! The three box configurations guarantee that you will either receive 3 UGR, 3 CR, or 3 ◇CR! This box retails at $39.80.",
-      },
-      {
-        id: "fantasywonderland",
-        image: FantasyWonderlandPoster,
-        username: "KAYOU US x MLPEKAYOU",
-        caption:
-          "Fantasy Wonderland has made its official US debut! You can find singles at Target, Barnes & Noble, or GameStop. Full boxes can be purchased from CrossingTCG or Kayou US's TikTok shop for $59.80.",
-      },
-      {
-        id: "friendshipsbegin",
-        image: FriendshipsBeginPoster,
-        username: "KAYOU US x MLPEKAYOU",
-        caption:
-          "Friendships Begin celebrates the six main characters with their own starter decks and paper playmat, with a touch of magic in the three bonus packs. You are guaranteed one hit from the bonus packs in every box! Boxes can be found at Target, GameStop, Kayou US, or CrossingTCG for $20 each.",
       },
     ].map((post, index) => (
       <div
@@ -1061,7 +1191,7 @@ before:pointer-events-none">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-purple-100">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-yellow-300 p-[2px]">
             <img
-              src="/website-assets/KayouLogoPFP.png"
+              src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.png"}
               alt="MLPEKAYOU"
               className="w-full h-full rounded-full object-cover bg-white"
             />
@@ -1081,17 +1211,98 @@ before:pointer-events-none">
         <div className="grid grid-cols-[320px_1fr]">
           {/* Left Image Panel */}
           <div className="bg-[#FAF6FF] p-5 flex items-center justify-center border-r border-purple-100">
-            <img
-              src={post.image}
-              alt={post.caption}
-              className="
-                w-full
-                max-w-[260px]
-                h-auto
-                rounded-2xl
-                shadow-[0_15px_30px_rgba(95,55,145,0.10)]
-              "
-            />
+            {post.id === "miniso" || post.id === "miniso2" && post.images ? (
+  <div className="relative w-[260px] overflow-hidden">
+    <div
+      className="flex transition-transform duration-500 ease-in-out"
+      style={{
+        transform: `translateX(-${minisoSlide * 260}px)`,
+      }}
+    >
+      {post.images.map((image, imageIndex) => (
+        <div
+          key={imageIndex}
+          className="w-[260px] flex-shrink-0 flex items-center justify-center"
+        >
+          <img
+            src={image}
+            alt={post.caption}
+            className="
+              w-full
+              h-auto
+              rounded-2xl
+              shadow-[0_15px_30px_rgba(95,55,145,0.10)]
+            "
+          />
+        </div>
+      ))}
+    </div>
+
+    {minisoSlide === 0 && (
+      <button
+        type="button"
+        onClick={() => setMinisoSlide(1)}
+        className="
+          absolute
+          right-3
+          top-1/2
+          -translate-y-1/2
+          w-10
+          h-10
+          rounded-full
+          bg-black/50
+          text-white
+          text-2xl
+          flex
+          items-center
+          justify-center
+          hover:bg-black/65
+          transition
+        "
+      >
+        ›
+      </button>
+    )}
+
+    {minisoSlide === 1 && (
+      <button
+        type="button"
+        onClick={() => setMinisoSlide(0)}
+        className="
+          absolute
+          left-3
+          top-1/2
+          -translate-y-1/2
+          w-10
+          h-10
+          rounded-full
+          bg-black/50
+          text-white
+          text-2xl
+          flex
+          items-center
+          justify-center
+          hover:bg-black/65
+          transition
+        "
+      >
+        ‹
+      </button>
+    )}
+  </div>
+) : (
+  <img
+    src={post.image}
+    alt={post.caption}
+    className="
+      w-full
+      max-w-[260px]
+      h-auto
+      rounded-2xl
+      shadow-[0_15px_30px_rgba(95,55,145,0.10)]
+    "
+  />
+)}
           </div>
 
 {/* Right Content Panel */}
@@ -1161,27 +1372,45 @@ before:pointer-events-none">
   </div>
 
   {/* Footer Link - pinned to bottom */}
-  <div
-    className={`mt-auto text-xs uppercase tracking-wide ${
-      post.id === "fantasywonderland" ||
-      post.id === "friendshipsbegin"
-        ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
-        : "text-[#A78BCB]"
-    }`}
-    onClick={() => {
-      if (post.id === "fantasywonderland") {
-        navigate("/fantasy-wonderland");
-      } else if (post.id === "friendshipsbegin") {
-        navigate("/friendships-begin");
-      }
-    }}
-  >
-    {post.id === "moon3"
-      ? "SET CHECKLIST DROPS 05/25"
-      : post.id === "star1" || post.id === "funmoments3"
-      ? "CHECKLIST COMING SOON"
-      : "VIEW SET CHECKLIST"}
-  </div>
+<div
+  className={`mt-auto text-xs uppercase tracking-wide ${
+    post.id === "miniso" ||
+    post.id === "miniso2" ||
+    post.id === "moon3" ||
+    post.id === "funmoments3" ||
+    post.id === "fantasywonderland" ||
+    post.id === "friendshipsbegin"
+      ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
+      : "text-[#A78BCB]"
+  }`}
+onClick={() => {
+  if (post.id === "miniso") {
+    window.open(
+      "https://www.tiktok.com/t/ZP9YXfjP2mmMF-jaHiQ/",
+      "_blank"
+    );
+  } else if (post.id === "miniso2") {
+    window.open(
+      "https://www.tiktok.com/t/ZP9Y4tWQwhu2F-SoaSI/",
+      "_blank"
+    );
+  } else if (post.id === "moon3") {
+    navigate("/eternal-moon-three");
+  } else if (post.id === "funmoments3") {
+    navigate("/fun-moments-three");
+  } else if (post.id === "fantasywonderland") {
+    navigate("/fantasy-wonderland");
+  } else if (post.id === "friendshipsbegin") {
+    navigate("/friendships-begin");
+  }
+}}
+>
+  {post.id === "miniso" || post.id === "miniso2"
+    ? "Find them in Keegan's TikTok Shop Showcase"
+    : post.id === "star1" || post.id === "rainbow2"
+    ? "CHECKLIST COMING SOON"
+    : "VIEW SET CHECKLIST"}
+</div>
 </div>
         </div>
       </div>

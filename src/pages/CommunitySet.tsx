@@ -19,7 +19,13 @@ import avatar012 from "@/assets/avatars/avatar012.jpg";
 import avatar013 from "@/assets/avatars/avatar013.jpg";
 import avatar014 from "@/assets/avatars/avatar014.jpg";
 import avatar015 from "@/assets/avatars/avatar015.jpg";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
+import maipfp from "@/assets/avatars/maipfp.jpg";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
+
+import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
+import elementOfLaughter from "/website-assets/elementoflaughter.png";
 
 const avatarMap: Record<string, string> = {
   "avatar001.jpg": avatar001,
@@ -37,6 +43,38 @@ const avatarMap: Record<string, string> = {
   "avatar013.jpg": avatar013,
   "avatar014.jpg": avatar014,
   "avatar015.jpg": avatar015,
+    "heimantouavatar": heimantouAvatar,
+  "heimantouavatar.jpg": heimantouAvatar,
+  "heimantouavatar.png": heimantouAvatar,
+  "keeganpfp.jpg": KeeganAvatar,
+  "maipfp.jpg": maipfp,
+};
+
+const VERIFIED_USERS = {
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+  "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+    "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
 };
 
 const sets: Record<string, { name: string; total: number }> = {
@@ -48,6 +86,7 @@ const sets: Record<string, { name: string; total: number }> = {
   "6": { name: "Rainbow Second Edition", total: 170 },
   "7": { name: "Fun Moments First Edition", total: 127 },
   "8": { name: "Fun Moments Second Edition", total: 136 },
+  "11": { name: "Fun Moments Third Edition", total: 148 },
   "friendshipsbegin": { name: "Friendships Begin", total: 194 },
   "fantasywonderland": { name: "Fantasy Wonderland", total: 191 },
 };
@@ -87,7 +126,6 @@ const isoSets = [
     folder: "fun-moments-two",
     prefix: "FM2",
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR:9, CR: 12 }
-    
   },
   {
   id: "3",
@@ -107,6 +145,13 @@ const isoSets = [
     SZR: 3
   }
 },
+ {
+    id: "11",
+    name: "Fun Moments: Second Edition",
+    folder: "fun-moments-two",
+    prefix: "FM2",
+    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR:9, CR: 12, SCR: 12 }
+  },
   {
     id: "friendshipsbegin",
     name: "Friendships Begin",
@@ -142,6 +187,7 @@ const forcedStillCollecting = [""];
 
 const manualPlacements: Record<string, string[]> = {
   "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"],
+  "8": ["Mari", "Keegan", "Jacob"],
 };
 
 const CommunitySet = () => {
@@ -194,7 +240,6 @@ progress.forEach((row: any) => {
 
  let owned = 0;
 
-// 🔥 SPECIAL CASE — FRIENDSHIPS BEGIN
 if (id === "friendshipsbegin") {
 
   const BONUS_STRUCTURE = [
@@ -225,12 +270,10 @@ if (id === "friendshipsbegin") {
   add("U", 4);
   add("SR", 2);
 
-  // ER (no deck letter)
   cards.push(`SD01ER${String(deckIndex).padStart(2, "0")}`);
 
   add("SPR", 4);
 
-  // RR (no deck letter)
   cards.push(`SD01RR${String(deckIndex).padStart(2, "0")}`);
 
   return cards;
@@ -257,7 +300,7 @@ BONUS_STRUCTURE.forEach(({ prefix, count }) => {
     let actualIndex = i;
 
     if (prefix === "SD01PER") {
-      actualIndex = i + 6; // MUST match FriendshipBegins
+      actualIndex = i + 6; 
     }
 
     const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
@@ -271,7 +314,6 @@ BONUS_STRUCTURE.forEach(({ prefix, count }) => {
 
 } else {
 
-  // ✅ NORMAL SETS (unchanged)
   const isoSet = isoSets.find(s => s.id === id);
   if (!isoSet) return;
 
@@ -288,6 +330,13 @@ owned = Object.values(row.progress || {}).filter((v: any) =>
     owned,
     updated: row.updated_at
   };
+
+  if (
+  user.username === "HeiManTou (Chinese Collector)" ||
+  user.username === "HeiManTou"
+) {
+  return;
+}
 
   const actualTotal = set.total;
 
@@ -310,7 +359,6 @@ active.sort((a, b) => {
   return b.owned - a.owned;
 });
 
-// ✅ completed sort
 if (manualPlacements[id || "HeiManTou (Chinese Collector)"]) {
 
   const manualOrder = manualPlacements[id || ""];
@@ -339,7 +387,7 @@ if (manualPlacements[id || "HeiManTou (Chinese Collector)"]) {
 
 }
 
-setCollectors(active.slice(0, 30));
+setCollectors(active.slice(0, 10));
 setCompleted(finished.slice(0, 10));
       setCompleted(finished.slice(0, 10));
 
@@ -386,7 +434,6 @@ setTradeCards(trades || []);
 };
 
   const getAvatar = (avatar?: string, username?: string) => {
-  // HEIMANTOU SPECIALTY
   if (username === "HeiManTou (Chinese Collector)") {
     return heimantouAvatar;
   }
@@ -451,8 +498,8 @@ setTradeCards(trades || []);
     </h1>
 
     <p className="mt-2 text-sm sm:text-base text-purple-700/80 max-w-3xl leading-relaxed">
-      This page shows the top 30 collectors still working toward completion,
-      along with everyone who has already finished the set.
+      This page shows the top ten closest collectors from completion,
+      along with everyone who has already finished the set in completion order from first to most recent.
     </p>
   </div>
 
@@ -502,16 +549,27 @@ setTradeCards(trades || []);
               "
             />
 
-            <span
-              className="
-                font-semibold
-                text-sm sm:text-base
-                text-purple-950
-                truncate
-              "
-            >
-              {user.username}
-            </span>
+           <div className="flex items-center gap-2 min-w-0">
+  <span
+    className="
+      font-semibold
+      text-sm sm:text-base
+      text-purple-950
+      truncate
+    "
+  >
+    {user.username}
+  </span>
+
+{VERIFIED_USERS[user.id] && (
+  <img
+    src={VERIFIED_USERS[user.id].badge}
+    alt={VERIFIED_USERS[user.id].label}
+    title={VERIFIED_USERS[user.id].label}
+    className="w-4 h-4 object-contain flex-shrink-0"
+  />
+)}
+</div>
           </div>
         )
       )}
@@ -591,16 +649,27 @@ setTradeCards(trades || []);
               "
             />
 
-            <span
-              className="
-                font-semibold
-                text-sm sm:text-base
-                text-purple-950
-                truncate
-              "
-            >
-              {user.username}
-            </span>
+            <div className="flex items-center gap-2 min-w-0">
+  <span
+    className="
+      font-semibold
+      text-sm sm:text-base
+      text-purple-950
+      truncate
+    "
+  >
+    {user.username}
+  </span>
+
+{VERIFIED_USERS[user.id] && (
+  <img
+    src={VERIFIED_USERS[user.id].badge}
+    alt={VERIFIED_USERS[user.id].label}
+    title={VERIFIED_USERS[user.id].label}
+    className="w-4 h-4 object-contain flex-shrink-0"
+  />
+)}
+</div>
           </div>
 
           <div

@@ -281,7 +281,7 @@ These cards come from Kayou US in-person events, and are connected to the Friend
 
     <li className="flex items-start gap-2">
       <span className="text-[#d4af37] mt-[2px]">✦</span>
-      Fantasy Wonderland Boxe Sets
+      Fantasy Wonderland Box Sets
     </li>
   </ul>
 

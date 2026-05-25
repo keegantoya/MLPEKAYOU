@@ -7,8 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabase";
 import ScrollToTop from "@/components/ScrollToTop";
 
-import Profile from "./pages/Profile";
 import Forum from "@/pages/Forum";
+import InsideListings from "./pages/insidelistings";
 import Index from "./pages/Index";
 import Collections from "./pages/Collections";
 import Collection from "@/pages/Collection";
@@ -45,6 +45,8 @@ import FAQ from "@/pages/FAQ";
 import MyProgressTCG from "./pages/MyProgressTCG";
 import OtherKayouMerch from "./pages/Other-Kayou-Merch";
 import UserMenu from "@/pages/UserMenu";
+import Wishlist from "./pages/Wishlist";
+
 
 const queryClient = new QueryClient();
 
@@ -109,7 +111,15 @@ const AppRoutes = () => {
   }
 />
 <Route
-  path="/my-trades"
+  path="/Wishlist"
+  element={
+    <RequireAuth>
+      <Wishlist />
+    </RequireAuth>
+  }
+/>
+<Route
+  path="/inventory"
   element={
     <RequireAuth>
       <MyTrades />
@@ -120,8 +130,7 @@ const AppRoutes = () => {
       <Route path="/community" element={<Community />} />
       <Route path="/community/:id" element={<CommunitySet />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
-      <Route path="/profile" element={<Profile />} />
-<Route path="/moon3-beta-keegansbuild" element={<Moon3 />} />
+<Route path="/eternal-moon-three" element={<Moon3 />} />
       <Route path="/star1" element={<Star1 />} />
       <Route path="/rainbow2" element={<Rainbow2 />} />
       <Route path="/fantasy-wonderland" element={<FantasyWonderland />} />
@@ -140,11 +149,27 @@ const AppRoutes = () => {
       <Route path="/limited-cards" element={<LimitedCards />} />
       <Route path="/trading-post" element={<TradingPost />} />
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
-      <Route path="/my-trades/:setId" element={<MyTradesSets />} />
+      <Route path="/inventory/:setId" element={<MyTradesSets />} />
       <Route path="/other-kayou-merch" element={<OtherKayouMerch />} />
       <Route path="/about" element={<AboutMe />} />
       <Route path="/faq" element={<FAQ />} />
-      <Route path="/profile-mobile" element={<UserMenu />} />
+      <Route
+  path="/UserMenu"
+  element={
+    <RequireAuth>
+      <UserMenu />
+    </RequireAuth>
+  }
+/>
+
+<Route
+  path="/profile-mobile"
+  element={
+    <RequireAuth>
+      <UserMenu />
+    </RequireAuth>
+  }
+/>
       <Route
   path="/progress-tcg"
   element={
@@ -162,8 +187,10 @@ const AppRoutes = () => {
   }
 />
       <Route path="/fun-moments-3" element={<FunMoments3 />} />
+<Route path="/fun-moments-three" element={<FunMoments3 />} />
       <Route path="/public-iso" element={<PublicISO />} />
       <Route path="/public-iso/:setId" element={<PublicISOSet />} />
+      <Route path="/inside-listings" element={<InsideListings />} />
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -181,7 +208,7 @@ const App = () => {
   <ScrollToTop />
 
  <div
-  className={`min-h-screen pb-[72px] sm:pt-[120px] sm:pb-0 ${
+  className={`min-h-screen pb-[72px] sm:pt-[64px] sm:pb-0 ${
   window.matchMedia('(display-mode: standalone)').matches
     ? 'pt-[88px]'
     : 'pt-[52px]'

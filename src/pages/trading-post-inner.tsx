@@ -4,12 +4,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 
+import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
+import elementOfLaughter from "/website-assets/elementoflaughter.png";
+
+
 type TradeCard = {
   id: string;
   user_id: string;
   set_id: string;
   card_key: string;
   actively_trading?: boolean;
+  listing_type?: "trade" | "purchase";
 };
 
 const rarityMap: Record<string, string[]> = {
@@ -19,11 +25,39 @@ const rarityMap: Record<string, string[]> = {
   "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
   "7": ["N","SN","R","SR","SSR","UR","CR"],
   "8": ["N", "SN","R","SR","SSR","UR","UGR","CR"],
+  "11": ["N", "SN","R","SR","SSR","UR","UGR","CR", "SCR"],
   "9": ["PR"],
   "10": ["LC"],
   "tcgpromos": ["PR"],
   "friendshipsbegin": ["C", "U", "SR", "SPR", "ER", "GR", "CR", "PER", "PRR"],
   "FW": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
+};
+
+const VERIFIED_USERS = {
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+  "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
 };
 
 const getCardImage = (card: TradeCard) => {
@@ -66,6 +100,7 @@ if (card.set_id === "FW") {
     "2": { folder: "second-edition-moon", prefix: "M2" },
     "8": { folder: "fun-moments-two", prefix: "FM2" },
     "3": { folder: "third-edition-moon", prefix: "M3" },
+    "11": { folder: "fun-moments-three", prefix: "FM3" },
   };
 
   const getRarityCode = (rarity: string) => {
@@ -87,7 +122,9 @@ export default function TradingPostInner() {
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [tradingProfiles, setTradingProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [selectedRarity, setSelectedRarity] = useState<string | null>(null);
+const [selectedRarity, setSelectedRarity] = useState<string | null>(
+  setId === "9" || setId === "tcgpromos" ? "PR" : null
+);
 
   const setNames: Record<string, string> = {
   "1": "Eternal Moon: First Edition",
@@ -96,6 +133,7 @@ export default function TradingPostInner() {
   "2": "Eternal Moon: Second Edition",
   "8": "Fun Moments: Second Edition",
   "3": "Eternal Moon: Third Edition",
+  "11": "Fun Moments: Third Edition",
   "9": "Promo Cards",
   "10": "Serialized & Limited Cards",
   "friendshipsbegin": "Friendships Begin",
@@ -245,8 +283,11 @@ const trades = allTrades;
   {setNames[setId || ""] || `Set ${setId}`}
 </h1>
 
-        {/* 🔥 RARITY FILTER */}
-        {setId && rarityMap[setId] && (
+        {/* RARITY FILTER */}
+        {setId &&
+  rarityMap[setId] &&
+  setId !== "9" &&
+  setId !== "tcgpromos" && (
           <>
             <div className="flex flex-wrap gap-2 mb-6 justify-center">
               {rarityMap[setId].map((rarity) => (
@@ -268,6 +309,7 @@ const trades = allTrades;
    if (rarity === "SZR") return "⬦ZR";
   if (rarity === "SN") return "⬦N";
   if (rarity === "LC") return "PR";
+  if (rarity === "SCR") return "⬦CR";
   if (
     (setId === "FW" || setId === "friendshipsbegin") &&
     rarity.startsWith("P")
@@ -334,11 +376,15 @@ const countB = selectedRarity ? cardsB.filter(c => getRarity(c.card_key) === sel
 
                   if (!tradingProfiles[userId]) return null;
 
-                if (!selectedRarity) return null;
+                if (
+  !selectedRarity &&
+  setId !== "9" &&
+  setId !== "tcgpromos"
+)
+  return null;
 
 const filteredCards = cards.filter(c => {
 
-  // ✅ TCG PROMOS FIX
   if (c.card_key.startsWith("RR")) {
     return selectedRarity === "PR";
   }
@@ -361,17 +407,32 @@ const filteredCards = cards.filter(c => {
                   <div key={userId} className="border rounded-xl p-4 bg-card w-full shadow-sm">
 
                     {/* USER HEADER */}
-                    <div className="font-semibold mb-1">
-                      {profiles[userId]?.username || userId}
+                    <div className="flex items-center flex-wrap gap-2 font-semibold mb-1">
+  <span>
+    {profiles[userId]?.username || userId}
+  </span>
 
-                      {tradingProfiles[userId] && (
-                        <span className="ml-2 text-green-500 text-xs">●</span>
-                      )}
+{VERIFIED_USERS[userId] && (
+  <img
+    src={VERIFIED_USERS[userId].badge}
+    alt={VERIFIED_USERS[userId].label}
+    title={VERIFIED_USERS[userId].label}
+    className="w-4 h-4 object-contain flex-shrink-0"
+  />
+)}
 
-                      <span className="text-xs text-muted-foreground ml-2">
-                        ({filteredCards.length} for trade)
-                      </span>
-                    </div>
+  {tradingProfiles[userId] && (
+    <span className="text-green-500 text-xs">●</span>
+  )}
+
+<span className="text-xs text-muted-foreground">
+  ({
+    filteredCards.filter(c => c.listing_type !== "purchase").length
+  } for trade • {
+    filteredCards.filter(c => c.listing_type === "purchase").length
+  } for sale)
+</span>
+</div>
 
                     {/* DISCORD */}
                     {tradingProfiles[userId] && (
@@ -425,12 +486,22 @@ const filteredCards = cards.filter(c => {
           />
 
           {card.actively_trading && (
-            <div className="absolute inset-0 bg-purple-900/80 flex items-center justify-center">
-              <span className="text-white text-[9px] sm:text-xs md:text-sm font-bold text-center px-1 leading-tight">
-                ACTIVELY<br />TRADING
-              </span>
-            </div>
-          )}
+  <div className="absolute inset-0 bg-purple-900/80 flex items-center justify-center">
+    <span className="text-white text-[9px] sm:text-xs md:text-sm font-bold text-center px-1 leading-tight">
+      ACTIVELY<br />TRADING
+    </span>
+  </div>
+)}
+
+<div
+  className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg border-2 border-white/20 z-10 ${
+    card.listing_type === "trade"
+      ? "bg-green-500"
+      : "bg-blue-500"
+  }`}
+>
+  {card.listing_type === "trade" ? "⇄" : "$"}
+</div>
         </div>
       );
     })}

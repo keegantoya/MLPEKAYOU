@@ -31,7 +31,6 @@ export const loadUserProgress = async () => {
   return result;
 };
 
-// ✅ NEW FUNCTION (separate, outside the first one)
 export const loadOwnedCardsBySet = async () => {
   const { data } = await supabase.auth.getSession();
   const user = data.session?.user;

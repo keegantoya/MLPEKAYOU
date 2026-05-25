@@ -10,6 +10,9 @@ import myTradesBadge from "@/assets/avatars/mytradesbadge.png";
 export default function MyTrades() {
   const navigate = useNavigate();
 
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("set");
+
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const [tradeSets, setTradeSets] = useState<string[]>([]);
 
@@ -28,7 +31,6 @@ export default function MyTrades() {
       return;
     }
 
-    // Load hidden sets
     const { data: profile } = await supabase
       .from("profiles")
       .select("iso_hidden_sets")
@@ -37,7 +39,6 @@ export default function MyTrades() {
 
     setHiddenSets(profile?.iso_hidden_sets || []);
 
-    // Load trades
     const { data: trades } = await supabase
       .from("for_trade")
       .select("*")
@@ -50,7 +51,6 @@ export default function MyTrades() {
     setTradeSets(uniqueSets);
   };
 
-  // initial load
   loadData();
 
   const {
@@ -96,11 +96,27 @@ export default function MyTrades() {
       category: "eternal-moon",
     },
     {
+      id: "3",
+      title: "Eternal Moon",
+      setName: "Three",
+      imageUrl: "/thumbnails/moon-te.jpg",
+      totalCards: 290,
+      category: "eternal-moon",
+    },
+    {
       id: "8",
       title: "Fun Moments",
       setName: "Two",
       imageUrl: "/thumbnails/fme02TN.jpg",
       totalCards: 136,
+      category: "fun-moments",
+    },
+    {
+      id: "11",
+      title: "Fun Moments",
+      setName: "Three",
+      imageUrl: "/thumbnails/fme03TN.jpg",
+      totalCards: 148,
       category: "fun-moments",
     },
     {
@@ -137,102 +153,272 @@ export default function MyTrades() {
 },
   ];
 
-  return (
-    <>
-      <KayouHeader />
+return (
+  <>
+    <KayouHeader />
 
-      <div
-  className="min-h-screen p-4 sm:p-6"
-    style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
-}}
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundColor: "#F8F3FF",
+        backgroundImage: `
+          radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
+          radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
+          radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
+          radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
+          linear-gradient(
+            180deg,
+            #FCF9FF 0%,
+            #F8F1FF 35%,
+            #F5EEFF 65%,
+            #FAF6FF 100%
+          )
+        `,
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+
+        {/* PAGE HEADER */}
+        <div className="text-center mb-6">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-none"
+            style={{
+              fontFamily: "Cinzel, serif",
+              color: "#5B3695",
+              textShadow:
+                "0 2px 0 #E5B93D, 0 6px 18px rgba(91,54,149,0.12)",
+            }}
+          >
+            My Inventory
+          </h1>
+        </div>
+
+        {/* INVENTORY PANEL */}
+        <div
+          className="
+            rounded-[2rem]
+            border border-[#DDD3F2]
+            bg-white/80
+            backdrop-blur-md
+            shadow-[0_10px_30px_rgba(91,54,149,0.05)]
+            p-4 sm:p-6
+          "
+        >
+
+          {/* FILTER / SORT BAR */}
+<div
+  className="
+    flex flex-col lg:flex-row lg:items-center lg:justify-between
+    gap-4
+    mb-5
+    pb-4
+    border-b border-[#E6DAF7]
+  "
 >
-        <div className="max-w-4xl mx-auto text-center">
-
-          <div className="mb-6">
-
-  <img
-    src={inventoryBadge}
-    alt="My Inventory"
-    className="mx-auto h-14 sm:h-16 md:h-20 object-contain mb-2"
-  />
-
-  <p className="text-[#5c4022] text-sm sm:text-base mt-2 max-w-xl mx-auto">
-    All cards you own will appear here. You can mark them for trade and update your personal inventory of duplicates. Duplicates will not be public information.
-  </p>
-
+  {/* Filter Tabs */}
+{/* Filter Tabs */}
+<div className="flex flex-wrap items-center gap-2">
+  {[
+    { id: "all", label: "All Cards" },
+    { id: "moon", label: "Moon Edition" },
+    { id: "star", label: "Star Edition" },
+    { id: "fun", label: "Fun Moments Edition" },
+    { id: "rainbow", label: "Rainbow Edition" },
+    { id: "promos", label: "Promotional" },
+    { id: "tcg", label: "TCG Sets" },
+  ].map((tab) => (
+    <button
+      key={tab.id}
+      onClick={() => setActiveFilter(tab.id)}
+      className={`
+        px-4 py-2
+        rounded-full
+        text-sm font-semibold
+        transition-all duration-200
+        ${
+          activeFilter === tab.id
+            ? "text-white shadow-md"
+            : "text-[#6D44A8] bg-white border border-[#E6DAF7] hover:bg-[#FAF7FF]"
+        }
+      `}
+      style={
+        activeFilter === tab.id
+          ? {
+              background:
+                "linear-gradient(135deg, #8E5CD0 0%, #6D44A8 100%)",
+            }
+          : {}
+      }
+    >
+      {tab.label}
+    </button>
+  ))}
 </div>
-
-
+</div>
           {/* COLLECTIONS */}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] justify-items-center gap-4 mt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 justify-items-center">
             {collections
-              .filter((col) => !hiddenSets.includes(col.id))
-              .map((col) => (
+  .filter((col) => {
+    // Hide any sets the user has chosen to hide
+    if (hiddenSets.includes(col.id)) return false;
+
+// Apply filter tabs
+if (activeFilter === "moon") {
+  return col.id === "1" || col.id === "2";
+}
+
+// Star Edition (not configured yet)
+if (activeFilter === "star") {
+  return false;
+}
+
+// Fun Moments Edition
+if (activeFilter === "fun") {
+  return col.id === "7" || col.id === "8";
+}
+
+// Rainbow Edition
+if (activeFilter === "rainbow") {
+  return col.id === "5";
+}
+
+// Promotional
+if (activeFilter === "promos") {
+  return (
+    col.id === "9" ||              // Promotional Cards
+    col.id === "tcgpromos" ||      // TCG Promos
+    col.id === "limitedpromos"     // Limited Promos
+  );
+}
+
+// TCG Sets
+if (activeFilter === "tcg") {
+  return (
+    col.id === "friendshipsbegin" ||
+    col.id === "FW"
+  );
+}
+
+// All Cards
+return true;
+  })
+  .map((col) => (
                 <div
                   key={col.id}
-                  onClick={() => navigate(`/my-trades/${col.id}`, { replace: true })}
-                  className="cursor-pointer"
+                  onClick={() => {
+  const fullName =
+    ["friendshipsbegin", "FW", "9", "tcgpromos"].includes(col.id)
+      ? `${col.title} ${col.setName}`
+      : `${col.title}: ${col.setName}`;
+
+  const slug = fullName
+    .toLowerCase()
+    .replace(/:/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  navigate(`/inventory/${slug}`, { replace: true });
+}}
+                  className="cursor-pointer w-full max-w-[150px] transition hover:scale-[1.02]"
                 >
                   <CollectionCard {...col} showProgress={false} />
                 </div>
               ))}
           </div>
+        </div>
 
-         {/* DIVIDER WITH MY TRADES */}
-<div className="flex items-center my-10">
-  <div className="flex-grow border-t border-gray-300" />
-  
-  <img
-    src={myTradesBadge}
-    alt="My Trades"
-    className="mx-4 h-10 sm:h-14 md:h-16 object-contain"
-  />
-  
-  <div className="flex-grow border-t border-gray-300" />
-</div>
+        {/* MY TRADES */}
+        <div className="mt-8">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex-1 max-w-[200px] h-px bg-[#D9C7F5]" />
+            <h2
+              className="text-2xl sm:text-3xl font-bold"
+              style={{
+                fontFamily: "Cinzel, serif",
+                color: "#5B3695",
+                textShadow:
+                  "0 1px 0 #E5B93D, 0 4px 12px rgba(91,54,149,0.08)",
+              }}
+            >
+              My Trades
+            </h2>
+            <div className="flex-1 max-w-[200px] h-px bg-[#D9C7F5]" />
+          </div>
 
-          {tradeSets.length > 0 ? (
-  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 justify-items-center">
-    {collections
-      .filter((col) =>
-        tradeSets.includes(String(col.id).trim())
-      )
-      .map((col) => (
-        <button
-          key={col.id}
-          onClick={() => navigate(`/my-trades/view/${col.id}`)}
-          className="px-4 py-2 bg-[#5a3e84] text-[#f5e6a8] border border-[#d4af37] rounded-lg hover:brightness-110 transition shadow"
-        >
-          {col.setName
-  ? (["friendshipsbegin", "FW", "9"].includes(col.id)
-      ? `${col.title} ${col.setName}`
-      : `${col.title} (${col.setName})`)
-  : col.title}
-        </button>
-      ))}
-  </div>
-) : (
-  <p className="text-gray-500 mt-4">
-    You haven’t marked any cards for trade yet.
-  </p>
-)}
+          <div
+            className="
+              rounded-[2rem]
+              border border-[#DDD3F2]
+              bg-white/80
+              backdrop-blur-md
+              shadow-[0_10px_30px_rgba(91,54,149,0.05)]
+              p-4 sm:p-6
+            "
+          >
+            {tradeSets.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                  {collections
+                    .filter((col) =>
+                      tradeSets.includes(String(col.id).trim())
+)
+.map((col) => (
+  <button
+    key={col.id}
+    onClick={() => navigate(`/my-trades/view/${col.id}`)}
+    className="
+      px-4 py-3
+      rounded-full
+      text-left
+      text-white
+      shadow-[0_6px_18px_rgba(91,54,149,0.15)]
+      flex items-center gap-3
+    "
+    style={{
+      background:
+        "linear-gradient(135deg, #8E5CD0 0%, #6D44A8 100%)",
+    }}
+  >
+    {/* Circular Thumbnail */}
+    <img
+      src={col.imageUrl}
+      alt={col.title}
+      className="
+        w-10 h-10
+        rounded-full
+        object-cover
+        border-2 border-white/40
+        flex-shrink-0
+      "
+    />
 
+    {/* Text */}
+    <div className="flex-1 min-w-0">
+      <div className="font-semibold text-sm leading-tight">
+        {col.setName
+          ? ["friendshipsbegin", "FW", "9"].includes(col.id)
+            ? `${col.title} ${col.setName}`
+            : `${col.title} (${col.setName})`
+          : col.title}
+      </div>
+
+      <div className="text-xs text-white/80 mt-1">
+        View trades →
+      </div>
+    </div>
+  </button>
+))}
+                </div>
+              </>
+            ) : (
+              <p className="text-center text-[#6B5B85] text-sm py-4">
+                You haven’t marked any cards for trade yet.
+              </p>
+            )}
+          </div>
         </div>
       </div>
-    </>
-  );
+    </div>
+  </>
+);
 }

@@ -32,6 +32,13 @@ import avatar012 from "@/assets/avatars/avatar012.jpg";
 import avatar013 from "@/assets/avatars/avatar013.jpg";
 import avatar014 from "@/assets/avatars/avatar014.jpg";
 import avatar015 from "@/assets/avatars/avatar015.jpg";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
+import maipfp from "@/assets/avatars/maipfp.jpg";
+
+import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
+import elementOfLaughter from "/website-assets/elementoflaughter.png";
 
 const avatarMap: Record<string, string> = {
   avatar001,
@@ -49,6 +56,49 @@ const avatarMap: Record<string, string> = {
   avatar013,
   avatar014,
   avatar015,
+
+  heimantouavatar: heimantouAvatar,
+  KeeganAvatar: KeeganAvatar,
+  "keeganpfp.jpg": KeeganAvatar,
+  maipfp: maipfp,
+};
+
+const VERIFIED_USERS: Record<
+  string,
+  {
+    badge: string;
+    label: string;
+  }
+> = {
+  // MLPEKAYOU STAFF (Gold)
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+
+  // KAYOU STAFF (Blue)
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "CROSSINGTCG STAFF",
+  },
+    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+
+  // Element of Laughter
+  "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
 };
 
 const adminOnlyPosts = [
@@ -57,9 +107,20 @@ const adminOnlyPosts = [
     title: "Kayou US News",
     topic: "News & Updates",
     author_name: "Keegan",
-    author_avatar: "avatar006",
+    author_avatar: "KeeganAvatar",
     caption:
       "Check back here for updates regarding set launches and Kayou US's latest news and in-person events.",
+    image: KeeganAvatar,
+  },
+
+    {
+    id: "giveaway-moving",
+    title: "Moving Giveaways",
+    topic: "Giveaways",
+    author_name: "Keegan",
+    author_avatar: "KeeganAvatar",
+    caption:
+      "(05/25-06/10) I am offically outprocessing from the military and I must move across the country to become a civilian again. Check the Discord server!",
     image: avatar006,
   },
 
@@ -68,7 +129,7 @@ const adminOnlyPosts = [
     title: "Monthly Giveaway",
     topic: "Giveaways",
     author_name: "Keegan",
-    author_avatar: "avatar006",
+    author_avatar: "KeeganAvatar",
     caption:
       "(05/10 - 05/15) 15 lucky winners will recieve one sealed in-person event promotional card from Kayou US's new Friendships Begin TCG set.",
     image: avatar006,
@@ -79,7 +140,7 @@ const adminOnlyPosts = [
   title: "Eternal Moon Three",
   topic: "News & Updates",
   author_name: "Keegan",
-  author_avatar: "avatar006",
+  author_avatar: "KeeganAvatar",
   caption:
     "Eternal Moon Three will be coming to MLPEKAYOU on 05/25!",
   image: avatar006,
@@ -152,6 +213,18 @@ const [selectedUserStats, setSelectedUserStats] = useState({
 const [selectedUserTradeCards, setSelectedUserTradeCards] = useState<any[]>([]);
 const [selectedUserIsoCards, setSelectedUserIsoCards] = useState<any[]>([]);
 
+const [selectedUserWishlistCards, setSelectedUserWishlistCards] =
+  useState<any[]>([]);
+
+const [selectedUserProfileSettings, setSelectedUserProfileSettings] =
+  useState<{
+    hide_iso: boolean;
+    hide_wishlist: boolean;
+  }>({
+    hide_iso: false,
+    hide_wishlist: false,
+  });
+
 const [zoomedCard, setZoomedCard] = useState<string | null>(null);
 const [zoomedCardTitle, setZoomedCardTitle] = useState<string>("");
 
@@ -160,13 +233,16 @@ const [showMobileRules, setShowMobileRules] = useState(false);
 
 // Modal Tabs
 const [selectedUserTab, setSelectedUserTab] =
-  useState<"trades" | "iso">("trades");
+  useState<"trades" | "purchases" | "iso" | "wishlist">("trades");
 
   const [collapsedSets, setCollapsedSets] = useState<Record<string, boolean>>({});
 
   const [selectedCards, setSelectedCards] = useState<
   { set_id: string; card_key: string }[]
 >([]);
+
+const [selectedUserPurchaseCards, setSelectedUserPurchaseCards] =
+  useState<any[]>([]);
 
 const [showCardPickerModal, setShowCardPickerModal] = useState(false);
 const [cardPickerSet, setCardPickerSet] = useState<string | null>(null);
@@ -198,6 +274,51 @@ useEffect(() => {
   zoomedCard,
   showUserModal,
 ]);
+
+useEffect(() => {
+  if (!showUserModal || !selectedUser) return;
+
+  const channel = supabase
+    .channel(`user-trades-${selectedUser.id}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "for_trade",
+        filter: `user_id=eq.${selectedUser.id}`,
+      },
+      async () => {
+        const { data: tradeCards } = await supabase
+          .from("for_trade")
+          .select("*")
+          .eq("user_id", selectedUser.id);
+
+        setSelectedUserTradeCards(
+  (tradeCards || []).filter(
+    (card: any) =>
+      (card.listing_type || "trade") === "trade"
+  )
+);
+
+setSelectedUserPurchaseCards(
+  (tradeCards || []).filter(
+    (card: any) => card.listing_type === "purchase"
+  )
+);
+
+        setSelectedUserStats((prev) => ({
+          ...prev,
+          trades: (tradeCards || []).length,
+        }));
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [showUserModal, selectedUser]);
 
 useEffect(() => {
   async function loadPosts() {
@@ -308,10 +429,11 @@ const [posts, setPosts] = useState<any[]>([
     title: "Welcome to the Kayou Community Forum!",
     topic: "General",
     author_name: "Keegan",
-    author_avatar: avatar006,
+    author_avatar: "KeeganAvatar",
     caption:
       "Welcome to the MLPEKAYOU Community Homepage. Here, you can discuss with other community members based on the discussion topics to my left. Please read the rules before posting or interacting, as violating these rules will result in a ban without warning.",
   },
+  
 ]);
 const filteredPosts = [...adminOnlyPosts, ...posts].filter(
   (post) => post.topic === selectedCategory
@@ -542,7 +664,6 @@ async function openUserProfile(user: any) {
   setSelectedUser(user);
   setShowCommentsModal(false);
   setShowUserModal(true);
-  setSelectedUserTab("trades");
   setCollapsedSets({});
   setSearchResults([]);
   setUserSearch("");
@@ -555,6 +676,32 @@ async function openUserProfile(user: any) {
     .single();
 
   setSelectedUserTradingProfile(tradingProfile || null);
+  
+const { data: profileSettings } = await supabase
+  .from("profiles")
+  .select(
+    "hide_iso, hide_wishlist, iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
+  )
+  .eq("id", user.id)
+  .single();
+
+const legacyHidden: string[] =
+  profileSettings?.iso_hidden_sets || [];
+
+const hiddenIsoSets: string[] = [
+  ...(profileSettings?.iso_hidden_sets_ccg?.length
+    ? profileSettings.iso_hidden_sets_ccg
+    : legacyHidden),
+  ...(profileSettings?.iso_hidden_sets_tcg?.length
+    ? profileSettings.iso_hidden_sets_tcg
+    : legacyHidden),
+];
+
+setSelectedUserProfileSettings({
+  hide_iso: profileSettings?.hide_iso ?? false,
+  hide_wishlist: profileSettings?.hide_wishlist ?? false,
+});
+
 
   // Load active trades
   const { data: tradeCards } = await supabase
@@ -562,7 +709,44 @@ async function openUserProfile(user: any) {
     .select("*")
     .eq("user_id", user.id);
 
-  setSelectedUserTradeCards(tradeCards || []);
+setSelectedUserTradeCards(
+  (tradeCards || []).filter(
+    (card: any) =>
+      (card.listing_type || "trade") === "trade"
+  )
+);
+
+setSelectedUserPurchaseCards(
+  (tradeCards || []).filter(
+    (card: any) =>
+      card.listing_type === "purchase"
+  )
+);
+
+  const { data: wishlistRows } = await supabase
+  .from("wishlists")
+  .select("card_key")
+  .eq("user_id", user.id)
+  .order("created_at", { ascending: true });
+
+const wishlistCards = (wishlistRows || []).map((row: any) => {
+
+  const [set_id, card_key] = String(row.card_key).split(":");
+
+  return {
+    id: row.card_key,
+    set_id,
+    card_key,
+  };
+});
+
+  if (!(profileSettings?.hide_iso ?? false)) {
+  setSelectedUserTab("iso");
+} else if (!(profileSettings?.hide_wishlist ?? false)) {
+  setSelectedUserTab("wishlist");
+} else {
+  setSelectedUserTab("trades");
+}
 
 // Load collection progress
 const { data: isoProgress } = await supabase
@@ -570,8 +754,61 @@ const { data: isoProgress } = await supabase
   .select("set_id, progress")
   .eq("user_id", user.id);
 
+  const { data: isoStatusRows } = await supabase
+  .from("iso_status")
+  .select("card_key, status")
+  .eq("user_id", user.id);
+
+// Build a lookup of cards currently in progress
+const inProgressCards = new Set(
+  (isoStatusRows || [])
+    .filter(
+      (row: any) =>
+        row.status === "trade_in_progress" ||
+        row.status === "purchase_in_progress"
+    )
+    .map((row: any) => String(row.card_key))
+);
+
 // Build a lookup of cards the user already owns
 const ownedCards: Record<string, boolean> = {};
+
+setSelectedUserWishlistCards(
+  [...wishlistCards].sort((a, b) => {
+    const setOrder = [
+      "1",
+      "2",
+      "5",
+      "7",
+      "8",
+      "3",
+      "11",
+      "9",
+      "FW",
+      "SD",
+      "friendshipsbegin",
+      "tcgpromos",
+      "10",
+    ];
+
+    const setIndexA = setOrder.indexOf(String(a.set_id));
+    const setIndexB = setOrder.indexOf(String(b.set_id));
+
+    if (setIndexA !== setIndexB) {
+      return (
+        (setIndexA === -1 ? 999 : setIndexA) -
+        (setIndexB === -1 ? 999 : setIndexB)
+      );
+    }
+
+    const extractNumber = (card: any) => {
+      const match = String(card.card_key).match(/(\d+)(?!.*\d)/);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+
+    return extractNumber(a) - extractNumber(b);
+  })
+);
 
 (isoProgress || []).forEach((set: any) => {
   Object.entries(set.progress || {}).forEach(([key, value]) => {
@@ -587,18 +824,22 @@ const isoCards: any[] = [];
 const isoSets = [
   { id: "1", rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } },
   { id: "2", rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 } },
+  { id: "3", rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, SZR: 3 } },
   { id: "5", rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 } },
   { id: "7", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
   { id: "8", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
+  { id: "11", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 } },
   { id: "9", rarities: { PR: 5 } },
   { id: "10", rarities: { LC: 1 } },
-
-  // These are generated from collection_progress instead of hardcoded rarity counts
   { id: "SD", rarities: {} },
-  { id: "FW", rarities: {} },
+{ id: "FW", rarities: {} },
+{ id: "TCG_PROMOS", rarities: {} },
 ];
 
 isoSets.forEach((set) => {
+  if (hiddenIsoSets.includes(String(set.id))) {
+    return;
+  }
 if (set.id === "FW") {
   const progressRow = (isoProgress || []).find(
     (row: any) => String(row.set_id) === "FW"
@@ -638,7 +879,10 @@ if (set.id === "FW") {
 
       const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
 
-      if (progress[cardKey] !== true) {
+      if (
+  progress[cardKey] !== true &&
+  !inProgressCards.has(cardKey)
+) {
         isoCards.push({
           id: `FW-${cardKey}`,
           set_id: "FW",
@@ -648,6 +892,16 @@ if (set.id === "FW") {
     }
   });
 
+  return;
+}
+
+if (
+  set.id === "SD" &&
+  (
+    hiddenIsoSets.includes("SD_STARTERS") ||
+    hiddenIsoSets.includes("SD_BONUS")
+  )
+) {
   return;
 }
 
@@ -687,7 +941,10 @@ if (set.id === "SD") {
         progress[`BONUS-${cardKey}`] === true ||
         progress[`STARTER-${cardKey}`] === true;
 
-      if (!isOwned) {
+      if (
+  !isOwned &&
+  !inProgressCards.has(cardKey)
+) {
         isoCards.push({
           id: `SD-${cardKey}`,
           set_id: "SD",
@@ -700,19 +957,45 @@ if (set.id === "SD") {
   return;
 }
 
+if (set.id === "tcgpromos") {
+  for (let i = 1; i <= 6; i++) {
+    const cardKey = `RR${String(i).padStart(2, "0")}`;
+    const fullKey = `tcgpromos-${cardKey}`;
+
+    if (
+      !ownedCards[fullKey] &&
+      !inProgressCards.has(fullKey)
+    ) {
+      isoCards.push({
+        id: fullKey,
+        set_id: "tcgpromos",
+        card_key: cardKey,
+      });
+    }
+  }
+
+  return;
+}
+
   // Existing logic for CCG sets
   Object.entries(set.rarities).forEach(([rarity, count]) => {
     for (let i = 1; i <= (count as number); i++) {
       const cardKey = `${rarity}-${i}`;
       const fullKey = `${set.id}-${cardKey}`;
+      if (inProgressCards.has(fullKey)) {
+  continue;
+}
 
-      if (!ownedCards[fullKey]) {
-        isoCards.push({
-          id: fullKey,
-          set_id: set.id,
-          card_key: cardKey,
-        });
-      }
+      if (
+  !ownedCards[fullKey] &&
+  !inProgressCards.has(fullKey)
+) {
+  isoCards.push({
+    id: fullKey,
+    set_id: set.id,
+    card_key: cardKey,
+  });
+}
     }
   });
 });
@@ -726,6 +1009,7 @@ setSelectedUserIsoCards(
       "7",
       "8",
       "3",
+      "11",
       "9",
       "FW",
       "SD",
@@ -736,10 +1020,11 @@ setSelectedUserIsoCards(
     const rarityOrders: Record<string, string[]> = {
       "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
       "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
-      "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+      "3": ["R", "SR", "SSR", "HR", "LSR", "UR", "SGR", "ZR", "SC", "SZR"],
       "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
       "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
       "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
+      "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR" ],
       "9": ["PR"],
       "tcgpromos": ["PR"],
 
@@ -862,8 +1147,9 @@ const sets = [
   { id: "5", rarities: { R:30, SR:15, FR:18, TR:12, TGR:8, MTR:18, SSR:15, UR:15, USR:8, XR:7 } },
   { id: "7", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, CR:12 } },
   { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 } },
- // { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, SZR:1 } },
+  { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, SZR:1 } },
   { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 } },
+  { id: "TCG_PROMOS", name: "TCG Promos" },
 ];
 
 sets.forEach((set) => {
@@ -968,15 +1254,15 @@ if (String(card.set_id) === "FW") {
   const rarity =
     rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
 
-  const config: Record<string, { folder: string; prefix: string }> = {
-    "1": { folder: "first-edition-moon", prefix: "M1" },
-    "2": { folder: "second-edition-moon", prefix: "M2" },
-    "3": { folder: "third-edition-moon", prefix: "M3" },
-    "5": { folder: "rainbow-one", prefix: "R1" },
-    "7": { folder: "fun-moments-one", prefix: "FM1" },
-    "8": { folder: "fun-moments-two", prefix: "FM2" },
-  };
-
+ const config: Record<string, { folder: string; prefix: string }> = {
+  "1": { folder: "first-edition-moon", prefix: "M1" },
+  "2": { folder: "second-edition-moon", prefix: "M2" },
+  "3": { folder: "third-edition-moon", prefix: "M3" },
+  "5": { folder: "rainbow-one", prefix: "R1" },
+  "7": { folder: "fun-moments-one", prefix: "FM1" },
+  "8": { folder: "fun-moments-two", prefix: "FM2" },
+  "11": { folder: "fun-moments-three", prefix: "FM3" },
+};
   const c = config[String(card.set_id)];
   if (!c) return "";
 
@@ -985,13 +1271,24 @@ if (String(card.set_id) === "FW") {
   ).padStart(3, "0")}.jpg`;
 }
 
+function isMoon3DoubleWide(card: any) {
+  if (!card) return false;
+
+  const setId = String(card.set_id);
+  const cardKey = String(card.card_key)
+    .replace(/^SZR-0*/, "SZR-");
+
+  return setId === "3" && cardKey === "SZR-1";
+}
+
 const CARD_PICKER_SETS = [
   { id: "1", name: "Eternal Moon: First Edition" },
   { id: "2", name: "Eternal Moon: Second Edition" },
- // { id: "3", name: "Eternal Moon: Third Edition" },
+  { id: "3", name: "Eternal Moon: Third Edition" },
   { id: "5", name: "Rainbow: First Edition" },
   { id: "7", name: "Fun Moments: First Edition" },
   { id: "8", name: "Fun Moments: Second Edition" },
+  { id: "11", name: "Fun Moments: Third Edition" },
   { id: "9", name: "Promotional Cards" },
   { id: "FW", name: "Fantasy Wonderland" },
   { id: "SD", name: "Friendships Begin" },
@@ -1001,10 +1298,11 @@ const CARD_PICKER_SETS = [
 const CARD_PICKER_RARITIES: Record<string, string[]> = {
   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
   "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
-  "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+  "3": ["R", "SR", "SSR", "HR", "LSR", "UR", "SGR", "ZR", "SC", "SZR"],
   "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
   "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
   "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
+  "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],
   "9": ["PR"],
   "FW": [
     "C",
@@ -1161,6 +1459,17 @@ function getCardsForPicker(
       UGR: 9,
       CR: 12,
     },
+    "11": {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      UGR: 9,
+      CR: 12,
+      SCR: 12,
+    },
   };
 
   const count = counts[setId]?.[rarity] || 0;
@@ -1209,6 +1518,8 @@ function getSetName(setId: string) {
     "5": "Rainbow: First Edition",
     "7": "Fun Moments: First Edition",
     "8": "Fun Moments: Second Edition",
+    "3": "Eternal Moon: Third Edition",
+    "11": "Fun Moments: Third Edition",
     "9": "Promos",
     "10": "Serialized & Limited Cards",
 "SD": "Friendships Begin",
@@ -1230,6 +1541,7 @@ function groupCardsBySet(cards: any[]) {
     "7",
     "8",
     "3",
+    "11",
     "9",
     "FW",
     "SD",
@@ -1241,10 +1553,11 @@ function groupCardsBySet(cards: any[]) {
   const rarityOrders: Record<string, string[]> = {
     "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
     "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
-    "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+    "3": ["R", "SR", "SSR", "HR", "LSR", "UR", "SGR", "ZR", "SC", "SZR"],
     "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
     "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
     "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
+    "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],
     "9": ["PR"],
     "10": ["LC"],
     "tcgpromos": ["PR"],
@@ -1455,9 +1768,20 @@ function groupCardsBySet(cards: any[]) {
           />
 
           <div>
-            <div className="font-semibold text-slate-900">
-              {user.username}
-            </div>
+            <div className="flex items-center gap-2">
+  <div className="font-semibold text-slate-900">
+    {user.username}
+  </div>
+
+  {VERIFIED_USERS[user.id] && (
+    <img
+  src={VERIFIED_USERS[user.id].badge}
+  alt={VERIFIED_USERS[user.id].label}
+  title={VERIFIED_USERS[user.id].label}
+  className="w-5 h-5 object-contain flex-shrink-0"
+/>
+  )}
+</div>
             <div className="text-xs text-slate-500">
               View profile
             </div>
@@ -1482,6 +1806,41 @@ function groupCardsBySet(cards: any[]) {
     <PenSquare className="w-5 h-5" />
     Create Post
   </button>
+{/* Verified Badge Legend */}
+<div className="mt-6 lg:mt-24 flex justify-center lg:justify-end">
+  <div className="inline-flex flex-col items-start gap-2 px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50/90 text-sm font-semibold text-amber-900 shadow-sm">
+    
+    <div className="flex items-center gap-2">
+      <img
+        src={verifiedBadge}
+        alt="MLPEKAYOU STAFF"
+        title="MLPEKAYOU STAFF"
+        className="w-5 h-5 object-contain flex-shrink-0"
+      />
+      <span>= MLPEKAYOU STAFF</span>
+    </div>
+
+    <div className="flex items-center gap-2">
+      <img
+        src={blueVerifiedBadge}
+        alt="CROSSINGTCG STAFF"
+        title="CROSSINGTCG STAFF"
+        className="w-5 h-5 object-contain flex-shrink-0"
+      />
+      <span>= KAYOUUS STAFF</span>
+    </div>
+    <div className="flex items-center gap-2">
+  <img
+    src={elementOfLaughter}
+    alt="ELEMENT OF LAUGHTER"
+    title="ELEMENT OF LAUGHTER"
+    className="w-5 h-5 object-contain flex-shrink-0"
+  />
+  <span>= TOP DONATORS</span>
+</div>
+
+  </div>
+</div>
 </div>
             </div>
           </div>
@@ -1489,6 +1848,7 @@ function groupCardsBySet(cards: any[]) {
 
         {/* Layout */}
         <div className="relative z-0 grid grid-cols-1 xl:grid-cols-12 gap-6">
+          
           {/* Left Sidebar */}
           <aside className="order-1 xl:order-none xl:col-span-3 space-y-6">
             <div className="xl:sticky xl:top-24 space-y-6">
@@ -1648,7 +2008,7 @@ function groupCardsBySet(cards: any[]) {
         }`}
       >
         {/* Post Header */}
-        <div className="flex items-start gap-4 mb-4">
+<div className="relative z-20 flex items-start gap-4 mb-4">
 <button
   type="button"
   onClick={async () => {
@@ -1691,7 +2051,7 @@ title="View Profile"
   />
 </button>
 
-          <div className="flex-1">
+<div className="flex-1">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
@@ -1707,13 +2067,24 @@ title="View Profile"
                     </span>
                   )}
 
-                  <p className="text-sm text-slate-500">
-  {post.id === "welcome-post" ||
-  String(post.id).startsWith("news-") ||
-  String(post.id).startsWith("giveaway-")
-    ? (post.author_name || post.author)
-    : `Posted by ${post.author_name || post.author}`}
-</p>
+                  <div className="flex items-center gap-2">
+  <p className="text-sm text-slate-500">
+    {post.id === "welcome-post" ||
+    String(post.id).startsWith("news-") ||
+    String(post.id).startsWith("giveaway-")
+      ? (post.author_name || post.author)
+      : `Posted by ${post.author_name || post.author}`}
+  </p>
+
+{VERIFIED_USERS[post.user_id] && (
+  <img
+    src={VERIFIED_USERS[post.user_id].badge}
+    alt={VERIFIED_USERS[post.user_id].label}
+    title={VERIFIED_USERS[post.user_id].label}
+    className="w-5 h-5 object-contain flex-shrink-0"
+  />
+)}
+</div>
                 </div>
               </div>
 
@@ -1728,15 +2099,17 @@ title="View Profile"
       "408a516c-ee80-4ff8-a869-493e1fd5d961",
     ].includes(currentUser?.id)
   ) && (
-    <button
-      onClick={() => {
-        setPostToDelete(post);
-        setShowDeleteModal(true);
-      }}
-      className="text-xs font-semibold text-rose-500 hover:text-rose-600"
-    >
-      Delete
-    </button>
+    <div className="mt-2">
+  <button
+    onClick={() => {
+      setPostToDelete(post);
+      setShowDeleteModal(true);
+    }}
+    className="text-pink-500 hover:text-pink-600 font-semibold text-sm"
+  >
+    Delete
+  </button>
+</div>
   )}
             </div>
           </div>
@@ -1993,7 +2366,8 @@ return (
 )}
    {showCreatePostModal && (
   <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
-    <div className="w-full max-w-2xl rounded-[2rem] bg-white shadow-2xl border border-white/60 p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+    <div className="w-full max-w-2xl rounded-[2rem] bg-white shadow-2xl border border-white/60 max-h-[90vh] overflow-hidden">
+ <div className="max-h-[90vh] overflow-y-scroll p-6 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-black text-slate-900">
           Create a New Post
@@ -2005,6 +2379,7 @@ return (
           ✕
         </button>
       </div>
+      
 
       <div className="mb-4">
         <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -2105,7 +2480,11 @@ return (
         <img
           src={getTradeCardImage(card)}
           alt={card.card_key}
-          className="w-full h-auto rounded-xl border border-slate-200 shadow-md"
+          className={`relative ${
+  isMoon3DoubleWide(card)
+    ? "col-span-2 aspect-[10/7]"
+    : "aspect-[5/7]"
+}`}
         />
 
         <button
@@ -2154,6 +2533,7 @@ return (
       </div>
     </div>
   </div>
+    </div>
 )}
 {showCommentsModal && selectedPost && (
   <div className="fixed inset-0 z-[200000] flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
@@ -2224,9 +2604,21 @@ return (
 </button>
 
     <div className="flex-1 min-w-0">
-      <p className="font-bold text-slate-900">
-        {selectedPost.author_name || selectedPost.author}
-      </p>
+      <div className="flex items-center gap-2">
+  <div className="font-semibold text-slate-900">
+    {selectedPost.author_name || selectedPost.author}
+  </div>
+
+  {selectedPost.user_id &&
+    VERIFIED_USERS[selectedPost.user_id] && (
+      <img
+        src={VERIFIED_USERS[selectedPost.user_id].badge}
+        alt={VERIFIED_USERS[selectedPost.user_id].label}
+        title={VERIFIED_USERS[selectedPost.user_id].label}
+        className="w-5 h-5 object-contain flex-shrink-0"
+      />
+    )}
+</div>
 
       <h3 className="mt-1 text-lg font-bold text-slate-900">
         {selectedPost.title}
@@ -2261,7 +2653,11 @@ return (
               <img
                 src={getTradeCardImage(card)}
                 alt={card.card_key}
-                className="w-24 sm:w-32 border border-slate-200 shadow-lg"
+                className={`relative ${
+  isMoon3DoubleWide(card)
+    ? "col-span-2 aspect-[10/7]"
+    : "aspect-[5/7]"
+}`}
               />
             </button>
           )
@@ -2343,13 +2739,32 @@ comments.map((comment) => (
 
       <div className="flex-1">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-bold text-slate-900">
-            {comment.author_name}
-          </p>
+          <div className="flex items-center gap-2">
+  <div className="font-semibold text-slate-900">
+    {comment.author_name}
+  </div>
+
+  {comment.user_id &&
+    VERIFIED_USERS[comment.user_id] && (
+      <img
+        src={VERIFIED_USERS[comment.user_id].badge}
+        alt={VERIFIED_USERS[comment.user_id].label}
+        title={VERIFIED_USERS[comment.user_id].label}
+        className="w-5 h-5 object-contain flex-shrink-0"
+      />
+    )}
+</div>
 
           
 
-{selectedPost?.user_id === comment.user_id && (
+{(
+  comment.user_id === currentUser?.id ||
+  [
+    "17e57e39-bc0c-44e7-b373-ac34c6690185",
+    "94a1c998-d040-4dd2-b2fb-5f606287139d",
+    "408a516c-ee80-4ff8-a869-493e1fd5d961",
+  ].includes(currentUser?.id)
+) && (
   <button
     onClick={() => {
       setPostToDelete({
@@ -2463,6 +2878,8 @@ comments.map((comment) => (
       ? "◇ZR"
       : rarity === "SN"
       ? "◇N"
+      : rarity === "SCR"
+      ? "◇CR"
       : rarity}
   </button>
 ))}
@@ -2507,7 +2924,11 @@ comments.map((comment) => (
                   <img
   src={getTradeCardImage(card)}
   alt={card.card_key}
-  className="w-full h-full object-cover rounded-xl"
+  className={`relative ${
+  isMoon3DoubleWide(card)
+    ? "col-span-2 aspect-[10/7]"
+    : "aspect-[5/7]"
+}`}
 />
 
                   {isSelected && (
@@ -2647,9 +3068,21 @@ comments.map((comment) => (
 
           {/* Stats */}
           <div className="flex-1">
-            <h3 className="text-2xl font-black text-slate-900 text-center sm:text-left">
-  {selectedUser.username}
-</h3>
+            <div className="flex items-center justify-center gap-2">
+  <h2 className="text-2xl font-bold text-slate-900">
+    {selectedUser?.username}
+  </h2>
+
+  {selectedUser?.id &&
+    VERIFIED_USERS[selectedUser.id] && (
+      <img
+        src={VERIFIED_USERS[selectedUser.id].badge}
+        alt={VERIFIED_USERS[selectedUser.id].label}
+        title={VERIFIED_USERS[selectedUser.id].label}
+        className="w-5 h-5 object-contain flex-shrink-0"
+      />
+    )}
+</div>
 
 {selectedUserRank && (
   <p className="mt-1 text-sm font-bold text-amber-600 text-center sm:text-left">
@@ -2671,6 +3104,7 @@ comments.map((comment) => (
                   Trades
                 </div>
               </div>
+              
 
               <div>
                 <div className="text-2xl font-black text-slate-900">
@@ -2694,49 +3128,127 @@ comments.map((comment) => (
         </div>
 
         {/* Tabs */}
-        <div className="mt-8 border-t border-b border-slate-200">
-          <div className="grid grid-cols-2">
-            <button
-              onClick={() => setSelectedUserTab("trades")}
-              className={`py-4 flex justify-center border-t-2 transition-colors ${
-                selectedUserTab === "trades"
-                  ? "border-slate-900 text-slate-900"
-                  : "border-transparent text-slate-400"
-              }`}
-            >
-              <ArrowLeftRight className="w-5 h-5" />
-            </button>
+<div
+  className="grid border-b border-slate-200"
+style={{
+  gridTemplateColumns: `repeat(${
+    (selectedUserPurchaseCards.length > 0 ? 1 : 0) +
+    (
+      !selectedUserProfileSettings.hide_wishlist &&
+      selectedUserWishlistCards.length > 0
+        ? 1
+        : 0
+    ) +
+    (!selectedUserProfileSettings.hide_iso ? 1 : 0) +
+    1
+  }, minmax(0, 1fr))`,
+}}
+>
+  {/* ISO */}
+  {!selectedUserProfileSettings.hide_iso && (
+    <button
+      onClick={() => setSelectedUserTab("iso")}
+      className={`py-4 flex items-center justify-center transition-colors ${
+        selectedUserTab === "iso"
+          ? "border-b-2 border-[#5a3e84] text-[#5a3e84]"
+          : "text-slate-400 hover:text-[#5a3e84]"
+      }`}
+    >
+      <Search className="w-5 h-5" />
+    </button>
+  )}
 
-            <button
-              onClick={() => setSelectedUserTab("iso")}
-              className={`py-4 flex justify-center border-t-2 transition-colors ${
-                selectedUserTab === "iso"
-                  ? "border-slate-900 text-slate-900"
-                  : "border-transparent text-slate-400"
-              }`}
-            >
-              <Search className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+  {/* Wishlist */}
+  {!selectedUserProfileSettings.hide_wishlist &&
+selectedUserWishlistCards.length > 0 && (
+    <button
+      onClick={() => setSelectedUserTab("wishlist")}
+      className={`py-4 flex items-center justify-center transition-colors ${
+        selectedUserTab === "wishlist"
+          ? "border-b-2 border-[#5a3e84] text-pink-500"
+          : "text-slate-400 hover:text-pink-500"
+      }`}
+    >
+      <Heart className="w-5 h-5 fill-current" />
+    </button>
+  )}
+
+{/* Purchases */}
+{selectedUserPurchaseCards.length > 0 && (
+  <button
+    onClick={() => setSelectedUserTab("purchases")}
+    className={`py-4 flex items-center justify-center transition-colors ${
+      selectedUserTab === "purchases"
+        ? "border-b-2 border-[#5a3e84] text-blue-500"
+        : "text-slate-400 hover:text-blue-500"
+    }`}
+  >
+    <span className="text-xl font-black">$</span>
+  </button>
+)}
+
+  {/* Trades */}
+  <button
+    onClick={() => setSelectedUserTab("trades")}
+    className={`py-4 flex items-center justify-center transition-colors ${
+      selectedUserTab === "trades"
+        ? "border-b-2 border-[#5a3e84] text-[#5a3e84]"
+        : "text-slate-400 hover:text-[#5a3e84]"
+    }`}
+  >
+    <ArrowLeftRight className="w-5 h-5" />
+  </button>
+</div>
+
+
 
 {/* Tab Content */}
-<div className="bg-white">
+<div
+  className="bg-white min-h-[800px]"
+  style={{ scrollbarGutter: "stable" }}
+>
   {(() => {
-    const cards =
-      selectedUserTab === "trades"
-        ? selectedUserTradeCards
-        : selectedUserIsoCards;
+const cards =
+  selectedUserTab === "trades"
+    ? selectedUserTradeCards
+    : selectedUserTab === "purchases"
+    ? selectedUserPurchaseCards
+    : selectedUserTab === "wishlist"
+    ? [...selectedUserWishlistCards]
+    : selectedUserIsoCards;
 
-    if (cards.length === 0) {
-      return (
-        <div className="py-12 text-center text-slate-500 text-sm">
-          {selectedUserTab === "trades"
-            ? "No cards listed for trade."
-            : "No ISO cards listed."}
-        </div>
-      );
-    }
+if (selectedUserTab === "wishlist") {
+  return (
+    <div
+  className="pt-6 grid grid-cols-4 gap-2 sm:gap-3"
+  style={{ scrollbarGutter: "stable" }}
+>
+      {cards.map((card) => (
+        <button
+          key={card.id || `${card.set_id}-${card.card_key}`}
+          type="button"
+          onClick={() => {
+            setZoomedCard(getTradeCardImage(card));
+            setZoomedCardTitle(
+              `${getSetName(card.set_id)} • ${card.card_key}`
+            );
+          }}
+          className="group relative"
+        >
+          <img
+            src={getTradeCardImage(card)}
+            alt={card.card_key}
+            className={`relative ${
+  isMoon3DoubleWide(card)
+    ? "col-span-2 aspect-[10/7]"
+    : "aspect-[5/7]"
+}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
 
     const grouped = groupCardsBySet(cards);
 
@@ -2771,7 +3283,11 @@ comments.map((comment) => (
               {setCards.map((card: any, index: number) => (
                 <div
   key={card.id || index}
-  className="aspect-[5/7] bg-white overflow-hidden cursor-pointer"
+  className={`${
+  isMoon3DoubleWide(card)
+    ? "col-span-2 aspect-[10/7]"
+    : "aspect-[5/7]"
+} bg-white overflow-hidden cursor-pointer`}
   onClick={() => {
     const imageSrc = getTradeCardImage(card);
     if (!imageSrc) return;

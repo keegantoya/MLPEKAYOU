@@ -7,6 +7,8 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import collectionsBanner from "@/assets/avatars/kayouuscollectionsbanner.png";
+import tcgOnlineButton from "/website-assets/tcgonlinebutton.png";
+import tcgOnlineButtonMobile from "/website-assets/tcgonlinebuttonmobile.png";
 
 type Collection = {
   id: string;
@@ -85,15 +87,15 @@ const collections: Collection[] = [
     released: true,
   },
   {
-    id: "moon3hidden",
+    id: "3",
     title: "Eternal Moon",
     setName: "Three",
     imageUrl: "/thumbnails/moon-te.jpg",
     totalCards: 290,
     category: "eternal-moon",
-    released: false,
+    released: true,
   },
-  {
+   {
     id: "11",
     title: "Fun Moments",
     setName: "Three",
@@ -159,9 +161,6 @@ const collections: Collection[] = [
 ];
 
 const unreleasedSetIds = [
-  "11", // Fun Moments 3
-  "4",  // Star 1
-  "6",  // Rainbow 2
 ];
 
 const Collections = () => {
@@ -171,6 +170,8 @@ const Collections = () => {
 );
   const [sets, setSets] = useState<Collection[]>([]);
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+  const [hideMastered, setHideMastered] = useState(true);
+  const [sortBy, setSortBy] = useState<"release" | "set">("release");
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -199,35 +200,88 @@ if (!user) {
         return;
       }
 
-      const { data: rawData } = await supabase
+const { data: rawData } = await supabase
   .from("collection_progress_raw")
   .select("set_id, progress")
   .eq("user_id", user.id);
 
+const { data: progressData } = await supabase
+  .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
+
+const mergedBySet: Record<string, Record<string, boolean>> = {};
+
+[...(rawData || []), ...(progressData || [])].forEach((row: any) => {
+  if (!mergedBySet[row.set_id]) {
+    mergedBySet[row.set_id] = {};
+  }
+
+  Object.entries(row.progress || {}).forEach(([key, value]) => {
+    if (Boolean(value)) {
+      mergedBySet[row.set_id][key] = true;
+    }
+  });
+});
+
 const progressMap: Record<string, number> = {};
 
-rawData?.forEach((row: any) => {
-  const count = Object.values(row.progress || {}).filter(Boolean).length;
+Object.entries(mergedBySet).forEach(([setId, progress]) => {
+  const count = Object.keys(progress).length;
 
-  if (row.set_id === "FW") {
-  progressMap["tcg"] = count;
-} else if (row.set_id === "SD") {
-  progressMap["friendshipsbegin"] = count;
-} else if (row.set_id === "OTHERMERCH") {
-  progressMap["OTHERMERCH"] = count;
-} else {
-  progressMap[row.set_id] = count;
-}
+  if (setId === "FW") {
+    progressMap["tcg"] = count;
+  } else if (setId === "SD") {
+    progressMap["friendshipsbegin"] = count;
+  } else if (setId === "OTHERMERCH") {
+    progressMap["OTHERMERCH"] = count;
+  } else {
+    progressMap[setId] = count;
+  }
 });
 
 const { data: profile } = await supabase
   .from("profiles")
-  .select("iso_hidden_sets")
+  .select(
+    "iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
+  )
   .eq("id", user.id)
   .single();
 
-setHiddenSets(profile?.iso_hidden_sets || []);
+const legacyHidden = profile?.iso_hidden_sets || [];
 
+const hiddenCCG =
+  profile?.iso_hidden_sets_ccg?.length
+    ? profile.iso_hidden_sets_ccg
+    : legacyHidden;
+
+const hiddenTCG =
+  profile?.iso_hidden_sets_tcg?.length
+    ? profile.iso_hidden_sets_tcg
+    : legacyHidden;
+
+// Convert stored hidden IDs to the collection IDs used on this page
+const mappedHiddenSets: string[] = [
+  ...hiddenCCG,
+  ...hiddenTCG.flatMap((id: string) => {
+    switch (id) {
+      case "FW":
+        return ["tcg"];
+
+      case "TCG_PROMOS":
+        return ["tcgpromos"];
+
+      case "SD_STARTERS":
+      case "SD_BONUS":
+        return ["friendshipsbegin"];
+
+      default:
+        return [id];
+    }
+  }),
+];
+
+setHiddenSets([...new Set(mappedHiddenSets)]);
 const updated = collections.map((set) => {
   const collected = progressMap[set.id] || 0;
 
@@ -257,13 +311,42 @@ setSets(updated);
     return () => subscription.unsubscribe();
   }, []);
 
-const filtered =
-  (
-    activeCategory === "all"
-      ? sets.filter((c) => c.category !== "merch")
-      : sets.filter((c) => c.category === activeCategory)
-  ).filter((c) => c.released);
+const setOrder: Record<string, number> = {
+  star: 1,
+  "eternal-moon": 2,
+  rainbow: 3,
+  "fun-moments": 4,
+  tcg: 5,
+  promos: 6,
+  merch: 7,
+};
 
+const filtered = (
+  activeCategory === "all"
+    ? sets
+        .filter((c) => c.category !== "merch")
+        .filter((c) => !hideMastered || c.progress !== 100)
+        .filter((c) => !hiddenSets.includes(c.id))
+    : sets
+        .filter((c) => c.category === activeCategory)
+)
+  .filter((c) => c.released)
+  .sort((a, b) => {
+    // SET ORDER
+    if (sortBy === "set") {
+      const categoryDiff =
+        (setOrder[a.category] ?? 999) - (setOrder[b.category] ?? 999);
+
+      if (categoryDiff !== 0) {
+        return categoryDiff;
+      }
+    }
+
+    return (
+      collections.findIndex((s) => s.id === a.id) -
+      collections.findIndex((s) => s.id === b.id)
+    );
+  });
   return (
  <div
   className="min-h-screen relative overflow-hidden"
@@ -317,67 +400,279 @@ const filtered =
 </div>
 
 {/* Mobile Collections Hero */}
-<div className="md:hidden px-4 pt-4 mb-3">
-  <div className="rounded-3xl bg-white/80 backdrop-blur-sm border border-purple-200 shadow-[0_15px_40px_rgba(95,55,145,0.10)] px-5 py-5 text-center">
+<div className="md:hidden px-4 pt-4 mb-4">
+  {(() => {
+    const releasedSets = sets.filter(
+  (set) =>
+    set.released &&
+    set.category !== "merch" &&
+    !hiddenSets.includes(set.id)
+);
+
+    const countedSets = releasedSets.filter(
+  (set) => !["9", "10", "tcgpromos"].includes(set.id)
+);
+
+const totalSets = countedSets.length;
+
+const completedSets = countedSets.filter(
+  (set) => set.progress === 100
+).length;
+
+    const totalCardsCollected = releasedSets.reduce(
+      (sum, set) => sum + (set.collectedCards || 0),
+      0
+    );
+
+    const totalCardsAvailable = releasedSets.reduce(
+      (sum, set) => sum + set.totalCards,
+      0
+    );
+
+    const completionRate =
+      totalCardsAvailable > 0
+        ? Math.round((totalCardsCollected / totalCardsAvailable) * 100)
+        : 0;
+
+    return (
+      <div className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/30 bg-gradient-to-r from-[#6d4a9c] via-[#7c5aa6] to-[#5a3e84] px-4 py-4 shadow-[0_20px_60px_rgba(90,62,132,0.30)]">
+        {/* Soft sparkles */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="absolute top-4 left-4 text-white text-base">✦</div>
+          <div className="absolute top-6 right-5 text-[#f5e6a8] text-sm">✧</div>
+        </div>
+
+<div className="relative z-10">
+  {/* Stats */}
+  <div className="grid grid-cols-3 gap-3 text-center">
+    {[
+      { value: `${completedSets}/${totalSets}`, label: "SETS FINISHED" },
+      {
+        value: totalCardsCollected.toLocaleString(),
+        label: "CARDS COLLECTED",
+      },
+      { value: `${completionRate}%`, label: "COMPLETE" },
+    ].map((stat) => (
+      <div key={stat.label}>
+        <div className="text-lg font-bold leading-none text-[#f5e6a8] whitespace-nowrap">
+          {stat.value}
+        </div>
+        <div className="mt-1 text-[8px] uppercase tracking-[0.14em] font-semibold text-[#f5e6a8]/80">
+          {stat.label}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {/* Progress Bar */}
+  <div className="mt-3">
+    <div className="h-3 rounded-full bg-white/15 overflow-hidden shadow-inner">
+      <div
+        className="h-full rounded-full bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]"
+        style={{
+          width: `${completionRate}%`,
+        }}
+      />
+    </div>
+
+    <div className="mt-2 text-center text-[11px] font-semibold tracking-wide text-[#f5e6a8]/90">
+      {totalCardsCollected.toLocaleString()} /{" "}
+      {totalCardsAvailable.toLocaleString()} Cards Collected
+    </div>
+  </div>
+
+  {/* Title */}
+  <div className="mt-4">
     <h1
-      className="text-3xl font-bold text-[#5B2E86]"
+      className="text-xl font-semibold leading-[0.95] tracking-[0.06em] text-[#f5e6a8] text-center"
       style={{
         fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
+        textShadow:
+          "0 2px 0 rgba(91,46,134,0.45), 0 4px 18px rgba(0,0,0,0.22)",
       }}
     >
-      All Collections
+      <span className="block">KAYOU US</span>
+      <span className="block">COLLECTIONS</span>
     </h1>
+  </div>
 
-    <p className="mt-2 text-sm leading-relaxed text-[#7A5A9B]">
-     Master all of these sets to appear on the leaderboard!
-    </p>
+  {/* Floating TCG Button */}
+  <a
+    href="https://minigame-test.kayou110.com/pony/index.html?Authorization=1d212d8d543b6f7687f12441ea9e1e44&lan=en-US&region=US"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="absolute bottom-[-2.75rem] right-[-2.0rem] z-20 transition-transform duration-200 active:scale-95"
+  >
+    <img
+      src={tcgOnlineButtonMobile}
+      alt="Play TCG Online"
+      className="w-[170px] h-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
+    />
+  </a>
+</div>
+      </div>
+    );
+  })()}
+</div>
+
+
+<div className="container mt-6 md:mt-6 pt-0 pb-8">
+
+{/* FULL-WIDTH TITLE HERO */}
+<div className="hidden sm:block mb-0">
+  {(() => {
+    const releasedSets = sets.filter(
+  (set) =>
+    set.released &&
+    set.category !== "merch" &&
+    !hiddenSets.includes(set.id)
+);
+
+    const countedSets = releasedSets.filter(
+  (set) => !["9", "10", "tcgpromos"].includes(set.id)
+);
+
+const totalSets = countedSets.length;
+
+const completedSets = countedSets.filter(
+  (set) => set.progress === 100
+).length;
+
+    const totalCardsCollected = releasedSets.reduce(
+      (sum, set) => sum + (set.collectedCards || 0),
+      0
+    );
+
+    const totalCardsAvailable = releasedSets.reduce(
+      (sum, set) => sum + set.totalCards,
+      0
+    );
+
+    const completionRate =
+      totalCardsAvailable > 0
+        ? Math.round((totalCardsCollected / totalCardsAvailable) * 100)
+        : 0;
+
+    return (
+    <div className="w-full rounded-[2rem] overflow-hidden border border-[#d4af37]/30 shadow-[0_20px_60px_rgba(90,62,132,0.30)] bg-gradient-to-r from-[#6d4a9c] via-[#7c5aa6] to-[#5a3e84] px-8 pt-4 pb-20 relative">
+        
+        {/* Soft sparkles */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="absolute top-6 left-8 text-white text-xl">✦</div>
+          <div className="absolute top-10 left-1/4 text-[#f5e6a8] text-lg">✧</div>
+          <div className="absolute bottom-8 left-1/3 text-white text-xl">✦</div>
+          <div className="absolute top-8 right-12 text-[#f5e6a8] text-lg">✦</div>
+        </div>
+{/* Main content */}
+<div className="relative z-10 grid grid-cols-[1.5fr_0.75fr_1.75fr] gap-8 items-center translate-y-6">
+
+  {/* LEFT: Title */}
+  <div className="flex items-center justify-center pr-6">
+    <h1
+      className="text-2xl md:text-3xl lg:text-4xl font-semibold leading-[0.95] tracking-[0.06em] text-[#f5e6a8] text-center"
+      style={{
+        fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
+        textShadow:
+          "0 2px 0 rgba(91,46,134,0.45), 0 4px 18px rgba(0,0,0,0.22)",
+      }}
+    >
+      <span className="block">KAYOU US</span>
+      <span className="block">COLLECTIONS</span>
+    </h1>
+  </div>
+
+{/* CENTER: Description */}
+<div className="relative w-[240px] h-full -ml-14">
+  <div className="absolute inset-0 flex items-center justify-center translate-y-3">
+    <a
+      href="https://minigame-test.kayou110.com/pony/index.html?Authorization=1d212d8d543b6f7687f12441ea9e1e44&lan=en-US&region=US"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="transition-transform duration-200 hover:scale-105"
+    >
+      <img
+        src={tcgOnlineButton}
+        alt="Play TCG Online"
+        className="w-[320px]  max-w-none h-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
+      />
+    </a>
   </div>
 </div>
 
-      <div className="container -mt-5 md:mt-6 pt-0 pb-8 flex gap-8">
-  
-  {/* Sidebar wrapper */}
-  <div className="hidden md:block p-4">
-  <CatalogSidebar
-    activeCategory={activeCategory}
-    onCategoryChange={setActiveCategory}
-  />
-</div>
-
-  <main className="flex-1">
-
-          <div className="mb-6 relative flex items-center">
-
-  {/* BACK BUTTON (LEFT) */}
-  <button
-  onClick={() => navigate("/")}
-  className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
->
-  <ArrowLeft className="h-4 w-4 text-[#f5e6a8]" />
-  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
-  </span>
-</button>
-
-  {/* CENTERED BANNER */}
-<div className="hidden sm:block absolute left-1/2 -translate-x-1/2">
-  <img
-    src={collectionsBanner}
-    alt="All Collections"
-    className="h-20 md:h-24 lg:h-28 object-contain"
-  />
-</div>
-
-  {/* RIGHT SIDE COUNT */}
-  <div className="hidden sm:block ml-auto text-sm text-[#555] tracking-wide">
-    {filtered.length} {filtered.length === 1 ? "set" : "sets"}
+  {/* RIGHT: Stats */}
+  <div className="grid grid-cols-3 gap-8 text-center max-w-[520px] mx-auto">
+    {[
+      { value: `${completedSets}/${totalSets}`, label: "SETS FINISHED" },
+      {
+        value: totalCardsCollected.toLocaleString(),
+        label: "CARDS COLLECTED",
+      },
+      { value: `${completionRate}%`, label: "COMPLETE" },
+    ].map((stat) => (
+      <div key={stat.label}>
+        <div className="text-xl md:text-2xl font-bold leading-none text-[#f5e6a8] whitespace-nowrap">
+          {stat.value}
+        </div>
+        <div className="mt-1 text-[8px] uppercase tracking-[0.14em] font-semibold text-[#f5e6a8]/80">
+          {stat.label}
+        </div>
+      </div>
+    ))}
   </div>
-
 </div>
+
+{/* Progress Bar */}
+<div className="absolute left-8 right-8 bottom-6 z-10">
+  <div className="grid grid-cols-[1.5fr_0.75fr_1.75fr] gap-8 items-start">
+    {/* Empty space under title */}
+    <div />
+
+    {/* Empty space under description */}
+    <div />
+
+    {/* Progress bar under stats only */}
+    <div>
+      <div className="h-3 rounded-full bg-white/15 overflow-hidden shadow-inner">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]"
+          style={{
+            width: `${completionRate}%`,
+          }}
+        />
+      </div>
+
+      <div className="mt-2 text-center text-[11px] font-semibold tracking-wide text-[#f5e6a8]/90">
+        {totalCardsCollected.toLocaleString()} /{" "}
+        {totalCardsAvailable.toLocaleString()} Cards Collected
+      </div>
+    </div>
+  </div>
+</div>
+      </div>
+    );
+  })()}
+</div>
+
+  {/* SIDEBAR + COLLECTIONS */}
+  <div className="flex gap-8 pt-6">
+
+    {/* Sidebar wrapper */}
+    <div className="hidden md:block p-4">
+      <CatalogSidebar
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+        hideMastered={hideMastered}
+        onToggleHideMastered={() => setHideMastered((prev) => !prev)}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+      />
+    </div>
+
+    <main className="flex-1">
 
 
 {activeCategory === "all" && (
   <p className="hidden sm:block mt-4 mb-6 text-sm md:text-base text-[#555] leading-relaxed">
-    Sets will appear here in release order. Promotional cards will always appear at the bottom. If a set is released but not yet available, it is because I am still waiting on Kayou.
   </p>
 )}
 
@@ -405,6 +700,8 @@ const filtered =
     return (
       <div key={col.id} className="relative">
 
+        
+
         {/* Card */}
         <div
           className={`${
@@ -416,13 +713,40 @@ const filtered =
           }`}
         >
           <CollectionCard {...col} />
+          {(col.id === "3" || col.id === "11") && (
+  <div
+    className="
+      absolute
+      top-12
+      right-2
+      z-20
+      bg-gradient-to-r
+      from-[#fff2a6]
+      via-[#d4af37]
+      to-[#fff2a6]
+      text-[#5a3e00]
+      text-[9px]
+      font-black
+      tracking-[0.22em]
+      px-2.5
+      py-1
+      rounded-full
+      border
+      border-[#fff7c7]
+      shadow-[0_4px_10px_rgba(212,175,55,0.45)]
+      pointer-events-none
+    "
+  >
+    NEW
+  </div>
+)}
         </div>
 
         {/* SET HIDDEN */}
 {isHidden && !isUnreleased && !isWaiting && (
   <div className="absolute inset-0 flex items-center justify-center translate-y-5 pointer-events-none">
     <div className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center border border-[#d4af37]/60">
-      YOU ARE NOT COLLECTING THIS SET
+      Not collecting this set.
     </div>
   </div>
 )}
@@ -459,7 +783,7 @@ const filtered =
 
         </main>
       </div>
-
+</div>
     </div>
   );
 };

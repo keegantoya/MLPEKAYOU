@@ -5,9 +5,7 @@ export function calculateCollectionTotal(
   let total = 0;
 
   const userRows = allProgress.filter(
-    (row: any) =>
-      row.user_id === userId &&
-      row.set_id !== "3"
+    (row: any) => row.user_id === userId
   );
 
   userRows.forEach((row: any) => {

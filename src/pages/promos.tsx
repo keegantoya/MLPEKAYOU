@@ -336,6 +336,12 @@ useEffect(() => {
       <span className="text-[#d4af37] mt-[2px]">✦</span>
       Moon 3 Box Set
     </li>
+
+    <li className="flex items-start gap-2">
+      <span className="text-[#d4af37] mt-[2px]">✦</span>
+      Star 1 Collector's Box Set
+    </li>
+
   </ul>
 
 </div>

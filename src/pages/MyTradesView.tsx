@@ -11,6 +11,7 @@ type TradeCard = {
   user_id: string;
   set_id: string;
   card_key: string;
+  listing_type: "trade" | "purchase";
 };
 
 export default function MyTradesView() {
@@ -123,10 +124,11 @@ if (card.set_id === "FW") {
   const config: any = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
     "2": { folder: "second-edition-moon", prefix: "M2" },
+        "3": { folder: "third-edition-moon", prefix: "M3" },
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
     "8": { folder: "fun-moments-two", prefix: "FM2" },
-    "3": { folder: "third-edition-moon", prefix: "M3" },
+    "11": { folder: "fun-moments-three", prefix: "FM3" },
   };
 
   const c = config[card.set_id];
@@ -185,7 +187,7 @@ const toggleActive = async () => {
 
         <div className="flex justify-center sm:justify-start mb-6">
   <button
-    onClick={() => navigate("/my-trades")}
+    onClick={() => navigate("/inventory")}
     className="group flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#d4af37]/50 bg-gradient-to-r from-[#2a163d]/95 to-[#4b2a6b]/95 hover:from-[#3a1f55] hover:to-[#5b357d] text-[#f6e27a] font-semibold shadow-lg shadow-purple-900/30 transition-all duration-200 hover:scale-105"
   >
     <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
@@ -194,10 +196,10 @@ const toggleActive = async () => {
 </div>
 
         <h1 className="text-3xl sm:text-4xl font-black text-center mb-2 bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
-          Your Cards Marked for Trade
+          Your Active Duplicates
         </h1>
         <p className="text-center text-sm text-muted-foreground mb-8">
-  Manage your active trades and completed cards
+  Manage your active trades and purchase offers. Click on a card to mark it as complete, or if you are in the process of trading it, mark it as actively trading.
 </p>
 
         {loading && <div className="text-center">Loading...</div>}
@@ -251,9 +253,15 @@ if (rarity === "PGR") rarity = "※GR";
 
           <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
 
-          <span className="text-[10px] sm:text-xs tracking-[0.3em] font-semibold text-[#d4af37] uppercase">
-            {rarity}
-          </span>
+          <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+  {rarity === "SHINING ZR" || rarity === "SZR"
+    ? "◇ZR"
+    : rarity === "SN"
+    ? "◇N"
+    : rarity === "SCR"
+    ? "◇CR"
+    : rarity}
+</span>
 
           <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
 
@@ -305,10 +313,21 @@ if (rarity === "PGR") rarity = "※GR";
                   }`}
                 >
 
-                  <img
-                    src={getCardImage(card)}
-                    className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+                  {card.set_id === "11" &&
+card.card_key === "N-10" ? (
+  <div className="w-full h-full bg-slate-100 flex items-center justify-center p-3 text-center">
+    <p className="text-xs font-semibold text-slate-600 leading-relaxed">
+      FME03-N-010
+      <br />
+      Waiting for Kayou to send image.
+    </p>
+  </div>
+) : (
+  <img
+    src={getCardImage(card)}
+    className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
+  />
+)}
 
                   {activeMap[card.id] && (
                     <div className="absolute inset-0 rounded-md overflow-hidden bg-gradient-to-br from-purple-700/90 to-fuchsia-900/90 backdrop-blur-sm flex items-center justify-center">
@@ -319,6 +338,16 @@ if (rarity === "PGR") rarity = "※GR";
                       </span>
                     </div>
                   )}
+
+                  <div
+  className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg border-2 border-white/20 ${
+    card.listing_type === "trade"
+      ? "bg-green-500"
+      : "bg-blue-500"
+  }`}
+>
+  {card.listing_type === "trade" ? "⇄" : "$"}
+</div>
 
                 </div>
               );

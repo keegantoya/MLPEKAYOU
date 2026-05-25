@@ -32,7 +32,7 @@ const getLink = () => {
       return "/rainbow-one";
 
     case "3":
-  return "/moon3-beta-keegansbuild";
+  return "/eternal-moon-three";
 
     case "4":
     case "star1":
@@ -61,7 +61,7 @@ const getLink = () => {
   return "/fun-moments-two";
 
     case "11":
-      return "/fun-moments-3";
+      return "/fun-moments-three";
 
     case "tcgpromos":
       return "/tcg-promos";

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
+import { ChevronUp } from "lucide-react";
 
 import moonOneBox from "/set-pictures/moononebox.jpg";
 import moonOnePack from "/set-pictures/moononepack.jpg";
@@ -42,6 +43,7 @@ const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
 const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
 const [isClosingZoom, setIsClosingZoom] = useState(false);
 const [showProductInfo, setShowProductInfo] = useState(false);
+const [showBackToTop, setShowBackToTop] = useState(false);
 
   const fireConfetti = () => {
   confetti({
@@ -276,6 +278,18 @@ useEffect(() => {
     body.style.touchAction = "";
   };
 }, [zoomedCard]);
+
+useEffect(() => {
+  const handleScroll = () => {
+    setShowBackToTop(window.scrollY > 600);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+}, []);
 
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
@@ -993,6 +1007,37 @@ const isZoomedLandscape = (() => {
     </div>
   </div>
         </div>
+)}
+{showBackToTop && (
+  <button
+    onClick={() =>
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+    }
+    className="
+      fixed
+      bottom-32 sm:bottom-6
+      right-4 sm:right-6
+      z-[99999]
+      w-11 h-11
+      rounded-full
+      bg-gradient-to-r
+      from-[#7c5aa6]
+      to-[#5a3e84]
+      text-[#f5e6a8]
+      border border-[#d4af37]/60
+      shadow-2xl
+      active:scale-95
+      transition
+      flex items-center justify-center
+      hover:brightness-110
+    "
+    aria-label="Back to top"
+  >
+    <ChevronUp className="w-5 h-5" />
+  </button>
 )}
     </div>
   );

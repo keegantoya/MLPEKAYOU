@@ -7,6 +7,7 @@ import {
   Grid3X3,
   ArrowLeftRight,
   Pencil,
+  Heart,
 } from "lucide-react";
 import avatar001 from "@/assets/avatars/avatar001.jpg";
 import avatar002 from "@/assets/avatars/avatar002.jpg";
@@ -23,6 +24,20 @@ import avatar012 from "@/assets/avatars/avatar012.jpg";
 import avatar013 from "@/assets/avatars/avatar013.jpg";
 import avatar014 from "@/assets/avatars/avatar014.jpg";
 import avatar015 from "@/assets/avatars/avatar015.jpg";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
+import maipfp from "@/assets/avatars/maipfp.jpg";
+
+import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
+import elementOfLaughter from "/website-assets/elementoflaughter.png";
+
+import fluttershyCutieMark from "/website-assets/fluttershycutiemark.png";
+import applejackCutieMark from "/website-assets/applejackcutiemark.png";
+import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.png";
+import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.png";
+import rarityCutieMark from "/website-assets/raritycutiemark.png";
+import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
 
 const avatarMap: Record<string, string> = {
   "avatar001.jpg": avatar001,
@@ -40,6 +55,44 @@ const avatarMap: Record<string, string> = {
   "avatar013.jpg": avatar013,
   "avatar014.jpg": avatar014,
   "avatar015.jpg": avatar015,
+
+  // Private avatar for HeiManTou only
+  "heimantouavatar": heimantouAvatar,
+  "heimantouavatar.jpg": heimantouAvatar,
+  "heimantouavatar.png": heimantouAvatar,
+  "keeganpfp.jpg": KeeganAvatar,
+  "maipfp.jpg": maipfp,
+
+};
+
+const VERIFIED_USERS = {
+  // Gold Badge = MLPEKAYOU STAFF
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+
+  // Blue Badge = KAYOU STAFF
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+  "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
 };
 
 const UserMenu = () => {
@@ -61,6 +114,9 @@ const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
 
 const navigate = useNavigate();
 const [activeTab, setActiveTab] = useState<"collection" | "trades">("collection");
+const [desktopTab, setDesktopTab] = useState<"showcase" | "trades">(
+  "showcase"
+);
 
   const [stats, setStats] = useState({
   owned: 0,
@@ -125,6 +181,8 @@ useEffect(() => {
   };
 }, []);
 
+const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null);
+
   useEffect(() => {
   const loadStats = async () => {
     try {
@@ -166,6 +224,7 @@ const sets = [
   { id: "2", rarities: { R:30, SR:20, SSR:54, HR:30, UR:16, LSR:16, SGR:8, ZR:7, SC:7, "SHINING ZR":1 }},
   { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, SZR:1 }},
   { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
+  { id: "11", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12, SCR:12 }},
 ];
 
 sets.forEach((set) => {
@@ -233,6 +292,7 @@ const setOrder = [
   "8",
   "3",
   "9",
+  "11",
   "FW",
   "friendshipsbegin",
   "tcgpromos",
@@ -250,6 +310,7 @@ const rarityOrders: Record<string, string[]> = {
   // Fun Moments
   "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
   "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
+  "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],
 
   // Fantasy Wonderland
   "FW": [
@@ -364,7 +425,17 @@ setTradeCards(sorted);
 }, []);
 
   const displayName = profile?.username || "Twilight Sparkle";
-  const avatarOptions = Object.entries(avatarMap);
+  const VERIFIED_USER_IDS = [
+  "17e57e39-bc0c-44e7-b373-ac34c6690185",
+  "94a1c998-d040-4dd2-b2fb-5f606287139d",
+  "408a516c-ee80-4ff8-a869-493e1fd5d961",
+];
+
+const verification =
+  profile?.id ? VERIFIED_USERS[profile.id] : null;
+  const avatarOptions = Object.entries(avatarMap).filter(
+  ([fileName]) => fileName.startsWith("avatar")
+);
   const getAvatar = (avatar?: string) => {
   if (!avatar) return avatar001;
 
@@ -404,6 +475,7 @@ useEffect(() => {
         "7",
         "8",
         "3",
+        "11",
         "9",
         "FW",
         "friendshipsbegin",
@@ -536,15 +608,26 @@ const displayAvatar = profile
       id: session.user.id,
       avatar_url: file,
     });
+// Normalize to the same format used throughout the app
+const avatarFile = file.includes(".") ? file : `${file}.jpg`;
 
-    // Update local state so the new avatar appears right after sb updates it
-    setProfile((prev: any) => ({
-      ...prev,
-      avatar_url: file,
-    }));
+// Update local state immediately
+setProfile((prev: any) => ({
+  ...prev,
+  avatar_url: avatarFile,
+}));
 
-    // Close the avatar picker
-    setShowAvatarPicker(false);
+// Notify KayouHeader and any other components that the avatar changed
+window.dispatchEvent(
+  new CustomEvent("profile-updated", {
+    detail: {
+      avatar_url: avatarFile,
+    },
+  })
+);
+
+// Close the avatar picker
+setShowAvatarPicker(false);
   } catch (error) {
     console.error("Failed to save avatar:", error);
   } finally {
@@ -598,6 +681,7 @@ if (
     "5": { folder: "rainbow-one", prefix: "R1" },
     "7": { folder: "fun-moments-one", prefix: "FM1" },
     "8": { folder: "fun-moments-two", prefix: "FM2" },
+    "11": { folder: "fun-moments-three", prefix: "FM3" },
   };
 
   const c = config[String(card.set_id)];
@@ -617,6 +701,7 @@ const getSetName = (setId: string) => {
     "7": "Fun Moments: First Edition",
     "8": "Fun Moments: Second Edition",
     "3": "Eternal Moon: Third Edition",
+    "11": "Fun Moments: Third Edition",
     "9": "Promotional Cards",
 
     "FW": "Fantasy Wonderland",
@@ -630,23 +715,62 @@ const getSetName = (setId: string) => {
   return names[String(setId)] || String(setId);
 };
 
+useEffect(() => {
+  const handleProfileUpdated = (event: Event) => {
+    const customEvent = event as CustomEvent<{
+      avatar_url?: string;
+      username?: string;
+    }>;
+
+    const updates = customEvent.detail || {};
+
+    setProfile((prev: any) => ({
+      ...prev,
+      ...updates,
+    }));
+  };
+
+  window.addEventListener(
+    "profile-updated",
+    handleProfileUpdated as EventListener
+  );
+
+  return () => {
+    window.removeEventListener(
+      "profile-updated",
+      handleProfileUpdated as EventListener
+    );
+  };
+}, []);
+
 // THE RETURN THAT GOES INTO THE OFFICIAL DATA. KEEGAN STOP MESSING THIS UP.
 
   return (
     <>
-      {/* Header + Mobile Bottom Navigation */}
-      {!showEditProfileModal &&
- !showAvatarPicker &&
- !showCollectionMenu && <KayouHeader />}
+{/* Header + Mobile Bottom Navigation */}
+{!(
+  showEditProfileModal ||
+  showCollectionMenu ||
+  (showAvatarPicker && window.innerWidth < 640)
+) && <KayouHeader />}
 
       {/* MOBILE ONLY */}
       <div className="sm:hidden min-h-screen bg-white pb-24 pt-7">
         <div className="px-4">
 {/* Username at top */}
-<div className="text-center mb-3">
+<div className="flex items-center justify-center gap-2 mb-3">
   <h1 className="text-xl font-semibold tracking-tight text-gray-900">
     {displayName}
   </h1>
+
+{verification && (
+  <img
+    src={verification.badge}
+    alt={verification.label}
+    title={verification.label}
+    className="w-5 h-5 object-contain flex-shrink-0"
+  />
+)}
 </div>
 
 {/* Avatar + Stats Row */}
@@ -669,7 +793,7 @@ const getSetName = (setId: string) => {
     </div>
 
     <div className="mt-0.5 flex flex-col items-center leading-tight">
-      <span className="text-[10px] font-semibold tracking-[0.12em] uppercase text-gray-400">
+      <span className="text-[8px] font-semibold tracking-[0.12em] uppercase text-gray-400">
         Trades
       </span>
       <span className="text-[10px] font-semibold tracking-[0.12em] uppercase text-gray-400">
@@ -717,120 +841,860 @@ const getSetName = (setId: string) => {
 </p>
 
             <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-              This is your personal profile on MLPEKAYOU!
+              Hi! My name is Keegan and I am hardcoding a description into your profile to remind you every time that you open this app that I love you, I appreciate you, and this app would be nothing without out. Thank you for everything.
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <Button
-  variant="outline"
-  className="h-9 rounded-lg border-gray-300 bg-white text-gray-800 font-semibold"
-  onClick={() => setShowEditProfileModal(true)}
->
-  Edit Profile
-</Button>
+<div className="mt-4">
+  {/* Edit Profile Button */}
+  <Button
+    variant="outline"
+    className="w-full h-9 rounded-lg border-gray-300 bg-white text-gray-800 font-semibold"
+    onClick={() => setShowEditProfileModal(true)}
+  >
+    Edit Profile
+  </Button>
 
-            <Button
-  variant="outline"
-  className="h-9 rounded-lg border-gray-300 bg-white text-gray-800 font-semibold"
-  onClick={() => setShowCollectionMenu(true)}
->
-  My Kayou Collection
-</Button>
+  {/* Mercari Style Menu */}
+  <div className="mt-3 border border-gray-200 rounded-xl overflow-hidden bg-white">
+
+    <button
+      onClick={() => navigate("/inventory")}
+      className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
+    >
+      <span className="text-[15px] font-medium text-gray-900">
+        My Inventory
+      </span>
+
+      <span className="text-xl text-gray-400">›</span>
+    </button>
+
+    <button
+      onClick={() => navigate("/my-progress")}
+      className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
+    >
+      <span className="text-[15px] font-medium text-gray-900">
+        CCG Progress
+      </span>
+
+      <span className="text-xl text-gray-400">›</span>
+    </button>
+
+    <button
+      onClick={() => navigate("/progress-tcg")}
+      className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
+    >
+      <span className="text-[15px] font-medium text-gray-900">
+        TCG Progress
+      </span>
+
+      <span className="text-xl text-gray-400">›</span>
+    </button>
+
+    <button
+      onClick={() => navigate("/my-iso")}
+      className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
+    >
+      <span className="text-[15px] font-medium text-gray-900">
+        My ISO
+      </span>
+
+      <span className="text-xl text-gray-400">›</span>
+    </button>
+
+    <button
+      onClick={() => navigate("/wishlist")}
+      className="w-full flex items-center justify-between px-4 py-4 text-left"
+    >
+      <span className="text-[15px] font-medium text-gray-900">
+        My Wishlist
+      </span>
+
+      <span className="text-xl text-gray-400">›</span>
+    </button>
+  </div>
+</div>
+        </div>
+      </div>
+
+{/* DESKTOP PC USER MENU */}
+<div className="hidden sm:block min-h-screen relative overflow-hidden bg-gradient-to-br from-white via-[#faf7ff] to-[#f1e8ff] pt-8 pb-12">
+  {/* Soft Sparkle Background */}
+  <div className="absolute inset-0 pointer-events-none">
+    {/* Large glow */}
+    <div className="absolute top-12 left-20 w-72 h-72 bg-[#d4af37]/6 rounded-full blur-3xl" />
+
+    {/* Lavender glow */}
+    <div className="absolute top-1/3 right-24 w-96 h-96 bg-[#c4b5fd]/10 rounded-full blur-3xl" />
+
+    {/* Bottom glow */}
+    <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-white/60 rounded-full blur-3xl" />
+
+    {/* Sparkles */}
+    <div className="absolute top-20 left-1/4 text-[#d4af37]/25 text-xl">✦</div>
+    <div className="absolute top-40 right-1/3 text-[#d4af37]/20 text-2xl">✧</div>
+    <div className="absolute top-2/3 left-1/5 text-[#d4af37]/20 text-lg">✦</div>
+    <div className="absolute bottom-32 right-1/4 text-[#d4af37]/25 text-xl">✧</div>
+    <div className="absolute bottom-20 left-1/2 text-[#d4af37]/15 text-2xl">✦</div>
+  </div>
+
+  {/* Main Content */}
+  <div className="relative z-10 max-w-7xl mx-auto px-6">
+    {/* Title */}
+    <div className="text-center mb-6">
+
+    </div>
+
+{/* DESKTOP AVATAR PICKER */}
+{showAvatarPicker && (
+  <div className="hidden sm:flex fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm items-center justify-center p-4 lg:p-6">
+    <div className="bg-white rounded-[2rem] shadow-2xl border border-[#d4af37]/20 w-full max-w-3xl max-h-[90vh] overflow-hidden">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
+        <h2 className="text-4xl font-serif font-semibold text-[#5a3e84] leading-none">
+          Choose Your Avatar
+        </h2>
+
+        <button
+          type="button"
+          onClick={() => setShowAvatarPicker(false)}
+          className="w-10 h-10 flex items-center justify-center text-4xl text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Avatar Grid */}
+      <div className="p-8 overflow-y-auto max-h-[70vh]">
+        <div className="grid grid-cols-6 gap-6">
+          {avatarOptions.map(([fileName, src]) => (
+            <button
+              key={fileName}
+              type="button"
+              onClick={() =>
+                handleAvatarSelect(fileName.replace(".jpg", ""))
+              }
+              disabled={savingAvatar}
+              className="group relative"
+            >
+              <div
+                className={`aspect-square rounded-full overflow-hidden border-4 transition-all shadow-md group-hover:scale-105 group-hover:shadow-xl ${
+                  displayAvatar === src
+                    ? "border-[#7c5aa6] ring-4 ring-[#d4af37]/20"
+                    : "border-transparent"
+                }`}
+              >
+                <img
+                  src={src}
+                  alt={fileName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+    {/* Main Dashboard Layout */}
+    <div className="grid grid-cols-[340px_1fr] gap-8 items-start">
+      {/* LEFT SIDEBAR */}
+      <div className="relative -top-8 self-start bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-8 sticky top-28 overflow-hidden">
+  {/* Cutie Mark Background Pattern */}
+<div className="absolute inset-0 pointer-events-none">
+  {[
+    twilightSparkleCutieMark,
+    rarityCutieMark,
+    rainbowDashCutieMark,
+    fluttershyCutieMark,
+    applejackCutieMark,
+    pinkiePieCutieMark,
+  ]
+    .flatMap((src) => Array(6).fill(src))
+    .map((src, index) => {
+      const positions = [
+        { top: "3%", left: "6%" },
+        { top: "7%", right: "8%" },
+        { top: "14%", left: "18%" },
+        { top: "20%", right: "14%" },
+        { top: "28%", left: "4%" },
+        { top: "34%", right: "5%" },
+        { top: "40%", left: "22%" },
+        { top: "47%", right: "18%" },
+        { top: "54%", left: "10%" },
+        { top: "60%", right: "9%" },
+        { top: "67%", left: "24%" },
+        { top: "73%", right: "20%" },
+        { top: "80%", left: "7%" },
+        { top: "86%", right: "6%" },
+        { top: "92%", left: "30%" },
+        { top: "10%", left: "55%" },
+        { top: "18%", left: "70%" },
+        { top: "26%", left: "48%" },
+        { top: "36%", left: "62%" },
+        { top: "44%", left: "76%" },
+        { top: "52%", left: "50%" },
+        { top: "62%", left: "66%" },
+        { top: "70%", left: "46%" },
+        { top: "78%", left: "72%" },
+        { top: "88%", left: "56%" },
+        { top: "6%", left: "36%" },
+        { top: "24%", left: "34%" },
+        { top: "42%", left: "36%" },
+        { top: "58%", left: "38%" },
+        { top: "76%", left: "40%" },
+        { top: "12%", left: "84%" },
+        { top: "30%", left: "86%" },
+        { top: "48%", left: "88%" },
+        { top: "66%", left: "84%" },
+        { top: "84%", left: "82%" },
+        { top: "94%", left: "68%" },
+      ];
+
+      const sizes = [42, 48, 54, 60, 46, 52];
+      const rotations = [
+        -18, 12, -8, 22, -25, 15,
+        -12, 8, -20, 18, -6, 24,
+      ];
+
+      const position = positions[index];
+      const size = sizes[index % sizes.length];
+      const rotation = rotations[index % rotations.length];
+
+      return (
+        <img
+          key={index}
+          src={src}
+          alt=""
+          aria-hidden="true"
+          className="absolute select-none"
+          style={{
+            ...position,
+            width: `${size}px`,
+            height: `${size}px`,
+            opacity: 0.07,
+            transform: `rotate(${rotation}deg)`,
+          }}
+        />
+      );
+    })}
+</div>
+
+  {/* Sidebar Content */}
+  <div className="relative z-10">
+       {/* Avatar */}
+<div className="relative w-40 h-40 mx-auto mb-6">
+  <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#d4af37]/30 shadow-lg">
+    <img
+      src={displayAvatar}
+      alt="Avatar"
+      className="w-full h-full object-cover"
+    />
+  </div>
+
+  {/* Edit Avatar Button */}
+  <button
+    type="button"
+    onClick={() => {
+  if (window.innerWidth >= 640) {
+    setShowAvatarPicker(true);
+  } else {
+    setShowAvatarPicker(true);
+  }
+}}
+    className="absolute top-2 right-2 w-9 h-9 rounded-full bg-white/95 border border-[#d4af37]/30 shadow-lg flex items-center justify-center text-[#5a3e84] hover:scale-105 transition-all"
+  >
+    <Pencil className="w-4 h-4" />
+  </button>
+</div>
+</div>
+
+        {/* Username */}
+<div className="flex items-center justify-center gap-2 mb-2">
+  {editingUsername ? (
+    <input
+      type="text"
+      value={usernameDraft}
+      onChange={(e) => setUsernameDraft(e.target.value)}
+      autoFocus
+      className="text-3xl font-bold text-[#5a3e84] bg-transparent border-none outline-none text-center"
+    />
+  ) : (
+    <>
+      <h1 className="text-3xl font-bold text-[#5a3e84] text-center">
+        {displayName}
+      </h1>
+
+{verification && (
+  <img
+    src={verification.badge}
+    alt={verification.label}
+    title={verification.label}
+    className="w-6 h-6 object-contain flex-shrink-0"
+  />
+)}
+    </>
+  )}
+
+  <button
+    type="button"
+    onClick={() => {
+      setUsernameDraft(displayName || "");
+      setEditingUsername(true);
+    }}
+    className="text-[#5a3e84] hover:opacity-70 flex-shrink-0"
+  >
+    <Pencil className="w-4 h-4" />
+  </button>
+</div>
+
+{/* Discord */}
+<div className="flex items-center justify-center gap-2 mb-2">
+  {editingDiscord ? (
+    <input
+      type="text"
+      value={discordDraft}
+      onChange={(e) => setDiscordDraft(e.target.value)}
+      placeholder="Add Discord username"
+      className="text-gray-600 bg-transparent border-none outline-none text-center"
+    />
+  ) : (
+    <p className="text-gray-600 text-center">
+      {profile
+        ? (discord || "No Discord username set")
+        : "Create an account or log in!"}
+    </p>
+  )}
+
+  {profile && (
+    <button
+      type="button"
+      onClick={() => {
+        setDiscordDraft(discord || "");
+        setEditingDiscord(true);
+      }}
+      className="text-[#5a3e84] hover:opacity-70 flex-shrink-0"
+    >
+      <Pencil className="w-4 h-4" />
+    </button>
+  )}
+</div>
+
+{/* Save Changes Button */}
+{(editingUsername || editingDiscord) && (
+  <div className="mb-6 flex justify-center">
+    <Button
+      className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
+      onClick={async () => {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.user) return;
+
+        // Save username if being edited
+        if (editingUsername) {
+          const trimmedUsername = usernameDraft.trim();
+
+          if (trimmedUsername) {
+            await supabase.auth.updateUser({
+              data: {
+                username: trimmedUsername,
+              },
+            });
+
+            await supabase.from("profiles").upsert({
+              id: session.user.id,
+              username: trimmedUsername,
+            });
+
+            setProfile((prev: any) => ({
+              ...prev,
+              username: trimmedUsername,
+            }));
+
+            window.dispatchEvent(
+              new CustomEvent("profile-updated", {
+                detail: {
+                  username: trimmedUsername,
+                },
+              })
+            );
+          }
+
+          setEditingUsername(false);
+        }
+
+        // Save Discord if being edited
+        if (editingDiscord) {
+          const trimmedDiscord = discordDraft.trim();
+
+          await supabase.from("trading_profiles").upsert({
+            user_id: session.user.id,
+            discord_username: trimmedDiscord,
+          });
+
+          setDiscord(trimmedDiscord);
+          setEditingDiscord(false);
+        }
+      }}
+    >
+      Save Changes
+    </Button>
+  </div>
+)}
+
+        {/* Stats */}
+        <div className="space-y-3 mb-6">
+          <div className="text-center bg-[#f8f5ff] rounded-2xl p-4 border border-[#d4af37]/10">
+            <div className="text-3xl font-bold text-[#5a3e84]">
+              {stats.trades.toLocaleString()}
+            </div>
+            <div className="text-xs uppercase tracking-widest text-gray-500 mt-1">
+              Trades Active
+            </div>
+          </div>
+
+          <div className="text-center bg-[#f8f5ff] rounded-2xl p-4 border border-[#d4af37]/10">
+            <div className="text-3xl font-bold text-[#5a3e84]">
+              {stats.owned.toLocaleString()}
+            </div>
+            <div className="text-xs uppercase tracking-widest text-gray-500 mt-1">
+              Cards Owned
+            </div>
+          </div>
+
+          <div className="text-center bg-[#f8f5ff] rounded-2xl p-4 border border-[#d4af37]/10">
+            <div className="text-3xl font-bold text-[#5a3e84]">
+              {stats.completed.toLocaleString()}
+            </div>
+            <div className="text-xs uppercase tracking-widest text-gray-500 mt-1">
+              Sets Completed
+            </div>
           </div>
         </div>
-{/* Tab Bar */}
-<div className="mt-6 border-t border-b border-gray-200">
-  <div className="grid grid-cols-2">
+
+               {/* Action Buttons */}
+        <div className="space-y-3">
+          <Button
+            className="w-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
+            onClick={() => setShowEditProfileModal(true)}
+          >
+            Edit Profile
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
+            onClick={() => navigate("/my-progress")}
+          >
+            CCG Progress
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
+            onClick={() => navigate("/progress-tcg")}
+          >
+            TCG Progress
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
+            onClick={() => navigate("/inventory")}
+          >
+            My Inventory
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
+            onClick={() => navigate("/my-iso")}
+          >
+            My ISO
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
+            onClick={() => navigate("/wishlist")}
+          >
+            My Wishlist
+          </Button>
+        </div>
+      </div>
+
+     {/* RIGHT CONTENT AREA */}
+<div className="space-y-8">
+  <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-6">
+    {/* Header + Toggle */}
+    <div className="flex items-center justify-between mb-6 gap-4">
+      <h2 className="text-2xl font-bold text-[#5a3e84]">
+        {desktopTab === "showcase" ? "Rarest Cards" : "Extra Cards"}
+      </h2>
+
+      <div className="flex items-center bg-[#f8f5ff] rounded-full p-1 border border-[#d4af37]/20 shadow-sm">
+        <button
+          type="button"
+          onClick={() => setDesktopTab("showcase")}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
+            desktopTab === "showcase"
+              ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-sm"
+              : "text-[#5a3e84] hover:bg-white/70"
+          }`}
+        >
+          Showcase
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setDesktopTab("trades")}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
+            desktopTab === "trades"
+              ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-sm"
+              : "text-[#5a3e84] hover:bg-white/70"
+          }`}
+        >
+          Extras
+        </button>
+      </div>
+    </div>
+
+    {/* Edit Trades Button (only when Trades tab is active) */}
+    {desktopTab === "trades" && (
+      <div className="flex justify-end mb-6">
+        <Button
+          variant="outline"
+          className="border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
+          onClick={() => navigate("/my-trades")}
+        >
+          Edit Trades and Sales
+        </Button>
+      </div>
+    )}
+
+    {/* Showcase Content */}
+    {desktopTab === "showcase" ? (
+      showcaseCards.length > 0 ? (
+        <div className="space-y-8">
+          {[
+  {
+    title: "ALL SC CARDS",
+    cards: showcaseCards.filter(
+      (card) =>
+        ["1", "2", "3"].includes(String(card.set_id)) &&
+        String(card.card_key).startsWith("SC-")
+    ),
+  },
+
+  {
+    title: "ALL ⬦ZR CARDS",
+    cards: showcaseCards.filter((card) => {
+      const rarity = String(card.card_key).split("-")[0];
+      return rarity === "SHINING ZR" || rarity === "SZR";
+    }),
+  },
+
+  {
+    title: "Fantasy Wonderland ※RR",
+    cards: showcaseCards.filter(
+      (card) =>
+        String(card.set_id) === "FW" &&
+        String(card.card_key).includes("PRR")
+    ),
+  },
+
+  {
+    title: "Friendships Begin ※RR",
+    cards: showcaseCards.filter(
+      (card) =>
+        String(card.set_id) === "friendshipsbegin" &&
+        String(card.card_key).includes("PRR")
+    ),
+  },
+
+{
+  title: "ALL ※RR CARDS",
+  cards: showcaseCards.filter((card) => {
+    const setId = String(card.set_id);
+    const key = String(card.card_key);
+
+    return (
+      (setId === "FW" ||
+        setId === "friendshipsbegin" ||
+        setId === "SD") &&
+      key.includes("PRR")
+    );
+  }),
+},
+]
+  .filter((section) => section.cards.length > 0)
+  .map((section) => (
+            <div key={section.title}>
+              <h3 className="text-sm font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4">
+                {section.title}
+              </h3>
+
+              <div className="relative">
+{(
+  (
+    desktopTab === "showcase"
+      ? showcaseCards
+          .filter((card) => section.cards.includes(card)).length
+      : tradeCards
+          .filter((card) => section.cards.includes(card)).length
+  ) >= 7
+) && (
+  <>
+    {/* Left Arrow */}
     <button
-      onClick={() => setActiveTab("collection")}
-      className={`py-3 flex justify-center border-t-2 ${
-        activeTab === "collection"
-          ? "border-gray-900"
-          : "border-transparent"
-      }`}
+      type="button"
+      onClick={(e) => {
+        const row = e.currentTarget.parentElement?.querySelector(
+          ".card-scroll-row"
+        ) as HTMLDivElement | null;
+
+        row?.scrollBy({
+          left: -720,
+          behavior: "smooth",
+        });
+      }}
+      className={
+        desktopTab === "showcase"
+          ? "absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-sm text-[#5a3e84] text-xs hover:scale-105 transition-all"
+          : "absolute left-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-md text-[#5a3e84] hover:scale-105 transition-all"
+      }
     >
-      <Grid3X3
-        className={`h-5 w-5 ${
-          activeTab === "collection"
-            ? "text-gray-900"
-            : "text-gray-400"
-        }`}
-      />
+      ‹
     </button>
 
+    {/* Right Arrow */}
     <button
-      onClick={() => setActiveTab("trades")}
-      className={`py-3 flex justify-center border-t-2 ${
-        activeTab === "trades"
-          ? "border-gray-900"
-          : "border-transparent"
-      }`}
+      type="button"
+      onClick={(e) => {
+        const row = e.currentTarget.parentElement?.querySelector(
+          ".card-scroll-row"
+        ) as HTMLDivElement | null;
+
+        row?.scrollBy({
+          left: 720,
+          behavior: "smooth",
+        });
+      }}
+      className={
+        desktopTab === "showcase"
+          ? "absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-sm text-[#5a3e84] text-xs hover:scale-105 transition-all"
+          : "absolute right-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-md text-[#5a3e84] hover:scale-105 transition-all"
+      }
     >
-      <ArrowLeftRight
-        className={`h-5 w-5 ${
-          activeTab === "trades"
-            ? "text-gray-900"
-            : "text-gray-400"
-        }`}
-      />
+      ›
     </button>
+  </>
+)}
+
+  {/* Scroll Container */}
+  <div
+    className="card-scroll-row overflow-x-auto overflow-y-visible px-6 pt-3 pb-4 [&::-webkit-scrollbar]:hidden"
+    style={{
+      scrollbarWidth: "none",
+      msOverflowStyle: "none",
+    }}
+  >
+    <div
+      className="grid grid-flow-col gap-3 w-full"
+      style={{
+        gridAutoColumns: "calc((100% - 3.75rem) / 6)",
+      }}
+    >
+      {showcaseCards
+        .filter((card) => section.cards.includes(card))
+        .map((card, index) => (
+          <div
+            key={`${card.set_id}-${card.card_key}-${index}`}
+            onClick={() => setSelectedCardImage(getTradeCardImage(card))}
+            className="relative aspect-[5/7] rounded-xl overflow-visible bg-white shadow-sm cursor-pointer hover:scale-105 hover:shadow-lg transition-all"
+          >
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 px-2 py-0.5 rounded-full bg-[#5a3e84] text-[#f5e6a8] text-[10px] font-bold tracking-wide shadow-md border border-[#d4af37]/40 whitespace-nowrap">
+              {(() => {
+                if (
+                  String(card.set_id) === "FW" ||
+                  String(card.set_id) === "SD" ||
+                  String(card.set_id) === "friendshipsbegin" ||
+                  String(card.set_id) === "tcgpromos"
+                ) {
+                  const cleanKey = String(card.card_key)
+                    .replace(/^BONUS-/, "")
+                    .replace(/^STARTER-/, "");
+
+                  const match = cleanKey.match(
+                    /(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C|PR)/
+                  );
+
+                  let rarity = match?.[0] || "";
+
+                  if (rarity === "PER") rarity = "※ER";
+                  if (rarity === "PSPR") rarity = "※SPR";
+                  if (rarity === "PCR") rarity = "※CR";
+                  if (rarity === "PGR") rarity = "※GR";
+                  if (rarity === "PRR") rarity = "※RR";
+
+                  return rarity;
+                }
+
+                let rarity = String(card.card_key).split("-")[0];
+
+                if (rarity === "SHINING ZR") rarity = "⬦ZR";
+                if (rarity === "SZR") rarity = "⬦ZR";
+
+                return rarity;
+              })()}
+            </div>
+
+            <img
+              src={getTradeCardImage(card)}
+              alt={card.card_key}
+              className={`w-full h-full ${
+                String(card.set_id) === "FW" ||
+                String(card.set_id) === "SD" ||
+                String(card.set_id) === "friendshipsbegin"
+                  ? "object-contain p-1"
+                  : "object-cover"
+              }`}
+            />
+          </div>
+        ))}
+    </div>
   </div>
 </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-gray-500 text-center py-12">
+          No rare cards collected yet.
+        </div>
+      )
+    ) : (
+      /* Trades Content */
+      tradeCards.length > 0 ? (
+        <div className="space-y-8">
+          {Array.from(
+  new Set(tradeCards.map((card) => String(card.set_id)))
+).map((setId) => (
+            <div key={setId}>
+              <h3 className="text-sm font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4">
+                {getSetName(setId)}
+              </h3>
 
-{/* Tab Content */}
-{activeTab === "collection" ? (
-  <div>
-    {/* Description */}
-<div className="px-6 py-5 bg-white">
-  <div className="relative flex items-center justify-center gap-3">
-    <div className="h-px bg-gray-200 flex-1 max-w-[60px]" />
+              <div className="relative">
+{tradeCards
+  .filter((card) => String(card.set_id) === setId).length >= 7 && (
+  <>
+    {/* Left Arrow */}
+    <button
+      type="button"
+      onClick={(e) => {
+        const row = e.currentTarget.parentElement?.querySelector(
+          ".card-scroll-row"
+        ) as HTMLDivElement | null;
 
-    <span className="text-[11px] tracking-[0.18em] font-semibold text-gray-500 uppercase">
-      These are your rarest cards
-    </span>
+        row?.scrollBy({
+          left: -720,
+          behavior: "smooth",
+        });
+      }}
+      className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-sm text-[#5a3e84] text-xs hover:scale-105 transition-all"
+    >
+      ‹
+    </button>
 
-    <div className="h-px bg-gray-200 flex-1 max-w-[60px]" />
-  </div>
-</div>
+    {/* Right Arrow */}
+    <button
+      type="button"
+      onClick={(e) => {
+        const row = e.currentTarget.parentElement?.querySelector(
+          ".card-scroll-row"
+        ) as HTMLDivElement | null;
 
-    {/* Showcase Grid */}
-    <div className="grid grid-cols-3 gap-[1px] bg-white">
-    {showcaseCards.length > 0 ? (
-      showcaseCards.map((card, index) => {
-        const showDivider =
-          index === 0 ||
-          String(showcaseCards[index - 1].set_id) !==
-            String(card.set_id);
+        row?.scrollBy({
+          left: 720,
+          behavior: "smooth",
+        });
+      }}
+      className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-sm text-[#5a3e84] text-xs hover:scale-105 transition-all"
+    >
+      ›
+    </button>
+  </>
+)}
 
-        return (
-          <>
-            {showDivider && (
-              <div
-                key={`showcase-divider-${card.set_id}`}
-                className="col-span-3 py-2 bg-white"
-              >
-                <div className="relative flex items-center justify-center gap-3">
-                  <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
+  {/* Scroll Container */}
+  <div
+    className="card-scroll-row overflow-x-auto overflow-y-visible px-6 pt-3 pb-4"
+    style={{
+      scrollbarWidth: "none",
+      msOverflowStyle: "none",
+    }}
+  >
+    <div
+      className="grid grid-flow-col gap-3 w-full"
+      style={{
+        gridAutoColumns: "calc((100% - 3.75rem) / 6)",
+      }}
+    >
+      {tradeCards
+  .filter((card) => String(card.set_id) === setId)
+  .map((card) => (
+          <div
+            key={card.id}
+            onClick={() => setSelectedCardImage(getTradeCardImage(card))}
+            className="relative aspect-[5/7] rounded-xl overflow-visible bg-white shadow-sm cursor-pointer hover:scale-105 hover:shadow-lg transition-all"
+          >
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 px-2 py-0.5 rounded-full bg-[#5a3e84] text-[#f5e6a8] text-[10px] font-bold tracking-wide shadow-md border border-[#d4af37]/40 whitespace-nowrap">
+              {(() => {
+                if (
+                  String(card.set_id) === "FW" ||
+                  String(card.set_id) === "SD" ||
+                  String(card.set_id) === "friendshipsbegin" ||
+                  String(card.set_id) === "tcgpromos"
+                ) {
+                  const cleanKey = String(card.card_key)
+                    .replace(/^BONUS-/, "")
+                    .replace(/^STARTER-/, "");
 
-                  <span className="text-[10px] tracking-[0.15em] font-semibold text-gray-500 uppercase">
-                    {getSetName(String(card.set_id))}
-                  </span>
+                  const match = cleanKey.match(
+                    /(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C|PR)/
+                  );
 
-                  <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
-                </div>
-              </div>
-            )}
+                  let rarity = match?.[0] || "";
 
-            <div
-              key={`${card.set_id}-${card.card_key}-${index}`}
-              className="aspect-[5/7] bg-white overflow-hidden"
-            >
-<img
+                  if (rarity === "PER") rarity = "※ER";
+                  if (rarity === "PSPR") rarity = "※SPR";
+                  if (rarity === "PCR") rarity = "※CR";
+                  if (rarity === "PGR") rarity = "※GR";
+                  if (rarity === "PRR") rarity = "※RR";
+
+                  return rarity;
+                }
+
+                let rarity = String(card.card_key).split("-")[0];
+
+                if (rarity === "SHINING ZR") rarity = "⬦ZR";
+                if (rarity === "SZR") rarity = "⬦ZR";
+
+                return rarity;
+              })()}
+            </div>
+
+            <img
   src={getTradeCardImage(card)}
   alt={card.card_key}
-  className={`w-full h-full bg-white ${
+  className={`w-full h-full ${
     String(card.set_id) === "FW" ||
     String(card.set_id) === "SD" ||
     String(card.set_id) === "friendshipsbegin"
@@ -838,90 +1702,38 @@ const getSetName = (setId: string) => {
       : "object-cover"
   }`}
 />
-            </div>
-          </>
-        );
-      })
-    ) : (
-      <div className="col-span-3 py-12 text-center text-sm text-gray-500 bg-white">
-        No rare cards collected yet.
-      </div>
-    )}
-  </div>
-  </div>
-) : (
-<div>
-  {/* Edit Trades Button */}
-  <div className="p-4">
-    <Button
-      variant="outline"
-      className="w-full h-9 rounded-lg border-gray-300 bg-white text-gray-800 font-semibold"
-      onClick={() => navigate("/my-trades")}
-    >
-      Edit Trades
-    </Button>
-  </div>
 
-  {/* Trades Grid */}
-  <div className="grid grid-cols-3 gap-[1px] bg-white">
-    {tradeCards.length > 0 ? (
-      tradeCards.map((card, index) => {
-  const showDivider =
-    index === 0 ||
-    String(tradeCards[index - 1].set_id) !== String(card.set_id);
-
-  return (
-    <>
-      {showDivider && (
-        <div
-          key={`divider-${card.set_id}`}
-          className="col-span-3 py-2 bg-white"
-        >
-          <div className="relative flex items-center justify-center gap-3">
-            <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
-
-            <span className="text-[10px] tracking-[0.15em] font-semibold text-gray-500 uppercase">
-              {getSetName(String(card.set_id))}
-            </span>
-
-            <div className="h-px bg-gray-200 flex-1 max-w-[80px]" />
-          </div>
-        </div>
-      )}
-
-     <div
-  key={card.id}
-  className="aspect-[5/7] bg-white overflow-hidden"
+<div
+  className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg border-2 border-white/20 z-20 ${
+    card.listing_type === "purchase"
+      ? "bg-blue-500"
+      : "bg-green-500"
+  }`}
 >
-  <img
-    src={getTradeCardImage(card)}
-    alt={card.card_key}
-    className={`w-full h-full bg-white ${
-      String(card.set_id) === "FW" ||
-      String(card.set_id) === "SD" ||
-      String(card.set_id) === "friendshipsbegin"
-        ? "object-contain p-1"
-        : "object-cover"
-    }`}
-  />
+  {card.listing_type === "purchase" ? "$" : "⇄"}
 </div>
-    </>
-  );
-})
-    ) : (
-      <div className="col-span-3 py-12 text-center text-sm text-gray-500 bg-white">
-        No cards marked for trade.
-      </div>
+          </div>
+        ))}
+    </div>
+  </div>
+</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-gray-500 text-center py-12">
+          No cards marked for trade.
+        </div>
+      )
     )}
   </div>
 </div>
-)}
-      </div>
+    </div>
+  </div>
+</div>
 
-      {/* Render nothing on desktop */}
-      <div className="hidden sm:block" />
 
-{/* Edit Profile Screen */}
+{/* MOBILE USER MENU */}
 {showEditProfileModal && (
   <>
     <style>
@@ -1307,6 +2119,7 @@ disabled={savingAvatar}
           <div className="text-sm text-gray-500">
             Track your CCG progress here.
           </div>
+          
         </div>
 
         <span className="text-2xl text-gray-400">›</span>
@@ -1380,9 +2193,32 @@ disabled={savingAvatar}
 
       <div className="ml-16 border-t border-gray-100" />
 
+      <div className="ml-16 border-t border-gray-100" />
+
+{/* Wishlist */}
+<button
+  onClick={() => navigate("/wishlist")}
+  className="w-full flex items-center px-4 py-4 active:bg-gray-50"
+>
+  <div className="w-8 flex justify-center text-gray-900">
+    <Heart className="w-6 h-6" />
+  </div>
+
+  <div className="ml-4 flex-1 text-left">
+    <div className="text-[17px] font-normal text-gray-900">
+      Wishlist
+    </div>
+    <div className="text-sm text-gray-500">
+      View and manage your most wanted cards.
+    </div>
+  </div>
+
+  <span className="text-2xl text-gray-400">›</span>
+</button>
+
       {/* My Trades */}
       <button
-        onClick={() => navigate("/my-trades")}
+        onClick={() => navigate("/inventory")}
         className="w-full flex items-center px-4 py-4 active:bg-gray-50"
       >
         <div className="w-8 flex justify-center text-gray-900">
@@ -1401,6 +2237,19 @@ disabled={savingAvatar}
         <span className="text-2xl text-gray-400">›</span>
       </button>
     </div>
+  </div>
+)}
+{selectedCardImage && (
+  <div
+    className="fixed inset-0 z-[30000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
+    onClick={() => setSelectedCardImage(null)}
+  >
+    <img
+      src={selectedCardImage}
+      alt="Selected Card"
+      className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl"
+      onClick={(e) => e.stopPropagation()}
+    />
   </div>
 )}
     </>

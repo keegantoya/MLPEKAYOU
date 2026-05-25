@@ -18,7 +18,19 @@ import avatar012 from "@/assets/avatars/avatar012.jpg";
 import avatar013 from "@/assets/avatars/avatar013.jpg";
 import avatar014 from "@/assets/avatars/avatar014.jpg";
 import avatar015 from "@/assets/avatars/avatar015.jpg";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
 import setLeaderboardsBadge from "@/assets/avatars/setleaderboardsbadge.png";
+import celestiasCrown from "/website-assets/celestiascrown.png";
+
+import elementOfMagic from "/website-assets/elementofmagic.png";
+import elementOfLoyalty from "/website-assets/elementofloyalty.png";
+import elementOfKindness from "/website-assets/elementofkindness.png";
+import elementOfGenerosity from "/website-assets/elementofgenerosity.png";
+import elementOfHonesty from "/website-assets/elementofhonesty.png";
+
+import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
+import elementOfLaughter from "/website-assets/elementoflaughter.png";
 
 const avatarMap: Record<string, string> = {
   "avatar001.jpg": avatar001,
@@ -36,19 +48,28 @@ const avatarMap: Record<string, string> = {
   "avatar013.jpg": avatar013,
   "avatar014.jpg": avatar014,
   "avatar015.jpg": avatar015,
+  "KeeganAvatar.jpg": KeeganAvatar,
 };
 
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", total: 186 },
-  { id: "5", name: "Rainbow First Edition", total: 146 },
+  { id: "5", name: "Eternal Rainbow First Edition", total: 146 },
   { id: "7", name: "Fun Moments First Edition", total: 127 },
   { id: "2", name: "Eternal Moon Second Edition", total: 189 },
   { id: "8", name: "Fun Moments Second Edition", total: 136 },
- //  { id: "3", name: "Eternal Moon Third Edition", total: 290 }, //
-  { id: "friendshipsbegin", name: "Friendships Begin", total: 194 },
-  {
+  { id: "3", name: "Eternal Moon Third Edition", total: 290 },
+  { id: "11", name: "Fun Moments Third Edition", total: 148 },
+{ 
+  id: "friendshipsbegin",
+  dbId: "SD",
+  name: "Friendships Begin",
+  total: 194
+},
+{
   id: "fantasywonderland",
+  dbId: "FW",
   name: "Fantasy Wonderland",
+  total: 191,
   folder: "fantasywonderland",
   prefix: "BP01",
   rarities: {
@@ -60,11 +81,11 @@ const sets = [
     GR: 12,
     CR: 12,
     RR: 6,
-    PER: 6,
+    PER: 12,
     PSPR: 11,
     PGR: 6,
     PCR: 12,
-    PRR: 6
+    PRR: 6,
   }
 }
 ];
@@ -79,13 +100,17 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
     avatar_url: "avatar010.jpg"
   },
   "5": {
-    username: "Keegan (Owner)",
-    avatar_url: "avatar006.jpg"
+    username: "Keegan",
+    avatar_url: "KeeganAvatar"
   },
   "8": {
-  username: "Keegan (Owner)",
-  avatar_url: "avatar006.jpg"
-}
+  username: "Mari",
+  avatar_url: "avatar003.jpg"
+  },
+  "7": {
+  username: "Jacob",
+  avatar_url: "avatar010.jpg"
+},
 };
 
 const isoSets = [
@@ -141,6 +166,24 @@ const isoSets = [
       "SHINING ZR": 1
     }
   },
+    {
+    id: "3",
+    name: "Eternal Moon: Third Edition",
+    folder: "third-edition-moon",
+    prefix: "M3",
+    rarities: {
+      R: 60,
+      SR: 40,
+      SSR: 40,
+      HR: 60,
+      LSR: 32,
+      UR: 18,
+      SGR: 16,
+      ZR: 14,
+      SC: 7,
+      "SZR": 3
+    }
+  },
   {
     id: "7",
     name: "Fun Moments: First Edition",
@@ -183,11 +226,50 @@ const isoSets = [
   }
 ];
 
+const VERIFIED_USERS: Record<
+  string,
+  {
+    badge: string;
+    label: string;
+  }
+> = {
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+    "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+};
+
 const Community = () => {
 
   const navigate = useNavigate();
 
+const [activeCategory, setActiveCategory] = useState<
+  "star" | "ccg" | "rainbow" | "funmoments" | "tcg"
+>("ccg");
+
   const [firstFinishers, setFirstFinishers] = useState<any>({});
+  const [setTopThree, setSetTopThree] = useState<Record<string, any[]>>({});
+  const [topCollector, setTopCollector] = useState<any>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [owned, setOwned] = useState<Record<string, boolean>>({});
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
@@ -223,7 +305,259 @@ const Community = () => {
   };
 
 useEffect(() => {
+const loadTopCollector = async () => {
   setFirstFinishers(manualFirstFinishers);
+
+  // Get all profiles
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, username, avatar_url");
+
+  if (!profiles || profiles.length === 0) return;
+
+  // Get all collection progress rows
+  const { data: allProgress } = await supabase
+    .from("collection_progress_raw")
+    .select("user_id, set_id, progress");
+
+  if (!allProgress) return;
+
+  let bestUser = null;
+  let bestCompleted = 0;
+
+    for (const profile of profiles) {
+    // Disqualify HeiManTou from Top Collector calculations
+    if (profile.id === "cd439365-992b-486c-8f03-928fb7bb6683") {
+      continue;
+    }
+    // Count how many sets this user has fully completed
+    const completedSets = sets.filter((set) => {
+      const row = allProgress.find(
+        (p) =>
+          p.user_id === profile.id &&
+          String(p.set_id) === String(set.id)
+      );
+
+      if (!row?.progress) return false;
+
+      const ownedCount = Object.values(row.progress).filter(Boolean).length;
+
+      return ownedCount >= set.total;
+    }).length;
+
+    // Track the highest total
+    if (completedSets > bestCompleted) {
+      bestCompleted = completedSets;
+      const totalCardsOwned = allProgress
+  .filter((p) => p.user_id === profile.id)
+  .reduce((total, row) => {
+    const count = Object.values(row.progress || {}).filter(Boolean).length;
+    return total + count;
+  }, 0);
+
+bestUser = {
+  ...profile,
+  completed_sets: completedSets,
+  total_cards_owned: totalCardsOwned,
+};
+    }
+  }
+
+  if (bestUser) {
+    setTopCollector(bestUser);
+  }
+};
+  loadTopCollector();
+}, []);
+
+useEffect(() => {
+const loadSetTopThree = async () => {
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, username, avatar_url");
+
+  const { data: allProgress } = await supabase
+    .from("collection_progress_raw")
+    .select("user_id, set_id, progress, updated_at");
+
+  if (!profiles || !allProgress) return;
+
+  const profileMap: Record<string, any> = {};
+  profiles.forEach((profile) => {
+    profileMap[profile.id] = profile;
+  });
+
+  // Same manual placements used in CommunitySet.tsx
+  const manualPlacements: Record<string, string[]> = {
+    "5": ["Keegan", "Jacob", "Mari"],
+    "2": ["Jacob", "Mari", "SillyPony"],
+    "8": ["Mari", "Keegan", "Jacob"],
+  };
+
+  const results: Record<string, any[]> = {};
+
+for (const set of sets) {
+
+  const actualSetId =
+    set.id === "friendshipsbegin"
+      ? "SD"
+      : set.id === "fantasywonderland"
+      ? "FW"
+      : String(set.id);
+
+  const rows = allProgress.filter(
+    (row) => String(row.set_id) === actualSetId
+  );
+
+    let leaderboard = rows
+      .map((row) => {
+        let owned = 0;
+
+if (set.id === "friendshipsbegin") {
+
+  const BONUS_STRUCTURE = [
+    { prefix: "SD01C", count: 9 },
+    { prefix: "SD01U", count: 7 },
+    { prefix: "SD01SR", count: 6 },
+    { prefix: "SD01SPR", count: 10 },
+    { prefix: "SD01GR", count: 6 },
+    { prefix: "SD01CR", count: 6 },
+    { prefix: "SD01ER", count: 6 },
+    { prefix: "SD01PER", count: 12 },
+    { prefix: "SD01PRR", count: 6 },
+  ];
+
+  const getDeckCards = (deckCode: string) => {
+    const cards: string[] = [];
+
+    const deckLetter = deckCode.slice(-1);
+    const deckIndex = deckLetter.charCodeAt(0) - 64;
+
+    const add = (rarity: string, count: number) => {
+      for (let i = 1; i <= count; i++) {
+        cards.push(
+          `${deckCode}${rarity}${String(i).padStart(2, "0")}`
+        );
+      }
+    };
+
+    add("C", 9);
+    add("U", 4);
+    add("SR", 2);
+
+    cards.push(`SD01ER${String(deckIndex).padStart(2, "0")}`);
+
+    add("SPR", 4);
+
+    cards.push(`SD01RR${String(deckIndex).padStart(2, "0")}`);
+
+    return cards;
+  };
+
+  const starterDecks = [
+    "SD01A",
+    "SD01B",
+    "SD01C",
+    "SD01D",
+    "SD01E",
+    "SD01F",
+  ];
+
+  starterDecks.forEach((deck) => {
+    const cards = getDeckCards(deck);
+
+    cards.forEach((cardKey) => {
+      const stateKey = `STARTER-${cardKey}`;
+
+      if (row.progress?.[stateKey]) {
+        owned++;
+      }
+    });
+  });
+
+  BONUS_STRUCTURE.forEach(({ prefix, count }) => {
+    for (let i = 1; i <= count; i++) {
+
+      let actualIndex = i;
+
+      if (prefix === "SD01PER") {
+        actualIndex = i + 6;
+      }
+
+      const key =
+        `${prefix}${String(actualIndex).padStart(2, "0")}`;
+
+      const stateKey = `BONUS-${key}`;
+
+      if (row.progress?.[stateKey]) {
+        owned++;
+      }
+    }
+  });
+
+} else {
+
+  owned = Object.values(row.progress || {}).filter(
+    (value: any) =>
+      value === true || value?.owned === true
+  ).length;
+
+}
+        const profile = profileMap[row.user_id];
+
+        if (!profile) return null;
+
+        const username =
+          profile.username === "Collector-f093b8"
+            ? ""
+            : profile.username;
+
+        return {
+          id: profile.id,
+          username,
+          avatar_url: profile.avatar_url,
+          owned,
+          updated_at: row.updated_at,
+        };
+      })
+            .filter(
+        (player: any) =>
+          player &&
+          player.username !== "HeiManTou (Chinese Collector)" &&
+          player.id !== "cd439365-992b-486c-8f03-928fb7bb6683"
+      );
+
+    // Apply manual placements for sets with predetermined order
+    if (
+  manualPlacements[String(set.id)] &&
+  leaderboard.length > 0
+) {
+      const manualOrder = manualPlacements[String(set.id)];
+
+      leaderboard.sort((a: any, b: any) => {
+        const aIndex = manualOrder.indexOf(a.username);
+        const bIndex = manualOrder.indexOf(b.username);
+
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
+        }
+
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+
+        return b.owned - a.owned;
+      });
+    } else {
+      leaderboard.sort((a: any, b: any) => b.owned - a.owned);
+    }
+
+    results[String(set.id)] = leaderboard.slice(0, 3);
+  }
+
+  setSetTopThree(results);
+};
+
+  loadSetTopThree();
 }, []);
 
   const loadISO = async (user: any) => {
@@ -282,164 +616,553 @@ useEffect(() => {
 
       <KayouHeader />
 
-      <div className="container py-10 max-w-7xl">
+      <div className="container py-10 max-w-[1600px]">
+  <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_260px] gap-8 items-start">
 
-        <div className="text-center mb-10 max-w-3xl mx-auto">
-          <img
-  src={setLeaderboardsBadge}
-  alt="Set Leaderboards"
-  className="mx-auto h-12 sm:h-14 md:h-16 object-contain mb-2"
-/>
-        </div>
+  {/* MOBILE TOP COLLECTOR */}
+  <div className="xl:hidden mb-8 mt-4">
+    <div
+      className="
+        rounded-3xl
+        bg-white/70 backdrop-blur-xl
+        border border-white/60
+        shadow-[0_10px_30px_rgba(76,29,149,0.08)]
+        px-6 py-5
+        text-center
+      "
+    >
+      <h2 className="text-sm font-extrabold uppercase tracking-wide text-purple-700 mb-4">
+        Top Collector
+        <span className="text-purple-400 font-semibold"> (All Sets)</span>
+      </h2>
 
-<div className="flex items-center gap-6 my-4">
-  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
+      <div className="text-xs font-semibold uppercase tracking-wide text-purple-500 mb-4">
+        {(topCollector?.total_cards_owned ?? 0).toLocaleString()} Cards Owned
+      </div>
 
-  <img
-    src="/website-assets/CCGBANNER.png"
-    alt="CCG"
-    className="h-16 sm:h-18 md:h-20 object-contain"
-  />
+      <div className="relative w-24 h-24 mx-auto mb-4">
+        <img
+          src={celestiasCrown}
+          alt="Top Collector Crown"
+          className="
+            absolute -top-8 -right-3 w-20 h-auto z-20
+            pointer-events-none drop-shadow-lg rotate-[24deg]
+          "
+        />
 
-  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
-</div>
+        <img
+          src={getAvatar(topCollector?.avatar_url)}
+          alt="Top Collector Avatar"
+          className="
+            relative z-10 w-24 h-24 rounded-full
+            border-4 border-white shadow-xl
+            ring-2 ring-yellow-300/70
+          "
+        />
+      </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-  {sets
-    .filter((set) => ["4", "1", "2", "3", "5", "6", "7", "8"].includes(set.id))
-    .map((set) => (
+      <div className="flex items-center justify-center gap-2 mb-3">
+        <span className="font-bold text-purple-950 text-base">
+          {topCollector?.username || "Loading..."}
+        </span>
 
-      <button
-        key={set.id}
-        onClick={() => navigate(`/community/${set.id}`)}
+        {topCollector?.id &&
+          VERIFIED_USERS[topCollector.id] && (
+            <img
+              src={VERIFIED_USERS[topCollector.id].badge}
+              alt={VERIFIED_USERS[topCollector.id].label}
+              title={VERIFIED_USERS[topCollector.id].label}
+              className="w-5 h-5 object-contain flex-shrink-0"
+            />
+          )}
+      </div>
+
+      <div className="text-4xl font-extrabold text-purple-700 leading-none">
+        {topCollector?.completed_sets ?? 0}
+      </div>
+
+      <div className="text-sm text-neutral-500 mt-1">
+        Completed Sets
+      </div>
+    </div>
+  </div>
+
+    {/* LEFT SIDEBAR */}
+<aside className="xl:sticky xl:top-6">
+      <div
         className="
-  group relative overflow-hidden
-  rounded-3xl p-6 text-left
-  bg-white/70 backdrop-blur-xl
-  border border-white/60
-  shadow-[0_10px_30px_rgba(76,29,149,0.08)]
-  hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
-  hover:-translate-y-1.5
-  hover:border-yellow-300/60
-  transition-all duration-300
-"
+          rounded-3xl
+          bg-white/70 backdrop-blur-xl
+          border border-white/60
+          shadow-[0_10px_30px_rgba(76,29,149,0.08)]
+          p-6
+        "
       >
-        <h2 className="text-lg font-bold text-purple-950 mb-2 pr-24">
-          {set.name}
+        <h2 className="text-xl font-bold text-purple-950 mb-2">
+          Categories
         </h2>
 
-        <div className="text-sm font-medium text-purple-700 group-hover:text-purple-900 transition-colors">
-  View Leaderboard →
+        <p className="text-sm text-purple-700/80 leading-relaxed mb-6">
+          Explore leaderboards for each card game and set collection.
+        </p>
+<div className="space-y-3">
+  {/* Star (empty for now) */}
+  <button
+    onClick={() => setActiveCategory("star" as any)}
+    className={`
+      w-full flex items-center justify-between
+      px-4 py-3 rounded-2xl font-semibold transition-all duration-200
+      ${
+        activeCategory === ("star" as any)
+          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
+          : "text-purple-900 hover:bg-purple-50"
+      }
+    `}
+  >
+    <span className="flex items-center gap-3">
+      <img
+        src={elementOfMagic}
+        alt="Star"
+        className="w-5 h-5 object-contain"
+      />
+      <span>Star</span>
+    </span>
+    <span>→</span>
+  </button>
+
+  {/* Moon (shows Eternal Moon 1 + 2) */}
+  <button
+    onClick={() => setActiveCategory("ccg")}
+    className={`
+      w-full flex items-center justify-between
+      px-4 py-3 rounded-2xl font-semibold transition-all duration-200
+      ${
+        activeCategory === "ccg"
+          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
+          : "text-purple-900 hover:bg-purple-50"
+      }
+    `}
+  >
+    <span className="flex items-center gap-3">
+      <img
+        src={elementOfKindness}
+        alt="Moon"
+        className="w-5 h-5 object-contain"
+      />
+      <span>Moon</span>
+    </span>
+    <span>→</span>
+  </button>
+
+  {/* Rainbow (shows Rainbow First Edition) */}
+  <button
+    onClick={() => setActiveCategory("rainbow" as any)}
+    className={`
+      w-full flex items-center justify-between
+      px-4 py-3 rounded-2xl font-semibold transition-all duration-200
+      ${
+        activeCategory === ("rainbow" as any)
+          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
+          : "text-purple-900 hover:bg-purple-50"
+      }
+    `}
+  >
+    <span className="flex items-center gap-3">
+      <img
+        src={elementOfLoyalty}
+        alt="Rainbow"
+        className="w-5 h-5 object-contain"
+      />
+      <span>Rainbow</span>
+    </span>
+    <span>→</span>
+  </button>
+
+  {/* Fun Moments (shows Fun Moments 1 + 2) */}
+  <button
+    onClick={() => setActiveCategory("funmoments" as any)}
+    className={`
+      w-full flex items-center justify-between
+      px-4 py-3 rounded-2xl font-semibold transition-all duration-200
+      ${
+        activeCategory === ("funmoments" as any)
+          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
+          : "text-purple-900 hover:bg-purple-50"
+      }
+    `}
+  >
+    <span className="flex items-center gap-3">
+      <img
+        src={elementOfGenerosity}
+        alt="Fun Moments"
+        className="w-5 h-5 object-contain"
+      />
+      <span>Fun Moments</span>
+    </span>
+    <span>→</span>
+  </button>
+
+  {/* TCG (shows Friendships Begin + Fantasy Wonderland) */}
+  <button
+    onClick={() => setActiveCategory("tcg")}
+    className={`
+      w-full flex items-center justify-between
+      px-4 py-3 rounded-2xl font-semibold transition-all duration-200
+      ${
+        activeCategory === "tcg"
+          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
+          : "text-purple-900 hover:bg-purple-50"
+      }
+    `}
+  >
+    <span className="flex items-center gap-3">
+      <img
+        src={elementOfHonesty}
+        alt="TCG"
+        className="w-5 h-5 object-contain"
+      />
+      <span>TCG</span>
+    </span>
+    <span>→</span>
+  </button>
+</div>
+      </div>
+    </aside>
+
+{/* MAIN CONTENT */}
+<main className="-mt-6">
+
+  {["star", "ccg", "rainbow", "funmoments"].includes(activeCategory) && (
+    <>
+
+<div className="flex items-center gap-4 my-4">
+  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
+
+  <div
+    className="
+      px-5 py-1.5
+      rounded-full
+      bg-white/80 backdrop-blur-sm
+      border border-purple-200/60
+      shadow-sm
+      text-sm font-extrabold uppercase tracking-[0.2em]
+      text-purple-700
+    "
+  >
+    CCG
+  </div>
+
+  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
 </div>
 
-        {firstFinishers[String(set.id)] && (
-          <div className="absolute top-3 right-3 flex flex-col items-center">
-            <div className="relative w-14 h-14">
-              <img
-                src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
-                className="w-14 h-14 rounded-full border-4 border-white shadow-xl ring-2 ring-yellow-300/60"
-              />
+<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 mb-10">
+  {sets
+    .filter((set) => {
+  if (activeCategory === "star") {
+    return false; // Empty for now
+  }
 
-              <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
-                #1
-              </div>
-            </div>
+  if (activeCategory === "ccg") {
+    // Moon
+    return ["1", "2", "3"].includes(set.id);
+  }
 
-            <div className="font-semibold text-xs mt-1 text-center">
-              {firstFinishers[String(set.id)]?.username}
-            </div>
-          </div>
-        )}
-      </button>
+  if (activeCategory === "rainbow") {
+    // Rainbow First Edition
+    return ["5"].includes(set.id);
+  }
+
+  if (activeCategory === "funmoments") {
+    // Fun Moments First + Second Edition
+    return ["7", "8", "11"].includes(set.id);
+  }
+
+  return false;
+})
+    .map((set) => (
+
+<button
+  key={set.id}
+  onClick={() => navigate(`/community/${set.id}`)}
+  className="
+    group relative overflow-hidden
+    rounded-3xl
+    px-6 py-5
+    text-left
+    bg-white/75 backdrop-blur-xl
+    border border-white/60
+    shadow-[0_10px_30px_rgba(76,29,149,0.08)]
+    hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
+    hover:-translate-y-1
+    hover:border-yellow-300/60
+    transition-all duration-300
+    min-h-[170px]
+  "
+>
+  {/* Soft highlight overlay */}
+  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-purple-100/20 pointer-events-none" />
+
+  {/* Set Title */}
+  <h2 className="relative text-xl font-bold text-purple-950 pr-28 leading-tight mb-2">
+    {set.name}
+  </h2>
+
+  {/* Subtitle */}
+  <div className="relative text-[11px] font-bold uppercase tracking-wide text-purple-500 mb-3">
+    Top Collector
+  </div>
+
+  {/* Placeholder leaderboard rows for visual depth */}
+<div className="relative space-y-1.5 mb-4">
+  {(setTopThree[String(set.id)] || []).map((player, index) => (
+    <div
+      key={player.id}
+      className={`flex items-center justify-between text-xs ${
+        index === 0
+          ? "font-semibold text-purple-950"
+          : "text-purple-700/80"
+      }`}
+    >
+      <span className="truncate">
+        {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"} {player.username}
+      </span>
+
+      <span className="font-bold text-purple-700">
+  {(player.owned ?? 0).toLocaleString()} / {(set.total ?? 0).toLocaleString()}
+</span>
+    </div>
   ))}
 </div>
 
-<div className="flex items-center gap-6 my-4">
+  {/* View Link */}
+  <div className="relative text-sm font-semibold text-purple-700 group-hover:text-purple-900 transition-colors">
+    View Leaderboard →
+  </div>
+
+  {/* #1 Avatar */}
+  {firstFinishers[String(set.id)] && (
+    <div className="absolute top-4 right-4 flex flex-col items-center">
+      <div className="relative w-14 h-14">
+        <img
+          src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
+          className="w-14 h-14 rounded-full border-4 border-white shadow-xl ring-2 ring-yellow-300/60"
+        />
+
+        <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+          #1
+        </div>
+      </div>
+
+      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight">
+        {firstFinishers[String(set.id)]?.username}
+      </div>
+    </div>
+  )}
+</button>
+  ))}
+</div>
+    </>
+  )}
+
+    {activeCategory === "tcg" && (
+    <>
+<div className="flex items-center gap-4 my-4">
   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
 
-  <img
-    src="/website-assets/TCGBANNER.png"
-    alt="TCG"
-    className="h-16 sm:h-18 md:h-20 object-contain"
-  />
+  <div
+    className="
+      px-5 py-1.5
+      rounded-full
+      bg-white/80 backdrop-blur-sm
+      border border-purple-200/60
+      shadow-sm
+      text-sm font-extrabold uppercase tracking-[0.2em]
+      text-purple-700
+    "
+  >
+    TCG
+  </div>
 
   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
 </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 mb-10">
   {sets
     .filter((set) => ["fantasywonderland", "friendshipsbegin"].includes(set.id))
     .map((set) => (
 
       <button
-        key={set.id}
-        onClick={() => navigate(`/community/${set.id}`)}
-        className="
-  group relative overflow-hidden
-  rounded-3xl p-6 text-left
-  bg-white/70 backdrop-blur-xl
-  border border-white/60
-  shadow-[0_10px_30px_rgba(76,29,149,0.08)]
-  hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
-  hover:-translate-y-1.5
-  hover:border-yellow-300/60
-  transition-all duration-300
-"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-purple-100/30 pointer-events-none" />
-        <h2 className="text-lg font-bold text-purple-950 mb-2 pr-24">
-          {set.name}
-        </h2>
+  key={set.id}
+  onClick={() => navigate(`/community/${set.id}`)}
+  className="
+    group relative overflow-hidden
+    rounded-3xl
+    px-6 py-5
+    text-left
+    bg-white/75 backdrop-blur-xl
+    border border-white/60
+    shadow-[0_10px_30px_rgba(76,29,149,0.08)]
+    hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
+    hover:-translate-y-1
+    hover:border-yellow-300/60
+    transition-all duration-300
+    min-h-[170px]
+  "
+>
+  {/* Soft highlight overlay */}
+  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-purple-100/20 pointer-events-none" />
 
-        <div className="text-sm font-medium text-purple-700 group-hover:text-purple-900 transition-colors">
-  View Leaderboard →
-</div>
+  {/* Set Title */}
+  <h2 className="relative text-xl font-bold text-purple-950 pr-28 leading-tight mb-2">
+    {set.name}
+  </h2>
 
-        {firstFinishers[String(set.id)] && (
-          <div className="absolute top-3 right-3 flex flex-col items-center">
-            <div className="relative w-14 h-14">
-              <img
-                src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
-                className="w-14 h-14 rounded-full border-4 border-white shadow-xl ring-2 ring-yellow-300/60"
-              />
+  {/* Subtitle */}
+  <div className="relative text-[11px] font-bold uppercase tracking-wide text-purple-500 mb-3">
+    Top Collector
+  </div>
 
-              <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
-                #1
-              </div>
-            </div>
+  {/* Placeholder leaderboard rows for visual depth */}
+<div className="relative space-y-1.5 mb-4">
+  {(setTopThree[String(set.id)] || []).map((player, index) => (
+    <div
+      key={player.id}
+      className={`flex items-center justify-between text-xs ${
+        index === 0
+          ? "font-semibold text-purple-950"
+          : "text-purple-700/80"
+      }`}
+    >
+      <span className="truncate">
+        {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"} {player.username}
+      </span>
 
-            <div className="font-semibold text-xs mt-1 text-center">
-              {firstFinishers[String(set.id)]?.username}
-            </div>
-          </div>
-        )}
-      </button>
+      <span className="font-bold text-purple-700">
+  {(player.owned ?? 0).toLocaleString()} / {(set.total ?? 0).toLocaleString()}
+</span>
+    </div>
   ))}
 </div>
-<footer className="mt-16 px-4 py-8 sm:py-10 text-center text-xs sm:text-sm text-neutral-600">
-  <div className="max-w-xl mx-auto space-y-2">
-    <p className="leading-relaxed">
-      This website is not run or owned by Kayou.
-    </p>
 
-    <p className="text-[9px] sm:text-[10px] italic text-neutral-500 leading-relaxed">
-      All rights to their respective owners. All rights to Kayou.
-    </p>
-
-    <p className="leading-relaxed max-w-md mx-auto">
-     This is a fanmade collector tool and generates no profit.
-    </p>
-
-    <img
-      src="/logos/collab-logo.png"
-      alt="MLPEKAYOU x KAYOU"
-      className="mx-auto mt-4 h-12 sm:h-16 w-auto opacity-90"
-    />
+  {/* View Link */}
+  <div className="relative text-sm font-semibold text-purple-700 group-hover:text-purple-900 transition-colors">
+    View Leaderboard →
   </div>
-</footer>
+
+  {/* #1 Avatar */}
+  {firstFinishers[String(set.id)] && (
+    <div className="absolute top-4 right-4 flex flex-col items-center">
+      <div className="relative w-14 h-14">
+        <img
+          src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
+          className="w-14 h-14 rounded-full border-4 border-white shadow-xl ring-2 ring-yellow-300/60"
+        />
+
+        <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
+          #1
+        </div>
+      </div>
+
+      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight">
+        {firstFinishers[String(set.id)]?.username}
       </div>
     </div>
-  );
+  )}
+</button>
+  ))}
+</div>
+    </>
+  )}
+
+    </main>
+
+<div
+  className="
+    hidden xl:block
+    w-[260px]
+    rounded-3xl
+    bg-white/70 backdrop-blur-xl
+    border border-white/60
+    shadow-[0_10px_30px_rgba(76,29,149,0.08)]
+    px-6 py-5
+    text-center
+  "
+>
+  <h2 className="text-sm font-extrabold uppercase tracking-wide text-purple-700 mb-4">
+    Top Collector
+    <span className="text-purple-400 font-semibold"> (All Sets)</span>
+  </h2>
+
+  {/* Total Cards Owned */}
+  <div className="text-xs font-semibold uppercase tracking-wide text-purple-500 mb-4">
+    {(topCollector?.total_cards_owned ?? 0).toLocaleString()} Cards Owned
+  </div>
+
+{/* Avatar with Crown */}
+<div className="relative w-24 h-24 mx-auto mb-4">
+  {/* Crown */}
+<img
+  src={celestiasCrown}
+  alt="Top Collector Crown"
+  className="
+    absolute
+    -top-8
+    -right-3
+    w-20
+    h-auto
+    z-20
+    pointer-events-none
+    drop-shadow-lg
+    rotate-[24deg]
+  "
+/>
+
+  {/* Avatar */}
+  <img
+    src={getAvatar(topCollector?.avatar_url)}
+    alt="Top Collector Avatar"
+    className="
+      relative z-10
+      w-24 h-24
+      rounded-full
+      border-4 border-white
+      shadow-xl
+      ring-2 ring-yellow-300/70
+    "
+  />
+</div>
+
+  {/* Name + Verification Badge */}
+  <div className="flex items-center justify-center gap-2 mb-3">
+    <span className="font-bold text-purple-950 text-base">
+      {topCollector?.username || "Loading..."}
+    </span>
+
+    {topCollector?.id &&
+      VERIFIED_USERS[topCollector.id] && (
+        <img
+          src={VERIFIED_USERS[topCollector.id].badge}
+          alt={VERIFIED_USERS[topCollector.id].label}
+          title={VERIFIED_USERS[topCollector.id].label}
+          className="w-5 h-5 object-contain flex-shrink-0"
+        />
+      )}
+  </div>
+
+  {/* Completed Sets Count */}
+  <div className="text-4xl font-extrabold text-purple-700 leading-none">
+    {topCollector?.completed_sets ?? 0}
+  </div>
+
+  <div className="text-sm text-neutral-500 mt-1">
+    Completed Sets
+  </div>
+</div>
+
+  </div>
+</div>
+</div>
+);
 };
 
 export default Community;

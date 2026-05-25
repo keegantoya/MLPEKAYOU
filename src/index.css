@@ -229,3 +229,15 @@ body {
     transform: scale(1);
   }
 }
+html,
+body,
+#root {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* Internet Explorer and old Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari, and new Edge */
+}

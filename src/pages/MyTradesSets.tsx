@@ -40,6 +40,13 @@ const sets = [
     rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
   },
   {
+    id: "11",
+    name: "Fun Moments: Third Edition",
+    folder: "fun-moments-three",
+    prefix: "FM3",
+    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 }
+  },
+  {
     id: "3",
     name: "Eternal Moon: Third Edition",
     folder: "third-edition-moon",
@@ -87,7 +94,13 @@ export default function MyTradesSets() {
 
   const [collapsedRarities, setCollapsedRarities] = useState<Record<string, boolean>>({});
   const [progressMap, setProgressMap] = useState<Record<string, any>>({});
-  const [tradeCards, setTradeCards] = useState<Record<string, boolean>>({});
+  const [tradeCards, setTradeCards] = useState<
+  Record<string, "trade" | "purchase">
+>({});
+
+const [listingMode, setListingMode] = useState<
+  "trade" | "purchase"
+>("trade");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [editMode, setEditMode] = useState(false);
   const [activeDeck, setActiveDeck] = useState<number | null>(null);
@@ -101,7 +114,7 @@ export default function MyTradesSets() {
       user = data.session?.user;
     }
 
-    // 🔴 handle logged-out case
+    // handle logged-out case
     if (!user) {
       setProgressMap({});
       setTradeCards({});
@@ -126,13 +139,14 @@ export default function MyTradesSets() {
     const { data: trades } = await supabase
       .from("for_trade")
       .select("*")
-      .eq("set_id", setId)
+      .eq("set_id", resolvedSetId)
       .eq("user_id", user.id);
 
-    const tradeMap: Record<string, boolean> = {};
-    trades?.forEach((card: any) => {
-      tradeMap[card.card_key] = true;
-    });
+    const tradeMap: Record<string, "trade" | "purchase"> = {};
+
+trades?.forEach((card: any) => {
+  tradeMap[card.card_key] = card.listing_type || "trade";
+});
 
     setTradeCards(tradeMap);
 
@@ -191,14 +205,14 @@ const changeQuantity = async (cardKey: string, delta: number) => {
     const user = data.session?.user;
     if (!user) return;
 
-    const isTrade = tradeCards[cardKey];
+    const currentType = tradeCards[cardKey];
 
-    if (isTrade) {
+    if (currentType) {
       await supabase
         .from("for_trade")
         .delete()
         .eq("user_id", user.id)
-        .eq("set_id", setId)
+        .eq("set_id", resolvedSetId)
         .eq("card_key", cardKey);
 
       setTradeCards((prev) => {
@@ -207,24 +221,41 @@ const changeQuantity = async (cardKey: string, delta: number) => {
         return updated;
       });
     } else {
-      await supabase.from("for_trade").insert({
-        user_id: user.id,
-        set_id: setId,
-        card_key: cardKey
-      });
+await supabase.from("for_trade").upsert({
+  user_id: user.id,
+  set_id: resolvedSetId,
+  card_key: cardKey,
+  listing_type: listingMode
+});
 
-      setTradeCards((prev) => ({
-        ...prev,
-        [cardKey]: true
-      }));
+setTradeCards((prev) => ({
+  ...prev,
+  [cardKey]: listingMode
+}));
     }
   };
 
-  const set = sets.find(s => s.id === setId);
+const slugMap: Record<string, string> = {
+  "eternal-moon-one": "1",
+  "eternal-moon-two": "2",
+  "eternal-moon-three": "3",
+  "rainbow-one": "5",
+  "fun-moments-one": "7",
+  "fun-moments-two": "8",
+  "fun-moments-three": "11",
+  "promotional-cards": "9",
+  "fantasy-wonderland": "FW",
+  "friendships-begin": "friendshipsbegin",
+  "tcg-promos": "tcgpromos",
+};
+
+const resolvedSetId = slugMap[setId || ""] || setId;
+
+const set = sets.find((s) => s.id === resolvedSetId);
 
 if (!set) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#faf7ef] to-[#f4efe3]">
       <KayouHeader />
       <div className="container py-8 text-center text-gray-500">
         Invalid set
@@ -421,26 +452,56 @@ const rarityOrders: Record<string, string[]> = {
       <div className="container py-8">
 
         <button
-          onClick={() => navigate("/my-trades")}
-          className="text-sm text-gray-500 hover:text-black mb-4"
-        >
-          ← Back to My Trades
-        </button>
+  onClick={() => navigate("/inventory")}
+  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#d4af37]/40 shadow-sm text-[#5a3e84] font-medium hover:bg-[#faf6ea] transition mb-6"
+>
+  ← Back to My Inventory
+</button>
 
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-2">{set.name}</h1>
-          <p className="text-gray-500 text-sm max-w-xl mx-auto">
+        <div className="relative overflow-hidden rounded-3xl border border-[#d4af37]/40 bg-gradient-to-br from-[#fffdf6] via-[#faf7ef] to-[#f4efe3] shadow-xl p-8 mb-8">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#5a3e84] drop-shadow-sm mb-3 text-center">
+  {set.name}
+</h1>
+          <p className="text-[#6b5b3f] text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
   {set.id === "friendshipsbegin"
     ? "Starter Deck cards cannot be traded, but you can still edit your inventory. Only Bonus Pack cards may be marked for trade."
-    : "Only cards you have collected can be marked for trade, which can be done by simply tapping the card. If you'd like to track your duplicates, there is a private inventory function. Nopony else can see your inventory."
+    : "Cards can be marked for trade by tapping on them. Cards marked for trade will appear in the bottom of the inventory main page. On mobile, use the arrows to add or delete from inventory. On PC, click the existing number and type in the new value."
   }
 </p>
-          <button
+          <div className="flex justify-center gap-3 mt-4">
+  <button
+    onClick={() => setListingMode("trade")}
+    className={`px-5 py-2 rounded-xl font-semibold transition ${
+      listingMode === "trade"
+        ? "bg-green-600 text-white"
+        : "bg-white border"
+    }`}
+  >
+    For Trade
+  </button>
+
+  <button
   onClick={() => setEditMode(!editMode)}
-  className="mt-3 px-3 py-1 rounded-lg bg-[#5a3e84] text-[#f5e6a8] border border-[#d4af37] text-sm font-semibold shadow hover:brightness-110"
+  className={`px-5 py-2 rounded-xl font-semibold transition ${
+    editMode
+      ? "bg-[#5a3e84] text-white"
+      : "bg-white border"
+  }`}
 >
   {editMode ? "Done Editing" : "Edit Inventory"}
 </button>
+
+  <button
+    onClick={() => setListingMode("purchase")}
+    className={`px-5 py-2 rounded-xl font-semibold transition ${
+      listingMode === "purchase"
+        ? "bg-blue-600 text-white"
+        : "bg-white border"
+    }`}
+  >
+    For Purchase
+  </button>
+</div>
         </div>
 
         {(set.id === "friendshipsbegin"
@@ -633,9 +694,15 @@ const indexB = currentOrder.indexOf(b);
 
             <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
 
-            <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
-              {rarity}
-            </span>
+            <span className="px-4 py-1 rounded-full bg-[#fff8e1] border border-[#d4af37]/30 text-[10px] sm:text-xs tracking-[0.25em] font-bold text-[#8b6a2b] uppercase shadow-sm">
+  {rarity === "SHINING ZR" || rarity === "SZR"
+    ? "◇ZR"
+    : rarity === "SN"
+    ? "◇N"
+    : rarity === "SCR"
+    ? "◇CR"
+    : rarity}
+</span>
 
             <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
 
@@ -652,16 +719,16 @@ const indexB = currentOrder.indexOf(b);
               {rarityCards.map((card) => {
 
                 const key = card.key;
-                const isTrade = tradeCards[key];
+                const listingType = tradeCards[key];
 
                 const isStarterDeck =
                   set.id === "friendshipsbegin" &&
                   key.includes("-");
 
                 const isDoubleCard =
-                  set.id === "moon3hidden" &&
-                  card.rarity === "SZR" &&
-                  card.number === 1;
+  set.id === "3" &&
+  card.rarity === "SZR" &&
+  card.number === 1;
 
                 return (
 
@@ -673,7 +740,11 @@ const indexB = currentOrder.indexOf(b);
                     className={`relative rounded-xl p-[2px] ${
                       isStarterDeck ? "" : "cursor-pointer"
                     } ${
-                      isTrade ? "border-2 border-green-500" : ""
+                      listingType === "trade"
+  ? "border-2 border-green-500"
+  : listingType === "purchase"
+  ? "border-2 border-blue-500"
+  : ""
                     } ${
                       isDoubleCard
                         ? "col-span-2 aspect-[10/7]"
@@ -694,38 +765,94 @@ const indexB = currentOrder.indexOf(b);
                     />
 
                     <div
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute bottom-1 right-1 flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow"
-                    >
+  onClick={(e) => e.stopPropagation()}
+  className="absolute bottom-1 right-1"
+>
+  {editMode && window.innerWidth >= 768 ? (
+  <div className="flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-2 py-[2px] border border-[#d4af37] shadow">
+    <input
+  type="text"
+  inputMode="numeric"
+  value={quantities[key] === 1 ? "" : String(quantities[key] || "")}
+  placeholder="1"
+  onClick={(e) => e.stopPropagation()}
+  onFocus={(e) => e.target.select()}
+  onChange={async (e) => {
+    const raw = e.target.value;
 
-                      {editMode && (
-                        <button
-                          onClick={() => changeQuantity(key, -1)}
-                          className="px-1 leading-none hover:text-[#ffd700]"
-                        >
-                          −
-                        </button>
-                      )}
+    // Allow the field to be temporarily blank while typing
+    if (raw === "") {
+      setQuantities((prev) => ({
+        ...prev,
+        [key]: 0,
+      }));
+      return;
+    }
 
-                      <span className="px-1 font-semibold">
-                        {quantities[key] || 1}
-                      </span>
+    const value = Math.max(1, Number(raw) || 1);
+    const current = quantities[key] || 1;
 
-                      {editMode && (
-                        <button
-                          onClick={() => changeQuantity(key, 1)}
-                          className="px-1 leading-none hover:text-[#ffd700]"
-                        >
-                          +
-                        </button>
-                      )}
+    // Update immediately in the UI
+    setQuantities((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
 
-                    </div>
+    // Save to database only if the value changed
+    const delta = value - current;
+    if (delta !== 0) {
+      await changeQuantity(key, delta);
+    }
+  }}
+  onBlur={async () => {
+    // If the user leaves the field blank, restore it to 1
+    if (!quantities[key] || quantities[key] < 1) {
+      setQuantities((prev) => ({
+        ...prev,
+        [key]: 1,
+      }));
+    }
+  }}
+  className="w-12 bg-transparent text-center font-semibold outline-none appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+/>
+  </div>
+)  : (
+    <div className="flex items-center bg-[#5a3e84] text-[#f5e6a8] text-[10px] rounded-full px-1.5 py-[2px] border border-[#d4af37] shadow">
+      {editMode && (
+        <button
+          onClick={() => changeQuantity(key, -1)}
+          className="px-1 leading-none hover:text-[#ffd700]"
+        >
+          −
+        </button>
+      )}
 
-                    {isTrade && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow">
-                        ✓
-                      </div>
+      <span className="px-1 font-semibold">
+        {quantities[key] || 1}
+      </span>
+
+      {editMode && (
+        <button
+          onClick={() => changeQuantity(key, 1)}
+          className="px-1 leading-none hover:text-[#ffd700]"
+        >
+          +
+        </button>
+      )}
+    </div>
+  )}
+</div>
+
+                    {listingType && (
+                      <div
+  className={`absolute top-2 right-2 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold shadow ${
+    listingType === "trade"
+      ? "bg-green-500"
+      : "bg-blue-500"
+  }`}
+>
+  ✓
+</div>
                     )}
 
                   </div>

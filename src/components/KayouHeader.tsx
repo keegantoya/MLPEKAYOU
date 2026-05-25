@@ -12,11 +12,13 @@ import {
   Grid,
   Layers,
   Search,
-  Sparkles
+  Sparkles,
+  CircleHelp,
+  Heart
 } from "lucide-react";
 
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +27,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useRef } from "react";
+
+import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
 
 import logo from "@/assets/avatars/mlpekayouwiki.png";
 
@@ -44,6 +49,8 @@ import avatar013 from "@/assets/avatars/avatar013.jpg";
 import avatar014 from "@/assets/avatars/avatar014.jpg";
 import avatar015 from "@/assets/avatars/avatar015.jpg";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
+import maipfp from "@/assets/avatars/maipfp.jpg";
 
 const generateUsername = () => {
   const names = [
@@ -81,6 +88,32 @@ const avatarMap: Record<string, string> = {
   "avatar013.jpg": avatar013,
   "avatar014.jpg": avatar014,
   "avatar015.jpg": avatar015,
+
+  "keeganpfp.jpg": KeeganAvatar,
+  "heimantouavatar.png": heimantouAvatar,
+  "maipfp.jpg": maipfp,
+};
+
+const VERIFIED_USERS = {
+  // Gold Badge = MLPEKAYOU STAFF
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+
+  // Blue Badge = KAYOU STAFF
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
 };
 
 const getAvatar = (avatar?: string, username?: string) => {
@@ -99,9 +132,10 @@ const getAvatar = (avatar?: string, username?: string) => {
 
 const KayouHeader = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
- const [avatarSrc, setAvatarSrc] = useState<string | null>(() => {
+  const [avatarSrc, setAvatarSrc] = useState<string | null>(() => {
   return sessionStorage.getItem("avatar");
 });
 const [showMobileLeaderboardMenu, setShowMobileLeaderboardMenu] = useState(false);
@@ -127,8 +161,10 @@ const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
   const [showProgressMenu, setShowProgressMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-const getProfile = async (userId: string) => {
+const verification =
+  profile?.id ? VERIFIED_USERS[profile.id] : null;
 
+  const getProfile = async (userId: string) => {
   const { data } = await supabase
     .from("profiles")
     .select("*")
@@ -136,7 +172,51 @@ const getProfile = async (userId: string) => {
     .single();
 
   setProfile(data);
+
+  if (data?.avatar_url) {
+    const avatar = getAvatar(data.avatar_url, data.username);
+    setAvatarSrc(avatar);
+    sessionStorage.setItem("avatar", avatar);
+  }
 };
+
+useEffect(() => {
+  const handleProfileUpdated = (event: Event) => {
+    const customEvent = event as CustomEvent<{
+      avatar_url?: string;
+      username?: string;
+    }>;
+
+    const updates = customEvent.detail || {};
+
+    if (updates.avatar_url) {
+      const avatar = getAvatar(
+        updates.avatar_url,
+        updates.username || profile?.username
+      );
+
+      setAvatarSrc(avatar);
+      sessionStorage.setItem("avatar", avatar);
+    }
+
+    setProfile((prev: any) => ({
+      ...prev,
+      ...updates,
+    }));
+  };
+
+  window.addEventListener(
+    "profile-updated",
+    handleProfileUpdated as EventListener
+  );
+
+  return () => {
+    window.removeEventListener(
+      "profile-updated",
+      handleProfileUpdated as EventListener
+    );
+  };
+}, [profile?.username]);
 
 useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
@@ -283,6 +363,14 @@ const handleForgotPassword = async () => {
     navigate("/");
   };
 
+  const isActive = (path: string) => {
+  if (path === "/") {
+    return location.pathname === "/";
+  }
+
+  return location.pathname.startsWith(path);
+};
+
   return (
     <>
 <header
@@ -315,20 +403,30 @@ style={{
       : `0px`
 }}
 >
-    {/* LEFT SIDE */}
-    {/* LEFT SIDE */}
+{/* LEFT SIDE */}
 <div className="flex items-center gap-3 min-w-[70px]">
+
+  {!user && (
+    <Button
+      className="hidden sm:flex h-10 px-5 bg-white/10 hover:bg-white/20 text-[#f5e6a8] border border-[#d4af37]/40 font-semibold shadow-sm"
+      onClick={() => {
+        setAuthMode("signup");
+        setLoginStep("email");
+        setLoginError("");
+        setShowForgot(false);
+        setShowLogin(true);
+      }}
+    >
+      Create Account
+    </Button>
+  )}
 
 {/* MOBILE PROFILE / LOGIN */}
 <div
   className="sm:hidden flex items-center gap-2"
   style={{
-    marginTop:
-      window.innerWidth < 640 &&
-      window.matchMedia("(display-mode: standalone)").matches
-        ? "-20px"
-        : "0px"
-  }}
+  marginTop: "-7px"
+}}
 >
 {user ? (
   <img
@@ -358,98 +456,287 @@ style={{
   </button>
 </div>
 
-{/* DESKTOP PROFILE AVATAR */}
-{user && (
-  <button
-    className="hidden sm:inline-flex items-center justify-center"
-    onClick={() => navigate("/profile")}
-  >
-    <img
-      src={avatarSrc || avatar001}
-      alt="avatar"
-      className="h-10 w-10 rounded-full object-cover border-2 border-white/30 shadow-md"
-    />
-  </button>
-)}
-
 {/* DESKTOP DISCORD BUTTON */}
-<button
-  className="hidden sm:inline-flex items-center justify-center"
-  onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
->
-  <img
-    src="/website-assets/discordlogo.png"
-    alt="Discord"
-    className="h-8 w-auto"
-  />
-</button>
 
-  <button
-  className="hidden sm:inline-flex items-center justify-center"
-  onClick={() => window.open("https://www.tiktok.com/@keanaex", "_blank")}
->
-  <img
-    src="/website-assets/tiktoklogo.png"
-    alt="TikTok"
-    className="h-12 w-auto"
-  />
-</button>
+ {user && (
+  <Sheet open={open} onOpenChange={setOpen}>
+    <SheetTrigger asChild>
+      <button className="hidden sm:inline-flex items-center justify-center">
+        <img
+          src={avatarSrc || avatar001}
+          alt="avatar"
+         className={`h-10 w-10 rounded-full object-cover border-2 shadow-md transition-all duration-300 hover:scale-110 hover:shadow-xl hover:border-[#d4af37]/60 ${
+  open
+    ? "scale-110 shadow-xl border-[#d4af37]/60"
+    : "border-white/30"
+}`}
+        />
+      </button>
+    </SheetTrigger>
 
+<SheetContent
+  side="left"
+  className="top-16 h-[calc(100vh-64px)] w-[260px] bg-gradient-to-b from-[#65408f] via-[#55357d] to-[#40285f] border-r border-[#d4af37]/30 text-[#f5e6a8] [&>button]:hidden p-0"
+>
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="flex flex-col items-center pt-5 pb-3">
+          <img
+            src={avatarSrc || avatar001}
+            alt="avatar"
+            className="h-16 w-16 rounded-full object-cover border-3 border-white/20 shadow-lg"
+          />
+
+          <div className="mt-2 flex items-center justify-center gap-2">
+  <div className="text-xl font-semibold">
+    {profile?.username || "My Profile"}
+  </div>
+
+{verification && (
+  <img
+    src={verification.badge}
+    alt={verification.label}
+    title={verification.label}
+    className="w-5 h-5 object-contain flex-shrink-0"
+  />
+)}
 </div>
+        </div>
 
-    {/* CENTER LOGO */}
-    <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center gap-2">
-      <img
-        src={logo}
-        alt="MLP Kayou Wiki"
-        className="h-[32px] sm:h-[40px] md:h-[46px] cursor-pointer"
-        onClick={() => navigate("/")}
-      />
-    </div>
+        {/* Menu Items */}
+        <div className="py-3 space-y-1.5">
+          <button
+            onClick={() => {
+              navigate("/UserMenu");
+              setOpen(false);
+            }}
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+          >
+            Edit My Profile
+          </button>
 
-   {/* RIGHT SIDE */}
-<div className="hidden sm:flex items-center gap-3">
+          <button
+            onClick={() => {
+              navigate("/my-progress");
+              setOpen(false);
+            }}
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+          >
+            My CCG Progress
+          </button>
 
-  {user && (
-  <>
-    <Button
-  variant="ghost"
-  className="text-white hover:bg-[#b48ec2]/40"
+          <button
+            onClick={() => {
+              navigate("/progress-tcg");
+              setOpen(false);
+            }}
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+          >
+            My TCG Progress
+          </button>
+
+          <button
+            onClick={() => {
+              navigate("/inventory");
+              setOpen(false);
+            }}
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+          >
+            My Inventory
+          </button>
+
+          <button
   onClick={() => {
-    handleLogout();
+    navigate("/my-iso");
     setOpen(false);
   }}
+  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
 >
-  Logout
-</Button>
-  </>
-)}
+  My ISO
+</button>
+<button
+  onClick={() => {
+    navigate("/wishlist");
+    setOpen(false);
+  }}
+ className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+>
+  My Wishlist
+</button>
+        </div>
+{/* Social Links */}
+<div className="pt-2 border-t border-white/10">
+  <div className="flex items-center justify-center gap-3 py-2">
+    <button
+      onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
+      className="opacity-90 hover:opacity-100 transition-opacity"
+    >
+      <img
+        src="/website-assets/discordlogo.png"
+        alt="Discord"
+        className="h-8 w-auto"
+      />
+    </button>
 
+    <button
+      onClick={() => window.open("https://www.tiktok.com/@keanaex", "_blank")}
+      className="opacity-90 hover:opacity-100 transition-opacity"
+    >
+      <img
+        src="/website-assets/tiktoklogo.png"
+        alt="TikTok"
+        className="h-10 w-auto"
+      />
+    </button>
+  </div>
+
+  {/* Logout */}
+  <button
+    onClick={() => {
+      handleLogout();
+      setOpen(false);
+    }}
+    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-[#d4af37]/20 transition-all"
+  >
+    Logout
+  </button>
+</div>
+      </div>
+    </SheetContent>
+  </Sheet>
+)}
+</div>
+
+{/* MOBILE CENTER LOGO */}
+<img
+  src={logo}
+  alt="MLP Kayou Wiki"
+  className="sm:hidden absolute left-1/2 -translate-x-1/2 h-8 w-auto cursor-pointer drop-shadow-md"
+  onClick={() => navigate("/")}
+/>
+
+{/* CENTER LOGO + DESKTOP ICON NAV */}
+<div className="absolute left-1/2 -translate-x-1/2 hidden sm:flex items-center gap-4">
+
+  {/* LEFT OF LOGO */}
+  <button
+    onClick={() => navigate("/")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <Home className="h-5 w-5" />
+  </button>
+
+  <button
+    onClick={() => navigate("/forum")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <Users className="h-5 w-5" />
+  </button>
+
+  <button
+    onClick={() => navigate("/collections")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <Sparkles className="h-5 w-5" />
+  </button>
+
+  {/* LOGO */}
+  <img
+    src={logo}
+    alt="MLP Kayou Wiki"
+    className="h-[46px] cursor-pointer mx-2"
+    onClick={() => navigate("/")}
+  />
+
+  {/* RIGHT OF LOGO */}
+  <button
+    onClick={() => navigate("/trading-post")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <ArrowLeftRight className="h-5 w-5" />
+  </button>
+
+  <button
+    onClick={() => navigate("/community")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/community")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <Trophy className="h-5 w-5" />
+  </button>
+
+  <button
+  onClick={() => navigate("/leaderboard")}
+  className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+    isActive("/leaderboard")
+      ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+      : "bg-white/10 border-white/20 hover:bg-white/20"
+  }`}
+  title="Top Collectors"
+>
+  <Medal className="h-5 w-5" />
+</button>
+
+  <button
+    onClick={() => navigate("/selling")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/selling")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <Tag className="h-5 w-5" />
+  </button>
+
+  <button
+    onClick={() => navigate("/faq")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/faq")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <Search className="h-5 w-5" />
+  </button>
+</div>
+
+{/* RIGHT SIDE */}
+<div className="hidden sm:flex items-center gap-3">
   {!user && (
-  <>
-    <Button
-      variant="ghost"
-      className="text-white hover:bg-[#b48ec2]/40"
-      onClick={() => {
-        setAuthMode("login");
-        setShowLogin(true);
-      }}
-    >
-      Login
-    </Button>
+    <>
 
-    <Button
-      className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
-      onClick={() => {
-        setAuthMode("signup");
-        setShowLogin(true);
-      }}
-    >
-      Make Account
-    </Button>
-  </>
-)}
-
+      <Button
+        className="h-10 px-5 bg-white/10 hover:bg-white/20 text-[#f5e6a8] border border-[#d4af37]/40 font-semibold shadow-sm"
+        onClick={() => {
+          setAuthMode("login");
+          setLoginStep("email");
+          setLoginError("");
+          setShowForgot(false);
+          setShowLogin(true);
+        }}
+      >
+        Login
+      </Button>
+    </>
+  )}
 </div>
 
   </div>
@@ -473,185 +760,6 @@ style={{
   </button>
 </div>
 </header>
-
-     {window.innerWidth >= 640 && (
-  <div
-  className="hidden sm:block fixed top-16 left-0 right-0 z-[9999] bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8]"
->
-  <div
-  ref={menuRef}
-  className="w-full px-4 py-1 flex justify-center gap-1"
->
-
-  <Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => navigate("/")}
->
-  Home
-</Button>
-
-<Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => navigate("/forum")}
->
-  Forum
-</Button>
-
- <Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => navigate("/collections")}
->
-  Collections
-</Button>
-  <div className="relative">
-  <Button
-    variant="ghost"
-    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
-    onClick={() => {
-      setShowProgressMenu(!showProgressMenu);
-      setShowIsoMenu(false);
-      setShowTradesMenu(false);
-      setShowLeaderboardMenu(false);
-    }}
-  >
-    Progress ▾
-  </Button>
-
-  {showProgressMenu && (
-    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
-
-      <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-        onClick={() => {
-          navigate("/my-progress");
-          setShowProgressMenu(false);
-        }}
-      >
-        CCG Progress
-      </button>
-
-      <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-        onClick={() => {
-          navigate("/progress-tcg");
-          setShowProgressMenu(false);
-        }}
-      >
-        TCG Progress
-      </button>
-
-    </div>
-  )}
-</div>
-
-<Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => navigate("/my-iso")}
->
-  ISO
-</Button>
-
-<div className="relative">
-  <Button
-    variant="ghost"
-    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
-    onClick={() => {
-  setShowTradesMenu(!showTradesMenu);
-  setShowIsoMenu(false);
-  setShowLeaderboardMenu(false);
-}}
-  >
-    Trades ▾
-  </Button>
-
-  {showTradesMenu && (
-   <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-44 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
-      
-      <button
-  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => {
-    navigate("/my-trades");
-    setShowTradesMenu(false);
-  }}
->
-  My Inventory
-</button>
-
-<button
-  className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => {
-    navigate("/trading-post");
-    setShowTradesMenu(false);
-  }}
->
-  Community Trades
-</button>
-
-    </div>
-  )}
-</div>
-  <div className="relative">
-  <Button
-    variant="ghost"
-    className="relative z-10 px-2 py-1 text-sm whitespace-nowrap text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4]"
-    onClick={() => {
-  setShowLeaderboardMenu(!showLeaderboardMenu);
-  setShowIsoMenu(false);
-  setShowTradesMenu(false);
-}}
-  >
-    Leaderboards ▾
-  </Button>
-
-  {showLeaderboardMenu && (
-    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 bg-[#5a3e84] backdrop-blur-xl border border-[#d4af37]/40 rounded-2xl shadow-xl z-50">
-      
-      <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-        onClick={() => {
-          navigate("/community");
-          setShowLeaderboardMenu(false);
-        }}
-      >
-        US Sets Leaderboards
-      </button>
-
-      <button
-        className="block mx-2 my-1 px-3 py-1.5 text-sm rounded-md text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-        onClick={() => {
-          navigate("/leaderboard");
-          setShowLeaderboardMenu(false);
-        }}
-      >
-        US Top Collectors
-      </button>
-
-    </div>
-  )}
-</div>
-  <Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => navigate("/selling")}
->
-  Selling
-</Button>
-
-<Button
-  variant="ghost"
-  className="relative z-10 text-[#f5e6a8] hover:bg-white/10 hover:text-[#fff3c4] transition-colors"
-  onClick={() => navigate("/faq")}
->
-  FAQ
-</Button>
-
-</div>
-</div>
-)}
 
 {showMobilePrompt && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">

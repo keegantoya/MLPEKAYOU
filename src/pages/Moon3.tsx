@@ -2,20 +2,47 @@ import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { ChevronUp } from "lucide-react";
 
+import moonThreeBox from "/set-pictures/mooonthreebox.jpg";
+import moonThreePack from "/set-pictures/moonthreepack.jpg";
 
 const Moon3 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+const [showProductInfo, setShowProductInfo] = useState(false);
+const [showScrollTop, setShowScrollTop] = useState(false);
 
-  const toggleFlip = (key: string) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+const [viewMode, setViewMode] = useState(false);
+const [zoomedCard, setZoomedCard] = useState<string | null>(null);
+const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
+const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+
+const toggleFlip = (key: string) => {
+  // In View Set mode, open zoom modal instead of marking ownership
+  if (viewMode) {
+    const [rarity, numberStr] = key.split("-");
+    const number = Number(numberStr);
+
+    const frontSrc =
+      `/cards/third-edition-moon/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+
+    const backSrc = getCardBack(rarity, number);
+
+    setZoomedCardFlipped(false);
+    setZoomedCardBack(backSrc);
+    setZoomedCard(frontSrc);
+    return;
+  }
+
+  // Normal mode: mark owned/unowned
+  setFlipped((prev) => ({
+    ...prev,
+    [key]: !prev[key],
+  }));
+};
 
   // LOAD PROGRESS
   useEffect(() => {
@@ -79,6 +106,17 @@ const Moon3 = () => {
 
     saveProgress();
   }, [flipped, loaded]);
+
+useEffect(() => {
+  const handleScroll = () => {
+    setShowScrollTop(window.scrollY > 400);
+  };
+
+  handleScroll();
+  window.addEventListener("scroll", handleScroll);
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
 
   const set = {
     name: "Eternal Moon",
@@ -178,6 +216,43 @@ const getCardBack = (rarity: string, number: number) => {
   return `/card-backs/third-moon-edition-backs/moon3defaultback.jpg`;
 };
 
+const isZoomedLandscape =
+  zoomedCard &&
+  (
+    // HR001-HR022
+    /M3HR0(0[1-9]|1[0-9]|2[0-2])\.jpg$/.test(zoomedCard) ||
+
+    // HR031-HR052
+    /M3HR0(3[1-9]|4[0-9]|5[0-2])\.jpg$/.test(zoomedCard) ||
+
+    // UR015-UR018
+    /M3UR0(1[5-8])\.jpg$/.test(zoomedCard) ||
+
+    // ZR014
+    /M3ZR014\.jpg$/.test(zoomedCard)
+  );
+
+useEffect(() => {
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (zoomedCard) {
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.touchAction = "none";
+  } else {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  }
+
+  return () => {
+    html.style.overflow = "";
+    body.style.overflow = "";
+    body.style.touchAction = "";
+  };
+}, [zoomedCard]);
+
   return (
     <div className="min-h-screen bg-white">
       <KayouHeader />
@@ -201,8 +276,17 @@ const getCardBack = (rarity: string, number: number) => {
   <div className="flex-1 text-center">
 
     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#5a3e84] leading-tight">
-      {set.name}
-    </h1>
+  <button
+    onClick={() => setShowProductInfo(true)}
+    className="inline-flex items-center gap-2 hover:text-[#7c5aa6] transition-colors duration-200 cursor-pointer group"
+  >
+    <span>{set.name}</span>
+
+    <span className="flex items-center justify-center w-6 h-6 rounded-full border border-[#d4af37]/60 text-xs font-bold text-[#8b6a2b] bg-[#fffaf0] group-hover:bg-[#f8f0ff] group-hover:border-[#7c5aa6]/40 group-hover:text-[#5a3e84] transition">
+      i
+    </span>
+  </button>
+</h1>
 
     <div className="flex items-center justify-center gap-2 sm:gap-4 my-5">
       <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[140px]" />
@@ -220,7 +304,14 @@ const getCardBack = (rarity: string, number: number) => {
 
   </div>
 
-  <div className="hidden sm:block w-[72px]" />
+  <button
+  onClick={() => setViewMode(!viewMode)}
+  className="self-center sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
+>
+  <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">
+    {viewMode ? "Exit View" : "View Set"}
+  </span>
+</button>
 </div>
 
 {!loaded ? (
@@ -292,7 +383,7 @@ const done = rarityGroup.every(c =>
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {group.map((card: any) => {
                   const key = `${card.rarity}-${card.number}`;
-                  const isFlipped = flipped[key];
+                  const isFlipped = !viewMode && flipped[key];
                   const isDoubleCard =
                     card.rarity === "SZR" && card.number === 1;
 
@@ -332,7 +423,164 @@ const done = rarityGroup.every(c =>
   </>
 )}
       </div>
+
+      {zoomedCard && (
+  <div
+    className="fixed inset-0 z-[9999] transform-none bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+    onClick={() => setZoomedCard(null)}
+  >
+    <div
+      style={{ perspective: "1200px" }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setZoomedCardFlipped(!zoomedCardFlipped);
+      }}
+    >
+      <div
+        className={`relative transition-transform duration-500 transform-style-preserve-3d ${
+          zoomedCardFlipped ? "rotate-y-180" : ""
+        }`}
+      >
+        {/* FRONT */}
+        <img
+          src={zoomedCard}
+          className={`absolute inset-0 ${
+            isZoomedLandscape
+              ? "rotate-90 max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+              : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+          } rounded-2xl shadow-2xl backface-hidden`}
+        />
+
+        {/* BACK */}
+        <img
+          src={
+            zoomedCardBack ||
+            "/card-backs/third-moon-edition-backs/moon3defaultback.jpg"
+          }
+          className={`${
+            isZoomedLandscape
+              ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
+              : "max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw]"
+          } rounded-2xl shadow-2xl backface-hidden`}
+          style={{
+  transform: isZoomedLandscape
+    ? "rotateY(180deg) rotate(-90deg)"
+    : "rotateY(180deg)",
+}}
+        />
+      </div>
     </div>
+  </div>
+)}
+
+      {showProductInfo && (
+  <div
+    className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+    onClick={() => setShowProductInfo(false)}
+  >
+    <div
+      className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full relative overflow-hidden"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
+        <button
+          onClick={() => setShowProductInfo(false)}
+          className="absolute top-4 right-4 z-10 text-gray-500 hover:text-gray-800 text-2xl font-bold"
+        >
+          ×
+        </button>
+
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#5a3e84] text-center mb-8">
+          Eternal Moon — Third Edition Products
+        </h2>
+
+        {/* Booster Box */}
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+          <img
+            src={moonThreeBox}
+            alt="Eternal Moon Third Edition Booster Box"
+            className="w-full max-w-[220px] mx-auto rounded-xl"
+          />
+
+          <div className="text-left">
+            <p className="text-gray-500 leading-relaxed">
+              Eternal Moon Third Edition booster boxes contain 12 packs and
+              introduced the First Edition stamp on the earliest print run only.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+            <div className="text-sm uppercase tracking-wider text-gray-400">
+              MSRP
+            </div>
+            <div className="text-2xl font-bold text-[#5a3e84]">
+              $47.88
+            </div>
+          </div>
+        </div>
+
+        <div className="my-8 border-t border-gray-200" />
+
+        {/* Booster Pack */}
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr_auto] gap-4 sm:gap-6 items-center text-center md:text-left">
+          <img
+            src={moonThreePack}
+            alt="Eternal Moon Third Edition Booster Pack"
+            className="w-full max-w-[220px] mx-auto rounded-xl"
+          />
+
+          <div className="text-left">
+            <p className="text-gray-500 leading-relaxed">
+              Individual booster packs contain 8 cards and were not sold separately.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center justify-center bg-[#faf7ff] border border-[#e9def7] rounded-2xl px-6 py-4 min-w-[140px] mx-auto md:mx-0">
+            <div className="text-sm uppercase tracking-wider text-gray-400">
+              MSRP
+            </div>
+            <div className="text-2xl font-bold text-[#5a3e84]">
+              NONE
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+{showScrollTop && (
+  <button
+    onClick={() =>
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+    }
+    className="
+      fixed
+      bottom-32 sm:bottom-6
+      right-4 sm:right-6
+      z-[99999]
+      w-11 h-11
+      rounded-full
+      bg-gradient-to-r
+      from-[#7c5aa6]
+      to-[#5a3e84]
+      text-[#f5e6a8]
+      border border-[#d4af37]/60
+      shadow-2xl
+      active:scale-95
+      transition
+      flex items-center justify-center
+      hover:brightness-110
+    "
+    aria-label="Back to top"
+  >
+    <ChevronUp className="w-5 h-5" />
+  </button>
+)}
+    </div>
+    
   );
 };
 
