@@ -379,9 +379,21 @@ for (let i = 1; i <= count; i++) {
 
 }
 
-  const progress =
+const progress =
   set.id === "friendshipsbegin"
-    ? progressMap["SD"] || {}
+    ? (
+        progressMap["friendshipsbegin"] ||
+        progressMap["SD"] ||
+        {}
+      )
+    : set.id === "FW"
+    ? (
+        progressMap["FW"] ||
+        progressMap["fantasywonderland"] ||
+        progressMap["fantasy-wonderland"] ||
+        progressMap["BP01"] ||
+        {}
+      )
     : progressMap[set.id] || {};
 
 const ownedBonusCards = cards.filter(card => 
