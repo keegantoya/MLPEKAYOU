@@ -841,7 +841,7 @@ useEffect(() => {
 </p>
 
             <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-              Hi! My name is Keegan and I am hardcoding a description into your profile to remind you every time that you open this app that I love you, I appreciate you, and this app would be nothing without out. Thank you for everything.
+              Hi! My name is Keegan and I am hardcoding a description into your profile to remind you every time that you open this app that I love you, I appreciate you, and this app would be nothing without you! Thank you for everything.
             </p>
           </div>
 
