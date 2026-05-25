@@ -154,7 +154,7 @@ trades?.forEach((card: any) => {
     const { data: qtyData } = await supabase
       .from("card_quantity")
       .select("*")
-      .eq("set_id", setId)
+      .eq("set_id", resolvedSetId)
       .eq("user_id", user.id);
 
     const qtyMap: Record<string, number> = {};

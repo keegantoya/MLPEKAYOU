@@ -633,7 +633,7 @@ style={{
   <button
     onClick={() => navigate("/forum")}
     className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/")
+  isActive("/forum")
     ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
     : "bg-white/10 border-white/20 hover:bg-white/20"
 }`}
@@ -644,7 +644,7 @@ style={{
   <button
     onClick={() => navigate("/collections")}
     className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/")
+  isActive("/collections")
     ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
     : "bg-white/10 border-white/20 hover:bg-white/20"
 }`}
@@ -664,7 +664,7 @@ style={{
   <button
     onClick={() => navigate("/trading-post")}
     className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/")
+  isActive("/trading-post")
     ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
     : "bg-white/10 border-white/20 hover:bg-white/20"
 }`}

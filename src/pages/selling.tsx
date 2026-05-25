@@ -138,7 +138,7 @@ export default function Selling() {
       subtitle: "TRADING CARD GAME",
       gradient: "from-emerald-600 via-teal-500 to-cyan-500",
       rows: [
-        ["※ER", "$15"],
+        ["※ER", "$8"],
         ["※GR", "$25"],
         ["※SPR", "$30"],
         ["※CR", "$50"],
@@ -150,7 +150,7 @@ export default function Selling() {
       subtitle: "TRADING CARD GAME BONUS PACKS",
       gradient: "from-violet-600 via-purple-500 to-pink-500",
       rows: [
-        ["※ER", "$15"],
+        ["※ER", "$6"],
         ["※RR", "$135"],
       ],
     },

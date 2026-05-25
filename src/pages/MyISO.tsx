@@ -335,17 +335,15 @@ const toggleSet = async (setId: string) => {
 
   setter(updated);
 
+const tcgIds = ["FW", "SD_STARTERS", "SD_BONUS", "TCG_PROMOS"];
+
+const updateColumn = tcgIds.includes(setId)
+  ? { iso_hidden_sets_tcg: updated }
+  : { iso_hidden_sets_ccg: updated };
+
 await supabase
   .from("profiles")
-  .update(
-    mode === "CCG"
-      ? {
-          iso_hidden_sets_ccg: updated
-        }
-      : {
-          iso_hidden_sets_tcg: updated
-        }
-  )
+  .update(updateColumn)
   .eq("id", userId);
 };
 
