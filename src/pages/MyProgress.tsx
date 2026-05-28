@@ -219,12 +219,9 @@ const found = progressMap.get(set.id);
 
       let owned = 0;
 
-      Object.entries(set.rarities).forEach(([rarity, count]) => {
-        for (let i = 1; i <= count; i++) {
-          const key = `${rarity}-${i}`;
-          if (found.progress[key]) owned++;
-        }
-      });
+      Object.entries(found.progress).forEach(([key, value]) => {
+  if (value) owned++;
+});
 
       newProgress[set.id] = owned;
     });
