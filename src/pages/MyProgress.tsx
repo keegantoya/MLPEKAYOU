@@ -11,6 +11,8 @@ import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.png";
 import rarityCutieMark from "/website-assets/raritycutiemark.png";
 import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
 
+import starOnePack from "/set-pictures/staronepacks.jpg";
+
 import funMomentsOnePack from "/set-pictures/funmomentsonepack.jpg";
 import funMomentsTwoPack from "/set-pictures/funmomentstwopack.jpg";
 import funMomentsThreePack from "/set-pictures/funmomentsthreepack.png";
@@ -20,6 +22,7 @@ import moonTwoPack from "/set-pictures/moontwopack.png";
 import moonThreePack from "/set-pictures/moonthreepack.jpg";
 
 import rainbowOnePack from "/set-pictures/rainbowonepack.jpg";
+import rainbowTwoPack from "/set-pictures/rainbowtwopack.jpg";
 
 const cutieMarks = [
   fluttershyCutieMark,
@@ -38,26 +41,30 @@ const setImages: Record<string, string> = {
   "8": "/thumbnails/fme02TN.jpg",
   "3": "/thumbnails/moon-te.jpg",
   "11": "/thumbnails/fme03TN.jpg",
+  "4": "/thumbnails/s1-thumbnail.jpg",
+  "6": "/thumbnails/rainbow2thumbnail.jpg",
   "9": "/thumbnails/promos-thumbnail.jpg",
   "10": "/thumbnails/limited-promos-thumbnail.jpg",
 };
 
 const setBadgeImages: Record<string, string> = {
-  "1": moonOnePack,          // Eternal Moon First Edition
-  "2": moonTwoPack,          // Eternal Moon Second Edition
-  "3": moonThreePack,          // Eternal Moon Third Edition (uses same pack art)
-  "5": rainbowOnePack,       // Rainbow First Edition
-  "7": funMomentsOnePack,    // Fun Moments First Edition
-  "8": funMomentsTwoPack,    // Fun Moments Second Edition
-  "11": funMomentsThreePack, // Fun Moments Three
+  "1": moonOnePack,
+  "2": moonTwoPack,
+  "3": moonThreePack,
+  "4": starOnePack,
+  "5": rainbowOnePack,
+  "6": rainbowTwoPack,
+  "7": funMomentsOnePack,
+  "8": funMomentsTwoPack,
+  "11": funMomentsThreePack,
 };
 
 const sets = [
   {
   id: "9",
   name: "Promotional Cards",
-  total: 5,
-  rarities: { PR: 5}
+  total: 6,
+  rarities: { PR: 6 }
   },
   {
     id: "1",
@@ -105,13 +112,34 @@ const sets = [
     id: "4",
     name: "Star First Edition",
     total: 105,
-    rarities: {}
+    rarities: {
+  SSR: 20,
+  SCR: 18,
+  UR: 18,
+  USR: 15,
+  AR: 9,
+  OR: 7,
+  BP: 9,
+  SAR: 9
+}
   },
   {
     id: "6",
     name: "Rainbow Second Edition",
     total: 170,
-    rarities: {}
+    rarities: {
+  BASE: 18,
+  R: 30,
+  SR: 14,
+  ST: 20,
+  SSR: 15,
+  FR: 18,
+  TR: 12,
+  TGR: 8,
+  UR: 19,
+  USR: 8,
+  XR: 8
+}
   },
   {
   id: "10",
@@ -131,6 +159,8 @@ const releasedRoutes: Record<string, string> = {
   "9": "/promos",
   "10": "/limited-cards",
   "8": "/fun-moments-two",
+  "4": "/star-one",
+  "6": "/rainbow-two",
 };
 
 const MyProgress = () => {
@@ -157,13 +187,22 @@ const MyProgress = () => {
       .select("*")
       .eq("user_id", user.id);
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("iso_hidden_sets")
-      .eq("id", user.id)
-      .single();
+const { data: profile } = await supabase
+  .from("profiles")
+  .select(
+    "iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
+  )
+  .eq("id", user.id)
+  .single();
 
-    setHiddenSets(profile?.iso_hidden_sets || []);
+const legacyHidden = profile?.iso_hidden_sets || [];
+
+const hiddenCCG =
+  profile?.iso_hidden_sets_ccg?.length
+    ? profile.iso_hidden_sets_ccg
+    : legacyHidden;
+
+setHiddenSets(hiddenCCG);
 
     const progressMap = new Map(
       collectionData?.map((row) => [String(row.set_id), row]) || []
@@ -650,14 +689,16 @@ const overallVisiblePercent =
                 ...sets.filter(
                   (set) =>
                     [
-                      "1",
-                      "5",
-                      "7",
-                      "2",
-                      "8",
-                      "3",
-                      "11",
-                    ].includes(set.id) &&
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "11",
+].includes(set.id) &&
                     releasedRoutes[set.id] &&
                     !hiddenSets.includes(set.id)
                 ),

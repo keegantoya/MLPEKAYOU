@@ -107,12 +107,47 @@ const isoSets = [
     rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 }
   },
   {
+  id: "4",
+  name: "Star: First Edition",
+  folder: "star-one",
+  prefix: "S1",
+  rarities: {
+    SSR: 20,
+    SCR: 18,
+    UR: 18,
+    USR: 15,
+    AR: 9,
+    OR: 7,
+    BP: 9,
+    SAR: 9
+  }
+},
+  {
     id: "5",
     name: "Rainbow: First Edition",
     folder: "rainbow-one",
     prefix: "R1",
     rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 }
   },
+  {
+  id: "6",
+  name: "Rainbow: Second Edition",
+  folder: "rainbow-two",
+  prefix: "R2",
+  rarities: {
+    BASE: 18,
+    R: 30,
+    SR: 14,
+    FR: 18,
+    TR: 12,
+    TGR: 8,
+    ST: 20,
+    SSR: 15,
+    UR: 19,
+    USR: 8,
+    XR: 8
+  }
+},
   {
     id: "7",
     name: "Fun Moments: First Edition",

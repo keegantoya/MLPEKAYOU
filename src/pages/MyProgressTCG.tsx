@@ -85,13 +85,22 @@ const MyProgressTCG = () => {
         .select("*")
         .eq("user_id", user.id);
 
-        const { data: profile } = await supabase
+const { data: profile } = await supabase
   .from("profiles")
-  .select("iso_hidden_sets")
+  .select(
+    "iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
+  )
   .eq("id", user.id)
   .single();
 
-setHiddenSets(profile?.iso_hidden_sets || []);
+const legacyHidden = profile?.iso_hidden_sets || [];
+
+const hiddenCCG =
+  profile?.iso_hidden_sets_ccg?.length
+    ? profile.iso_hidden_sets_ccg
+    : legacyHidden;
+
+setHiddenSets(hiddenCCG);
 
       const progressMap = new Map(
         collectionData?.map((row) => [String(row.set_id), row]) || []

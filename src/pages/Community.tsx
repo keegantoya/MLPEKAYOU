@@ -59,6 +59,8 @@ const sets = [
   { id: "8", name: "Fun Moments Second Edition", total: 136 },
   { id: "3", name: "Eternal Moon Third Edition", total: 290 },
   { id: "11", name: "Fun Moments Third Edition", total: 148 },
+  { id: "4", name: "Star First Edition", total: 105 },
+  { id: "6", name: "Eternal Rainbow Second Edition", total: 170 },
 { 
   id: "friendshipsbegin",
   dbId: "SD",
@@ -114,6 +116,22 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
 };
 
 const isoSets = [
+   {
+    id: "4",
+    name: "Star: First Edition",
+    folder: "star-one",
+    prefix: "S1",
+    rarities: {
+      SSR: 20,
+      SCR: 18,
+      UR: 18,
+      USR: 15,
+      AR: 9,
+      OR: 7,
+      BP: 9,
+      SAR: 9
+    }
+  },
   {
     id: "1",
     name: "Eternal Moon: First Edition",
@@ -213,6 +231,25 @@ const isoSets = [
       UR: 10,
       UGR: 9,
       CR: 12
+    }
+  },
+    {
+    id: "6",
+    name: "Rainbow: Second Edition",
+    folder: "rainbow-two",
+    prefix: "R2",
+    rarities: {
+      BASE: 18,
+      R: 30,
+      SR: 14,
+      FR: 18,
+      TR: 12,
+      TGR: 8,
+      ST: 20,
+      SSR: 15,
+      UR: 19,
+      USR: 8,
+      XR: 8
     }
   },
   {
@@ -859,8 +896,8 @@ if (set.id === "friendshipsbegin") {
   {sets
     .filter((set) => {
   if (activeCategory === "star") {
-    return false; // Empty for now
-  }
+  return ["4"].includes(set.id);
+}
 
   if (activeCategory === "ccg") {
     // Moon
@@ -868,9 +905,8 @@ if (set.id === "friendshipsbegin") {
   }
 
   if (activeCategory === "rainbow") {
-    // Rainbow First Edition
-    return ["5"].includes(set.id);
-  }
+  return ["5", "6"].includes(set.id);
+}
 
   if (activeCategory === "funmoments") {
     // Fun Moments First + Second Edition

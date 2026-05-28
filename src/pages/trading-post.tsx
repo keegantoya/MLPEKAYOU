@@ -58,8 +58,8 @@ const sets = [
   { id: "8", name: "Fun Moments Second Edition", released: true },
   { id: "3", name: "Eternal Moon Third Edition", released: true },
   { id: "11", name: "Fun Moments Third Edition", released: true },
-  { id: "4", name: "Star First Edition", released: false },
-  { id: "6", name: "Rainbow Second Edition", released: false },
+  { id: "4", name: "Star First Edition", released: true },
+  { id: "6", name: "Rainbow Second Edition", released: true },
   { id: "9", name: "CCG Promos", released: true },
   { id: "10", name: "Serialized & Limited Cards", released: true },
   { id: "FW", name: "Fantasy Wonderland", released: true },
@@ -100,20 +100,27 @@ if (set_id === "FW") {
   return `/friendships-begin/SD01${rarity}${String(number).padStart(2, "0")}.png`;
 }
 
-  const config: any = {
-    "1": { folder: "first-edition-moon", prefix: "M1" },
-    "2": { folder: "second-edition-moon", prefix: "M2" },
-    "5": { folder: "rainbow-one", prefix: "R1" },
-    "7": { folder: "fun-moments-one", prefix: "FM1" },
-    "8": { folder: "fun-moments-two", prefix: "FM2" },
-    "3": { folder: "third-edition-moon", prefix: "M3" },
-    "11": { folder: "fun-moments-three", prefix: "FM3 "},
-  };
+const config: any = {
+  "1": { folder: "first-edition-moon", prefix: "M1" },
+  "2": { folder: "second-edition-moon", prefix: "M2" },
+  "3": { folder: "third-edition-moon", prefix: "M3" },
+  "4": { folder: "star-one", prefix: "S1" },
+  "5": { folder: "rainbow-one", prefix: "R1" },
+  "6": { folder: "rainbow-two", prefix: "R2" },
+  "7": { folder: "fun-moments-one", prefix: "FM1" },
+  "8": { folder: "fun-moments-two", prefix: "FM2" },
+  "11": { folder: "fun-moments-three", prefix: "FM3"},
+};
 
   const c = config[set_id];
   if (!c) return "";
 
-  return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+  return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}${
+  set_id === "6" &&
+  ["ST", "TR", "TGR"].includes(rarity)
+    ? ".png"
+    : ".jpg"
+}`;
 };
 
 const TradingPost = () => {
@@ -280,31 +287,35 @@ const handleSaveDiscord = async () => {
 };
 
 const COUNTED_SET_IDS = [
-  "1",                  // Eternal Moon First Edition
-  "2",   
-  "3",               // Eternal Moon Second Edition
-  "5",                  // Rainbow First Edition
-  "7",                  // Fun Moments First Edition
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
   "8",
-  "11",                  // Fun Moments Second Edition
-  "friendshipsbegin",   // Friendships Begin
-  "FW",                 // Fantasy Wonderland
-  "9",                  // CCG Promos
-  "10",                 // Serialized & Limited Cards
-  "tcgpromos",          // TCG Promos
+  "11",
+  "friendshipsbegin",
+  "FW",
+  "9",
+  "10",
+  "tcgpromos",
 ];
 
 const CARD_TOTALS: Record<string, number> = {
   "1": 186,
   "2": 189,
   "3": 290,
+  "4": 105,
   "5": 146,
+  "6": 170,
   "7": 127,
   "8": 136,
   "11": 148,
   "friendshipsbegin": 191,
   "FW": 191,
-  "9": 5,
+  "9": 6,
   "10": 1,
   "tcgpromos": 6,
 };
@@ -622,8 +633,9 @@ const completionPercentage =
         {/* SET GRID */}
         {(() => {
   const ccg = sets.filter(s =>
-    s.released && ["1", "2", "5", "7", "8", "3", "11"].includes(s.id)
-  );
+  s.released &&
+  ["1", "2", "3", "4", "5", "6", "7", "8", "11"].includes(s.id)
+);
 
 const tcg = sets.filter(s =>
   s.released && (
@@ -641,10 +653,12 @@ const tcg = sets.filter(s =>
 
 const renderSet = (set: any) => {
   const setImages: Record<string, string> = {
+    "4": "/thumbnails/s1-thumbnail.jpg",
     "1": "/thumbnails/moon-fe.jpg",
     "2": "/thumbnails/moon-se.jpg",
     "3": "/thumbnails/moon-te.jpg",
     "5": "/thumbnails/rainbow1thumbnail.jpg",
+    "6": "/thumbnails/rainbow2thumbnail.jpg",
     "7": "/thumbnails/fme01TN.jpg",
     "8": "/thumbnails/fme02TN.jpg",
     "11": "/thumbnails/fme03TN.jpg",
@@ -662,7 +676,9 @@ const setDescriptions: Record<string, string> = {
   "1": "MLPME01",
   "2": "MLPME02 • INT03-HR",
   "3": "MLPME03",
+  "4": "MLPSE01",
   "5": "RBE01 • INT01-R • INT01-SR • INT01-SSR",
+  "6": "RBE02 • MLPME02-R • MLPME03-R • MLPEM03-SR • MLPME03-SSR",
   "7": "FME01 • INT01-R • INT02-R • INT02-UR",
   "8": "FME02 • INT02-R • INT03-R • INT03-UR",
   "11": "FME03",

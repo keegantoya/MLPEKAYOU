@@ -55,8 +55,6 @@ const avatarMap: Record<string, string> = {
   "avatar013.jpg": avatar013,
   "avatar014.jpg": avatar014,
   "avatar015.jpg": avatar015,
-
-  // Private avatar for HeiManTou only
   "heimantouavatar": heimantouAvatar,
   "heimantouavatar.jpg": heimantouAvatar,
   "heimantouavatar.png": heimantouAvatar,
@@ -225,6 +223,8 @@ const sets = [
   { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, SZR:1 }},
   { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
   { id: "11", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12, SCR:12 }},
+  { id: "6", rarities: { BASE: 18, R: 30, SR: 14, ST: 20, SSR: 15, FR: 18, TR: 12, TGR: 8, UR: 19, USR: 8, XR: 8 }},
+  { id: "4", rarities: { SSR: 20, SCR: 18, UR:18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 }},
 ];
 
 sets.forEach((set) => {
@@ -291,6 +291,8 @@ const setOrder = [
   "7",
   "8",
   "3",
+  "4",
+  "6",
   "9",
   "11",
   "FW",
@@ -299,6 +301,9 @@ const setOrder = [
 ];
 
 const rarityOrders: Record<string, string[]> = {
+  // Eternal Star
+  "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
+
   // Eternal Moon
   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
   "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
@@ -306,6 +311,7 @@ const rarityOrders: Record<string, string[]> = {
 
   // Rainbow
   "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
+  "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
 
   // Fun Moments
   "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
@@ -674,23 +680,30 @@ if (
   const [rarityRaw, number] = card.card_key.split("-");
   const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
 
-  const config: Record<string, { folder: string; prefix: string }> = {
-    "1": { folder: "first-edition-moon", prefix: "M1" },
-    "2": { folder: "second-edition-moon", prefix: "M2" },
-    "3": { folder: "third-edition-moon", prefix: "M3" },
-    "5": { folder: "rainbow-one", prefix: "R1" },
-    "7": { folder: "fun-moments-one", prefix: "FM1" },
-    "8": { folder: "fun-moments-two", prefix: "FM2" },
-    "11": { folder: "fun-moments-three", prefix: "FM3" },
-  };
+const config: Record<string, { folder: string; prefix: string }> = {
+  "1": { folder: "first-edition-moon", prefix: "M1" },
+  "2": { folder: "second-edition-moon", prefix: "M2" },
+  "3": { folder: "third-edition-moon", prefix: "M3" },
+  "4": { folder: "star-one", prefix: "S1" },
+  "5": { folder: "rainbow-one", prefix: "R1" },
+  "6": { folder: "rainbow-two", prefix: "R2" },
+  "7": { folder: "fun-moments-one", prefix: "FM1" },
+  "8": { folder: "fun-moments-two", prefix: "FM2" },
+  "11": { folder: "fun-moments-three", prefix: "FM3" },
+};
 
   const c = config[String(card.set_id)];
   if (!c) return "";
 
   return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(
-    3,
-    "0"
-  )}.jpg`;
+  3,
+  "0"
+)}${
+  String(card.set_id) === "6" &&
+  ["ST", "TR", "TGR"].includes(rarity)
+    ? ".png"
+    : ".jpg"
+}`;
 };
 
 const getSetName = (setId: string) => {
@@ -701,6 +714,8 @@ const getSetName = (setId: string) => {
     "7": "Fun Moments: First Edition",
     "8": "Fun Moments: Second Edition",
     "3": "Eternal Moon: Third Edition",
+    "4": "Star: First Edition",
+    "6": "Rainbow: Second Edition",
     "11": "Fun Moments: Third Edition",
     "9": "Promotional Cards",
 
@@ -1003,7 +1018,7 @@ useEffect(() => {
     {/* Main Dashboard Layout */}
     <div className="grid grid-cols-[340px_1fr] gap-8 items-start">
       {/* LEFT SIDEBAR */}
-      <div className="relative -top-8 self-start bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-8 sticky top-28 overflow-hidden">
+      <div className="relative self-start bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-8 sticky top-4 overflow-hidden">
   {/* Cutie Mark Background Pattern */}
 <div className="absolute inset-0 pointer-events-none">
   {[
@@ -1330,7 +1345,7 @@ useEffect(() => {
       </div>
 
      {/* RIGHT CONTENT AREA */}
-<div className="space-y-8">
+<div className="space-y-8 self-start">
   <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-6">
     {/* Header + Toggle */}
     <div className="flex items-center justify-between mb-6 gap-4">
@@ -1371,7 +1386,7 @@ useEffect(() => {
         <Button
           variant="outline"
           className="border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
-          onClick={() => navigate("/my-trades")}
+          onClick={() => navigate("/inventory")}
         >
           Edit Trades and Sales
         </Button>
@@ -1383,6 +1398,14 @@ useEffect(() => {
       showcaseCards.length > 0 ? (
         <div className="space-y-8">
           {[
+            {
+  title: "ALL ◇AR CARDS",
+  cards: showcaseCards.filter(
+    (card) =>
+      String(card.set_id) === "4" &&
+      String(card.card_key).startsWith("SAR-")
+  ),
+},
   {
     title: "ALL SC CARDS",
     cards: showcaseCards.filter(
@@ -1549,7 +1572,18 @@ useEffect(() => {
                 let rarity = String(card.card_key).split("-")[0];
 
                 if (rarity === "SHINING ZR") rarity = "⬦ZR";
-                if (rarity === "SZR") rarity = "⬦ZR";
+if (rarity === "SZR") rarity = "⬦ZR";
+
+if (
+  rarity === "SCR" &&
+  String(card.set_id) !== "4"
+) {
+  rarity = "◇CR";
+}
+
+if (rarity === "SAR") {
+  rarity = "◇AR";
+}
 
                 return rarity;
               })()}
@@ -1685,7 +1719,21 @@ useEffect(() => {
                 let rarity = String(card.card_key).split("-")[0];
 
                 if (rarity === "SHINING ZR") rarity = "⬦ZR";
-                if (rarity === "SZR") rarity = "⬦ZR";
+if (rarity === "SZR") rarity = "⬦ZR";
+
+if (
+  rarity === "SCR" &&
+  String(card.set_id) !== "4"
+) {
+  rarity = "◇CR";
+}
+
+if (
+  rarity === "SAR" &&
+  String(card.set_id) === "4"
+) {
+  rarity = "◇AR";
+}
 
                 return rarity;
               })()}

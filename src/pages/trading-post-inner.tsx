@@ -22,7 +22,9 @@ const rarityMap: Record<string, string[]> = {
   "1": ["R","SR","SSR","HR","UR","LSR","SGR","SC"],
   "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
   "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
+  "4": ["SSR","SCR","UR","USR","AR","OR","BP","SAR"],
   "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
+  "6": [ "BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
   "7": ["N","SN","R","SR","SSR","UR","CR"],
   "8": ["N", "SN","R","SR","SSR","UR","UGR","CR"],
   "11": ["N", "SN","R","SR","SSR","UR","UGR","CR", "SCR"],
@@ -93,15 +95,17 @@ if (card.set_id === "FW") {
   return `/tcgpromos/${card.card_key}.png`;
 }
 
-  const config: any = {
-    "1": { folder: "first-edition-moon", prefix: "M1" },
-    "5": { folder: "rainbow-one", prefix: "R1" },
-    "7": { folder: "fun-moments-one", prefix: "FM1" },
-    "2": { folder: "second-edition-moon", prefix: "M2" },
-    "8": { folder: "fun-moments-two", prefix: "FM2" },
-    "3": { folder: "third-edition-moon", prefix: "M3" },
-    "11": { folder: "fun-moments-three", prefix: "FM3" },
-  };
+const config: any = {
+  "1": { folder: "first-edition-moon", prefix: "M1" },
+  "2": { folder: "second-edition-moon", prefix: "M2" },
+  "3": { folder: "third-edition-moon", prefix: "M3" },
+  "4": { folder: "star-one", prefix: "S1" },
+  "5": { folder: "rainbow-one", prefix: "R1" },
+  "6": { folder: "rainbow-two", prefix: "R2" },
+  "7": { folder: "fun-moments-one", prefix: "FM1" },
+  "8": { folder: "fun-moments-two", prefix: "FM2" },
+  "11": { folder: "fun-moments-three", prefix: "FM3" },
+};
 
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
@@ -111,7 +115,12 @@ if (card.set_id === "FW") {
   const c = config[card.set_id];
   if (!c) return "";
 
-  return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}.jpg`;
+  return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}${
+  card.set_id === "6" &&
+  ["ST", "TR", "TGR"].includes(rarity)
+    ? ".png"
+    : ".jpg"
+}`;
 };
 
 export default function TradingPostInner() {
@@ -134,6 +143,8 @@ const [selectedRarity, setSelectedRarity] = useState<string | null>(
   "8": "Fun Moments: Second Edition",
   "3": "Eternal Moon: Third Edition",
   "11": "Fun Moments: Third Edition",
+  "4": "Star: First Edition",
+  "6": "Rainbow: Second Edition",
   "9": "Promo Cards",
   "10": "Serialized & Limited Cards",
   "friendshipsbegin": "Friendships Begin",
@@ -309,7 +320,11 @@ const trades = allTrades;
    if (rarity === "SZR") return "⬦ZR";
   if (rarity === "SN") return "⬦N";
   if (rarity === "LC") return "PR";
-  if (rarity === "SCR") return "⬦CR";
+  if (
+  rarity === "SCR" &&
+  setId !== "4"
+) return "⬦CR";
+if (rarity === "SAR") return "◇AR";
   if (
     (setId === "FW" || setId === "friendshipsbegin") &&
     rarity.startsWith("P")

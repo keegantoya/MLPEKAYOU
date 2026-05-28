@@ -75,7 +75,7 @@ export default function Selling() {
       gradient: "from-indigo-700 via-blue-600 to-indigo-500",
       rows: [
         ["SGR", "$9"],
-        ["ZR", "$30"],
+        ["ZR", "$25"],
         ["HIDDEN ZR", "UNKNOWN"],
         ["SC", "$62"],
         ["HIDDEN SC", "UNKNOWN"],
@@ -96,8 +96,8 @@ export default function Selling() {
       subtitle: "RAINBOW EDITION",
       gradient: "from-pink-500 via-yellow-400 via-green-400 to-blue-500",
       rows: [
-        ["USR", "UNKNOWN"],
-        ["XR", "UNKNOWN"],
+        ["USR", "$15"],
+        ["XR", "$28"],
         ["HIDDEN XR", "UNKNOWN"],
       ],
     },

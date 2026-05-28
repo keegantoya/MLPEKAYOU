@@ -111,7 +111,7 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/s1-thumbnail.jpg",
     totalCards: 105,
     category: "star",
-    released: false,
+    released: true,
   },
   {
     id: "6",
@@ -120,14 +120,14 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/rainbow2thumbnail.jpg",
     totalCards: 170,
     category: "rainbow",
-    released: false,
+    released: true,
   },
   {
     id: "9",
     title: "Promotional",
     setName: "Cards",
     imageUrl: "/thumbnails/promos-thumbnail.jpg",
-    totalCards: 5,
+    totalCards: 6,
     category: "promos",
     released: true,
   },
@@ -227,7 +227,21 @@ const mergedBySet: Record<string, Record<string, boolean>> = {};
 const progressMap: Record<string, number> = {};
 
 Object.entries(mergedBySet).forEach(([setId, progress]) => {
-  const count = Object.keys(progress).length;
+ const validPromoCards = [
+  "PR-1",
+  "PR-2",
+  "PR-3",
+  "PR-4",
+  "PR-5",
+  "PR-7",
+];
+
+const count =
+  setId === "9"
+    ? Object.keys(progress).filter((key) =>
+        validPromoCards.includes(key)
+      ).length
+    : Object.keys(progress).length;
 
   if (setId === "FW") {
     progressMap["tcg"] = count;
@@ -713,7 +727,7 @@ const completedSets = countedSets.filter(
           }`}
         >
           <CollectionCard {...col} />
-          {(col.id === "3" || col.id === "11") && (
+          {(col.id === "3" || col.id === "11" || col.id === "6" || col.id === "4") && (
   <div
     className="
       absolute

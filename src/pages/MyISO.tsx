@@ -86,6 +86,42 @@ const sets = [
   }
 },
 {
+  id: "6",
+  name: "Rainbow: Second Edition",
+  folder: "rainbow-two",
+  prefix: "R2",
+  rarities: {
+    BASE: 18,
+    R: 30,
+    SR: 14,
+    FR: 18,
+    ST: 20,
+    TR: 12,
+    TGR: 8,
+    SSR: 15,
+    UR: 19,
+    USR: 8,
+    XR: 8
+  }
+},
+
+{
+  id: "4",
+  name: "Star: First Edition",
+  folder: "star-one",
+  prefix: "S1",
+  rarities: {
+    SSR: 20,
+    SCR: 18,
+    UR: 18,
+    USR: 15,
+    AR: 9,
+    OR: 7,
+    BP: 9,
+    SAR: 9
+  }
+},
+{
   id: "SD_STARTERS",
   name: "Friendships Begin - Character Decks"
 },
@@ -109,7 +145,7 @@ const sets = [
     name: "Promos",
     folder: "promo-cards",
     prefix: "PR",
-    rarities: { PR: 5 }
+    rarities: { PR: 6 }
   },
   {
     id: "10",
@@ -188,8 +224,6 @@ const combinedProgress = [
   ...(progress || []),
   ...(rawProgress || []),
 ];
-
-
       
     const allOwned: Record<string, boolean> = {};
 
@@ -413,7 +447,9 @@ if (setId === "5" && rarity === "SSR") {
     "1": "MLPME01",
     "2": "MLPME02",
     "3": "MLPME03",
+    "6": "RBE02",
     "5": "RBE01",
+    "4": "MLPSE01",
     "7": "FME01",
     "8": "FME02",
     "9": "PR",
@@ -555,9 +591,31 @@ if (setId === "10") {
   return "MLPE-PR-005";
 }
 
+if (setId === "6" && rarity === "SSR") {
+
+  // Cards 001–006
+  if (number <= 6) {
+    return `MLPME03-SSR-${String(number).padStart(3, "0")}`;
+  }
+
+  // Cards 013–020
+  if (number <= 14) {
+    const actualNumber = number + 6;
+
+    return `MLPME03-SSR-${String(actualNumber).padStart(3, "0")}`;
+  }
+
+  // Final special Twilight card
+  return `RBE02-SSR-001`;
+}
+
   const baseCode = setCodeMap[setId] || "";
 
-  return `${baseCode}-${rarityCode}-${cardNumber}`;
+ return `${baseCode}-${
+  setId === "4" && rarity === "SAR"
+    ? "◇AR"
+    : rarityCode
+}-${cardNumber}`;
 };
 
 const getTCGSetDisplayName = (setId: string) => {
@@ -746,7 +804,7 @@ Array.from({ length: 6 }, (_, i) => {
   }
 
   if (mode === "CCG") {
-    return ["1", "2", "3", "5", "7", "8", "9", "10", "11"].includes(set.id);
+    return ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"].includes(set.id);
   }
 
   return ["SD_STARTERS", "SD_BONUS", "FW"].includes(set.id);
@@ -1582,7 +1640,12 @@ onToggleHiddenSet={toggleSet}
               ? `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`
               : set.id === "10"
               ? "/serialized-limited-cards/andypricepromo.jpg"
-              : `/cards/${set.folder}/${set.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}.jpg`;
+             : `/cards/${set.folder}/${set.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}${
+    set.id === "6" &&
+    ["TR", "TGR", "ST"].includes(rarity)
+      ? ".png"
+      : ".jpg"
+  }`;
 
           return (
             <div
@@ -1719,12 +1782,14 @@ onToggleHiddenSet={toggleSet}
         <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
 {
   rarity === "LC"
-    ? "PR"
-    : rarity === "SN"
-    ? "◇N"
-    : rarity === "SHINING ZR" || rarity === "SZR"
-    ? "◇ZR"
-    : rarity
+  ? "PR"
+  : rarity === "SN"
+  ? "◇N"
+  : rarity === "SHINING ZR" || rarity === "SZR"
+  ? "◇ZR"
+  : set.id ==="4" && rarity === "SAR"
+  ? "◇AR"
+  : rarity
 }
 </span>
 
@@ -1773,7 +1838,12 @@ onClick={() => {
             ? `/promo-cards/mlpepr${String(card.number).padStart(3, "0")}.jpg`
             : set.id === "10"
             ? "/serialized-limited-cards/andypricepromo.jpg"
-            : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`
+            : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}${
+    set.id === "6" &&
+    ["TR", "TGR", "ST"].includes(card.rarity)
+      ? ".png"
+      : ".jpg"
+  }`
         }
         className="w-full h-full object-cover"
       />
@@ -1782,15 +1852,19 @@ onClick={() => {
     <div className="px-2 py-2 min-w-0">
 <div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
   {(() => {
-    const setCodeMap: Record<string, string> = {
-      "1": "MLPME01",
-      "2": "MLPME02",
-      "5": "RBE01",
-      "7": "FME01",
-      "8": "FME02",
-      "9": "PR",
-      "10": "LC",
-    };
+const setCodeMap: Record<string, string> = {
+  "1": "MLPME01",
+  "2": "MLPME02",
+  "3": "MLPME03",
+  "4": "MLPSE01",
+  "5": "RBE01",
+  "6": "RBE02",
+  "7": "FME01",
+  "8": "FME02",
+  "9": "PR",
+  "10": "LC",
+  "11": "FME03",
+};
 
 const fullCode = getDisplayCardCode(
   set.id,
@@ -1969,7 +2043,7 @@ else if (selectedCardKey.startsWith("SD-BONUS-")) {
 }
 
 const VALID_SET_IDS = [
-  "1", "2", "3", "5", "7", "8", "9", "10", "11",
+  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
   "SD", "FW", "tcgpromos"
 ];
 

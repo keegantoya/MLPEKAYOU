@@ -26,6 +26,13 @@ const sets = [
     rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 }
   },
   {
+    id: "6",
+    name: "Rainbow: Second Edition",
+    folder: "rainbow-two",
+    prefix: "R2",
+    rarities: { BASE: 18, R: 30, SR: 14, ST: 20, TR: 12, TGR: 8, SSR: 15, FR: 18, UR: 19, USR: 8, XR: 8 }
+  },
+  {
     id: "7",
     name: "Fun Moments: First Edition",
     folder: "fun-moments-one",
@@ -54,11 +61,18 @@ const sets = [
     rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, "SZR": 3 }
   },
   {
+    id: "4",
+    name: "Star: First Edition",
+    folder: "star-one",
+    prefix: "S1",
+    rarities: { SSR: 20, SCR: 18, UR:18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 }
+  },
+  {
     id: "9",
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 5 }
+    rarities: { PR: 6 }
   },
   {
   id: "FW",
@@ -238,7 +252,9 @@ const slugMap: Record<string, string> = {
   "eternal-moon-one": "1",
   "eternal-moon-two": "2",
   "eternal-moon-three": "3",
+  "star-one": "4",
   "rainbow-one": "5",
+  "rainbow-two": "6",
   "fun-moments-one": "7",
   "fun-moments-two": "8",
   "fun-moments-three": "11",
@@ -366,6 +382,14 @@ for (let i = 1; i <= count; i++) {
     });
   }
 
+} else if (set.id === "9") {
+
+  cards = [1, 2, 3, 4, 5, 7].map((num) => ({
+    rarity: "PR",
+    number: num,
+    key: `PR-${num}`
+  }));
+
 } else {
 
   cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
@@ -408,6 +432,9 @@ const hasStarterDeck = set.id === "friendshipsbegin" &&
 
 const rarityOrders: Record<string, string[]> = {
 
+  //Star
+  "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
+
   // Eternal Moon
   "1": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
   "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
@@ -415,6 +442,7 @@ const rarityOrders: Record<string, string[]> = {
 
   // Rainbow
   "5": ["R","SR","FR","TR","TGR","MTR","SSR","UR","USR","XR"],
+  "6": ["BASE", "R", "SR", "ST", "TR", "TGR", "SSR", "FR", "UR", "USR", "XR"],
 
   // Fun Moments
   "7": ["N","SN","R","SR","SSR","UR","CR"],
@@ -780,7 +808,12 @@ const indexB = currentOrder.indexOf(b);
                           : set.id === "tcgpromos"
                           ? `/tcgpromos/${card.key}.png`
                           : card.image ||
-                            `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}.jpg`
+  `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}${
+    set.id === "6" &&
+    ["ST", "TR", "TGR"].includes(card.rarity)
+      ? ".png"
+      : ".jpg"
+  }`
                       }
                       className="rounded-lg w-full"
                     />

@@ -175,9 +175,9 @@ useEffect(() => {
   };
 }, [zoomedCard]);
 
-  const cards = Array.from({ length: 5 }, (_, i) => ({
-    number: i + 1
-  }));
+const cards = [1, 2, 3, 4, 5, 7].map((number) => ({
+  number
+}));
 
   return (
     <div className="min-h-screen bg-background">
@@ -297,6 +297,12 @@ useEffect(() => {
 {card.number === 5 && (
   <div className="text-[10px] text-gray-500 text-center mt-1">
    Available in Moon 2 standard box set.
+  </div>
+)}
+
+{card.number === 7 && (
+  <div className="text-[10px] text-gray-500 text-center mt-1">
+   Available in Rainbow 2 standard box set.
   </div>
 )}
                 </div>

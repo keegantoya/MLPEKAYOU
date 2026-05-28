@@ -825,11 +825,13 @@ const isoSets = [
   { id: "1", rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } },
   { id: "2", rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 } },
   { id: "3", rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, SZR: 3 } },
+  { id: "4", rarities: { SSR: 20, SCR: 18, UR:18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 }},
   { id: "5", rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 } },
+  { id: "6", rarities: { BASE: 18, R: 30, SR: 14, ST: 20, SSR: 15, FR: 18, TR: 12, TGR: 8, UR: 19, USR: 8, XR: 8 }},
   { id: "7", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
   { id: "8", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
   { id: "11", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 } },
-  { id: "9", rarities: { PR: 5 } },
+  { id: "9", rarities: { PR: 6 } },
   { id: "10", rarities: { LC: 1 } },
   { id: "SD", rarities: {} },
 { id: "FW", rarities: {} },
@@ -837,6 +839,24 @@ const isoSets = [
 ];
 
 isoSets.forEach((set) => {
+  if (set.id === "9") {
+  ["PR-1","PR-2","PR-3","PR-4","PR-5","PR-7"].forEach((cardKey) => {
+    const fullKey = `${set.id}-${cardKey}`;
+
+    if (
+      !ownedCards[fullKey] &&
+      !inProgressCards.has(fullKey)
+    ) {
+      isoCards.push({
+        id: fullKey,
+        set_id: set.id,
+        card_key: cardKey,
+      });
+    }
+  });
+
+  return;
+}
   if (hiddenIsoSets.includes(String(set.id))) {
     return;
   }
@@ -1011,6 +1031,8 @@ setSelectedUserIsoCards(
       "3",
       "11",
       "9",
+      "4",
+      "6",
       "FW",
       "SD",
       "friendshipsbegin",
@@ -1021,7 +1043,9 @@ setSelectedUserIsoCards(
       "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
       "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
       "3": ["R", "SR", "SSR", "HR", "LSR", "UR", "SGR", "ZR", "SC", "SZR"],
+      "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
       "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
+      "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
       "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
       "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
       "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR" ],
@@ -1254,11 +1278,13 @@ if (String(card.set_id) === "FW") {
   const rarity =
     rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
 
- const config: Record<string, { folder: string; prefix: string }> = {
+const config: Record<string, { folder: string; prefix: string }> = {
   "1": { folder: "first-edition-moon", prefix: "M1" },
   "2": { folder: "second-edition-moon", prefix: "M2" },
   "3": { folder: "third-edition-moon", prefix: "M3" },
+  "4": { folder: "star-one", prefix: "S1" },
   "5": { folder: "rainbow-one", prefix: "R1" },
+  "6": { folder: "rainbow-two", prefix: "R2" },
   "7": { folder: "fun-moments-one", prefix: "FM1" },
   "8": { folder: "fun-moments-two", prefix: "FM2" },
   "11": { folder: "fun-moments-three", prefix: "FM3" },
@@ -1267,8 +1293,13 @@ if (String(card.set_id) === "FW") {
   if (!c) return "";
 
   return `/cards/${c.folder}/${c.prefix}${rarity}${String(
-    number
-  ).padStart(3, "0")}.jpg`;
+  number
+).padStart(3, "0")}${
+  String(card.set_id) === "6" &&
+  ["ST", "TR", "TGR"].includes(rarity)
+    ? ".png"
+    : ".jpg"
+}`;
 }
 
 function isMoon3DoubleWide(card: any) {
@@ -1285,7 +1316,9 @@ const CARD_PICKER_SETS = [
   { id: "1", name: "Eternal Moon: First Edition" },
   { id: "2", name: "Eternal Moon: Second Edition" },
   { id: "3", name: "Eternal Moon: Third Edition" },
+  { id: "4", name: "Star: First Edition" },
   { id: "5", name: "Rainbow: First Edition" },
+  { id: "6", name: "Rainbow: Second Edition" },
   { id: "7", name: "Fun Moments: First Edition" },
   { id: "8", name: "Fun Moments: Second Edition" },
   { id: "11", name: "Fun Moments: Third Edition" },
@@ -1299,7 +1332,9 @@ const CARD_PICKER_RARITIES: Record<string, string[]> = {
   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
   "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
   "3": ["R", "SR", "SSR", "HR", "LSR", "UR", "SGR", "ZR", "SC", "SZR"],
+  "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
   "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
+  "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
   "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
   "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
   "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],
@@ -1395,11 +1430,11 @@ function getCardsForPicker(
 
   // Promotional Cards
   if (setId === "9") {
-    return Array.from({ length: 5 }, (_, i) => ({
-      set_id: setId,
-      card_key: `PR-${i + 1}`,
-    }));
-  }
+  return [1, 2, 3, 4, 5, 7].map((num) => ({
+    set_id: setId,
+    card_key: `PR-${num}`,
+  }));
+}
 
   // Standard checklist sets
   const counts: Record<string, Record<string, number>> = {
@@ -1470,6 +1505,30 @@ function getCardsForPicker(
       CR: 12,
       SCR: 12,
     },
+    "4": {
+  SSR: 20,
+  SCR: 18,
+  UR: 18,
+  USR: 15,
+  AR: 9,
+  OR: 7,
+  BP: 9,
+  SAR: 9,
+},
+
+"6": {
+  BASE: 18,
+  R: 30,
+  SR: 14,
+  ST: 20,
+  SSR: 15,
+  FR: 18,
+  TR: 12,
+  TGR: 8,
+  UR: 19,
+  USR: 8,
+  XR: 8,
+},
   };
 
   const count = counts[setId]?.[rarity] || 0;
@@ -1515,10 +1574,12 @@ function getSetName(setId: string) {
   const names: Record<string, string> = {
     "1": "Eternal Moon: First Edition",
     "2": "Eternal Moon: Second Edition",
+    "3": "Eternal Moon: Third Edition",
+    "4": "Star: First Edition",
     "5": "Rainbow: First Edition",
+    "6": "Rainbow: Second Edition",
     "7": "Fun Moments: First Edition",
     "8": "Fun Moments: Second Edition",
-    "3": "Eternal Moon: Third Edition",
     "11": "Fun Moments: Third Edition",
     "9": "Promos",
     "10": "Serialized & Limited Cards",
@@ -1541,6 +1602,8 @@ function groupCardsBySet(cards: any[]) {
     "7",
     "8",
     "3",
+    "4",
+    "6",
     "11",
     "9",
     "FW",
@@ -1554,7 +1617,9 @@ function groupCardsBySet(cards: any[]) {
     "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
     "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
     "3": ["R", "SR", "SSR", "HR", "LSR", "UR", "SGR", "ZR", "SC", "SZR"],
+    "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
     "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
+    "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
     "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
     "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
     "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],

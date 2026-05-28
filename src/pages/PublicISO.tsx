@@ -74,7 +74,7 @@ const setConfigs: Record<string, any> = {
   "7": { rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
   "8": { rarities: { N: 20, SN: 20, R:35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
  // "3": { rarities: { R: 60, SR: 40, SSR: 40, HR: 60, LSR: 32, UR: 18, SGR: 16, ZR: 14, SC: 7, SZR: 3 } },
-  "9": { rarities: { PR: 5 } },
+  "9": { rarities: { PR: 6 } },
   "10": { rarities: { LC: 1 } }
 };
 

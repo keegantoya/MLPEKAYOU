@@ -138,7 +138,42 @@ const sets = [
     UGR: 9,
     CR: 12,
     SCR: 12,
+    }
   },
+  {
+  id: "6",
+  name: "Rainbow: Second Edition",
+  folder: "rainbow-two",
+  prefix: "R2",
+  rarities: {
+    BASE: 18,
+    R: 30,
+    SR: 14,
+    FR: 18,
+    ST: 20,
+    TR: 12,
+    TGR: 8,
+    SSR: 15,
+    UR: 19,
+    USR: 8,
+    XR: 8
+  }
+},
+{
+  id: "4",
+  name: "Star: First Edition",
+  folder: "star-one",
+  prefix: "S1",
+  rarities: {
+    SSR: 20,
+    SCR: 18,
+    UR: 18,
+    USR: 15,
+    AR: 9,
+    OR: 7,
+    BP: 9,
+    SAR: 9
+  }
 },
   {
     id: "9",
@@ -146,7 +181,7 @@ const sets = [
     folder: "promo-cards",
     prefix: "PR",
     rarities: {
-      PR: 5,
+      PR: 6,
     },
   },
   {
@@ -210,7 +245,7 @@ const sets = [
 const setGroups = [
   {
     label: "Star",
-    setIds: [],
+    setIds: ["4"],
   },
   {
   label: "Moon",
@@ -218,7 +253,7 @@ const setGroups = [
 },
   {
     label: "Rainbow",
-    setIds: ["5"],
+    setIds: ["5", "6"],
   },
   {
   label: "Fun Moments",
@@ -380,11 +415,13 @@ function getWishlistCardImage(card: {
   const [rarityRaw, number] = String(card.card_key).split("-");
   const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
 
- const config: Record<string, { folder: string; prefix: string }> = {
+const config: Record<string, { folder: string; prefix: string }> = {
   "1": { folder: "first-edition-moon", prefix: "M1" },
   "2": { folder: "second-edition-moon", prefix: "M2" },
   "3": { folder: "third-edition-moon", prefix: "M3" },
+  "4": { folder: "star-one", prefix: "S1" },
   "5": { folder: "rainbow-one", prefix: "R1" },
+  "6": { folder: "rainbow-two", prefix: "R2" },
   "7": { folder: "fun-moments-one", prefix: "FM1" },
   "8": { folder: "fun-moments-two", prefix: "FM2" },
   "11": { folder: "fun-moments-three", prefix: "FM3" },
@@ -394,8 +431,13 @@ function getWishlistCardImage(card: {
   if (!c) return "";
 
   return `/cards/${c.folder}/${c.prefix}${rarity}${String(
-    number
-  ).padStart(3, "0")}.jpg`;
+  number
+).padStart(3, "0")}${
+  String(card.set_id) === "6" &&
+  ["ST", "TR", "TGR"].includes(rarity)
+    ? ".png"
+    : ".jpg"
+}`;
 }
 
 
@@ -954,8 +996,13 @@ const cards =
                 : selectedSet.id === "10"
                 ? "/serialized-limited-cards/andypricepromo.jpg"
                 : `/cards/${selectedSet.folder}/${selectedSet.prefix}${getRarityCode(
-                    card.rarity
-                  )}${String(card.number).padStart(3, "0")}.jpg`;
+  card.rarity
+)}${String(card.number).padStart(3, "0")}${
+  selectedSet.id === "6" &&
+  ["ST", "TR", "TGR"].includes(card.rarity)
+    ? ".png"
+    : ".jpg"
+}`;
 
                   const cardKey =
   "card_key" in card

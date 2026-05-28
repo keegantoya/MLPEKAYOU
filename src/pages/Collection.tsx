@@ -54,7 +54,6 @@ const [showBackToTop, setShowBackToTop] = useState(false);
 };
 
 const toggleFlip = async (key: string) => {
-  // View Mode: open the zoomed card instead of marking ownership
   if (viewMode) {
     const [rarity, numberStr] = key.split("-");
     const number = Number(numberStr);
@@ -70,8 +69,6 @@ const toggleFlip = async (key: string) => {
     setZoomedCard(frontSrc);
     return;
   }
-
-  // Normal Mode: toggle ownership and save to Supabase
   const newFlipped = {
     ...flipped,
     [key]: !flipped[key]
@@ -96,8 +93,6 @@ const toggleFlip = async (key: string) => {
       { onConflict: "user_id,set_id" }
     );
 };
-
-  // LOAD PROGRESS
   useEffect(() => {
     const loadProgress = async () => {
       const { data } = await supabase.auth.getSession();
@@ -121,8 +116,6 @@ const toggleFlip = async (key: string) => {
 
     loadProgress();
   }, [id]);
-
-  // SAVE PROGRESS ( RELOAD AFTER LOGIN )
   useEffect(() => {
   const loadProgress = async (userOverride?: any) => {
     let user = userOverride;
@@ -300,7 +293,6 @@ useEffect(() => {
 
   const padded = String(number).padStart(3, "0");
 
-// Force default for LSR
 if (rarity === "LSR") {
   return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
 }
@@ -308,17 +300,12 @@ if (rarity === "LSR") {
   // ---------- MOON 1 ----------
   if (set.prefix === "M1") {
 
-    // R (individual backs)
     if (rarity === "R") {
       return `/moon-1-other-backs/M1RBK${padded}.jpg`;
     }
-
-    // SR (individual backs)
     if (rarity === "SR") {
       return `/moon-1-other-backs/M1SRB${padded}.jpg`;
     }
-
-    // HR
     if (rarity === "HR") {
       const sideways = [8,9,10,18,19,21,23,27,32,34,36];
       if (sideways.includes(number)) {
@@ -326,39 +313,28 @@ if (rarity === "LSR") {
       }
       return `/card-backs/M1HRBACK.jpeg`;
     }
-
-    // SSR
     if (rarity === "SSR") {
       return `/card-backs/M1SSRBACK.jpeg`;
     }
-
-    // UR
     if (rarity === "UR") {
       if (number === 16) {
         return `/card-backs/M1URSIDEWAYSBACK.jpg`;
       }
       return `/card-backs/M1URBACK.jpeg`;
     }
-
-    // SGR
     if (rarity === "SGR") {
       return `/card-backs/M1SGRBACK.jpeg`;
     }
-
-    // SC
     if (rarity === "SC") {
       if (number === 7) {
         return `/card-backs/M1SCBACK.jpeg`;
       }
       return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
     }
-
-    // LSR default
     if (rarity === "LSR") {
       return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
     }
   }
-
   // ---------- MOON 2 ----------
   if (set.prefix === "M2") {
 
@@ -408,7 +384,6 @@ if (rarity === "LSR") {
       return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
     }
   }
-
   // ---------- RAINBOW 1 ----------
   if (set.prefix === "R1") {
 
@@ -427,8 +402,6 @@ if (rarity === "LSR") {
     if (rarity === "UR") {
       return `/card-backs/M1URBACK.jpeg`;
     }
-
-    // default group
 if (["TGR","TR","MTR","SSR","USR","XR"].includes(rarity)) {
   return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
 }
@@ -502,7 +475,6 @@ const isZoomedLandscape = (() => {
 
   // Eternal Moon 2
   if (set.prefix === "M2") {
-    // HR001–HR022 (all HR except the last 8)
     if (zoomedCard.includes("M2HR")) {
       const match = zoomedCard.match(/M2HR(\d{3})/);
       if (match && Number(match[1]) <= 22) {
@@ -517,7 +489,6 @@ const isZoomedLandscape = (() => {
       return true;
     }
   }
-
   // Rainbow 1
   if (set.prefix === "R1") {
     return false;
@@ -637,7 +608,6 @@ const isZoomedLandscape = (() => {
               })}
             </div>
           )}
-
           {/* CONTAINER */}
           <div className="relative bg-white border border-gray-200 rounded-xl p-3 md:p-4 pt-8 overflow-visible">
 

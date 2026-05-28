@@ -119,6 +119,22 @@ export default function MyTrades() {
       totalCards: 148,
       category: "fun-moments",
     },
+      {
+    id: "4",
+    title: "Star",
+    setName: "One",
+    imageUrl: "/thumbnails/s1-thumbnail.jpg",
+    totalCards: 105,
+    category: "star",
+  },
+  {
+    id: "6",
+    title: "Rainbow",
+    setName: "Two",
+    imageUrl: "/thumbnails/rainbow2thumbnail.jpg",
+    totalCards: 170,
+    category: "rainbow",
+  },
     {
   id: "FW",
   title: "Fantasy",
@@ -140,7 +156,7 @@ export default function MyTrades() {
   title: "Promotional",
   setName: "Cards",
   imageUrl: "/thumbnails/promos-thumbnail.jpg",
-  totalCards: 5,
+  totalCards: 6,
   category: "promo-cards",
 },
 {
@@ -267,19 +283,19 @@ if (activeFilter === "moon") {
   return col.id === "1" || col.id === "2";
 }
 
-// Star Edition (not configured yet)
+// Star Edition
 if (activeFilter === "star") {
-  return false;
+  return col.id === "4";
 }
 
 // Fun Moments Edition
 if (activeFilter === "fun") {
-  return col.id === "7" || col.id === "8";
+  return col.id === "7" || col.id === "8" || col.id === "11";
 }
 
 // Rainbow Edition
 if (activeFilter === "rainbow") {
-  return col.id === "5";
+  return col.id === "5" || col.id === "6";
 }
 
 // Promotional

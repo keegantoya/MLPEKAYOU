@@ -36,11 +36,11 @@ const getLink = () => {
 
     case "4":
     case "star1":
-      return "/star1";
+      return "/star-one";
 
-    case "6":
-    case "rainbow2":
-      return "/rainbow2";
+case "6":
+case "rainbow2":
+  return "/rainbow-two";
 
     case "tcg":
       return "/fantasy-wonderland";

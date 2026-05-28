@@ -20,7 +20,7 @@ import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import Moon3 from "./pages/Moon3";
 import Star1 from "./pages/Star1";
-import Rainbow2 from "./pages/Rainbow2";
+import RainbowTwo from "./pages/RainbowTwo";
 import FantasyWonderland from "./pages/Fantasy-Wonderland";
 import FunMoments2 from "./pages/FunMoments2";
 import FunMoments1 from "./pages/FunMoments1";
@@ -131,8 +131,8 @@ const AppRoutes = () => {
       <Route path="/community/:id" element={<CommunitySet />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
 <Route path="/eternal-moon-three" element={<Moon3 />} />
-      <Route path="/star1" element={<Star1 />} />
-      <Route path="/rainbow2" element={<Rainbow2 />} />
+      <Route path="/star-one" element={<Star1 />} />
+      <Route path="/rainbow-two" element={<RainbowTwo />} />
       <Route path="/fantasy-wonderland" element={<FantasyWonderland />} />
       <Route path="/fun-moments-2" element={<FunMoments2 />} />
 <Route path="/fun-moments-two" element={<FunMoments2 />} />
