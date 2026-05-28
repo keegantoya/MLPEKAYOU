@@ -31,7 +31,7 @@ import { useRef } from "react";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
 
-import logo from "@/assets/avatars/mlpekayouwiki.png";
+const logo = "/website-assets/mlpekayouwiki.webp";
 
 import avatar001 from "@/assets/avatars/avatar001.jpg";
 import avatar002 from "@/assets/avatars/avatar002.jpg";

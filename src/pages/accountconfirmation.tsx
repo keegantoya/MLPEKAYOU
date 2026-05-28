@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/avatars/mlpekayouwiki.png";
+const logo = "/website-assets/mlpekayouwiki.webp";
 
 export default function AccountConfirmation() {
   const navigate = useNavigate();

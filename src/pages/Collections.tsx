@@ -7,8 +7,6 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import collectionsBanner from "@/assets/avatars/kayouuscollectionsbanner.png";
-import tcgOnlineButton from "/website-assets/tcgonlinebutton.png";
-import tcgOnlineButtonMobile from "/website-assets/tcgonlinebuttonmobile.png";
 
 type Collection = {
   id: string;
@@ -509,20 +507,6 @@ const completedSets = countedSets.filter(
       <span className="block">COLLECTIONS</span>
     </h1>
   </div>
-
-  {/* Floating TCG Button */}
-  <a
-    href="https://minigame-test.kayou110.com/pony/index.html?Authorization=1d212d8d543b6f7687f12441ea9e1e44&lan=en-US&region=US"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="absolute bottom-[-2.75rem] right-[-2.0rem] z-20 transition-transform duration-200 active:scale-95"
-  >
-    <img
-      src={tcgOnlineButtonMobile}
-      alt="Play TCG Online"
-      className="w-[170px] h-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
-    />
-  </a>
 </div>
       </div>
     );
@@ -578,10 +562,34 @@ const completedSets = countedSets.filter(
           <div className="absolute top-8 right-12 text-[#f5e6a8] text-lg">✦</div>
         </div>
 {/* Main content */}
-<div className="relative z-10 grid grid-cols-[1.5fr_0.75fr_1.75fr] gap-8 items-center translate-y-6">
+<div className="relative z-10 grid grid-cols-3 items-center translate-y-6">
 
-  {/* LEFT: Title */}
-  <div className="flex items-center justify-center pr-6">
+  {/* LEFT: Stats */}
+  <div className="flex justify-start">
+    <div className="grid grid-cols-3 gap-8 text-center">
+      {[
+        { value: `${completedSets}/${totalSets}`, label: "SETS FINISHED" },
+        {
+          value: totalCardsCollected.toLocaleString(),
+          label: "CARDS COLLECTED",
+        },
+        { value: `${completionRate}%`, label: "COMPLETE" },
+      ].map((stat) => (
+        <div key={stat.label}>
+          <div className="text-xl md:text-2xl font-bold leading-none text-[#f5e6a8] whitespace-nowrap">
+            {stat.value}
+          </div>
+
+          <div className="mt-1 text-[8px] uppercase tracking-[0.14em] font-semibold text-[#f5e6a8]/80">
+            {stat.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {/* CENTER: Title */}
+  <div className="flex justify-center">
     <h1
       className="text-2xl md:text-3xl lg:text-4xl font-semibold leading-[0.95] tracking-[0.06em] text-[#f5e6a8] text-center"
       style={{
@@ -595,57 +603,9 @@ const completedSets = countedSets.filter(
     </h1>
   </div>
 
-{/* CENTER: Description */}
-<div className="relative w-[240px] h-full -ml-14">
-  <div className="absolute inset-0 flex items-center justify-center translate-y-3">
-    <a
-      href="https://minigame-test.kayou110.com/pony/index.html?Authorization=1d212d8d543b6f7687f12441ea9e1e44&lan=en-US&region=US"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="transition-transform duration-200 hover:scale-105"
-    >
-      <img
-        src={tcgOnlineButton}
-        alt="Play TCG Online"
-        className="w-[320px]  max-w-none h-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
-      />
-    </a>
-  </div>
-</div>
-
-  {/* RIGHT: Stats */}
-  <div className="grid grid-cols-3 gap-8 text-center max-w-[520px] mx-auto">
-    {[
-      { value: `${completedSets}/${totalSets}`, label: "SETS FINISHED" },
-      {
-        value: totalCardsCollected.toLocaleString(),
-        label: "CARDS COLLECTED",
-      },
-      { value: `${completionRate}%`, label: "COMPLETE" },
-    ].map((stat) => (
-      <div key={stat.label}>
-        <div className="text-xl md:text-2xl font-bold leading-none text-[#f5e6a8] whitespace-nowrap">
-          {stat.value}
-        </div>
-        <div className="mt-1 text-[8px] uppercase tracking-[0.14em] font-semibold text-[#f5e6a8]/80">
-          {stat.label}
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-
-{/* Progress Bar */}
-<div className="absolute left-8 right-8 bottom-6 z-10">
-  <div className="grid grid-cols-[1.5fr_0.75fr_1.75fr] gap-8 items-start">
-    {/* Empty space under title */}
-    <div />
-
-    {/* Empty space under description */}
-    <div />
-
-    {/* Progress bar under stats only */}
-    <div>
+  {/* RIGHT: Progress */}
+  <div className="flex justify-end">
+    <div className="w-full max-w-[420px]">
       <div className="h-3 rounded-full bg-white/15 overflow-hidden shadow-inner">
         <div
           className="h-full rounded-full bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]"

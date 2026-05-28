@@ -615,7 +615,7 @@ useEffect(() => {
           {/* Mobile Card Fan */}
 <div className="lg:hidden mt-8 mb-8 flex justify-center">
   <img
-    src="/website-assets/card design.png"
+    src="/website-assets/carddesign.webp"
     alt="Kayou card fan"
     className="
       w-[420px]
@@ -724,7 +724,7 @@ useEffect(() => {
 
   {/* Pre-made card fan image */}
   <img
-    src="/website-assets/card design.png"
+    src="/website-assets/carddesign.webp"
     alt="Kayou card fan"
 className="
   relative

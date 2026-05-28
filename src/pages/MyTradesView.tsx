@@ -4,7 +4,7 @@ import KayouHeader from "@/components/KayouHeader";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import MyTradesSets from "@/pages/MyTradesSets";
-import watermark from "@/assets/avatars/mlpekayouwiki.png";
+const logo = "/website-assets/mlpekayouwiki.webp";
 
 type TradeCard = {
   id: string;
