@@ -12,7 +12,16 @@ const Star1 = () => {
   const navigate = useNavigate();
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  SSR: true,
+  SCR: true,
+  UR: true,
+  USR: true,
+  AR: true,
+  OR: true,
+  BP: true,
+  SAR: true,
+});
   const [loaded, setLoaded] = useState(false);
 
   const [viewMode, setViewMode] = useState(false);

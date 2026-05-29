@@ -11,7 +11,15 @@ import funMomentsOnePack from "/set-pictures/funmomentsonepack.jpg";
 const FunMoments1 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  N: true,
+  SN: true,
+  R: true,
+  SR: true,
+  SSR: true,
+  UR: true,
+  CR: true,
+});
 const [loaded, setLoaded] = useState(false);
 
 const [showProductInfo, setShowProductInfo] = useState(false);

@@ -11,7 +11,17 @@ import funMomentsThreePack from "/set-pictures/funmomentsthreepack.png";
 const FunMoments3 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  N: true,
+  SN: true,
+  R: true,
+  SR: true,
+  SSR: true,
+  UR: true,
+  UGR: true,
+  CR: true,
+  SCR: true,
+});
   const [loaded, setLoaded] = useState(false);
 
   const [showProductInfo, setShowProductInfo] = useState(false);

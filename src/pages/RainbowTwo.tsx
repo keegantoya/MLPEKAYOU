@@ -12,7 +12,19 @@ const RainbowTwo = () => {
   const navigate = useNavigate();
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  BASE: true,
+  R: true,
+  SR: true,
+  ST: true,
+  SSR: true,
+  FR: true,
+  TR: true,
+  TGR: true,
+  UR: true,
+  USR: true,
+  XR: true,
+});
   const [loaded, setLoaded] = useState(false);
 
   const [viewMode, setViewMode] = useState(false);

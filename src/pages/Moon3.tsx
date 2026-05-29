@@ -11,7 +11,18 @@ const Moon3 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  R: true,
+  SR: true,
+  SSR: true,
+  HR: true,
+  LSR: true,
+  UR: true,
+  SGR: true,
+  ZR: true,
+  SC: true,
+  SZR: true,
+});
 const [showProductInfo, setShowProductInfo] = useState(false);
 const [showScrollTop, setShowScrollTop] = useState(false);
 

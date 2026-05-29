@@ -14,7 +14,17 @@ const FriendshipBegins = () => {
 
   const [showProductInfo, setShowProductInfo] = useState(false);
 
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  SD01C: true,
+  SD01U: true,
+  SD01SR: true,
+  SD01SPR: true,
+  SD01GR: true,
+  SD01CR: true,
+  SD01ER: true,
+  SD01PER: true,
+  SD01PRR: true,
+});
 
 const [viewMode, setViewMode] = useState(false);
 const [zoomedCard, setZoomedCard] = useState<string | null>(null);

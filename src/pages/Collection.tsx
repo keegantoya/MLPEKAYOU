@@ -35,7 +35,24 @@ const id = slugToId[rawId] || rawId;
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
 const [celebrated, setCelebrated] = useState(false);
-const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  R: true,
+  SR: true,
+  SSR: true,
+  HR: true,
+  UR: true,
+  LSR: true,
+  SGR: true,
+  ZR: true,
+  SC: true,
+  "SHINING ZR": true,
+  FR: true,
+  TR: true,
+  TGR: true,
+  MTR: true,
+  USR: true,
+  XR: true,
+});
 
 const [viewMode, setViewMode] = useState(false);
 const [zoomedCard, setZoomedCard] = useState<string | null>(null);

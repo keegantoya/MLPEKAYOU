@@ -11,7 +11,23 @@ const FantasyWonderland = () => {
   const navigate = useNavigate();
 
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+  BASE: true,
+  C: true,
+  U: true,
+  ER: true,
+  SR: true,
+  SPR: true,
+  GR: true,
+  CR: true,
+  UR: true,
+  RR: true,
+  PER: true,
+  PSPR: true,
+  PGR: true,
+  PCR: true,
+  PRR: true,
+});
 const [loaded, setLoaded] = useState(false);
 
 const [showProductInfo, setShowProductInfo] = useState(false);
