@@ -12,7 +12,6 @@ import { supabase } from "@/lib/supabase";
 import heroFront from "/friendships-begin/SD01PRR01.png";
 import heroMiddle from "/cards/third-edition-moon/M3ZR003.jpg";
 import heroBack from "/cards/rainbow-one/R1XR004.jpg";
-import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 
 import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
 
@@ -23,7 +22,6 @@ import {
   Gift,
   Star,
   Heart,
-  MessageCircle,
   Send,
   Bookmark,
 } from "lucide-react";
@@ -76,11 +74,6 @@ const Index = () => {
 
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
-
-  const [comments, setComments] = useState<Record<string, any[]>>({});
-  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
-  const [selectedPost, setSelectedPost] = useState<any>(null);
-  const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [minisoSlide, setMinisoSlide] = useState(0);
 
   const [stats, setStats] = useState({
@@ -90,11 +83,6 @@ const Index = () => {
 });
 
 const [activeGiveaway, setActiveGiveaway] = useState<string | null>(null);
-const [topCollector, setTopCollector] = useState<{
-  id: string;
-  username: string;
-  total: number;
-} | null>(null);
 
 const toggleLike = async (postId: string) => {
   const { data } = await supabase.auth.getSession();
@@ -141,113 +129,6 @@ const toggleLike = async (postId: string) => {
   }
 };
 
-const loadComments = async () => {
-  // Load all comments
-  const { data: commentRows, error: commentsError } = await supabase
-    .from("post_comments")
-    .select(`
-      id,
-      post_id,
-      comment,
-      created_at,
-      user_id
-    `)
-    .order("created_at", { ascending: true });
-
-  if (commentsError) {
-    console.error("Error loading comments:", commentsError);
-    return;
-  }
-
-  // Collect unique user IDs
-  const userIds = [
-    ...new Set(
-      (commentRows || [])
-        .map((row: any) => row.user_id)
-        .filter(Boolean)
-    ),
-  ];
-
-  // Load usernames from profiles
-  const profileMap: Record<string, string> = {};
-
-  if (userIds.length > 0) {
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("id, username")
-      .in("id", userIds);
-
-    if (profilesError) {
-      console.error("Error loading profiles:", profilesError);
-    } else {
-      profiles?.forEach((profile: any) => {
-        profileMap[profile.id] = profile.username || "Anonymous";
-      });
-    }
-  }
-
-  // Group comments by post_id and attach usernames
-  const grouped: Record<string, any[]> = {};
-
-  (commentRows || []).forEach((row: any) => {
-    if (!grouped[row.post_id]) {
-      grouped[row.post_id] = [];
-    }
-
-    grouped[row.post_id].push({
-      ...row,
-      profiles: {
-        username: profileMap[row.user_id] || "Anonymous",
-      },
-    });
-  });
-
-  setComments(grouped);
-};
-
-const submitComment = async (postId: string) => {
-  const text = (commentInputs[postId] || "").trim();
-
-  if (!text) return;
-
-  const { data } = await supabase.auth.getSession();
-  const user = data.session?.user;
-
-  if (!user) {
-    navigate("/auth");
-    return;
-  }
-
-  const { error } = await supabase
-    .from("post_comments")
-    .insert({
-      post_id: postId,   // text column, so "star1" is valid
-      user_id: user.id,
-      comment: text,
-    });
-
-  if (error) {
-    console.error("Error posting comment:", error);
-    alert(error.message);
-    return;
-  }
-
-  // Clear the input box
-  setCommentInputs((prev) => ({
-    ...prev,
-    [postId]: "",
-  }));
-
-  // Reload comments so the new one appears immediately
-  await loadComments();
-};
-
-
-const openComments = (post: any) => {
-  setSelectedPost(post);
-  setShowCommentsModal(true);
-};
-
 useEffect(() => {
   const loadLikes = async () => {
     const { data } = await supabase.auth.getSession();
@@ -280,7 +161,6 @@ useEffect(() => {
   };
 
   loadLikes();
-  loadComments();
 }, []);
 
   const intervalRef = useRef(null);
@@ -488,41 +368,6 @@ if (fwRow) {
   });
 
   return () => subscription.unsubscribe();
-}, []);
-
-useEffect(() => {
-  const loadTopCollector = async () => {
-    const { data: progress } = await supabase
-      .from("collection_progress_raw")
-      .select("*");
-
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, username");
-
-    const profileMap: Record<string, string> = {};
-    profiles?.forEach((p: any) => {
-      profileMap[p.id] = p.username;
-    });
-
-    // Get all unique user IDs
-    const userIds = [...new Set((progress || []).map((row: any) => row.user_id))];
-
-    // Calculate totals using the shared helper
-    const totals = userIds.map((userId: string) => ({
-  id: userId,
-  username: profileMap[userId] || "Anonymous",
-  total: calculateCollectionTotal(userId, progress || []),
-}));
-
-    const sorted = totals
-      .filter((user) => user.username !== "HeiManTou (Chinese Collector)")
-      .sort((a, b) => b.total - a.total);
-
-    setTopCollector(sorted[0] || null);
-  };
-
-  loadTopCollector();
 }, []);
   
   return (
@@ -825,35 +670,6 @@ before:pointer-events-none">
           <div className="text-4xl font-bold">{stats.trades}</div>
         </div>
 
-        {/* Top Collector */}
-        <div className="rounded-3xl bg-gradient-to-br from-[#FFF8D6] to-[#F8E9A8] border border-[#E8C76B] shadow-lg p-6 text-center">
-          <div className="text-xs font-semibold tracking-widest uppercase text-[#9A6B00] mb-2">
-            #1 KayouUS mlp collector
-          </div>
-
-          <div
-  className="flex items-center justify-center gap-2 text-4xl font-bold text-[#5B2E86]"
-  style={{
-    fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
-  }}
->
-  <span>{topCollector?.username}</span>
-
-  {topCollector?.id &&
-    VERIFIED_USERS[topCollector.id] && (
-      <img
-        src={VERIFIED_USERS[topCollector.id].badge}
-        alt={VERIFIED_USERS[topCollector.id].label}
-        title={VERIFIED_USERS[topCollector.id].label}
-        className="w-8 h-8 object-contain flex-shrink-0"
-      />
-    )}
-</div>
-
-          <div className="mt-2 text-2xl font-semibold text-[#5B2E86]">
-            {(topCollector?.total || 5284).toLocaleString()} cards
-          </div>
-        </div>
         {/* Mobile Social Icons */}
 <div className="sm:hidden mt-8 flex items-center justify-center gap-6">
   <button
@@ -1044,16 +860,6 @@ src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-asse
       : "text-[#6B3FA2]"
   }`}
 />
-            <button
-  type="button"
-  onClick={() => openComments(post)}
-  className="flex items-center gap-1 text-[#6B3FA2] hover:text-[#5B2E86] transition"
->
-  <MessageCircle className="w-6 h-6" />
-  <span className="text-xs font-semibold">
-    {(comments[post.id] || []).length}
-  </span>
-</button>
             <Send className="w-6 h-6 text-[#6B3FA2]" />
           </div>
 
@@ -1070,25 +876,6 @@ src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-asse
   </span>
   {post.caption}
 </p>
-
-{/* COMMENTS */}
-<div className="mt-3">
-  <button
-    type="button"
-    onClick={() => openComments(post)}
-    className="
-      text-sm
-      font-semibold
-      text-[#8B5CC7]
-      hover:text-[#6B3FA2]
-      transition
-    "
-  >
-    {(comments[post.id] || []).length === 0
-      ? "View comments"
-      : `View all ${(comments[post.id] || []).length} comments`}
-  </button>
-</div>
 
 <div
   className={`mt-3 text-xs uppercase tracking-wide ${
@@ -1333,45 +1120,8 @@ src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-asse
           : "text-[#6B3FA2]"
       }`}
     />
-
-    <button
-      type="button"
-      onClick={() => openComments(post)}
-      className="flex items-center gap-1 text-[#6B3FA2] hover:text-[#5B2E86] transition"
-    >
-      <MessageCircle className="w-6 h-6" />
-      <span className="text-xs font-semibold">
-        {(comments[post.id] || []).length}
-      </span>
-    </button>
-
     <Send className="w-6 h-6 text-[#6B3FA2]" />
     <Bookmark className="w-6 h-6 text-[#6B3FA2] ml-auto" />
-  </div>
-
-  {/* COMMENTS PREVIEW (fixed-height area) */}
-<div className="space-y-3 mb-4 max-h-[88px] overflow-hidden">
-    {(comments[post.id] || []).slice(0, 2).map((comment) => (
-      <div
-        key={comment.id}
-        className="text-sm leading-relaxed text-[#5E467A]"
-      >
-        <span className="font-semibold text-[#5B2E86] mr-2">
-          {comment.profiles?.username || "Anonymous"}
-        </span>
-        {comment.comment}
-      </div>
-    ))}
-
-    {(comments[post.id] || []).length > 2 && (
-      <button
-        type="button"
-        onClick={() => openComments(post)}
-        className="text-sm font-semibold text-[#8B5CC7] hover:text-[#6B3FA2] transition"
-      >
-        View all {(comments[post.id] || []).length} comments
-      </button>
-    )}
   </div>
 
   {/* Footer Link - pinned to bottom */}

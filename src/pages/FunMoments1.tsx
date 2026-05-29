@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ChevronUp } from "lucide-react";
+import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 
 import funMomentsOneBox from "/set-pictures/funmomentsonebox.jpg";
 import funMomentsOnePack from "/set-pictures/funmomentsonepack.jpg";
@@ -111,6 +112,24 @@ const toggleFlip = (key: string) => {
         },
         { onConflict: "user_id,set_id" }
       );
+      const { data: allProgress } = await supabase
+  .from("collection_progress_raw")
+  .select("user_id, progress")
+  .eq("user_id", user.id);
+
+if (allProgress) {
+  const total = calculateCollectionTotal(
+    user.id,
+    allProgress
+  );
+
+  await supabase
+    .from("profiles")
+    .update({
+      collection_total: total
+    })
+    .eq("id", user.id);
+}
 
     console.log("SAVE ERROR:", error);
 

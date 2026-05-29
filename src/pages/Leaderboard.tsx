@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase";
 import leaderboardBadge from "@/assets/avatars/leaderboardbadge.png";
 import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 
-
 import avatar001 from "@/assets/avatars/avatar001.jpg";
 import avatar002 from "@/assets/avatars/avatar002.jpg";
 import avatar003 from "@/assets/avatars/avatar003.jpg";
@@ -88,80 +87,6 @@ const VERIFIED_USERS = {
   },
 };
 
-const sets = [
-  {
-    id: "1",
-    name: "Eternal Moon: First Edition",
-    rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 }
-  },
-  {
-    id: "5",
-    name: "Rainbow: First Edition",
-    rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 }
-  },
-  {
-    id: "7",
-    name: "Fun Moments: First Edition",
-    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 }
-  },
-  {
-    id: "2",
-    name: "Eternal Moon: Second Edition",
-    rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 }
-  },
-  {
-  id: "8",
-  name: "Fun Moments Second Edition",
-  total: 136,
-  rarities: { N: 20, SN: 20, R:35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 }
-  },
-  {
-  id: "SD",
-  name: "Friendships Begin",
-  rarities: { BONUS: 68 }
-  },
-  {
-  id: "FW",
-  name: "Fantasy Wonderland",
-  rarities: {
-    C: 48,
-    U: 18,
-    ER: 6,
-    SR: 14,
-    SPR: 28,
-    GR: 12,
-    CR: 12,
-    RR: 6,
-    PER: 12,
-    PSPR: 11,
-    PGR: 6,
-    PCR: 12,
-    PRR: 6
-  }
-},
-  {
-    id: "9",
-    name: "Promo Cards",
-    rarities: { PR: 6 }
-  },
-  {
-    id: "10",
-    name: "Andy Price Promo",
-    rarities: { LC: 1 }
-  },
-  {
-  id: "tcgpromos",
-  name: "TCG Promos",
-  rarities: { RR: 6 }
-}
-];
-
-const rarityDisplayMap: Record<string, string> = {
-  "SHINING ZR": "⬦ZR",
-  "SZR": "⬦ZR",
-  "SN": "⬦N",
-};
-
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState<any[]>([]);
     const [rankWorthyCollectors, setRankWorthyCollectors] = useState(0);
@@ -182,23 +107,11 @@ useEffect(() => {
 }, [openProfile]);
 
   useEffect(() => {
-    const load = async () => {
-      const { data: progress } = await supabase
-  .from("collection_progress_raw")
-  .select("*");
-const mergedProgress: Record<string, any> = {};
-
-progress?.forEach((row: any) => {
-  mergedProgress[`${row.user_id}-${row.set_id}`] = row;
-});
+const load = async () => {
         
       const { data: profiles } = await supabase
-        .from("profiles")
-        .select("*");
-        const { data: tradingData } = await supabase
-  .from("trading_profiles")
-  .select("*");
-
+  .from("profiles")
+  .select("id, username, avatar_url, iso_hidden_sets, collection_total, rank_worthy")
       const profileMap: Record<string, any> = {};
 profiles?.forEach((p: any) => {
   profileMap[p.id] = {
@@ -206,392 +119,14 @@ profiles?.forEach((p: any) => {
     hiddenSets: p.iso_hidden_sets || []
   };
 });
-const tradingMap: Record<string, string> = {};
-
-(tradingData || []).forEach((p: any) => {
-  tradingMap[p.user_id] = p.discord_username;
-});
-      const totals: Record<string, any> = {};
-
-      Object.keys(profileMap).forEach((userId) => {
-  const profile = profileMap[userId];
-
-  if (!totals[userId]) {
-    totals[userId] = {
-  id: userId,
-  username: profile?.username || "Anonymous",
-  avatar: profile?.avatar_url,
-  discord_username: tradingMap[userId] || null,
-  total: 0,
-  missing: [] as string[],
-  hiddenSets: profile?.hiddenSets || [],
-  mastered: [],
-  notStarted: []
-};
-  }
-
-  sets.forEach((set) => {
-
-let row = { progress: {} as Record<string, boolean> };
-
-if (set.id === "SD") {
-  const base = mergedProgress[`${userId}-SD`] || { progress: {} };
-  const bonus = mergedProgress[`${userId}-SD_BONUS`] || { progress: {} };
-  const starters = mergedProgress[`${userId}-SD_STARTERS`] || { progress: {} };
-
-  row.progress = {
-    ...base.progress,
-    ...bonus.progress,
-    ...starters.progress
-  };
-} else {
-  row = mergedProgress[`${userId}-${set.id}`] || { progress: {} };
-}
-
-    const ownedMap: Record<string, boolean> = {};
-    if (row?.progress) {
-      Object.entries(row.progress).forEach(([k, v]) => {
-        if (v) ownedMap[k] = true;
-      });
-    }
-
-    const isHidden = profile?.hiddenSets?.includes(set.id);
-
-  const hideStarters = profile?.hiddenSets?.includes("SD_STARTERS");
-  const hideBonus = profile?.hiddenSets?.includes("SD_BONUS");
-
-    let owned = 0;
-    let totalCardsInSet = 0;
-    let hasAny = false;
-    let missingCards: string[] = [];
-
-    if (set.id === "SD") {
-      let hasStarter = false;
-      let hasBonus = false;
-Object.entries(ownedMap).forEach(([cardKey, value]) => {
-  if (value !== true) return;
-
-const rawKey = cardKey.replace("STARTER-", "").replace("BONUS-", "");
-
-if (rawKey.startsWith("SD01")) {
-
-    if (
-  rawKey.startsWith("SD01A") ||
-  rawKey.startsWith("SD01B") ||
-  rawKey.startsWith("SD01C") ||
-  rawKey.startsWith("SD01D") ||
-  rawKey.startsWith("SD01E") ||
-  rawKey.startsWith("SD01F")
-) {
-      hasStarter = true;
-    } else {
-      hasBonus = true;
-    }
-
-    if (hideBonus && !cardKey.includes("SD01A") &&
-        !cardKey.includes("SD01B") &&
-        !cardKey.includes("SD01C") &&
-        !cardKey.includes("SD01D") &&
-        !cardKey.includes("SD01E") &&
-        !cardKey.includes("SD01F")) {
-      return;
-    }
-
-    owned++;
-    hasAny = true;
-  }
-});
-  totalCardsInSet = 194;
-if (!hasStarter && !hasBonus) {
-  totals[userId].notStarted.push("Friendships Begin");
-} else {
-
-const STARTER_DECKS = [
-  { code: "SD01A", name: "Twilight Sparkle Starter Deck" },
-  { code: "SD01B", name: "Fluttershy Starter Deck" },
-  { code: "SD01C", name: "Pinkie Pie Starter Deck" },
-  { code: "SD01D", name: "Applejack Starter Deck" },
-  { code: "SD01E", name: "Rainbow Dash Starter Deck" },
-  { code: "SD01F", name: "Rarity Starter Deck" },
-];
-
-let anyStarterOwned = false;
-let starterCount = 0;
-
-STARTER_DECKS.forEach((deck) => {
-  const hasDeck = Object.keys(ownedMap).some((cardKey) => {
-    const rawKey = cardKey.replace("STARTER-", "").replace("BONUS-", "");
-    return rawKey.startsWith(deck.code);
-  });
-
-  if (hasDeck) {
-    anyStarterOwned = true;
-    hasStarter = true;
-    starterCount++;
-  } else if (!hideStarters && !isHidden) {
-    totals[userId].missing.push(
-      `${deck.name} • Friendships Begin`
-    );
-  }
-});
-
-if (starterCount === 6 && !hideStarters) {
-  totals[userId].mastered.push("Friendships Begin Character Decks");
-}
-
-if (starterCount === 0 && !hideStarters) {
-  totals[userId].notStarted.push("Friendships Begin — Character Starter Decks");
-}
-
-if (!anyStarterOwned && !hideStarters) {
-  totals[userId].notStarted.push("Friendships Begin — Character Starter Decks");
-}
-
-if (!hideBonus) {
-
-  if (!hasBonus) {
-    totals[userId].notStarted.push("Friendships Begin — Bonus Packs");
-  } else {
-
-  const BONUS_STRUCTURE = [
-    { prefix: "SD01C", count: 9 },
-    { prefix: "SD01U", count: 7 },
-    { prefix: "SD01SR", count: 6 },
-    { prefix: "SD01SPR", count: 10 },
-    { prefix: "SD01GR", count: 6 },
-    { prefix: "SD01CR", count: 6 },
-    { prefix: "SD01ER", count: 6 },
-    { prefix: "SD01PER", count: 12 },
-    { prefix: "SD01PRR", count: 6 },
-  ];
-  BONUS_STRUCTURE.forEach(({ prefix, count }) => {
-
-  for (let i = 1; i <= count; i++) {
-
-    let actualIndex = i;
-
-if (prefix === "SD01PER") {
-  actualIndex = i + 6;
-}
-    const num = String(actualIndex).padStart(2, "0");
-    const key = `${prefix}${num}`;
-
-const isOwned = Object.keys(ownedMap).some(k =>
-  k.endsWith(key)
-);
-if (isOwned) {
-  continue;
-}
-
-    if (!isHidden && hasBonus) {
-
-      let rarity = prefix.replace("SD01", "");
-      let displayRarity = rarity;
-      let special = false;
-
-      if (rarity.startsWith("P")) {
-  special = true;
-  displayRarity = rarity.slice(1);
-}
-
-if (rarity === "PER") {
-  displayRarity = "ER";
-  special = true;
-}
-
-      let formattedRarity = displayRarity;
-
-if (rarityDisplayMap[formattedRarity]) {
-  formattedRarity = rarityDisplayMap[formattedRarity];
-}
-const prefixMark = special ? "※" : "";
-
-let formatted = `${prefixMark}${formattedRarity}-${num}`;
-
-if (rarity === "PER") {
-  const displayNum = Math.ceil(i / 2) + 6;
-  const variant = i % 2 === 1 ? "(Day)" : "(Night)";
-
-  formatted =
-    `${prefixMark}${formattedRarity}-${String(displayNum).padStart(2, "0")} ${variant}`;
-}
-
-      missingCards.push(`${set.name} • ${formatted}`);
-    }
-  }
-
-});
-  }
-}
-}
-  
-} else if (set.id === "FW") {
-
-
-  const STRUCTURE = [
-  { prefix: "BP01C", count: 48 },
-  { prefix: "BP01U", count: 18 },
-  { prefix: "BP01ER", count: 6 },
-  { prefix: "BP01SR", count: 14 },
-  { prefix: "BP01SPR", count: 28 },
-  { prefix: "BP01GR", count: 12 },
-  { prefix: "BP01CR", count: 12 },
-  { prefix: "BP01RR", count: 6 },
-  { prefix: "BP01PER", count: 12 },
-  { prefix: "BP01PSPR", count: 11 },
-  { prefix: "BP01PGR", count: 6 },
-  { prefix: "BP01PCR", count: 12 },
-  { prefix: "BP01PRR", count: 6 },
-];
-
-const FW_CARDS = STRUCTURE.flatMap(({ prefix, count }) => {
-
-  // ER cards are numbered 07–12
-  if (prefix === "BP01ER") {
-    return Array.from({ length: 6 }, (_, i) =>
-      `BP01ER${String(i + 7).padStart(2, "0")}`
-    );
-  }
-
-  // PSPR uses a custom numbering sequence
-  if (prefix === "BP01PSPR") {
-    return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map((n) =>
-      `BP01PSPR${String(n).padStart(2, "0")}`
-    );
-  }
-
-  // All other Fantasy Wonderland cards, including PER,
-  // use standard numbering starting at 01.
-  return Array.from({ length: count }, (_, i) =>
-    `${prefix}${String(i + 1).padStart(2, "0")}`
-  );
-});
-
-totalCardsInSet = FW_CARDS.length;
-
-const validSet = new Set(FW_CARDS);
-
-const progressData = row?.progress || {};
-
-const validKeys = new Set(FW_CARDS);
-
-Object.entries(progressData).forEach(([key, val]) => {
-  if (val && validKeys.has(key)) {
-    owned++;
-    hasAny = true;
-  }
-  if (val && !validKeys.has(key)) {
-    console.log("Unrecognized Fantasy Wonderland card:", key);
-  }
-});
-
-FW_CARDS.forEach((key) => {
-  if (!isHidden && hasAny && !progressData[key]) {
-
-let rarity = key.replace("BP01", "").replace(/[0-9]/g, "");
-let displayRarity = rarity;
-let special = false;
-
-if (rarity.startsWith("P")) {
-  special = true;
-  displayRarity = rarity.slice(1); // REMOVE the P
-}
-
-if (rarity === "PER") {
-  displayRarity = "ER";
-  special = true;
-}
-let formattedRarity = displayRarity;
-
-if (rarityDisplayMap[formattedRarity]) {
-  formattedRarity = rarityDisplayMap[formattedRarity];
-}
-
-const prefixMark = special ? "※" : "";
-
-const num = key.slice(-2);
-
-const rawNum = parseInt(num);
-
-let displayNum = rawNum;
-let variant = "";
-
-if (rarity === "PER") {
-  displayNum = Math.ceil(rawNum / 2);
-  variant = rawNum % 2 === 1 ? "(Day)" : "(Night)";
-}
-
-const formatted = `${prefixMark}${formattedRarity}-${String(displayNum).padStart(2,"0")} ${variant}`;
-
-    missingCards.push(`${set.name} • ${formatted}`);
-  }
-});
-
-} else if (set.id === "tcgpromos") {
-
-  totalCardsInSet = 6;
-
-  for (let i = 1; i <= 6; i++) {
-    const key = `RR${String(i).padStart(2, "0")}`;
-
-    const isOwned =
-  ownedMap[key] ||
-  ownedMap[`BONUS-${key}`];
-
-if (isOwned) {
-  owned++;
-  hasAny = true;
-} else if (!isHidden && hasAny && owned < totalCardsInSet) {
-      missingCards.push(`${set.name} • ${key}`);
-    }
-  }
-
-} else {
-
-  Object.entries(set.rarities).forEach(([rarity, count]) => {
-    totalCardsInSet += count as number;
-
-    for (let i = 1; i <= count; i++) {
-      const cardKey = `${rarity}-${i}`;
-
-      if (ownedMap[cardKey]) {
-        owned++;
-        hasAny = true;
-      } else if (!isHidden && hasAny && owned < totalCardsInSet) {
-        let displayRarity = rarity === "LC" ? "PR" : rarity;
-
-        if (rarityDisplayMap[displayRarity]) {
-          displayRarity = rarityDisplayMap[displayRarity];
-        }
-
-        const padded = String(i).padStart(3, "0");
-missingCards.push(`${set.name} • ${displayRarity}-${padded}`);
-      }
-    }
-  });
-
-}
-if (set.id === sets[sets.length - 1].id) {
-  totals[userId].total = calculateCollectionTotal(
-    userId,
-    Object.values(mergedProgress)
-  );
-}
-    totals[userId].missing.push(...missingCards);
-
-    if (owned === totalCardsInSet && totalCardsInSet > 0) {
-      totals[userId].mastered.push(set.name);
-    }
-
-if (
-  set.id !== "SD" &&
-  !hasAny &&
-  !isHidden
-) {
-  totals[userId].notStarted.push(set.name);
-}
-  });
-});
+const allUsersSorted = (profiles || [])
+  .map((u: any) => ({
+    id: u.id,
+    username: u.username || "Anonymous",
+    avatar: u.avatar_url,
+    total: u.collection_total || 0,
+  }))
+  .sort((a: any, b: any) => b.total - a.total);
 
  const excludedMasteredSets = [
   "Promo Cards",
@@ -599,28 +134,27 @@ if (
   "Andy Price Promo",
 ];
 
-const allUsersSorted = Object.values(totals)
-  .filter(
-    (u: any) => u.username !== "HeiManTou (Chinese Collector)"
-  )
-  .sort((a: any, b: any) => b.total - a.total);
+  console.log(
+  allUsersSorted.slice(0, 20).map((u, index) => ({
+    user_id: u.id,
+    username: u.username,
+    avatar_url: u.avatar,
+    total: u.total,
+    rank: index + 1,
+  }))
+);
 
 // RANK-WORTHY COLLECTORS
 // Users with 3+ completed sets, excluding promos and limited cards
-const rankWorthy = allUsersSorted.filter((u: any) => {
-  const qualifyingCompletedSets = (u.mastered || []).filter(
-    (setName: string) =>
-      !excludedMasteredSets.includes(setName)
-  );
-
-  return qualifyingCompletedSets.length >= 1;
-});
+const rankWorthy = (profiles || []).filter(
+  (u: any) => u.rank_worthy === true
+);
 
 setRankWorthyCollectors(rankWorthy.length);
 
 // TOTAL CARDS SITEWIDE
 const totalCards = allUsersSorted.reduce(
-  (sum: number, u: any) => sum + (u.total || 0),
+  (sum, u) => sum + u.total,
   0
 );
 
@@ -646,7 +180,14 @@ if (currentUserId) {
 }
 
 // SHOW ONLY TOP 12 ON THE PAGE
-setLeaders(allUsersSorted.slice(0, 12));
+setLeaders(
+  allUsersSorted
+    .filter(
+      (u: any) =>
+        u.username !== "HeiManTou (Chinese Collector)"
+    )
+    .slice(0, 12)
+);
     };
 
     load();
