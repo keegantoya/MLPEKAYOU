@@ -652,6 +652,18 @@ style={{
     <Sparkles className="h-5 w-5" />
   </button>
 
+    <button
+  onClick={() => navigate("/leaderboard")}
+  className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+    isActive("/leaderboard")
+      ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+      : "bg-white/10 border-white/20 hover:bg-white/20"
+  }`}
+  title="Top Collectors"
+>
+  <Medal className="h-5 w-5" />
+</button>
+
   {/* LOGO */}
   <img
     src={logo}
@@ -661,17 +673,6 @@ style={{
   />
 
   {/* RIGHT OF LOGO */}
-  <button
-    onClick={() => navigate("/trading-post")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/trading-post")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
-}`}
-  >
-    <ArrowLeftRight className="h-5 w-5" />
-  </button>
-
   <button
     onClick={() => navigate("/community")}
     className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
@@ -683,17 +684,16 @@ style={{
     <Trophy className="h-5 w-5" />
   </button>
 
-  <button
-  onClick={() => navigate("/leaderboard")}
-  className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-    isActive("/leaderboard")
-      ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-      : "bg-white/10 border-white/20 hover:bg-white/20"
-  }`}
-  title="Top Collectors"
->
-  <Medal className="h-5 w-5" />
-</button>
+    <button
+    onClick={() => navigate("/trading-post")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+  isActive("/trading-post")
+    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
+    : "bg-white/10 border-white/20 hover:bg-white/20"
+}`}
+  >
+    <ArrowLeftRight className="h-5 w-5" />
+  </button>
 
   <button
     onClick={() => navigate("/selling")}
