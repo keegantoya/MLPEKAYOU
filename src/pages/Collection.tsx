@@ -112,29 +112,6 @@ const toggleFlip = async (key: string) => {
     );
 };
   useEffect(() => {
-    const loadProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-
-      if (user) {
-        const { data: saved } = await supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", user.id)
-          .eq("set_id", id)
-          .single();
-
-        if (saved?.progress) {
-          setFlipped(saved.progress);
-        }
-      }
-
-      setLoaded(true);
-    };
-
-    loadProgress();
-  }, [id]);
-  useEffect(() => {
   const loadProgress = async (userOverride?: any) => {
     let user = userOverride;
 

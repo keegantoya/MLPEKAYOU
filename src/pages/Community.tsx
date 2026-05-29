@@ -307,12 +307,6 @@ const [activeCategory, setActiveCategory] = useState<
   const [firstFinishers, setFirstFinishers] = useState<any>({});
   const [setTopThree, setSetTopThree] = useState<Record<string, any[]>>({});
   const [topCollector, setTopCollector] = useState<any>(null);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [owned, setOwned] = useState<Record<string, boolean>>({});
-  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-  const [loadingHidden, setLoadingHidden] = useState(false);
-  const [tradeCards, setTradeCards] = useState<any[]>([]);
-  const [view, setView] = useState<"choice" | "iso" | "trade">("choice");
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
@@ -596,47 +590,6 @@ if (set.id === "friendshipsbegin") {
 
   loadSetTopThree();
 }, []);
-
-  const loadISO = async (user: any) => {
-    
-
-    setSelectedUser(user);
-    setView("choice");
-    setLoadingHidden(true);
-
-   const { data: progress } = await supabase
-  .from("collection_progress_raw")
-  .select("*")
-  .eq("user_id", user.id);
-
-    const allOwned: Record<string, boolean> = {};
-
-    progress?.forEach((set: any) => {
-      Object.entries(set.progress || {}).forEach(([key, value]) => {
-        if (value) {
-          allOwned[`${set.set_id}-${key}`] = true;
-        }
-      });
-    });
-
-    setOwned(allOwned);
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("iso_hidden_sets")
-      .eq("id", user.id)
-      .single();
-
-    setHiddenSets(profile?.iso_hidden_sets || []);
-    setLoadingHidden(false);
-
-    const { data: trades } = await supabase
-      .from("for_trade")
-      .select("*")
-      .eq("user_id", user.id);
-
-    setTradeCards(trades || []);
-  };
 
   return (
  <div

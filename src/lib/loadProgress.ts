@@ -9,10 +9,10 @@ export const loadUserProgress = async () => {
     return {};
   }
 
-  const { data: progress, error } = await supabase
-    .from("collection_progress")
-    .select("*")
-    .eq("user_id", user.id);
+const { data: progress, error } = await supabase
+  .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
 
   if (error || !progress) {
     return {};

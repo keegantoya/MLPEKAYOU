@@ -3,8 +3,6 @@ import { useEffect, useState, useRef } from "react";
 import KayouHeader from "@/components/KayouHeader";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import MyTradesSets from "@/pages/MyTradesSets";
-const logo = "/website-assets/mlpekayouwiki.webp";
 
 type TradeCard = {
   id: string;
@@ -35,9 +33,9 @@ const popupRef = useRef<HTMLDivElement | null>(null);
       const user = data.session?.user;
       if (!user) return;
 
-  const { data: trades } = await supabase
+const { data: trades } = await supabase
   .from("for_trade")
-  .select("*")
+  .select("id, user_id, set_id, card_key, listing_type")
   .eq("user_id", user.id);
 
       const filtered = (trades || []).filter((card) => {

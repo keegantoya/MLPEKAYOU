@@ -3,9 +3,6 @@ import CollectionCard from "@/components/CollectionCard";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import inventoryBadge from "@/assets/avatars/inventorybadge.png";
-import myTradesBadge from "@/assets/avatars/mytradesbadge.png";
-
 
 export default function MyTrades() {
   const navigate = useNavigate();
@@ -40,9 +37,9 @@ export default function MyTrades() {
     setHiddenSets(profile?.iso_hidden_sets || []);
 
     const { data: trades } = await supabase
-      .from("for_trade")
-      .select("*")
-      .eq("user_id", user.id);
+  .from("for_trade")
+  .select("set_id")
+  .eq("user_id", user.id);
 
     const uniqueSets = [
       ...new Set((trades || []).map((t) => String(t.set_id).trim()))

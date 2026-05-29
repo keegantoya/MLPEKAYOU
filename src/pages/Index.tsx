@@ -5,7 +5,7 @@ import Star1Poster from "@/assets/avatars/Star1poster.png";
 import tcgAppBanner from "@/assets/website-assets/tcgapp.png";
 const minisoPoster = "/website-assets/minisocollab.jpg";
 const minisoLogo = "/website-assets/minisologo.jpg";
-const minisoPoster2 = "/website-assets/minisocollab2.png";
+const minisoPoster2 = "/website-assets/minisocollab2.webp";
 const minisoPoster3 = "/website-assets/minisocollab3.jpg";
 const rainbow2Poster = "/website-assets/rainbow2post.jpg";
 import { supabase } from "@/lib/supabase";
@@ -205,10 +205,10 @@ useEffect(() => {
       return;
     }
 
-    const { data: progress } = await supabase
-      .from("collection_progress")
-      .select("*")
-      .eq("user_id", user.id);
+   const { data: progress } = await supabase
+  .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
 
     let ownedCount = 0;
     let completedCount = 0;
@@ -878,40 +878,40 @@ src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-asse
 </p>
 
 <div
-  className={`mt-3 text-xs uppercase tracking-wide ${
-    post.id === "miniso" || post.id === "miniso2" ||
-    post.id === "fantasywonderland" ||
-    post.id === "friendshipsbegin"
-      ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
-      : "text-[#A78BCB]"
-  }`}
-  onClick={() => {
-    if (post.id === "miniso") {
-      window.open(
-        "https://www.tiktok.com/@keanaex?_r=1&_t=ZP-96X7XS4ajT4",
-        "_blank"
-      );
-        } else if (post.id === "miniso2") {
+className={`mt-3 text-xs uppercase tracking-wide ${
+  post.id === "miniso" || post.id === "miniso2"
+    ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
+    : "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
+}`}
+onClick={() => {
+  if (post.id === "miniso") {
+    window.open(
+      "https://www.tiktok.com/@keanaex?_r=1&_t=ZP-96X7XS4ajT4",
+      "_blank"
+    );
+  } else if (post.id === "miniso2") {
     window.open(
       "https://www.tiktok.com/t/ZP9Y4tWQwhu2F-SoaSI/",
       "_blank"
     );
-    } else if (post.id === "funmoments3") {
-  navigate("/fun-moments-three");
-    } else if (post.id === "fantasywonderland") {
-      navigate("/fantasy-wonderland");
-    } else if (post.id === "friendshipsbegin") {
-      navigate("/friendships-begin");
-    }
-  }}
+  } else if (post.id === "star1") {
+    navigate("/star-one");
+  } else if (post.id === "rainbow2") {
+    navigate("/rainbow-two");
+  } else if (post.id === "moon3") {
+    navigate("/eternal-moon-three");
+  } else if (post.id === "funmoments3") {
+    navigate("/fun-moments-three");
+  } else if (post.id === "fantasywonderland") {
+    navigate("/fantasy-wonderland");
+  } else if (post.id === "friendshipsbegin") {
+    navigate("/friendships-begin");
+  }
+}}
 >
   {post.id === "miniso" || post.id === "miniso2"
-    ? "Find them in Keegan's TikTok Shop Showcase"
-    : post.id === "moon3"
-    ? "SET CHECKLIST DROPS 05/25"
-    : post.id === "star1" || post.id === "rainbow2"
-? "CHECKLIST COMING SOON"
-: "VIEW SET CHECKLIST"}
+  ? "Find them in Keegan's TikTok Shop Showcase"
+  : "VIEW SET CHECKLIST"}
 </div>
       </div>
     </div>
@@ -1126,16 +1126,18 @@ src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-asse
 
   {/* Footer Link - pinned to bottom */}
 <div
-  className={`mt-auto text-xs uppercase tracking-wide ${
-    post.id === "miniso" ||
-    post.id === "miniso2" ||
-    post.id === "moon3" ||
-    post.id === "funmoments3" ||
-    post.id === "fantasywonderland" ||
-    post.id === "friendshipsbegin"
-      ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
-      : "text-[#A78BCB]"
-  }`}
+className={`mt-auto text-xs uppercase tracking-wide ${
+  post.id === "miniso" ||
+  post.id === "miniso2" ||
+  post.id === "moon3" ||
+  post.id === "funmoments3" ||
+  post.id === "star1" ||
+  post.id === "rainbow2" ||
+  post.id === "fantasywonderland" ||
+  post.id === "friendshipsbegin"
+    ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
+    : "text-[#A78BCB]"
+}`}
 onClick={() => {
   if (post.id === "miniso") {
     window.open(
@@ -1147,6 +1149,10 @@ onClick={() => {
       "https://www.tiktok.com/t/ZP9Y4tWQwhu2F-SoaSI/",
       "_blank"
     );
+  } else if (post.id === "star1") {
+    navigate("/star-one");
+  } else if (post.id === "rainbow2") {
+    navigate("/rainbow-two");
   } else if (post.id === "moon3") {
     navigate("/eternal-moon-three");
   } else if (post.id === "funmoments3") {
@@ -1160,8 +1166,6 @@ onClick={() => {
 >
   {post.id === "miniso" || post.id === "miniso2"
     ? "Find them in Keegan's TikTok Shop Showcase"
-    : post.id === "star1" || post.id === "rainbow2"
-    ? "CHECKLIST COMING SOON"
     : "VIEW SET CHECKLIST"}
 </div>
 </div>

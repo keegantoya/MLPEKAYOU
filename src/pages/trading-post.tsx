@@ -19,7 +19,7 @@ import avatar013 from "@/assets/avatars/avatar013.jpg";
 import avatar014 from "@/assets/avatars/avatar014.jpg";
 import avatar015 from "@/assets/avatars/avatar015.jpg";
 
-const tradePostCards = "/website-assets/tradepostcards.png";
+const tradePostCards = "/website-assets/tradepostcards.webp";
 
 const avatarMap: Record<string, string> = {
   avatar001,

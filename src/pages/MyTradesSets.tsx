@@ -137,10 +137,10 @@ const [listingMode, setListingMode] = useState<
     }
 
     // 🔹 LOAD PROGRESS
-    const { data: progress } = await supabase
-      .from("collection_progress")
-      .select("*")
-      .eq("user_id", user.id);
+   const { data: progress } = await supabase
+  .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
 
     const map: Record<string, any> = {};
     progress?.forEach((row: any) => {
@@ -151,10 +151,10 @@ const [listingMode, setListingMode] = useState<
 
     // 🔹 LOAD TRADE
     const { data: trades } = await supabase
-      .from("for_trade")
-      .select("*")
-      .eq("set_id", resolvedSetId)
-      .eq("user_id", user.id);
+  .from("for_trade")
+  .select("card_key, listing_type")
+  .eq("set_id", resolvedSetId)
+  .eq("user_id", user.id);
 
     const tradeMap: Record<string, "trade" | "purchase"> = {};
 
@@ -166,10 +166,10 @@ trades?.forEach((card: any) => {
 
     // 🔹 LOAD QUANTITIES
     const { data: qtyData } = await supabase
-      .from("card_quantity")
-      .select("*")
-      .eq("set_id", resolvedSetId)
-      .eq("user_id", user.id);
+  .from("card_quantity")
+  .select("card_key, quantity")
+  .eq("set_id", resolvedSetId)
+  .eq("user_id", user.id);
 
     const qtyMap: Record<string, number> = {};
     qtyData?.forEach((row: any) => {

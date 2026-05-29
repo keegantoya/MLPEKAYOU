@@ -292,7 +292,7 @@ useEffect(() => {
       async () => {
         const { data: tradeCards } = await supabase
           .from("for_trade")
-          .select("*")
+          .select("listing_type")
           .eq("user_id", selectedUser.id);
 
         setSelectedUserTradeCards(
@@ -329,9 +329,11 @@ useEffect(() => {
     setCurrentUser(user);
 
     const { data: forumData } = await supabase
-      .from("forum_posts")
-      .select("*")
-      .order("created_at", { ascending: false });
+  .from("forum_posts")
+  .select(
+    "id, user_id, author_name, author_avatar, title, caption, topic, location, attached_cards, created_at"
+  )
+  .order("created_at", { ascending: false });
 
     if (forumData) {
       setPosts((currentPosts) => [
@@ -534,7 +536,9 @@ async function openComments(post: any) {
 
   const { data } = await supabase
     .from("forum_comments")
-    .select("*")
+    .select(
+  "id, post_id, user_id, author_name, author_avatar, content, created_at"
+)
     .eq("post_id", post.id)
     .order("created_at", { ascending: true });
 
@@ -684,7 +688,7 @@ async function openUserProfile(user: any) {
   // Load trading profile (Discord username)
   const { data: tradingProfile } = await supabase
     .from("trading_profiles")
-    .select("*")
+    .select("discord_username")
     .eq("user_id", user.id)
     .single();
 
@@ -719,7 +723,7 @@ setSelectedUserProfileSettings({
   // Load active trades
   const { data: tradeCards } = await supabase
     .from("for_trade")
-    .select("*")
+      .select("set_id, card_key, listing_type")
     .eq("user_id", user.id);
 
 setSelectedUserTradeCards(
@@ -1167,15 +1171,11 @@ const extractRarity = (card: any) => {
   });
 
   // Load collection progress for completed sets
-const { data: progress } = await supabase
-  .from("collection_progress")
-  .select("*")
-  .eq("user_id", user.id);
 
 let completed = 0;
 
 const progressMap = new Map(
-  (progress || []).map((row: any) => [String(row.set_id), row])
+  (isoProgress || []).map((row: any) => [String(row.set_id), row])
 );
 
 // Main checklist sets only

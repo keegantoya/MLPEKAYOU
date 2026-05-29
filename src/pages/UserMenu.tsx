@@ -135,10 +135,10 @@ useEffect(() => {
       }
 
       const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
+  .from("profiles")
+  .select("id, username, avatar_url")
+  .eq("id", session.user.id)
+  .single();
 
       if (data) {
         setProfile(data);
@@ -205,7 +205,7 @@ const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null);
       // Completed sets
       const { data: progress } = await supabase
   .from("collection_progress")
-  .select("*")
+  .select("set_id, progress")
   .eq("user_id", session.user.id);
 
 let completed = 0;
@@ -281,7 +281,7 @@ useEffect(() => {
 
       const { data } = await supabase
   .from("for_trade")
-  .select("*")
+  .select("id, set_id, card_key, listing_type")
   .eq("user_id", session.user.id);
 
 const setOrder = [

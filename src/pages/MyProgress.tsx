@@ -2,7 +2,6 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
-import myProgressBadge from "@/assets/avatars/myprogressbadge.png";
 
 import fluttershyCutieMark from "/website-assets/fluttershycutiemark.png";
 import applejackCutieMark from "/website-assets/applejackcutiemark.png";
@@ -183,15 +182,13 @@ const MyProgress = () => {
     }
 
     const { data: collectionData } = await supabase
-      .from("collection_progress")
-      .select("*")
-      .eq("user_id", user.id);
+  .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
 
 const { data: profile } = await supabase
   .from("profiles")
-  .select(
-    "iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
-  )
+  .select("iso_hidden_sets, iso_hidden_sets_ccg")
   .eq("id", user.id)
   .single();
 

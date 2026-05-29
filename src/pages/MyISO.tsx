@@ -212,12 +212,12 @@ setHiddenSetsTCG([]);
 
     const { data: progress } = await supabase
   .from("collection_progress")
-  .select("*")
+  .select("set_id, progress")
   .eq("user_id", user.id);
 
 const { data: rawProgress } = await supabase
   .from("collection_progress_raw")
-  .select("*")
+  .select("set_id, progress")
   .eq("user_id", user.id);
 
 const combinedProgress = [

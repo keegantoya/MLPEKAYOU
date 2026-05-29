@@ -231,11 +231,6 @@ const CommunitySet = () => {
 
   const [collectors, setCollectors] = useState<any[]>([]);
   const [completed, setCompleted] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [owned, setOwned] = useState<Record<string, boolean>>({});
-  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-  const [tradeCards, setTradeCards] = useState<any[]>([]);
-  const [view, setView] = useState<"choice" | "iso" | "trade">("choice");
   const [showAllFinishers, setShowAllFinishers] = useState(false);
 
   const set = id ? sets[id] : undefined;
@@ -246,8 +241,8 @@ const CommunitySet = () => {
     const load = async () => {
 
       const { data: progress } = await supabase
-        .from("collection_progress_raw")
-        .select("*")
+  .from("collection_progress_raw")
+  .select("user_id, progress, updated_at")
         .eq(
   "set_id",
   id === "friendshipsbegin"
@@ -424,49 +419,11 @@ if (manualPlacements[id || "HeiManTou (Chinese Collector)"]) {
 
 setCollectors(active.slice(0, 10));
 setCompleted(finished.slice(0, 10));
-      setCompleted(finished.slice(0, 10));
 
     };
 
     load();
   }, [id, set]);
-
-  const loadISO = async (user: any) => {
-    setSelectedUser(user);
-    setView("choice");
-
-    const { data: progress } = await supabase
-      .from("collection_progress")
-      .select("*")
-      .eq("user_id", user.id);
-
-    const allOwned: Record<string, boolean> = {};
-
-    progress?.forEach((set: any) => {
-      Object.entries(set.progress || {}).forEach(([key, value]) => {
-        if (value) {
-          allOwned[`${set.set_id}-${key}`] = true;
-        }
-      });
-    });
-
-    setOwned(allOwned);
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("iso_hidden_sets")
-      .eq("id", user.id)
-      .single();
-
-    setHiddenSets(profile?.iso_hidden_sets || []);
-
-const { data: trades } = await supabase
-  .from("for_trade")
-  .select("*")
-  .eq("user_id", user.id);
-
-setTradeCards(trades || []);
-};
 
   const getAvatar = (avatar?: string, username?: string) => {
   if (username === "HeiManTou (Chinese Collector)") {

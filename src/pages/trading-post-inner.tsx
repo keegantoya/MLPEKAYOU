@@ -205,9 +205,9 @@ const trades = allTrades;
     .from("profiles")
     .select("id, username");
 
-  const { data: tradingData } = await supabase
-    .from("trading_profiles")
-    .select("*");
+const { data: tradingData } = await supabase
+  .from("trading_profiles")
+  .select("user_id, discord_username");
 
   const profileMap: Record<string, any> = {};
   (profileData || []).forEach(p => profileMap[p.id] = p);
