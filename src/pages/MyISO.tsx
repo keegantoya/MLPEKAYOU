@@ -591,6 +591,25 @@ if (setId === "10") {
   return "MLPE-PR-005";
 }
 
+if (setId === "6" && rarity === "R") {
+  if (number <= 15) {
+    return `MLPME02-R-${String(number).padStart(3, "0")}`;
+  }
+
+  return `MLPME03-R-${String(number - 15).padStart(3, "0")}`;
+}
+
+if (setId === "6" && rarity === "SR") {
+  const actualNumbers = [
+    1, 3, 5, 7, 9, 11, 13,
+    14, 15, 16, 17, 18, 19, 20
+  ];
+
+  return `MLPME03-SR-${String(
+    actualNumbers[number - 1]
+  ).padStart(3, "0")}`;
+}
+
 if (setId === "6" && rarity === "SSR") {
 
   // Cards 001–006
@@ -1309,6 +1328,7 @@ onToggleHiddenSet={toggleSet}
     <div className="aspect-[5/7]">
       <img
         src={imageSrc}
+        loading="lazy"
         className="w-full h-full object-cover"
       />
     </div>
@@ -1458,6 +1478,7 @@ onToggleHiddenSet={toggleSet}
     <div className="aspect-[5/7]">
       <img
         src={imageSrc}
+        loading="lazy"
         className="w-full h-full object-cover"
       />
     </div>
@@ -1592,6 +1613,7 @@ onToggleHiddenSet={toggleSet}
                   <div className="aspect-[5/7]">
                     <img
                       src={imageSrc}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -1661,6 +1683,7 @@ onToggleHiddenSet={toggleSet}
                 >
                   <img
                     src={imageSrc}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 </div>
