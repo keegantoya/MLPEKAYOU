@@ -30,6 +30,7 @@ const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
 const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
 const [isClosingZoom, setIsClosingZoom] = useState(false);
 const [showScrollTop, setShowScrollTop] = useState(false);
+const [showLoginModal, setShowLoginModal] = useState(false);
 
 const toggleFlip = (key: string) => {
   if (viewMode) {
@@ -243,6 +244,18 @@ const isZoomedLandscape =
   );
 
   useEffect(() => {
+  const checkAuth = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    if (!data.session) {
+      setShowLoginModal(true);
+    }
+  };
+
+  checkAuth();
+}, []);
+
+  useEffect(() => {
   const handleScroll = () => {
     setShowScrollTop(window.scrollY > 400);
   };
@@ -252,6 +265,31 @@ const isZoomedLandscape =
 
   return () => window.removeEventListener("scroll", handleScroll);
 }, []);
+
+if (showLoginModal) {
+  return (
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center border border-[#d4af37]/30">
+
+        <h2 className="text-3xl font-bold text-[#5a3e84] mb-3">
+          Login Required
+        </h2>
+
+        <p className="text-gray-600 mb-8 leading-relaxed">
+          You must be logged in to access card sets and track your collection progress.
+        </p>
+
+        <button
+          onClick={() => navigate("/collections")}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] font-semibold border border-[#d4af37]/60 hover:brightness-110 transition"
+        >
+          Return to Collections
+        </button>
+
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-white">
@@ -264,7 +302,7 @@ const isZoomedLandscape =
 
   {/* Back Button */}
   <button
-    onClick={() => navigate("/collections")}
+    onClick={() => window.location.href = "/collections"}
     className="self-start sm:self-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] border border-[#d4af37]/60 shadow-md hover:brightness-110 transition"
   >
     <span className="text-sm font-semibold text-[#f5e6a8] tracking-wide">

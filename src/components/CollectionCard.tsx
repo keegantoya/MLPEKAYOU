@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
 interface CollectionCardProps {
   id: string;
@@ -18,6 +19,8 @@ const CollectionCard = ({
   progress = 0,
   showProgress = true
 }: CollectionCardProps) => {
+
+  const navigate = useNavigate();
 
 const getLink = () => {
   switch (id) {
@@ -71,6 +74,17 @@ case "rainbow2":
 
     default:
       return `/collection/${id}`;
+  }
+};
+
+const handleClick = async (
+  e: React.MouseEvent<HTMLAnchorElement>
+) => {
+  const { data } = await supabase.auth.getSession();
+
+  if (!data.session) {
+    e.preventDefault();
+    navigate("/login");
   }
 };
 

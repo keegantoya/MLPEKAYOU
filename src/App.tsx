@@ -38,8 +38,6 @@ import MyTradesSets from "@/pages/MyTradesSets";
 import AboutMe from "@/pages/AboutMe";
 import MyTradesView from "@/pages/MyTradesView";
 import FunMoments3 from "./pages/FunMoments3";
-import PublicISO from "@/pages/PublicISO";
-import PublicISOSet from "@/pages/PublicISOSet";
 import RequireAuth from "./components/RequireAuth";
 import FAQ from "@/pages/FAQ";
 import MyProgressTCG from "./pages/MyProgressTCG";
@@ -188,8 +186,6 @@ const AppRoutes = () => {
 />
       <Route path="/fun-moments-3" element={<FunMoments3 />} />
 <Route path="/fun-moments-three" element={<FunMoments3 />} />
-      <Route path="/public-iso" element={<PublicISO />} />
-      <Route path="/public-iso/:setId" element={<PublicISOSet />} />
       <Route path="/inside-listings" element={<InsideListings />} />
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
       <Route path="*" element={<NotFound />} />

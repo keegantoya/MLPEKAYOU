@@ -155,6 +155,7 @@ const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [showForgot, setShowForgot] = useState(false);
   const [showResetSent, setShowResetSent] = useState(false);
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [showTradesMenu, setShowTradesMenu] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
@@ -355,6 +356,15 @@ const handleForgotPassword = async () => {
   setLoginPassword("");
   setConfirmPassword("");
   setLoginStep("email");
+};
+
+const requireLogin = (path: string) => {
+  if (!user) {
+    setShowLoginRequired(true);
+    return;
+  }
+
+  navigate(path);
 };
 
   const handleLogout = async () => {
@@ -631,7 +641,7 @@ style={{
   </button>
 
   <button
-    onClick={() => navigate("/forum")}
+    onClick={() => requireLogin("/forum")}
     className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
   isActive("/forum")
     ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
@@ -685,7 +695,7 @@ style={{
   </button>
 
     <button
-    onClick={() => navigate("/trading-post")}
+    onClick={() => requireLogin("/trading-post")}
     className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
   isActive("/trading-post")
     ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
@@ -970,6 +980,32 @@ style={{
           onClick={() => setShowResetSent(false)}
         >
           Got it
+        </Button>
+      </div>
+
+    </div>
+  </div>
+)}
+
+{showLoginRequired && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+
+    <div className="relative w-[92%] max-w-lg bg-white rounded-2xl shadow-2xl p-6">
+
+      <div className="text-center">
+        <div className="text-xl font-semibold mb-3 text-[#5a3e84]">
+          Login Required
+        </div>
+
+        <div className="text-gray-600 mb-6">
+          You cannot access this page without being signed in to an account.
+        </div>
+
+        <Button
+          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8]"
+          onClick={() => setShowLoginRequired(false)}
+        >
+          Okay
         </Button>
       </div>
 

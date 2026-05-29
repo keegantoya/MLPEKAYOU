@@ -190,6 +190,7 @@ const [showDeleteModal, setShowDeleteModal] = useState(false);
 const [postToDelete, setPostToDelete] = useState<any>(null);
 const [memberCount, setMemberCount] = useState(0);
 const [currentUser, setCurrentUser] = useState<any>(null);
+const [showLoginModal, setShowLoginModal] = useState(false);
 // User Search
 const [userSearch, setUserSearch] = useState("");
 const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -404,6 +405,18 @@ setMemberCount(totalMembers || 0);
   }
 
   loadPosts();
+}, []);
+
+useEffect(() => {
+  const checkAuth = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    if (!data.session) {
+      setShowLoginModal(true);
+    }
+  };
+
+  checkAuth();
 }, []);
 
 useEffect(() => {
@@ -1202,7 +1215,8 @@ sets.forEach((set) => {
 
 const { data: allProgress } = await supabase
   .from("collection_progress_raw")
-  .select("user_id, set_id, progress");
+  .select("progress")
+  .eq("user_id", user.id);
 
 let rank: number | null = null;
 
@@ -1729,6 +1743,31 @@ function groupCardsBySet(cards: any[]) {
   });
 
   return sortedGroups;
+}
+
+if (showLoginModal) {
+  return (
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center border border-[#d4af37]/30">
+
+        <h2 className="text-3xl font-bold text-[#5a3e84] mb-3">
+          Login Required
+        </h2>
+
+        <p className="text-gray-600 mb-8 leading-relaxed">
+          You cannot access this page without being signed in to an account.
+        </p>
+
+        <button
+          onClick={() => window.location.href = "/"}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] font-semibold"
+        >
+          Return Home
+        </button>
+
+      </div>
+    </div>
+  );
 }
 
   return (

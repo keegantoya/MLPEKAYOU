@@ -131,6 +131,7 @@ export default function TradingPostInner() {
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [tradingProfiles, setTradingProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 const [selectedRarity, setSelectedRarity] = useState<string | null>(
   setId === "9" || setId === "tcgpromos" ? "PR" : null
 );
@@ -151,6 +152,18 @@ const [selectedRarity, setSelectedRarity] = useState<string | null>(
   "FW": "Fantasy Wonderland",
   "tcgpromos": "TCG Promos",
 };
+
+useEffect(() => {
+  const checkAuth = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    if (!data.session) {
+      setShowLoginModal(true);
+    }
+  };
+
+  checkAuth();
+}, []);
 
   useEffect(() => {
   if (!setId) return;
@@ -236,6 +249,31 @@ const trades = allTrades;
     supabase.removeChannel(channel);
   };
 }, [setId]);
+
+if (showLoginModal) {
+  return (
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center">
+
+        <h2 className="text-3xl font-bold text-[#5a3e84] mb-3">
+          Login Required
+        </h2>
+
+        <p className="text-gray-600 mb-8">
+          You cannot access this page without being signed in to an account.
+        </p>
+
+        <button
+          onClick={() => navigate("/trading-post")}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] font-semibold"
+        >
+          Return
+        </button>
+
+      </div>
+    </div>
+  );
+}
   return (
 <div
   className="min-h-screen relative overflow-hidden"

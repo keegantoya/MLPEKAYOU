@@ -32,6 +32,7 @@ const RainbowTwo = () => {
   const [zoomedCard, setZoomedCard] = useState<string | null>(null);
   const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
   const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -281,6 +282,18 @@ if (
     }
   }, [flipped]);
 
+useEffect(() => {
+  const checkAuth = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    if (!data.session) {
+      setShowLoginModal(true);
+    }
+  };
+
+  checkAuth();
+}, []);
+
   const isZoomedLandscape = (() => {
   if (!zoomedCard) return false;
 
@@ -291,6 +304,31 @@ if (
 
   return false;
 })();
+
+if (showLoginModal) {
+  return (
+    <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center border border-[#d4af37]/30">
+
+        <h2 className="text-3xl font-bold text-[#5a3e84] mb-3">
+          Login Required
+        </h2>
+
+        <p className="text-gray-600 mb-8 leading-relaxed">
+          You must be logged in to access card sets and track your collection progress.
+        </p>
+
+        <button
+          onClick={() => navigate("/collections")}
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] font-semibold border border-[#d4af37]/60 hover:brightness-110 transition"
+        >
+          Return to Collections
+        </button>
+
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-white">
