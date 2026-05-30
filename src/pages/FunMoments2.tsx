@@ -13,6 +13,7 @@ const FunMoments2 = () => {
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 
 const [showProductInfo, setShowProductInfo] = useState(false);
 
@@ -109,8 +110,9 @@ useEffect(() => {
   .eq("set_id", "8")
   .single();
 
-        if (saved?.progress) {
+if (saved?.progress) {
   setFlipped(saved.progress);
+  setLastSavedProgress(JSON.stringify(saved.progress));
 
   const newCollapsed: Record<string, boolean> = {};
 
@@ -131,6 +133,7 @@ useEffect(() => {
 
 } else {
   setFlipped({});
+  setLastSavedProgress("{}");
 
   setCollapsed({
     N: false,
@@ -161,29 +164,41 @@ useEffect(() => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // SAVE PROGRESS
-  useEffect(() => {
-    if (!loaded) return;
+// SAVE PROGRESS
+useEffect(() => {
+  if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+  const current = JSON.stringify(flipped);
 
-      await supabase
-        .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: "8", // ✅ CHANGED
-            progress: flipped
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+  if (current === lastSavedProgress) return;
 
-    saveProgress();
-  }, [flipped, loaded]);
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: "8",
+          progress: flipped,
+        },
+        { onConflict: "user_id,set_id" }
+      );
+
+    if (error) {
+  console.error("SAVE ERROR:", error);
+} else {
+  console.log("SAVE SUCCESS");
+}
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress]);
 
 useEffect(() => {
   const html = document.documentElement;

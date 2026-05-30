@@ -8,7 +8,7 @@ const Promos = () => {
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
-const [forTrade, setForTrade] = useState<Record<string, boolean>>({});
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 
 const [viewMode, setViewMode] = useState(false);
 const [zoomedCard, setZoomedCard] = useState<string | null>(null);
@@ -35,37 +35,6 @@ const [showLoginModal, setShowLoginModal] = useState(false);
   }));
 };
 
-  const toggleTrade = async (key: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    const { data } = await supabase.auth.getSession();
-    const user = data.session?.user;
-    if (!user) return;
-
-    const isTrading = forTrade[key];
-
-    if (isTrading) {
-      await supabase
-        .from("for_trade")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("set_id", Number(setId))
-        .eq("card_key", key);
-    } else {
-      await supabase
-        .from("for_trade")
-        .insert({
-          user_id: user.id,
-          set_id: setId,
-          card_key: key
-        });
-    }
-
-    setForTrade((prev) => ({
-      ...prev,
-      [key]: !isTrading
-    }));
-  };
 
   useEffect(() => {
   const loadAll = async (userOverride?: any) => {
@@ -86,33 +55,17 @@ const [showLoginModal, setShowLoginModal] = useState(false);
         .eq("set_id", Number(setId))
         .single();
 
-      if (saved?.progress) {
-        setFlipped(saved.progress);
-      } else {
-        setFlipped({});
-      }
-
-      // LOAD TRADE
-      const { data: trades } = await supabase
-        .from("for_trade")
-        .select("card_key")
-        .eq("user_id", user.id)
-        .eq("set_id", Number(setId));
-
-      if (trades) {
-        const tradeMap: Record<string, boolean> = {};
-        trades.forEach((card) => {
-          tradeMap[card.card_key] = true;
-        });
-        setForTrade(tradeMap);
-      } else {
-        setForTrade({});
-      }
+if (saved?.progress) {
+  setFlipped(saved.progress);
+  setLastSavedProgress(JSON.stringify(saved.progress));
+} else {
+  setFlipped({});
+  setLastSavedProgress("{}");
+}
 
     } else {
       // not logged in
       setFlipped({});
-      setForTrade({});
     }
 
     setLoaded(true);
@@ -131,29 +84,39 @@ const [showLoginModal, setShowLoginModal] = useState(false);
   return () => subscription.unsubscribe();
 }, []);
 
-  // SAVE PROGRESS
-  useEffect(() => {
-    if (!loaded) return;
+// SAVE PROGRESS
+useEffect(() => {
+  if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+  const current = JSON.stringify(flipped);
 
-      await supabase
-        .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: setId,
-            progress: flipped
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+  if (current === lastSavedProgress) return;
 
-    saveProgress();
-  }, [flipped, loaded]);
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: setId,
+          progress: flipped,
+        },
+        { onConflict: "user_id,set_id" }
+      );
+
+    if (error) {
+      console.error("SAVE ERROR:", error);
+    }
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress]);
 
 useEffect(() => {
   const html = document.documentElement;

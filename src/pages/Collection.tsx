@@ -34,6 +34,7 @@ const id = slugToId[rawId] || rawId;
 
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 const [celebrated, setCelebrated] = useState(false);
 const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
@@ -54,7 +55,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
   });
 };
 
-const toggleFlip = async (key: string) => {
+const toggleFlip = (key: string) => {
   if (viewMode) {
     const [rarity, numberStr] = key.split("-");
     const number = Number(numberStr);
@@ -70,30 +71,13 @@ const toggleFlip = async (key: string) => {
     setZoomedCard(frontSrc);
     return;
   }
-  const newFlipped = {
-    ...flipped,
-    [key]: !flipped[key]
-  };
 
-  setFlipped(newFlipped);
-
-  const { data } = await supabase.auth.getSession();
-  const user = data.session?.user;
-
-  if (!user) return;
-
-  await supabase
-    .from("collection_progress_raw")
-    .upsert(
-      {
-        user_id: user.id,
-        set_id: id,
-        progress: newFlipped,
-        updated_at: new Date().toISOString()
-      },
-      { onConflict: "user_id,set_id" }
-    );
+  setFlipped((prev) => ({
+    ...prev,
+    [key]: !prev[key],
+  }));
 };
+
   useEffect(() => {
   const loadProgress = async (userOverride?: any) => {
     let user = userOverride;
@@ -113,6 +97,7 @@ const toggleFlip = async (key: string) => {
 
 if (saved?.progress) {
   setFlipped(saved.progress);
+  setLastSavedProgress(JSON.stringify(saved.progress));
 
   const collapseState: Record<string, boolean> = {};
 
@@ -129,6 +114,7 @@ if (saved?.progress) {
 
 } else {
   setFlipped({});
+  setLastSavedProgress("{}");
   setCollapsed({});
 }
     } else {
@@ -148,6 +134,40 @@ if (saved?.progress) {
 
   return () => subscription.unsubscribe();
 }, [id]);
+
+useEffect(() => {
+  if (!loaded) return;
+
+  const current = JSON.stringify(flipped);
+
+  if (current === lastSavedProgress) return;
+
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: id,
+          progress: flipped,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,set_id" }
+      );
+
+    if (error) {
+      console.error("SAVE ERROR:", error);
+    }
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress, id]);
 
   const sets = {
     "1": {

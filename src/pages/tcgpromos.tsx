@@ -8,6 +8,7 @@ const TCGPromos = () => {
 
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 const [forTrade, setForTrade] = useState<Record<string, boolean>>({});
 
 const [viewMode, setViewMode] = useState(false);
@@ -20,7 +21,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
   const toggleFlip = (key: string) => {
   if (viewMode) {
     setZoomedCardFlipped(false);
-    setZoomedCardBack("/card-backs/tcgdefaultback.png");
+    setZoomedCardBack("/card-backs/tcgdefaultback.webp");
     setZoomedCard(`/tcgpromos/${key}.webp`);
     return;
   }
@@ -81,10 +82,12 @@ const [showLoginModal, setShowLoginModal] = useState(false);
           .maybeSingle();
 
         if (saved?.progress) {
-          setFlipped(saved.progress);
-        } else {
-          setFlipped({});
-        }
+  setFlipped(saved.progress);
+  setLastSavedProgress(JSON.stringify(saved.progress));
+} else {
+  setFlipped({});
+  setLastSavedProgress("{}");
+}
 
         const { data: trades } = await supabase
           .from("for_trade")
@@ -121,28 +124,38 @@ const [showLoginModal, setShowLoginModal] = useState(false);
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!loaded) return;
+useEffect(() => {
+  if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+  const current = JSON.stringify(flipped);
 
-      await supabase
-        .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: setId,
-            progress: flipped
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+  if (current === lastSavedProgress) return;
 
-    saveProgress();
-  }, [flipped, loaded]);
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: setId,
+          progress: flipped,
+        },
+        { onConflict: "user_id,set_id" }
+      );
+
+    if (error) {
+      console.error("SAVE ERROR:", error);
+    }
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress]);
 
 useEffect(() => {
   const html = document.documentElement;
@@ -290,7 +303,7 @@ These cards come from Kayou US in-person events, and are connected to the Friend
 
                       {/* BACK */}
 <img
-  src="/card-backs/tcgdefaultback.png"
+  src="/card-backs/tcgdefaultback.webp"
   className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
 />
 
@@ -352,7 +365,7 @@ These cards come from Kayou US in-person events, and are connected to the Friend
 
               {/* BACK */}
               <img
-                src={zoomedCardBack || "/card-backs/tcgdefaultback.png"}
+                src={zoomedCardBack || "/card-backs/tcgdefaultback.webp"}
                 className="max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
                 style={{
                   transform: "rotateY(180deg)",

@@ -9,6 +9,7 @@ import friendshipsBeginBoxes from "/set-pictures/friendshipsbeginboxes.webp";
 const FriendshipBegins = () => {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
+  const [lastSavedProgress, setLastSavedProgress] = useState<string>("");
   const [celebrated, setCelebrated] = useState(false);
   const [activeDeck, setActiveDeck] = useState<number | null>(null);
 
@@ -167,6 +168,7 @@ useEffect(() => {
         const progress = saved?.progress || {};
 
 setFlipped(progress);
+setLastSavedProgress(JSON.stringify(progress));
 
 const collapseState: Record<string, boolean> = {};
 
@@ -211,29 +213,37 @@ setCollapsed(collapseState);
   }, []);
 
   // SAVE PROGRESS
-  useEffect(() => {
-    if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+useEffect(() => {
+  if (!loaded) return;
 
-      await supabase
-        .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: "SD",
-            progress: flipped,
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+  const current = JSON.stringify(flipped);
 
-    saveProgress();
-  }, [flipped, loaded]);
+  if (current === lastSavedProgress) return;
 
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    console.log("Saving progress");
+
+    await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: "SD",
+          progress: flipped,
+        },
+        { onConflict: "user_id,set_id" }
+      );
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress]);
   useEffect(() => {
   const html = document.documentElement;
   const body = document.body;

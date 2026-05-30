@@ -10,7 +10,8 @@ import moonThreePack from "/set-pictures/moonthreepack.webp";
 const Moon3 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
+const [loaded, setLoaded] = useState(false);
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 const [showProductInfo, setShowProductInfo] = useState(false);
 const [showScrollTop, setShowScrollTop] = useState(false);
@@ -63,8 +64,9 @@ const toggleFlip = (key: string) => {
           .eq("set_id", "3")
           .single();
 
-        if (saved?.progress) {
+if (saved?.progress) {
   setFlipped(saved.progress);
+  setLastSavedProgress(JSON.stringify(saved.progress));
 
   const newCollapsed: Record<string, boolean> = {};
 
@@ -85,6 +87,7 @@ const toggleFlip = (key: string) => {
 
 } else {
   setFlipped({});
+  setLastSavedProgress("{}");
 
   setCollapsed({
     N: false,
@@ -115,16 +118,22 @@ const toggleFlip = (key: string) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // SAVE PROGRESS
-  useEffect(() => {
-    if (!loaded) return;
+// SAVE PROGRESS
+useEffect(() => {
+  if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
+  const current = JSON.stringify(flipped);
 
-      await supabase.from("collection_progress_raw").upsert(
+  if (current === lastSavedProgress) return;
+
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
         {
           user_id: user.id,
           set_id: "3",
@@ -132,10 +141,16 @@ const toggleFlip = (key: string) => {
         },
         { onConflict: "user_id,set_id" }
       );
-    };
 
-    saveProgress();
-  }, [flipped, loaded]);
+    if (error) {
+      console.error("SAVE ERROR:", error);
+    }
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress]);
 
 useEffect(() => {
   const handleScroll = () => {

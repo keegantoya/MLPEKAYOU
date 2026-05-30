@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import KayouHeader from "@/components/KayouHeader";
 import { supabase } from "@/lib/supabase";
-import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 import {
   MessageCircle,
   Sparkles,
@@ -1213,35 +1212,7 @@ sets.forEach((set) => {
   }
 });
 
-const { data: allProgress } = await supabase
-  .from("collection_progress_raw")
-  .select("progress")
-  .eq("user_id", user.id);
-
-let rank: number | null = null;
-
-if (allProgress) {
-  const uniqueUserIds = [
-    ...new Set(allProgress.map((row: any) => row.user_id)),
-  ];
-
-  const totals = uniqueUserIds.map((userId) => ({
-    userId,
-    total: calculateCollectionTotal(userId, allProgress),
-  }));
-
-  totals.sort((a, b) => b.total - a.total);
-
-  const index = totals.findIndex(
-    (entry) => entry.userId === user.id
-  );
-
-  if (index !== -1 && index < 12) {
-    rank = index + 1;
-  }
-}
-
-setSelectedUserRank(rank);
+setSelectedUserRank(null);
 
 setSelectedUserStats({
   trades: (tradeCards || []).length,

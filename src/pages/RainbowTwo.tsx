@@ -25,7 +25,8 @@ const RainbowTwo = () => {
   USR: true,
   XR: true,
 });
-  const [loaded, setLoaded] = useState(false);
+const [loaded, setLoaded] = useState(false);
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 
   const [viewMode, setViewMode] = useState(false);
 
@@ -197,11 +198,45 @@ if (
           .eq("set_id", "6")
           .single();
 
-        if (saved?.progress) {
-          setFlipped(saved.progress);
-        } else {
-          setFlipped({});
-        }
+if (saved?.progress) {
+  setFlipped(saved.progress);
+  setLastSavedProgress(JSON.stringify(saved.progress));
+
+  const newCollapsed: Record<string, boolean> = {};
+
+  Object.entries(set.rarities).forEach(([rarity, count]) => {
+    let complete = true;
+
+    for (let i = 1; i <= (count as number); i++) {
+      if (!saved.progress[`${rarity}-${i}`]) {
+        complete = false;
+        break;
+      }
+    }
+
+    newCollapsed[rarity] = complete;
+  });
+
+  setCollapsed(newCollapsed);
+
+} else {
+  setFlipped({});
+  setLastSavedProgress("{}");
+
+  setCollapsed({
+    BASE: false,
+    R: false,
+    SR: false,
+    ST: false,
+    SSR: false,
+    FR: false,
+    TR: false,
+    TGR: false,
+    UR: false,
+    USR: false,
+    XR: false,
+  });
+}
       }
 
       setLoaded(true);
@@ -218,30 +253,40 @@ if (
     return () => subscription.unsubscribe();
   }, []);
 
-  // SAVE PROGRESS
-  useEffect(() => {
-    if (!loaded) return;
+// SAVE PROGRESS
+useEffect(() => {
+  if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+  const current = JSON.stringify(flipped);
 
-      if (!user) return;
+  if (current === lastSavedProgress) return;
 
-      await supabase
-        .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: "6",
-            progress: flipped,
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
 
-    saveProgress();
-  }, [flipped, loaded]);
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: "6",
+          progress: flipped,
+        },
+        { onConflict: "user_id,set_id" }
+      );
+
+    if (error) {
+      console.error("SAVE ERROR:", error);
+    }
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress]);
 
   // SCROLL BUTTON
   useEffect(() => {

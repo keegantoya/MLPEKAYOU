@@ -13,6 +13,7 @@ const FunMoments1 = () => {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 
 const [showProductInfo, setShowProductInfo] = useState(false);
 
@@ -69,11 +70,13 @@ const toggleFlip = (key: string) => {
 
       console.log("LOADED PROGRESS:", saved);
 
-      if (saved?.progress) {
-        setFlipped(saved.progress);
-      } else {
-        setFlipped({});
-      }
+if (saved?.progress) {
+  setFlipped(saved.progress);
+  setLastSavedProgress(JSON.stringify(saved.progress));
+} else {
+  setFlipped({});
+  setLastSavedProgress("{}");
+}
     } else {
       setFlipped({});
     }
@@ -94,9 +97,13 @@ const toggleFlip = (key: string) => {
   return () => subscription.unsubscribe();
 }, []);
 
-  // SAVE PROGRESS
-  useEffect(() => {
+// SAVE PROGRESS
+useEffect(() => {
   if (!loaded) return;
+
+  const current = JSON.stringify(flipped);
+
+  if (current === lastSavedProgress) return;
 
   const saveProgress = async () => {
     const { data } = await supabase.auth.getSession();
@@ -109,42 +116,41 @@ const toggleFlip = (key: string) => {
         {
           user_id: user.id,
           set_id: "7",
-          progress: flipped
+          progress: flipped,
         },
         { onConflict: "user_id,set_id" }
       );
-      const { data: allProgress } = await supabase
-  .from("collection_progress_raw")
-  .select("user_id, progress")
-  .eq("user_id", user.id);
 
-if (allProgress) {
-  const total = calculateCollectionTotal(
-    user.id,
-    allProgress
-  );
+    const { data: allProgress } = await supabase
+      .from("collection_progress_raw")
+      .select("user_id, progress")
+      .eq("user_id", user.id);
 
-  await supabase
-    .from("profiles")
-    .update({
-      collection_total: total
-    })
-    .eq("id", user.id);
+    if (allProgress) {
+      const total = calculateCollectionTotal(
+        user.id,
+        allProgress
+      );
+
+      await supabase
+        .from("profiles")
+        .update({
+          collection_total: total,
+        })
+        .eq("id", user.id);
+    }
+
+    if (error) {
+  console.error("SAVE ERROR:", error);
+} else {
+  console.log("SAVE SUCCESS");
 }
 
-    console.log("SAVE ERROR:", error);
-
-    const { data: check } = await supabase
-      .from("collection_progress_raw")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("set_id", "7");
-
-    console.log("AFTER SAVE:", check);
+    setLastSavedProgress(current);
   };
 
   saveProgress();
-}, [flipped, loaded]);
+}, [flipped, loaded, lastSavedProgress]);
 
 useEffect(() => {
   const html = document.documentElement;

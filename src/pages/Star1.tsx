@@ -13,7 +13,8 @@ const Star1 = () => {
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [loaded, setLoaded] = useState(false);
+const [loaded, setLoaded] = useState(false);
+const [lastSavedProgress, setLastSavedProgress] = useState("");
 
   const [viewMode, setViewMode] = useState(false);
 
@@ -171,9 +172,10 @@ const getCardBack = (rarity: string, number?: number) => {
           .eq("set_id", "4")
           .single();
 
-        const progress = saved?.progress || {};
+const progress = saved?.progress || {};
 
 setFlipped(progress);
+setLastSavedProgress(JSON.stringify(progress));
 
 const collapseState: Record<string, boolean> = {};
 
@@ -207,30 +209,40 @@ setCollapsed(collapseState);
     return () => subscription.unsubscribe();
   }, []);
 
-  // SAVE PROGRESS
-  useEffect(() => {
-    if (!loaded) return;
+// SAVE PROGRESS
+useEffect(() => {
+  if (!loaded) return;
 
-    const saveProgress = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+  const current = JSON.stringify(flipped);
 
-      if (!user) return;
+  if (current === lastSavedProgress) return;
 
-      await supabase
-        .from("collection_progress_raw")
-        .upsert(
-          {
-            user_id: user.id,
-            set_id: "4",
-            progress: flipped,
-          },
-          { onConflict: "user_id,set_id" }
-        );
-    };
+  const saveProgress = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
 
-    saveProgress();
-  }, [flipped, loaded]);
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: user.id,
+          set_id: "4",
+          progress: flipped,
+        },
+        { onConflict: "user_id,set_id" }
+      );
+
+    if (error) {
+      console.error("SAVE ERROR:", error);
+    }
+
+    setLastSavedProgress(current);
+  };
+
+  saveProgress();
+}, [flipped, loaded, lastSavedProgress]);
 
   // SCROLL BUTTON
   useEffect(() => {
