@@ -233,7 +233,7 @@ useEffect(() => {
     }
 
     if (rarity === "UR") {
-      return "/card-backs/M1URBACK.jpeg";
+      return "/card-backs/M1URBACK.webp";
     }
 
     if (rarity === "CR") {
@@ -243,7 +243,7 @@ useEffect(() => {
       return "/fun-moments-one-backs/FM1CRBACK002.webp";
     }
 
-    return "/card-backs/M1R-SR-SGR-SCBACK.jpeg";
+    return "/card-backs/M1R-SR-SGR-SCBACK.webp";
   };
 
 const isZoomedLandscape =
@@ -504,7 +504,7 @@ if (showLoginModal) {
 
               {/* BACK */}
               <img
-                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.webp"}
                 className={`${
                   isZoomedLandscape
                     ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"

@@ -275,11 +275,11 @@ if (rarity === "SR") {
 }
   // UR backs
 if (rarity === "UR") {
-  return "/card-backs/M1URBACK.jpeg";
+  return "/card-backs/M1URBACK.webp";
 }
 
   // Default back
-  return "/card-backs/M1R-SR-SGR-SCBACK.jpeg";
+  return "/card-backs/M1R-SR-SGR-SCBACK.webp";
 };
 
   const isZoomedLandscape =
@@ -525,7 +525,7 @@ return (
               />
 
               <img
-                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.webp"}
                 className={`${
                   isZoomedLandscape
                     ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"

@@ -532,7 +532,7 @@ if (showLoginModal) {
 
               {/* BACK */}
               <img
-                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.webp"}
                 className={`${
                   isZoomedLandscape
                     ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
