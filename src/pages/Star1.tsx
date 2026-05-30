@@ -5,23 +5,14 @@ import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { ChevronUp } from "lucide-react";
 
-import starOneBox from "/set-pictures/staronebox.jpg";
-import starOnePacks from "/set-pictures/staronepacks.jpg";
+import starOneBox from "/set-pictures/staronebox.webp";
+import starOnePacks from "/set-pictures/staronepacks.webp";
 
 const Star1 = () => {
   const navigate = useNavigate();
 
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-  SSR: true,
-  SCR: true,
-  UR: true,
-  USR: true,
-  AR: true,
-  OR: true,
-  BP: true,
-  SAR: true,
-});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
 
   const [viewMode, setViewMode] = useState(false);
@@ -82,22 +73,22 @@ const getCardBack = (rarity: string, number?: number) => {
 
   // SAR
   if (rarity === "SAR") {
-    return "/card-backs/star-one/S1SARBACK.jpg";
+    return "/card-backs/star-one/S1SARBACK.webp";
   }
 
   // OR
   if (rarity === "OR") {
-    return "/card-backs/star-one/S1ORBACK.jpg";
+    return "/card-backs/star-one/S1ORBACK.webp";
   }
 
   // BP (individual backs)
   if (rarity === "BP" && number) {
-    return `/card-backs/star-one/S1BPBACK${String(number).padStart(3, "0")}.jpg`;
+    return `/card-backs/star-one/S1BPBACK${String(number).padStart(3, "0")}.webp`;
   }
 
   // AR
   if (rarity === "AR") {
-    return "/card-backs/star-one/S1ARBACK.jpg";
+    return "/card-backs/star-one/S1ARBACK.webp";
   }
 
   // USR special split
@@ -106,29 +97,29 @@ const getCardBack = (rarity: string, number?: number) => {
     const specialBack2 = [1, 3, 6, 13, 14];
 
     if (number && specialBack2.includes(number)) {
-      return "/card-backs/star-one/S1USRBACK2.jpg";
+      return "/card-backs/star-one/S1USRBACK2.webp";
     }
 
-    return "/card-backs/star-one/S1USRBACK1.jpg";
+    return "/card-backs/star-one/S1USRBACK1.webp";
   }
 
   // UR
   if (rarity === "UR") {
-    return "/card-backs/star-one/S1URBACK.jpg";
+    return "/card-backs/star-one/S1URBACK.webp";
   }
 
   // SCR
   if (rarity === "SCR") {
-    return "/card-backs/star-one/S1SCRBACK.jpg";
+    return "/card-backs/star-one/S1SCRBACK.webp";
   }
 
   // SSR
   if (rarity === "SSR") {
-    return "/card-backs/star-one/S1SSRBACK.jpg";
+    return "/card-backs/star-one/S1SSRBACK.webp";
   }
 
   // fallback
-  return "/card-backs/star-one/S1SSRBACK.jpg";
+  return "/card-backs/star-one/S1SSRBACK.webp";
 };
 
   const toggleFlip = (key: string) => {
@@ -138,7 +129,7 @@ const getCardBack = (rarity: string, number?: number) => {
 
       const frontSrc = `/cards/${set.folder}/${set.prefix}${rarity}${String(
         number
-      ).padStart(3, "0")}.jpg`;
+      ).padStart(3, "0")}.webp`;
 
       const backSrc = getCardBack(rarity, number);
 
@@ -180,11 +171,26 @@ const getCardBack = (rarity: string, number?: number) => {
           .eq("set_id", "4")
           .single();
 
-        if (saved?.progress) {
-          setFlipped(saved.progress);
-        } else {
-          setFlipped({});
-        }
+        const progress = saved?.progress || {};
+
+setFlipped(progress);
+
+const collapseState: Record<string, boolean> = {};
+
+Object.entries(set.rarities).forEach(([rarity, count]) => {
+  let complete = true;
+
+  for (let i = 1; i <= (count as number); i++) {
+    if (!progress[`${rarity}-${i}`]) {
+      complete = false;
+      break;
+    }
+  }
+
+  collapseState[rarity] = complete;
+});
+
+setCollapsed(collapseState);
       }
 
       setLoaded(true);
@@ -472,7 +478,7 @@ if (showLoginModal) {
                           <img
                             src={`/cards/${set.folder}/${set.prefix}${rarity}${String(
                               number
-                            ).padStart(3, "0")}.jpg`}
+                            ).padStart(3, "0")}.webp`}
                             className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                           />
 

@@ -4,9 +4,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
-import elementOfLaughter from "/website-assets/elementoflaughter.png";
+import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 
 type TradeCard = {
@@ -66,7 +66,7 @@ const getCardImage = (card: TradeCard) => {
   const [rarity, number] = card.card_key.split("-");
 
 if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
-  return `/friendships-begin/${card.card_key}.png`;
+  return `/friendships-begin/${card.card_key}.webp`;
 }
 
 if (card.set_id === "FW") {
@@ -74,25 +74,25 @@ if (card.set_id === "FW") {
   const num = card.card_key.slice(-2);
 
   if (card.card_key.startsWith("BP01ER")) {
-    return `/fantasy-wonderland/SD01ER${num}.png`;
+    return `/fantasy-wonderland/SD01ER${num}.webp`;
   }
 
   if (card.card_key.startsWith("BP01PER")) {
-    return `/fantasy-wonderland/SD01PER${num}.png`;
+    return `/fantasy-wonderland/SD01PER${num}.webp`;
   }
 
-  return `/fantasy-wonderland/${card.card_key}.png`;
+  return `/fantasy-wonderland/${card.card_key}.webp`;
 }
 
   if (card.set_id === "9") {
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
 
   if (card.set_id === "10") {
-    return `/serialized-limited-cards/andypricepromo.jpg`;
+    return `/serialized-limited-cards/andypricepromo.webp`;
   }
   if (card.set_id === "tcgpromos") {
-  return `/tcgpromos/${card.card_key}.png`;
+  return `/tcgpromos/${card.card_key}.webp`;
 }
 
 const config: any = {
@@ -118,8 +118,8 @@ const config: any = {
   return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}${
   card.set_id === "6" &&
   ["ST", "TR", "TGR"].includes(rarity)
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`;
 };
 

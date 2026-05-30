@@ -5,21 +5,13 @@ import { supabase } from "@/lib/supabase";
 import { ChevronUp } from "lucide-react";
 import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 
-import funMomentsOneBox from "/set-pictures/funmomentsonebox.jpg";
-import funMomentsOnePack from "/set-pictures/funmomentsonepack.jpg";
+import funMomentsOneBox from "/set-pictures/funmomentsonebox.webp";
+import funMomentsOnePack from "/set-pictures/funmomentsonepack.webp";
 
 const FunMoments1 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-  N: true,
-  SN: true,
-  R: true,
-  SR: true,
-  SSR: true,
-  UR: true,
-  CR: true,
-});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
 
 const [showProductInfo, setShowProductInfo] = useState(false);
@@ -38,7 +30,7 @@ const toggleFlip = (key: string) => {
     const number = Number(numberStr);
 
     const frontSrc =
-      `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+      `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`;
 
     const backSrc = getCardBack(rarity, number);
 
@@ -199,6 +191,27 @@ useEffect(() => {
 }
   };
 
+  useEffect(() => {
+  if (!loaded) return;
+
+  const newCollapsed: Record<string, boolean> = {};
+
+  Object.entries(set.rarities).forEach(([rarity, count]) => {
+    let complete = true;
+
+    for (let i = 1; i <= (count as number); i++) {
+      if (!flipped[`${rarity}-${i}`]) {
+        complete = false;
+        break;
+      }
+    }
+
+    newCollapsed[rarity] = complete;
+  });
+
+  setCollapsed(newCollapsed);
+}, [flipped, loaded]);
+
   const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
     Array.from({ length: count as number }, (_, i) => ({
       rarity,
@@ -208,15 +221,15 @@ useEffect(() => {
 
   const getCardBack = (rarity: string, number: number) => {
     if (rarity === "N" || rarity === "SN") {
-      return `/fun-moments-one-backs/FM1BACKN${String(number).padStart(3, "0")}.jpg`;
+      return `/fun-moments-one-backs/FM1BACKN${String(number).padStart(3, "0")}.webp`;
     }
 
     if (rarity === "R") {
-      return `/fun-moments-one-backs/FM1RB${String(number).padStart(3, "0")}.jpg`;
+      return `/fun-moments-one-backs/FM1RB${String(number).padStart(3, "0")}.webp`;
     }
 
     if (rarity === "SR") {
-      return `/fun-moments-one-backs/FM1SRB${String(number).padStart(3, "0")}.jpg`;
+      return `/fun-moments-one-backs/FM1SRB${String(number).padStart(3, "0")}.webp`;
     }
 
     if (rarity === "UR") {
@@ -225,9 +238,9 @@ useEffect(() => {
 
     if (rarity === "CR") {
       if (number <= 9) {
-        return "/fun-moments-one-backs/FM1CRBACK001.jpg";
+        return "/fun-moments-one-backs/FM1CRBACK001.webp";
       }
-      return "/fun-moments-one-backs/FM1CRBACK002.jpg";
+      return "/fun-moments-one-backs/FM1CRBACK002.webp";
     }
 
     return "/card-backs/M1R-SR-SGR-SCBACK.jpeg";
@@ -438,7 +451,7 @@ if (showLoginModal) {
                     >
 
                       <img
-                        src={`/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`}
+                        src={`/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`}
                         className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                       />
 

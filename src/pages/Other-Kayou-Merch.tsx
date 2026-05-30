@@ -9,32 +9,32 @@ const merchItems = [
   {
     id: 1,
     title: "Twilight Sparkle",
-    image: "/otherkayoumerch/twilightplushone.jpg",
+    image: "/otherkayoumerch/twilightplushone.webp",
   },
   {
     id: 2,
     title: "Pinkie Pie",
-    image: "/otherkayoumerch/pinkieplushone.jpg",
+    image: "/otherkayoumerch/pinkieplushone.webp",
   },
   {
     id: 3,
     title: "Fluttershy",
-    image: "/otherkayoumerch/fluttershyplushone.jpg",
+    image: "/otherkayoumerch/fluttershyplushone.webp",
   },
   {
     id: 4,
     title: "Rainbow Dash",
-    image: "/otherkayoumerch/rainbowdashplushone.jpg",
+    image: "/otherkayoumerch/rainbowdashplushone.webp",
   },
   {
     id: 5,
     title: "Rarity",
-    image: "/otherkayoumerch/rarityplushone.jpg",
+    image: "/otherkayoumerch/rarityplushone.webp",
   },
   {
     id: 6,
     title: "Applejack",
-    image: "/otherkayoumerch/applejackplushone.jpg",
+    image: "/otherkayoumerch/applejackplushone.webp",
   },
 ];
 

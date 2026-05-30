@@ -9,57 +9,56 @@ import {
   Pencil,
   Heart,
 } from "lucide-react";
-import avatar001 from "@/assets/avatars/avatar001.jpg";
-import avatar002 from "@/assets/avatars/avatar002.jpg";
-import avatar003 from "@/assets/avatars/avatar003.jpg";
-import avatar004 from "@/assets/avatars/avatar004.jpg";
-import avatar005 from "@/assets/avatars/avatar005.jpg";
-import avatar006 from "@/assets/avatars/avatar006.jpg";
-import avatar007 from "@/assets/avatars/avatar007.jpg";
-import avatar008 from "@/assets/avatars/avatar008.jpg";
-import avatar009 from "@/assets/avatars/avatar009.jpg";
-import avatar010 from "@/assets/avatars/avatar010.jpg";
-import avatar011 from "@/assets/avatars/avatar011.jpg";
-import avatar012 from "@/assets/avatars/avatar012.jpg";
-import avatar013 from "@/assets/avatars/avatar013.jpg";
-import avatar014 from "@/assets/avatars/avatar014.jpg";
-import avatar015 from "@/assets/avatars/avatar015.jpg";
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
-import maipfp from "@/assets/avatars/maipfp.jpg";
+import avatar001 from "@/assets/avatars/avatar001.webp";
+import avatar002 from "@/assets/avatars/avatar002.webp";
+import avatar003 from "@/assets/avatars/avatar003.webp";
+import avatar004 from "@/assets/avatars/avatar004.webp";
+import avatar005 from "@/assets/avatars/avatar005.webp";
+import avatar006 from "@/assets/avatars/avatar006.webp";
+import avatar007 from "@/assets/avatars/avatar007.webp";
+import avatar008 from "@/assets/avatars/avatar008.webp";
+import avatar009 from "@/assets/avatars/avatar009.webp";
+import avatar010 from "@/assets/avatars/avatar010.webp";
+import avatar011 from "@/assets/avatars/avatar011.webp";
+import avatar012 from "@/assets/avatars/avatar012.webp";
+import avatar013 from "@/assets/avatars/avatar013.webp";
+import avatar014 from "@/assets/avatars/avatar014.webp";
+import avatar015 from "@/assets/avatars/avatar015.webp";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import maipfp from "@/assets/avatars/maipfp.webp";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
-import elementOfLaughter from "/website-assets/elementoflaughter.png";
+import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.png";
-import applejackCutieMark from "/website-assets/applejackcutiemark.png";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.png";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.png";
-import rarityCutieMark from "/website-assets/raritycutiemark.png";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
+import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
+import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
+import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
+import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
+import rarityCutieMark from "/website-assets/raritycutiemark.webp";
+import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
 
 const avatarMap: Record<string, string> = {
-  "avatar001.jpg": avatar001,
-  "avatar002.jpg": avatar002,
-  "avatar003.jpg": avatar003,
-  "avatar004.jpg": avatar004,
-  "avatar005.jpg": avatar005,
-  "avatar006.jpg": avatar006,
-  "avatar007.jpg": avatar007,
-  "avatar008.jpg": avatar008,
-  "avatar009.jpg": avatar009,
-  "avatar010.jpg": avatar010,
-  "avatar011.jpg": avatar011,
-  "avatar012.jpg": avatar012,
-  "avatar013.jpg": avatar013,
-  "avatar014.jpg": avatar014,
-  "avatar015.jpg": avatar015,
+  "avatar001.webp": avatar001,
+  "avatar002.webp": avatar002,
+  "avatar003.webp": avatar003,
+  "avatar004.webp": avatar004,
+  "avatar005.webp": avatar005,
+  "avatar006.webp": avatar006,
+  "avatar007.webp": avatar007,
+  "avatar008.webp": avatar008,
+  "avatar009.webp": avatar009,
+  "avatar010.webp": avatar010,
+  "avatar011.webp": avatar011,
+  "avatar012.webp": avatar012,
+  "avatar013.webp": avatar013,
+  "avatar014.webp": avatar014,
+  "avatar015.webp": avatar015,
   "heimantouavatar": heimantouAvatar,
-  "heimantouavatar.jpg": heimantouAvatar,
-  "heimantouavatar.png": heimantouAvatar,
-  "keeganpfp.jpg": KeeganAvatar,
-  "maipfp.jpg": maipfp,
+  "heimantouavatar.webp": heimantouAvatar,
+  "keeganpfp.webp": KeeganAvatar,
+  "maipfp.webp": maipfp,
 
 };
 
@@ -442,13 +441,16 @@ const verification =
   const avatarOptions = Object.entries(avatarMap).filter(
   ([fileName]) => fileName.startsWith("avatar")
 );
-  const getAvatar = (avatar?: string) => {
+const getAvatar = (avatar?: string) => {
   if (!avatar) return avatar001;
 
   let file = avatar.split("/").pop() || "";
-  if (!file.includes(".")) file = `${file}.jpg`;
 
-  return avatarMap[file] || avatar001;
+  return (
+    avatarMap[file] ||
+    avatarMap[`${file}.webp`] ||
+    avatar001
+  );
 };
 
 useEffect(() => {
@@ -615,7 +617,7 @@ const displayAvatar = profile
       avatar_url: file,
     });
 // Normalize to the same format used throughout the app
-const avatarFile = file.includes(".") ? file : `${file}.jpg`;
+const avatarFile = file.includes(".") ? file : `${file}.webp`;
 
 // Update local state immediately
 setProfile((prev: any) => ({
@@ -652,29 +654,29 @@ if (
     .replace(/^BONUS-/, "")
     .replace(/^STARTER-/, "");
 
-  return `/friendships-begin/${cleanKey}.png`;
+  return `/friendships-begin/${cleanKey}.webp`;
 }
   if (card.set_id === "FW") {
     const num = card.card_key.slice(-2);
 
     if (card.card_key.startsWith("BP01ER")) {
-      return `/fantasy-wonderland/SD01ER${num}.png`;
+      return `/fantasy-wonderland/SD01ER${num}.webp`;
     }
 
     if (card.card_key.startsWith("BP01PER")) {
-      return `/fantasy-wonderland/SD01PER${num}.png`;
+      return `/fantasy-wonderland/SD01PER${num}.webp`;
     }
 
-    return `/fantasy-wonderland/${card.card_key}.png`;
+    return `/fantasy-wonderland/${card.card_key}.webp`;
   }
 
   if (card.set_id === "9") {
     const number = card.card_key.split("-")[1];
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
 
   if (card.set_id === "tcgpromos") {
-    return `/tcgpromos/${card.card_key}.png`;
+    return `/tcgpromos/${card.card_key}.webp`;
   }
 
   const [rarityRaw, number] = card.card_key.split("-");
@@ -701,8 +703,8 @@ const config: Record<string, { folder: string; prefix: string }> = {
 )}${
   String(card.set_id) === "6" &&
   ["ST", "TR", "TGR"].includes(rarity)
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`;
 };
 
@@ -989,7 +991,7 @@ useEffect(() => {
               key={fileName}
               type="button"
               onClick={() =>
-                handleAvatarSelect(fileName.replace(".jpg", ""))
+                handleAvatarSelect(fileName.replace(".webp", ""))
               }
               disabled={savingAvatar}
               className="group relative"
@@ -2072,7 +2074,7 @@ if (
         <button
           key={fileName}
           className="relative"
-          onClick={() => handleAvatarSelect(fileName.replace(".jpg", ""))}
+          onClick={() => handleAvatarSelect(fileName.replace(".webp", ""))}
 disabled={savingAvatar}
         >
           <div

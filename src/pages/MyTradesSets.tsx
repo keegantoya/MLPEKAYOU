@@ -308,7 +308,7 @@ if (set.id === "friendshipsbegin") {
 
     cards.push({
       key: `${prefix}${num}`,
-      image: `/friendships-begin/${prefix}${num}.png`
+      image: `/friendships-begin/${prefix}${num}.webp`
     });
   }
 });
@@ -338,7 +338,7 @@ if (set.id === "friendshipsbegin") {
 
       cards.push({
         key: `BP01ER${num}`,
-        image: `/fantasy-wonderland/SD01ER${num}.png`
+        image: `/fantasy-wonderland/SD01ER${num}.webp`
       });
     }
     return;
@@ -351,7 +351,7 @@ if (prefix === "BP01PSPR") {
 
     cards.push({
       key: `BP01PSPR${num}`,
-      image: `/fantasy-wonderland/BP01PSPR${num}.png`
+      image: `/fantasy-wonderland/BP01PSPR${num}.webp`
     });
   });
 
@@ -365,8 +365,8 @@ for (let i = 1; i <= count; i++) {
     key: `${prefix}${num}`,
     image:
       prefix === "BP01PER"
-        ? `/fantasy-wonderland/SD01PER${num}.png`
-        : `/fantasy-wonderland/${prefix}${num}.png`
+        ? `/fantasy-wonderland/SD01PER${num}.webp`
+        : `/fantasy-wonderland/${prefix}${num}.webp`
   });
 }
 });
@@ -378,7 +378,7 @@ for (let i = 1; i <= count; i++) {
 
     cards.push({
       key: `RR${num}`,
-      image: `/tcgpromos/RR${num}.png`
+      image: `/tcgpromos/RR${num}.webp`
     });
   }
 
@@ -562,12 +562,12 @@ const rarityOrders: Record<string, string[]> = {
 
         <div className="flex flex-wrap justify-center gap-4">
           {[
-  { code: "SD01A", name: "Twilight Sparkle", img: "/starter-decks-boxes/SDTWILIGHT.png" },
-  { code: "SD01B", name: "Fluttershy", img: "/starter-decks-boxes/SDFLUTTERSHY.png" },
-  { code: "SD01C", name: "Pinkie Pie", img: "/starter-decks-boxes/SDPINKIEPIE.png" },
-  { code: "SD01D", name: "Applejack", img: "/starter-decks-boxes/SDAPPLEJACK.png" },
-  { code: "SD01E", name: "Rainbow Dash", img: "/starter-decks-boxes/SDRAINBOWDASH.png" },
-  { code: "SD01F", name: "Rarity", img: "/starter-decks-boxes/SDRARITY.png" },
+  { code: "SD01A", name: "Twilight Sparkle", img: "/starter-decks-boxes/SDTWILIGHT.webp" },
+  { code: "SD01B", name: "Fluttershy", img: "/starter-decks-boxes/SDFLUTTERSHY.webp" },
+  { code: "SD01C", name: "Pinkie Pie", img: "/starter-decks-boxes/SDPINKIEPIE.webp" },
+  { code: "SD01D", name: "Applejack", img: "/starter-decks-boxes/SDAPPLEJACK.webp" },
+  { code: "SD01E", name: "Rainbow Dash", img: "/starter-decks-boxes/SDRAINBOWDASH.webp" },
+  { code: "SD01F", name: "Rarity", img: "/starter-decks-boxes/SDRARITY.webp" },
 ].filter((deck) => {
 
   const deckLetter = deck.code.slice(-1);
@@ -804,15 +804,15 @@ const indexB = currentOrder.indexOf(b);
                     <img
                       src={
                         set.id === "9"
-                          ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`
+                          ? `/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.webp`
                           : set.id === "tcgpromos"
-                          ? `/tcgpromos/${card.key}.png`
+                          ? `/tcgpromos/${card.key}.webp`
                           : card.image ||
   `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3,"0")}${
     set.id === "6" &&
     ["ST", "TR", "TGR"].includes(card.rarity)
-      ? ".png"
-      : ".jpg"
+      ? ".webp"
+      : ".webp"
   }`
                       }
                       className="rounded-lg w-full"

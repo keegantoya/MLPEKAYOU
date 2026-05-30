@@ -5,7 +5,7 @@ export const sets = [
     setName: "First Volume",
     folder: "first-edition-moon",
     prefix: "M1",
-    imageUrl: "/thumbnails/moon-fe.jpg",
+    imageUrl: "/thumbnails/moon-fe.webp",
     totalCards: 186,
     category: "eternal-moon",
     rarities: {
@@ -26,7 +26,7 @@ export const sets = [
     setName: "Second Volume",
     folder: "second-edition-moon",
     prefix: "M2",
-    imageUrl: "/thumbnails/moon-se.jpg",
+    imageUrl: "/thumbnails/moon-se.webp",
     totalCards: 189,
     category: "eternal-moon",
     rarities: {
@@ -49,7 +49,7 @@ export const sets = [
     setName: "Third Volume",
     folder: "third-edition-moon",
     prefix: "M3",
-    imageUrl: "/thumbnails/moon-te.jpg",
+    imageUrl: "/thumbnails/moon-te.webp",
     totalCards: 290,
     category: "eternal-moon",
     rarities: {
@@ -71,7 +71,7 @@ export const sets = [
     setName: "First Volume",
     folder: "star-one",
     prefix: "S1",
-    imageUrl: "/thumbnails/s1-thumbnail.jpg",
+    imageUrl: "/thumbnails/s1-thumbnail.webp",
     totalCards: 105,
     category: "star",
     rarities: {
@@ -92,7 +92,7 @@ export const sets = [
     setName: "First Volume",
     folder: "rainbow-one",
     prefix: "R1",
-    imageUrl: "/thumbnails/rainbow1thumbnail.jpg",
+    imageUrl: "/thumbnails/rainbow1thumbnail.webp",
     totalCards: 146,
     category: "rainbow",
     rarities: {
@@ -115,7 +115,7 @@ export const sets = [
     setName: "Second Volume",
     folder: "rainbow-two",
     prefix: "R2",
-    imageUrl: "/thumbnails/rainbow2thumbnail.jpg",
+    imageUrl: "/thumbnails/rainbow2thumbnail.webp",
     totalCards: 170,
     category: "rainbow",
     rarities: {
@@ -139,7 +139,7 @@ export const sets = [
     setName: "First Volume",
     folder: "fun-moments-one",
     prefix: "FM1",
-    imageUrl: "/thumbnails/fme01TN.jpg",
+    imageUrl: "/thumbnails/fme01TN.webp",
     totalCards: 127,
     category: "fun-moments",
     rarities: {
@@ -159,7 +159,7 @@ export const sets = [
     setName: "Second Volume",
     folder: "fun-moments-two",
     prefix: "FM2",
-    imageUrl: "/thumbnails/fme02TN.jpg",
+    imageUrl: "/thumbnails/fme02TN.webp",
     totalCards: 136,
     category: "fun-moments",
     rarities: {}
@@ -171,7 +171,7 @@ export const sets = [
     setName: "Wonderland",
     folder: "fantasy-wonderland",
     prefix: "FW",
-    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
+    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.webp",
     totalCards: 191,
     category: "tcg",
     rarities: {}

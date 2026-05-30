@@ -1,10 +1,9 @@
 import KayouHeader from "@/components/KayouHeader";
 import { useState } from "react";
-import authentic1 from "@/faq-assets/authenticseal1.jpg";
-import authentic2 from "@/faq-assets/authenticseal2.jpg";
-import fake1 from "@/faq-assets/fakeseal.png";
-import fake2 from "@/faq-assets/fakeseal2.png";
-import faqBadge from "@/assets/avatars/faqbadge.png";
+import authentic1 from "@/faq-assets/authenticseal1.webp";
+import authentic2 from "@/faq-assets/authenticseal2.webp";
+import fake1 from "@/faq-assets/fakeseal.webp";
+import fake2 from "@/faq-assets/fakeseal2.webp";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -15,66 +14,66 @@ import tutorialCard2 from "/cards/third-edition-moon/M3SC002.jpg";
 /// FAQ BIBLE IMPORTS ///
 
 /// STAR EDITION
-import eternalStarFaq1 from "/faq-mlp-bibles/eternalstarfaq1.png";
-import eternalStarFaq2 from "/faq-mlp-bibles/eternalstarfaq2.png";
-import eternalStarFaq3 from "/faq-mlp-bibles/eternalstarfaq3.png";
-import eternalStarPackConfigs from "/faq-mlp-bibles/packconfigs-star.png";
+import eternalStarFaq1 from "/faq-mlp-bibles/eternalstarfaq1.webp";
+import eternalStarFaq2 from "/faq-mlp-bibles/eternalstarfaq2.webp";
+import eternalStarFaq3 from "/faq-mlp-bibles/eternalstarfaq3.webp";
+import eternalStarPackConfigs from "/faq-mlp-bibles/packconfigs-star.webp";
 
 /// MOON EDITIONS
-import eternalMoonFaq1 from "/faq-mlp-bibles/eternalmoonfaq1.png";
-import eternalMoonFaq2 from "/faq-mlp-bibles/eternalmoonfaq2.png";
-import eternalMoonPackConfigs from "/faq-mlp-bibles/packconfigs-moon1.png";
-import eternalMoon2Faq1 from "/faq-mlp-bibles/eternalmoon2faq1.png";
-import eternalMoon2Faq2 from "/faq-mlp-bibles/eternalmoon2faq2.png";
-import eternalMoon2Faq3 from "/faq-mlp-bibles/eternalmoon2faq3.png";
-import eternalMoon2PackConfigs from "/faq-mlp-bibles/packconfigs-moon2A.png";
-import eternalMoon2CPackConfigs from "/faq-mlp-bibles/packconfigs-moon2C.png";
-import eternalMoon21NAFaq1 from "/faq-mlp-bibles/eternalmoon21NAfaq1.png";
-import eternalMoon21NAFaq2 from "/faq-mlp-bibles/eternalmoon21NAfaq2.png";
-import eternalMoon21NAPackConfigs from "/faq-mlp-bibles/packconfigs-moon21NA.png";
-import eternalMoon21AFaq1 from "/faq-mlp-bibles/eternalmoon21Afaq1.png";
-import eternalMoon21APackConfigs from "/faq-mlp-bibles/packconfigs-moon21A.png";
-import eternalMoon3Faq1 from "/faq-mlp-bibles/eternalmoon3faq1.png";
-import eternalMoon3Faq2 from "/faq-mlp-bibles/eternalmoon3faq2.png";
-import eternalMoon3Faq3 from "/faq-mlp-bibles/eternalmoon3faq3.png";
-import eternalMoon3PackConfigs from "/faq-mlp-bibles/packconfigs-moon3.png";
+import eternalMoonFaq1 from "/faq-mlp-bibles/eternalmoonfaq1.webp";
+import eternalMoonFaq2 from "/faq-mlp-bibles/eternalmoonfaq2.webp";
+import eternalMoonPackConfigs from "/faq-mlp-bibles/packconfigs-moon1.webp";
+import eternalMoon2Faq1 from "/faq-mlp-bibles/eternalmoon2faq1.webp";
+import eternalMoon2Faq2 from "/faq-mlp-bibles/eternalmoon2faq2.webp";
+import eternalMoon2Faq3 from "/faq-mlp-bibles/eternalmoon2faq3.webp";
+import eternalMoon2PackConfigs from "/faq-mlp-bibles/packconfigs-moon2A.webp";
+import eternalMoon2CPackConfigs from "/faq-mlp-bibles/packconfigs-moon2C.webp";
+import eternalMoon21NAFaq1 from "/faq-mlp-bibles/eternalmoon21NAfaq1.webp";
+import eternalMoon21NAFaq2 from "/faq-mlp-bibles/eternalmoon21NAfaq2.webp";
+import eternalMoon21NAPackConfigs from "/faq-mlp-bibles/packconfigs-moon21NA.webp";
+import eternalMoon21AFaq1 from "/faq-mlp-bibles/eternalmoon21Afaq1.webp";
+import eternalMoon21APackConfigs from "/faq-mlp-bibles/packconfigs-moon21A.webp";
+import eternalMoon3Faq1 from "/faq-mlp-bibles/eternalmoon3faq1.webp";
+import eternalMoon3Faq2 from "/faq-mlp-bibles/eternalmoon3faq2.webp";
+import eternalMoon3Faq3 from "/faq-mlp-bibles/eternalmoon3faq3.webp";
+import eternalMoon3PackConfigs from "/faq-mlp-bibles/packconfigs-moon3.webp";
 
 /// RAINBOW EDITIONS
-import eternalRainbow1Faq1 from "/faq-mlp-bibles/eternalrainbow1faq1.png";
-import eternalRainbow1Faq2 from "/faq-mlp-bibles/eternalrainbow1faq2.png";
-import eternalRainbow1PackConfigs from "/faq-mlp-bibles/packconfigs-rainbow1.png";
-import eternalRainbow2Faq1 from "/faq-mlp-bibles/eternalrainbow2faq1.png";
-import eternalRainbow2Faq2 from "/faq-mlp-bibles/eternalrainbow2faq2.png";
-import eternalRainbow2PackConfigs from "/faq-mlp-bibles/packconfigs-rainbow2.png";
+import eternalRainbow1Faq1 from "/faq-mlp-bibles/eternalrainbow1faq1.webp";
+import eternalRainbow1Faq2 from "/faq-mlp-bibles/eternalrainbow1faq2.webp";
+import eternalRainbow1PackConfigs from "/faq-mlp-bibles/packconfigs-rainbow1.webp";
+import eternalRainbow2Faq1 from "/faq-mlp-bibles/eternalrainbow2faq1.webp";
+import eternalRainbow2Faq2 from "/faq-mlp-bibles/eternalrainbow2faq2.webp";
+import eternalRainbow2PackConfigs from "/faq-mlp-bibles/packconfigs-rainbow2.webp";
 
 /// FUN MOMENTS EDITION
-import eternalFunMoments1Faq1 from "/faq-mlp-bibles/eternalfunmoments1faq1.png";
-import eternalFunMoments1Faq2 from "/faq-mlp-bibles/eternalfunmoments1faq2.png";
-import eternalFunMoments1PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments1.png";
-import eternalFunMoments2Faq1 from "/faq-mlp-bibles/eternalfunmoments2faq1.png";
-import eternalFunMoments2Faq2 from "/faq-mlp-bibles/eternalfunmoments2faq2.png";
-import eternalFunMoments2PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments2A.png";
-import eternalFunMoments2PackConfigsB from "/faq-mlp-bibles/packconfigs-funmoments2B.png";
-import eternalFunMoments3Faq1 from "/faq-mlp-bibles/eternalfunmoments3faq1.png";
-import eternalFunMoments3Faq2 from "/faq-mlp-bibles/eternalfunmoments3faq2.png";
-import eternalFunMoments3Faq3 from "/faq-mlp-bibles/eternalfunmoments3faq3.png";
-import eternalFunMoments3PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments3.png";
+import eternalFunMoments1Faq1 from "/faq-mlp-bibles/eternalfunmoments1faq1.webp";
+import eternalFunMoments1Faq2 from "/faq-mlp-bibles/eternalfunmoments1faq2.webp";
+import eternalFunMoments1PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments1.webp";
+import eternalFunMoments2Faq1 from "/faq-mlp-bibles/eternalfunmoments2faq1.webp";
+import eternalFunMoments2Faq2 from "/faq-mlp-bibles/eternalfunmoments2faq2.webp";
+import eternalFunMoments2PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments2A.webp";
+import eternalFunMoments2PackConfigsB from "/faq-mlp-bibles/packconfigs-funmoments2B.webp";
+import eternalFunMoments3Faq1 from "/faq-mlp-bibles/eternalfunmoments3faq1.webp";
+import eternalFunMoments3Faq2 from "/faq-mlp-bibles/eternalfunmoments3faq2.webp";
+import eternalFunMoments3Faq3 from "/faq-mlp-bibles/eternalfunmoments3faq3.webp";
+import eternalFunMoments3PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments3.webp";
 
 /// FANTASY WONDERLAND 
-import fantasyWonderlandFaq1 from "/faq-mlp-bibles/fantasywonderlandfaq1.png";
-import fantasyWonderlandFaq2 from "/faq-mlp-bibles/fantasywonderlandfaq2.png";
-import fantasyWonderlandFaq3 from "/faq-mlp-bibles/fantasywonderlandfaq3.png";
-import fantasyWonderlandPackConfigs from "/faq-mlp-bibles/packconfigs-fantasywonderland.png";
+import fantasyWonderlandFaq1 from "/faq-mlp-bibles/fantasywonderlandfaq1.webp";
+import fantasyWonderlandFaq2 from "/faq-mlp-bibles/fantasywonderlandfaq2.webp";
+import fantasyWonderlandFaq3 from "/faq-mlp-bibles/fantasywonderlandfaq3.webp";
+import fantasyWonderlandPackConfigs from "/faq-mlp-bibles/packconfigs-fantasywonderland.webp";
 
 /// FRIENDSHIPS BEGIN
-import friendshipsBeginFaq1 from "/faq-mlp-bibles/friendshipsbeginfaq1.png";
-import friendshipsBeginFaq2 from "/faq-mlp-bibles/friendshipsbeginfaq2.png";
-import friendshipsBeginFaq3 from "/faq-mlp-bibles/friendshipsbeginfaq3.png";
-import friendshipsBeginPackConfigs from "/faq-mlp-bibles/packconfigs-friendshipsbegin.png";
+import friendshipsBeginFaq1 from "/faq-mlp-bibles/friendshipsbeginfaq1.webp";
+import friendshipsBeginFaq2 from "/faq-mlp-bibles/friendshipsbeginfaq2.webp";
+import friendshipsBeginFaq3 from "/faq-mlp-bibles/friendshipsbeginfaq3.webp";
+import friendshipsBeginPackConfigs from "/faq-mlp-bibles/packconfigs-friendshipsbegin.webp";
 
 // OTHERS CATEGORY
-import crossingPlushies from "/faq-mlp-bibles/crossingplushies.jpg";
-import crossingPlushies2 from "/faq-mlp-bibles/crossingplushies2.jpg";
+import crossingPlushies from "/faq-mlp-bibles/crossingplushies.webp";
+import crossingPlushies2 from "/faq-mlp-bibles/crossingplushies2.webp";
 
 const FAQ = () => {
   const [active, setActive] = useState(0);
@@ -630,7 +629,7 @@ content: (
           This seems to be where all of the newer collectors on r/MLPKAYOU are thinking they have purchased counterfeit cards. Below is images of the same card, but from two different sets.
         </p>
         <img
-  src="/website-assets/fakecardxp1.png"
+  src="/website-assets/fakecardxp1.webp"
   alt="Example of similar cards from different sets"
   className="w-full h-auto mt-4 rounded-lg"
 />
@@ -640,7 +639,7 @@ content: (
           Upon first glance, you would think these two cards are identical - but in print, they are not. Looking in the upper right-hand corner, you will see two different identification codes. One card is a Fun Moments card, and one is a Moon Edition card. Here art pictures of the cards from my personal collection, where you can see the differences.
         </p>
         <img
-  src="/website-assets/fakecardxp2.png"
+  src="/website-assets/fakecardxp2.webp"
   alt="Example of similar cards from different sets"
   className="w-full h-auto mt-4 rounded-lg"
 />
@@ -656,7 +655,7 @@ content: (
             This applies to the Chinese sets. Their version of Moon Edition will begin with "HY," and the identical card to the one above will be "HY08-SR-001." The identical Fun Moments card will be in their Shadow set, with the code "QY05-SR-001."
         </p>
         <img
-  src="/website-assets/fakecardxp3.png"
+  src="/website-assets/fakecardxp3.webp"
   alt="Example of similar cards from different sets but Chinese"
   className="w-full h-auto mt-4 rounded-lg"
 />
@@ -683,7 +682,7 @@ content: (
   See true fake cards below.
         </p>
         <img
-  src="/website-assets/fakecardxp4.png"
+  src="/website-assets/fakecardxp4.webp"
   alt="Straight up fake cards"
   className="w-full h-auto mt-4 rounded-lg"
 />

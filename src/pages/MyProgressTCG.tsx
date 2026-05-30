@@ -2,12 +2,12 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.png";
-import applejackCutieMark from "/website-assets/applejackcutiemark.png";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.png";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.png";
-import rarityCutieMark from "/website-assets/raritycutiemark.png";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
+import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
+import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
+import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
+import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
+import rarityCutieMark from "/website-assets/raritycutiemark.webp";
+import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
 
 const cutieMarks = [
   fluttershyCutieMark,
@@ -19,17 +19,17 @@ const cutieMarks = [
 ];
 
 const setImages: Record<string, string> = {
-  friendshipsbegin_bonus: "/thumbnails/friendship-begins-bonus-thumbnail.jpg",
-  friendshipsbegin_decks: "/thumbnails/friendship-begins-thumbnail.jpg",
-  FW: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
-  tcgpromos: "/thumbnails/tcgpromosthumbnail.jpg",
+  friendshipsbegin_bonus: "/thumbnails/friendship-begins-bonus-thumbnail.webp",
+  friendshipsbegin_decks: "/thumbnails/friendship-begins-thumbnail.webp",
+  FW: "/thumbnails/fantasy-wonderland-thumbnail.webp",
+  tcgpromos: "/thumbnails/tcgpromosthumbnail.webp",
 };
 
 const setBadgeImages: Record<string, string> = {
-  friendshipsbegin_bonus: "/starter-decks-boxes/SDBONUSPACKS.png",
-  friendshipsbegin_decks: "/starter-decks-boxes/SDRAINBOWDASH.png",
-  FW: "/set-pictures/fantasywonderlandpack.jpg",
-  tcgpromos: "/set-pictures/promopackfriendshipsbegin.png",
+  friendshipsbegin_bonus: "/starter-decks-boxes/SDBONUSPACKS.webp",
+  friendshipsbegin_decks: "/starter-decks-boxes/SDRAINBOWDASH.webp",
+  FW: "/set-pictures/fantasywonderlandpack.webp",
+  tcgpromos: "/set-pictures/promopackfriendshipsbegin.webp",
 };
 
 const sets = [
@@ -313,7 +313,7 @@ newProgress[set.id] = owned;
         className="absolute left-0 bottom-0 w-[30%] h-full opacity-20"
         style={{
           background:
-            "url('/website-assets/twilightcastle.png') left bottom / contain no-repeat",
+            "url('/website-assets/twilightcastle.webp') left bottom / contain no-repeat",
         }}
       />
 
@@ -322,7 +322,7 @@ newProgress[set.id] = owned;
         className="absolute right-0 bottom-8 w-[35%] h-[45%] opacity-20"
         style={{
           background:
-            "url('/website-assets/rainbow.png') right center / contain no-repeat",
+            "url('/website-assets/rainbow.webp') right center / contain no-repeat",
         }}
       />
 

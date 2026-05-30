@@ -4,25 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ChevronUp } from "lucide-react";
 
-import moonThreeBox from "/set-pictures/mooonthreebox.jpg";
-import moonThreePack from "/set-pictures/moonthreepack.jpg";
+import moonThreeBox from "/set-pictures/mooonthreebox.webp";
+import moonThreePack from "/set-pictures/moonthreepack.webp";
 
 const Moon3 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-  R: true,
-  SR: true,
-  SSR: true,
-  HR: true,
-  LSR: true,
-  UR: true,
-  SGR: true,
-  ZR: true,
-  SC: true,
-  SZR: true,
-});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 const [showProductInfo, setShowProductInfo] = useState(false);
 const [showScrollTop, setShowScrollTop] = useState(false);
 const [showLoginModal, setShowLoginModal] = useState(false);
@@ -39,7 +28,7 @@ const toggleFlip = (key: string) => {
     const number = Number(numberStr);
 
     const frontSrc =
-      `/cards/third-edition-moon/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+      `/cards/third-edition-moon/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`;
 
     const backSrc = getCardBack(rarity, number);
 
@@ -75,10 +64,39 @@ const toggleFlip = (key: string) => {
           .single();
 
         if (saved?.progress) {
-          setFlipped(saved.progress);
-        } else {
-          setFlipped({});
-        }
+  setFlipped(saved.progress);
+
+  const newCollapsed: Record<string, boolean> = {};
+
+  Object.entries(set.rarities).forEach(([rarity, count]) => {
+    let complete = true;
+
+    for (let i = 1; i <= (count as number); i++) {
+      if (!saved.progress[`${rarity}-${i}`]) {
+        complete = false;
+        break;
+      }
+    }
+
+    newCollapsed[rarity] = complete;
+  });
+
+  setCollapsed(newCollapsed);
+
+} else {
+  setFlipped({});
+
+  setCollapsed({
+    N: false,
+    SN: false,
+    R: false,
+    SR: false,
+    SSR: false,
+    UR: false,
+    UGR: false,
+    CR: false,
+  });
+}
       } else {
         setFlipped({});
       }
@@ -183,65 +201,65 @@ const rarityContainerNames: Record<string, string> = {
   // CARD BACK LOGIC
 const getCardBack = (rarity: string, number: number) => {
     if (rarity === "SZR" && number === 1) {
-    return `/card-backs/third-moon-edition-backs/M3SZR001BACK.jpg`;
+    return `/card-backs/third-moon-edition-backs/M3SZR001BACK.webp`;
   }
     if (rarity === "SZR" && number >= 2 && number <= 3) {
-    return `/card-backs/third-moon-edition-backs/moon3zrback2.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3zrback2.webp`;
   }
     if (rarity === "SC") {
-    return `/card-backs/third-moon-edition-backs/m3scback.jpg`;
+    return `/card-backs/third-moon-edition-backs/m3scback.webp`;
   }
     if (rarity === "ZR" && number === 14) {
-    return `/card-backs/third-moon-edition-backs/moon3sdzrback2.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3sdzrback2.webp`;
   }
   if (rarity === "ZR" && number >= 8 && number <= 13) {
-    return `/card-backs/third-moon-edition-backs/moon3zrback2.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3zrback2.webp`;
   }
   if (rarity === "ZR" && number >= 1 && number <= 7) {
-    return `/card-backs/third-moon-edition-backs/m3zrback1.jpg`;
+    return `/card-backs/third-moon-edition-backs/m3zrback1.webp`;
   }
   if (rarity === "UR" && number >= 15 && number <= 18) {
-    return `/card-backs/third-moon-edition-backs/moon3sdurback.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3sdurback.webp`;
   }
   if (rarity === "UR" && number >= 1 && number <= 14) {
-    return `/card-backs/third-moon-edition-backs/moon3urback.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3urback.webp`;
   }
     if (rarity === "SGR" && number >= 1 && number <= 8) {
-    return `/card-backs/third-moon-edition-backs/moon3sgrback1.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3sgrback1.webp`;
   }
   if (rarity === "SGR" && number >= 9 && number <= 16) {
-    return `/card-backs/third-moon-edition-backs/moon3sgrback2.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3sgrback2.webp`;
   }
     if (
     rarity === "HR" &&
     ((number >= 1 && number <= 22) ||
      (number >= 31 && number <= 52))
   ) {
-    return `/card-backs/third-moon-edition-backs/moon3sdhrback.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3sdhrback.webp`;
   }
     if (rarity === "SR") {
-    return `/card-backs/third-moon-edition-backs/moon3srback.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3srback.webp`;
   }
       if (rarity === "SSR") {
-    return `/card-backs/third-moon-edition-backs/moon3ssrback.jpg`;
+    return `/card-backs/third-moon-edition-backs/moon3ssrback.webp`;
   }
-  return `/card-backs/third-moon-edition-backs/moon3defaultback.jpg`;
+  return `/card-backs/third-moon-edition-backs/moon3defaultback.webp`;
 };
 
 const isZoomedLandscape =
   zoomedCard &&
   (
     // HR001-HR022
-    /M3HR0(0[1-9]|1[0-9]|2[0-2])\.jpg$/.test(zoomedCard) ||
+    /M3HR0(0[1-9]|1[0-9]|2[0-2])\.webp$/.test(zoomedCard) ||
 
     // HR031-HR052
-    /M3HR0(3[1-9]|4[0-9]|5[0-2])\.jpg$/.test(zoomedCard) ||
+    /M3HR0(3[1-9]|4[0-9]|5[0-2])\.webp$/.test(zoomedCard) ||
 
     // UR015-UR018
-    /M3UR0(1[5-8])\.jpg$/.test(zoomedCard) ||
+    /M3UR0(1[5-8])\.webp$/.test(zoomedCard) ||
 
     // ZR014
-    /M3ZR014\.jpg$/.test(zoomedCard)
+    /M3ZR014\.webp$/.test(zoomedCard)
   );
 
 useEffect(() => {
@@ -452,7 +470,7 @@ const done = rarityGroup.every(c =>
                         }`}
                       >
                         <img
-                          src={`/cards/third-edition-moon/${set.prefix}${card.rarity}${String(card.number).padStart(3, "0")}.jpg`}
+                          src={`/cards/third-edition-moon/${set.prefix}${card.rarity}${String(card.number).padStart(3, "0")}.webp`}
                           className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                         />
                         <img
@@ -504,7 +522,7 @@ const done = rarityGroup.every(c =>
         <img
           src={
             zoomedCardBack ||
-            "/card-backs/third-moon-edition-backs/moon3defaultback.jpg"
+            "/card-backs/third-moon-edition-backs/moon3defaultback.webp"
           }
           className={`${
             isZoomedLandscape

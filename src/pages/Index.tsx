@@ -1,19 +1,13 @@
 import KayouHeader from "@/components/KayouHeader";
-import Moon3Poster from "@/assets/avatars/Moon3Poster.png";
-import FunMoments3Poster from "@/assets/avatars/FunMoments3Poster.png";
-import Star1Poster from "@/assets/avatars/Star1poster.png";
-import tcgAppBanner from "@/assets/website-assets/tcgapp.png";
-const minisoPoster = "/website-assets/minisocollab.jpg";
-const minisoLogo = "/website-assets/minisologo.jpg";
+import Moon3Poster from "@/assets/avatars/Moon3Poster.webp";
+import FunMoments3Poster from "@/assets/avatars/FunMoments3Poster.webp";
+import Star1Poster from "@/assets/avatars/Star1poster.webp";
+const minisoPoster = "/website-assets/minisocollab.webp";
+const minisoLogo = "/website-assets/minisologo.webp";
 const minisoPoster2 = "/website-assets/minisocollab2.webp";
-const minisoPoster3 = "/website-assets/minisocollab3.jpg";
-const rainbow2Poster = "/website-assets/rainbow2post.jpg";
+const minisoPoster3 = "/website-assets/minisocollab3.webp";
+const rainbow2Poster = "/website-assets/rainbow2post.webp";
 import { supabase } from "@/lib/supabase";
-import heroFront from "/friendships-begin/SD01PRR01.png";
-import heroMiddle from "/cards/third-edition-moon/M3ZR003.jpg";
-import heroBack from "/cards/rainbow-one/R1XR004.jpg";
-
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
 
 import {
   BookOpen,
@@ -29,9 +23,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
-import elementOfLaughter from "/website-assets/elementoflaughter.png";
+import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 const VERIFIED_USERS = {
   "17e57e39-bc0c-44e7-b373-ac34c6690185": {
@@ -688,7 +682,7 @@ before:pointer-events-none">
     "
   >
     <img
-      src="/website-assets/discordlogo.png"
+      src="/website-assets/discordlogo.webp"
       alt="Discord"
       className="h-8 w-auto"
     />
@@ -710,7 +704,7 @@ before:pointer-events-none">
     "
   >
     <img
-      src="/website-assets/tiktoklogo.png"
+      src="/website-assets/tiktoklogo.webp"
       alt="TikTok"
       className="h-10 w-auto"
     />
@@ -804,7 +798,7 @@ before:pointer-events-none">
       <div className="flex items-center gap-3 px-4 py-4">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-yellow-300 p-[2px]">
   <img
-src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.png"}
+src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.webp"}
     alt="MLPEKAYOU"
     className="w-full h-full rounded-full object-cover bg-white"
   />
@@ -981,7 +975,7 @@ onClick={() => {
         <div className="flex items-center gap-3 px-5 py-4 border-b border-purple-100">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-yellow-300 p-[2px]">
             <img
-              src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.png"}
+              src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.webp"}
               alt="MLPEKAYOU"
               className="w-full h-full rounded-full object-cover bg-white"
             />

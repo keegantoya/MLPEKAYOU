@@ -2,7 +2,6 @@ import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { ChevronUp } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import myProgressBadge from "@/assets/avatars/personaliso.png";
 import MyISOSidebar from "@/components/MyISOSidebar";
 
 const sets = [
@@ -140,13 +139,14 @@ const sets = [
   id: "TCG_PROMOS",
   name: "TCG Promos"
 },
-  {
-    id: "9",
-    name: "Promos",
-    folder: "promo-cards",
-    prefix: "PR",
-    rarities: { PR: 6 }
-  },
+{
+  id: "9",
+  name: "Promos",
+  folder: "promo-cards",
+  prefix: "PR",
+  promoNumbers: [1, 2, 3, 4, 5, 7],
+  rarities: { PR: 6 }
+},
   {
     id: "10",
     name: "Serialized & Limited Cards",
@@ -850,10 +850,15 @@ Array.from({ length: 6 }, (_, i) => {
 if (set.rarities) {
   const cards = Object.entries(set.rarities).flatMap(
     ([rarity, count]) =>
-      Array.from({ length: count as number }, (_, i) => ({
-        rarity,
-        number: i + 1,
-      }))
+      set.id === "9"
+  ? set.promoNumbers.map((n) => ({
+      rarity: "PR",
+      number: n,
+    }))
+  : Array.from({ length: count as number }, (_, i) => ({
+      rarity,
+      number: i + 1,
+    }))
   );
 
   const missing = cards.filter((card) => {
@@ -1071,7 +1076,7 @@ onToggleHiddenSet={toggleSet}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
         <div className="aspect-[5/7]">
           <img
-            src={`/tcgpromos/${key}.png`}
+            src={`/tcgpromos/${key}.webp`}
             className="w-full h-full object-cover"
           />
         </div>
@@ -1151,12 +1156,12 @@ onToggleHiddenSet={toggleSet}
 
     <div className="flex flex-wrap gap-4 justify-center">
      {[
-  { code: "SD01A", src: "/starter-decks-boxes/SDTWILIGHT.png" },
-  { code: "SD01B", src: "/starter-decks-boxes/SDFLUTTERSHY.png" },
-  { code: "SD01C", src: "/starter-decks-boxes/SDPINKIEPIE.png" },
-  { code: "SD01D", src: "/starter-decks-boxes/SDAPPLEJACK.png" },
-  { code: "SD01E", src: "/starter-decks-boxes/SDRAINBOWDASH.png" },
-  { code: "SD01F", src: "/starter-decks-boxes/SDRARITY.png" },
+  { code: "SD01A", src: "/starter-decks-boxes/SDTWILIGHT.webp" },
+  { code: "SD01B", src: "/starter-decks-boxes/SDFLUTTERSHY.webp" },
+  { code: "SD01C", src: "/starter-decks-boxes/SDPINKIEPIE.webp" },
+  { code: "SD01D", src: "/starter-decks-boxes/SDAPPLEJACK.webp" },
+  { code: "SD01E", src: "/starter-decks-boxes/SDRAINBOWDASH.webp" },
+  { code: "SD01F", src: "/starter-decks-boxes/SDRARITY.webp" },
 ].filter((deck) => {
 
   const progressData =
@@ -1313,7 +1318,7 @@ onToggleHiddenSet={toggleSet}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
 
             {cards.map((key) => {
-  const imageSrc = `/friendships-begin/${key}.png`;
+  const imageSrc = `/friendships-begin/${key}.webp`;
 
   return (
               <div
@@ -1460,10 +1465,10 @@ onToggleHiddenSet={toggleSet}
             {cards.map((key) => {
   const imageSrc =
     key.startsWith("BP01ER")
-      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
       : key.startsWith("BP01PER")
-      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
-      : `/fantasy-wonderland/${key}.png`;
+      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
+      : `/fantasy-wonderland/${key}.webp`;
 
   return (
              <div
@@ -1551,7 +1556,7 @@ onToggleHiddenSet={toggleSet}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                   <div className="aspect-[5/7]">
                     <img
-                      src={`/tcgpromos/${promoCode}.png`}
+                      src={`/tcgpromos/${promoCode}.webp`}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -1586,14 +1591,14 @@ onToggleHiddenSet={toggleSet}
           ) {
             const imageSrc =
               cardKey.startsWith("BP01ER")
-                ? `/fantasy-wonderland/SD01ER${cardKey.slice(-2)}.png`
+                ? `/fantasy-wonderland/SD01ER${cardKey.slice(-2)}.webp`
                 : cardKey.startsWith("BP01PER")
-                ? `/fantasy-wonderland/SD01PER${cardKey.slice(-2)}.png`
+                ? `/fantasy-wonderland/SD01PER${cardKey.slice(-2)}.webp`
                 : cardKey.startsWith("BP01")
-                ? `/fantasy-wonderland/${cardKey}.png`
+                ? `/fantasy-wonderland/${cardKey}.webp`
                 : cardKey.startsWith("SD01")
-                ? `/friendships-begin/${cardKey}.png`
-                : `/tcgpromos/${cardKey}.png`;
+                ? `/friendships-begin/${cardKey}.webp`
+                : `/tcgpromos/${cardKey}.webp`;
 
             let setName = "Friendships Begin";
 
@@ -1659,14 +1664,14 @@ onToggleHiddenSet={toggleSet}
 
           const imageSrc =
             set.id === "9"
-              ? `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`
+              ? `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`
               : set.id === "10"
-              ? "/serialized-limited-cards/andypricepromo.jpg"
+              ? "/serialized-limited-cards/andypricepromo.webp"
              : `/cards/${set.folder}/${set.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}${
     set.id === "6" &&
     ["TR", "TGR", "ST"].includes(rarity)
-      ? ".png"
-      : ".jpg"
+      ? ".webp"
+      : ".webp"
   }`;
 
           return (
@@ -1729,10 +1734,15 @@ onToggleHiddenSet={toggleSet}
 )
       .map((set) => {
         const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
-          Array.from({ length: count as number }, (_, i) => ({
-            rarity,
-            number: i + 1
-          }))
+          set.id === "9"
+  ? set.promoNumbers.map((n) => ({
+      rarity: "PR",
+      number: n,
+    }))
+  : Array.from({ length: count as number }, (_, i) => ({
+      rarity,
+      number: i + 1,
+    }))
         );
 
         const missing = cards.filter((card) => {
@@ -1808,6 +1818,8 @@ onToggleHiddenSet={toggleSet}
   ? "PR"
   : rarity === "SN"
   ? "◇N"
+  : set.id ==="11" && rarity === "SCR"
+  ? "◇CR"
   : rarity === "SHINING ZR" || rarity === "SZR"
   ? "◇ZR"
   : set.id ==="4" && rarity === "SAR"
@@ -1858,14 +1870,14 @@ onClick={() => {
       <img
         src={
           set.id === "9"
-            ? `/promo-cards/mlpepr${String(card.number).padStart(3, "0")}.jpg`
+            ? `/promo-cards/mlpepr${String(card.number).padStart(3, "0")}.webp`
             : set.id === "10"
-            ? "/serialized-limited-cards/andypricepromo.jpg"
+            ? "/serialized-limited-cards/andypricepromo.webp"
             : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}${
     set.id === "6" &&
     ["TR", "TGR", "ST"].includes(card.rarity)
-      ? ".png"
-      : ".jpg"
+      ? ".webp"
+      : ".webp"
   }`
         }
         className="w-full h-full object-cover"

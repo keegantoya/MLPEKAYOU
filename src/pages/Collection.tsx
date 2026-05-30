@@ -6,16 +6,16 @@ import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { ChevronUp } from "lucide-react";
 
-import moonOneBox from "/set-pictures/moononebox.jpg";
-import moonOnePack from "/set-pictures/moononepack.jpg";
+import moonOneBox from "/set-pictures/moononebox.webp";
+import moonOnePack from "/set-pictures/moononepack.webp";
 
-import moonTwoBox from "/set-pictures/moontwobox.jpg";
-import moonTwoPack from "/set-pictures/moontwopack.png";
-import moonTwoBoxTwo from "/set-pictures/moontwoboxtwo.jpg";
-import moonTwoCollectorsBox from "/set-pictures/moontwocollectorsbox.jpg";
+import moonTwoBox from "/set-pictures/moontwobox.webp";
+import moonTwoPack from "/set-pictures/moontwopack.webp";
+import moonTwoBoxTwo from "/set-pictures/moontwoboxtwo.webp";
+import moonTwoCollectorsBox from "/set-pictures/moontwocollectorsbox.webp";
 
-import rainbowOneBox from "/set-pictures/rainbowonebox.jpg";
-import rainbowOnePack from "/set-pictures/rainbowonepack.jpg";
+import rainbowOneBox from "/set-pictures/rainbowonebox.webp";
+import rainbowOnePack from "/set-pictures/rainbowonepack.webp";
 
 const slugToId: Record<string, string> = {
   "eternal-moon-one": "1",
@@ -35,24 +35,7 @@ const id = slugToId[rawId] || rawId;
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
 const [celebrated, setCelebrated] = useState(false);
-const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-  R: true,
-  SR: true,
-  SSR: true,
-  HR: true,
-  UR: true,
-  LSR: true,
-  SGR: true,
-  ZR: true,
-  SC: true,
-  "SHINING ZR": true,
-  FR: true,
-  TR: true,
-  TGR: true,
-  MTR: true,
-  USR: true,
-  XR: true,
-});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
 const [viewMode, setViewMode] = useState(false);
 const [zoomedCard, setZoomedCard] = useState<string | null>(null);
@@ -78,7 +61,7 @@ const toggleFlip = async (key: string) => {
 
     const frontSrc = `/cards/${set.folder}/${set.prefix}${getRarityCode(
       rarity
-    )}${String(number).padStart(3, "0")}.jpg`;
+    )}${String(number).padStart(3, "0")}.webp`;
 
     const backSrc = getCardBack(rarity, number);
 
@@ -128,11 +111,26 @@ const toggleFlip = async (key: string) => {
         .eq("set_id", id)
         .single();
 
-      if (saved?.progress) {
-        setFlipped(saved.progress);
-      } else {
-        setFlipped({});
-      }
+if (saved?.progress) {
+  setFlipped(saved.progress);
+
+  const collapseState: Record<string, boolean> = {};
+
+  Object.entries(set.rarities).forEach(([rarity, count]) => {
+    const complete = Array.from(
+      { length: count as number },
+      (_, i) => saved.progress[`${rarity}-${i + 1}`]
+    ).every(Boolean);
+
+    collapseState[rarity] = complete;
+  });
+
+  setCollapsed(collapseState);
+
+} else {
+  setFlipped({});
+  setCollapsed({});
+}
     } else {
       setFlipped({});
     }
@@ -289,121 +287,121 @@ useEffect(() => {
   const padded = String(number).padStart(3, "0");
 
 if (rarity === "LSR") {
-  return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+  return `/card-backs/M1R-SR-SGR-SCBACK.webp`;
 }
 
   // ---------- MOON 1 ----------
   if (set.prefix === "M1") {
 
     if (rarity === "R") {
-      return `/moon-1-other-backs/M1RBK${padded}.jpg`;
+      return `/moon-1-other-backs/M1RBK${padded}.webp`;
     }
     if (rarity === "SR") {
-      return `/moon-1-other-backs/M1SRB${padded}.jpg`;
+      return `/moon-1-other-backs/M1SRB${padded}.webp`;
     }
     if (rarity === "HR") {
       const sideways = [8,9,10,18,19,21,23,27,32,34,36];
       if (sideways.includes(number)) {
-        return `/card-backs/M1HRSIDEWAYSBACK.jpg`;
+        return `/card-backs/M1HRSIDEWAYSBACK.webp`;
       }
-      return `/card-backs/M1HRBACK.jpeg`;
+      return `/card-backs/M1HRBACK.webp`;
     }
     if (rarity === "SSR") {
-      return `/card-backs/M1SSRBACK.jpeg`;
+      return `/card-backs/M1SSRBACK.webp`;
     }
     if (rarity === "UR") {
       if (number === 16) {
-        return `/card-backs/M1URSIDEWAYSBACK.jpg`;
+        return `/card-backs/M1URSIDEWAYSBACK.webp`;
       }
-      return `/card-backs/M1URBACK.jpeg`;
+      return `/card-backs/M1URBACK.webp`;
     }
     if (rarity === "SGR") {
-      return `/card-backs/M1SGRBACK.jpeg`;
+      return `/card-backs/M1SGRBACK.webp`;
     }
     if (rarity === "SC") {
       if (number === 7) {
-        return `/card-backs/M1SCBACK.jpeg`;
+        return `/card-backs/M1SCBACK.webp`;
       }
-      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+      return `/card-backs/M1R-SR-SGR-SCBACK.webp`;
     }
     if (rarity === "LSR") {
-      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+      return `/card-backs/M1R-SR-SGR-SCBACK.webp`;
     }
   }
   // ---------- MOON 2 ----------
   if (set.prefix === "M2") {
 
     if (rarity === "R") {
-      return `/moon-2-other-backs/M2RB${padded}.jpg`;
+      return `/moon-2-other-backs/M2RB${padded}.webp`;
     }
 
     if (rarity === "SR") {
-      return `/moon-2-other-backs/M2SRB${padded}.jpg`;
+      return `/moon-2-other-backs/M2SRB${padded}.webp`;
     }
 
     if (rarity === "HR") {
       if (number <= 22) {
-        return `/card-backs/M1SCBACK.jpeg`;
+        return `/card-backs/M1SCBACK.webp`;
       }
-      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+      return `/card-backs/M1R-SR-SGR-SCBACK.webp`;
     }
 
     if (rarity === "SSR") {
-      return `/card-backs/M2SSRBACK.jpg`;
+      return `/card-backs/M2SSRBACK.webp`;
     }
 
     if (rarity === "UR") {
-      return `/card-backs/M1URBACK.jpeg`;
+      return `/card-backs/M1URBACK.webp`;
     }
 
     if (rarity === "SGR") {
-      return `/card-backs/M2SGRBACK.jpg`;
+      return `/card-backs/M2SGRBACK.webp`;
     }
 
     if (rarity === "ZR") {
-  return `/card-backs/M2ZRBACK.jpeg`;
+  return `/card-backs/M2ZRBACK.webp`;
 }
 
     if (rarity === "SC") {
       if (number === 7) {
-        return `/card-backs/M2SC007BACK.jpg`;
+        return `/card-backs/M2SC007BACK.webp`;
       }
-      return `/card-backs/M2SCBACK.jpeg`;
+      return `/card-backs/M2SCBACK.webp`;
     }
 
     if (rarity === "SHINING ZR") {
-      return `/card-backs/M2SZRBACK.jpg`;
+      return `/card-backs/M2SZRBACK.webp`;
     }
 
     if (rarity === "LSR") {
-      return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+      return `/card-backs/M1R-SR-SGR-SCBACK.webp`;
     }
   }
   // ---------- RAINBOW 1 ----------
   if (set.prefix === "R1") {
 
     if (rarity === "R") {
-      return `/rainbow-1-backs/R1RB${padded}.jpg`;
+      return `/rainbow-1-backs/R1RB${padded}.webp`;
     }
 
     if (rarity === "SR") {
-      return `/rainbow-1-backs/R1SRB${padded}.jpg`;
+      return `/rainbow-1-backs/R1SRB${padded}.webp`;
     }
 
     if (rarity === "FR") {
-      return `/card-backs/R1FRBACK.jpg`;
+      return `/card-backs/R1FRBACK.webp`;
     }
 
     if (rarity === "UR") {
-      return `/card-backs/M1URBACK.jpeg`;
+      return `/card-backs/M1URBACK.webp`;
     }
 if (["TGR","TR","MTR","SSR","USR","XR"].includes(rarity)) {
-  return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+  return `/card-backs/M1R-SR-SGR-SCBACK.webp`;
 }
 
 }
 
-return `/card-backs/M1R-SR-SGR-SCBACK.jpeg`;
+return `/card-backs/M1R-SR-SGR-SCBACK.webp`;
 };
 
 const rarityButtonNames: Record<string, string> = {
@@ -677,7 +675,7 @@ if (showLoginModal) {
                         }`}
                       >
                         <img
-                          src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.jpg`}
+                          src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
                           className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                         />
                         <img
@@ -728,7 +726,7 @@ if (showLoginModal) {
 
               {/* BACK */}
               <img
-                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.webp"}
                 className={`${
                   isZoomedLandscape
                     ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"

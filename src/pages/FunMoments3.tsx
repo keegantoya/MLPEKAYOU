@@ -5,23 +5,13 @@ import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { ChevronUp } from "lucide-react";
 
-import funMomentsThreeBox from "/set-pictures/funmomentsthreebox.jpg";
-import funMomentsThreePack from "/set-pictures/funmomentsthreepack.png";
+import funMomentsThreeBox from "/set-pictures/funmomentsthreebox.webp";
+import funMomentsThreePack from "/set-pictures/funmomentsthreepack.webp";
 
 const FunMoments3 = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-  N: true,
-  SN: true,
-  R: true,
-  SR: true,
-  SSR: true,
-  UR: true,
-  UGR: true,
-  CR: true,
-  SCR: true,
-});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
 
   const [showProductInfo, setShowProductInfo] = useState(false);
@@ -76,8 +66,8 @@ const toggleFlip = (key: string) => {
 
     const frontSrc =
   rarity === "N" && number === 10
-    ? `/cards/${set.folder}/FM3SN010.jpg`
-    : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`;
+    ? `/cards/${set.folder}/FM3SN010.webp`
+    : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`;
 
     const backSrc = getCardBack(rarity, number);
 
@@ -122,11 +112,40 @@ useEffect(() => {
           .eq("set_id", "11")
           .single();
 
-        if (saved?.progress) {
-          setFlipped(saved.progress);
-        } else {
-          setFlipped({});
-        }
+if (saved?.progress) {
+  setFlipped(saved.progress);
+
+  const newCollapsed: Record<string, boolean> = {};
+
+  Object.entries(set.rarities).forEach(([rarity, count]) => {
+    let complete = true;
+
+    for (let i = 1; i <= (count as number); i++) {
+      if (!saved.progress[`${rarity}-${i}`]) {
+        complete = false;
+        break;
+      }
+    }
+
+    newCollapsed[rarity] = complete;
+  });
+
+  setCollapsed(newCollapsed);
+
+} else {
+  setFlipped({});
+
+  setCollapsed({
+    N: false,
+    SN: false,
+    R: false,
+    SR: false,
+    SSR: false,
+    UR: false,
+    UGR: false,
+    CR: false,
+  });
+}
       } else {
         setFlipped({});
       }
@@ -228,42 +247,42 @@ const getCardBack = (rarity: string, number: number) => {
   // CR backs
   if (rarity === "CR") {
     if (number <= 9) {
-      return "/fun-moments-three-backs/FM3CRBACK001.jpg";
+      return "/fun-moments-three-backs/FM3CRBACK001.webp";
     }
-    return "/fun-moments-three-backs/FM3CRBACK002.jpg";
+    return "/fun-moments-three-backs/FM3CRBACK002.webp";
   }
 
 // SCR backs
 if (rarity === "SCR") {
-  return "/fun-moments-three-backs/FM3SCRBACK.jpg";
+  return "/fun-moments-three-backs/FM3SCRBACK.webp";
 }
 
 // UGR backs
 if (rarity === "UGR") {
-  return "/fun-moments-three-backs/FM3UGRBACK.jpg";
+  return "/fun-moments-three-backs/FM3UGRBACK.webp";
 }
   // N + SN backs (shared)
   if (rarity === "N" || rarity === "SN") {
-    return `/fun-moments-three-backs/FM3NBACK${String(number).padStart(3, "0")}.jpg`;
+    return `/fun-moments-three-backs/FM3NBACK${String(number).padStart(3, "0")}.webp`;
   }
 
   // R backs
   if (rarity === "R") {
-    return `/fun-moments-three-backs/FM3RBACK${String(number).padStart(3, "0")}.jpg`;
+    return `/fun-moments-three-backs/FM3RBACK${String(number).padStart(3, "0")}.webp`;
   }
 
 // SR backs (all SR cards share one common back)
 if (rarity === "SR") {
-  return "/fun-moments-three-backs/FM3SRBACK.jpg";
+  return "/fun-moments-three-backs/FM3SRBACK.webp";
 }
 
 // SSR backs (all SSR cards share one common back)
 if (rarity === "SSR") {
-  return "/fun-moments-three-backs/FM3SSRBACK.jpg";
+  return "/fun-moments-three-backs/FM3SSRBACK.webp";
 }
   // UR backs
   if (rarity === "UR") {
-    return "/fun-moments-three-backs/FM3URBACK.jpg";
+    return "/fun-moments-three-backs/FM3URBACK.webp";
   }
 
 
@@ -453,8 +472,8 @@ if (showLoginModal) {
               <img
                 src={
   rarity === "N" && number === 10
-    ? `/cards/${set.folder}/FM3SN010.jpg`
-    : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.jpg`
+    ? `/cards/${set.folder}/FM3SN010.webp`
+    : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`
 }
                 className="absolute w-full h-full object-cover rounded-lg backface-hidden"
               />

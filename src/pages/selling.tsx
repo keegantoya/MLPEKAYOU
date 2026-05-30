@@ -1,14 +1,9 @@
 import KayouHeader from "@/components/KayouHeader";
-import sellingBadge from "@/assets/avatars/sellingbadge.png";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
+import sellingBadge from "@/assets/avatars/sellingbadge.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
 import { useState } from "react";
-
-import elementOfMagic from "/website-assets/elementofmagic.png";
-import elementOfLoyalty from "/website-assets/elementofloyalty.png";
-import elementOfKindness from "/website-assets/elementofkindness.png";
-import elementOfGenerosity from "/website-assets/elementofgenerosity.png";
-import elementOfHonesty from "/website-assets/elementofhonesty.png";
-import elementOfLaughter from "/website-assets/elementoflaughter.png";
+import elementOfGenerosity from "/website-assets/elementofgenerosity.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 export default function Selling() {
   const stats = [
@@ -160,17 +155,17 @@ const [selectedFilter, setSelectedFilter] = useState("All Sets");
 
 
   const setHeaderImages: Record<string, string> = {
-  "Star Edition One": "/thumbnails/s1-thumbnail.jpg",
-  "Moon Edition One": "/thumbnails/moon-fe.jpg",
-  "Moon Edition Two": "/thumbnails/moon-se.jpg",
-  "Moon Edition Three": "/thumbnails/moon-te.jpg",
-  "Rainbow Edition One": "/thumbnails/rainbow1thumbnail.jpg",
-  "Rainbow Edition Two": "/thumbnails/rainbow2thumbnail.jpg",
-  "Fun Moments Edition One": "/thumbnails/fme01TN.jpg",
-  "Fun Moments Edition Two": "/thumbnails/fme02TN.jpg",
-  "Fun Moments Edition Three": "/thumbnails/fme03TN.jpg",
-  "Fantasy Wonderland": "/thumbnails/fantasy-wonderland-thumbnail.jpg",
-  "Friendships Begin": "/thumbnails/friendship-begins-thumbnail.jpg",
+  "Star Edition One": "/thumbnails/s1-thumbnail.webp",
+  "Moon Edition One": "/thumbnails/moon-fe.webp",
+  "Moon Edition Two": "/thumbnails/moon-se.webp",
+  "Moon Edition Three": "/thumbnails/moon-te.webp",
+  "Rainbow Edition One": "/thumbnails/rainbow1thumbnail.webp",
+  "Rainbow Edition Two": "/thumbnails/rainbow2thumbnail.webp",
+  "Fun Moments Edition One": "/thumbnails/fme01TN.webp",
+  "Fun Moments Edition Two": "/thumbnails/fme02TN.webp",
+  "Fun Moments Edition Three": "/thumbnails/fme03TN.webp",
+  "Fantasy Wonderland": "/thumbnails/fantasy-wonderland-thumbnail.webp",
+  "Friendships Begin": "/thumbnails/friendship-begins-thumbnail.webp",
 };
 
 const filteredPricingCards =
@@ -287,7 +282,7 @@ const filteredPricingCards =
               <div className="bg-gradient-to-r from-violet-100 to-white px-6 py-5 border-b border-violet-100">
   <h2 className="text-3xl font-bold text-violet-900 flex items-center gap-3">
     <img
-      src="/website-assets/elementoflaughter.png"
+      src="/website-assets/elementoflaughter.webp"
       alt="Lower Tier"
       className="w-10 h-10 object-contain drop-shadow-sm"
     />
@@ -319,7 +314,7 @@ const filteredPricingCards =
               <div className="bg-gradient-to-r from-yellow-100 to-amber-50 px-6 py-5 border-b border-yellow-200">
   <h2 className="text-3xl font-bold text-violet-900 flex items-center gap-3">
     <img
-      src="/website-assets/elementofgenerosity.png"
+      src="/website-assets/elementofgenerosity.webp"
       alt="Higher Tier"
       className="w-10 h-10 object-contain drop-shadow-sm"
     />
@@ -382,7 +377,7 @@ const filteredPricingCards =
 <div
   className="relative px-5 py-4 overflow-hidden"
   style={{
-    backgroundImage: `url(${setHeaderImages[card.title] || "/thumbnails/moon-fe.jpg"})`,
+    backgroundImage: `url(${setHeaderImages[card.title] || "/thumbnails/moon-fe.webp"})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
   }}

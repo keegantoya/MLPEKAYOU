@@ -17,28 +17,28 @@ import {
   BookOpen,
 } from "lucide-react";
 
-import avatar001 from "@/assets/avatars/avatar001.jpg";
-import avatar002 from "@/assets/avatars/avatar002.jpg";
-import avatar003 from "@/assets/avatars/avatar003.jpg";
-import avatar004 from "@/assets/avatars/avatar004.jpg";
-import avatar005 from "@/assets/avatars/avatar005.jpg";
-import avatar006 from "@/assets/avatars/avatar006.jpg";
-import avatar007 from "@/assets/avatars/avatar007.jpg";
-import avatar008 from "@/assets/avatars/avatar008.jpg";
-import avatar009 from "@/assets/avatars/avatar009.jpg";
-import avatar010 from "@/assets/avatars/avatar010.jpg";
-import avatar011 from "@/assets/avatars/avatar011.jpg";
-import avatar012 from "@/assets/avatars/avatar012.jpg";
-import avatar013 from "@/assets/avatars/avatar013.jpg";
-import avatar014 from "@/assets/avatars/avatar014.jpg";
-import avatar015 from "@/assets/avatars/avatar015.jpg";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
-import maipfp from "@/assets/avatars/maipfp.jpg";
+import avatar001 from "@/assets/avatars/avatar001.webp";
+import avatar002 from "@/assets/avatars/avatar002.webp";
+import avatar003 from "@/assets/avatars/avatar003.webp";
+import avatar004 from "@/assets/avatars/avatar004.webp";
+import avatar005 from "@/assets/avatars/avatar005.webp";
+import avatar006 from "@/assets/avatars/avatar006.webp";
+import avatar007 from "@/assets/avatars/avatar007.webp";
+import avatar008 from "@/assets/avatars/avatar008.webp";
+import avatar009 from "@/assets/avatars/avatar009.webp";
+import avatar010 from "@/assets/avatars/avatar010.webp";
+import avatar011 from "@/assets/avatars/avatar011.webp";
+import avatar012 from "@/assets/avatars/avatar012.webp";
+import avatar013 from "@/assets/avatars/avatar013.webp";
+import avatar014 from "@/assets/avatars/avatar014.webp";
+import avatar015 from "@/assets/avatars/avatar015.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
+import maipfp from "@/assets/avatars/maipfp.webp";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
-import elementOfLaughter from "/website-assets/elementoflaughter.png";
+import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 const avatarMap: Record<string, string> = {
   avatar001,
@@ -59,7 +59,7 @@ const avatarMap: Record<string, string> = {
 
   heimantouavatar: heimantouAvatar,
   KeeganAvatar: KeeganAvatar,
-  "keeganpfp.jpg": KeeganAvatar,
+  "keeganpfp.webp": KeeganAvatar,
   maipfp: maipfp,
 };
 
@@ -1262,7 +1262,7 @@ if (
     .replace(/^BONUS-/, "")
     .replace(/^STARTER-/, "");
 
-  return `/friendships-begin/${key}.png`;
+  return `/friendships-begin/${key}.webp`;
 }
 
 // Fantasy Wonderland
@@ -1270,22 +1270,22 @@ if (String(card.set_id) === "FW") {
   const key = String(card.card_key);
 
   return key.startsWith("BP01ER")
-    ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+    ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
     : key.startsWith("BP01PER")
-    ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
-    : `/fantasy-wonderland/${key}.png`;
+    ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
+    : `/fantasy-wonderland/${key}.webp`;
 }
 
   if (card.set_id === "9") {
     const number = card.card_key.split("-")[1];
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
   if (card.set_id === "10") {
-  return "/serialized-limited-cards/andypricepromo.jpg";
+  return "/serialized-limited-cards/andypricepromo.webp";
 }
 
   if (card.set_id === "tcgpromos") {
-    return `/tcgpromos/${card.card_key}.png`;
+    return `/tcgpromos/${card.card_key}.webp`;
   }
 
   const [rarityRaw, number] = card.card_key.split("-");
@@ -1311,8 +1311,8 @@ const config: Record<string, { folder: string; prefix: string }> = {
 ).padStart(3, "0")}${
   String(card.set_id) === "6" &&
   ["ST", "TR", "TGR"].includes(rarity)
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`;
 }
 

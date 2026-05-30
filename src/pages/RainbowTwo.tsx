@@ -5,8 +5,8 @@ import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { ChevronUp } from "lucide-react";
 
-import rainbowTwoBox from "/set-pictures/rainbowtwobox.jpg";
-import rainbowTwoPack from "/set-pictures/rainbowtwopack.jpg";
+import rainbowTwoBox from "/set-pictures/rainbowtwobox.webp";
+import rainbowTwoPack from "/set-pictures/rainbowtwopack.webp";
 
 const RainbowTwo = () => {
   const navigate = useNavigate();
@@ -97,8 +97,8 @@ const [showProductInfo, setShowProductInfo] = useState(false);
   rarity === "ST" ||
   rarity === "TR" ||
   rarity === "TGR"
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`;
 
       const backSrc = getCardBack(rarity, number);
@@ -127,32 +127,32 @@ const getCardBack = (rarity: string, number?: number) => {
 
   // BASE
   if (rarity === "BASE") {
-    return "/card-backs/rainbow-two/R2BASEBACKS.jpg";
+    return "/card-backs/rainbow-two/R2BASEBACKS.webp";
   }
 
   // R (individual backs)
   if (rarity === "R" && number) {
-    return `/card-backs/rainbow-two/R2BACKR${String(number).padStart(3, "0")}.jpg`;
+    return `/card-backs/rainbow-two/R2BACKR${String(number).padStart(3, "0")}.webp`;
   }
 
   // SR
   if (rarity === "SR") {
-    return "/card-backs/rainbow-two/R2SRBACK.jpg";
+    return "/card-backs/rainbow-two/R2SRBACK.webp";
   }
 
   // SSR
   if (rarity === "SSR") {
-    return "/card-backs/rainbow-two/R2SSRBACK.jpg";
+    return "/card-backs/rainbow-two/R2SSRBACK.webp";
   }
 
   // UR
   if (rarity === "UR") {
-    return "/card-backs/rainbow-two/R2URBACK.jpg";
+    return "/card-backs/rainbow-two/R2URBACK.webp";
   }
 
 // FR
 if (rarity === "FR") {
-  return "/card-backs/rainbow-two/R2FRBACK.jpg";
+  return "/card-backs/rainbow-two/R2FRBACK.webp";
 }
 
 // USR / ST / TR / TGR
@@ -162,21 +162,21 @@ if (
   rarity === "TR" ||
   rarity === "TGR"
 ) {
-  return "/card-backs/rainbow-two/R2USRBACK.jpg";
+  return "/card-backs/rainbow-two/R2USRBACK.webp";
 }
 
   // XR special split
   if (rarity === "XR") {
 
     if ((number || 0) <= 6) {
-      return "/card-backs/rainbow-two/R2XRBACK1.jpg";
+      return "/card-backs/rainbow-two/R2XRBACK1.webp";
     }
 
-    return "/card-backs/rainbow-two/R2XRBACK2.jpg";
+    return "/card-backs/rainbow-two/R2XRBACK2.webp";
   }
 
   // fallback
-  return "/card-backs/rainbow-two/R2SRBACK.jpg";
+  return "/card-backs/rainbow-two/R2SRBACK.webp";
 };
 
   // LOAD PROGRESS
@@ -486,8 +486,8 @@ if (showLoginModal) {
   rarity === "ST" ||
   rarity === "TR" ||
   rarity === "TGR"
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`}
     className="absolute w-full h-full object-cover rounded-lg backface-hidden"
   />

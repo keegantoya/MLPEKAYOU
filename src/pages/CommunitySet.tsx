@@ -4,50 +4,49 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 
-import avatar001 from "@/assets/avatars/avatar001.jpg";
-import avatar002 from "@/assets/avatars/avatar002.jpg";
-import avatar003 from "@/assets/avatars/avatar003.jpg";
-import avatar004 from "@/assets/avatars/avatar004.jpg";
-import avatar005 from "@/assets/avatars/avatar005.jpg";
-import avatar006 from "@/assets/avatars/avatar006.jpg";
-import avatar007 from "@/assets/avatars/avatar007.jpg";
-import avatar008 from "@/assets/avatars/avatar008.jpg";
-import avatar009 from "@/assets/avatars/avatar009.jpg";
-import avatar010 from "@/assets/avatars/avatar010.jpg";
-import avatar011 from "@/assets/avatars/avatar011.jpg";
-import avatar012 from "@/assets/avatars/avatar012.jpg";
-import avatar013 from "@/assets/avatars/avatar013.jpg";
-import avatar014 from "@/assets/avatars/avatar014.jpg";
-import avatar015 from "@/assets/avatars/avatar015.jpg";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.jpg";
-import maipfp from "@/assets/avatars/maipfp.jpg";
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.png";
+import avatar001 from "@/assets/avatars/avatar001.webp";
+import avatar002 from "@/assets/avatars/avatar002.webp";
+import avatar003 from "@/assets/avatars/avatar003.webp";
+import avatar004 from "@/assets/avatars/avatar004.webp";
+import avatar005 from "@/assets/avatars/avatar005.webp";
+import avatar006 from "@/assets/avatars/avatar006.webp";
+import avatar007 from "@/assets/avatars/avatar007.webp";
+import avatar008 from "@/assets/avatars/avatar008.webp";
+import avatar009 from "@/assets/avatars/avatar009.webp";
+import avatar010 from "@/assets/avatars/avatar010.webp";
+import avatar011 from "@/assets/avatars/avatar011.webp";
+import avatar012 from "@/assets/avatars/avatar012.webp";
+import avatar013 from "@/assets/avatars/avatar013.webp";
+import avatar014 from "@/assets/avatars/avatar014.webp";
+import avatar015 from "@/assets/avatars/avatar015.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import maipfp from "@/assets/avatars/maipfp.webp";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.png";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.png";
-import elementOfLaughter from "/website-assets/elementoflaughter.png";
+import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 const avatarMap: Record<string, string> = {
-  "avatar001.jpg": avatar001,
-  "avatar002.jpg": avatar002,
-  "avatar003.jpg": avatar003,
-  "avatar004.jpg": avatar004,
-  "avatar005.jpg": avatar005,
-  "avatar006.jpg": avatar006,
-  "avatar007.jpg": avatar007,
-  "avatar008.jpg": avatar008,
-  "avatar009.jpg": avatar009,
-  "avatar010.jpg": avatar010,
-  "avatar011.jpg": avatar011,
-  "avatar012.jpg": avatar012,
-  "avatar013.jpg": avatar013,
-  "avatar014.jpg": avatar014,
-  "avatar015.jpg": avatar015,
+  "avatar001.webp": avatar001,
+  "avatar002.webp": avatar002,
+  "avatar003.webp": avatar003,
+  "avatar004.webp": avatar004,
+  "avatar005.webp": avatar005,
+  "avatar006.webp": avatar006,
+  "avatar007.webp": avatar007,
+  "avatar008.webp": avatar008,
+  "avatar009.webp": avatar009,
+  "avatar010.webp": avatar010,
+  "avatar011.webp": avatar011,
+  "avatar012.webp": avatar012,
+  "avatar013.webp": avatar013,
+  "avatar014.webp": avatar014,
+  "avatar015.webp": avatar015,
     "heimantouavatar": heimantouAvatar,
-  "heimantouavatar.jpg": heimantouAvatar,
-  "heimantouavatar.png": heimantouAvatar,
-  "keeganpfp.jpg": KeeganAvatar,
-  "maipfp.jpg": maipfp,
+  "heimantouavatar.webp": heimantouAvatar,
+  "keeganpfp.webp": KeeganAvatar,
+  "maipfp.webp": maipfp,
 };
 
 const VERIFIED_USERS = {
@@ -425,7 +424,7 @@ setCompleted(finished.slice(0, 10));
     load();
   }, [id, set]);
 
-  const getAvatar = (avatar?: string, username?: string) => {
+const getAvatar = (avatar?: string, username?: string) => {
   if (username === "HeiManTou (Chinese Collector)") {
     return heimantouAvatar;
   }
@@ -433,9 +432,12 @@ setCompleted(finished.slice(0, 10));
   if (!avatar) return avatar001;
 
   let file = avatar.split("/").pop() || "";
-  if (!file.includes(".")) file = `${file}.jpg`;
 
-  return avatarMap[file] || avatar001;
+  return (
+    avatarMap[file] ||
+    avatarMap[`${file}.webp`] ||
+    avatar001
+  );
 };
 
   const getRarityCode = (rarity: string) => {

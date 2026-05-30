@@ -3,25 +3,25 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.png";
-import applejackCutieMark from "/website-assets/applejackcutiemark.png";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.png";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.png";
-import rarityCutieMark from "/website-assets/raritycutiemark.png";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
+import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
+import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
+import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
+import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
+import rarityCutieMark from "/website-assets/raritycutiemark.webp";
+import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
 
-import starOnePack from "/set-pictures/staronepacks.jpg";
+import starOnePack from "/set-pictures/staronepacks.webp";
 
-import funMomentsOnePack from "/set-pictures/funmomentsonepack.jpg";
-import funMomentsTwoPack from "/set-pictures/funmomentstwopack.jpg";
-import funMomentsThreePack from "/set-pictures/funmomentsthreepack.png";
+import funMomentsOnePack from "/set-pictures/funmomentsonepack.webp";
+import funMomentsTwoPack from "/set-pictures/funmomentstwopack.webp";
+import funMomentsThreePack from "/set-pictures/funmomentsthreepack.webp";
 
-import moonOnePack from "/set-pictures/moononepackstandalone.jpg";
-import moonTwoPack from "/set-pictures/moontwopack.png";
-import moonThreePack from "/set-pictures/moonthreepack.jpg";
+import moonOnePack from "/set-pictures/moononepackstandalone.webp";
+import moonTwoPack from "/set-pictures/moontwopack.webp";
+import moonThreePack from "/set-pictures/moonthreepack.webp";
 
-import rainbowOnePack from "/set-pictures/rainbowonepack.jpg";
-import rainbowTwoPack from "/set-pictures/rainbowtwopack.jpg";
+import rainbowOnePack from "/set-pictures/rainbowonepack.webp";
+import rainbowTwoPack from "/set-pictures/rainbowtwopack.webp";
 
 const cutieMarks = [
   fluttershyCutieMark,
@@ -33,17 +33,17 @@ const cutieMarks = [
 ];
 
 const setImages: Record<string, string> = {
-  "1": "/thumbnails/moon-fe.jpg",
-  "5": "/thumbnails/rainbow1thumbnail.jpg",
-  "7": "/thumbnails/fme01TN.jpg",
-  "2": "/thumbnails/moon-se.jpg",
-  "8": "/thumbnails/fme02TN.jpg",
-  "3": "/thumbnails/moon-te.jpg",
-  "11": "/thumbnails/fme03TN.jpg",
-  "4": "/thumbnails/s1-thumbnail.jpg",
-  "6": "/thumbnails/rainbow2thumbnail.jpg",
-  "9": "/thumbnails/promos-thumbnail.jpg",
-  "10": "/thumbnails/limited-promos-thumbnail.jpg",
+  "1": "/thumbnails/moon-fe.webp",
+  "5": "/thumbnails/rainbow1thumbnail.webp",
+  "7": "/thumbnails/fme01TN.webp",
+  "2": "/thumbnails/moon-se.webp",
+  "8": "/thumbnails/fme02TN.webp",
+  "3": "/thumbnails/moon-te.webp",
+  "11": "/thumbnails/fme03TN.webp",
+  "4": "/thumbnails/s1-thumbnail.webp",
+  "6": "/thumbnails/rainbow2thumbnail.webp",
+  "9": "/thumbnails/promos-thumbnail.webp",
+  "10": "/thumbnails/limited-promos-thumbnail.webp",
 };
 
 const setBadgeImages: Record<string, string> = {
@@ -325,7 +325,7 @@ return (
               className="absolute left-0 bottom-0 w-[30%] h-full opacity-20"
               style={{
                 background:
-                  "url('/website-assets/twilightcastle.png') left bottom / contain no-repeat",
+                  "url('/website-assets/twilightcastle.webp') left bottom / contain no-repeat",
               }}
             />
 
@@ -334,7 +334,7 @@ return (
               className="absolute right-0 bottom-8 w-[35%] h-[45%] opacity-20"
               style={{
                 background:
-                  "url('/website-assets/rainbow.png') right center / contain no-repeat",
+                  "url('/website-assets/rainbow.webp') right center / contain no-repeat",
               }}
             />
 

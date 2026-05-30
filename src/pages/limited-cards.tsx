@@ -181,7 +181,7 @@ useEffect(() => {
   const cards = [
     {
       key: "LC-1",
-      image: "/serialized-limited-cards/andypricepromo.jpg"
+      image: "/serialized-limited-cards/andypricepromo.webp"
     }
   ];
 
@@ -288,7 +288,7 @@ useEffect(() => {
       />
 
       <img
-        src="/card-backs/M1R-SR-SGR-SCBACK.jpeg"
+        src="/card-backs/M1R-SR-SGR-SCBACK.webp"
         className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
       />
 

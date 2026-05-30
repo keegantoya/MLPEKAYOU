@@ -1,16 +1,15 @@
 import KayouHeader from "@/components/KayouHeader";
 import { ChevronUp, Heart } from "lucide-react";
 import { useState } from "react";
-import myProgressBadge from "@/assets/avatars/personaliso.png";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.png";
-import applejackCutieMark from "/website-assets/applejackcutiemark.png";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.png";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.png";
-import rarityCutieMark from "/website-assets/raritycutiemark.png";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
+import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
+import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
+import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
+import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
+import rarityCutieMark from "/website-assets/raritycutiemark.webp";
+import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
 
 const backgroundCutieMarks = [
   fluttershyCutieMark,
@@ -386,30 +385,30 @@ function getWishlistCardImage(card: {
       .replace(/^BONUS-/, "")
       .replace(/^STARTER-/, "");
 
-    return `/friendships-begin/${key}.png`;
+    return `/friendships-begin/${key}.webp`;
   }
 
   if (String(card.set_id) === "FW") {
     const key = String(card.card_key);
 
     return key.startsWith("BP01ER")
-      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
       : key.startsWith("BP01PER")
-      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
-      : `/fantasy-wonderland/${key}.png`;
+      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
+      : `/fantasy-wonderland/${key}.webp`;
   }
 
   if (String(card.set_id) === "tcgpromos") {
-    return `/tcgpromos/${card.card_key}.png`;
+    return `/tcgpromos/${card.card_key}.webp`;
   }
 
   if (String(card.set_id) === "9") {
     const number = String(card.card_key).split("-")[1];
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
 
   if (String(card.set_id) === "10") {
-    return "/serialized-limited-cards/andypricepromo.jpg";
+    return "/serialized-limited-cards/andypricepromo.webp";
   }
 
   const [rarityRaw, number] = String(card.card_key).split("-");
@@ -435,8 +434,8 @@ const config: Record<string, { folder: string; prefix: string }> = {
 ).padStart(3, "0")}${
   String(card.set_id) === "6" &&
   ["ST", "TR", "TGR"].includes(rarity)
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`;
 }
 
@@ -801,7 +800,9 @@ onClick={() => setShowSetList(!showSetList)}
   <div className="rounded-3xl border border-[#d4af37]/40 bg-gradient-to-br from-white/80 to-[#f6f0ff]/70 backdrop-blur-sm shadow-lg p-3 sm:p-6 lg:p-8">
     {(() => {
         if (selectedSetId === "FULL_WISHLIST") {
-  const wishlistCards = Array.from(wishlist).map((entry) => {
+const wishlistCards = Array.from(wishlist)
+  .filter((entry) => entry !== "9:PR-006")
+  .map((entry) => {
     const [set_id, card_key] = entry.split(":");
     return { set_id, card_key };
   });
@@ -870,9 +871,14 @@ onClick={() => setShowSetList(!showSetList)}
       }
 
 const cards =
-  selectedSet.id === "SD" ||
-  selectedSet.id === "FW" ||
-  selectedSet.id === "tcgpromos"
+  selectedSet.id === "9"
+    ? [1, 2, 3, 4, 5, 7].map((number) => ({
+        rarity: "PR",
+        number,
+      }))
+    : selectedSet.id === "SD" ||
+      selectedSet.id === "FW" ||
+      selectedSet.id === "tcgpromos"
     ? getWishlistCardsForSet(selectedSet.id)
     : Object.entries(selectedSet.rarities).flatMap(
         ([rarity, count]) =>
@@ -992,16 +998,16 @@ const cards =
                 ? `/promo-cards/mlpepr${String(card.number).padStart(
                     3,
                     "0"
-                  )}.jpg`
+                  )}.webp`
                 : selectedSet.id === "10"
-                ? "/serialized-limited-cards/andypricepromo.jpg"
+                ? "/serialized-limited-cards/andypricepromo.webp"
                 : `/cards/${selectedSet.folder}/${selectedSet.prefix}${getRarityCode(
   card.rarity
 )}${String(card.number).padStart(3, "0")}${
   selectedSet.id === "6" &&
   ["ST", "TR", "TGR"].includes(card.rarity)
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`;
 
                   const cardKey =

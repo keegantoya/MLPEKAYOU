@@ -22,9 +22,9 @@ const [showLoginModal, setShowLoginModal] = useState(false);
     const number = Number(key.split("-")[1]);
 
     setZoomedCardFlipped(false);
-    setZoomedCardBack("/card-backs/M1R-SR-SGR-SCBACK.jpeg");
+    setZoomedCardBack("/card-backs/M1R-SR-SGR-SCBACK.webp");
     setZoomedCard(
-      `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`
+      `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`
     );
     return;
   }
@@ -296,12 +296,12 @@ if (showLoginModal) {
                   >
 
                     <img
-                      src={`/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.jpg`}
+                      src={`/promo-cards/mlpepr${String(card.number).padStart(3,"0")}.webp`}
                       className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                     />
 
                     <img
-                      src="/card-backs/M1R-SR-SGR-SCBACK.jpeg"
+                      src="/card-backs/M1R-SR-SGR-SCBACK.webp"
                       className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
                     />
 
@@ -417,7 +417,7 @@ if (showLoginModal) {
 
               {/* BACK */}
               <img
-                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.jpeg"}
+                src={zoomedCardBack || "/card-backs/M1R-SR-SGR-SCBACK.webp"}
                 className="max-h-[60vh] max-w-[60vw] sm:max-h-[65vh] sm:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
                 style={{
                   transform: "rotateY(180deg)",

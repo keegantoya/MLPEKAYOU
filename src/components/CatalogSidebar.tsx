@@ -12,12 +12,12 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.png";
-import applejackCutieMark from "/website-assets/applejackcutiemark.png";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.png";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.png";
-import rarityCutieMark from "/website-assets/raritycutiemark.png";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.png";
+import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
+import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
+import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
+import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
+import rarityCutieMark from "/website-assets/raritycutiemark.webp";
+import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
 
 type Category = {
   name: string;

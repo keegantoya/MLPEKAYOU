@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import ScrollToTop from "@/components/ScrollToTop";
 
 import Forum from "@/pages/Forum";
-import InsideListings from "./pages/insidelistings";
 import Index from "./pages/Index";
 import Collections from "./pages/Collections";
 import Collection from "@/pages/Collection";
@@ -35,7 +34,6 @@ import TradingPost from "./pages/trading-post";
 import TradingPostInner from "./pages/trading-post-inner";
 import MyTrades from "@/pages/MyTrades";
 import MyTradesSets from "@/pages/MyTradesSets";
-import AboutMe from "@/pages/AboutMe";
 import MyTradesView from "@/pages/MyTradesView";
 import FunMoments3 from "./pages/FunMoments3";
 import RequireAuth from "./components/RequireAuth";
@@ -149,7 +147,6 @@ const AppRoutes = () => {
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="/inventory/:setId" element={<MyTradesSets />} />
       <Route path="/other-kayou-merch" element={<OtherKayouMerch />} />
-      <Route path="/about" element={<AboutMe />} />
       <Route path="/faq" element={<FAQ />} />
       <Route
   path="/UserMenu"
@@ -186,7 +183,6 @@ const AppRoutes = () => {
 />
       <Route path="/fun-moments-3" element={<FunMoments3 />} />
 <Route path="/fun-moments-three" element={<FunMoments3 />} />
-      <Route path="/inside-listings" element={<InsideListings />} />
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

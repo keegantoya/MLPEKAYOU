@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
 import { ChevronUp } from "lucide-react";
 
-import friendshipsBeginBoxes from "/set-pictures/friendshipsbeginboxes.jpg";
+import friendshipsBeginBoxes from "/set-pictures/friendshipsbeginboxes.webp";
 
 const FriendshipBegins = () => {
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
@@ -14,17 +14,7 @@ const FriendshipBegins = () => {
 
   const [showProductInfo, setShowProductInfo] = useState(false);
 
-const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-  SD01C: true,
-  SD01U: true,
-  SD01SR: true,
-  SD01SPR: true,
-  SD01GR: true,
-  SD01CR: true,
-  SD01ER: true,
-  SD01PER: true,
-  SD01PRR: true,
-});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
 const [viewMode, setViewMode] = useState(false);
 const [zoomedCard, setZoomedCard] = useState<string | null>(null);
@@ -84,13 +74,13 @@ const rarityContainerNames: Record<string, string> = {
   ];
 
   const starterDeckImages = [
-    "/starter-decks-boxes/SDBONUSPACKS.png",
-  "/starter-decks-boxes/SDTWILIGHT.png",
-  "/starter-decks-boxes/SDFLUTTERSHY.png",
-  "/starter-decks-boxes/SDPINKIEPIE.png",
-  "/starter-decks-boxes/SDAPPLEJACK.png",
-  "/starter-decks-boxes/SDRAINBOWDASH.png",
-  "/starter-decks-boxes/SDRARITY.png"
+    "/starter-decks-boxes/SDBONUSPACKS.webp",
+  "/starter-decks-boxes/SDTWILIGHT.webp",
+  "/starter-decks-boxes/SDFLUTTERSHY.webp",
+  "/starter-decks-boxes/SDPINKIEPIE.webp",
+  "/starter-decks-boxes/SDAPPLEJACK.webp",
+  "/starter-decks-boxes/SDRAINBOWDASH.webp",
+  "/starter-decks-boxes/SDRARITY.webp"
 ];
 const starterDeckGroups = [
   { name: "Twilight Sparkle", code: "SD01A", start: 1, end: 21 },
@@ -105,7 +95,7 @@ const toggleFlip = (key: string) => {
   if (viewMode) {
     const cleanKey = key.replace(/^STARTER-/, "").replace(/^BONUS-/, "");
 
-    let backSrc = "/card-backs/tcgdefaultback.png";
+    let backSrc = "/card-backs/tcgdefaultback.webp";
 
     // Starter Deck custom backs (C06-C09)
     if (
@@ -114,27 +104,27 @@ const toggleFlip = (key: string) => {
       cleanKey.includes("C08") ||
       cleanKey.includes("C09")
     ) {
-      backSrc = `/tcg-card-backs/${cleanKey}BACK.png`;
+      backSrc = `/tcg-card-backs/${cleanKey}BACK.webp`;
     }
 
     // RR cards
     else if (cleanKey.startsWith("SD01RR")) {
-      backSrc = `/tcg-card-backs/SDRR${cleanKey.slice(-2)}BACK.png`;
+      backSrc = `/tcg-card-backs/SDRR${cleanKey.slice(-2)}BACK.webp`;
     }
 
     // ER cards (scene card back)
     else if (cleanKey.includes("ER") && !cleanKey.includes("PER")) {
-      backSrc = "/tcg-card-backs/SCENECARDBACK.png";
+      backSrc = "/tcg-card-backs/SCENECARDBACK.webp";
     }
 
     // PRR cards
     else if (cleanKey.startsWith("SD01PRR")) {
-      backSrc = `/tcg-card-backs/PRR${cleanKey.slice(-2)}BACK.png`;
+      backSrc = `/tcg-card-backs/PRR${cleanKey.slice(-2)}BACK.webp`;
     }
 
     setZoomedCardFlipped(false);
     setZoomedCardBack(backSrc);
-    setZoomedCard(`/friendships-begin/${cleanKey}.png`);
+    setZoomedCard(`/friendships-begin/${cleanKey}.webp`);
     return;
   }
 
@@ -174,7 +164,34 @@ useEffect(() => {
           .eq("set_id", "SD")
           .single();
 
-        setFlipped(saved?.progress || {});
+        const progress = saved?.progress || {};
+
+setFlipped(progress);
+
+const collapseState: Record<string, boolean> = {};
+
+BONUS_STRUCTURE.forEach(({ prefix, count }) => {
+  let complete = true;
+
+  for (let i = 1; i <= count; i++) {
+    let actualIndex = i;
+
+    if (prefix === "SD01PER") {
+      actualIndex = i + 6;
+    }
+
+    const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
+
+    if (!progress[`BONUS-${key}`]) {
+      complete = false;
+      break;
+    }
+  }
+
+  collapseState[prefix] = complete;
+});
+
+setCollapsed(collapseState);
       } else {
         setFlipped({});
       }
@@ -312,7 +329,7 @@ const BONUS_STRUCTURE = [
   { prefix: "SD01PRR", count: 6 },
 ];
   const getCardBack = () => {
-    return "/card-backs/tcgdefaultback.png";
+    return "/card-backs/tcgdefaultback.webp";
   };
 
 const getDeckCards = (deckCode: string) => {
@@ -547,7 +564,7 @@ if (showLoginModal) {
 
               {/* FRONT */}
               <img
-                src={`/friendships-begin/${key}.png`}
+                src={`/friendships-begin/${key}.webp`}
                 className="absolute w-full h-full object-cover rounded-xl backface-hidden shadow-md"
               />
 
@@ -558,12 +575,12 @@ if (showLoginModal) {
                   key.includes("C07") ||
                   key.includes("C08") ||
                   key.includes("C09")
-                    ? `/tcg-card-backs/${key}BACK.png`
+                    ? `/tcg-card-backs/${key}BACK.webp`
                     : key.startsWith("SD01RR")
-                    ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.png`
+                    ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.webp`
                     : key.includes("ER") && !key.includes("PER")
-                    ? `/tcg-card-backs/SCENECARDBACK.png`
-                    : "/card-backs/tcgdefaultback.png"
+                    ? `/tcg-card-backs/SCENECARDBACK.webp`
+                    : "/card-backs/tcgdefaultback.webp"
                 }
                 className="absolute w-full h-full object-cover rounded-xl rotate-y-180 backface-hidden shadow-md"
               />
@@ -583,7 +600,7 @@ if (showLoginModal) {
   <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px] sm:max-w-[180px]" />
 
   <img
-    src="/starter-decks-boxes/SDBONUSPACKS.png"
+    src="/starter-decks-boxes/SDBONUSPACKS.webp"
     alt="Bonus Packs"
     className="h-16 sm:h-20 object-contain drop-shadow-md"
   />
@@ -688,13 +705,13 @@ if (showLoginModal) {
 
 const backSrc =
   key.startsWith("SD01ER") || key.startsWith("SD01PER")
-    ? "/tcg-card-backs/SCENECARDBACK.png"
+    ? "/tcg-card-backs/SCENECARDBACK.webp"
     : key.startsWith("SD01PRR")
-      ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`
+      ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.webp`
       : getCardBack();
 
 setZoomedCardBack(backSrc);
-setZoomedCard(`/friendships-begin/${key}.png`);
+setZoomedCard(`/friendships-begin/${key}.webp`);
   } else {
     toggleFlip(stateKey);
   }
@@ -707,7 +724,7 @@ setZoomedCard(`/friendships-begin/${key}.png`);
                 >
                   {/* FRONT */}
                   <img
-                    src={`/friendships-begin/${key}.png`}
+                    src={`/friendships-begin/${key}.webp`}
                     className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                   />
 
@@ -715,9 +732,9 @@ setZoomedCard(`/friendships-begin/${key}.png`);
                   <img
                     src={
                       key.startsWith("SD01ER") || key.startsWith("SD01PER")
-                        ? "/tcg-card-backs/SCENECARDBACK.png"
+                        ? "/tcg-card-backs/SCENECARDBACK.webp"
                         : key.startsWith("SD01PRR")
-                          ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`
+                          ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.webp`
                           : getCardBack()
                     }
                     className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
@@ -772,7 +789,7 @@ setZoomedCard(`/friendships-begin/${key}.png`);
 
     {/* BACK */}
     <img
-  src={zoomedCardBack || "/card-backs/tcgdefaultback.png"}
+  src={zoomedCardBack || "/card-backs/tcgdefaultback.webp"}
   className={`${
     isZoomedLandscape
       ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"

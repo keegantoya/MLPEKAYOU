@@ -25,7 +25,7 @@ const collections: Collection[] = [
     id: "1",
     title: "Eternal Moon",
     setName: "One",
-    imageUrl: "/thumbnails/moon-fe.jpg",
+    imageUrl: "/thumbnails/moon-fe.webp",
     totalCards: 186,
     category: "eternal-moon",
      released: true,
@@ -34,7 +34,7 @@ const collections: Collection[] = [
     id: "5",
     title: "Rainbow",
     setName: "One",
-    imageUrl: "/thumbnails/rainbow1thumbnail.jpg",
+    imageUrl: "/thumbnails/rainbow1thumbnail.webp",
     totalCards: 146,
     category: "rainbow",
     released: true,
@@ -43,7 +43,7 @@ const collections: Collection[] = [
     id: "7",
     title: "Fun Moments",
     setName: "One",
-    imageUrl: "/thumbnails/fme01TN.jpg",
+    imageUrl: "/thumbnails/fme01TN.webp",
     totalCards: 127,
     category: "fun-moments",
     released: true,
@@ -52,7 +52,7 @@ const collections: Collection[] = [
     id: "2",
     title: "Eternal Moon",
     setName: "Two",
-    imageUrl: "/thumbnails/moon-se.jpg",
+    imageUrl: "/thumbnails/moon-se.webp",
     totalCards: 189,
     category: "eternal-moon",
     released: true,
@@ -61,7 +61,7 @@ const collections: Collection[] = [
     id: "8",
     title: "Fun Moments",
     setName: "Two",
-    imageUrl: "/thumbnails/fme02TN.jpg",
+    imageUrl: "/thumbnails/fme02TN.webp",
     totalCards: 136,
     category: "fun-moments",
     released: true,
@@ -70,7 +70,7 @@ const collections: Collection[] = [
     id: "tcg",
     title: "Fantasy",
     setName: "Wonderland",
-    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.jpg",
+    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.webp",
     totalCards: 191,
     category: "tcg",
     released: true,
@@ -79,7 +79,7 @@ const collections: Collection[] = [
     id: "friendshipsbegin",
     title: "Friendships",
     setName: "Begin",
-    imageUrl: "/thumbnails/friendship-begins-thumbnail.jpg",
+    imageUrl: "/thumbnails/friendship-begins-thumbnail.webp",
     totalCards: 191,
     category: "tcg",
     released: true,
@@ -88,7 +88,7 @@ const collections: Collection[] = [
     id: "3",
     title: "Eternal Moon",
     setName: "Three",
-    imageUrl: "/thumbnails/moon-te.jpg",
+    imageUrl: "/thumbnails/moon-te.webp",
     totalCards: 290,
     category: "eternal-moon",
     released: true,
@@ -97,7 +97,7 @@ const collections: Collection[] = [
     id: "11",
     title: "Fun Moments",
     setName: "Three",
-    imageUrl: "/thumbnails/fme03TN.jpg",
+    imageUrl: "/thumbnails/fme03TN.webp",
     totalCards: 148,
     category: "fun-moments",
     released: true,
@@ -106,7 +106,7 @@ const collections: Collection[] = [
     id: "4",
     title: "Star",
     setName: "One",
-    imageUrl: "/thumbnails/s1-thumbnail.jpg",
+    imageUrl: "/thumbnails/s1-thumbnail.webp",
     totalCards: 105,
     category: "star",
     released: true,
@@ -115,7 +115,7 @@ const collections: Collection[] = [
     id: "6",
     title: "Rainbow",
     setName: "Two",
-    imageUrl: "/thumbnails/rainbow2thumbnail.jpg",
+    imageUrl: "/thumbnails/rainbow2thumbnail.webp",
     totalCards: 170,
     category: "rainbow",
     released: true,
@@ -124,7 +124,7 @@ const collections: Collection[] = [
     id: "9",
     title: "Promotional",
     setName: "Cards",
-    imageUrl: "/thumbnails/promos-thumbnail.jpg",
+    imageUrl: "/thumbnails/promos-thumbnail.webp",
     totalCards: 6,
     category: "promos",
     released: true,
@@ -133,7 +133,7 @@ const collections: Collection[] = [
     id: "10",
     title: "Limited",
     setName: "Cards",
-    imageUrl: "/thumbnails/limited-promos-thumbnail.jpg",
+    imageUrl: "/thumbnails/limited-promos-thumbnail.webp",
     totalCards: 1,
     category: "promos",
     released: true,
@@ -142,7 +142,7 @@ const collections: Collection[] = [
   id: "tcgpromos",
   title: "TCG",
   setName: "Promos",
-  imageUrl: "/thumbnails/tcgpromosthumbnail.jpg",
+  imageUrl: "/thumbnails/tcgpromosthumbnail.webp",
   totalCards: 6,
   category: "promos",
   released: true,
@@ -151,7 +151,7 @@ const collections: Collection[] = [
     id: "OTHERMERCH",
     title: "Kayou US",
     setName: "Non-Card Merch",
-    imageUrl: "/thumbnails/other-merch-tn.jpg",
+    imageUrl: "/thumbnails/other-merch-tn.webp",
     totalCards: 6,
     category: "merch",
      released: true,
@@ -677,16 +677,16 @@ const completedSets = countedSets.filter(
         
 
         {/* Card */}
-        <div
-          className={`${
-            isUnreleased || isWaiting
-              ? "opacity-50 grayscale pointer-events-none"
-              : isHidden
-              ? "opacity-50 grayscale"
-              : ""
-          }`}
-        >
-          <CollectionCard {...col} />
+<div
+  className={`cursor-pointer ${
+    isUnreleased || isWaiting
+      ? "opacity-50 grayscale pointer-events-none"
+      : isHidden
+      ? "opacity-50 grayscale"
+      : ""
+  }`}
+>
+  <CollectionCard {...col} />
           {(col.id === "3" || col.id === "11" || col.id === "6" || col.id === "4") && (
   <div
     className="

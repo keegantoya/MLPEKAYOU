@@ -21,7 +21,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
   if (viewMode) {
     setZoomedCardFlipped(false);
     setZoomedCardBack("/card-backs/tcgdefaultback.png");
-    setZoomedCard(`/tcgpromos/${key}.png`);
+    setZoomedCard(`/tcgpromos/${key}.webp`);
     return;
   }
 
@@ -284,7 +284,7 @@ These cards come from Kayou US in-person events, and are connected to the Friend
                     >
 
                       <img
-                        src={`/tcgpromos/${key}.png`}
+                        src={`/tcgpromos/${key}.webp`}
                         className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                       />
 

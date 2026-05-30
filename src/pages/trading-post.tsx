@@ -3,21 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-import avatar001 from "@/assets/avatars/avatar001.jpg";
-import avatar002 from "@/assets/avatars/avatar002.jpg";
-import avatar003 from "@/assets/avatars/avatar003.jpg";
-import avatar004 from "@/assets/avatars/avatar004.jpg";
-import avatar005 from "@/assets/avatars/avatar005.jpg";
-import avatar006 from "@/assets/avatars/avatar006.jpg";
-import avatar007 from "@/assets/avatars/avatar007.jpg";
-import avatar008 from "@/assets/avatars/avatar008.jpg";
-import avatar009 from "@/assets/avatars/avatar009.jpg";
-import avatar010 from "@/assets/avatars/avatar010.jpg";
-import avatar011 from "@/assets/avatars/avatar011.jpg";
-import avatar012 from "@/assets/avatars/avatar012.jpg";
-import avatar013 from "@/assets/avatars/avatar013.jpg";
-import avatar014 from "@/assets/avatars/avatar014.jpg";
-import avatar015 from "@/assets/avatars/avatar015.jpg";
+import avatar001 from "@/assets/avatars/avatar001.webp";
+import avatar002 from "@/assets/avatars/avatar002.webp";
+import avatar003 from "@/assets/avatars/avatar003.webp";
+import avatar004 from "@/assets/avatars/avatar004.webp";
+import avatar005 from "@/assets/avatars/avatar005.webp";
+import avatar006 from "@/assets/avatars/avatar006.webp";
+import avatar007 from "@/assets/avatars/avatar007.webp";
+import avatar008 from "@/assets/avatars/avatar008.webp";
+import avatar009 from "@/assets/avatars/avatar009.webp";
+import avatar010 from "@/assets/avatars/avatar010.webp";
+import avatar011 from "@/assets/avatars/avatar011.webp";
+import avatar012 from "@/assets/avatars/avatar012.webp";
+import avatar013 from "@/assets/avatars/avatar013.webp";
+import avatar014 from "@/assets/avatars/avatar014.webp";
+import avatar015 from "@/assets/avatars/avatar015.webp";
 
 const tradePostCards = "/website-assets/tradepostcards.webp";
 
@@ -75,29 +75,29 @@ const getCardImage = (card: any) => {
   const { set_id, rarity, number } = card;
 
   if (set_id === "9") {
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.jpg`;
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
   if (set_id === "tcgpromos") {
-  return `/tcgpromos/RR${String(number).padStart(2, "0")}.png`;
+  return `/tcgpromos/RR${String(number).padStart(2, "0")}.webp`;
 }
   if (set_id === "10") {
-    return `/serialized-limited-cards/andypricepromo.jpg`;
+    return `/serialized-limited-cards/andypricepromo.webp`;
   }
 if (set_id === "FW") {
   const key = `BP01${rarity}${String(number).padStart(2, "0")}`;
 
   if (key.startsWith("BP01ER")) {
-    return `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`;
+    return `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`;
   }
 
   if (key.startsWith("BP01PER")) {
-    return `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`;
+    return `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`;
   }
 
-  return `/fantasy-wonderland/${key}.png`;
+  return `/fantasy-wonderland/${key}.webp`;
 }
   if (set_id === "friendshipsbegin" || set_id === "SD") {
-  return `/friendships-begin/SD01${rarity}${String(number).padStart(2, "0")}.png`;
+  return `/friendships-begin/SD01${rarity}${String(number).padStart(2, "0")}.webp`;
 }
 
 const config: any = {
@@ -118,8 +118,8 @@ const config: any = {
   return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}${
   set_id === "6" &&
   ["ST", "TR", "TGR"].includes(rarity)
-    ? ".png"
-    : ".jpg"
+    ? ".webp"
+    : ".webp"
 }`;
 };
 
@@ -653,20 +653,20 @@ const tcg = sets.filter(s =>
 
 const renderSet = (set: any) => {
   const setImages: Record<string, string> = {
-    "4": "/thumbnails/s1-thumbnail.jpg",
-    "1": "/thumbnails/moon-fe.jpg",
-    "2": "/thumbnails/moon-se.jpg",
-    "3": "/thumbnails/moon-te.jpg",
-    "5": "/thumbnails/rainbow1thumbnail.jpg",
-    "6": "/thumbnails/rainbow2thumbnail.jpg",
-    "7": "/thumbnails/fme01TN.jpg",
-    "8": "/thumbnails/fme02TN.jpg",
-    "11": "/thumbnails/fme03TN.jpg",
-    "FW": "/thumbnails/fantasy-wonderland-thumbnail.jpg",
-    "friendshipsbegin": "/thumbnails/friendship-begins-thumbnail.jpg",
-    "9": "/thumbnails/promos-thumbnail.jpg",
-    "10": "/thumbnails/limited-promos-thumbnail.jpg",
-    "tcgpromos": "/thumbnails/tcgpromosthumbnail.jpg",
+    "4": "/thumbnails/s1-thumbnail.webp",
+    "1": "/thumbnails/moon-fe.webp",
+    "2": "/thumbnails/moon-se.webp",
+    "3": "/thumbnails/moon-te.webp",
+    "5": "/thumbnails/rainbow1thumbnail.webp",
+    "6": "/thumbnails/rainbow2thumbnail.webp",
+    "7": "/thumbnails/fme01TN.webp",
+    "8": "/thumbnails/fme02TN.webp",
+    "11": "/thumbnails/fme03TN.webp",
+    "FW": "/thumbnails/fantasy-wonderland-thumbnail.webp",
+    "friendshipsbegin": "/thumbnails/friendship-begins-thumbnail.webp",
+    "9": "/thumbnails/promos-thumbnail.webp",
+    "10": "/thumbnails/limited-promos-thumbnail.webp",
+    "tcgpromos": "/thumbnails/tcgpromosthumbnail.webp",
   };
   
 
@@ -678,7 +678,7 @@ const setDescriptions: Record<string, string> = {
   "3": "MLPME03",
   "4": "MLPSE01",
   "5": "RBE01 • INT01-R • INT01-SR • INT01-SSR",
-  "6": "RBE02 • MLPME02-R • MLPME03-R • MLPEM03-SR • MLPME03-SSR",
+  "6": "RBE02 • MLPME02-R • MLPME03-R • MLPME03-SR • MLPME03-SSR",
   "7": "FME01 • INT01-R • INT02-R • INT02-UR",
   "8": "FME02 • INT02-R • INT03-R • INT03-UR",
   "11": "FME03",

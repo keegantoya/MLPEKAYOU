@@ -4,29 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ChevronUp } from "lucide-react";
 
-import fantasyWonderlandBox from "/set-pictures/fantasywonderlandbox.jpg";
-import fantasyWonderlandPack from "/set-pictures/fantasywonderlandpack.jpg";
+import fantasyWonderlandBox from "/set-pictures/fantasywonderlandbox.webp";
+import fantasyWonderlandPack from "/set-pictures/fantasywonderlandpack.webp";
 
 const FantasyWonderland = () => {
   const navigate = useNavigate();
 
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-  C: true,
-  U: true,
-  ER: true,
-  SR: true,
-  SPR: true,
-  GR: true,
-  CR: true,
-  UR: true,
-  RR: true,
-  PER: true,
-  PSPR: true,
-  PGR: true,
-  PCR: true,
-  PRR: true,
-});
+const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
 
 const [showProductInfo, setShowProductInfo] = useState(false);
@@ -41,22 +26,22 @@ const [showLoginModal, setShowLoginModal] = useState(false);
 
   const toggleFlip = (key: string) => {
   if (viewMode) {
-    let backSrc = "/card-backs/tcgdefaultback.png";
+    let backSrc = "/card-backs/tcgdefaultback.webp";
 
     if (key.startsWith("BP01PRR")) {
-      backSrc = `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`;
+      backSrc = `/tcg-card-backs/PRR${key.slice(-2)}BACK.webp`;
     } else if (key.startsWith("BP01RR")) {
-      backSrc = `/tcg-card-backs/SDRR${key.slice(-2)}BACK.png`;
+      backSrc = `/tcg-card-backs/SDRR${key.slice(-2)}BACK.webp`;
     } else if (key.startsWith("BP01ER") || key.startsWith("BP01PER")) {
-      backSrc = "/tcg-card-backs/SCENECARDBACK.png";
+      backSrc = "/tcg-card-backs/SCENECARDBACK.webp";
     }
 
     const frontSrc =
       key.startsWith("BP01ER")
-        ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+        ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
         : key.startsWith("BP01PER")
-        ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
-        : `/fantasy-wonderland/${key}.png`;
+        ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
+        : `/fantasy-wonderland/${key}.webp`;
 
     setZoomedCardFlipped(false);
     setZoomedCardBack(backSrc);
@@ -175,11 +160,25 @@ useEffect(() => {
           .eq("set_id", "FW")
           .single();
 
-        if (saved?.progress) {
-          setFlipped(saved.progress);
-        } else {
-          setFlipped({});
-        }
+        const progress = saved?.progress || {};
+
+setFlipped(progress);
+
+const collapseState: Record<string, boolean> = {};
+
+Object.entries(
+  cards.reduce((acc: any, card) => {
+    if (!acc[card.rarity]) acc[card.rarity] = [];
+    acc[card.rarity].push(card);
+    return acc;
+  }, {})
+).forEach(([rarity, group]: any) => {
+  collapseState[rarity] = group.every(
+    (card: any) => progress[card.key]
+  );
+});
+
+setCollapsed(collapseState);
       } else {
         setFlipped({});
       }
@@ -437,10 +436,10 @@ useEffect(() => {
                   <img
                     src={
                       key.startsWith("BP01ER")
-                        ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.png`
+                        ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
                         : key.startsWith("BP01PER")
-                        ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.png`
-                        : `/fantasy-wonderland/${key}.png`
+                        ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
+                        : `/fantasy-wonderland/${key}.webp`
                     }
                     className="absolute w-full h-full object-cover rounded-lg backface-hidden"
                   />
@@ -449,12 +448,12 @@ useEffect(() => {
                   <img
                     src={
                       key.startsWith("BP01PRR")
-                        ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.png`
+                        ? `/tcg-card-backs/PRR${key.slice(-2)}BACK.webp`
                         : key.startsWith("BP01RR")
-                        ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.png`
+                        ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.webp`
                         : key.startsWith("BP01ER") || key.startsWith("BP01PER")
-                        ? `/tcg-card-backs/SCENECARDBACK.png`
-                        : "/card-backs/tcgdefaultback.png"
+                        ? `/tcg-card-backs/SCENECARDBACK.webp`
+                        : "/card-backs/tcgdefaultback.webp"
                     }
                     className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
                   />
@@ -503,7 +502,7 @@ useEffect(() => {
 
               {/* BACK */}
               <img
-                src={zoomedCardBack || "/card-backs/tcgdefaultback.png"}
+                src={zoomedCardBack || "/card-backs/tcgdefaultback.webp"}
                 className={`${
                   isZoomedLandscape
                     ? "max-h-[45vh] max-w-[95vw] sm:max-h-[75vh] sm:max-w-[90vw]"
