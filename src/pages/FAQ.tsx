@@ -7,9 +7,9 @@ import fake2 from "@/faq-assets/fakeseal2.webp";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import tutorialCardBack from "/card-backs/third-moon-edition-backs/m3scback.jpg";
-import tutorialCard1 from "/cards/third-edition-moon/M3SC004.jpg";
-import tutorialCard2 from "/cards/third-edition-moon/M3SC002.jpg";
+import tutorialCardBack from "/card-backs/third-moon-edition-backs/m3scback.webp";
+import tutorialCard1 from "/cards/third-edition-moon/M3SC004.webp";
+import tutorialCard2 from "/cards/third-edition-moon/M3SC002.webp";
 
 /// FAQ BIBLE IMPORTS ///
 
