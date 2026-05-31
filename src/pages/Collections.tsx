@@ -6,7 +6,6 @@ import { loadUserProgress } from "@/lib/loadProgress";
 import { supabase } from "@/lib/supabase";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import collectionsBanner from "@/assets/avatars/kayouuscollectionsbanner.png";
 
 type Collection = {
   id: string;
