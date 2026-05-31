@@ -51,6 +51,7 @@ import avatar015 from "@/assets/avatars/avatar015.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 const generateUsername = () => {
   const names = [
@@ -95,7 +96,6 @@ const avatarMap: Record<string, string> = {
 };
 
 const VERIFIED_USERS = {
-  // Gold Badge = MLPEKAYOU STAFF
   "17e57e39-bc0c-44e7-b373-ac34c6690185": {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
@@ -104,15 +104,25 @@ const VERIFIED_USERS = {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
   },
+  "6247b70d-3f55-493c-8eee-3badedf581db": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
   "408a516c-ee80-4ff8-a869-493e1fd5d961": {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
   },
-
-  // Blue Badge = KAYOU STAFF
   "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
     badge: blueVerifiedBadge,
     label: "KAYOU STAFF",
+  },
+    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+    "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
   },
 };
 

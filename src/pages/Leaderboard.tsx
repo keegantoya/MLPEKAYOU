@@ -1,7 +1,6 @@
 import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 
 import avatar001 from "@/assets/avatars/avatar001.webp";
 import avatar002 from "@/assets/avatars/avatar002.webp";
@@ -57,7 +56,6 @@ const avatarMap: Record<string, string> = {
 };
 
 const VERIFIED_USERS = {
-  // Gold Badge = MLPEKAYOU STAFF
   "17e57e39-bc0c-44e7-b373-ac34c6690185": {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
@@ -70,8 +68,10 @@ const VERIFIED_USERS = {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
   },
-
-  // Blue Badge = KAYOU STAFF
+  "6247b70d-3f55-493c-8eee-3badedf581db": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
   "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
     badge: blueVerifiedBadge,
     label: "KAYOU STAFF",

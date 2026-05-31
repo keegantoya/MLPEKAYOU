@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Grid3X3,
   Layers3,
-  Gem,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";

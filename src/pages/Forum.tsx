@@ -3,14 +3,12 @@ import KayouHeader from "@/components/KayouHeader";
 import { supabase } from "@/lib/supabase";
 import {
   MessageCircle,
-  Sparkles,
   Users,
   FileText,
   PenSquare,
   Heart,
   Repeat2,
   Search,
-  Grid3X3,
   ArrowLeftRight,
   X,
   BookOpen,
@@ -82,18 +80,18 @@ const VERIFIED_USERS: Record<
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
   },
-
-  // KAYOU STAFF (Blue)
+  "6247b70d-3f55-493c-8eee-3badedf581db": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
   "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
     badge: blueVerifiedBadge,
-    label: "CROSSINGTCG STAFF",
+    label: "KAYOU STAFF",
   },
     "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
     badge: blueVerifiedBadge,
     label: "KAYOU STAFF",
   },
-
-  // Element of Laughter
   "325585dd-c617-4dd2-8314-d608273cd5f6": {
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",

@@ -2,10 +2,8 @@ import { useState, useEffect } from "react";
 import KayouHeader from "@/components/KayouHeader";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import CollectionCard from "@/components/CollectionCard";
-import { loadUserProgress } from "@/lib/loadProgress";
 import { supabase } from "@/lib/supabase";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 
 type Collection = {
   id: string;

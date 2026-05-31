@@ -48,6 +48,10 @@ const VERIFIED_USERS = {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
   },
+  "6247b70d-3f55-493c-8eee-3badedf581db": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
   "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
     badge: blueVerifiedBadge,
     label: "KAYOU STAFF",
