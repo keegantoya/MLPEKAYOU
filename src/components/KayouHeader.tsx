@@ -1060,13 +1060,21 @@ style={{
             </div>
 
             {loginStep === "email" && (
-  <input
-    type="email"
-    value={loginEmail}
-    autoComplete="off"
-    className="w-full border rounded-lg px-3 py-2 mb-2"
-    onChange={(e) => setLoginEmail(e.target.value)}
-  />
+  <>
+    <input
+      type="email"
+      value={loginEmail}
+      autoComplete="off"
+      className="w-full border rounded-lg px-3 py-2 mb-2"
+      onChange={(e) => setLoginEmail(e.target.value)}
+    />
+
+    {authMode === "signup" && (
+      <div className="text-xs text-gray-500 italic text-center mb-2">
+        You will be required to confirm your signup via a link in your email from MLPEKAYOU. This email will likely be found in your spam or junk folder. Accounts that do not confirm sign up will be deleted after 30 days. You cannot log in without confirming. Please double check your email and ensure you typed it in correctly.
+      </div>
+    )}
+  </>
 )}
 
 {loginStep === "password" && (
