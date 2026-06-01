@@ -65,10 +65,8 @@ const toggleFlip = (key: string) => {
     const [rarity, numberStr] = key.split("-");
     const number = Number(numberStr);
 
-    const frontSrc =
-  rarity === "N" && number === 10
-    ? `/cards/${set.folder}/FM3SN010.webp`
-    : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`;
+const frontSrc =
+  `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`;
 
     const backSrc = getCardBack(rarity, number);
 
@@ -483,11 +481,7 @@ if (showLoginModal) {
             >
 
               <img
-                src={
-  rarity === "N" && number === 10
-    ? `/cards/${set.folder}/FM3SN010.webp`
-    : `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`
-}
+                src={`/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(3, "0")}.webp`}
                 className="absolute w-full h-full object-cover rounded-lg backface-hidden"
               />
 
@@ -527,11 +521,6 @@ if (showLoginModal) {
                 zoomedCardFlipped ? "rotate-y-180" : ""
               }`}
             >
-                {zoomedCard?.includes("FM3SN010") && (
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-xl backdrop-blur-sm shadow-lg max-w-[90%] text-center">
-      Kayou did not send me the front image for this card. Sorry for the confusion.
-    </div>
-  )}
 
               {/* FRONT */}
               <img
