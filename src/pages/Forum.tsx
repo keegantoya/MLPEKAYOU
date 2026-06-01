@@ -96,6 +96,10 @@ const VERIFIED_USERS: Record<
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
+  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
 };
 
 const adminOnlyPosts = [

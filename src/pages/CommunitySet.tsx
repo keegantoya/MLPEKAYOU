@@ -62,6 +62,10 @@ const VERIFIED_USERS = {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
   },
+  "6247b70d-3f55-493c-8eee-3badedf581db": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
   "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
     badge: blueVerifiedBadge,
     label: "KAYOU STAFF",
@@ -71,6 +75,10 @@ const VERIFIED_USERS = {
     label: "KAYOU STAFF",
   },
     "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
