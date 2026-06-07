@@ -1,5 +1,4 @@
 import {
-  Menu,
   Home,
   BarChart,
   Trophy,
@@ -8,13 +7,8 @@ import {
   ArrowLeftRight,
   Users,
   User,
-  List,
-  Grid,
-  Layers,
   Search,
   Sparkles,
-  CircleHelp,
-  Heart
 } from "lucide-react";
 
 import { Button } from "./ui/button";
@@ -159,7 +153,6 @@ const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [newUsername, setNewUsername] = useState("");
-  const [loginStep, setLoginStep] = useState<"email" | "password">("email");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -168,6 +161,7 @@ const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
   const [open, setOpen] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [showForgot, setShowForgot] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const [showResetSent, setShowResetSent] = useState(false);
   const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [showTradesMenu, setShowTradesMenu] = useState(false);
@@ -310,7 +304,6 @@ useEffect(() => {
   setShowLogin(false);
   setLoginEmail("");
   setLoginPassword("");
-  setLoginStep("email");
   setLoginError("");
   setShowForgot(false);
 };
@@ -369,7 +362,6 @@ const handleForgotPassword = async () => {
   setLoginEmail("");
   setLoginPassword("");
   setConfirmPassword("");
-  setLoginStep("email");
 };
 
 const requireLogin = (path: string) => {
@@ -435,7 +427,6 @@ style={{
       className="hidden sm:flex h-10 px-5 bg-white/10 hover:bg-white/20 text-[#f5e6a8] border border-[#d4af37]/40 font-semibold shadow-sm"
       onClick={() => {
         setAuthMode("signup");
-        setLoginStep("email");
         setLoginError("");
         setShowForgot(false);
         setShowLogin(true);
@@ -452,13 +443,7 @@ style={{
   marginTop: "-7px"
 }}
 >
-{user ? (
-  <img
-    src={avatarSrc || avatar001}
-    alt="avatar"
-    className="h-9 w-9 rounded-full object-cover border-2 border-white/30 shadow-md"
-  />
-) : (
+{!user && (
   <Button
     size="sm"
     className="h-8 px-3 text-xs bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
@@ -478,6 +463,14 @@ style={{
   >
     <Trophy className="h-4 w-4" />
   </button>
+
+  <button
+  onClick={() => navigate("/community")}
+  className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] shadow-sm"
+>
+  <Medal className="h-4 w-4" />
+</button>
+
 </div>
 
 {/* DESKTOP DISCORD BUTTON */}
@@ -727,7 +720,7 @@ style={{
     : "bg-white/10 border-white/20 hover:bg-white/20"
 }`}
   >
-    <Tag className="h-5 w-5" />
+    <Tag className="h-4 w-4" />
   </button>
 
   <button
@@ -751,7 +744,6 @@ style={{
         className="h-10 px-5 bg-white/10 hover:bg-white/20 text-[#f5e6a8] border border-[#d4af37]/40 font-semibold shadow-sm"
         onClick={() => {
           setAuthMode("login");
-          setLoginStep("email");
           setLoginError("");
           setShowForgot(false);
           setShowLogin(true);
@@ -982,8 +974,10 @@ style={{
         </div>
 
         <div className="text-sm text-gray-500">
-          Check your email for instructions to reset your password.
-          If you don't see it, check your spam folder.
+          If an email exists for this account, you will find
+          a password reset link in your junk mail. Please recheck
+          the email you entered if you don't find it. The most common
+          error is an invalid email entered at login.
         </div>
 
       </div>
@@ -1049,79 +1043,81 @@ style={{
   />
 </div>
 
-            <div className="text-center mb-5 text-gray-700">
-              {loginStep === "email" ? (
-                <>
-                  <div className="text-lg font-semibold mb-2">
-                    {authMode === "login"
-                      ? "Sign In"
-                      : "Create Your Account"}
-                  </div>
+<form
+  onSubmit={(e) => {
+    e.preventDefault();
 
-                  <div className="text-sm text-gray-500">
-                    {authMode === "login"
-                      ? "Enter the email associated with your account."
-                      : "Enter the email you'd like to use."}
-                  </div>
-                </>
-              ) : (
-                <div className="text-lg font-semibold">
-                  {authMode === "login"
-                    ? "Enter your password."
-                    : "Create a password."}
-                </div>
-              )}
-            </div>
+    authMode === "login"
+      ? handleLoginSubmit()
+      : handleSignupSubmit();
+  }}
+>
 
-            {loginStep === "email" && (
-  <>
-    <input
-      type="email"
-      value={loginEmail}
-      autoComplete="off"
-      className="w-full border rounded-lg px-3 py-2 mb-2"
-      onChange={(e) => setLoginEmail(e.target.value)}
-    />
+          <div className="text-center mb-5 text-gray-700">
+  <div className="text-lg font-semibold mb-2">
+    {authMode === "login"
+      ? "Sign In"
+      : "Create Your Account"}
+  </div>
 
-    {authMode === "signup" && (
-      <div className="text-xs text-gray-500 italic text-center mb-2">
-        You will be required to confirm your signup via a link in your email from MLPEKAYOU. This email will likely be found in your spam or junk folder. Accounts that do not confirm sign up will be deleted after 30 days. You cannot log in without confirming. Please double check your email and ensure you typed it in correctly.
-      </div>
-    )}
-  </>
+  <div className="text-sm text-gray-500 mb-4">
+    {authMode === "login"
+      ? "Enter your email and password."
+      : "Enter your email and create a password."}
+  </div>
+</div>
+
+<input
+  type="email"
+  placeholder="Email"
+  value={loginEmail}
+  autoComplete="email"
+  className="w-full border rounded-lg px-3 py-2 mb-2"
+  onChange={(e) => {
+    setLoginEmail(e.target.value);
+    setEmailError("");
+  }}
+/>
+
+{emailError && (
+  <div className="text-sm text-red-500 mb-2">
+    {emailError}
+  </div>
 )}
 
-{loginStep === "password" && (
+<input
+  type="password"
+  placeholder="Password"
+  value={loginPassword}
+  autoComplete="current-password"
+  className="w-full border rounded-lg px-3 py-2 mb-2"
+  onChange={(e) => setLoginPassword(e.target.value)}
+/>
+
+{authMode === "signup" && (
   <>
     <input
       type="password"
-      placeholder="Password"
-      value={loginPassword}
-      autoComplete="off"
+      placeholder="Confirm Password"
+      value={confirmPassword}
+      autoComplete="new-password"
       className="w-full border rounded-lg px-3 py-2 mb-2"
-      onChange={(e) => setLoginPassword(e.target.value)}
+      onChange={(e) => setConfirmPassword(e.target.value)}
     />
 
-    {authMode === "signup" && (
-      <input
-        type="password"
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        autoComplete="off"
-        className="w-full border rounded-lg px-3 py-2 mb-2"
-        onChange={(e) => setConfirmPassword(e.target.value)}
-      />
-    )}
+    <div className="text-xs text-gray-500 italic text-center mb-2">
+      You will be required to confirm your signup via a link sent to your email.
+    </div>
   </>
 )}
 
-{loginError && loginStep === "password" && (
+{loginError && (
   <div className="text-sm text-red-500 mb-2">
     {loginError}
   </div>
 )}
 
-{showForgot && loginStep === "password" && (
+{showForgot && (
   <button
     onClick={handleForgotPassword}
     className="text-sm text-pink-500 hover:text-pink-600 mb-4"
@@ -1129,6 +1125,7 @@ style={{
     Forgot your password? Request a reset here.
   </button>
 )}
+
 <div className="flex justify-between items-center gap-2">
 
   {/* MOBILE CREATE ACCOUNT */}
@@ -1138,7 +1135,6 @@ style={{
   className="h-8 px-3 rounded-xl bg-gradient-to-r from-pink-400 to-pink-500 text-white border border-pink-200/40 shadow-md hover:brightness-110"
         onClick={() => {
           setAuthMode("signup");
-          setLoginStep("email");
           setLoginError("");
         }}
       >
@@ -1152,7 +1148,6 @@ style={{
   className="text-pink-500 hover:text-pink-400 hover:bg-transparent"
         onClick={() => {
           setAuthMode("login");
-          setLoginStep("email");
           setLoginError("");
         }}
       >
@@ -1171,16 +1166,8 @@ style={{
     </Button>
 
     <Button
+    type="submit"
       className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110 hover:bg-[#e8e8e0]"
-      onClick={() => {
-        if (loginStep === "email") {
-          setLoginStep("password");
-        } else {
-          authMode === "login"
-            ? handleLoginSubmit()
-            : handleSignupSubmit();
-        }
-      }}
     >
       Continue
     </Button>
@@ -1188,6 +1175,7 @@ style={{
   </div>
 
 </div>
+</form>
           </div>
 
         </div>
@@ -1195,15 +1183,18 @@ style={{
 
 {/* MOBILE BOTTOM NAV */}
 <div
-  className="sm:hidden fixed bottom-0 left-0 right-0 z-[999]
+  className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[999]
   bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84]
-  border-t border-[#d4af37]/40
-  flex justify-around items-center
-  shadow-[0_-4px_16px_rgba(0,0,0,0.5)]"
+  border border-[#d4af37]/40
+  rounded-full
+  shadow-2xl
+  flex justify-around items-center"
   style={{
-    height: "calc(58px + env(safe-area-inset-bottom))",
-    paddingBottom: "max(env(safe-area-inset-bottom), 4px)",
-  }}
+  width: "calc(100% - 24px)",
+  maxWidth: "420px",
+  height: "64px",
+  backdropFilter: "blur(12px)",
+}}
 >
 
     {/* HOMEPAGE */}
@@ -1215,7 +1206,7 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/");
     }}
-    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <Home className="h-6 w-6" />
   </button>
@@ -1229,7 +1220,7 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/collections");
     }}
-    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <Sparkles className="h-6 w-6" />
   </button>
@@ -1243,7 +1234,7 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/trading-post");
     }}
-    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <ArrowLeftRight className="h-6 w-6" />
   </button>
@@ -1257,38 +1248,39 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/forum");
     }}
-    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
+    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <Search className="h-6 w-6" />
   </button>
 
-  {/* SET LEADERBOARDS */}
-  <button
-    onClick={() => {
-      setShowMobileProgressMenu(false);
-      setShowMobileIsoMenu(false);
-      setShowMobileLeaderboardMenu(false);
-      setShowMobileHomeMenu(false);
-      navigate("/community");
-    }}
-    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
-  >
-    <Medal className="h-6 w-6" />
-  </button>
+{/* PROFILE */}
+<button
+  onClick={() => {
+    setShowMobileProgressMenu(false);
+    setShowMobileIsoMenu(false);
+    setShowMobileLeaderboardMenu(false);
+    setShowMobileHomeMenu(false);
 
-  {/* PROFILE */}
-  <button
-    onClick={() => {
-      setShowMobileProgressMenu(false);
-      setShowMobileIsoMenu(false);
-      setShowMobileLeaderboardMenu(false);
-      setShowMobileHomeMenu(false);
-      navigate(window.innerWidth < 640 ? "/profile-mobile" : "/profile");
-    }}
-    className="flex items-center justify-center w-11 h-11 rounded-full border border-white/20 bg-white/10 text-[#f5e6a8] shadow-sm hover:bg-white/20 transition-colors"
-  >
+    if (!user) {
+      setAuthMode("login");
+      setShowLogin(true);
+      return;
+    }
+
+    navigate("/profile-mobile");
+  }}
+  className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+>
+  {user ? (
+    <img
+      src={avatarSrc || avatar001}
+      alt="avatar"
+      className="h-8 w-8 rounded-full object-cover border border-white/20"
+    />
+  ) : (
     <User className="h-6 w-6" />
-  </button>
+  )}
+</button>
 </div>
 </>
 );
