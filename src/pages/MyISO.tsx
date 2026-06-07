@@ -911,15 +911,15 @@ availableRarities={
 
     : selectedSetId === "SD_BONUS"
     ? [
-        { prefix: "SD01C", count: 9, label: "Common" },
-        { prefix: "SD01U", count: 7, label: "Uncommon" },
-        { prefix: "SD01SR", count: 6, label: "Silver Rare" },
-        { prefix: "SD01SPR", count: 10, label: "Special Rare" },
-        { prefix: "SD01GR", count: 6, label: "Gold Rare" },
-        { prefix: "SD01CR", count: 6, label: "Colorful Rare" },
-        { prefix: "SD01ER", count: 6, label: "Emerald Rare" },
-        { prefix: "SD01PER", count: 12, label: "※Emerald Rare" },
-        { prefix: "SD01PRR", count: 6, label: "※Ruby Rare" },
+        { prefix: "SD01C", count: 9, label: "C" },
+        { prefix: "SD01U", count: 7, label: "U" },
+        { prefix: "SD01SR", count: 6, label: "SR" },
+        { prefix: "SD01SPR", count: 10, label: "SPR" },
+        { prefix: "SD01GR", count: 6, label: "GR" },
+        { prefix: "SD01CR", count: 6, label: "CR" },
+        { prefix: "SD01ER", count: 6, label: "ER" },
+        { prefix: "SD01PER", count: 12, label: "※ER" },
+        { prefix: "SD01PRR", count: 6, label: "※RR" },
       ]
         .filter(({ prefix, count }) =>
           Array.from({ length: count }, (_, i) => {
@@ -938,19 +938,19 @@ availableRarities={
 
     : selectedSetId === "FW"
     ? [
-        { prefix: "BP01C", count: 48, label: "Common" },
-        { prefix: "BP01U", count: 18, label: "Uncommon" },
-        { prefix: "BP01ER", count: 6, label: "Emerald Rare" },
-        { prefix: "BP01SR", count: 14, label: "Silver Rare" },
-        { prefix: "BP01SPR", count: 28, label: "Special Rare" },
-        { prefix: "BP01GR", count: 12, label: "Gold Rare" },
-        { prefix: "BP01CR", count: 12, label: "Colorful Rare" },
-        { prefix: "BP01RR", count: 6, label: "Ruby Rare" },
-        { prefix: "BP01PER", count: 12, label: "※Emerald Rare" },
-        { prefix: "BP01PSPR", count: 11, label: "※Special Rare" },
-        { prefix: "BP01PGR", count: 6, label: "※Gold Rare" },
-        { prefix: "BP01PCR", count: 12, label: "※Colorful Rare" },
-        { prefix: "BP01PRR", count: 6, label: "※Ruby Rare" },
+        { prefix: "BP01C", count: 48, label: "C" },
+        { prefix: "BP01U", count: 18, label: "U" },
+        { prefix: "BP01ER", count: 6, label: "ER" },
+        { prefix: "BP01SR", count: 14, label: "SR" },
+        { prefix: "BP01SPR", count: 28, label: "SPR" },
+        { prefix: "BP01GR", count: 12, label: "GR" },
+        { prefix: "BP01CR", count: 12, label: "CR" },
+        { prefix: "BP01RR", count: 6, label: "RR" },
+        { prefix: "BP01PER", count: 12, label: "※ER" },
+        { prefix: "BP01PSPR", count: 11, label: "※SPR" },
+        { prefix: "BP01PGR", count: 6, label: "※GR" },
+        { prefix: "BP01PCR", count: 12, label: "※CR" },
+        { prefix: "BP01PRR", count: 6, label: "※RR" },
       ]
         .filter(({ prefix, count }) =>
           Array.from({ length: count }, (_, i) => {
@@ -1046,7 +1046,7 @@ onToggleHiddenSet={toggleSet}
     <div className="h-px w-16 sm:w-24 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
 
     <span className="text-[10px] sm:text-xs tracking-[0.35em] font-semibold text-[#8b6a2b] uppercase">
-      Collector Wishlist
+      What You're Missing
     </span>
 
     <div className="h-px w-16 sm:w-24 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />

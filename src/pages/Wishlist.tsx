@@ -175,7 +175,7 @@ const sets = [
 },
   {
     id: "9",
-    name: "Promos",
+    name: "CCG Promos",
     folder: "promo-cards",
     prefix: "PR",
     rarities: {
@@ -928,9 +928,13 @@ const cards =
           : rarity === "SZR"
           ? "◇ZR"
           : rarity === "SCR"
-          ? "◇CR"
+          ? selectedSet.id === "4"
+          ? "SCR"
+          : "◇CR"
           : rarity === "SN"
           ? "◇N"
+          : rarity === "SAR"
+          ? "◇AR"
           : rarity === "PER"
           ? "※ER"
           : rarity === "PSPR"
