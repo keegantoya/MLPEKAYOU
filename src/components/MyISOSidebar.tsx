@@ -28,6 +28,8 @@ isoStatuses: Record<string, string>;
 allSets: SetItem[];
 hiddenSets: string[];
 onToggleHiddenSet: (setId: string) => void;
+cardCodeSearch: string;
+onCardCodeSearchChange: (value: string) => void;
 }
 
 const CCG_RARITIES = [
@@ -89,6 +91,8 @@ setMode,
 onClearSelection,
 viewAllCardCodes,
 onToggleViewAllCardCodes,
+cardCodeSearch,
+onCardCodeSearchChange,
 isoStatuses,
 allSets,
 hiddenSets,
@@ -184,6 +188,39 @@ const isAllowed =
           <span>{viewAllCardCodes ? "Go back to ISO mode" : "View ALL card codes"}</span>
         </button>
 
+        {viewAllCardCodes && (
+  <div className="px-3 mt-3">
+    <input
+      type="text"
+      value={cardCodeSearch}
+onChange={(e) =>
+  onCardCodeSearchChange(
+    e.target.value
+      .toUpperCase()
+      .replace(/#/g, "※")
+.replace(/<>/g, "◇")
+.replace(/<ZR/g, "◇ZR")
+.replace(/<AR/g, "◇AR")
+.replace(/<CR/g, "◇CR")
+.replace(/<N/g, "◇N")
+  )
+}
+      placeholder="Search card code..."
+      className="
+        w-full
+        px-4 py-2.5
+        rounded-xl
+        bg-white/10
+        border border-white/10
+        text-white
+        placeholder:text-white/50
+        text-base
+        outline-none
+      "
+    />
+  </div>
+)}
+
         {(purchaseCards.length > 0 || tradeCards.length > 0) && (
   <button
     type="button"
@@ -209,9 +246,10 @@ const isAllowed =
     <button
       type="button"
       onClick={() => {
-        setMode("CCG");
-        onClearSelection();
-      }}
+  setMode("CCG");
+  onCardCodeSearchChange("");
+  onClearSelection();
+}}
       className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
         mode === "CCG"
           ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border-[#d4af37] shadow-lg"
@@ -224,9 +262,10 @@ const isAllowed =
     <button
       type="button"
       onClick={() => {
-        setMode("TCG");
-        onClearSelection();
-      }}
+  setMode("TCG");
+  onCardCodeSearchChange("");
+  onClearSelection();
+}}
       className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
         mode === "TCG"
           ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border-[#d4af37] shadow-lg"

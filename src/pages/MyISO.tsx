@@ -171,6 +171,7 @@ const [selectedRarity, setSelectedRarity] = useState<string | null>(null);
 const [isoStatuses, setIsoStatuses] = useState<Record<string, string>>({});
 const [selectedCardKey, setSelectedCardKey] = useState<string | null>(null);
 const [viewAllCardCodes, setViewAllCardCodes] = useState(false);
+const [cardCodeSearch, setCardCodeSearch] = useState("");
 const [showScrollTop, setShowScrollTop] = useState(false);
 
 useEffect(() => {
@@ -860,13 +861,30 @@ if (set.rarities) {
   );
 
   const missing = cards.filter((card) => {
-    if (viewAllCardCodes) {
-      return true;
-    }
+  const displayCode = getDisplayCardCode(
+    set.id,
+    card.rarity,
+    card.number
+  );
 
-    const key = `${card.rarity}-${card.number}`;
-    return !owned[`${set.id}-${key}`];
-  });
+  if (
+    cardCodeSearch &&
+    !displayCode.toUpperCase().includes(cardCodeSearch)
+  ) {
+    return false;
+  }
+
+  if (viewAllCardCodes) {
+  if (!cardCodeSearch) return true;
+
+  return displayCode
+    .toUpperCase()
+    .includes(cardCodeSearch.toUpperCase());
+}
+
+  const key = `${card.rarity}-${card.number}`;
+  return !owned[`${set.id}-${key}`];
+});
 
   return missing.length > 0;
 }
@@ -983,6 +1001,8 @@ onClearSelection={() => {
   setViewAllCardCodes(false);
 }}
 viewAllCardCodes={viewAllCardCodes}
+cardCodeSearch={cardCodeSearch}
+onCardCodeSearchChange={setCardCodeSearch}
 onToggleViewAllCardCodes={() => {
   if (viewAllCardCodes) {
     // If currently in viewing mode, return to normal ISO mode
@@ -1280,7 +1300,16 @@ onToggleHiddenSet={toggleSet}
 
       if (!viewAllCardCodes && owned[stateKey]) return null;
 
-      return key;
+const displayCode = getTCGCardDisplayCode(key);
+
+if (
+  cardCodeSearch &&
+  !displayCode.toUpperCase().includes(cardCodeSearch)
+) {
+  return null;
+}
+
+return key;
     }).filter(Boolean);
 
     if (cards.length === 0) return null;
@@ -1424,7 +1453,16 @@ onToggleHiddenSet={toggleSet}
 
       if (!viewAllCardCodes && owned[`FW-${key}`]) return null;
 
-      return key;
+const displayCode = getTCGCardDisplayCode(key);
+
+if (
+  cardCodeSearch &&
+  !displayCode.toUpperCase().includes(cardCodeSearch)
+) {
+  return null;
+}
+
+return key;
 
     }).filter(Boolean);
 
@@ -1717,6 +1755,7 @@ onToggleHiddenSet={toggleSet}
     </div>
   </div>
 )}
+
 {/* MAIN GRID */}
 {selectedSetId !== "CARDS_IN_PROGRESS" && (
   <div className="grid grid-cols-1 gap-6">
@@ -1743,7 +1782,20 @@ onToggleHiddenSet={toggleSet}
     }))
         );
 
-        const missing = cards.filter((card) => {
+  const missing = cards.filter((card) => {
+  const displayCode = getDisplayCardCode(
+    set.id,
+    card.rarity,
+    card.number
+  );
+
+  if (
+    cardCodeSearch &&
+    !displayCode.toUpperCase().includes(cardCodeSearch.toUpperCase())
+  ) {
+    return false;
+  }
+
   if (viewAllCardCodes) {
     return true;
   }
@@ -1762,7 +1814,9 @@ onToggleHiddenSet={toggleSet}
   return acc;
 }, {} as Record<string, typeof missing>);
 
-        if (missing.length === 0) return null;
+if (missing.length === 0) {
+  return null;
+}
 
         return (
           <div
@@ -1784,11 +1838,11 @@ onToggleHiddenSet={toggleSet}
 
 <div className="space-y-8">
 
-{Object.entries(groupedMissing)
-  .filter(([rarity]) =>
-    selectedRarity === null || rarity === selectedRarity
-  )
-  .map(([rarity, rarityCards]) => {
+    {Object.entries(groupedMissing)
+      .filter(([rarity]) =>
+        selectedRarity === null || rarity === selectedRarity
+      )
+      .map(([rarity, rarityCards]) => {
 
   const collapseKey = `${set.id}-${rarity}`;
   const isCollapsed = collapsedRarities[collapseKey];
