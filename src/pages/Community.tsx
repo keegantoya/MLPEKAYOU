@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -613,8 +612,6 @@ if (set.id === "friendshipsbegin") {
     `,
   }}
 >
-
-      <KayouHeader />
 
       <div className="container py-10 max-w-[1600px]">
   <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_260px] gap-8 items-start">

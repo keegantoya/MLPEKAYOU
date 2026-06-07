@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabase";
 import ScrollToTop from "@/components/ScrollToTop";
+import KayouHeader from "@/components/KayouHeader";
 
 import Forum from "@/pages/Forum";
 import Index from "./pages/Index";
@@ -195,17 +196,19 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-       <BrowserRouter>
+<BrowserRouter>
 
   <ScrollToTop />
 
- <div
-  className={`min-h-screen pb-[72px] sm:pt-[64px] sm:pb-0 ${
-  window.matchMedia('(display-mode: standalone)').matches
-    ? 'pt-[88px]'
-    : 'pt-[52px]'
-}`}
->
+  <KayouHeader />
+
+  <div
+    className={`min-h-screen pb-[72px] sm:pt-[64px] sm:pb-0 ${
+      window.matchMedia('(display-mode: standalone)').matches
+        ? 'pt-[88px]'
+        : 'pt-[52px]'
+    }`}
+  >
     <AppRoutes />
   </div>
 

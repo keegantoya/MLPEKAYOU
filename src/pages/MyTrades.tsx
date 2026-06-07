@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import CollectionCard from "@/components/CollectionCard";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -168,7 +167,6 @@ export default function MyTrades() {
 
 return (
   <>
-    <KayouHeader />
 
     <div
       className="min-h-screen"

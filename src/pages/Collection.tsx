@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -237,7 +236,6 @@ useEffect(() => {
   if (!set) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <KayouHeader />
         <div className="container py-8">
           <h1 className="text-2xl font-bold">Set not found</h1>
         </div>
@@ -549,8 +547,6 @@ if (showLoginModal) {
 
   return (
     <div className="min-h-screen bg-white">
-      <KayouHeader />
-
       <div className="container py-8">
 {/* HEADER */}
 <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-0 mb-8 mt-6 sm:mt-0">

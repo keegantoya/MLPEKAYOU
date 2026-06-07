@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import KayouHeader from "@/components/KayouHeader";
 import { useNavigate } from "react-router-dom";
 import {
   Grid3X3,
@@ -630,7 +629,6 @@ setProfile((prev: any) => ({
   avatar_url: avatarFile,
 }));
 
-// Notify KayouHeader and any other components that the avatar changed
 window.dispatchEvent(
   new CustomEvent("profile-updated", {
     detail: {
@@ -769,12 +767,6 @@ useEffect(() => {
 
   return (
     <>
-{/* Header + Mobile Bottom Navigation */}
-{!(
-  showEditProfileModal ||
-  showCollectionMenu ||
-  (showAvatarPicker && window.innerWidth < 640)
-) && <KayouHeader />}
 
       {/* MOBILE ONLY */}
       <div className="sm:hidden min-h-screen bg-white pb-24 pt-7">

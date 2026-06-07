@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import confetti from "canvas-confetti";
@@ -414,7 +413,6 @@ if (showLoginModal) {
 
   return (
     <div className="min-h-screen bg-white">
-      <KayouHeader />
 
       <div className="container py-8">
 

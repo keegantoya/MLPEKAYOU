@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -212,8 +211,6 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-background">
-      <KayouHeader />
-
       <div className="container py-8">
 
 {/* HEADER */}

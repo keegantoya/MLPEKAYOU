@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { ChevronUp, Heart } from "lucide-react";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -574,7 +573,7 @@ const toggleHideWishlist = async () => {
   `,
 }}
     >
-<KayouHeader />
+
 
 {/* Background Cutie Marks */}
 <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">

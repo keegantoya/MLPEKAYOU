@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import KayouHeader from "@/components/KayouHeader";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -186,7 +185,6 @@ const toggleActive = async () => {
 
   return (
     <div className="min-h-screen bg-background pb-[100px] sm:pb-0">
-      <KayouHeader />
 
       <div className="container py-8">
 

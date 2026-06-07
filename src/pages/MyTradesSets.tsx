@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -271,7 +270,6 @@ const set = sets.find((s) => s.id === resolvedSetId);
 if (!set) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#fffdf8] via-[#faf7ef] to-[#f4efe3]">
-      <KayouHeader />
       <div className="container py-8 text-center text-gray-500">
         Invalid set
       </div>
@@ -486,8 +484,6 @@ const rarityOrders: Record<string, string[]> = {
 
   return (
     <div className="min-h-screen bg-background">
-      <KayouHeader />
-
       <div className="container py-8">
 
         <button

@@ -1,9 +1,5 @@
-import KayouHeader from "@/components/KayouHeader";
-import sellingBadge from "@/assets/avatars/sellingbadge.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
 import { useState } from "react";
-import elementOfGenerosity from "/website-assets/elementofgenerosity.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 export default function Selling() {
   const stats = [
@@ -218,7 +214,6 @@ const filteredPricingCards =
   `,
 }}
     >
-      <KayouHeader />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-5">
         {/* HERO */}

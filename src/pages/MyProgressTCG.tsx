@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -283,7 +282,6 @@ newProgress[set.id] = owned;
   `,
 }}
     >
-      <KayouHeader />
 
 <div className="container py-8 flex-1">
 {/* HERO */}

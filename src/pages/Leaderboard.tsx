@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -246,7 +245,6 @@ const getAvatar = (avatar?: string) => {
   `,
 }}
 >
-      <KayouHeader />
 
       {/* FLOATING CUTIE MARK BACKGROUND */}
 <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">

@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -475,8 +474,6 @@ const getAvatar = (avatar?: string, username?: string) => {
   `,
 }}
 >
-      <KayouHeader />
-
       <div className="container max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
   {/* Back Button */}
   <button

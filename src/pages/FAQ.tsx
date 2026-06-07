@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useState } from "react";
 import authentic1 from "@/faq-assets/authenticseal1.webp";
 import authentic2 from "@/faq-assets/authenticseal2.webp";
@@ -1138,7 +1137,6 @@ content: (
   `,
 }}
     >
-      <KayouHeader />
 
 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 

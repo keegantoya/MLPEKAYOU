@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -81,7 +80,6 @@ export default function OtherKayouMerch() {
         backgroundSize: "26px 26px",
       }}
     >
-      <KayouHeader />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
 

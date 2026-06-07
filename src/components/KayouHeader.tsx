@@ -1,6 +1,5 @@
 import {
   Home,
-  BarChart,
   Trophy,
   Medal,
   Tag,
@@ -180,13 +179,17 @@ const verification =
     .eq("id", userId)
     .single();
 
-  setProfile(data);
-
   if (data?.avatar_url) {
-    const avatar = getAvatar(data.avatar_url, data.username);
-    setAvatarSrc(avatar);
+  const avatar = getAvatar(data.avatar_url, data.username);
+
+  setAvatarSrc((prev) => {
+    if (prev === avatar) return prev;
     sessionStorage.setItem("avatar", avatar);
-  }
+    return avatar;
+  });
+}
+
+setProfile(data);
 };
 
 useEffect(() => {
@@ -282,12 +285,15 @@ useEffect(() => {
   }
 }, []);
 useEffect(() => {
-  if (profile?.avatar_url) {
-    const avatar = getAvatar(profile.avatar_url);
+  if (!profile?.avatar_url) return;
+
+  const avatar = getAvatar(profile.avatar_url);
+
+  if (avatar !== avatarSrc) {
     setAvatarSrc(avatar);
     sessionStorage.setItem("avatar", avatar);
   }
-}, [profile]);
+}, [profile?.avatar_url]);
 
   const handleLoginSubmit = async () => {
   const { error } = await supabase.auth.signInWithPassword({
@@ -720,7 +726,7 @@ style={{
     : "bg-white/10 border-white/20 hover:bg-white/20"
 }`}
   >
-    <Tag className="h-4 w-4" />
+    <Tag className="h-5 w-5" />
   </button>
 
   <button
@@ -1183,19 +1189,66 @@ style={{
 
 {/* MOBILE BOTTOM NAV */}
 <div
-  className="sm:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[999]
-  bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84]
-  border border-[#d4af37]/40
-  rounded-full
-  shadow-2xl
-  flex justify-around items-center"
+  className="sm:hidden fixed bottom-4 left-1/2 z-[99999]
+bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84]
+border border-[#d4af37]/40
+rounded-full
+shadow-2xl
+grid grid-cols-5 place-items-center"
   style={{
-  width: "calc(100% - 24px)",
-  maxWidth: "420px",
-  height: "64px",
-  backdropFilter: "blur(12px)",
-}}
+    width: "calc(100% - 24px)",
+    maxWidth: "420px",
+    height: "64px",
+
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+
+    transform: "translateX(-50%) translateZ(0)",
+    WebkitTransform: "translateX(-50%) translateZ(0)",
+
+    willChange: "transform",
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden",
+
+    contain: "layout paint style",
+  }}
 >
+
+<div
+  className="
+    absolute top-1/2 h-[54px] w-[55px] rounded-full
+    bg-white/20
+    backdrop-blur-x5
+    shadow-[0_0_24px_rgba(255,255,255,0.35)]
+  "
+  style={{
+    left:
+      location.pathname === "/"
+        ? "10%"
+        : location.pathname.startsWith("/collections")
+        ? "30%"
+        : location.pathname.startsWith("/trading-post")
+        ? "50%"
+        : location.pathname.startsWith("/forum")
+        ? "70%"
+        : "90%",
+
+    transform:
+  location.pathname === "/"
+    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
+    : location.pathname.startsWith("/collections")
+    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
+    : location.pathname.startsWith("/trading-post")
+    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
+    : location.pathname.startsWith("/forum")
+    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
+    : "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)",
+    transition:
+      "left 350ms cubic-bezier(0.22, 1.4, 0.36, 1), transform 350ms cubic-bezier(0.22, 1.4, 0.36, 1)",
+
+    willChange: "left, transform",
+  }}
+/>
 
     {/* HOMEPAGE */}
   <button
@@ -1206,7 +1259,7 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/");
     }}
-    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <Home className="h-6 w-6" />
   </button>
@@ -1220,7 +1273,7 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/collections");
     }}
-    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <Sparkles className="h-6 w-6" />
   </button>
@@ -1234,7 +1287,7 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/trading-post");
     }}
-    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <ArrowLeftRight className="h-6 w-6" />
   </button>
@@ -1248,7 +1301,7 @@ style={{
       setShowMobileHomeMenu(false);
       navigate("/forum");
     }}
-    className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
     <Search className="h-6 w-6" />
   </button>
@@ -1269,17 +1322,9 @@ style={{
 
     navigate("/profile-mobile");
   }}
-  className="flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+  className="relative z-10 flex items-center justify-center w-10 h-full text-[#f5e6a8] transition-colors flex-shrink-0"
 >
-  {user ? (
-    <img
-      src={avatarSrc || avatar001}
-      alt="avatar"
-      className="h-8 w-8 rounded-full object-cover border border-white/20"
-    />
-  ) : (
-    <User className="h-6 w-6" />
-  )}
+  <User className="h-6 w-6" />
 </button>
 </div>
 </>

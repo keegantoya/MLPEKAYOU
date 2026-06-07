@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import KayouHeader from "@/components/KayouHeader";
 import { supabase } from "@/lib/supabase";
 import {
   MessageCircle,
@@ -1763,7 +1762,6 @@ if (showLoginModal) {
         `,
       }}
     >
-      <KayouHeader />
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         {/* Hero Banner */}

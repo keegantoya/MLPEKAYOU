@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import KayouHeader from "@/components/KayouHeader";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import CollectionCard from "@/components/CollectionCard";
 import { supabase } from "@/lib/supabase";
@@ -376,7 +375,6 @@ const filtered = (
     `,
   }}
 >
-      <KayouHeader />
 
       {/* MOBILE CATEGORY BAR */}
 <div className="md:hidden px-4 pt-8 pb-2 overflow-x-auto scrollbar-hide">

@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import Moon3Poster from "@/assets/avatars/Moon3Poster.webp";
 import FunMoments3Poster from "@/assets/avatars/FunMoments3Poster.webp";
 import Star1Poster from "@/assets/avatars/Star1poster.webp";
@@ -353,7 +352,6 @@ if (fwRow) {
   `,
 }}
   >
-    <KayouHeader />
 
 <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
   {/* Desktop sparkles only */}

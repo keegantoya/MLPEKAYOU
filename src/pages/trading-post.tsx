@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -420,8 +419,6 @@ const completionPercentage =
   `,
 }}
   >
-    
-      <KayouHeader />
 
       <div className="container max-w-6xl xl:max-w-[1600px] py-8 sm:py-8 pt-6 sm:pt-8 px-4 sm:px-6 xl:px-10">
 

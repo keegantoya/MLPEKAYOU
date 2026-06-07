@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -377,7 +376,6 @@ if (showLoginModal) {
 
   return (
     <div className="min-h-screen bg-white">
-      <KayouHeader />
 
       <div className="container py-8">
 

@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -302,7 +301,6 @@ if (showLoginModal) {
   `,
 }}
   >
-      <KayouHeader />
 
       <div className="container py-8">
 

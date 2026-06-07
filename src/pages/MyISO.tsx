@@ -1,4 +1,3 @@
-import KayouHeader from "@/components/KayouHeader";
 import { useEffect, useState } from "react";
 import { ChevronUp } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -797,7 +796,6 @@ return (
   `,
 }}
   >
-    <KayouHeader />
 
     <div className="container py-6 sm:py-8">
   <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-start">
