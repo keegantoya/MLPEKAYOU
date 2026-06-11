@@ -7,15 +7,15 @@
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
-  {
-    "src": "/app-icons/appiconapple.png",
-    "sizes": "563x563",
-    "type": "image/png"
-  },
-  {
-    "src": "/app-icons/appiconbig.webp",
-    "sizes": "1600x1600",
-    "type": "image/webp"
-  }
-]
+    {
+      "src": "/app-icons/appiconsmall.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/app-icons/appiconbig.webp",
+      "sizes": "1600x1600",
+      "type": "image/webp"
+    }
+  ]
 }
