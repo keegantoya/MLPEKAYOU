@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import CollectionCard from "@/components/CollectionCard";
 import { supabase } from "@/lib/supabase";
@@ -167,6 +167,17 @@ const Collections = () => {
   const [hideMastered, setHideMastered] = useState(true);
   const [sortBy, setSortBy] = useState<"release" | "set">("release");
   const navigate = useNavigate();
+
+const stars = useMemo(
+  () =>
+    Array.from({ length: 180 }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: 1 + Math.random() * 5,
+      opacity: 0.15 + Math.random() * 0.55,
+    })),
+  []
+);
   
   useEffect(() => {
     if (location.state?.category) {
@@ -358,23 +369,47 @@ const filtered = (
   return (
  <div
   className="min-h-screen relative overflow-hidden"
-  style={{
-    backgroundColor: "#F8F3FF",
-    backgroundImage: `
-      radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-      radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-      radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-      radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-      linear-gradient(
-        180deg,
-        #FCF9FF 0%,
-        #F8F1FF 35%,
-        #F5EEFF 65%,
-        #FAF6FF 100%
-      )
-    `,
-  }}
+style={{
+  backgroundColor: "#0d0816",
+backgroundImage: `
+
+  linear-gradient(
+    180deg,
+    #1a1028 0%,
+    #120b1d 45%,
+    #090611 100%
+  )
+`,
+}}
 >
+  
+<div className="absolute top-16 right-16 w-64 h-64 pointer-events-none z-0">
+  <div className="moon-glow" />
+
+  <img
+    src="/nightmarenight-assets/mareinthemoon.webp"
+    alt=""
+    className="relative z-10 w-full h-auto opacity-60"
+  />
+</div>
+
+  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+  {stars.map((star, i) => (
+    <div
+      key={i}
+      className="absolute rounded-full bg-white"
+      style={{
+        left: `${star.left}%`,
+        top: `${star.top}%`,
+        width: `${star.size}px`,
+        height: `${star.size}px`,
+        opacity: star.opacity,
+      }}
+    />
+  ))}
+</div>
+
+  <div className="absolute inset-0 bg-[#1a1028]/10 pointer-events-none" />
 
       {/* MOBILE CATEGORY BAR */}
 <div className="md:hidden px-4 pt-8 pb-2 overflow-x-auto scrollbar-hide">
@@ -442,7 +477,16 @@ const completedSets = countedSets.filter(
         : 0;
 
     return (
-      <div className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/30 bg-gradient-to-r from-[#6d4a9c] via-[#7c5aa6] to-[#5a3e84] px-4 py-4 shadow-[0_20px_60px_rgba(90,62,132,0.30)]">
+      <div
+  className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/30 px-4 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+  style={{
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }}
+>
+
+  <div className="absolute inset-0 bg-black/35 pointer-events-none" />
+  
         {/* Soft sparkles */}
         <div className="absolute inset-0 pointer-events-none opacity-20">
           <div className="absolute top-4 left-4 text-white text-base">✦</div>
@@ -509,7 +553,7 @@ const completedSets = countedSets.filter(
 </div>
 
 
-<div className="container mt-6 md:mt-6 pt-0 pb-8">
+<div className="container mt-6 md:mt-6 pt-0 pb-24 md:pb-8">
 
 {/* FULL-WIDTH TITLE HERO */}
 <div className="hidden sm:block mb-0">
@@ -547,7 +591,16 @@ const completedSets = countedSets.filter(
         : 0;
 
     return (
-    <div className="w-full rounded-[2rem] overflow-hidden border border-[#d4af37]/30 shadow-[0_20px_60px_rgba(90,62,132,0.30)] bg-gradient-to-r from-[#6d4a9c] via-[#7c5aa6] to-[#5a3e84] px-8 pt-4 pb-20 relative">
+    <div
+  className="w-full rounded-[2rem] overflow-hidden border border-[#d4af37]/30 shadow-[0_20px_60px_rgba(0,0,0,0.45)] px-8 pt-4 pb-20 relative"
+  style={{
+    backgroundImage: "url('/nightmarenight-assets/collectionsbannernmn.webp')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }}
+>
+
+  <div className="absolute inset-0 bg-black/35 pointer-events-none" />
         
         {/* Soft sparkles */}
         <div className="absolute inset-0 pointer-events-none opacity-20">

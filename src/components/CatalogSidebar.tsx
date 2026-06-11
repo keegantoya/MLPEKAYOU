@@ -1,23 +1,6 @@
 import {
-  Search,
-  LayoutGrid,
-  Circle,
-  Star,
-  Rainbow,
-  FlaskConical,
-  Gamepad2,
-  BadgePercent,
-  Package,
   ChevronRight,
-  ChevronDown,
 } from "lucide-react";
-
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
-import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
-import rarityCutieMark from "/website-assets/raritycutiemark.webp";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
 
 type Category = {
   name: string;
@@ -57,90 +40,20 @@ const CatalogSidebar = ({
     <aside className="w-56 shrink-0 hidden md:block text-xs">
       <nav
   className="rounded-3xl border border-[#d4af37]/25 shadow-[0_25px_60px_rgba(90,62,132,0.28)] p-4 relative overflow-hidden"
-  style={{
-    backgroundColor: "#6b4b99",
-    backgroundImage: `
-      linear-gradient(rgba(107, 75, 153, 0.58), rgba(90, 62, 132, 0.62)),
-      url(${applejackCutieMark}),
-      url(${twilightSparkleCutieMark}),
-      url(${rainbowDashCutieMark}),
-      url(${fluttershyCutieMark}),
-      url(${pinkiePieCutieMark}),
-      url(${rarityCutieMark}),
-      url(${applejackCutieMark}),
-      url(${twilightSparkleCutieMark}),
-      url(${rainbowDashCutieMark}),
-      url(${fluttershyCutieMark}),
-      url(${pinkiePieCutieMark}),
-      url(${rarityCutieMark}),
-      url(${applejackCutieMark}),
-      url(${twilightSparkleCutieMark}),
-      url(${rainbowDashCutieMark}),
-      linear-gradient(
-        180deg,
-        #7c5aa6 0%,
-        #6b4b99 45%,
-        #5a3e84 100%
-      )
-    `,
-    backgroundRepeat: `
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat,
-      no-repeat
-    `,
-    backgroundPosition: `
-      center,
-      6% 8%,
-      82% 6%,
-      18% 22%,
-      74% 20%,
-      10% 38%,
-      84% 34%,
-      22% 50%,
-      70% 48%,
-      8% 62%,
-      86% 60%,
-      18% 74%,
-      74% 76%,
-      12% 90%,
-      82% 88%,
-      48% 58%,
-      center
-    `,
-    backgroundSize: `
-      cover,
-      72px,
-      78px,
-      68px,
-      74px,
-      66px,
-      70px,
-      72px,
-      78px,
-      68px,
-      74px,
-      66px,
-      70px,
-      72px,
-      78px,
-      68px,
-      cover
-    `,
-  }}
+style={{
+  backgroundColor: "#22152f",
+  backgroundImage: `
+    radial-gradient(circle at 20% 15%, rgba(255,140,60,0.10) 0%, transparent 18%),
+    radial-gradient(circle at 80% 25%, rgba(255,255,255,0.05) 0%, transparent 14%),
+    radial-gradient(circle at 35% 70%, rgba(255,140,60,0.08) 0%, transparent 16%),
+    linear-gradient(
+      180deg,
+      #342048 0%,
+      #261733 45%,
+      #1a1028 100%
+    )
+  `,
+}}
 >
 
         {/* SECTION TITLE */}

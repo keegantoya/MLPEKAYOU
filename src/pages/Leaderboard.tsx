@@ -16,15 +16,30 @@ import avatar012 from "@/assets/avatars/avatar012.webp";
 import avatar013 from "@/assets/avatars/avatar013.webp";
 import avatar014 from "@/assets/avatars/avatar014.webp";
 import avatar015 from "@/assets/avatars/avatar015.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
+import avatar016 from "@/assets/avatars/avatar016.webp";
+import avatar017 from "@/assets/avatars/avatar017.webp";
+import avatar018 from "@/assets/avatars/avatar018.webp";
+import avatar019 from "@/assets/avatars/avatar019.webp";
+import avatar020 from "@/assets/avatars/avatar020.webp";
+import avatar021 from "@/assets/avatars/avatar021.webp";
+import avatar022 from "@/assets/avatars/avatar022.webp";
+import avatar023 from "@/assets/avatars/avatar023.webp";
+import avatar024 from "@/assets/avatars/avatar024.webp";
+import avatar025 from "@/assets/avatars/avatar025.webp";
+import avatar026 from "@/assets/avatars/avatar026.webp";
+import avatar027 from "@/assets/avatars/avatar027.webp";
 
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
-import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
-import rarityCutieMark from "/website-assets/raritycutiemark.webp";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
+import maipfp from "@/assets/avatars/maipfp.webp";
+import TerriAvatar from "@/assets/avatars/terrypfp.webp";
+
+import twilightBroomstick from "/nightmarenight-assets/twilightsparkleonabroomstick.webp";
+import candy1 from "/nightmarenight-assets/nmncandy1.webp";
+import candy2 from "/nightmarenight-assets/nmncandy2.webp";
+import candy3 from "/nightmarenight-assets/nmncandy3.webp";
+
+import nightmareMoonEye from "/nightmarenight-assets/nightmaremooneye.webp";
 
 import elementOfMagic from "/website-assets/elementofmagic.webp";
 import elementOfGenerosity from "/website-assets/elementofgenerosity.webp";
@@ -50,8 +65,22 @@ const avatarMap: Record<string, string> = {
   "avatar013.webp": avatar013,
   "avatar014.webp": avatar014,
   "avatar015.webp": avatar015,
+  "avatar016.webp": avatar016,
+  "avatar017.webp": avatar017,
+  "avatar018.webp": avatar018,
+  "avatar019.webp": avatar019,
+  "avatar020.webp": avatar020,
+  "avatar021.webp": avatar021,
+  "avatar022.webp": avatar022,
+  "avatar023.webp": avatar023,
+  "avatar024.webp": avatar024,
+  "avatar025.webp": avatar025,
+  "avatar026.webp": avatar026,
+  "avatar027.webp": avatar027,
   "keeganpfp.webp": KeeganAvatar,
   "maipfp.webp": maipfp,
+  "keeganpfpnmn.webp": KeeganAvatar2,
+  "terrypfp.webp": TerriAvatar,
 };
 
 const VERIFIED_USERS = {
@@ -94,19 +123,67 @@ const Leaderboard = () => {
     const [rankWorthyCollectors, setRankWorthyCollectors] = useState(0);
     const [totalCardsSitewide, setTotalCardsSitewide] = useState(0);
     const [yourCurrentRank, setYourCurrentRank] = useState<number | null>(null);
-const [openProfile, setOpenProfile] = useState<string | null>(null);
-const [openSet, setOpenSet] = useState<Record<string, string | null>>({});
-useEffect(() => {
-  if (openProfile) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "auto";
-  }
+const [fallingCandies, setFallingCandies] = useState<any[]>([]);
 
-  return () => {
-    document.body.style.overflow = "auto";
-  };
-}, [openProfile]);
+useEffect(() => {
+  const candies = [candy1, candy2, candy3];
+
+  const interval = setInterval(() => {
+    const now = Date.now() % 40000;
+
+    const twilight =
+  document.getElementById(
+    "twilight-flyby"
+  );
+
+if (!twilight) return;
+
+const rect =
+  twilight.getBoundingClientRect();
+
+if (
+  rect.right < 0 ||
+  rect.left > window.innerWidth
+) {
+  return;
+}
+
+const x = rect.left;
+const y = rect.top + rect.height * 0.7;
+
+    const id =
+  Date.now() +
+  Math.random();
+
+    setFallingCandies((prev) => [
+      ...prev,
+      {
+        id,
+        image:
+          candies[
+            Math.floor(
+              Math.random() *
+                candies.length
+            )
+          ],
+        left: x + 65,
+top: y,
+        size: 22,
+      },
+    ]);
+
+    setTimeout(() => {
+      setFallingCandies((prev) =>
+        prev.filter(
+          (c) =>
+            c.id !== id
+        )
+      );
+    }, 12000);
+  }, 250);
+
+  return () => clearInterval(interval);
+}, []);
 
   useEffect(() => {
 const load = async () => {
@@ -226,71 +303,63 @@ const getAvatar = (avatar?: string) => {
   return (
 <div
   className="min-h-screen relative overflow-hidden"
-  style={{
+style={{
   background: `
-    radial-gradient(circle at 10% 15%, rgba(255,255,255,0.75), transparent 28%),
-    radial-gradient(circle at 90% 10%, rgba(255,223,128,0.18), transparent 24%),
-    radial-gradient(circle at 75% 30%, rgba(251,207,232,0.16), transparent 26%),
-    radial-gradient(circle at 20% 65%, rgba(196,181,253,0.18), transparent 32%),
-    radial-gradient(circle at 80% 85%, rgba(147,197,253,0.14), transparent 30%),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.35), transparent 45%),
+    radial-gradient(circle at 20% 15%, rgba(124,90,166,0.12), transparent 22%),
+    radial-gradient(circle at 80% 25%, rgba(255,255,255,0.04), transparent 18%),
+    radial-gradient(circle at 35% 70%, rgba(124,90,166,0.10), transparent 20%),
     linear-gradient(
       180deg,
-      #fcf8ff 0%,
-      #f8f1ff 22%,
-      #f4ecff 48%,
-      #efe6ff 72%,
-      #e8ddff 100%
+      #1a1028 0%,
+      #120b1d 45%,
+      #090611 100%
     )
   `,
 }}
 >
 
-      {/* FLOATING CUTIE MARK BACKGROUND */}
-<div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-  {Array.from({ length: 96 }).map((_, index) => {
-    const marks = [
-      twilightSparkleCutieMark,
-      fluttershyCutieMark,
-      rarityCutieMark,
-      applejackCutieMark,
-      pinkiePieCutieMark,
-      rainbowDashCutieMark,
-    ];
-
-    const mark = marks[index % marks.length];
-
-    // Spread symbols in a dense 12-column pattern with slight offsets
-    const row = Math.floor(index / 12);
-    const col = index % 12;
-
-    const top = row * 12 + (col % 2 === 0 ? 2 : 6);
-    const left = col * 8 + ((row % 2) * 2);
-
-    const rotations = [-30, -20, -12, -6, 6, 12, 18, 24, 30, -24, 15, -15];
-    const sizes = [48, 56, 64, 72, 52, 60];
+<div className="absolute top-0 left-0 right-0 h-[3000px] pointer-events-none overflow-hidden select-none">
+  {Array.from({ length: 70 }).map((_, index) => {
+    const row = Math.floor(index / 10);
+    const col = index % 10;
 
     return (
       <img
         key={index}
-        src={mark}
+        src={nightmareMoonEye}
         alt=""
         className="absolute"
         style={{
-          top: `${Math.min(top, 96)}%`,
-          left: `${Math.min(left, 96)}%`,
-          width: `${sizes[index % sizes.length]}px`,
+          top: `${row * 220 + (col % 2 ? 60 : 0)}px`,
+          left: `${col * 10}%`,
+          width: `${40 + ((index * 7) % 20)}px`,
           height: "auto",
-          transform: `rotate(${rotations[index % rotations.length]}deg)`,
-          opacity: 0.06,
-          filter: "blur(0.15px)",
+          opacity: 0.12,
+          transform: `rotate(${(index * 17) % 360}deg)`,
+          filter: "blur(0.3px)",
         }}
       />
     );
   })}
 </div>
 
-<div className="container max-w-7xl mx-auto px-4 py-10 overflow-visible">
+<div className="candy-rain-layer">
+  {fallingCandies.map((candy) => (
+    <img
+      key={candy.id}
+      src={candy.image}
+      alt=""
+      className="falling-candy"
+      style={{
+  left: `${candy.left}px`,
+  top: `${candy.top}px`,
+  width: `${candy.size}px`,
+}}
+    />
+  ))}
+</div>
+
+<div className="container max-w-7xl mx-auto px-4 pt-10 pb-24 overflow-visible">
 
   {/* HERO TITLE */}
   <div className="text-center mb-10">
@@ -340,23 +409,45 @@ const getAvatar = (avatar?: string) => {
   </div>
 </div>
   </div>
+
+<div
+  className="twilight-flyby"
+  id="twilight-flyby"
+>
+  <img
+    src={twilightBroomstick}
+    alt=""
+    className="w-full h-auto"
+  />
+</div>
+
 {/* STATS BAR */}
 <div className="mb-16">
   <div
     className="
-      relative overflow-hidden
-      bg-white/90 backdrop-blur-xl
-      border border-white/80
-      rounded-3xl md:rounded-[2rem]
-      shadow-[0_20px_60px_rgba(107,70,193,0.12),0_8px_20px_rgba(0,0,0,0.06)]
-      px-4 sm:px-6 md:px-8
-      py-4 sm:py-5 md:py-6
-    "
+  relative overflow-hidden
+  backdrop-blur-md
+  border border-[#7c5aa6]/35
+  rounded-3xl md:rounded-[2rem]
+  shadow-[0_20px_60px_rgba(0,0,0,0.55)]
+  px-4 sm:px-6 md:px-8
+  py-4 sm:py-5 md:py-6
+"
+style={{
+  background: `
+    linear-gradient(
+      180deg,
+      rgba(52,32,72,0.92) 0%,
+      rgba(38,23,51,0.95) 50%,
+      rgba(26,16,40,0.98) 100%
+    )
+  `,
+}}
   >
     {/* Decorative Glow */}
     <div className="absolute inset-0 pointer-events-none">
-      <div className="absolute -top-12 left-1/4 w-24 h-24 md:w-32 md:h-32 bg-yellow-200/20 rounded-full blur-3xl" />
-      <div className="absolute -bottom-10 right-1/4 w-28 h-28 md:w-40 md:h-40 bg-purple-300/20 rounded-full blur-3xl" />
+      <div className="absolute -top-12 left-1/4 w-24 h-24 md:w-32 md:h-32 bg-[#d4af37]/10 rounded-full blur-3xl" />
+      <div className="absolute -bottom-10 right-1/4 w-28 h-28 md:w-40 md:h-40 bg-[#7c5aa6]/15 rounded-full blur-3xl" />
     </div>
 
     <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0">
@@ -365,7 +456,8 @@ const getAvatar = (avatar?: string) => {
       <div className="relative text-center py-3 md:py-1">
         <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-purple-200 to-transparent" />
 
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-50 border border-purple-200 shadow-sm">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#342048] to-[#261733]
+border border-[#7c5aa6]/40 shadow-sm">
           <span className="text-xl sm:text-2xl">🌟</span>
         </div>
 
@@ -386,7 +478,8 @@ const getAvatar = (avatar?: string) => {
       <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-purple-100">
         <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-purple-200 to-transparent" />
 
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-yellow-100 to-amber-50 border border-yellow-200 shadow-sm">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#342048] to-[#261733]
+border border-[#7c5aa6]/40 shadow-sm">
           <span className="text-xl sm:text-2xl">❤️</span>
         </div>
 
@@ -405,7 +498,8 @@ const getAvatar = (avatar?: string) => {
 
       {/* Your Current Rank */}
       <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-purple-100">
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-pink-100 to-rose-50 border border-pink-200 shadow-sm">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#342048] to-[#261733]
+border border-[#7c5aa6]/40 shadow-sm">
           <span className="text-xl sm:text-2xl">👑</span>
         </div>
 
@@ -439,16 +533,31 @@ const getAvatar = (avatar?: string) => {
 
       return (
         <div
-          key={user.id}
-          className={`
-            relative cursor-pointer rounded-3xl border bg-white/95 backdrop-blur-sm
-            shadow-xl hover:shadow-2xl transition-all duration-300
-            ${isFirst ? "md:scale-110 border-yellow-300 py-10" : "py-8"}
-            ${isSecond ? "border-gray-300" : ""}
-            ${isThird ? "border-amber-300" : ""}
-            px-6 text-center
-          `}
-        >
+  key={user.id}
+  className={`
+    relative cursor-pointer rounded-3xl backdrop-blur-md
+    transition-all duration-300
+    px-6 text-center
+    ${isFirst ? "md:scale-110 py-10" : "py-8"}
+    ${
+      isFirst
+        ? "border border-[#f5e6a8]/70 shadow-[0_0_30px_rgba(245,230,168,0.12)]"
+        : isSecond
+        ? "border border-[#cbbcf0]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+        : "border border-[#b38b6d]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+    }
+  `}
+  style={{
+    background: `
+      linear-gradient(
+        180deg,
+        rgba(52,32,72,0.92) 0%,
+        rgba(38,23,51,0.95) 50%,
+        rgba(26,16,40,0.98) 100%
+      )
+    `,
+  }}
+>
           {/* Medal */}
           <div
             className={`
@@ -474,7 +583,7 @@ const getAvatar = (avatar?: string) => {
 
           {/* Username + Verified Badge */}
 <div className="flex items-center justify-center gap-2 mb-2">
-  <div className="text-2xl font-bold text-purple-950">
+  <div className="text-2xl font-bold text-[#e8e2ff]">
     {user.username}
   </div>
 
@@ -498,14 +607,14 @@ const getAvatar = (avatar?: string) => {
           {/* Card Count */}
           <div
             className={`
-              font-bold text-purple-700
+              font-bold text-[#f5e6a8]
               ${isFirst ? "text-5xl" : "text-4xl"}
             `}
           >
             {user.total.toLocaleString()}
           </div>
 
-          <div className="text-sm text-purple-500 mt-1">
+          <div className="text-sm text-[#cbbcf0] mt-1">
   cards collected
 </div>
 
@@ -545,15 +654,29 @@ const getAvatar = (avatar?: string) => {
         <div
           key={user.id}
           className="
-            cursor-pointer bg-white/95 backdrop-blur-sm
-            border border-white/70 rounded-2xl
-            px-6 py-4 shadow-md hover:shadow-xl
-            transition-all duration-300
-          "
+  cursor-pointer
+  rounded-2xl
+  px-6 py-4
+  backdrop-blur-md
+  border border-[#7c5aa6]/35
+  shadow-[0_10px_30px_rgba(0,0,0,0.45)]
+  hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)]
+  transition-all duration-300
+"
+style={{
+  background: `
+    linear-gradient(
+      180deg,
+      rgba(52,32,72,0.92) 0%,
+      rgba(38,23,51,0.95) 50%,
+      rgba(26,16,40,0.98) 100%
+    )
+  `,
+}}
         >
 <div className="flex items-center gap-3 sm:gap-4">
   {/* Rank */}
-  <div className="w-10 sm:w-12 md:w-16 text-lg sm:text-2xl md:text-3xl font-bold text-purple-800 shrink-0">
+  <div className="w-10 sm:w-12 md:w-16 text-lg sm:text-2xl md:text-3xl font-bold text-[#f5e6a8] shrink-0">
     #{rank}
   </div>
 
@@ -566,7 +689,7 @@ const getAvatar = (avatar?: string) => {
 {/* Username + Verified Badge */}
 <div className="flex-1 min-w-0">
   <div className="flex items-center gap-2 min-w-0">
-    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-purple-950 truncate">
+    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-[#e8e2ff] truncate">
       {user.username}
     </div>
 
@@ -583,10 +706,10 @@ const getAvatar = (avatar?: string) => {
 
   {/* Total */}
   <div className="text-right shrink-0">
-    <div className="text-lg sm:text-2xl md:text-3xl font-bold text-purple-700 leading-none">
+    <div className="text-lg sm:text-2xl md:text-3xl font-bold text-[#f5e6a8] leading-none">
       {user.total.toLocaleString()}
     </div>
-    <div className="text-[10px] sm:text-xs md:text-sm text-purple-500">
+    <div className="text-[10px] sm:text-xs md:text-sm text-[#cbbcf0]">
       cards
     </div>
   </div>

@@ -20,7 +20,7 @@ export default function Selling() {
     ["Rainbow Editions", "USR, XR"],
     ["Fun Moments Editions", "UGR, CR, ◇CR"],
     ["Star Editions", "USR, AR, OR, BP, ◇AR"],
-    ["Fantasy Wonderland", "※ER, ※GR, ※SPR, ※CR, ※RR"],
+    ["TCG Boxes", "※ER, ※GR, ※SPR, ※CR, ※RR"],
     ["Starter Decks", "※ER, ※RR"],
   ];
 

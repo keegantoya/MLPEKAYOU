@@ -203,7 +203,7 @@ const App = () => {
   <KayouHeader />
 
   <div
-    className={`min-h-screen pb-[72px] sm:pt-[64px] sm:pb-0 ${
+  className={`min-h-screen sm:pt-[64px] sm:pb-0 ${
       window.matchMedia('(display-mode: standalone)').matches
         ? 'pt-[88px]'
         : 'pt-[52px]'

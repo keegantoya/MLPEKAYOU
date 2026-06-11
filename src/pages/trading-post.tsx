@@ -18,7 +18,7 @@ import avatar013 from "@/assets/avatars/avatar013.webp";
 import avatar014 from "@/assets/avatars/avatar014.webp";
 import avatar015 from "@/assets/avatars/avatar015.webp";
 
-const tradePostCards = "/website-assets/tradepostcards.webp";
+const tradePostCards = "/website-assets/tradingpostcardsnmn.webp";
 
 const avatarMap: Record<string, string> = {
   avatar001,
@@ -123,6 +123,12 @@ const config: any = {
 };
 
 const TradingPost = () => {
+  const stars = Array.from({ length: 180 }, () => ({
+  left: Math.random() * 100,
+  top: Math.random() * 100,
+  size: 1 + Math.random() * 5,
+  opacity: 0.15 + Math.random() * 0.55,
+}));
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -400,42 +406,72 @@ const completionPercentage =
     : 0;
 
   return (
-   <div
+<div
   className="min-h-screen relative overflow-hidden"
-    style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
-}}
-  >
+  style={{
+    backgroundColor: "#0d0816",
+    backgroundImage: `
+  linear-gradient(
+    180deg,
+    #1a1028 0%,
+    #120b1d 45%,
+    #090611 100%
+  )
+`,
+  }}
+>
+
+<div className="absolute top-16 left-16 w-64 h-64 pointer-events-none z-20">
+  <div className="moon-glow" />
+
+  <img
+    src="/nightmarenight-assets/mareinthemoon.webp"
+    alt=""
+    className="relative w-full h-auto opacity-60"
+  />
+</div>
+
+<div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
+  {stars.map((star, i) => (
+    <div
+      key={i}
+      className="absolute rounded-full bg-white"
+      style={{
+        left: `${star.left}%`,
+        top: `${star.top}%`,
+        width: `${star.size}px`,
+        height: `${star.size}px`,
+        opacity: star.opacity,
+      }}
+    />
+  ))}
+</div>
+
+<div className="princess-flyby">
+  <img
+    src="/nightmarenight-assets/princessesflying.webp"
+    alt=""
+    className="princess-flyby-image"
+  />
+</div>
+
+<div className="absolute inset-0 bg-[#1a1028]/10 pointer-events-none" />
 
       <div className="container max-w-6xl xl:max-w-[1600px] py-8 sm:py-8 pt-6 sm:pt-8 px-4 sm:px-6 xl:px-10">
 
 {/* HERO HEADER */}
 <div className="mb-10">
   <div
-    className="relative overflow-hidden rounded-[2.5rem] border border-white/40 shadow-[0_12px_30px_rgba(91,33,182,0.12)]"
+    className="relative overflow-hidden rounded-[2.5rem] border border-purple-900/50 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
     style={{
-      background: `
-        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.08) 0%, transparent 35%),
-        radial-gradient(circle at 80% 25%, rgba(244,200,74,0.10) 0%, transparent 30%),
-        radial-gradient(circle at 70% 80%, rgba(236,72,153,0.06) 0%, transparent 30%),
-        linear-gradient(135deg, #7C4BB5 0%, #6D44A8 45%, #5B3695 100%)
-      `,
+      backgroundImage:
+        "url('/nightmarenight-assets/collectionsbannernmn.webp')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
       minHeight: "260px",
     }}
   >
+    <div className="absolute inset-0 bg-black/45 pointer-events-none" />
     {/* Decorative sparkles */}
     <div className="absolute top-6 left-10 text-white/15 text-2xl">✦</div>
     <div className="absolute top-8 right-10 text-yellow-200/20 text-xl">✦</div>
@@ -444,12 +480,9 @@ const completionPercentage =
 <div
   className="hidden xl:block absolute z-20 pointer-events-none"
   style={{
-    left: "50%",
-
-    top: "-150px",
-
+    left: "52%",
+    top: "-50px",
     transform: "translateX(-52%)",
-
     width: "600px",
   }}
 >
@@ -542,7 +575,7 @@ const completionPercentage =
 {/* FILTER BAR */}
 <div className="-mt-6 mb-10 relative z-10">
   <div
-    className="rounded-[1.75rem] border border-white/70 bg-white/85 backdrop-blur-md shadow-[0_10px_35px_rgba(91,33,182,0.08)] px-4 py-3"
+    className="rounded-[1.75rem] border border-purple-400/30 bg-black/20 backdrop-blur-md shadow-[0_10px_35px_rgba(91,33,182,0.08)] px-4 py-3"
   >
     <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
 
@@ -551,20 +584,21 @@ const completionPercentage =
   <button
     type="button"
     onClick={() => navigate("/forum")}
-    className="
-      w-full h-12 rounded-full
-      border border-[#E7DDF7]
-      bg-white
+   className="
+  w-full h-12 rounded-full
+  border border-purple-400/30
+  bg-black/20
+  backdrop-blur-md
       flex items-center px-4
       text-left
-      hover:border-[#D8C2F5]
-      hover:bg-[#FCFAFF]
+      hover:border-purple-300/40
+      hover:bg-black/30
       transition
     "
   >
     <span className="text-[#8B5FBF] text-lg mr-3">⌕</span>
 
-    <span className="text-sm text-gray-400">
+    <span className="text-sm text-white/70">
       FIND USERS IN THE FORUM SEARCH.
     </span>
   </button>
@@ -596,9 +630,10 @@ const completionPercentage =
   <button
     onClick={() => navigate("/inventory ")}
     className="
-      w-full h-12 rounded-full
-      font-semibold text-sm uppercase tracking-[0.15em]
-      text-white
+  w-full h-12 rounded-full
+ border-purple-400/30
+  bg-black/20
+  backdrop-blur-md
       flex items-center justify-center gap-3
       shadow-[0_8px_20px_rgba(124,75,181,0.18)]
       transition hover:scale-[1.02]
@@ -678,7 +713,7 @@ const setDescriptions: Record<string, string> = {
   "6": "RBE02 • MLPME02-R • MLPME03-R • MLPME03-SR • MLPME03-SSR",
   "7": "FME01 • INT01-R • INT02-R • INT02-UR",
   "8": "FME02 • INT02-R • INT03-R • INT03-UR",
-  "11": "FME03",
+  "11": "FME03 • MLPME02-R • MLPME03-R • MLPME03-SR • RBE02-UR",
   "FW": "BP01",
   "friendshipsbegin": "SD01",
   "9": "MLPE-PR",
@@ -701,9 +736,9 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
     flex items-center gap-4
     relative overflow-hidden
     rounded-[1.75rem]
-    border border-[#E9DDF8]
-    bg-white/90 backdrop-blur-sm
-    px-5 py-4
+border border-purple-400/30
+bg-transparent backdrop-blur-md
+px-5 py-4
     shadow-[0_8px_25px_rgba(91,33,182,0.06)]
     hover:shadow-[0_14px_35px_rgba(91,33,182,0.12)]
     hover:border-[#DCC8F7]
@@ -711,13 +746,13 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
   "
 >
   {/* Subtle magical glow */}
-  <div
-    className="absolute inset-0 pointer-events-none"
-    style={{
-      background:
-        "radial-gradient(circle at top right, rgba(244,200,74,0.06), transparent 45%)",
-    }}
-  />
+<div
+  className="absolute inset-0 pointer-events-none"
+  style={{
+    background:
+      "radial-gradient(circle at top right, rgba(139,92,246,0.06), transparent 45%)",
+  }}
+/>
 
   {/* Circular Set Thumbnail */}
   <div
@@ -768,9 +803,9 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
           items-center gap-5
           relative overflow-hidden
           rounded-[1.75rem]
-          border border-[#E9DDF8]
-          bg-white/90 backdrop-blur-sm
-          px-6 py-5
+border border-purple-400/30
+bg-transparent backdrop-blur-md
+px-6 py-5
           shadow-[0_8px_25px_rgba(91,33,182,0.06)]
           hover:shadow-[0_14px_35px_rgba(91,33,182,0.12)]
           hover:border-[#DCC8F7]
@@ -779,15 +814,15 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
       >
         {/* Subtle magical glow */}
         <div
-          className="
-            absolute inset-0 opacity-0 group-hover:opacity-100
-            transition-opacity duration-300 pointer-events-none
-          "
-          style={{
-            background:
-              "radial-gradient(circle at top right, rgba(244,200,74,0.08), transparent 45%)",
-          }}
-        />
+  className="
+    absolute inset-0 opacity-0 group-hover:opacity-100
+    transition-opacity duration-300 pointer-events-none
+  "
+  style={{
+    background:
+      "radial-gradient(circle at top right, rgba(139,92,246,0.08), transparent 45%)",
+  }}
+/>
 
         {/* Circular Set Thumbnail */}
         <div
@@ -861,7 +896,7 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
   {/* Center badge */}
   <div className="mx-6 relative">
     {/* Soft glow */}
-    <div className="absolute inset-0 rounded-full blur-xl bg-[#F4C84A]/20 scale-150" />
+    <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/10 scale-150" />
 
     {/* Label pill */}
     <div
@@ -869,13 +904,13 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
         relative
         px-6 py-2
         rounded-full
-        border border-white/70
-        bg-white/85 backdrop-blur-md
+        border border-purple-400/30
+        bg-black/20 backdrop-blur-md
         shadow-[0_8px_25px_rgba(91,33,182,0.08)]
         flex items-center gap-2
       "
     >
-      <span className="text-[#E5B93D] text-xs">✦</span>
+      <span className="text-purple-300 text-xs">✦</span>
 
       <span
         className="
@@ -891,7 +926,7 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
         Collectible Card Game
       </span>
 
-      <span className="text-[#E5B93D] text-xs">✦</span>
+      <span className="text-purple-300 text-xs">✦</span>
     </div>
   </div>
 
@@ -929,7 +964,7 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
   {/* Center badge */}
   <div className="mx-6 relative">
     {/* Soft glow */}
-    <div className="absolute inset-0 rounded-full blur-xl bg-[#F4C84A]/20 scale-150" />
+    <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/10 scale-150" />
 
     {/* Label pill */}
     <div
@@ -937,13 +972,13 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
         relative
         px-6 py-2
         rounded-full
-        border border-white/70
-        bg-white/85 backdrop-blur-md
+        border border-purple-400/30
+        bg-black/20 backdrop-blur-md
         shadow-[0_8px_25px_rgba(91,33,182,0.08)]
         flex items-center gap-2
       "
     >
-      <span className="text-[#E5B93D] text-xs">✦</span>
+      <span className="text-purple-300 text-xs">✦</span>
 
       <span
         className="
@@ -959,7 +994,7 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
         Trading Card Game
       </span>
 
-      <span className="text-[#E5B93D] text-xs">✦</span>
+      <span className="text-purple-300 text-xs">✦</span>
     </div>
   </div>
 
@@ -997,7 +1032,7 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
   {/* Center badge */}
   <div className="mx-6 relative">
     {/* Soft glow */}
-    <div className="absolute inset-0 rounded-full blur-xl bg-[#F4C84A]/20 scale-150" />
+    <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/10 scale-150" />
 
     {/* Label pill */}
     <div
@@ -1005,13 +1040,13 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
         relative
         px-6 py-2
         rounded-full
-        border border-white/70
-        bg-white/85 backdrop-blur-md
+        border border-purple-400/30
+        bg-black/20 backdrop-blur-md
         shadow-[0_8px_25px_rgba(91,33,182,0.08)]
         flex items-center gap-2
       "
     >
-      <span className="text-[#E5B93D] text-xs">✦</span>
+      <span className="text-purple-300 text-xs">✦</span>
 
       <span
         className="
@@ -1027,7 +1062,7 @@ const setDescription = setDescriptions[set.id] || "Add codes here";
         Promotional Cards
       </span>
 
-      <span className="text-[#E5B93D] text-xs">✦</span>
+      <span className="text-purple-300 text-xs">✦</span>
     </div>
   </div>
 

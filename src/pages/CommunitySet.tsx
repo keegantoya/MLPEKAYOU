@@ -18,9 +18,25 @@ import avatar012 from "@/assets/avatars/avatar012.webp";
 import avatar013 from "@/assets/avatars/avatar013.webp";
 import avatar014 from "@/assets/avatars/avatar014.webp";
 import avatar015 from "@/assets/avatars/avatar015.webp";
+import avatar016 from "@/assets/avatars/avatar016.webp";
+import avatar017 from "@/assets/avatars/avatar017.webp";
+import avatar018 from "@/assets/avatars/avatar018.webp";
+import avatar019 from "@/assets/avatars/avatar019.webp";
+import avatar020 from "@/assets/avatars/avatar020.webp";
+import avatar021 from "@/assets/avatars/avatar021.webp";
+import avatar022 from "@/assets/avatars/avatar022.webp";
+import avatar023 from "@/assets/avatars/avatar023.webp";
+import avatar024 from "@/assets/avatars/avatar024.webp";
+import avatar025 from "@/assets/avatars/avatar025.webp";
+import avatar026 from "@/assets/avatars/avatar026.webp";
+import avatar027 from "@/assets/avatars/avatar027.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
+import TerriAvatar from "@/assets/avatars/terrypfp.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
+
+import spider from "/website-assets/spider.webp";
 
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
@@ -42,10 +58,24 @@ const avatarMap: Record<string, string> = {
   "avatar013.webp": avatar013,
   "avatar014.webp": avatar014,
   "avatar015.webp": avatar015,
-    "heimantouavatar": heimantouAvatar,
+  "avatar016.webp": avatar016,
+  "avatar017.webp": avatar017,
+  "avatar018.webp": avatar018,
+  "avatar019.webp": avatar019,
+  "avatar020.webp": avatar020,
+  "avatar021.webp": avatar021,
+  "avatar022.webp": avatar022,
+  "avatar023.webp": avatar023,
+  "avatar024.webp": avatar024,
+  "avatar025.webp": avatar025,
+  "avatar026.webp": avatar026,
+  "avatar027.webp": avatar027,
+  "heimantouavatar": heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,
   "keeganpfp.webp": KeeganAvatar,
+  "keeganpfpnmn.webp": KeeganAvatar2,
   "maipfp.webp": maipfp,
+  "terrypfp.webp": TerriAvatar,
 };
 
 const VERIFIED_USERS = {
@@ -454,34 +484,34 @@ const getAvatar = (avatar?: string, username?: string) => {
 
   if (!set) return null;
 
-  return (
-    <div
-  className="min-h-screen"
+return (
+  <div
+    className="min-h-screen"
     style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
-}}
+      backgroundColor: "#0d0816",
+      backgroundImage: `
+        radial-gradient(circle at 20% 15%, rgba(255,119,0,0.12) 0%, transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(139,92,246,0.12) 0%, transparent 30%),
+        radial-gradient(circle at 25% 80%, rgba(255,119,0,0.08) 0%, transparent 35%),
+        radial-gradient(circle at 75% 75%, rgba(168,85,247,0.08) 0%, transparent 35%),
+        linear-gradient(
+          180deg,
+          #12091d 0%,
+          #0d0816 35%,
+          #090611 70%,
+          #05030a 100%
+        )
+      `,
+    }}
 >
-      <div className="container max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
+      <div className="container max-w-6xl px-4 sm:px-6 py-6 sm:py-8 pb-24 md:pb-8">
   {/* Back Button */}
   <button
     onClick={() => navigate("/community")}
     className="
       inline-flex items-center gap-2
-      text-sm font-medium text-purple-700
-      hover:text-purple-900
+      text-sm font-medium text-orange-300
+      hover:text-orange-200
       mb-4 sm:mb-6
       transition-colors
     "
@@ -492,11 +522,11 @@ const getAvatar = (avatar?: string, username?: string) => {
 
   {/* Page Header */}
   <div className="mb-6 sm:mb-8">
-    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-purple-950 leading-tight">
+    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-orange-200 leading-tight">
       {set.name} Leaderboard
     </h1>
 
-    <p className="mt-2 text-sm sm:text-base text-purple-700/80 max-w-3xl leading-relaxed">
+    <p className="mt-2 text-sm sm:text-base text-orange-300/80 max-w-3xl leading-relaxed">
       This page shows the top ten closest collectors from completion,
       along with everyone who has already finished the set in completion order from first to most recent.
     </p>
@@ -509,13 +539,13 @@ const getAvatar = (avatar?: string, username?: string) => {
     className="
   xl:col-span-1
       rounded-3xl
-      bg-white/75 backdrop-blur-xl
-      border border-white/60
-      shadow-[0_12px_35px_rgba(76,29,149,0.08)]
+      bg-black/40 backdrop-blur-xl
+border border-purple-900/60
+shadow-[0_12px_40px_rgba(0,0,0,0.5)]
       p-5 sm:p-6
     "
   >
-    <h2 className="text-xl font-bold text-purple-950 mb-5">
+    <h2 className="text-xl font-bold text-orange-200 mb-5">
       Completed Sets
     </h2>
 
@@ -527,8 +557,8 @@ const getAvatar = (avatar?: string, username?: string) => {
             className="
               flex items-center gap-3
               rounded-2xl
-              bg-white/70
-              border border-purple-100
+              bg-black/30
+border border-purple-900/50
               px-3 py-3 sm:px-4
               shadow-sm
             "
@@ -553,7 +583,7 @@ const getAvatar = (avatar?: string, username?: string) => {
     className="
       font-semibold
       text-sm sm:text-base
-      text-purple-950
+      text-orange-200
       truncate
     "
   >
@@ -579,8 +609,8 @@ const getAvatar = (avatar?: string, username?: string) => {
           className="
             w-full mt-2 py-3
             rounded-2xl
-            bg-purple-100 hover:bg-purple-200
-            text-sm font-semibold text-purple-800
+            bg-purple-950/70 hover:bg-purple-900
+text-orange-200
             transition-colors
           "
         >
@@ -591,10 +621,21 @@ const getAvatar = (avatar?: string, username?: string) => {
       )}
 
       {completed.length === 0 && (
-        <div className="text-sm text-purple-700/70 italic">
-          No one has completed this set yet.
-        </div>
-      )}
+  <div className="flex flex-col items-center py-6">
+    <img
+      src={spider}
+      alt="Spider"
+      className="w-14 h-auto animate-[spiderSwing_4s_ease-in-out_infinite]"
+      style={{
+        transformOrigin: "top center",
+      }}
+    />
+
+    <div className="mt-3 text-sm text-purple-300/70 italic text-center">
+      No one has completed this set yet...
+    </div>
+  </div>
+)}
     </div>
   </div>
 
@@ -603,13 +644,13 @@ const getAvatar = (avatar?: string, username?: string) => {
     className="
   xl:col-span-2
       rounded-3xl
-      bg-white/75 backdrop-blur-xl
-      border border-white/60
-      shadow-[0_12px_35px_rgba(76,29,149,0.08)]
+      bg-black/40 backdrop-blur-xl
+border border-purple-900/60
+shadow-[0_12px_40px_rgba(0,0,0,0.5)]
       p-5 sm:p-6
     "
   >
-    <h2 className="text-xl font-bold text-purple-950 mb-5">
+    <h2 className="text-xl font-bold text-orange-200 mb-5">
       Still Collecting
     </h2>
 
@@ -620,8 +661,8 @@ const getAvatar = (avatar?: string, username?: string) => {
           className="
             flex items-center justify-between gap-3
             rounded-2xl
-            bg-white/70
-            border border-purple-100
+            bg-black/30
+border border-purple-900/50
             px-3 py-3 sm:px-4
             shadow-sm
           "
@@ -631,7 +672,7 @@ const getAvatar = (avatar?: string, username?: string) => {
               className="
                 shrink-0
                 w-8 text-sm font-bold
-                text-purple-700
+                text-orange-300
               "
             >
               #{index + 1}
@@ -653,7 +694,7 @@ const getAvatar = (avatar?: string, username?: string) => {
     className="
       font-semibold
       text-sm sm:text-base
-      text-purple-950
+      text-orange-200
       truncate
     "
   >
@@ -676,7 +717,7 @@ const getAvatar = (avatar?: string, username?: string) => {
               shrink-0
               text-sm sm:text-base
               font-bold
-              text-purple-700
+              text-orange-300
             "
           >
             {user.owned} / {set.total}

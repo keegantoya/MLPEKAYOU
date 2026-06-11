@@ -1,5 +1,10 @@
 import {
   Home,
+    Ghost,
+    Candy,
+    Cat,
+    Skull,
+    Moon,
   Trophy,
   Medal,
   Tag,
@@ -24,7 +29,7 @@ import { useRef } from "react";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
 
-const logo = "/website-assets/mlpekayouwiki.webp";
+const logo = "/website-assets/mlpekayouwikinmn.webp";
 
 import avatar001 from "@/assets/avatars/avatar001.webp";
 import avatar002 from "@/assets/avatars/avatar002.webp";
@@ -41,8 +46,22 @@ import avatar012 from "@/assets/avatars/avatar012.webp";
 import avatar013 from "@/assets/avatars/avatar013.webp";
 import avatar014 from "@/assets/avatars/avatar014.webp";
 import avatar015 from "@/assets/avatars/avatar015.webp";
+import avatar016 from "@/assets/avatars/avatar016.webp";
+import avatar017 from "@/assets/avatars/avatar017.webp";
+import avatar018 from "@/assets/avatars/avatar018.webp";
+import avatar019 from "@/assets/avatars/avatar019.webp";
+import avatar020 from "@/assets/avatars/avatar020.webp";
+import avatar021 from "@/assets/avatars/avatar021.webp";
+import avatar022 from "@/assets/avatars/avatar022.webp";
+import avatar023 from "@/assets/avatars/avatar023.webp";
+import avatar024 from "@/assets/avatars/avatar024.webp";
+import avatar025 from "@/assets/avatars/avatar025.webp";
+import avatar026 from "@/assets/avatars/avatar026.webp";
+import avatar027 from "@/assets/avatars/avatar027.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
+import TerriAvatar from "@/assets/avatars/terrypfp.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
@@ -82,10 +101,23 @@ const avatarMap: Record<string, string> = {
   "avatar013.webp": avatar013,
   "avatar014.webp": avatar014,
   "avatar015.webp": avatar015,
-
+  "avatar016.webp": avatar016,
+  "avatar017.webp": avatar017,
+  "avatar018.webp": avatar018,
+  "avatar019.webp": avatar019,
+  "avatar020.webp": avatar020,
+  "avatar021.webp": avatar021,
+  "avatar022.webp": avatar022,
+  "avatar023.webp": avatar023,
+  "avatar024.webp": avatar024,
+  "avatar025.webp": avatar025,
+  "avatar026.webp": avatar026,
+  "avatar027.webp": avatar027,
   "keeganpfp.webp": KeeganAvatar,
-  "heimantouavatar.webp": heimantouAvatar,
+  "keeganpfpnmn.webp": KeeganAvatar2,
   "maipfp.webp": maipfp,
+  "terrypfp.webp": TerriAvatar,
+  "heimantouavatar.webp": heimantouAvatar,
 };
 
 const VERIFIED_USERS = {
@@ -166,8 +198,12 @@ const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
   const [showTradesMenu, setShowTradesMenu] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
-  const [showProgressMenu, setShowProgressMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+const [showProgressMenu, setShowProgressMenu] = useState(false);
+
+const [showSpider, setShowSpider] = useState(true);
+const [spiderLeaving, setSpiderLeaving] = useState(false);
+
+const menuRef = useRef<HTMLDivElement>(null);
 
 const verification =
   profile?.id ? VERIFIED_USERS[profile.id] : null;
@@ -295,6 +331,16 @@ useEffect(() => {
   }
 }, [profile?.avatar_url]);
 
+useEffect(() => {
+  sessionStorage.removeItem("spiderDismissed");
+}, []);
+
+useEffect(() => {
+  if (sessionStorage.getItem("spiderDismissed")) {
+    setShowSpider(false);
+  }
+}, []);
+
   const handleLoginSubmit = async () => {
   const { error } = await supabase.auth.signInWithPassword({
     email: loginEmail,
@@ -385,6 +431,15 @@ const requireLogin = (path: string) => {
     navigate("/");
   };
 
+  const dismissSpider = () => {
+  setSpiderLeaving(true);
+
+  setTimeout(() => {
+    sessionStorage.setItem("spiderDismissed", "true");
+    setShowSpider(false);
+  }, 1200);
+};
+
   const isActive = (path: string) => {
   if (path === "/") {
     return location.pathname === "/";
@@ -393,18 +448,37 @@ const requireLogin = (path: string) => {
   return location.pathname.startsWith(path);
 };
 
-  return (
-    <>
+return (
+  <>
+{showSpider && (
+  <button
+    onClick={dismissSpider}
+    className={`fixed left-1/2 z-[19999] bg-transparent border-0 p-0 cursor-pointer ${
+      spiderLeaving ? "spider-up" : "spider-down"
+    }`}
+    aria-label="Spider"
+  >
+    <div className={spiderLeaving ? "" : "spider-sway"}>
+      <img
+  src="/website-assets/spider.webp"
+  alt="Spider"
+  className="w-20 sm:w-24 h-auto select-none pointer-events-none"
+/>
+    </div>
+  </button>
+)}
+
 <header
-  className={`fixed left-0 right-0 z-[20000] bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-md ${
+  className={`fixed left-0 right-0 z-[20000] text-[#f5e6a8] shadow-md ${
     !window.matchMedia('(display-mode: standalone)').matches
       ? 'top-0'
       : 'top-0'
   }`}
-  style={{
-    WebkitTransform: "translateZ(0)",
-    transform: "translateZ(0)"
-  }}
+style={{
+  background: "#ece8f1",
+  WebkitTransform: "translateZ(0)",
+  transform: "translateZ(0)",
+}}
 >
   
  <div
@@ -463,16 +537,34 @@ style={{
 )}
 
   {/* MOBILE TROPHY FOR LEADERBOARD */}
-  <button
-    onClick={() => navigate("/leaderboard")}
-    className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] shadow-sm"
-  >
-    <Trophy className="h-4 w-4" />
-  </button>
+<button
+  onClick={() => navigate("/leaderboard")}
+  className="
+    flex items-center justify-center
+    w-8 h-8 rounded-full
+    border border-white
+    bg-[#cbc5d4]
+    text-white
+    shadow-md
+    transition-all
+    hover:bg-[#c0b9cb]
+  "
+>
+  <Trophy className="h-4 w-4" />
+</button>
 
-  <button
+<button
   onClick={() => navigate("/community")}
-  className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] shadow-sm"
+  className="
+    flex items-center justify-center
+    w-8 h-8 rounded-full
+    border border-white
+    bg-[#cbc5d4]
+    text-white
+    shadow-md
+    transition-all
+    hover:bg-[#c0b9cb]
+  "
 >
   <Medal className="h-4 w-4" />
 </button>
@@ -499,7 +591,7 @@ style={{
 
 <SheetContent
   side="left"
-  className="top-16 h-[calc(100vh-64px)] w-[260px] bg-gradient-to-b from-[#65408f] via-[#55357d] to-[#40285f] border-r border-[#d4af37]/30 text-[#f5e6a8] [&>button]:hidden p-0"
+  className="top-16 h-[calc(100vh-64px)] w-[260px] bg-[#ece8f1] border-r border-white text-[#5a3e84] [&>button]:hidden p-0"
 >
       <div className="flex flex-col h-full">
         {/* Header */}
@@ -507,11 +599,11 @@ style={{
           <img
             src={avatarSrc || avatar001}
             alt="avatar"
-            className="h-16 w-16 rounded-full object-cover border-3 border-white/20 shadow-lg"
+            className="h-16 w-16 rounded-full object-cover border-3 border-white shadow-lg"
           />
 
           <div className="mt-2 flex items-center justify-center gap-2">
-  <div className="text-xl font-semibold">
+  <div className="text-xl font-semibold text-[#5a3e84]">
     {profile?.username || "My Profile"}
   </div>
 
@@ -533,7 +625,7 @@ style={{
               navigate("/UserMenu");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
           >
             Edit My Profile
           </button>
@@ -543,7 +635,7 @@ style={{
               navigate("/my-progress");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
           >
             My CCG Progress
           </button>
@@ -553,7 +645,7 @@ style={{
               navigate("/progress-tcg");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
           >
             My TCG Progress
           </button>
@@ -563,7 +655,7 @@ style={{
               navigate("/inventory");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
           >
             My Inventory
           </button>
@@ -573,7 +665,7 @@ style={{
     navigate("/my-iso");
     setOpen(false);
   }}
-  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
 >
   My ISO
 </button>
@@ -582,13 +674,13 @@ style={{
     navigate("/wishlist");
     setOpen(false);
   }}
- className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#d4af37]/30 transition-all"
+ className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
 >
   My Wishlist
 </button>
         </div>
 {/* Social Links */}
-<div className="pt-2 border-t border-white/10">
+<div className="pt-2 border-t border-white">
   <div className="flex items-center justify-center gap-3 py-2">
     <button
       onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
@@ -619,7 +711,7 @@ style={{
       handleLogout();
       setOpen(false);
     }}
-    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-[#d4af37]/20 transition-all"
+    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-3 rounded-2xl bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] transition-all"
   >
     Logout
   </button>
@@ -644,44 +736,44 @@ style={{
   {/* LEFT OF LOGO */}
   <button
     onClick={() => navigate("/")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
-    <Home className="h-5 w-5" />
+    <Ghost className="h-5 w-5" />
   </button>
 
   <button
     onClick={() => requireLogin("/forum")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/forum")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
-    <Users className="h-5 w-5" />
+    <Candy className="h-5 w-5" />
   </button>
 
   <button
     onClick={() => navigate("/collections")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/collections")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
-    <Sparkles className="h-5 w-5" />
+    <Skull className="h-5 w-5" />
   </button>
 
     <button
   onClick={() => navigate("/leaderboard")}
-  className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-    isActive("/leaderboard")
-      ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-      : "bg-white/10 border-white/20 hover:bg-white/20"
-  }`}
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
+}`}
   title="Top Collectors"
 >
   <Medal className="h-5 w-5" />
@@ -698,10 +790,10 @@ style={{
   {/* RIGHT OF LOGO */}
   <button
     onClick={() => navigate("/community")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/community")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
     <Trophy className="h-5 w-5" />
@@ -709,21 +801,21 @@ style={{
 
     <button
     onClick={() => requireLogin("/trading-post")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/trading-post")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
-    <ArrowLeftRight className="h-5 w-5" />
+    <Cat className="h-5 w-5" />
   </button>
 
   <button
     onClick={() => navigate("/selling")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/selling")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
     <Tag className="h-5 w-5" />
@@ -731,10 +823,10 @@ style={{
 
   <button
     onClick={() => navigate("/faq")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-  isActive("/faq")
-    ? "bg-white/20 border-[#d4af37]/50 shadow-md scale-105"
-    : "bg-white/10 border-white/20 hover:bg-white/20"
+className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
+isActive("/")
+  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
     <Search className="h-5 w-5" />
@@ -747,7 +839,17 @@ style={{
     <>
 
       <Button
-        className="h-10 px-5 bg-white/10 hover:bg-white/20 text-[#f5e6a8] border border-[#d4af37]/40 font-semibold shadow-sm"
+        className="
+flex items-center justify-center
+w-8 h-8
+rounded-full
+border border-white
+bg-[#cbc5d4]
+text-white
+shadow-md
+transition-all
+hover:bg-[#c0b9cb]
+"
         onClick={() => {
           setAuthMode("login");
           setLoginError("");
@@ -769,14 +871,34 @@ style={{
 <div className="sm:hidden absolute right-3 bottom-2 flex items-center gap-2">
   <button
     onClick={() => navigate("/selling")}
-    className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] text-lg font-bold shadow-sm"
+    className="
+flex items-center justify-center
+w-8 h-8
+rounded-full
+border border-white
+bg-[#cbc5d4]
+text-white
+shadow-md
+transition-all
+hover:bg-[#c0b9cb]
+"
   >
     $
   </button>
 
   <button
     onClick={() => navigate("/faq")}
-    className="flex items-center justify-center w-8 h-8 rounded-full border border-white/30 bg-white/10 text-[#f5e6a8] text-lg font-bold shadow-sm"
+    className="
+flex items-center justify-center
+w-8 h-8
+rounded-full
+border border-white
+bg-[#cbc5d4]
+text-white
+shadow-md
+transition-all
+hover:bg-[#c0b9cb]
+"
   >
     ?
   </button>
@@ -846,6 +968,93 @@ style={{
 
 <style>
 {`
+.spider-down {
+  top: 52px;
+  transform: translateX(-50%);
+  animation: spiderDrop 2.5s ease-out forwards;
+}
+
+.spider-up {
+  top: 52px;
+  transform: translateX(-50%);
+  animation: spiderRise 1.2s ease-in forwards;
+}
+
+@media (min-width: 640px) {
+  .spider-down,
+  .spider-up {
+    top: 64px;
+  }
+}
+
+.spider-thread {
+  width: 2px;
+  height: 90px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.8);
+}
+
+.spider-sway {
+  animation: spiderSway 3s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes spiderDrop {
+  from {
+    transform: translateX(-50%) translateY(-120px);
+  }
+
+  to {
+    transform: translateX(-50%) translateY(-25px);
+  }
+}
+
+@keyframes spiderRise {
+  from {
+    transform: translateX(-50%) translateY(-25px);
+  }
+
+  to {
+    transform: translateX(-50%) translateY(-120px);
+  }
+}
+
+@media (max-width: 639px) {
+  @keyframes spiderDrop {
+    from {
+      transform: translateX(-50%) translateY(-120px);
+    }
+
+    to {
+      transform: translateX(-50%) translateY(25px);
+    }
+  }
+
+  @keyframes spiderRise {
+    from {
+      transform: translateX(-50%) translateY(25px);
+    }
+
+    to {
+      transform: translateX(-50%) translateY(-120px);
+    }
+  }
+}
+
+@keyframes spiderSway {
+  0% {
+    transform: rotate(-6deg);
+  }
+
+  50% {
+    transform: rotate(6deg);
+  }
+
+  100% {
+    transform: rotate(-6deg);
+  }
+}
+
 .glitter {
   position: absolute;
   width: 8px;
@@ -1189,19 +1398,19 @@ style={{
 
 {/* MOBILE BOTTOM NAV */}
 <div
-  className="sm:hidden fixed bottom-4 left-1/2 z-[99999]
-bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84]
-border border-[#d4af37]/40
+className="sm:hidden fixed bottom-6 left-1/2 z-[99999]
+bg-black/50
+border border-white/15
 rounded-full
-shadow-2xl
+shadow-[0_8px_32px_rgba(0,0,0,0.35)]
 grid grid-cols-5 place-items-center"
   style={{
-    width: "calc(100% - 24px)",
-    maxWidth: "420px",
+    width: "calc(100% - 48px)",
+maxWidth: "360px",
     height: "64px",
 
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
+    backdropFilter: "blur(18px) saturate(180%)",
+WebkitBackdropFilter: "blur(18px) saturate(180%)",
 
     transform: "translateX(-50%) translateZ(0)",
     WebkitTransform: "translateX(-50%) translateZ(0)",
@@ -1216,11 +1425,10 @@ grid grid-cols-5 place-items-center"
 
 <div
   className="
-    absolute top-1/2 h-[54px] w-[55px] rounded-full
-    bg-white/20
-    backdrop-blur-x5
-    shadow-[0_0_24px_rgba(255,255,255,0.35)]
-  "
+  absolute top-1/2 h-[48px] w-[48px] rounded-full
+  bg-white/15
+  shadow-[0_0_18px_rgba(255,255,255,0.18)]
+"
   style={{
     left:
       location.pathname === "/"
@@ -1261,7 +1469,7 @@ grid grid-cols-5 place-items-center"
     }}
     className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
-    <Home className="h-6 w-6" />
+    <Ghost className="h-6 w-6" />
   </button>
 
   {/* COLLECTIONS */}
@@ -1275,7 +1483,7 @@ grid grid-cols-5 place-items-center"
     }}
     className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
-    <Sparkles className="h-6 w-6" />
+    <Skull className="h-6 w-6" />
   </button>
 
   {/* TRADES */}
@@ -1289,10 +1497,10 @@ grid grid-cols-5 place-items-center"
     }}
     className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
-    <ArrowLeftRight className="h-6 w-6" />
+    <Cat className="h-6 w-6" />
   </button>
 
-  {/* ALL ISOS */}
+  {/* FORUM */}
   <button
     onClick={() => {
       setShowMobileProgressMenu(false);
@@ -1303,7 +1511,7 @@ grid grid-cols-5 place-items-center"
     }}
     className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
   >
-    <Search className="h-6 w-6" />
+    <Candy className="h-6 w-6" />
   </button>
 
 {/* PROFILE */}
@@ -1324,7 +1532,7 @@ grid grid-cols-5 place-items-center"
   }}
   className="relative z-10 flex items-center justify-center w-10 h-full text-[#f5e6a8] transition-colors flex-shrink-0"
 >
-  <User className="h-6 w-6" />
+  <Moon className="h-6 w-6" />
 </button>
 </div>
 </>

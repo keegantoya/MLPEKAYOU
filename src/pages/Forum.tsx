@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   MessageCircle,
@@ -6,6 +6,7 @@ import {
   FileText,
   PenSquare,
   Heart,
+    Candy,
   Repeat2,
   Search,
   ArrowLeftRight,
@@ -28,9 +29,23 @@ import avatar012 from "@/assets/avatars/avatar012.webp";
 import avatar013 from "@/assets/avatars/avatar013.webp";
 import avatar014 from "@/assets/avatars/avatar014.webp";
 import avatar015 from "@/assets/avatars/avatar015.webp";
+import avatar016 from "@/assets/avatars/avatar016.webp";
+import avatar017 from "@/assets/avatars/avatar017.webp";
+import avatar018 from "@/assets/avatars/avatar018.webp";
+import avatar019 from "@/assets/avatars/avatar019.webp";
+import avatar020 from "@/assets/avatars/avatar020.webp";
+import avatar021 from "@/assets/avatars/avatar021.webp";
+import avatar022 from "@/assets/avatars/avatar022.webp";
+import avatar023 from "@/assets/avatars/avatar023.webp";
+import avatar024 from "@/assets/avatars/avatar024.webp";
+import avatar025 from "@/assets/avatars/avatar025.webp";
+import avatar026 from "@/assets/avatars/avatar026.webp";
+import avatar027 from "@/assets/avatars/avatar027.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
+import TerriAvatar from "@/assets/avatars/terrypfp.webp";
 
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
@@ -52,11 +67,27 @@ const avatarMap: Record<string, string> = {
   avatar013,
   avatar014,
   avatar015,
-
+  avatar016,
+  avatar017,
+  avatar018,
+  avatar019,
+  avatar020,
+  avatar021,
+  avatar022,
+  avatar023,
+  avatar024,
+  avatar025,
+  avatar026,
+  avatar027,
   heimantouavatar: heimantouAvatar,
+  keeganpfpnmn: KeeganAvatar2,
+  "keeganpfpnmn.webp": KeeganAvatar2,
   KeeganAvatar: KeeganAvatar,
-  "keeganpfp.webp": KeeganAvatar,
+  "keeganpfp": KeeganAvatar,
   maipfp: maipfp,
+  "maipfp.webp": maipfp,
+  TerriAvatar: TerriAvatar,
+  "terrypfp": TerriAvatar,
 };
 
 const VERIFIED_USERS: Record<
@@ -107,9 +138,9 @@ const adminOnlyPosts = [
     title: "Kayou US News",
     topic: "News & Updates",
     author_name: "Keegan",
-    author_avatar: "KeeganAvatar",
+    author_avatar: "keeganpfpnmn.webp",
     caption:
-      "Check back here for updates regarding set launches and Kayou US's latest news and in-person events.",
+      "Discord TCG, Nightmare Night TCG, Hearths Warming TCG, and Moon 4 are coming! Dates will be released when they are known.",
     image: KeeganAvatar,
   },
 
@@ -118,43 +149,34 @@ const adminOnlyPosts = [
     title: "Moving Giveaways",
     topic: "Giveaways",
     author_name: "Keegan",
-    author_avatar: "KeeganAvatar",
+    author_avatar: "keeganpfpnmn.webp",
     caption:
-      "(05/25-06/10) I am offically outprocessing from the military and I must move across the country to become a civilian again. Check the Discord server!",
+      "I finally finished my time in service! I am in the process of moving across the country now. Giveaways will resume when I am moved in to my new house.",
     image: avatar006,
   },
-
-  {
-    id: "giveaway-may",
-    title: "Monthly Giveaway",
-    topic: "Giveaways",
-    author_name: "Keegan",
-    author_avatar: "KeeganAvatar",
-    caption:
-      "(05/10 - 05/15) 15 lucky winners will recieve one sealed in-person event promotional card from Kayou US's new Friendships Begin TCG set.",
-    image: avatar006,
-  },
-
-  {
-  id: "news-moon3-sc001-preview",
-  title: "Eternal Moon Three",
-  topic: "News & Updates",
-  author_name: "Keegan",
-  author_avatar: "KeeganAvatar",
-  caption:
-    "Eternal Moon Three will be coming to MLPEKAYOU on 05/25!",
-  image: avatar006,
-  attached_cards: [
-    {
-      set_id: "3",
-      card_key: "SC-1",
-    },
-  ],
-},
 
 ];
 
 export default function Forum() {
+
+  const spookyCandies = useMemo(() => {
+  const candyImages = [
+    "/nightmarenight-assets/nmncandy1.webp",
+    "/nightmarenight-assets/nmncandy2.webp",
+    "/nightmarenight-assets/nmncandy3.webp",
+  ];
+
+  return Array.from({ length: 45 }, (_, i) => ({
+    id: i,
+    src: candyImages[Math.floor(Math.random() * candyImages.length)],
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    rotate: `${Math.random() * 360}deg`,
+    size: 40 + Math.random() * 50,
+    opacity: 0.08 + Math.random() * 0.12,
+  }));
+}, []);
+
   const categories = [
     "General",
     "In Search Of",
@@ -444,7 +466,7 @@ const [posts, setPosts] = useState<any[]>([
     title: "Welcome to the Kayou Community Forum!",
     topic: "General",
     author_name: "Keegan",
-    author_avatar: "KeeganAvatar",
+    author_avatar: "keeganpfpnmn.webp",
     caption:
       "Welcome to the MLPEKAYOU Community Homepage. Here, you can discuss with other community members based on the discussion topics to my left. Please read the rules before posting or interacting, as violating these rules will result in a ban without warning.",
   },
@@ -1742,38 +1764,56 @@ if (showLoginModal) {
   );
 }
 
-  return (
-    <div
-  className="min-h-screen w-full overflow-x-hidden"
-      style={{
-        backgroundColor: "#F8F3FF",
-        backgroundImage: `
-          radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-          radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-          radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-          radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-          linear-gradient(
-            180deg,
-            #FCF9FF 0%,
-            #F8F1FF 35%,
-            #F5EEFF 65%,
-            #FAF6FF 100%
-          )
-        `,
-      }}
+return (
+  <div
+  className="relative min-h-screen w-full overflow-x-hidden"
+style={{
+  backgroundColor: "#0d0816",
+  backgroundImage: `
+    radial-gradient(circle at 20% 20%, rgba(124,58,237,0.10) 0%, transparent 35%),
+    radial-gradient(circle at 80% 15%, rgba(99,102,241,0.08) 0%, transparent 30%),
+    radial-gradient(circle at 25% 75%, rgba(139,92,246,0.08) 0%, transparent 35%),
+    radial-gradient(circle at 75% 80%, rgba(79,70,229,0.08) 0%, transparent 30%),
+    linear-gradient(
+      180deg,
+      #1a1630 0%,
+      #141024 35%,
+      #0d0816 70%,
+      #090611 100%
+    )
+  `,
+}}
     >
 
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+          {/* Candy Background */}
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+      {spookyCandies.map((candy) => (
+        <img
+          key={candy.id}
+          src={candy.src}
+          alt=""
+          className="absolute select-none"
+          style={{
+            left: candy.left,
+            top: candy.top,
+            width: `${candy.size}px`,
+            height: `${candy.size}px`,
+            transform: `rotate(${candy.rotate})`,
+            opacity: candy.opacity,
+          }}
+        />
+      ))}
+    </div>
+
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-24 md:pb-8">
         {/* Hero Banner */}
 <div className="relative mb-8 z-[10000]">
-  <div className="relative overflow-visible rounded-[2rem] border border-white/60 bg-white/70 backdrop-blur-xl shadow-[0_20px_60px_rgba(168,85,247,0.12)] px-6 sm:px-8 py-8 sm:py-10">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-violet-200/30 to-purple-300/30 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3" />
-
+  <div className="relative overflow-visible rounded-[2rem] border border-purple-500/20 bg-black/20 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.45)] px-6 sm:px-8 py-8 sm:py-10">
             <div className="relative z-10 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 lg:gap-8">
               <div>
 
                 <div className="flex items-start justify-between gap-4">
-  <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900">
+  <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
     Community Homepage
   </h1>
 
@@ -1787,7 +1827,7 @@ if (showLoginModal) {
   </button>
 </div>
 
-                <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
+                <p className="mt-3 text-base sm:text-lg text-white/80 max-w-2xl leading-relaxed">
   Discussions, trades, questions, and more! Find everything you are looking for here in the forum.
 </p>
 
@@ -1876,7 +1916,7 @@ if (showLoginModal) {
 <div className="w-full lg:w-auto lg:flex-shrink-0">
   <button
     onClick={() => setShowCreatePostModal(true)}
-    className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gradient-to-r from-[#6F4BA1] to-[#7B56AE] hover:from-[#5F3E8C] hover:to-[#6B489B] text-white font-bold shadow-lg shadow-purple-200 transition-all duration-200 hover:scale-[1.02]"
+    className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gradient-to-r from-[#6F4BA1] to-[#7B56AE] hover:from-[#5F3E8C] hover:to-[#6B489B] text-white font-boldtransition-all duration-200 hover:scale-[1.02]"
   >
     <PenSquare className="w-5 h-5" />
     Create Post
@@ -1924,47 +1964,53 @@ if (showLoginModal) {
         {/* Layout */}
         <div className="relative z-0 grid grid-cols-1 xl:grid-cols-12 gap-6">
           
-          {/* Left Sidebar */}
-          <aside className="order-1 xl:order-none xl:col-span-3 space-y-6">
-            <div className="xl:sticky xl:top-24 space-y-6">
-              {/* Categories */}
-<div className="rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
-  <button
-    type="button"
-    onClick={() => setShowMobileCategories(!showMobileCategories)}
-    className="w-full flex items-center justify-between"
-  >
-    <h2 className="text-lg font-black text-slate-900">
-      Categories
-    </h2>
+ {/* Right Sidebar */}
+          <aside className="order-2 xl:order-none xl:col-span-3 space-y-6">
+            <div className="xl:sticky xl:top-24">
+             <div className="hidden xl:block rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileRules(!showMobileRules)}
+                  className="w-full flex items-center justify-between"
+                >
+                  <h2 className="text-lg font-black text-slate-900">
+                    Community Rules
+                  </h2>
 
-    <span className="xl:hidden text-2xl font-bold text-slate-500">
-      {showMobileCategories ? "−" : "+"}
-    </span>
-  </button>
+                  <span className="xl:hidden text-2xl font-bold text-slate-500">
+                    {showMobileRules ? "−" : "+"}
+                  </span>
+                </button>
 
-  <div
-    className={`mt-5 space-y-2 ${
-      showMobileCategories ? "block" : "hidden"
-    } xl:block`}
-  >
-    {categories.map((category) => (
-      <button
-        key={category}
-        onClick={() => setSelectedCategory(category)}
-        className={`w-full text-left px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-semibold ${
-          selectedCategory === category
-            ? "bg-gradient-to-r from-[#6F4BA1] to-[#7B56AE] text-white shadow-md"
-            : "bg-slate-50/80 hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 hover:text-purple-700 text-slate-700"
-        }`}
-      >
-        {category}
-      </button>
-    ))}
-  </div>
-</div>
-
-              {/* Community Stats */}
+                <div
+                  className={`mt-5 ${
+                    showMobileRules ? "block" : "hidden"
+                  } xl:block`}
+                >
+                  <ul className="space-y-3">
+                    {[
+                      "Be respectful to everypony.",
+                      "Be honest.",
+                      "Do not spam post.",
+                      "Stay on topic.",
+                      "Do not curse.",
+                      "This website is only for English cards. Include your location to differentiate between NA and SEA.",
+                    ].map((rule, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start gap-3 text-sm text-slate-600"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                          {index + 1}
+                        </div>
+                        <span>{rule}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+                          {/* Community Stats */}
               <div className="rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
                 <h2 className="text-lg font-black text-slate-900 mb-5">
                   Community Stats
@@ -2013,61 +2059,53 @@ if (showLoginModal) {
                   })}
                 </div>
               </div>
-            </div>
           </aside>
+          {/* Left Sidebar */}
+          <aside className="order-1 xl:order-none xl:col-span-3 space-y-6">
+            <div className="xl:sticky xl:top-24 space-y-6">
+              {/* Categories */}
+<div className="rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
+  <button
+    type="button"
+    onClick={() => setShowMobileCategories(!showMobileCategories)}
+    className="w-full flex items-center justify-between"
+  >
+    <h2 className="text-lg font-black text-slate-900">
+      Categories
+    </h2>
 
-          {/* Right Sidebar */}
-          <aside className="order-2 xl:order-none xl:col-span-3 space-y-6">
-            <div className="xl:sticky xl:top-24">
-             <div className="hidden xl:block rounded-[2rem] border border-white/60 bg-white/75 backdrop-blur-xl shadow-lg p-6">
-                <button
-                  type="button"
-                  onClick={() => setShowMobileRules(!showMobileRules)}
-                  className="w-full flex items-center justify-between"
-                >
-                  <h2 className="text-lg font-black text-slate-900">
-                    Community Rules
-                  </h2>
+    <span className="xl:hidden text-2xl font-bold text-slate-500">
+      {showMobileCategories ? "−" : "+"}
+    </span>
+  </button>
 
-                  <span className="xl:hidden text-2xl font-bold text-slate-500">
-                    {showMobileRules ? "−" : "+"}
-                  </span>
-                </button>
-
-                <div
-                  className={`mt-5 ${
-                    showMobileRules ? "block" : "hidden"
-                  } xl:block`}
-                >
-                  <ul className="space-y-3">
-                    {[
-                      "Be respectful to everypony.",
-                      "Be honest.",
-                      "Do not spam post.",
-                      "Stay on topic.",
-                      "Do not curse.",
-                      "This website is only for English cards. Include your location to differentiate between NA and SEA.",
-                    ].map((rule, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-3 text-sm text-slate-600"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 text-violet-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                          {index + 1}
-                        </div>
-                        <span>{rule}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+  <div
+    className={`mt-5 space-y-2 ${
+      showMobileCategories ? "block" : "hidden"
+    } xl:block`}
+  >
+    {categories.map((category) => (
+      <button
+        key={category}
+        onClick={() => setSelectedCategory(category)}
+        className={`w-full text-left px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-semibold ${
+          selectedCategory === category
+            ? "bg-gradient-to-r from-[#6F4BA1] to-[#7B56AE] text-white shadow-md"
+            : "bg-slate-50/80 hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 hover:text-purple-700 text-slate-700"
+        }`}
+      >
+        {category}
+      </button>
+    ))}
+  </div>
+</div>
             </div>
           </aside>
 
 {/* Main Feed */}
 <section className="order-3 xl:order-none xl:col-span-6 space-y-6">
   <div className="space-y-4">
-    <h2 className="text-xl font-black text-slate-900">
+    <h2 className="text-xl font-black text-white">
       {selectedCategory}
     </h2>
 
@@ -2320,7 +2358,7 @@ return (
           : "text-slate-500 hover:text-rose-500"
       }`}
     >
-      <Heart
+      <Candy
         className="w-5 h-5"
         fill={
           likedPosts.includes(String(post.id))
@@ -2753,7 +2791,7 @@ return (
             : "text-slate-500 hover:text-rose-500"
         }`}
       >
-        <Heart
+        <Candy
           className="w-4 h-4"
           fill={
             likedPosts.includes(String(selectedPost.id))

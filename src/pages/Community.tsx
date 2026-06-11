@@ -17,8 +17,25 @@ import avatar012 from "@/assets/avatars/avatar012.webp";
 import avatar013 from "@/assets/avatars/avatar013.webp";
 import avatar014 from "@/assets/avatars/avatar014.webp";
 import avatar015 from "@/assets/avatars/avatar015.webp";
+import avatar016 from "@/assets/avatars/avatar016.webp";
+import avatar017 from "@/assets/avatars/avatar017.webp";
+import avatar018 from "@/assets/avatars/avatar018.webp";
+import avatar019 from "@/assets/avatars/avatar019.webp";
+import avatar020 from "@/assets/avatars/avatar020.webp";
+import avatar021 from "@/assets/avatars/avatar021.webp";
+import avatar022 from "@/assets/avatars/avatar022.webp";
+import avatar023 from "@/assets/avatars/avatar023.webp";
+import avatar024 from "@/assets/avatars/avatar024.webp";
+import avatar025 from "@/assets/avatars/avatar025.webp";
+import avatar026 from "@/assets/avatars/avatar026.webp";
+import avatar027 from "@/assets/avatars/avatar027.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
+import TerriAvatar from "@/assets/avatars/terrypfp.webp";
+import maipfp from "@/assets/avatars/maipfp.webp";
 import celestiasCrown from "/website-assets/celestiascrown.webp";
+
+import berryShineGhost from "/nightmarenight-assets/berryshineghost.webp";
 
 import elementOfMagic from "/website-assets/elementofmagic.webp";
 import elementOfLoyalty from "/website-assets/elementofloyalty.webp";
@@ -46,7 +63,22 @@ const avatarMap: Record<string, string> = {
   "avatar013.webp": avatar013,
   "avatar014.webp": avatar014,
   "avatar015.webp": avatar015,
+  "avatar016.webp": avatar016,
+  "avatar017.webp": avatar017,
+  "avatar018.webp": avatar018,
+  "avatar019.webp": avatar019,
+  "avatar020.webp": avatar020,
+  "avatar021.webp": avatar021,
+  "avatar022.webp": avatar022,
+  "avatar023.webp": avatar023,
+  "avatar024.webp": avatar024,
+  "avatar025.webp": avatar025,
+  "avatar026.webp": avatar026,
+  "avatar027.webp": avatar027,
   "KeeganAvatar.webp": KeeganAvatar,
+  "keeganpfpnmn.webp": KeeganAvatar2,
+  "maipfp.webp": maipfp,
+  "terrypfp.webp": TerriAvatar,
 };
 
 const sets = [
@@ -101,7 +133,7 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
   },
   "5": {
     username: "Keegan",
-    avatar_url: "KeeganAvatar"
+    avatar_url: "keeganpfpnmn.webp"
   },
   "8": {
   username: "Mari",
@@ -605,11 +637,15 @@ if (set.id === "friendshipsbegin") {
   className="min-h-screen relative overflow-hidden"
   style={{
     background: `
-      radial-gradient(circle at 15% 20%, rgba(255,255,255,0.45), transparent 30%),
-      radial-gradient(circle at 85% 10%, rgba(255,215,0,0.08), transparent 25%),
-      radial-gradient(circle at 50% 80%, rgba(168,85,247,0.08), transparent 35%),
-      linear-gradient(180deg, #f8f4ff 0%, #f1e9ff 50%, #ede3ff 100%)
-    `,
+  radial-gradient(circle at 80% 15%, rgba(147,51,234,0.12), transparent 30%),
+  radial-gradient(circle at 50% 80%, rgba(0,0,0,0.25), transparent 40%),
+  linear-gradient(
+    180deg,
+    #0d0816 0%,
+    #120b1f 40%,
+    #1a1028 100%
+  )
+`
   }}
 >
 
@@ -621,19 +657,19 @@ if (set.id === "friendshipsbegin") {
     <div
       className="
         rounded-3xl
-        bg-white/70 backdrop-blur-xl
-        border border-white/60
+        bg-[#1a1328]/85 backdrop-blur-xl
+        border border-purple-900/50
         shadow-[0_10px_30px_rgba(76,29,149,0.08)]
         px-6 py-5
         text-center
       "
     >
-      <h2 className="text-sm font-extrabold uppercase tracking-wide text-purple-700 mb-4">
+      <h2 className="text-sm font-extrabold uppercase tracking-wide text-orange-300 mb-4">
         Top Collector
         <span className="text-purple-400 font-semibold"> (All Sets)</span>
       </h2>
 
-      <div className="text-xs font-semibold uppercase tracking-wide text-purple-500 mb-4">
+      <div className="text-xs font-semibold uppercase tracking-wide text-purple-300 mb-4">
         {(topCollector?.total_cards_owned ?? 0).toLocaleString()} Cards Owned
       </div>
 
@@ -659,7 +695,7 @@ if (set.id === "friendshipsbegin") {
       </div>
 
       <div className="flex items-center justify-center gap-2 mb-3">
-        <span className="font-bold text-purple-950 text-base">
+        <span className="font-bold text-orange-100 text-base">
           {topCollector?.username || "Loading..."}
         </span>
 
@@ -674,7 +710,7 @@ if (set.id === "friendshipsbegin") {
           )}
       </div>
 
-      <div className="text-4xl font-extrabold text-purple-700 leading-none">
+      <div className="text-4xl font-extrabold text-orange-300 leading-none">
         {topCollector?.completed_sets ?? 0}
       </div>
 
@@ -689,17 +725,17 @@ if (set.id === "friendshipsbegin") {
       <div
         className="
           rounded-3xl
-          bg-white/70 backdrop-blur-xl
-          border border-white/60
+          bg-[#1a1328]/85 backdrop-blur-xl
+          border border-purple-900/50
           shadow-[0_10px_30px_rgba(76,29,149,0.08)]
           p-6
         "
       >
-        <h2 className="text-xl font-bold text-purple-950 mb-2">
+        <h2 className="text-xl font-bold text-orange-100 mb-2">
           Categories
         </h2>
 
-        <p className="text-sm text-purple-700/80 leading-relaxed mb-6">
+        <p className="text-sm text-orange-300/80 leading-relaxed mb-6">
           Explore leaderboards for each card game and set collection.
         </p>
 <div className="space-y-3">
@@ -711,8 +747,8 @@ if (set.id === "friendshipsbegin") {
       px-4 py-3 rounded-2xl font-semibold transition-all duration-200
       ${
         activeCategory === ("star" as any)
-          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
-          : "text-purple-900 hover:bg-purple-50"
+          ? "bg-gradient-to-r from-[#f6b26b] to-[#eea04a] text-white shadow-lg shadow-orange-500/20"
+          : "text-orange-100 hover:bg-orange-500/10"
       }
     `}
   >
@@ -735,8 +771,8 @@ if (set.id === "friendshipsbegin") {
       px-4 py-3 rounded-2xl font-semibold transition-all duration-200
       ${
         activeCategory === "ccg"
-          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
-          : "text-purple-900 hover:bg-purple-50"
+          ? "bg-gradient-to-r from-[#f6b26b] to-[#eea04a] text-white shadow-lg shadow-orange-500/20"
+          : "text-orange-100 hover:bg-orange-500/10"
       }
     `}
   >
@@ -759,8 +795,8 @@ if (set.id === "friendshipsbegin") {
       px-4 py-3 rounded-2xl font-semibold transition-all duration-200
       ${
         activeCategory === ("rainbow" as any)
-          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
-          : "text-purple-900 hover:bg-purple-50"
+          ? "bg-gradient-to-r from-[#f6b26b] to-[#eea04a] text-white shadow-lg shadow-orange-500/20"
+          : "text-orange-100 hover:bg-orange-500/10"
       }
     `}
   >
@@ -783,8 +819,8 @@ if (set.id === "friendshipsbegin") {
       px-4 py-3 rounded-2xl font-semibold transition-all duration-200
       ${
         activeCategory === ("funmoments" as any)
-          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
-          : "text-purple-900 hover:bg-purple-50"
+          ? "bg-gradient-to-r from-[#f6b26b] to-[#eea04a] text-white shadow-lg shadow-orange-500/20"
+          : "text-orange-100 hover:bg-orange-500/10"
       }
     `}
   >
@@ -807,8 +843,8 @@ if (set.id === "friendshipsbegin") {
       px-4 py-3 rounded-2xl font-semibold transition-all duration-200
       ${
         activeCategory === "tcg"
-          ? "bg-gradient-to-r from-purple-700 to-purple-600 text-white shadow-lg shadow-purple-700/20"
-          : "text-purple-900 hover:bg-purple-50"
+          ? "bg-gradient-to-r from-[#f6b26b] to-[#eea04a] text-white shadow-lg shadow-orange-500/20"
+          : "text-orange-100 hover:bg-orange-500/10"
       }
     `}
   >
@@ -827,7 +863,7 @@ if (set.id === "friendshipsbegin") {
     </aside>
 
 {/* MAIN CONTENT */}
-<main className="-mt-6">
+<main className="-mt-6 pb-20 xl:pb-0">
 
   {["star", "ccg", "rainbow", "funmoments"].includes(activeCategory) && (
     <>
@@ -839,11 +875,11 @@ if (set.id === "friendshipsbegin") {
     className="
       px-5 py-1.5
       rounded-full
-      bg-white/80 backdrop-blur-sm
+      bg-[#140d22]/90 backdrop-blur-sm
       border border-purple-200/60
       shadow-sm
       text-sm font-extrabold uppercase tracking-[0.2em]
-      text-purple-700
+      text-orange-300
     "
   >
     CCG
@@ -885,8 +921,8 @@ if (set.id === "friendshipsbegin") {
     rounded-3xl
     px-6 py-5
     text-left
-    bg-white/75 backdrop-blur-xl
-    border border-white/60
+    bg-[#1a1328]/85 backdrop-blur-xl
+    border border-purple-900/50
     shadow-[0_10px_30px_rgba(76,29,149,0.08)]
     hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
     hover:-translate-y-1
@@ -895,16 +931,16 @@ if (set.id === "friendshipsbegin") {
     min-h-[170px]
   "
 >
-  {/* Soft highlight overlay */}
-  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-purple-100/20 pointer-events-none" />
+ {/* Soft highlight overlay */}
+<div className="absolute inset-0 bg-gradient-to-br from-black/25 via-transparent to-purple-950/25 pointer-events-none" />
 
   {/* Set Title */}
-  <h2 className="relative text-xl font-bold text-purple-950 pr-28 leading-tight mb-2">
-    {set.name}
-  </h2>
+  <h2 className="relative text-xl font-bold text-orange-100 pr-28 leading-tight mb-2 min-h-[3rem]">
+  {set.name}
+</h2>
 
   {/* Subtitle */}
-  <div className="relative text-[11px] font-bold uppercase tracking-wide text-purple-500 mb-3">
+  <div className="relative text-[11px] font-bold uppercase tracking-wide text-purple-300 mb-3">
     Top Collector
   </div>
 
@@ -915,15 +951,15 @@ if (set.id === "friendshipsbegin") {
       key={player.id}
       className={`flex items-center justify-between text-xs ${
         index === 0
-          ? "font-semibold text-purple-950"
-          : "text-purple-700/80"
+          ? "font-semibold text-orange-100"
+          : "text-orange-300/80"
       }`}
     >
       <span className="truncate">
         {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"} {player.username}
       </span>
 
-      <span className="font-bold text-purple-700">
+      <span className="font-bold text-orange-300">
   {(player.owned ?? 0).toLocaleString()} / {(set.total ?? 0).toLocaleString()}
 </span>
     </div>
@@ -931,13 +967,14 @@ if (set.id === "friendshipsbegin") {
 </div>
 
   {/* View Link */}
-  <div className="relative text-sm font-semibold text-purple-700 group-hover:text-purple-900 transition-colors">
+  <div className="relative text-sm font-semibold text-orange-300 group-hover:text-orange-100 transition-colors">
     View Leaderboard →
   </div>
 
-  {/* #1 Avatar */}
-  {firstFinishers[String(set.id)] && (
-    <div className="absolute top-4 right-4 flex flex-col items-center">
+{/* Winner / Ghost */}
+<div className="absolute top-4 right-4 flex flex-col items-center">
+  {firstFinishers[String(set.id)] ? (
+    <>
       <div className="relative w-14 h-14">
         <img
           src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
@@ -949,11 +986,18 @@ if (set.id === "friendshipsbegin") {
         </div>
       </div>
 
-      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight">
+      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight text-orange-100">
         {firstFinishers[String(set.id)]?.username}
       </div>
-    </div>
+    </>
+  ) : (
+    <img
+  src={berryShineGhost}
+  alt="No Winner Yet"
+  className="w-20 h-20 object-contain opacity-90 animate-[ghostWalk_2.5s_ease-in-out_infinite]"
+/>
   )}
+</div>
 </button>
   ))}
 </div>
@@ -969,11 +1013,11 @@ if (set.id === "friendshipsbegin") {
     className="
       px-5 py-1.5
       rounded-full
-      bg-white/80 backdrop-blur-sm
+      bg-[#140d22]/90 backdrop-blur-sm
       border border-purple-200/60
       shadow-sm
       text-sm font-extrabold uppercase tracking-[0.2em]
-      text-purple-700
+      text-orange-300
     "
   >
     TCG
@@ -995,8 +1039,8 @@ if (set.id === "friendshipsbegin") {
     rounded-3xl
     px-6 py-5
     text-left
-    bg-white/75 backdrop-blur-xl
-    border border-white/60
+    bg-[#1a1328]/85 backdrop-blur-xl
+    border border-purple-900/50
     shadow-[0_10px_30px_rgba(76,29,149,0.08)]
     hover:shadow-[0_20px_45px_rgba(76,29,149,0.15)]
     hover:-translate-y-1
@@ -1006,15 +1050,15 @@ if (set.id === "friendshipsbegin") {
   "
 >
   {/* Soft highlight overlay */}
-  <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-purple-100/20 pointer-events-none" />
+  <div className="absolute inset-0 bg-gradient-to-br from-black/25 via-transparent to-purple-950/25 pointer-events-none" />
 
   {/* Set Title */}
-  <h2 className="relative text-xl font-bold text-purple-950 pr-28 leading-tight mb-2">
-    {set.name}
-  </h2>
+ <h2 className="relative text-xl font-bold text-orange-100 pr-28 leading-tight mb-2 min-h-[3rem]">
+  {set.name}
+</h2>
 
   {/* Subtitle */}
-  <div className="relative text-[11px] font-bold uppercase tracking-wide text-purple-500 mb-3">
+  <div className="relative text-[11px] font-bold uppercase tracking-wide text-purple-300 mb-3">
     Top Collector
   </div>
 
@@ -1025,15 +1069,15 @@ if (set.id === "friendshipsbegin") {
       key={player.id}
       className={`flex items-center justify-between text-xs ${
         index === 0
-          ? "font-semibold text-purple-950"
-          : "text-purple-700/80"
+          ? "font-semibold text-orange-100"
+          : "text-orange-300/80"
       }`}
     >
       <span className="truncate">
         {index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉"} {player.username}
       </span>
 
-      <span className="font-bold text-purple-700">
+      <span className="font-bold text-orange-300">
   {(player.owned ?? 0).toLocaleString()} / {(set.total ?? 0).toLocaleString()}
 </span>
     </div>
@@ -1041,13 +1085,14 @@ if (set.id === "friendshipsbegin") {
 </div>
 
   {/* View Link */}
-  <div className="relative text-sm font-semibold text-purple-700 group-hover:text-purple-900 transition-colors">
+  <div className="relative text-sm font-semibold text-orange-300 group-hover:text-orange-100 transition-colors">
     View Leaderboard →
   </div>
 
-  {/* #1 Avatar */}
-  {firstFinishers[String(set.id)] && (
-    <div className="absolute top-4 right-4 flex flex-col items-center">
+{/* Winner / Ghost */}
+<div className="absolute top-4 right-4 flex flex-col items-center">
+  {firstFinishers[String(set.id)] ? (
+    <>
       <div className="relative w-14 h-14">
         <img
           src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
@@ -1059,11 +1104,18 @@ if (set.id === "friendshipsbegin") {
         </div>
       </div>
 
-      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight">
+      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight text-orange-100">
         {firstFinishers[String(set.id)]?.username}
       </div>
-    </div>
+    </>
+  ) : (
+    <img
+  src={berryShineGhost}
+  alt="No Winner Yet"
+  className="w-20 h-20 object-contain opacity-90 animate-[ghostWalk_2.5s_ease-in-out_infinite]"
+/>
   )}
+</div>
 </button>
   ))}
 </div>
@@ -1077,20 +1129,20 @@ if (set.id === "friendshipsbegin") {
     hidden xl:block
     w-[260px]
     rounded-3xl
-    bg-white/70 backdrop-blur-xl
-    border border-white/60
+    bg-[#1a1328]/85 backdrop-blur-xl
+    border border-purple-900/50
     shadow-[0_10px_30px_rgba(76,29,149,0.08)]
     px-6 py-5
     text-center
   "
 >
-  <h2 className="text-sm font-extrabold uppercase tracking-wide text-purple-700 mb-4">
+  <h2 className="text-sm font-extrabold uppercase tracking-wide text-orange-300 mb-4">
     Top Collector
     <span className="text-purple-400 font-semibold"> (All Sets)</span>
   </h2>
 
   {/* Total Cards Owned */}
-  <div className="text-xs font-semibold uppercase tracking-wide text-purple-500 mb-4">
+  <div className="text-xs font-semibold uppercase tracking-wide text-purple-300 mb-4">
     {(topCollector?.total_cards_owned ?? 0).toLocaleString()} Cards Owned
   </div>
 
@@ -1130,7 +1182,7 @@ if (set.id === "friendshipsbegin") {
 
   {/* Name + Verification Badge */}
   <div className="flex items-center justify-center gap-2 mb-3">
-    <span className="font-bold text-purple-950 text-base">
+    <span className="font-bold text-orange-100 text-base">
       {topCollector?.username || "Loading..."}
     </span>
 
@@ -1146,7 +1198,7 @@ if (set.id === "friendshipsbegin") {
   </div>
 
   {/* Completed Sets Count */}
-  <div className="text-4xl font-extrabold text-purple-700 leading-none">
+  <div className="text-4xl font-extrabold text-orange-300 leading-none">
     {topCollector?.completed_sets ?? 0}
   </div>
 

@@ -22,6 +22,26 @@ const CollectionCard = ({
 
   const navigate = useNavigate();
 
+  const candyIndex =
+  [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 3;
+
+const candyImages = [
+  "/nightmarenight-assets/nmncandy1.webp",
+  "/nightmarenight-assets/nmncandy2.webp",
+  "/nightmarenight-assets/nmncandy3.webp",
+];
+
+const progressBarStyles = [
+  // Candy Corn
+  "#f58a63",
+
+  // Pink Lollipop
+  "#e58ab7",
+
+  // Blue Lollipop
+  "#7cb8e8",
+];
+
 const getLink = () => {
   switch (id) {
 
@@ -93,16 +113,27 @@ const handleClick = async (
     <div className="transition cursor-pointer">
 
       <div className="text-center text-sm font-semibold text-[#3b2a1a] mb-1 leading-tight">
-  <div className="text-[#8b6a2b] font-semibold tracking-wide">
+  <div
+  className="font-semibold tracking-wide text-[#e8e2ff]"
+  style={{
+    textShadow: "0 0 6px rgba(220, 210, 255, 0.45)",
+  }}
+>
   {title}
 </div>
- {setName && (
-  <div className="text-xs font-semibold tracking-wide text-[#a8841f]">
+
+{setName && (
+  <div
+    className="text-xs font-semibold tracking-wide text-[#e8e2ff]"
+    style={{
+      textShadow: "0 0 6px rgba(220, 210, 255, 0.45)",
+    }}
+  >
     {setName}
   </div>
 )}
 </div>
-      <div className="relative rounded-xl overflow-hidden">
+      <div className="relative rounded-xl overflow-visible">
         <img
   src={imageUrl}
   alt={setName || title}
@@ -110,16 +141,28 @@ const handleClick = async (
 />
         {showProgress && progress < 100 && (
   <>
-    <div className="absolute bottom-2 right-2 text-[10px] font-semibold text-white bg-black/50 px-1.5 py-0.5 rounded">
+    <div className="absolute bottom-5 right-2 text-[10px] font-semibold text-white bg-black/50 px-1.5 py-0.5 rounded">
       {progress}%
     </div>
 
-    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#5a3e84]/30 overflow-hidden">
+<div className="absolute bottom-2 left-2 right-2 h-1.5">
+<div className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#5a3e84]/30 rounded-full overflow-hidden">
   <div
-    className="h-full transition-all"
+    className="h-full rounded-full transition-all"
     style={{
       width: `${progress}%`,
-      background: "linear-gradient(90deg, #f5e6a8 0%, #d4af37 40%, #b8962e 60%, #f5e6a8 100%)"
+      background: progressBarStyles[candyIndex],
+    }}
+  />
+</div>
+
+  <img
+  src={candyImages[candyIndex]}
+  alt=""
+  className="absolute bottom-0 w-5 h-5 pointer-events-none drop-shadow-md"
+    style={{
+      left: `calc(${progress}% - 10px)`,
+      transform: "translateY(25%)",
     }}
   />
 </div>

@@ -429,29 +429,6 @@ return (
                 </div>
               </div>
             </div>
-
-            {/* Mastered Set Plates */}
-            <div className="flex flex-wrap justify-center gap-1.5 max-w-5xl mx-auto">
-              {sets
-                .filter((set) => {
-                  const owned = progress[set.id] || 0;
-                  return set.total > 0 && owned === set.total;
-                })
-                .map((set) => (
-                  <div
-                    key={`mastered-${set.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/92 border border-[#d4af37]/40 shadow-md"
-                  >
-                    <span className="text-xs md:text-sm font-semibold text-[#2f2150]">
-                      {set.name}
-                    </span>
-
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-[#f5e6a8] via-[#d4af37] to-[#b8962e] text-white text-[10px] font-bold shadow-sm">
-                      ✓
-                    </span>
-                  </div>
-                ))}
-            </div>
           </div>
         </div>
       </div>
@@ -539,7 +516,7 @@ const showBadgeImage = !!badgeImage;
 )}
 
         {/* New Ribbon */}
-                {["3", "11"].includes(set.id) && (
+                {["3", "11", "4", "6"].includes(set.id) && (
           <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-gradient-to-r from-[#ff6fb3] to-[#f9a8d4] text-white text-[10px] font-bold tracking-[0.12em] shadow-lg uppercase">
             New
           </div>
@@ -674,7 +651,7 @@ const overallVisiblePercent =
     : 0;
 
         return (
-          <>
+          <div className="pb-0">
 
            <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
               {[
@@ -704,7 +681,29 @@ const overallVisiblePercent =
                 .filter((set) => (progress[set.id] || 0) < set.total)
                 .map(renderSetCard)}
             </div>
-          </>
+            {/* Mastered Set Plates */}
+<div className="flex flex-wrap justify-center gap-1.5 max-w-5xl mx-auto mt-8 pb-32 px-4">
+  {sets
+    .filter((set) => {
+      const owned = progress[set.id] || 0;
+      return set.total > 0 && owned === set.total;
+    })
+    .map((set) => (
+      <div
+        key={`mastered-${set.id}`}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/92 border border-[#d4af37]/40 shadow-md"
+      >
+        <span className="text-xs md:text-sm font-semibold text-[#2f2150]">
+          {set.name}
+        </span>
+
+        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-[#f5e6a8] via-[#d4af37] to-[#b8962e] text-white text-[10px] font-bold shadow-sm">
+          ✓
+        </span>
+      </div>
+    ))}
+</div>
+          </div>
         );
       })()}
     </div>

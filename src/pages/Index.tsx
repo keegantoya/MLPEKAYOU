@@ -1,23 +1,16 @@
-import Moon3Poster from "@/assets/avatars/Moon3Poster.webp";
-import FunMoments3Poster from "@/assets/avatars/FunMoments3Poster.webp";
-import Star1Poster from "@/assets/avatars/Star1poster.webp";
-const minisoPoster = "/website-assets/minisocollab.webp";
-const minisoLogo = "/website-assets/minisologo.webp";
-const minisoPoster2 = "/website-assets/minisocollab2.webp";
-const minisoPoster3 = "/website-assets/minisocollab3.webp";
-const rainbow2Poster = "/website-assets/rainbow2post.webp";
+const lunaGif = "/nightmarenight-assets/princesslunagif.webp";
 import { supabase } from "@/lib/supabase";
 
 import {
   BookOpen,
   Trophy,
   ArrowLeftRight,
-  Gift,
   Star,
   Heart,
+    Ghost,
   Send,
   Bookmark,
-} from "lucide-react";
+} from "lucide-react"; 
 
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
@@ -25,26 +18,21 @@ import { useEffect, useState, useRef } from "react";
 const Index = () => {
   const navigate = useNavigate();
 
-  const images = [
-    Moon3Poster,
-    FunMoments3Poster,
-    Star1Poster,
-  ];
+  const images = [lunaGif];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
 
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
-  const [minisoSlide, setMinisoSlide] = useState(0);
+
+  const [postSlides, setPostSlides] = useState<Record<string, number>>({});
 
   const [stats, setStats] = useState({
   owned: 0,
   completed: 0,
   trades: 0
 });
-
-const [activeGiveaway, setActiveGiveaway] = useState<string | null>(null);
 
 const toggleLike = async (postId: string) => {
   const { data } = await supabase.auth.getSession();
@@ -334,46 +322,107 @@ if (fwRow) {
   
   return (
   <div
-  className="min-h-screen relative overflow-hidden"
+  className="min-h-screen relative overflow-hidden pb-24"
     style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
+backgroundColor: "#120A24",
+backgroundImage: `
+  radial-gradient(circle at 20% 15%, rgba(104,58,183,0.25) 0%, transparent 35%),
+  radial-gradient(circle at 80% 10%, rgba(53,94,255,0.18) 0%, transparent 30%),
+  radial-gradient(circle at 50% 60%, rgba(91,46,134,0.20) 0%, transparent 40%),
+  linear-gradient(
+    180deg,
+    #1A1033 0%,
+    #201547 30%,
+    #17244D 65%,
+    #10172F 100%
+  )
+`,
 }}
   >
 
 <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-  {/* Desktop sparkles only */}
-  <div className="hidden lg:block absolute top-40 left-24 text-pink-400/70 text-5xl">✦</div>
-  <div className="hidden lg:block absolute top-52 right-32 text-yellow-300/70 text-4xl">✧</div>
-  <div className="hidden lg:block absolute top-[420px] left-1/3 text-purple-300/60 text-6xl">✦</div>
-  <div className="hidden lg:block absolute top-[300px] right-24 text-pink-300/50 text-5xl">✦</div>
-  <div className="hidden lg:block absolute bottom-48 right-1/4 text-purple-300/40 text-7xl">❦</div>
+  
+{/* Left Branch */}
+<img
+  src="/website-assets/spookybranch1.webp"
+  alt=""
+  style={{
+    animation: "branch-sway-left 12s ease-in-out infinite",
+    transformOrigin: "top left",
+  }}
+  className="
+  absolute
+  top-5
+  left-0
+  w-[280px]
+  sm:w-[340px]
+  lg:w-[550px]
+  opacity-50
+  select-none
+"
+/>
 
-  {/* Mobile-only sparkles spread from top to bottom */}
-  <div className="lg:hidden absolute top-8 left-4 text-yellow-300/60 text-3xl">✦</div>
-  <div className="lg:hidden absolute top-24 right-6 text-pink-300/60 text-4xl">✧</div>
-  <div className="lg:hidden absolute top-56 left-8 text-purple-300/50 text-3xl">✦</div>
-  <div className="lg:hidden absolute top-[420px] right-4 text-yellow-200/60 text-4xl">✦</div>
-  <div className="lg:hidden absolute top-[620px] left-6 text-pink-300/50 text-3xl">✧</div>
-  <div className="lg:hidden absolute top-[850px] right-8 text-purple-300/50 text-5xl">✦</div>
-  <div className="lg:hidden absolute top-[1100px] left-4 text-yellow-200/50 text-4xl">✦</div>
-  <div className="lg:hidden absolute top-[1450px] right-6 text-pink-300/50 text-3xl">✧</div>
-  <div className="lg:hidden absolute top-[1800px] left-8 text-purple-300/40 text-5xl">❦</div>
-  <div className="lg:hidden absolute top-[2200px] right-4 text-yellow-200/50 text-4xl">✦</div>
-  <div className="lg:hidden absolute bottom-24 left-6 text-pink-300/50 text-4xl">✦</div>
-  <div className="lg:hidden absolute bottom-8 right-8 text-purple-300/40 text-5xl">❦</div>
+{/* Right Branch */}
+<img
+  src="/website-assets/spookybranch2.webp"
+  alt=""
+  style={{
+    animation: "branch-sway-right 12s ease-in-out infinite",
+    transformOrigin: "top right",
+  }}
+  className="
+  absolute
+  top-40
+  right-0
+  w-[280px]
+  sm:w-[340px]
+  lg:w-[550px]
+  opacity-50
+  select-none
+  z-20
+"
+/>
+
+<div
+  className="
+    absolute
+    top-12
+    right-[-40px]
+    lg:right-[40px]
+    w-[180px]
+    sm:w-[240px]
+    lg:w-[340px]
+  "
+>
+  <div className="moon-glow" />
+
+  <img
+    src="/nightmarenight-assets/mareinthemoon.webp"
+    alt=""
+    className="relative z-10 w-full h-auto"
+  />
+</div>
+
+ {/* Background stars */}
+<div className="absolute top-12 left-6 text-purple-300/25 text-3xl">✦</div>
+<div className="absolute top-24 right-8 text-blue-200/20 text-2xl">⋆</div>
+
+<div className="absolute top-52 left-[12%] text-purple-200/20 text-4xl">✧</div>
+<div className="absolute top-72 right-[15%] text-indigo-200/20 text-3xl">•</div>
+
+<div className="absolute top-[420px] left-1/3 text-purple-300/15 text-5xl">✦</div>
+<div className="absolute top-[560px] right-10 text-blue-200/20 text-3xl">⋆</div>
+
+<div className="absolute top-[850px] left-10 text-indigo-200/15 text-4xl">✧</div>
+<div className="absolute top-[1100px] right-[10%] text-purple-300/20 text-3xl">•</div>
+
+<div className="absolute top-[1450px] left-[8%] text-blue-200/15 text-5xl">✦</div>
+<div className="absolute top-[1800px] right-[12%] text-purple-200/20 text-4xl">⋆</div>
+
+<div className="absolute top-[2200px] left-12 text-indigo-200/15 text-3xl">✧</div>
+
+<div className="absolute bottom-32 left-8 text-purple-300/20 text-4xl">✦</div>
+<div className="absolute bottom-16 right-10 text-blue-200/15 text-5xl">⋆</div>
 </div>
 
     <div className="relative z-10 container max-w-7xl mx-auto px-6 py-10 min-[1024px]:max-[1439px]:scale-90 min-[1024px]:max-[1439px]:origin-top">
@@ -382,10 +431,28 @@ if (fwRow) {
         {/* LEFT SIDE */}
         <div className="text-center lg:text-left">
           {/* Badge */}
-<div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/80 border border-purple-300 shadow-sm text-xs font-semibold tracking-wide text-[#8B5CC7] mb-6">
-  <Star className="w-3.5 h-3.5 fill-current text-[#F4B942]" />
-  <span>THE FIRST INTERACTIVE U.S. KAYOU MLP CHECKLIST</span>
-  <Star className="w-3.5 h-3.5 fill-current text-[#F4B942]" />
+<div
+  className="
+    inline-flex
+    items-center
+    gap-2
+    px-5
+    py-2
+    rounded-full
+   bg-[#161021]/95
+    border
+    border-[#7A5A9B]
+    shadow-[0_0_35px_rgba(184,138,232,0.15)]
+    text-xs
+    font-semibold
+    tracking-wide
+    text-[#DCCEEF]
+    mb-6
+  "
+>
+  <Star className="w-3.5 h-3.5 fill-current text-[#E6D38A]" />
+  <span>THE FIRST SPOOKY INTERACTIVE U.S. KAYOU MLP CHECKLIST</span>
+  <Star className="w-3.5 h-3.5 fill-current text-[#E6D38A]" />
 </div>
 
           {/* Headline */}
@@ -395,15 +462,15 @@ if (fwRow) {
     font-bold
     leading-[0.95]
     tracking-[-0.02em]
-    text-[#5B2E86]
-    drop-shadow-[0_4px_18px_rgba(139,92,199,0.22)]
+    text-[#D8C5F4]
+    drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]
   "
   style={{
     fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
   }}
 >
   <span className="block">Your collection</span>
-  <span className="block text-[#6B3FA2]">anytime,</span>
+  <span className="block text-[#B88AE8]">anytime,</span>
   <span className="block relative">
     anywhere.
     <span className="absolute -top-4 -right-6 text-3xl sm:text-4xl text-[#F4C84A] opacity-95">
@@ -413,15 +480,15 @@ if (fwRow) {
 </h1>
 
           {/* Description */}
-          <p className="mt-8 max-w-xl mx-auto lg:mx-0 text-lg text-[#5E467A] leading-relaxed">
+          <p className="mt-8 max-w-xl mx-auto lg:mx-0 text-lg text-[#A991C7] leading-relaxed">
             Track your progress, your inventory, and your place on the board.
-            MLPEKAYOU is not owned or run by Kayou, but the owner is a partner of Kayou's US E-Commerce branch.
+            KAYOU US is not owned or run by Kayou, but the owner is a partner of Kayou's US E-Commerce branch.
           </p>
 
           {/* Mobile Card Fan */}
 <div className="lg:hidden mt-8 mb-8 flex justify-center">
   <img
-    src="/website-assets/carddesign.webp"
+    src="/website-assets/carddesignnmn.webp"
     alt="Kayou card fan"
     className="
       w-[420px]
@@ -438,75 +505,151 @@ if (fwRow) {
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <button
   onClick={() => navigate("/inventory")}
-  className="
-    px-8 py-4 rounded-2xl
-    bg-gradient-to-r from-[#7C4BB8] to-[#9C6ADE]
-    text-white font-semibold
-    shadow-lg hover:shadow-xl hover:scale-[1.02]
-    transition
-    relative overflow-hidden
+className="
+  px-8 py-4 rounded-2xl
 
-    border border-[#D8B45A]
+  bg-gradient-to-r
+  from-[#16203D]
+  via-[#1B2A52]
+  to-[#24386B]
 
-    before:content-['']
-    before:absolute
-    before:inset-[3px]
-    before:rounded-[14px]
-    before:border
-    before:border-[#F8E38C]
-    before:shadow-[inset_0_0_0_1px_rgba(255,245,180,0.35)]
-    before:pointer-events-none
-  "
+  text-[#E6E2F5]
+  font-semibold
+
+  border border-[#D8B45A]
+
+  shadow-[0_10px_30px_rgba(0,0,0,0.45)]
+  hover:shadow-[0_15px_40px_rgba(0,0,0,0.55)]
+  hover:scale-[1.03]
+
+  transition-all duration-300
+
+  relative overflow-hidden
+
+  before:content-['']
+  before:absolute
+  before:inset-[3px]
+  before:rounded-[14px]
+  before:border
+  before:border-[#F8E38C]/70
+  before:pointer-events-none
+
+  after:content-['']
+  after:absolute
+  after:top-0
+  after:left-[-120%]
+  after:w-[60%]
+  after:h-full
+  after:bg-gradient-to-r
+  after:from-transparent
+  after:via-white/10
+  after:to-transparent
+  after:skew-x-[-20deg]
+  hover:after:left-[140%]
+  after:transition-all
+  after:duration-700
+"
 >
   View Your Collection
 </button>
 
             <button
   onClick={() => navigate("/leaderboard")}
-  className="
-    px-8 py-4 rounded-2xl
-    bg-white/90
-    text-[#6A3F9D] font-semibold
-    shadow-sm hover:shadow-md
-    transition
-    relative overflow-hidden
+className="
+  px-8 py-4 rounded-2xl
 
-    border border-[#D8B45A]
+  bg-gradient-to-r
+  from-[#16203D]
+  via-[#1B2A52]
+  to-[#24386B]
 
-    before:content-['']
-    before:absolute
-    before:inset-[3px]
-    before:rounded-[14px]
-    before:border
-    before:border-[#F8E38C]
-    before:shadow-[inset_0_0_0_1px_rgba(255,245,180,0.35)]
-    before:pointer-events-none
-  "
+  text-[#E6E2F5]
+  font-semibold
+
+  border border-[#D8B45A]
+
+  shadow-[0_10px_30px_rgba(0,0,0,0.45)]
+  hover:shadow-[0_15px_40px_rgba(0,0,0,0.55)]
+  hover:scale-[1.03]
+
+  transition-all duration-300
+
+  relative overflow-hidden
+
+  before:content-['']
+  before:absolute
+  before:inset-[3px]
+  before:rounded-[14px]
+  before:border
+  before:border-[#F8E38C]/70
+  before:pointer-events-none
+
+  after:content-['']
+  after:absolute
+  after:top-0
+  after:left-[-120%]
+  after:w-[60%]
+  after:h-full
+  after:bg-gradient-to-r
+  after:from-transparent
+  after:via-white/10
+  after:to-transparent
+  after:skew-x-[-20deg]
+  hover:after:left-[140%]
+  after:transition-all
+  after:duration-700
+"
 >
   Top Kayou US Collectors
 </button>
 <button
   onClick={() => navigate("/faq")}
-  className="
-    px-8 py-4 rounded-2xl
-    bg-white/90
-    text-[#6A3F9D] font-semibold
-    shadow-sm hover:shadow-md
-    transition
-    relative overflow-hidden
-    border border-[#D8B45A]
+className="
+  px-8 py-4 rounded-2xl
 
-    before:content-['']
-    before:absolute
-    before:inset-[3px]
-    before:rounded-[14px]
-    before:border
-    before:border-[#F8E38C]
-    before:shadow-[inset_0_0_0_1px_rgba(255,245,180,0.35)]
-    before:pointer-events-none
-  "
+  bg-gradient-to-r
+  from-[#16203D]
+  via-[#1B2A52]
+  to-[#24386B]
+
+  text-[#E6E2F5]
+  font-semibold
+
+  border border-[#D8B45A]
+
+  shadow-[0_10px_30px_rgba(0,0,0,0.45)]
+  hover:shadow-[0_15px_40px_rgba(0,0,0,0.55)]
+  hover:scale-[1.03]
+
+  transition-all duration-300
+
+  relative overflow-hidden
+
+  before:content-['']
+  before:absolute
+  before:inset-[3px]
+  before:rounded-[14px]
+  before:border
+  before:border-[#F8E38C]/70
+  before:pointer-events-none
+
+  after:content-['']
+  after:absolute
+  after:top-0
+  after:left-[-120%]
+  after:w-[60%]
+  after:h-full
+  after:bg-gradient-to-r
+  after:from-transparent
+  after:via-white/10
+  after:to-transparent
+  after:skew-x-[-20deg]
+  hover:after:left-[140%]
+  after:transition-all
+  after:duration-700
+"
 >
-  MLPEKAYOU TUTORIAL
+  KAYOU US TUTORIAL
 </button>
           </div>
         </div>
@@ -530,7 +673,7 @@ if (fwRow) {
 
   {/* Pre-made card fan image */}
   <img
-    src="/website-assets/carddesign.webp"
+    src="/website-assets/carddesignnmn.webp"
     alt="Kayou card fan"
 className="
   relative
@@ -556,12 +699,18 @@ className="
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
         {/* Cards Owned */}
         <div className="rounded-[28px]
-bg-gradient-to-br from-[#6B3FA2] via-[#7D4BB8] to-[#925FD1]
+bg-gradient-to-br
+from-[#121A33]
+via-[#17244D]
+to-[#22366A]
+
 text-white
 p-6
-shadow-[0_20px_50px_rgba(95,55,145,0.22)]
+shadow-[0_15px_40px_rgba(0,0,0,0.50)]
 border border-[#D8B45A]
+
 relative overflow-hidden
+
 before:content-['']
 before:absolute
 before:inset-[4px]
@@ -571,7 +720,7 @@ before:border-[#F8E38C]/60
 before:pointer-events-none">
           <div className="flex items-center gap-3 mb-3">
             <BookOpen className="w-6 h-6 text-[#F8E38C]" />
-            <span className="text-sm uppercase tracking-wide font-semibold opacity-90">
+            <span className="text-sm uppercase tracking-wide font-semibold text-[#DCCEEF]">
               total cards owned
             </span>
           </div>
@@ -582,12 +731,18 @@ before:pointer-events-none">
 
         {/* Sets Completed */}
         <div className="rounded-[28px]
-bg-gradient-to-br from-[#6B3FA2] via-[#7D4BB8] to-[#925FD1]
+bg-gradient-to-br
+from-[#121A33]
+via-[#17244D]
+to-[#22366A]
+
 text-white
 p-6
-shadow-[0_20px_50px_rgba(95,55,145,0.22)]
+shadow-[0_15px_40px_rgba(0,0,0,0.50)]
 border border-[#D8B45A]
+
 relative overflow-hidden
+
 before:content-['']
 before:absolute
 before:inset-[4px]
@@ -597,7 +752,7 @@ before:border-[#F8E38C]/60
 before:pointer-events-none">
           <div className="flex items-center gap-3 mb-3">
             <Trophy className="w-6 h-6 text-[#F8E38C]" />
-            <span className="text-sm uppercase tracking-wide font-semibold opacity-90">
+            <span className="text-sm uppercase tracking-wide font-semibold text-[#DCCEEF]">
               Completed Sets
             </span>
           </div>
@@ -609,12 +764,18 @@ before:pointer-events-none">
 
         {/* Cards for Trade */}
         <div className="rounded-[28px]
-bg-gradient-to-br from-[#6B3FA2] via-[#7D4BB8] to-[#925FD1]
+bg-gradient-to-br
+from-[#121A33]
+via-[#17244D]
+to-[#22366A]
+
 text-white
 p-6
-shadow-[0_20px_50px_rgba(95,55,145,0.22)]
+shadow-[0_15px_40px_rgba(0,0,0,0.50)]
 border border-[#D8B45A]
+
 relative overflow-hidden
+
 before:content-['']
 before:absolute
 before:inset-[4px]
@@ -624,7 +785,7 @@ before:border-[#F8E38C]/60
 before:pointer-events-none">
           <div className="flex items-center gap-3 mb-3">
             <ArrowLeftRight className="w-6 h-6 text-[#F8E38C]" />
-            <span className="text-sm uppercase tracking-wide font-semibold opacity-90">
+            <span className="text-sm uppercase tracking-wide font-semibold text-[#DCCEEF]">
               total for trade
             </span>
           </div>
@@ -638,15 +799,49 @@ before:pointer-events-none">
       window.open("https://discord.gg/mlpekayou", "_blank")
     }
     className="
-      inline-flex items-center justify-center
-      w-14 h-14
-      rounded-full
-      bg-gradient-to-br from-[#7C4BB8] to-[#9C6ADE]
-      border border-[#D8B45A]
-      shadow-[0_10px_25px_rgba(88,42,135,0.25)]
-      hover:scale-105
-      transition
-    "
+  inline-flex items-center justify-center
+
+  w-14 h-14
+  rounded-full
+
+  bg-gradient-to-r
+  from-[#16203D]
+  via-[#1B2A52]
+  to-[#24386B]
+
+  border border-[#D8B45A]
+
+  shadow-[0_10px_30px_rgba(0,0,0,0.45)]
+  hover:shadow-[0_15px_40px_rgba(0,0,0,0.55)]
+  hover:scale-105
+
+  transition-all duration-300
+
+  relative overflow-hidden
+
+  before:content-['']
+  before:absolute
+  before:inset-[2px]
+  before:rounded-full
+  before:border
+  before:border-[#F8E38C]/70
+  before:pointer-events-none
+
+  after:content-['']
+  after:absolute
+  after:top-0
+  after:left-[-120%]
+  after:w-[60%]
+  after:h-full
+  after:bg-gradient-to-r
+  after:from-transparent
+  after:via-white/10
+  after:to-transparent
+  after:skew-x-[-20deg]
+  hover:after:left-[140%]
+  after:transition-all
+  after:duration-700
+"
   >
     <img
       src="/website-assets/discordlogo.webp"
@@ -660,15 +855,49 @@ before:pointer-events-none">
       window.open("https://www.tiktok.com/@keanaex?_r=1&_t=ZP-96Ea5WXQqic", "_blank")
     }
     className="
-      inline-flex items-center justify-center
-      w-14 h-14
-      rounded-full
-      bg-gradient-to-br from-[#7C4BB8] to-[#9C6ADE]
-      border border-[#D8B45A]
-      shadow-[0_10px_25px_rgba(88,42,135,0.25)]
-      hover:scale-105
-      transition
-    "
+  inline-flex items-center justify-center
+
+  w-14 h-14
+  rounded-full
+
+  bg-gradient-to-r
+  from-[#16203D]
+  via-[#1B2A52]
+  to-[#24386B]
+
+  border border-[#D8B45A]
+
+  shadow-[0_10px_30px_rgba(0,0,0,0.45)]
+  hover:shadow-[0_15px_40px_rgba(0,0,0,0.55)]
+  hover:scale-105
+
+  transition-all duration-300
+
+  relative overflow-hidden
+
+  before:content-['']
+  before:absolute
+  before:inset-[2px]
+  before:rounded-full
+  before:border
+  before:border-[#F8E38C]/70
+  before:pointer-events-none
+
+  after:content-['']
+  after:absolute
+  after:top-0
+  after:left-[-120%]
+  after:w-[60%]
+  after:h-full
+  after:bg-gradient-to-r
+  after:from-transparent
+  after:via-white/10
+  after:to-transparent
+  after:skew-x-[-20deg]
+  hover:after:left-[140%]
+  after:transition-all
+  after:duration-700
+"
   >
     <img
       src="/website-assets/tiktoklogo.webp"
@@ -679,367 +908,354 @@ before:pointer-events-none">
 </div>
       </section>
 
-      {/* MOBILE LIKE NOTICE */}
-<div className="sm:hidden mb-6">
-  <div
-    className="
-      rounded-3xl
-      bg-white/85
-      backdrop-blur-sm
-      border border-purple-200
-      shadow-[0_12px_30px_rgba(95,55,145,0.10)]
-      px-5 py-4
-      text-center
-    "
-  >
-
-    <p className="text-sm font-semibold text-[#5B2E86]">
-      The like buttons below are fully functional!
-    </p>
-
-    <p className="mt-1 text-xs leading-relaxed text-[#8B6BAA]">
-      Tap the heart to leave a real like that is saved and visible to everyone.
-    </p>
-  </div>
-</div>
-
 {/* MOBILE INSTAGRAM-STYLE POSTS */}
 <section className="sm:hidden mt-12 space-y-8">
   {[
-    {
-  id: "miniso2",
-  image: minisoPoster3,
-  username: "MINISO x MLPEKAYOU",
-  caption:
-    "Another Miniso x MLPEKayou partnership has arisen! You can find these adorable plushies in Keegan's TikTok Shop Showcase for $45.99 each. (I know they look small here, but they are ridiculously big.)",
-},
-{
-  id: "miniso",
-  image: minisoPoster,
-  images: [minisoPoster, minisoPoster2],
-  username: "MINISO x MLPEKAYOU",
-  caption:
-    "MLPEKayou has now partnered with Miniso on TikTok! These adorable sleeping figures are currently 50% off if bought through TikTok Shop! Also, face reveal! Hi, I'm Keegan!",
-},
-{
-  id: "rainbow2",
-  image: rainbow2Poster,
-  username: "KAYOU US x MLPEKAYOU",
-  caption:
-    "Rainbow Edition Two is coming to the U.S, complete with a U.S. exclusive promotional card. This set will be uploaded once it is obtained from KayouUS.",
-},
-{
-  id: "star1",
-  image: Star1Poster,
-  username: "KAYOU US x MLPEKAYOU",
-  caption:
-    "Star Edition One is now available at CrossingTCG, and for preorder in Kayou US's TikTok shop. This set's box price is $127.84.",
-},
-    {
-  id: "moon3",
-  image: Moon3Poster,
-      username: "KAYOU US x MLPEKAYOU",
-      caption:
-        "Third Edition Moon comes as a combination of Chinese Moon 9 and 10, featuring gorgeous SC and ZR designs. This box is available from CrossingTCG, or for preorder from Kayou US TikTok shop for $47.88.",
-    },
-    {
-  id: "funmoments3",
-  image: FunMoments3Poster,
-      username: "KAYOU US x MLPEKAYOU",
-      caption:
-        "Fun Moments 3 features the highest hit rate of any Fun Moments set ever! The three box configurations guarantee that you will either recieve 3 UGR, 3 CR, or 3 ◇CR! This box retails at $39.80.",
-    },
-  ].map((post, index) => (
+  {
+    id: "luna",
+    image: lunaGif,
+    username: "MLPEKAYOU",
+    caption: "NIGHTMARE NIGHT LOOMS AROUND THE DARKENING CORNERS OF EQUESTRIA, THREATENING TO BRING NEW KAYOU US PRODUCTS TO YOU!",
+  },
+
+  {
+    id: "discord",
+    image: "/nightmarenight-assets/discordposter.webp",
+    username: "KAYOU US",
+    caption: "Discord! is coming to the My Little Pony Kayou US community soon, complete with a new chaotic theme and powerful card skills.",
+  },
+
+  {
+    id: "triple",
+    images: [
+      "/nightmarenight-assets/nightmarenightposter.webp",
+      "/nightmarenight-assets/nmnboxset.webp",
+      "/nightmarenight-assets/nmnboosterbox.webp",
+    ],
+    username: "KAYOU US",
+    caption: "The darkness of Nightmare Night looms closer to Equestria with each passing day, bringing Kayou US's new Nightmare Night themed TCG deck closer and closer.",
+  },
+
+  {
+    id: "giftset",
+    image: "/nightmarenight-assets/nmngiftset.webp",
+    username: "KAYOU US",
+    caption: "With Nightmare Night will come Kayou US's first available large gift set. This set will MSRP at $139.99 and come with an array of exclusive items. This gift set will include five Nightmare Night TCG booster packs, and an exclusive bonus pack with box art of the Mane 6 on them only available in this gift set. This set will also include a random card storage box, with designs featuring the Mane 6 characters in their Nightmare Night costumes. Lastly, this gift set will have a pack of 70 Nightmare Night themed card sleeves and a 3x3 grid binder with an exclusive Nightmare Night print on it.",
+  },
+].map((post) => (
     <div
-      key={index}
+      key={post.id}
       className="
-        bg-white/90
-        backdrop-blur-sm
-        rounded-3xl
-        overflow-hidden
-        border border-purple-200
-        shadow-[0_20px_50px_rgba(95,55,145,0.12)]
-      "
+  bg-[#121212]
+  rounded-3xl
+  overflow-hidden
+  border border-[#262626]
+"
     >
-      {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-yellow-300 p-[2px]">
-  <img
-src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.webp"}
-    alt="MLPEKAYOU"
-    className="w-full h-full rounded-full object-cover bg-white"
-  />
-</div>
+        <div className="w-10 h-10 rounded-full bg-[#3A3A3A] p-[2px]">
+          <img
+  src={
+    post.username === "MLPEKAYOU"
+      ? "/nightmarenight-assets/mareinthemoon.webp"
+      : "/website-assets/KayouLogoPFP.webp"
+  }
+  alt={post.username}
+  className="w-full h-full rounded-full object-cover bg-white"
+/>
+        </div>
 
         <div className="flex-1">
-          <div className="font-semibold text-sm text-[#5B2E86]">
+          <div className="font-semibold text-sm text-white">
             {post.username}
           </div>
         </div>
       </div>
 
-      {/* Image */}
-      <div className="relative">
+<div className="p-4 pt-0">
+  {post.images ? (
+    <div className="relative">
+      <div
+  className="
+    relative
+    overflow-hidden
+    rounded-3xl
+    bg-black
+    h-[500px]
+  "
+>
+  <div
+    className="
+      absolute
+      inset-0
+      flex
+      transition-transform
+      duration-500
+      ease-in-out
+    "
+          style={{
+            transform: `translateX(-${(postSlides[post.id] ?? 0) * 100}%)`,
+          }}
+        >
+          {post.images.map((img, index) => (
+  <div
+  key={index}
+  className="
+    relative
+    w-full
+    h-full
+    shrink-0
+  "
+>
+              <img
+                src={img}
+                alt={post.caption}
+                className="absolute inset-0 w-full h-full object-contain"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button
+        onClick={() =>
+          setPostSlides((prev) => ({
+            ...prev,
+            [post.id]:
+              ((prev[post.id] ?? 0) - 1 + post.images.length) %
+              post.images.length,
+          }))
+        }
+        className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/60 rounded-full w-9 h-9 text-white z-10"
+      >
+        ‹
+      </button>
+
+      <button
+        onClick={() =>
+          setPostSlides((prev) => ({
+            ...prev,
+            [post.id]:
+              ((prev[post.id] ?? 0) + 1) %
+              post.images.length,
+          }))
+        }
+        className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/60 rounded-full w-9 h-9 text-white z-10"
+      >
+        ›
+      </button>
+
+      <div className="flex justify-center gap-2 mt-3">
+        {post.images.map((_, i) => (
+          <div
+            key={i}
+            className={`h-2 w-2 rounded-full ${
+              (postSlides[post.id] ?? 0) === i
+                ? "bg-white"
+                : "bg-white/30"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  ) : (
+    <div className="overflow-hidden rounded-3xl h-[500px]">
   <img
-    src={
-      post.id === "miniso" && post.images
-        ? post.images[minisoSlide]
-        : post.image
-    }
+    src={post.image}
     alt={post.caption}
-    className="w-full h-auto object-cover"
+    className="w-full h-full object-contain"
   />
-
-  {post.id === "miniso" && minisoSlide === 0 && (
-    <button
-      onClick={() => setMinisoSlide(1)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 text-white w-10 h-10 rounded-full text-2xl flex items-center justify-center"
-    >
-      ›
-    </button>
-  )}
-
-  {post.id === "miniso" && minisoSlide === 1 && (
-    <button
-      onClick={() => setMinisoSlide(0)}
-      className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 text-white w-10 h-10 rounded-full text-2xl flex items-center justify-center"
-    >
-      ‹
-    </button>
+</div>
   )}
 </div>
 
-      {/* Actions */}
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
-            <Heart
-  onClick={() => toggleLike(post.id)}
-  className={`w-6 h-6 cursor-pointer transition ${
-    likedPosts[post.id]
-      ? "fill-[#E85AA8] text-[#E85AA8]"
-      : "text-[#6B3FA2]"
-  }`}
-/>
-            <Send className="w-6 h-6 text-[#6B3FA2]" />
+            <Ghost
+              onClick={() => toggleLike(post.id)}
+              className={`w-6 h-6 cursor-pointer transition ${
+                likedPosts[post.id]
+                  ? "fill-[#E85AA8] text-[#E85AA8]"
+                  : "text-white"
+              }`}
+            />
+            <Send className="w-6 h-6 text-white" />
           </div>
 
-          <Bookmark className="w-6 h-6 text-[#6B3FA2]" />
+          <Bookmark className="w-6 h-6 text-white" />
         </div>
 
-        <div className="text-sm font-semibold text-[#5B2E86] mb-2">
+        <div className="text-sm font-semibold text-white mb-2">
           {(likeCounts[post.id] || 0).toLocaleString()} likes
         </div>
 
-<p className="text-sm leading-relaxed text-[#5E467A]">
-  <span className="font-semibold text-[#5B2E86] mr-2">
-    {post.username}
-  </span>
-  {post.caption}
-</p>
-
-<div
-className={`mt-3 text-xs uppercase tracking-wide ${
-  post.id === "miniso" || post.id === "miniso2"
-    ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
-    : "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
-}`}
-onClick={() => {
-  if (post.id === "miniso") {
-    window.open(
-      "https://www.tiktok.com/@keanaex?_r=1&_t=ZP-96X7XS4ajT4",
-      "_blank"
-    );
-  } else if (post.id === "miniso2") {
-    window.open(
-      "https://www.tiktok.com/t/ZP9Y4tWQwhu2F-SoaSI/",
-      "_blank"
-    );
-  } else if (post.id === "star1") {
-    navigate("/star-one");
-  } else if (post.id === "rainbow2") {
-    navigate("/rainbow-two");
-  } else if (post.id === "moon3") {
-    navigate("/eternal-moon-three");
-  } else if (post.id === "funmoments3") {
-    navigate("/fun-moments-three");
-  } else if (post.id === "fantasywonderland") {
-    navigate("/fantasy-wonderland");
-  } else if (post.id === "friendshipsbegin") {
-    navigate("/friendships-begin");
-  }
-}}
->
-  {post.id === "miniso" || post.id === "miniso2"
-  ? "Find them in Keegan's TikTok Shop Showcase"
-  : "VIEW SET CHECKLIST"}
-</div>
+        <p className="text-sm leading-relaxed text-gray-200">
+          <span className="font-semibold text-white mr-2">
+            {post.username}
+          </span>
+          {post.caption}
+        </p>
       </div>
     </div>
   ))}
 </section>
 
-{/* DESKTOP FACEBOOK-STYLE LANDSCAPE POSTS */}
+{/* DESKTOP FACEBOOK-STYLE POSTS */}
 <section className="hidden sm:block mt-12">
-  <div className="max-w-5xl mx-auto space-y-6">
+  <div className="max-w-5xl mx-auto space-y-8">
     {[
-      {
-  id: "miniso2",
-  image: minisoPoster3,
-  username: "MINISO x MLPEKAYOU",
-  caption:
-    "Another Miniso x MLPEKayou partnership has arisen! You can find these adorable plushies in Keegan's TikTok Shop Showcase for $45.99 each. (I know they look small here, but they are ridiculously big.)",
-},
-      {
-  id: "miniso",
-  image: minisoPoster,
-  images: [minisoPoster, minisoPoster2],
-  username: "MINISO x MLPEKAYOU",
-  caption:
-    "Rainbow Edition Two is coming to the U.S, complete with a U.S. exclusive promotional card. This set will be uploaded once it is obtained from KayouUS.",
-},
-{
-  id: "rainbow2",
-  image: rainbow2Poster,
-  username: "KAYOU US x MLPEKAYOU",
-  caption:
-    "Rainbow Edition Two is coming to the U.S, complete with a U.S. exclusive promotional card. This set will be uploaded once it is obtained from KayouUS.",
-},
-{
-  id: "star1",
-  image: Star1Poster,
-  username: "KAYOU US x MLPEKAYOU",
-  caption:
-    "Star Edition One is now available at CrossingTCG, and for preorder in Kayou US's TikTok shop. This set's box price is $127.84.",
-},
-      {
-        id: "moon3",
-        image: Moon3Poster,
-        username: "KAYOU US x MLPEKAYOU",
-        caption:
-          "Third Edition Moon comes as a combination of Chinese Moon 9 and 10, featuring gorgeous SC and ZR designs. This box is available from CrossingTCG, or for preorder from Kayou US TikTok shop for $47.88.",
-      },
-      {
-        id: "funmoments3",
-        image: FunMoments3Poster,
-        username: "KAYOU US x MLPEKAYOU",
-        caption:
-          "Fun Moments 3 features the highest hit rate of any Fun Moments set ever! The three box configurations guarantee that you will either receive 3 UGR, 3 CR, or 3 ◇CR! This box retails at $39.80.",
-      },
-    ].map((post, index) => (
+  {
+    id: "luna",
+    image: lunaGif,
+    username: "MLPEKAYOU",
+    caption: "NIGHTMARE NIGHT LOOMS AROUND THE DARKENING CORNERS OF EQUESTRIA, THREATENING TO BRING NEW KAYOU US PRODUCTS TO YOU!",
+  },
+
+  {
+    id: "discord",
+    image: "/nightmarenight-assets/discordposter.webp",
+    username: "KAYOU US",
+    caption: "Discord! is coming to the My Little Pony Kayou US community soon, complete with a new chaotic theme and powerful card skills.",
+  },
+
+  {
+    id: "triple",
+    images: [
+      "/nightmarenight-assets/nightmarenightposter.webp",
+      "/nightmarenight-assets/nmnboxset.webp",
+      "/nightmarenight-assets/nmnboosterbox.webp",
+    ],
+    username: "KAYOU US",
+    caption: "The darkness of Nightmare Night looms closer to Equestria with each passing day, bringing Kayou US's new Nightmare Night themed TCG deck closer and closer.",
+  },
+
+  {
+    id: "giftset",
+    image: "/nightmarenight-assets/nmngiftset.webp",
+    username: "KAYOU US",
+    caption: "With Nightmare Night will come Kayou US's first available large gift set. This set will MSRP at $139.99 and come with an array of exclusive items. This gift set will include five Nightmare Night TCG booster packs, and an exclusive bonus pack with box art of the Mane 6 on them only available in this gift set. This set will also include a random card storage box, with designs featuring the Mane 6 characters in their Nightmare Night costumes. Lastly, this gift set will have a pack of 70 Nightmare Night themed card sleeves and a 3x3 grid binder with an exclusive Nightmare Night print on it.",
+  },
+].map((post) => (
       <div
-        key={index}
-        className="
-          bg-white/95
-          backdrop-blur-sm
-          rounded-3xl
-          overflow-hidden
-          border border-purple-200
-          shadow-[0_12px_35px_rgba(95,55,145,0.08)]
-        "
+        key={post.id}
+       className="
+  bg-[#121212]
+  rounded-3xl
+  overflow-hidden
+  border border-[#262626]
+"
       >
-        {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-purple-100">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-[#262626]">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 via-purple-400 to-yellow-300 p-[2px]">
-            <img
-              src={post.id === "miniso" || post.id === "miniso2" ? minisoLogo : "/website-assets/KayouLogoPFP.webp"}
-              alt="MLPEKAYOU"
-              className="w-full h-full rounded-full object-cover bg-white"
-            />
+           <img
+  src={
+    post.username === "MLPEKAYOU"
+      ? "/nightmarenight-assets/mareinthemoon.webp"
+      : "/website-assets/KayouLogoPFP.webp"
+  }
+  alt={post.username}
+  className="w-full h-full rounded-full object-cover bg-white"
+/>
           </div>
 
           <div className="flex-1">
-            <div className="font-semibold text-sm text-[#5B2E86]">
+            <div className="font-semibold text-sm text-white">
               {post.username}
             </div>
-            <div className="text-xs text-[#A78BCB]">
-              Just now · Public
+
+            <div className="text-xs text-gray-400">
+              1,000 Moons Ago · Public
             </div>
           </div>
         </div>
 
-        {/* Landscape Body */}
         <div className="grid grid-cols-[320px_1fr]">
-          {/* Left Image Panel */}
-          <div className="bg-[#FAF6FF] p-5 flex items-center justify-center border-r border-purple-100">
-            {post.id === "miniso" || post.id === "miniso2" && post.images ? (
-  <div className="relative w-[260px] overflow-hidden">
+          <div className="bg-[#121212] p-5 flex items-center justify-center border-r border-[#262626]">
+{post.images ? (
+  <div className="relative w-full">
     <div
-      className="flex transition-transform duration-500 ease-in-out"
-      style={{
-        transform: `translateX(-${minisoSlide * 260}px)`,
-      }}
+      className="
+        relative
+        overflow-hidden
+        rounded-3xl
+        bg-black
+        h-[500px]
+      "
     >
-      {post.images.map((image, imageIndex) => (
-        <div
-          key={imageIndex}
-          className="w-[260px] flex-shrink-0 flex items-center justify-center"
-        >
-          <img
-            src={image}
-            alt={post.caption}
+      <div
+        className="
+          absolute
+          inset-0
+          flex
+          transition-transform
+          duration-500
+          ease-in-out
+        "
+        style={{
+          transform: `translateX(-${(postSlides[post.id] ?? 0) * 100}%)`,
+        }}
+      >
+        {post.images.map((img, index) => (
+          <div
+            key={index}
             className="
+              relative
               w-full
-              h-auto
-              rounded-2xl
-              shadow-[0_15px_30px_rgba(95,55,145,0.10)]
+              h-full
+              shrink-0
             "
-          />
-        </div>
-      ))}
+          >
+            <img
+              src={img}
+              alt={post.caption}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+          </div>
+        ))}
+      </div>
     </div>
 
-    {minisoSlide === 0 && (
-      <button
-        type="button"
-        onClick={() => setMinisoSlide(1)}
-        className="
-          absolute
-          right-3
-          top-1/2
-          -translate-y-1/2
-          w-10
-          h-10
-          rounded-full
-          bg-black/50
-          text-white
-          text-2xl
-          flex
-          items-center
-          justify-center
-          hover:bg-black/65
-          transition
-        "
-      >
-        ›
-      </button>
-    )}
+    <button
+      onClick={() =>
+        setPostSlides((prev) => ({
+          ...prev,
+          [post.id]:
+            ((prev[post.id] ?? 0) - 1 + post.images.length) %
+            post.images.length,
+        }))
+      }
+      className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/60 rounded-full w-10 h-10 text-white z-10"
+    >
+      ‹
+    </button>
 
-    {minisoSlide === 1 && (
-      <button
-        type="button"
-        onClick={() => setMinisoSlide(0)}
-        className="
-          absolute
-          left-3
-          top-1/2
-          -translate-y-1/2
-          w-10
-          h-10
-          rounded-full
-          bg-black/50
-          text-white
-          text-2xl
-          flex
-          items-center
-          justify-center
-          hover:bg-black/65
-          transition
-        "
-      >
-        ‹
-      </button>
-    )}
+    <button
+      onClick={() =>
+        setPostSlides((prev) => ({
+          ...prev,
+          [post.id]:
+            ((prev[post.id] ?? 0) + 1) %
+            post.images.length,
+        }))
+      }
+      className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/60 rounded-full w-10 h-10 text-white z-10"
+    >
+      ›
+    </button>
+
+    <div className="flex justify-center gap-2 mt-3">
+      {post.images.map((_, i) => (
+        <div
+          key={i}
+          className={`h-2 w-2 rounded-full ${
+            (postSlides[post.id] ?? 0) === i
+              ? "bg-white"
+              : "bg-white/30"
+          }`}
+        />
+      ))}
+    </div>
   </div>
 ) : (
   <img
@@ -1049,87 +1265,38 @@ onClick={() => {
       w-full
       max-w-[260px]
       h-auto
-      rounded-2xl
+      rounded-3xl
       shadow-[0_15px_30px_rgba(95,55,145,0.10)]
     "
   />
 )}
           </div>
 
-{/* Right Content Panel */}
-<div className="p-6 flex flex-col">
-  {/* Caption */}
-  <p className="text-sm leading-7 text-[#5E467A] mb-5">
-    <span className="font-semibold text-[#5B2E86] mr-2">
-      {post.username}
-    </span>
-    {post.caption}
-  </p>
+          <div className="p-6 flex flex-col">
+            <p className="text-sm leading-7 text-gray-200 mb-5">
+              <span className="font-semibold text-white mr-2">
+                {post.username}
+              </span>
+              {post.caption}
+            </p>
 
-  {/* Likes */}
-  <div className="text-sm font-semibold text-[#5B2E86] mb-5">
-    {(likeCounts[post.id] || 0).toLocaleString()} likes
-  </div>
+            <div className="text-sm font-semibold text-white mb-5">
+              {(likeCounts[post.id] || 0).toLocaleString()} likes
+            </div>
 
-  {/* Actions */}
-  <div className="flex items-center gap-4 mb-4">
-    <Heart
-      onClick={() => toggleLike(post.id)}
-      className={`w-6 h-6 cursor-pointer transition ${
-        likedPosts[post.id]
-          ? "fill-[#E85AA8] text-[#E85AA8]"
-          : "text-[#6B3FA2]"
-      }`}
-    />
-    <Send className="w-6 h-6 text-[#6B3FA2]" />
-    <Bookmark className="w-6 h-6 text-[#6B3FA2] ml-auto" />
-  </div>
-
-  {/* Footer Link - pinned to bottom */}
-<div
-className={`mt-auto text-xs uppercase tracking-wide ${
-  post.id === "miniso" ||
-  post.id === "miniso2" ||
-  post.id === "moon3" ||
-  post.id === "funmoments3" ||
-  post.id === "star1" ||
-  post.id === "rainbow2" ||
-  post.id === "fantasywonderland" ||
-  post.id === "friendshipsbegin"
-    ? "text-[#8B5CC7] font-semibold cursor-pointer hover:text-[#6B3FA2] transition"
-    : "text-[#A78BCB]"
-}`}
-onClick={() => {
-  if (post.id === "miniso") {
-    window.open(
-      "https://www.tiktok.com/t/ZP9YXfjP2mmMF-jaHiQ/",
-      "_blank"
-    );
-  } else if (post.id === "miniso2") {
-    window.open(
-      "https://www.tiktok.com/t/ZP9Y4tWQwhu2F-SoaSI/",
-      "_blank"
-    );
-  } else if (post.id === "star1") {
-    navigate("/star-one");
-  } else if (post.id === "rainbow2") {
-    navigate("/rainbow-two");
-  } else if (post.id === "moon3") {
-    navigate("/eternal-moon-three");
-  } else if (post.id === "funmoments3") {
-    navigate("/fun-moments-three");
-  } else if (post.id === "fantasywonderland") {
-    navigate("/fantasy-wonderland");
-  } else if (post.id === "friendshipsbegin") {
-    navigate("/friendships-begin");
-  }
-}}
->
-  {post.id === "miniso" || post.id === "miniso2"
-    ? "Find them in Keegan's TikTok Shop Showcase"
-    : "VIEW SET CHECKLIST"}
-</div>
-</div>
+            <div className="flex items-center gap-4">
+              <Ghost
+                onClick={() => toggleLike(post.id)}
+                className={`w-6 h-6 cursor-pointer transition ${
+                  likedPosts[post.id]
+                    ? "fill-[white] text-[white]"
+                    : "text-white"
+                }`}
+              />
+              <Send className="w-6 h-6 text-white" />
+              <Bookmark className="w-6 h-6 text-white ml-auto" />
+            </div>
+          </div>
         </div>
       </div>
     ))}

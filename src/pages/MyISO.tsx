@@ -1067,17 +1067,20 @@ onToggleHiddenSet={toggleSet}
 {mode === "TCG" &&
  !hiddenSetsTCG.includes("TCG_PROMOS") &&
  (!selectedSetId || selectedSetId === "TCG_PROMOS") &&
- Array.from({ length: 6 }, (_, i) => {
-   const key = `RR${String(i + 1).padStart(2, "0")}`;
-   return owned[`tcgpromos-${key}`];
- }).every(Boolean) === false && (
+ (
+   viewAllCardCodes ||
+   Array.from({ length: 6 }, (_, i) => {
+     const key = `RR${String(i + 1).padStart(2, "0")}`;
+     return owned[`tcgpromos-${key}`];
+   }).every(Boolean) === false
+ ) && (
 
   <div className="mb-6">
     <h2 className="text-sm md:text-base font-semibold mb-3">
       TCG Promos
     </h2>
 
-    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
 {Array.from({ length: 6 }, (_, i) => {
   const num = i + 1;
   const key = `RR${String(num).padStart(2, "0")}`;

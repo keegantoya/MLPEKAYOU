@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
-  Grid3X3,
   ArrowLeftRight,
   Pencil,
   Heart,
@@ -23,20 +22,33 @@ import avatar012 from "@/assets/avatars/avatar012.webp";
 import avatar013 from "@/assets/avatars/avatar013.webp";
 import avatar014 from "@/assets/avatars/avatar014.webp";
 import avatar015 from "@/assets/avatars/avatar015.webp";
+import avatar016 from "@/assets/avatars/avatar016.webp";
+import avatar017 from "@/assets/avatars/avatar017.webp";
+import avatar018 from "@/assets/avatars/avatar018.webp";
+import avatar019 from "@/assets/avatars/avatar019.webp";
+import avatar020 from "@/assets/avatars/avatar020.webp";
+import avatar021 from "@/assets/avatars/avatar021.webp";
+import avatar022 from "@/assets/avatars/avatar022.webp";
+import avatar023 from "@/assets/avatars/avatar023.webp";
+import avatar024 from "@/assets/avatars/avatar024.webp";
+import avatar025 from "@/assets/avatars/avatar025.webp";
+import avatar026 from "@/assets/avatars/avatar026.webp";
+import avatar027 from "@/assets/avatars/avatar027.webp";
+
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
+import TerriAvatar from "@/assets/avatars/terrypfp.webp";
 
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
-import fluttershyCutieMark from "/website-assets/fluttershycutiemark.webp";
-import applejackCutieMark from "/website-assets/applejackcutiemark.webp";
-import pinkiePieCutieMark from "/website-assets/pinkiecutiemark.webp";
-import rainbowDashCutieMark from "/website-assets/rainbowdashcutiemark.webp";
-import rarityCutieMark from "/website-assets/raritycutiemark.webp";
-import twilightSparkleCutieMark from "/website-assets/twilightcutiemark.webp";
+import nightmareMoonEye from "/nightmarenight-assets/nightmaremooneye.webp";
+import nightmareMoonBuilding from "/nightmarenight-assets/nmnbuilding1.webp";
+import nightmareMoonBuilding2 from "/nightmarenight-assets/nmnbuilding2.webp";
+import headlessHorse from "/nightmarenight-assets/headlesshorse.webp";
 
 const avatarMap: Record<string, string> = {
   "avatar001.webp": avatar001,
@@ -45,6 +57,7 @@ const avatarMap: Record<string, string> = {
   "avatar004.webp": avatar004,
   "avatar005.webp": avatar005,
   "avatar006.webp": avatar006,
+  "avatar027.webp": avatar027,
   "avatar007.webp": avatar007,
   "avatar008.webp": avatar008,
   "avatar009.webp": avatar009,
@@ -54,11 +67,23 @@ const avatarMap: Record<string, string> = {
   "avatar013.webp": avatar013,
   "avatar014.webp": avatar014,
   "avatar015.webp": avatar015,
+  "avatar016.webp": avatar016,
+  "avatar017.webp": avatar017,
+  "avatar018.webp": avatar018,
+  "avatar019.webp": avatar019,
+  "avatar020.webp": avatar020,
+  "avatar021.webp": avatar021,
+  "avatar022.webp": avatar022,
+  "avatar023.webp": avatar023,
+  "avatar024.webp": avatar024,
+  "avatar025.webp": avatar025,
+  "avatar026.webp": avatar026,
   "heimantouavatar": heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,
   "keeganpfp.webp": KeeganAvatar,
+  "keeganpfpnmn.webp": KeeganAvatar2,
   "maipfp.webp": maipfp,
-
+  "terrypfp.webp": TerriAvatar,
 };
 
 const VERIFIED_USERS = {
@@ -107,6 +132,7 @@ const UserMenu = () => {
   const [discordDraft, setDiscordDraft] = useState("");
   const [editingUsername, setEditingUsername] = useState(false);
 const [usernameDraft, setUsernameDraft] = useState("");
+const [showNightmarePromo, setShowNightmarePromo] = useState(false);
 
 const [showCollectionMenu, setShowCollectionMenu] = useState(false);
 
@@ -598,6 +624,17 @@ const displayAvatar = profile
   ? getAvatar(profile?.avatar_url)
   : avatar004;
 
+const stars = useMemo(
+  () =>
+    Array.from({ length: 180 }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: 1 + Math.random() * 5,
+      opacity: 0.15 + Math.random() * 0.55,
+    })),
+  []
+);
+
     const handleAvatarSelect = async (file: string) => {
   try {
     const {
@@ -855,7 +892,7 @@ useEffect(() => {
 </p>
 
             <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-              Hi! My name is Keegan and I am hardcoding a description into your profile to remind you every time that you open this app that I love you, I appreciate you, and this app would be nothing without you! Thank you for everything.
+              Keegan here to tell you that I love and appreciate you, and this website would be nothing without you. Check your bag below for a treat! Consider it a thank you.
             </p>
           </div>
 
@@ -928,30 +965,90 @@ useEffect(() => {
       <span className="text-xl text-gray-400">›</span>
     </button>
   </div>
+  <div className="mt-10 flex justify-center">
+  <div className="relative">
+    <img
+      src="/nightmarenight-assets/goodiebagnmn.webp"
+      alt=""
+      onClick={() => setShowNightmarePromo(!showNightmarePromo)}
+      className="w-16 h-16 cursor-pointer animate-bounce"
+    />
+
+    {showNightmarePromo && (
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-[999999] w-[300px] rounded-2xl bg-white p-4 shadow-xl border">
+        <p className="text-sm">
+          To celebrate our descent into Nightmare Night festivities, use discount code
+          <strong> 'mlpekayou' </strong>
+          on any purchase of Star 1 from{" "}
+          <a
+            href="https://stonestradingco.com/products/kayou-my-little-pony-friendship-eternal-cards-star-edition-english-series-1-display-box?_pos=2&_sid=65c79c8b6&_ss=r"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline font-semibold"
+          >
+            StonesTradingCo
+          </a>
+          {" "}for 20% off! Happy early Nightmare Night everypony! This offer is exclusive to MLPEKAYOU users and only works on Stone's website. As long as this pop up exists, the offer is still valid.
+        </p>
+      </div>
+    )}
+  </div>
+</div>
 </div>
         </div>
       </div>
 
 {/* DESKTOP PC USER MENU */}
-<div className="hidden sm:block min-h-screen relative overflow-hidden bg-gradient-to-br from-white via-[#faf7ff] to-[#f1e8ff] pt-8 pb-12">
-  {/* Soft Sparkle Background */}
-  <div className="absolute inset-0 pointer-events-none">
-    {/* Large glow */}
-    <div className="absolute top-12 left-20 w-72 h-72 bg-[#d4af37]/6 rounded-full blur-3xl" />
+<div className="hidden sm:block min-h-screen relative isolate overflow-hidden bg-gradient-to-br from-[#14001f] via-[#24003d] to-[#3a0066] pt-8 pb-12">
+<div className="absolute top-0 left-0 right-0 h-[60%] pointer-events-none overflow-hidden -z-10">
+  {stars.map((star, i) => (
+    <div
+      key={i}
+      className="absolute rounded-full bg-white"
+      style={{
+        left: `${star.left}%`,
+        top: `${star.top}%`,
+        width: `${star.size}px`,
+        height: `${star.size}px`,
+        opacity: star.opacity,
+      }}
+    />
+  ))}
+</div>
+{/* NIGHTMARE NIGHT ADDITIONS */}
+<img
+  src={nightmareMoonBuilding}
+  alt=""
+  aria-hidden="true"
+  className="absolute bottom-0 right-[-200px] pointer-events-none select-none z-[1]"
+  style={{
+    width: "900px",
+    opacity: 0.25,
+  }}
+/>
 
-    {/* Lavender glow */}
-    <div className="absolute top-1/3 right-24 w-96 h-96 bg-[#c4b5fd]/10 rounded-full blur-3xl" />
+<img
+  src={nightmareMoonBuilding2}
+  alt=""
+  aria-hidden="true"
+  className="absolute bottom-0 left-[-200px] pointer-events-none select-none z-[1]"
+  style={{
+    width: "900px",
+    opacity: 0.25,
+  }}
+/>
 
-    {/* Bottom glow */}
-    <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-white/60 rounded-full blur-3xl" />
 
-    {/* Sparkles */}
-    <div className="absolute top-20 left-1/4 text-[#d4af37]/25 text-xl">✦</div>
-    <div className="absolute top-40 right-1/3 text-[#d4af37]/20 text-2xl">✧</div>
-    <div className="absolute top-2/3 left-1/5 text-[#d4af37]/20 text-lg">✦</div>
-    <div className="absolute bottom-32 right-1/4 text-[#d4af37]/25 text-xl">✧</div>
-    <div className="absolute bottom-20 left-1/2 text-[#d4af37]/15 text-2xl">✦</div>
-  </div>
+<img
+  src={headlessHorse}
+  alt=""
+  aria-hidden="true"
+  className="absolute bottom-[-200px] right-[-100px] pointer-events-none select-none z-[1] headless-horse"
+  style={{
+    width: "850px",
+    opacity: 0.7,
+  }}
+/>
 
   {/* Main Content */}
   <div className="relative z-10 max-w-7xl mx-auto px-6">
@@ -962,7 +1059,7 @@ useEffect(() => {
 
 {/* DESKTOP AVATAR PICKER */}
 {showAvatarPicker && (
-  <div className="hidden sm:flex fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm items-center justify-center p-4 lg:p-6">
+  <div className="hidden sm:flex fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm items-center justify-center p-4 lg:p-6">
     <div className="bg-white rounded-[2rem] shadow-2xl border border-[#d4af37]/20 w-full max-w-3xl max-h-[90vh] overflow-hidden">
       
       {/* Header */}
@@ -981,8 +1078,8 @@ useEffect(() => {
       </div>
 
       {/* Avatar Grid */}
-      <div className="p-8 overflow-y-auto max-h-[70vh]">
-        <div className="grid grid-cols-6 gap-6">
+<div className="p-8 overflow-y-auto max-h-[420px]">
+  <div className="grid grid-cols-6 gap-6">
           {avatarOptions.map(([fileName, src]) => (
             <button
               key={fileName}
@@ -1017,18 +1114,11 @@ useEffect(() => {
     {/* Main Dashboard Layout */}
     <div className="grid grid-cols-[340px_1fr] gap-8 items-start">
       {/* LEFT SIDEBAR */}
-      <div className="relative self-start bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-8 sticky top-4 overflow-hidden">
-  {/* Cutie Mark Background Pattern */}
+      <div className="self-start bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-8 sticky top-4 overflow-visible">
+  {/* PROFILE BACKGROUND PATTERN */}
 <div className="absolute inset-0 pointer-events-none">
-  {[
-    twilightSparkleCutieMark,
-    rarityCutieMark,
-    rainbowDashCutieMark,
-    fluttershyCutieMark,
-    applejackCutieMark,
-    pinkiePieCutieMark,
-  ]
-    .flatMap((src) => Array(6).fill(src))
+{Array(36)
+  .fill(nightmareMoonEye)
     .map((src, index) => {
       const positions = [
         { top: "3%", left: "6%" },
@@ -1100,6 +1190,36 @@ useEffect(() => {
 
   {/* Sidebar Content */}
   <div className="relative z-10">
+    
+<div className="relative mb-6">
+<div className="absolute left-0 top-0 z-20">
+  <img
+    src="/nightmarenight-assets/goodiebagnmn.webp"
+    alt=""
+    onClick={() => setShowNightmarePromo(!showNightmarePromo)}
+    className="w-16 h-16 cursor-pointer animate-bounce"
+  />
+
+  {showNightmarePromo && (
+    <div className="absolute left-0 top-full mt-2 z-[999999] w-[300px] rounded-2xl bg-white p-4 shadow-xl border">
+      <p className="text-sm">
+        To celebrate our descent into Nightmare Night festivities, use discount code
+        <strong> 'mlpekayou' </strong>
+        on any purchase of Star 1 from{" "}
+        <a
+          href="https://stonestradingco.com/products/kayou-my-little-pony-friendship-eternal-cards-star-edition-english-series-1-display-box?_pos=2&_sid=65c79c8b6&_ss=r"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline font-semibold"
+        >
+          StonesTradingCo
+        </a>
+        {" "}for 20% off! Happy early Nightmare Night everypony! This offer is exclusive to MLPEKAYOU users and only works on Stone's website. As long as this pop up exists, the offer is still valid.
+      </p>
+    </div>
+  )}
+</div>
+
        {/* Avatar */}
 <div className="relative w-40 h-40 mx-auto mb-6">
   <div className="w-full h-full rounded-full overflow-hidden border-4 border-[#d4af37]/30 shadow-lg">
@@ -1124,6 +1244,7 @@ useEffect(() => {
   >
     <Pencil className="w-4 h-4" />
   </button>
+</div>
 </div>
 </div>
 
@@ -1344,8 +1465,8 @@ useEffect(() => {
       </div>
 
      {/* RIGHT CONTENT AREA */}
-<div className="space-y-8 self-start">
-  <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-6">
+<div className="space-y-8 self-start relative z-0">
+  <div className="bg-white backdrop-blur-sm rounded-3xl shadow-xl border border-[#d4af37]/20 p-6">
     {/* Header + Toggle */}
     <div className="flex items-center justify-between mb-6 gap-4">
       <h2 className="text-2xl font-bold text-[#5a3e84]">
@@ -1378,20 +1499,6 @@ useEffect(() => {
         </button>
       </div>
     </div>
-
-    {/* Edit Trades Button (only when Trades tab is active) */}
-    {desktopTab === "trades" && (
-      <div className="flex justify-end mb-6">
-        <Button
-          variant="outline"
-          className="border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
-          onClick={() => navigate("/inventory")}
-        >
-          Edit Trades and Sales
-        </Button>
-      </div>
-    )}
-
     {/* Showcase Content */}
     {desktopTab === "showcase" ? (
       showcaseCards.length > 0 ? (
@@ -1794,7 +1901,7 @@ if (
     </style>
   <div
   id="edit-profile-modal"
-  className="fixed inset-0 z-[100] bg-white sm:hidden overflow-y-auto animate-in slide-in-from-right duration-300"
+  className="fixed inset-x-0 bottom-0 top-20 z-[100] bg-white sm:hidden overflow-y-auto animate-in slide-in-from-right duration-300"
 >
     {/* Header */}
   <div
@@ -2044,52 +2151,70 @@ if (
 )}
 {/* How the Avatars load in */}
 {showAvatarPicker && (
-  <div className="fixed inset-0 z-[110] bg-white sm:hidden overflow-y-auto">
+  <div className="fixed inset-x-0 bottom-0 top-32 z-[110] bg-white sm:hidden overflow-y-auto">
     {/* Header */}
-    <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
-      <div className="relative flex items-center justify-center h-14">
-        <button
-          onClick={() => setShowAvatarPicker(false)}
-          className="absolute left-4 top-6 z-20 p-4 -m-2"
-          style={{
-            paddingTop: "max(1rem, env(safe-area-inset-top))",
-          }}
-        >
-          <span className="text-3xl leading-none text-gray-900">‹</span>
-        </button>
+<button
+  onClick={() => setShowAvatarPicker(false)}
+  className="fixed left-8 top-36 z-[120] w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md"
+>
+  <svg
+    className="w-5 h-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="3"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M15 18l-6-6 6-6" />
+  </svg>
+</button>
+{/* Avatar PFP Choosing Grid */}
+<div className="px-4 pt-6 pb-24">
+  <div className="text-center mb-6">
+    <h3 className="text-lg font-bold text-gray-900">
+      Choose Your Avatar
+    </h3>
 
-        <h2 className="text-xl font-semibold text-gray-900">
-          Choose Avatar
-        </h2>
-      </div>
-    </div>
+    <p className="text-sm text-gray-500 mt-1">
+      Newer avatars will appear at the bottom.
+    </p>
+  </div>
 
-    {/* Avatar PFP Choosing Grid */}
-    <div 
-    className="pt-20 px-4 pb-4 grid grid-cols-3 gap-4">
-      {avatarOptions.map(([fileName, src]) => (
-        <button
-          key={fileName}
-          className="relative"
-          onClick={() => handleAvatarSelect(fileName.replace(".webp", ""))}
-disabled={savingAvatar}
-        >
-          <div
-            className={`w-full aspect-square rounded-full overflow-hidden border-4 ${
-              displayAvatar === src
-                ? "border-purple-500"
-                : "border-transparent"
-            }`}
-          >
-            <img
-              src={src}
-              alt={fileName}
-              className="w-full h-full object-cover"
-            />
+  <div className="grid grid-cols-3 gap-4">
+    {avatarOptions.map(([fileName, src]) => (
+      <button
+        key={fileName}
+        type="button"
+        onClick={() =>
+          handleAvatarSelect(fileName.replace(".webp", ""))
+        }
+        disabled={savingAvatar}
+        className={`relative overflow-hidden rounded-3xl transition-all duration-200 ${
+          displayAvatar === src
+            ? "ring-4 ring-[#7c5aa6] scale-[1.03]"
+            : ""
+        }`}
+      >
+        <div className="aspect-square bg-gray-100">
+          <img
+            src={src}
+            alt={fileName}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {displayAvatar === src && (
+          <div className="absolute inset-0 bg-[#7c5aa6]/15 flex items-center justify-center">
+            <div className="bg-white rounded-full px-3 py-1 text-sm font-bold text-[#7c5aa6] shadow-lg">
+              Selected
+            </div>
           </div>
-        </button>
-      ))}
-    </div>
+        )}
+      </button>
+    ))}
+  </div>
+</div>
   </div>
 )}
 {/* My Kayou Collection Menu */}

@@ -171,20 +171,19 @@ return (
     <div
       className="min-h-screen"
       style={{
-        backgroundColor: "#F8F3FF",
-        backgroundImage: `
-          radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-          radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-          radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-          radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-          linear-gradient(
-            180deg,
-            #FCF9FF 0%,
-            #F8F1FF 35%,
-            #F5EEFF 65%,
-            #FAF6FF 100%
-          )
-        `,
+       backgroundColor: "#0b0613",
+backgroundImage: `
+  radial-gradient(circle at 20% 20%, rgba(120, 70, 180, 0.12) 0%, transparent 35%),
+  radial-gradient(circle at 80% 15%, rgba(80, 40, 140, 0.12) 0%, transparent 30%),
+  radial-gradient(circle at 25% 75%, rgba(100, 60, 160, 0.10) 0%, transparent 35%),
+  linear-gradient(
+    180deg,
+    #09050f 0%,
+    #12071d 35%,
+    #1a0d2b 65%,
+    #0d0717 100%
+  )
+`,
       }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
@@ -195,9 +194,9 @@ return (
             className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-none"
             style={{
               fontFamily: "Cinzel, serif",
-              color: "#5B3695",
+              color: "#d8c7ff",
               textShadow:
-                "0 2px 0 #E5B93D, 0 6px 18px rgba(91,54,149,0.12)",
+              "0 0 12px rgba(150,100,255,0.5)",
             }}
           >
             My Inventory
@@ -208,10 +207,9 @@ return (
         <div
           className="
             rounded-[2rem]
-            border border-[#DDD3F2]
-            bg-white/80
-            backdrop-blur-md
-            shadow-[0_10px_30px_rgba(91,54,149,0.05)]
+            border border-[#3b2457]
+bg-[#140a22]/90
+shadow-[0_10px_40px_rgba(0,0,0,0.45)]
             p-4 sm:p-6
           "
         >
@@ -223,7 +221,7 @@ return (
     gap-4
     mb-5
     pb-4
-    border-b border-[#E6DAF7]
+    border-b border-[#35204d]
   "
 >
   {/* Filter Tabs */}
@@ -249,14 +247,14 @@ return (
         ${
           activeFilter === tab.id
             ? "text-white shadow-md"
-            : "text-[#6D44A8] bg-white border border-[#E6DAF7] hover:bg-[#FAF7FF]"
+            : "text-[#d8c7ff] bg-[#1a1028] border border-[#3b2457] hover:bg-[#241437]"
         }
       `}
       style={
         activeFilter === tab.id
           ? {
               background:
-                "linear-gradient(135deg, #8E5CD0 0%, #6D44A8 100%)",
+  "linear-gradient(135deg, #5f2d91 0%, #3c1b61 100%)",
             }
           : {}
       }
@@ -275,7 +273,7 @@ return (
 
 // Apply filter tabs
 if (activeFilter === "moon") {
-  return col.id === "1" || col.id === "2";
+  return col.id === "1" || col.id === "2" || col.id === "3";
 }
 
 // Star Edition
@@ -341,28 +339,27 @@ return true;
         {/* MY TRADES */}
         <div className="mt-8">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="flex-1 max-w-[200px] h-px bg-[#D9C7F5]" />
+            <div className="flex-1 max-w-[200px] h-px bg-[#3b2457]" />
             <h2
               className="text-2xl sm:text-3xl font-bold"
               style={{
                 fontFamily: "Cinzel, serif",
-                color: "#5B3695",
-                textShadow:
-                  "0 1px 0 #E5B93D, 0 4px 12px rgba(91,54,149,0.08)",
+                color: "#d8c7ff",
+textShadow:
+  "0 0 10px rgba(150,100,255,0.45)",
               }}
             >
               My Trades
             </h2>
-            <div className="flex-1 max-w-[200px] h-px bg-[#D9C7F5]" />
+            <div className="flex-1 max-w-[200px] h-px bg-[#3b2457]" />
           </div>
 
           <div
             className="
               rounded-[2rem]
-              border border-[#DDD3F2]
-              bg-white/80
-              backdrop-blur-md
-              shadow-[0_10px_30px_rgba(91,54,149,0.05)]
+              border border-[#3b2457]
+bg-[#140a22]/90
+shadow-[0_10px_40px_rgba(0,0,0,0.45)]
               p-4 sm:p-6
             "
           >
@@ -387,7 +384,7 @@ return true;
     "
     style={{
       background:
-        "linear-gradient(135deg, #8E5CD0 0%, #6D44A8 100%)",
+  "linear-gradient(135deg, #5f2d91 0%, #3c1b61 100%)",
     }}
   >
     {/* Circular Thumbnail */}
@@ -422,7 +419,7 @@ return true;
                 </div>
               </>
             ) : (
-              <p className="text-center text-[#6B5B85] text-sm py-4">
+              <p className="text-center text-[#bfaee3] text-sm py-4">
                 You haven’t marked any cards for trade yet.
               </p>
             )}
