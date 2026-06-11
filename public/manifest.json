@@ -1,6 +1,6 @@
 {
   "name": "MLPEKAYOU",
-  "short_name": "MLP",
+  "short_name": "MLPEKAYOU",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -10,7 +10,7 @@
   {
     "src": "/app-icons/appiconapple.png",
     "sizes": "600x600",
-    "type": "image/webp"
+    "type": "image/png"
   },
   {
     "src": "/app-icons/appiconbig.webp",
