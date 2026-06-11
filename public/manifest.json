@@ -8,12 +8,12 @@
   "theme_color": "#ffffff",
   "icons": [
   {
-    "src": "/app-icons/appicon1.webp",
+    "src": "/app-icons/appiconsmall.webp",
     "sizes": "600x600",
     "type": "image/webp"
   },
   {
-    "src": "/app-icons/appicon2.webp",
+    "src": "/app-icons/appiconbig.webp",
     "sizes": "1600x1600",
     "type": "image/webp"
   }
