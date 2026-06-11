@@ -1059,11 +1059,11 @@ before:pointer-events-none">
       </div>
     </div>
   ) : (
-    <div className="overflow-hidden rounded-3xl h-[500px]">
+<div className="overflow-hidden rounded-3xl">
   <img
     src={post.image}
     alt={post.caption}
-    className="w-full h-full object-contain"
+    className="w-full h-auto object-contain"
   />
 </div>
   )}

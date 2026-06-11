@@ -457,7 +457,7 @@ const completionPercentage =
 
 <div className="absolute inset-0 bg-[#1a1028]/10 pointer-events-none" />
 
-      <div className="container max-w-6xl xl:max-w-[1600px] py-8 sm:py-8 pt-6 sm:pt-8 px-4 sm:px-6 xl:px-10">
+      <div className="container max-w-6xl xl:max-w-[1600px] py-8 sm:py-8 pt-6 sm:pt-8 px-4 sm:px-6 xl:px-10 pb-28 sm:pb-8">
 
 {/* HERO HEADER */}
 <div className="mb-10">

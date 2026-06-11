@@ -666,7 +666,7 @@ const toggleHideWishlist = async () => {
   })()}
 </div>
 
-      <div className="relative z-10 container py-8">
+      <div className="relative z-10 container py-8 pb-28 sm:pb-8">
         {/* Header */}
         <div className="relative z-40 rounded-3xl border border-[#d4af37]/40 bg-white/70 backdrop-blur-md shadow-lg px-5 py-5 mb-8">
           <div className="flex flex-col items-center justify-center gap-3 text-center">

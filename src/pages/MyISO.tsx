@@ -798,7 +798,7 @@ return (
 }}
   >
 
-    <div className="container py-6 sm:py-8">
+    <div className="container py-6 sm:py-8 pb-28 sm:pb-8">
   <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-start">
 <MyISOSidebar
   mode={mode as "CCG" | "TCG"}
