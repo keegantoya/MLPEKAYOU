@@ -2,10 +2,11 @@
   "name": "MLPEKAYOU",
   "short_name": "MLPEKAYOU",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "theme_color": "#5a3e84",
   "icons": [
     {
       "src": "/app-icons/appiconsmall.png",
