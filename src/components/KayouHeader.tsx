@@ -181,6 +181,7 @@ const [showMobileLeaderboardMenu, setShowMobileLeaderboardMenu] = useState(false
 const [showMobileHomeMenu, setShowMobileHomeMenu] = useState(false);
 const [showMobileProgressMenu, setShowMobileProgressMenu] = useState(false);
 const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
+const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -334,6 +335,34 @@ useEffect(() => {
 useEffect(() => {
   sessionStorage.removeItem("spiderDismissed");
 }, []);
+
+useEffect(() => {
+  let ticking = false;
+
+  const handleScroll = () => {
+    if (mobileNavCollapsed) return;
+
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        if (window.scrollY > 50) {
+          setMobileNavCollapsed(true);
+        }
+
+        ticking = false;
+      });
+
+      ticking = true;
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll, {
+    passive: true,
+  });
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+}, [mobileNavCollapsed]);
 
 useEffect(() => {
   if (sessionStorage.getItem("spiderDismissed")) {
@@ -1398,59 +1427,101 @@ hover:bg-[#c0b9cb]
 
 {/* MOBILE BOTTOM NAV */}
 <div
-className="sm:hidden fixed bottom-6 left-1/2 z-[99999]
-bg-black/50
-border border-white/15
+className={`
+sm:hidden
+fixed
+bottom-6
+z-[99999]
 rounded-full
-shadow-[0_8px_32px_rgba(0,0,0,0.35)]
-grid grid-cols-5 place-items-center"
-  style={{
-    width: "calc(100% - 48px)",
-maxWidth: "360px",
-    height: "64px",
+overflow-hidden
+transition-all
+duration-500
+ease-[cubic-bezier(0.22,1,0.36,1)]
+grid
+place-items-center
+${
+  mobileNavCollapsed
+    ? "grid-cols-1"
+    : "grid-cols-5"
+}
+`}
+style={{
+width: mobileNavCollapsed
+  ? "68px"
+  : "calc(100% - 48px)",
 
-    backdropFilter: "blur(18px) saturate(180%)",
-WebkitBackdropFilter: "blur(18px) saturate(180%)",
+maxWidth: mobileNavCollapsed
+  ? "68px"
+  : "360px",
 
-    transform: "translateX(-50%) translateZ(0)",
-    WebkitTransform: "translateX(-50%) translateZ(0)",
+height: "68px",
 
-    willChange: "transform",
-    backfaceVisibility: "hidden",
-    WebkitBackfaceVisibility: "hidden",
+left: mobileNavCollapsed
+  ? "15%"
+  : "50%",
 
-    contain: "layout paint style",
-  }}
+background: "rgba(255,255,255,0.03)",
+
+backdropFilter: "blur(3px) saturate(90%) brightness(1.02)",
+WebkitBackdropFilter: "blur(3px) saturate(90%) brightness(1.02)",
+
+boxShadow: `
+  inset 0 1px 0 rgba(255,255,255,0.35),
+  inset 0 -1px 0 rgba(255,255,255,0.12),
+  0 4px 16px rgba(0,0,0,0.08)
+`,
+
+transform: "translateX(-50%)",
+WebkitTransform: "translateX(-50%)",
+
+  willChange: "transform",
+
+  backfaceVisibility: "hidden",
+  WebkitBackfaceVisibility: "hidden",
+
+  contain: "paint",
+}}
 >
 
 <div
-  className="
-  absolute top-1/2 h-[48px] w-[48px] rounded-full
-  bg-white/15
-  shadow-[0_0_18px_rgba(255,255,255,0.18)]
-"
+className={`
+absolute
+top-1/2
+h-[60px]
+w-[60px]
+pointer-events-none
+${mobileNavCollapsed ? "opacity-0" : "opacity-100"}
+`}
   style={{
-    left:
-      location.pathname === "/"
-        ? "10%"
-        : location.pathname.startsWith("/collections")
-        ? "30%"
-        : location.pathname.startsWith("/trading-post")
-        ? "50%"
-        : location.pathname.startsWith("/forum")
-        ? "70%"
-        : "90%",
+background: "rgba(255,255,255,0.06)",
 
-    transform:
+boxShadow: `
+  inset 0 1px 0 rgba(255,255,255,0.08),
+  0 1px 3px rgba(0,0,0,0.02)
+`,
+
+left:
   location.pathname === "/"
-    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
+    ? "9.5%"
     : location.pathname.startsWith("/collections")
-    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
+    ? "30%"
     : location.pathname.startsWith("/trading-post")
-    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
+    ? "50%"
     : location.pathname.startsWith("/forum")
-    ? "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)"
-    : "translate(-50%, -50%) scaleX(1.15) scaleY(0.92)",
+    ? "70%"
+    : "90%",
+
+transform: "translate(-50%, -50%)",
+borderRadius:
+  location.pathname === "/"
+    ? "30px 14px 14px 30px"
+    : location.pathname.startsWith("/collections")
+    ? "18px"
+    : location.pathname.startsWith("/trading-post")
+    ? "18px"
+    : location.pathname.startsWith("/forum")
+    ? "18px"
+    : "14px 30px 30px 14px",
     transition:
       "left 350ms cubic-bezier(0.22, 1.4, 0.36, 1), transform 350ms cubic-bezier(0.22, 1.4, 0.36, 1)",
 
@@ -1460,14 +1531,35 @@ WebkitBackdropFilter: "blur(18px) saturate(180%)",
 
     {/* HOMEPAGE */}
   <button
-    onClick={() => {
-      setShowMobileProgressMenu(false);
-      setShowMobileIsoMenu(false);
-      setShowMobileLeaderboardMenu(false);
-      setShowMobileHomeMenu(false);
-      navigate("/");
-    }}
-    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+onClick={() => {
+  if (mobileNavCollapsed) {
+    setMobileNavCollapsed(false);
+    return;
+  }
+
+  setShowMobileProgressMenu(false);
+  setShowMobileIsoMenu(false);
+  setShowMobileLeaderboardMenu(false);
+  setShowMobileHomeMenu(false);
+
+  navigate("/");
+}}
+className={`
+relative
+z-50
+flex
+items-center
+justify-center
+text-[#d5d1d6] 
+transition-all
+duration-300
+h-full
+${
+  mobileNavCollapsed
+    ? "w-[68px]"
+    : "px-3"
+}
+`}
   >
     <Ghost className="h-6 w-6" />
   </button>
@@ -1481,7 +1573,15 @@ WebkitBackdropFilter: "blur(18px) saturate(180%)",
       setShowMobileHomeMenu(false);
       navigate("/collections");
     }}
-    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+    className={`
+relative z-10 flex items-center justify-center h-full px-3 text-[#d9d4da] 
+transition-all duration-300
+${
+  mobileNavCollapsed
+    ? "hidden"
+    : "opacity-100 scale-100"
+}
+`}
   >
     <Skull className="h-6 w-6" />
   </button>
@@ -1495,7 +1595,14 @@ WebkitBackdropFilter: "blur(18px) saturate(180%)",
       setShowMobileHomeMenu(false);
       navigate("/trading-post");
     }}
-    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+    className={`
+relative z-10 flex items-center justify-center h-full px-3 text-[#666467] 
+${
+mobileNavCollapsed
+  ? "hidden"
+  : "opacity-100 scale-100"
+}
+`}
   >
     <Cat className="h-6 w-6" />
   </button>
@@ -1509,7 +1616,15 @@ WebkitBackdropFilter: "blur(18px) saturate(180%)",
       setShowMobileHomeMenu(false);
       navigate("/forum");
     }}
-    className="relative z-10 flex items-center justify-center h-full px-3 text-[#f5e6a8] transition-colors"
+    className={`
+relative z-10 flex items-center justify-center h-full px-3 text-[#ee8ad5]   
+transition-all duration-300
+${
+mobileNavCollapsed
+  ? "hidden"
+  : "opacity-100 scale-100"
+}
+`}
   >
     <Candy className="h-6 w-6" />
   </button>
@@ -1530,7 +1645,18 @@ WebkitBackdropFilter: "blur(18px) saturate(180%)",
 
     navigate("/profile-mobile");
   }}
-  className="relative z-10 flex items-center justify-center w-10 h-full text-[#f5e6a8] transition-colors flex-shrink-0"
+  className={`
+relative z-10
+flex items-center justify-center
+h-full px-3
+text-[#e3dc5e]  
+transition-all duration-300
+${
+mobileNavCollapsed
+  ? "hidden"
+  : "opacity-100 scale-100"
+}
+`}
 >
   <Moon className="h-6 w-6" />
 </button>
