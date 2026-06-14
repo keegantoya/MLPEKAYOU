@@ -488,11 +488,13 @@ return (
     aria-label="Spider"
   >
     <div className={spiderLeaving ? "" : "spider-sway"}>
+      <div className="spider-web" />
+
       <img
-  src="/website-assets/spider.webp"
-  alt="Spider"
-  className="w-20 sm:w-24 h-auto select-none pointer-events-none"
-/>
+        src="/website-assets/nmnspidernoweb.webp"
+        alt="Spider"
+        className="w-20 sm:w-24 h-auto select-none pointer-events-none"
+      />
     </div>
   </button>
 )}
@@ -598,7 +600,7 @@ style={{
       </button>
     </>
   )}
-</div>
+</div>n
 
 {/* DESKTOP DISCORD BUTTON */}
 
@@ -1017,16 +1019,25 @@ hover:bg-[#c0b9cb]
   }
 }
 
-.spider-thread {
+.spider-web {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  top: -140px;
+  height: 180px;
+
   width: 2px;
-  height: 90px;
-  margin: 0 auto;
-  background: rgba(255,255,255,0.8);
+
+  background: rgba(255,255,255,0.95);
+
+  z-index: -1;
+  pointer-events: none;
 }
 
 .spider-sway {
   animation: spiderSway 3s ease-in-out infinite;
-  transform-origin: top center;
+  transform-origin: center 12px;
 }
 
 @keyframes spiderDrop {
@@ -1035,13 +1046,13 @@ hover:bg-[#c0b9cb]
   }
 
   to {
-    transform: translateX(-50%) translateY(-25px);
+    transform: translateX(-50%) translateY(35px);
   }
 }
 
 @keyframes spiderRise {
   from {
-    transform: translateX(-50%) translateY(-25px);
+    transform: translateX(-50%) translateY(35px);
   }
 
   to {
@@ -1056,14 +1067,14 @@ hover:bg-[#c0b9cb]
     }
 
     to {
-      transform: translateX(-50%) translateY(25px);
-    }
+  transform: translateX(-50%) translateY(40px);
+}
   }
 
   @keyframes spiderRise {
     from {
-      transform: translateX(-50%) translateY(25px);
-    }
+  transform: translateX(-50%) translateY(40px);
+}
 
     to {
       transform: translateX(-50%) translateY(-120px);
