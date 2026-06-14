@@ -533,7 +533,7 @@ style={{
 
   {!user && (
     <Button
-      className="hidden sm:flex h-10 px-5 bg-white/10 hover:bg-white/20 text-[#f5e6a8] border border-[#d4af37]/40 font-semibold shadow-sm"
+  className="hidden sm:flex h-10 px-5 bg-[#f4a261] hover:bg-[#ee964b] text-white border border-[#e48c3f] font-semibold shadow-sm"
       onClick={() => {
         setAuthMode("signup");
         setLoginError("");
@@ -549,55 +549,55 @@ style={{
 <div
   className="sm:hidden flex items-center gap-2"
   style={{
-  marginTop: "-7px"
-}}
+    marginTop: "-7px"
+  }}
 >
-{!user && (
-  <Button
-    size="sm"
-    className="h-8 px-3 text-xs bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
-    onClick={() => {
-      setAuthMode("login");
-      setShowLogin(true);
-    }}
-  >
-    Login
-  </Button>
-)}
+  {!user ? (
+    <Button
+      size="sm"
+      className="h-8 px-3 text-xs bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
+      onClick={() => {
+        setAuthMode("login");
+        setShowLogin(true);
+      }}
+    >
+      Login
+    </Button>
+  ) : (
+    <>
+      <button
+        onClick={() => navigate("/leaderboard")}
+        className="
+          flex items-center justify-center
+          w-8 h-8 rounded-full
+          border border-white
+          bg-[#cbc5d4]
+          text-white
+          shadow-md
+          transition-all
+          hover:bg-[#c0b9cb]
+        "
+      >
+        <Trophy className="h-4 w-4" />
+      </button>
 
-  {/* MOBILE TROPHY FOR LEADERBOARD */}
-<button
-  onClick={() => navigate("/leaderboard")}
-  className="
-    flex items-center justify-center
-    w-8 h-8 rounded-full
-    border border-white
-    bg-[#cbc5d4]
-    text-white
-    shadow-md
-    transition-all
-    hover:bg-[#c0b9cb]
-  "
->
-  <Trophy className="h-4 w-4" />
-</button>
-
-<button
-  onClick={() => navigate("/community")}
-  className="
-    flex items-center justify-center
-    w-8 h-8 rounded-full
-    border border-white
-    bg-[#cbc5d4]
-    text-white
-    shadow-md
-    transition-all
-    hover:bg-[#c0b9cb]
-  "
->
-  <Medal className="h-4 w-4" />
-</button>
-
+      <button
+        onClick={() => navigate("/community")}
+        className="
+          flex items-center justify-center
+          w-8 h-8 rounded-full
+          border border-white
+          bg-[#cbc5d4]
+          text-white
+          shadow-md
+          transition-all
+          hover:bg-[#c0b9cb]
+        "
+      >
+        <Medal className="h-4 w-4" />
+      </button>
+    </>
+  )}
 </div>
 
 {/* DESKTOP DISCORD BUTTON */}
@@ -867,27 +867,28 @@ isActive("/")
   {!user && (
     <>
 
-      <Button
-        className="
+<Button
+  className="
 flex items-center justify-center
-w-8 h-8
-rounded-full
-border border-white
-bg-[#cbc5d4]
+h-10 px-5
+rounded-xl
+border border-[#e48c3f]
+bg-[#f4a261]
 text-white
-shadow-md
+font-semibold
+shadow-sm
 transition-all
-hover:bg-[#c0b9cb]
+hover:bg-[#ee964b]
 "
-        onClick={() => {
-          setAuthMode("login");
-          setLoginError("");
-          setShowForgot(false);
-          setShowLogin(true);
-        }}
-      >
-        Login
-      </Button>
+  onClick={() => {
+    setAuthMode("login");
+    setLoginError("");
+    setShowForgot(false);
+    setShowLogin(true);
+  }}
+>
+  Login
+</Button>
     </>
   )}
 </div>
