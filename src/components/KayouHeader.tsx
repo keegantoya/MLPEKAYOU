@@ -762,8 +762,12 @@ style={{
 />
 
 {/* CENTER LOGO + DESKTOP ICON NAV */}
-<div className="absolute left-1/2 -translate-x-1/2 hidden sm:flex items-center gap-4">
-
+<div
+  className="absolute hidden sm:flex items-center gap-4 -translate-x-1/2"
+  style={{
+    left: user ? "calc(50% - 40px)" : "50%",
+  }}
+>
   {/* LEFT OF LOGO */}
   <button
     onClick={() => navigate("/")}
@@ -812,11 +816,11 @@ isActive("/")
 
   {/* LOGO */}
   <img
-    src={logo}
-    alt="MLP Kayou Wiki"
-    className="h-[46px] cursor-pointer mx-2"
-    onClick={() => navigate("/")}
-  />
+  src={logo}
+  alt="MLP Kayou Wiki"
+  className="h-[46px] cursor-pointer"
+  onClick={() => navigate("/")}
+/>
 
   {/* RIGHT OF LOGO */}
   <button
@@ -865,33 +869,30 @@ isActive("/")
 </div>
 
 {/* RIGHT SIDE */}
-<div className="hidden sm:flex items-center gap-3">
+<div className="hidden sm:flex items-center gap-3 min-w-[40px]">
   {!user && (
-    <>
-
-<Button
-  className="
-flex items-center justify-center
-h-10 px-5
-rounded-xl
-border border-[#e48c3f]
-bg-[#f4a261]
-text-white
-font-semibold
-shadow-sm
-transition-all
-hover:bg-[#ee964b]
-"
-  onClick={() => {
-    setAuthMode("login");
-    setLoginError("");
-    setShowForgot(false);
-    setShowLogin(true);
-  }}
->
-  Login
-</Button>
-    </>
+    <Button
+      className="
+        flex items-center justify-center
+        h-10 px-5
+        rounded-xl
+        border border-[#e48c3f]
+        bg-[#f4a261]
+        text-white
+        font-semibold
+        shadow-sm
+        transition-all
+        hover:bg-[#ee964b]
+      "
+      onClick={() => {
+        setAuthMode("login");
+        setLoginError("");
+        setShowForgot(false);
+        setShowLogin(true);
+      }}
+    >
+      Login
+    </Button>
   )}
 </div>
 

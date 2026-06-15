@@ -649,7 +649,7 @@ className="
   after:duration-700
 "
 >
-  KAYOU US TUTORIAL
+  MLPEKAYOU TUTORIAL
 </button>
           </div>
         </div>
