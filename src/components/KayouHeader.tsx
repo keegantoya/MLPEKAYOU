@@ -600,7 +600,7 @@ style={{
       </button>
     </>
   )}
-</div>n
+</div>
 
 {/* DESKTOP DISCORD BUTTON */}
 
@@ -1330,9 +1330,11 @@ hover:bg-[#c0b9cb]
   autoComplete="email"
   className="w-full border rounded-lg px-3 py-2 mb-2"
   onChange={(e) => {
-    setLoginEmail(e.target.value);
-    setEmailError("");
-  }}
+  setLoginEmail(e.target.value);
+  setEmailError("");
+  setLoginError("");
+  setShowForgot(false);
+}}
 />
 
 {emailError && (
@@ -1347,7 +1349,11 @@ hover:bg-[#c0b9cb]
   value={loginPassword}
   autoComplete="current-password"
   className="w-full border rounded-lg px-3 py-2 mb-2"
-  onChange={(e) => setLoginPassword(e.target.value)}
+  onChange={(e) => {
+  setLoginPassword(e.target.value);
+  setLoginError("");
+  setShowForgot(false);
+}}
 />
 
 {authMode === "signup" && (

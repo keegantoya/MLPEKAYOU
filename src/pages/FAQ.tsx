@@ -36,6 +36,7 @@ import eternalMoon3Faq1 from "/faq-mlp-bibles/eternalmoon3faq1.webp";
 import eternalMoon3Faq2 from "/faq-mlp-bibles/eternalmoon3faq2.webp";
 import eternalMoon3Faq3 from "/faq-mlp-bibles/eternalmoon3faq3.webp";
 import eternalMoon3PackConfigs from "/faq-mlp-bibles/packconfigs-moon3.webp";
+import eternalMoon3PackConfigsA from "/faq-mlp-bibles/packconfigs-moon3A.webp";
 
 /// RAINBOW EDITIONS
 import eternalRainbow1Faq1 from "/faq-mlp-bibles/eternalrainbow1faq1.webp";
@@ -523,6 +524,12 @@ const TutorialCard = ({ image, flipped, onClick }) => {
 
 <img
   src={eternalMoon3PackConfigs}
+  alt="Eternal Moon Volume 3 Pack Configurations"
+  className="w-full h-auto"
+/>
+
+<img
+  src={eternalMoon3PackConfigsA}
   alt="Eternal Moon Volume 3 Pack Configurations"
   className="w-full h-auto"
 />
