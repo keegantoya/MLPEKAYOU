@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,6 +43,7 @@ import MyProgressTCG from "./pages/MyProgressTCG";
 import OtherKayouMerch from "./pages/Other-Kayou-Merch";
 import UserMenu from "@/pages/UserMenu";
 import Wishlist from "./pages/Wishlist";
+import LinksPage from "./pages/linkspage";
 
 
 const queryClient = new QueryClient();
@@ -185,6 +186,7 @@ const AppRoutes = () => {
       <Route path="/fun-moments-3" element={<FunMoments3 />} />
 <Route path="/fun-moments-three" element={<FunMoments3 />} />
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
+      <Route path="/links" element={<LinksPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -198,19 +200,23 @@ const App = () => {
         <Sonner />
 <BrowserRouter>
 
-  <ScrollToTop />
+<ScrollToTop />
 
-  <KayouHeader />
+{window.location.pathname !== "/links" && <KayouHeader />}
 
-  <div
-  className={`min-h-screen sm:pt-[64px] sm:pb-0 ${
-      window.matchMedia('(display-mode: standalone)').matches
-        ? 'pt-[88px]'
-        : 'pt-[52px]'
-    }`}
-  >
-    <AppRoutes />
-  </div>
+<div
+  className={
+    window.location.pathname === "/links"
+      ? "min-h-screen"
+      : `min-h-screen sm:pt-[64px] sm:pb-0 ${
+          window.matchMedia('(display-mode: standalone)').matches
+            ? 'pt-[88px]'
+            : 'pt-[52px]'
+        }`
+  }
+>
+  <AppRoutes />
+</div>
 
 </BrowserRouter>
       </TooltipProvider>
