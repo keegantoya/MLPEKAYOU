@@ -245,19 +245,65 @@ const loadTopCollector = async () => {
       continue;
     }
     // Count how many sets this user has fully completed
-    const completedSets = sets.filter((set) => {
-      const row = allProgress.find(
-        (p) =>
-          p.user_id === profile.id &&
-          String(p.set_id) === String(set.id)
-      );
+ const completedSets = sets.filter((set) => {
+  const dbId = set.dbId ?? set.id;
 
-      if (!row?.progress) return false;
+  const row = allProgress.find(
+    (p) =>
+      p.user_id === profile.id &&
+      String(p.set_id) === String(dbId)
+  );
 
-      const ownedCount = Object.values(row.progress).filter(Boolean).length;
+  if (!row?.progress) return false;
 
-      return ownedCount >= set.total;
-    }).length;
+  let ownedCount = 0;
+
+  if (dbId === "FW") {
+    const STRUCTURE = [
+      { prefix: "BP01C", count: 48 },
+      { prefix: "BP01U", count: 18 },
+      { prefix: "BP01ER", count: 6 },
+      { prefix: "BP01SR", count: 14 },
+      { prefix: "BP01SPR", count: 28 },
+      { prefix: "BP01GR", count: 12 },
+      { prefix: "BP01CR", count: 12 },
+      { prefix: "BP01RR", count: 6 },
+      { prefix: "BP01PER", count: 12 },
+      { prefix: "BP01PSPR", count: 11 },
+      { prefix: "BP01PGR", count: 6 },
+      { prefix: "BP01PCR", count: 12 },
+      { prefix: "BP01PRR", count: 6 },
+    ];
+
+    const validKeys = new Set(
+      STRUCTURE.flatMap(({ prefix, count }) => {
+        if (prefix === "BP01ER") {
+          return Array.from({ length: 6 }, (_, i) =>
+            `BP01ER${String(i + 7).padStart(2, "0")}`
+          );
+        }
+
+        if (prefix === "BP01PSPR") {
+          return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
+            (n) => `BP01PSPR${String(n).padStart(2, "0")}`
+          );
+        }
+
+        return Array.from({ length: count }, (_, i) =>
+          `${prefix}${String(i + 1).padStart(2, "0")}`
+        );
+      })
+    );
+
+    ownedCount = Object.entries(row.progress).filter(
+      ([key, value]) => value && validKeys.has(key)
+    ).length;
+  } else {
+    ownedCount = Object.values(row.progress).filter(Boolean).length;
+  }
+
+  return ownedCount >= set.total;
+}).length;
 
     // Track the highest total
     if (completedSets > bestCompleted) {

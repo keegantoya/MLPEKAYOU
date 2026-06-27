@@ -11,8 +11,6 @@ export default function Selling() {
     ["Rainbow Editions", "BASE, ST, R, SR, FR, TR, TGR"],
     ["Fun Moments Editions", "N, ◇N, R, SR, SSR, UR"],
     ["Star Editions", "SSR, SCR, UR"],
-    ["TCG Boxes", "C, U, SR, SPR, ER, GR, CR, RR"],
-    ["Starter Decks", "C, U, SR, SPR, ER, GR, CR"],
   ];
 
   const higherTier = [
@@ -20,8 +18,6 @@ export default function Selling() {
     ["Rainbow Editions", "USR, XR"],
     ["Fun Moments Editions", "UGR, CR, ◇CR"],
     ["Star Editions", "USR, AR, OR, BP, ◇AR"],
-    ["TCG Boxes", "※ER, ※GR, ※SPR, ※CR, ※RR"],
-    ["Starter Decks", "※ER, ※RR"],
   ];
 
   const pricingCards = [
@@ -30,11 +26,11 @@ export default function Selling() {
       subtitle: "STAR EDITION",
       gradient: "from-purple-700 via-violet-600 to-fuchsia-500",
       rows: [
-        ["USR", "UNKNOWN"],
-        ["AR", "UNKNOWN"],
-        ["OR", "UNKNOWN"],
-        ["BP", "UNKNOWN"],
-        ["◇AR", "UNKNOWN"],
+        ["USR", "$15"],
+        ["AR", "$20"],
+        ["OR", "$40"],
+        ["BP", "$65"],
+        ["◇AR", "$150"],
       ],
     },
     {
@@ -52,12 +48,12 @@ export default function Selling() {
       subtitle: "MOON EDITION",
       gradient: "from-indigo-700 via-blue-600 to-indigo-500",
       rows: [
-        ["SGR", "$13"],
-        ["ZR", "$27"],
+        ["SGR", "$11"],
+        ["ZR", "$20"],
         ["HIDDEN ZR", "$145"],
-        ["SC", "$59"],
-        ["HIDDEN SC", "$200"],
-        ["◇ZR", "$200"],
+        ["SC", "$50"],
+        ["HIDDEN SC", "$150"],
+        ["◇ZR", "$250"],
       ],
     },
     {
@@ -65,12 +61,14 @@ export default function Selling() {
       subtitle: "MOON EDITION",
       gradient: "from-indigo-700 via-blue-600 to-indigo-500",
       rows: [
-        ["SGR", "$9"],
-        ["ZR", "$25"],
-        ["HIDDEN ZR", "UNKNOWN"],
+        ["SGR", "$10"],
+        ["CHILDHOOD ZR", "$25"],
+        ["CRYSTAL ZR", "$35"],
+        ["HIDDEN ZR", "$150"],
         ["SC", "$62"],
-        ["HIDDEN SC", "UNKNOWN"],
-        ["◇ZR", "UNKNOWN"],
+        ["HIDDEN SC", "$200"],
+        ["CHILDHOOD ◇ZR", "UNKNOWN"],
+        ["CRYSTAL ◇ZR", "UNKNOWN"],
       ],
     },
     {
@@ -89,7 +87,7 @@ export default function Selling() {
       rows: [
         ["USR", "$15"],
         ["XR", "$28"],
-        ["HIDDEN XR", "UNKNOWN"],
+        ["HIDDEN XR", "$75"],
       ],
     },
     {
@@ -116,34 +114,13 @@ export default function Selling() {
       subtitle: "FUN MOMENTS EDITION",
       gradient: "from-pink-500 via-rose-400 to-fuchsia-500",
       rows: [
-        ["UGR", "$13"],
-        ["CR", "$13"],
-        ["HIDDEN CR", "$13"],
-        ["◇CR", "$13"],
+        ["UGR", "$8"],
+        ["CR", "$15"],
+        ["HIDDEN CR", "$20"],
+        ["◇CR", "$25"],
       ],
       note:
         "These prices are due to the extremely high hit rates in this box set. All rarities are evenly ditributed in Fun Moments 3 and easily attainable.",
-    },
-    {
-      title: "Fantasy Wonderland",
-      subtitle: "TRADING CARD GAME",
-      gradient: "from-emerald-600 via-teal-500 to-cyan-500",
-      rows: [
-        ["※ER", "$8"],
-        ["※GR", "$25"],
-        ["※SPR", "$30"],
-        ["※CR", "$50"],
-        ["※RR", "$150"],
-      ],
-    },
-    {
-      title: "Friendships Begin",
-      subtitle: "TRADING CARD GAME BONUS PACKS",
-      gradient: "from-violet-600 via-purple-500 to-pink-500",
-      rows: [
-        ["※ER", "$6"],
-        ["※RR", "$135"],
-      ],
     },
   ];
 
@@ -182,13 +159,6 @@ const filteredPricingCards =
 
         if (selectedFilter === "Star") {
           return card.title.includes("Star");
-        }
-
-        if (selectedFilter === "TCG") {
-          return (
-            card.title === "Fantasy Wonderland" ||
-            card.title === "Friendships Begin"
-          );
         }
 
         return true;
@@ -345,7 +315,6 @@ const filteredPricingCards =
       "Rainbow",
       "Fun Moments",
       "Star",
-      "TCG",
     ].map((filter) => (
       <button
         key={filter}
@@ -439,7 +408,9 @@ const filteredPricingCards =
               Prices reflect consistent changes as sets get older
               and go out of print. Rarity worth may change as the
               Kayou community itself decides a certain rarity isn't
-              sought after even despite its hit rate.
+              sought after even despite its hit rate. For TCG prices,
+              please refer to eBay's recently sold. Those are a whole
+              different monster.
             </p>
           </div>
         </section>
