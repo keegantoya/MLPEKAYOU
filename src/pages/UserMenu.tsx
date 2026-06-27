@@ -280,6 +280,61 @@ sets.forEach((set) => {
   }
 });
 
+// Fantasy Wonderland
+const { data: fwProgress } = await supabase
+  .from("collection_progress_raw")
+  .select("progress")
+  .eq("user_id", session.user.id)
+  .eq("set_id", "FW");
+
+const fwRow = fwProgress?.[0];
+
+if (fwRow) {
+  const STRUCTURE = [
+    { prefix: "BP01C", count: 48 },
+    { prefix: "BP01U", count: 18 },
+    { prefix: "BP01ER", count: 6 },
+    { prefix: "BP01SR", count: 14 },
+    { prefix: "BP01SPR", count: 28 },
+    { prefix: "BP01GR", count: 12 },
+    { prefix: "BP01CR", count: 12 },
+    { prefix: "BP01RR", count: 6 },
+    { prefix: "BP01PER", count: 12 },
+    { prefix: "BP01PSPR", count: 11 },
+    { prefix: "BP01PGR", count: 6 },
+    { prefix: "BP01PCR", count: 12 },
+    { prefix: "BP01PRR", count: 6 },
+  ];
+
+  const validKeys = new Set(
+    STRUCTURE.flatMap(({ prefix, count }) => {
+      if (prefix === "BP01ER") {
+        return Array.from({ length: 6 }, (_, i) =>
+          `BP01ER${String(i + 7).padStart(2, "0")}`
+        );
+      }
+
+      if (prefix === "BP01PSPR") {
+        return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map((n) =>
+          `BP01PSPR${String(n).padStart(2, "0")}`
+        );
+      }
+
+      return Array.from({ length: count }, (_, i) =>
+        `${prefix}${String(i + 1).padStart(2, "0")}`
+      );
+    })
+  );
+
+  const ownedFW = Object.entries(fwRow.progress || {}).filter(
+    ([key, val]) => val && validKeys.has(key)
+  ).length;
+
+  if (ownedFW === validKeys.size) {
+    completed++;
+  }
+}
+
       // Total cards listed for trade
       const { data: trades } = await supabase
         .from("for_trade")
@@ -1527,24 +1582,6 @@ useEffect(() => {
       const rarity = String(card.card_key).split("-")[0];
       return rarity === "SHINING ZR" || rarity === "SZR";
     }),
-  },
-
-  {
-    title: "Fantasy Wonderland ※RR",
-    cards: showcaseCards.filter(
-      (card) =>
-        String(card.set_id) === "FW" &&
-        String(card.card_key).includes("PRR")
-    ),
-  },
-
-  {
-    title: "Friendships Begin ※RR",
-    cards: showcaseCards.filter(
-      (card) =>
-        String(card.set_id) === "friendshipsbegin" &&
-        String(card.card_key).includes("PRR")
-    ),
   },
 
 {

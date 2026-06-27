@@ -290,11 +290,15 @@ if (fwRow) {
     })
   );
 
-  const owned = Object.entries(fwRow.progress || {}).filter(
-    ([key, val]) => val && validKeys.has(key)
-  ).length;
+const owned = Object.entries(fwRow.progress || {}).filter(
+  ([key, val]) => val && validKeys.has(key)
+).length;
 
-  ownedCount += owned;
+ownedCount += owned;
+
+if (owned === validKeys.size) {
+  completedCount++;
+}
 }
     
     const { data: trades } = await supabase
@@ -911,25 +915,6 @@ before:pointer-events-none">
 {/* MOBILE INSTAGRAM-STYLE POSTS */}
 <section className="sm:hidden mt-12 space-y-8">
   {[
-
-      {
-    id: "transitions",
-    image: "/nightmarenight-assets/nomoreeditions.webp",
-    username: "MLPEKAYOU",
-        caption: (
-  <>
-    Kayou US has decided to move in a new direction regarding all IPs, and will be implementing major changes. Their new brand image will revolve around the saying 'Spark Joy,' which will take effect at an unknown date. So far, it seems as if the name change vote has decided 'Fun Moments' will be renamed 'Spark Fun,' and 'Moon Editions' will be renamed 'Spark Magic.' If you'd like to state your opinion on these changes and vote for or against them, you can join the official Kayou US Discord Server{" "}
-    <a
-      href="https://discord.gg/VdDmzQ3k2y"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-400 underline"
-    >
-      here
-    </a>.
-  </>
-),
-  },
   {
     id: "luna",
     image: lunaGif,
@@ -1124,25 +1109,6 @@ before:pointer-events-none">
 <section className="hidden sm:block mt-12">
   <div className="max-w-5xl mx-auto space-y-8">
     {[
-        {
-    id: "transitions",
-        image: "/nightmarenight-assets/nomoreeditions.webp",
-    username: "MLPEKAYOU",
-    caption: (
-  <>
-    Kayou US has decided to move in a new direction regarding all IPs, and will be implementing major changes. Their new brand image will revolve around the saying 'Spark Joy,' which will take effect at an unknown date. So far, it seems as if the name change vote has decided 'Fun Moments' will be renamed 'Spark Fun,' and 'Moon Editions' will be renamed 'Spark Magic.' If you'd like to state your opinion on these changes and vote for or against them, you can join the official Kayou US Discord Server{" "}
-    <a
-      href="https://discord.gg/VdDmzQ3k2y"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-400 underline"
-    >
-      here
-    </a>.
-  </>
-),
-  },
-
   {
     id: "luna",
     image: lunaGif,

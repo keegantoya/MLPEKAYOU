@@ -137,161 +137,17 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
   },
   "8": {
   username: "Mari",
-  avatar_url: "avatar003.webp"
+  avatar_url: "avatar021.webp"
   },
   "7": {
   username: "Jacob",
   avatar_url: "avatar010.webp"
 },
+  "fantasywonderland": {
+  username: "Mari",
+  avatar_url: "avatar021.webp"
+},
 };
-
-const isoSets = [
-   {
-    id: "4",
-    name: "Star: First Edition",
-    folder: "star-one",
-    prefix: "S1",
-    rarities: {
-      SSR: 20,
-      SCR: 18,
-      UR: 18,
-      USR: 15,
-      AR: 9,
-      OR: 7,
-      BP: 9,
-      SAR: 9
-    }
-  },
-  {
-    id: "1",
-    name: "Eternal Moon: First Edition",
-    folder: "first-edition-moon",
-    prefix: "M1",
-    rarities: {
-      R: 30,
-      SR: 20,
-      SSR: 54,
-      HR: 36,
-      UR: 16,
-      LSR: 15,
-      SGR: 8,
-      SC: 7
-    }
-  },
-  {
-    id: "5",
-    name: "Rainbow: First Edition",
-    folder: "rainbow-one",
-    prefix: "R1",
-    rarities: {
-      R: 30,
-      SR: 15,
-      FR: 18,
-      TR: 12,
-      TGR: 8,
-      MTR: 18,
-      SSR: 15,
-      UR: 15,
-      USR: 8,
-      XR: 7
-    }
-  },
-  {
-    id: "2",
-    name: "Eternal Moon: Second Edition",
-    folder: "second-edition-moon",
-    prefix: "M2",
-    rarities: {
-      R: 30,
-      SR: 20,
-      SSR: 54,
-      HR: 30,
-      UR: 16,
-      LSR: 16,
-      SGR: 8,
-      ZR: 7,
-      SC: 7,
-      "SHINING ZR": 1
-    }
-  },
-    {
-    id: "3",
-    name: "Eternal Moon: Third Edition",
-    folder: "third-edition-moon",
-    prefix: "M3",
-    rarities: {
-      R: 60,
-      SR: 40,
-      SSR: 40,
-      HR: 60,
-      LSR: 32,
-      UR: 18,
-      SGR: 16,
-      ZR: 14,
-      SC: 7,
-      "SZR": 3
-    }
-  },
-  {
-    id: "7",
-    name: "Fun Moments: First Edition",
-    folder: "fun-moments-one",
-    prefix: "FM1",
-    rarities: {
-      N: 20,
-      SN: 20,
-      R: 35,
-      SR: 15,
-      SSR: 15,
-      UR: 10,
-      CR: 12
-    }
-  },
-  {
-    id: "8",
-    name: "Fun Moments: Second Edition",
-    folder: "fun-moments-two",
-    prefix: "FM2",
-    rarities: {
-      N: 20,
-      SN: 20,
-      R: 35,
-      SR: 15,
-      SSR: 15,
-      UR: 10,
-      UGR: 9,
-      CR: 12
-    }
-  },
-    {
-    id: "6",
-    name: "Rainbow: Second Edition",
-    folder: "rainbow-two",
-    prefix: "R2",
-    rarities: {
-      BASE: 18,
-      R: 30,
-      SR: 14,
-      FR: 18,
-      TR: 12,
-      TGR: 8,
-      ST: 20,
-      SSR: 15,
-      UR: 19,
-      USR: 8,
-      XR: 8
-    }
-  },
-  {
-    id: "friendshipsbegin",
-    name: "Friendships Begin",
-    folder: "friendshipsbegin",
-    prefix: "SD01",
-    rarities: {
-  
-    }
-  }
-];
 
 const VERIFIED_USERS: Record<
   string,
@@ -349,20 +205,6 @@ const [activeCategory, setActiveCategory] = useState<
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
   };
-
-  const getTradeImage = (setId: string, cardKey: string) => {
-  const [rarity, number] = cardKey.split("-");
-  const set = isoSets.find((s) => s.id === setId);
-
-  // PROMOS
-  if (rarity === "PR") {
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
-  }
-
-  if (!set) return null;
-
-  return `/cards/${set.folder}/${set.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}.webp`;
-};
 
 const getAvatar = (avatar?: string) => {
   if (!avatar) return avatar001;
@@ -461,6 +303,7 @@ const loadSetTopThree = async () => {
 
   // Same manual placements used in CommunitySet.tsx
   const manualPlacements: Record<string, string[]> = {
+    "1": ["Jacob", "Mari", "derpypony"],
     "5": ["Keegan", "Jacob", "Mari"],
     "2": ["Jacob", "Mari", "SillyPony"],
     "8": ["Mari", "Keegan", "Jacob"],
