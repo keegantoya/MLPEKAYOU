@@ -130,8 +130,9 @@ const UserMenu = () => {
   const [discord, setDiscord] = useState("");
   const [editingDiscord, setEditingDiscord] = useState(false);
   const [discordDraft, setDiscordDraft] = useState("");
-  const [editingUsername, setEditingUsername] = useState(false);
+const [editingUsername, setEditingUsername] = useState(false);
 const [usernameDraft, setUsernameDraft] = useState("");
+const [usernameTaken, setUsernameTaken] = useState(false);
 const [showNightmarePromo, setShowNightmarePromo] = useState(false);
 
 const [showCollectionMenu, setShowCollectionMenu] = useState(false);
@@ -1010,15 +1011,26 @@ useEffect(() => {
     </button>
 
     <button
-      onClick={() => navigate("/wishlist")}
-      className="w-full flex items-center justify-between px-4 py-4 text-left"
-    >
-      <span className="text-[15px] font-medium text-gray-900">
-        My Wishlist
-      </span>
+  onClick={() => navigate("/wishlist")}
+  className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
+>
+  <span className="text-[15px] font-medium text-gray-900">
+    My Wishlist
+  </span>
 
-      <span className="text-xl text-gray-400">›</span>
-    </button>
+  <span className="text-xl text-gray-400">›</span>
+</button>
+
+<button
+  onClick={() => navigate("/my-collection-binder")}
+  className="w-full flex items-center justify-between px-4 py-4 text-left"
+>
+  <span className="text-[15px] font-medium text-gray-900">
+    My Binders
+  </span>
+
+  <span className="text-xl text-gray-400">›</span>
+</button>
   </div>
   <div className="mt-10 flex justify-center">
   <div className="relative">
@@ -1306,13 +1318,24 @@ useEffect(() => {
         {/* Username */}
 <div className="flex items-center justify-center gap-2 mb-2">
   {editingUsername ? (
-    <input
-      type="text"
-      value={usernameDraft}
-      onChange={(e) => setUsernameDraft(e.target.value)}
-      autoFocus
-      className="text-3xl font-bold text-[#5a3e84] bg-transparent border-none outline-none text-center"
-    />
+    <>
+  <input
+    type="text"
+    value={usernameDraft}
+    onChange={(e) => {
+      setUsernameDraft(e.target.value);
+      setUsernameTaken(false);
+    }}
+    autoFocus
+    className="text-3xl font-bold text-[#5a3e84] bg-transparent border-none outline-none text-center"
+  />
+
+  {usernameTaken && (
+    <p className="mt-1 text-sm text-red-600 font-semibold text-center">
+      Username taken!
+    </p>
+  )}
+</>
   ) : (
     <>
       <h1 className="text-3xl font-bold text-[#5a3e84] text-center">
@@ -1387,37 +1410,51 @@ useEffect(() => {
         if (!session?.user) return;
 
         // Save username if being edited
-        if (editingUsername) {
-          const trimmedUsername = usernameDraft.trim();
+if (editingUsername) {
+  const trimmedUsername = usernameDraft.trim();
 
-          if (trimmedUsername) {
-            await supabase.auth.updateUser({
-              data: {
-                username: trimmedUsername,
-              },
-            });
+  if (trimmedUsername) {
+    const { data: existingUser } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", trimmedUsername)
+      .neq("id", session.user.id)
+      .maybeSingle();
 
-            await supabase.from("profiles").upsert({
-              id: session.user.id,
-              username: trimmedUsername,
-            });
+    if (existingUser) {
+      setUsernameTaken(true);
+      return;
+    }
 
-            setProfile((prev: any) => ({
-              ...prev,
-              username: trimmedUsername,
-            }));
+    setUsernameTaken(false);
 
-            window.dispatchEvent(
-              new CustomEvent("profile-updated", {
-                detail: {
-                  username: trimmedUsername,
-                },
-              })
-            );
-          }
+    await supabase.auth.updateUser({
+      data: {
+        username: trimmedUsername,
+      },
+    });
 
-          setEditingUsername(false);
-        }
+    await supabase.from("profiles").upsert({
+      id: session.user.id,
+      username: trimmedUsername,
+    });
+
+    setProfile((prev: any) => ({
+      ...prev,
+      username: trimmedUsername,
+    }));
+
+    window.dispatchEvent(
+      new CustomEvent("profile-updated", {
+        detail: {
+          username: trimmedUsername,
+        },
+      })
+    );
+  }
+
+  setEditingUsername(false);
+}
 
         // Save Discord if being edited
         if (editingDiscord) {
@@ -2041,43 +2078,66 @@ if (
       </>
     ) : (
       <>
-        <input
-  type="text"
-  value={usernameDraft}
-  onChange={(e) => setUsernameDraft(e.target.value)}
-  autoFocus
-  autoComplete="off"
-  autoCorrect="off"
-  autoCapitalize="none"
-  spellCheck={false}
-  name="mlpekayou-username"
-  inputMode="text"
-  className="flex-1 border-none bg-transparent text-lg text-gray-700 outline-none"
-/>
+        <div className="flex-1">
+  <input
+    type="text"
+    value={usernameDraft}
+    onChange={(e) => {
+      setUsernameDraft(e.target.value);
+      setUsernameTaken(false);
+    }}
+    autoFocus
+    autoComplete="off"
+    autoCorrect="off"
+    autoCapitalize="none"
+    spellCheck={false}
+    name="mlpekayou-username"
+    inputMode="text"
+    className="w-full border-none bg-transparent text-lg text-gray-700 outline-none"
+  />
+
+  {usernameTaken && (
+    <p className="mt-1 text-sm text-red-600 font-semibold">
+      Username taken!
+    </p>
+  )}
+</div>
 
         <button
           onClick={async () => {
-            const trimmed = usernameDraft.trim();
-            if (!trimmed) return;
+const trimmed = usernameDraft.trim();
+if (!trimmed) return;
 
-            const {
-              data: { session },
-            } = await supabase.auth.getSession();
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 
-            if (!session?.user) return;
+if (!session?.user) return;
 
-            // Update Auth metadata
-            await supabase.auth.updateUser({
-              data: {
-                username: trimmed,
-              },
-            });
+const { data: existingUser } = await supabase
+  .from("profiles")
+  .select("id")
+  .eq("username", trimmed)
+  .neq("id", session.user.id)
+  .maybeSingle();
 
-            // Update profiles table
-            await supabase.from("profiles").upsert({
-              id: session.user.id,
-              username: trimmed,
-            });
+if (existingUser) {
+  setUsernameTaken(true);
+  return;
+}
+
+setUsernameTaken(false);
+
+await supabase.auth.updateUser({
+  data: {
+    username: trimmed,
+  },
+});
+
+await supabase.from("profiles").upsert({
+  id: session.user.id,
+  username: trimmed,
+});
 
             // Update local state immediately
             setProfile((prev: any) => ({

@@ -709,6 +709,15 @@ style={{
 >
   My Wishlist
 </button>
+<button
+  onClick={() => {
+    navigate("/my-collection-binder");
+    setOpen(false);
+  }}
+  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+>
+  My Binders
+</button>
         </div>
 {/* Social Links */}
 <div className="pt-2 border-t border-white">

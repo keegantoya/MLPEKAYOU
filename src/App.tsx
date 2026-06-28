@@ -43,6 +43,7 @@ import MyProgressTCG from "./pages/MyProgressTCG";
 import OtherKayouMerch from "./pages/Other-Kayou-Merch";
 import UserMenu from "@/pages/UserMenu";
 import Wishlist from "./pages/Wishlist";
+import MyCollectionBinder from "./pages/my-collection-binder";
 import LinksPage from "./pages/linkspage";
 
 
@@ -113,6 +114,14 @@ const AppRoutes = () => {
   element={
     <RequireAuth>
       <Wishlist />
+    </RequireAuth>
+  }
+/>
+<Route
+  path="/my-collection-binder"
+  element={
+    <RequireAuth>
+      <MyCollectionBinder />
     </RequireAuth>
   }
 />
