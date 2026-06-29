@@ -188,9 +188,23 @@ top: y,
   useEffect(() => {
 const load = async () => {
         
-      const { data: profiles } = await supabase
+const { data: profiles } = await supabase
   .from("profiles")
-  .select("id, username, avatar_url, iso_hidden_sets, collection_total, rank_worthy")
+  .select("id, username, avatar_url, iso_hidden_sets, collection_total, rank_worthy");
+
+const { data: tradingProfiles } = await supabase
+  .from("trading_profiles")
+  .select("user_id, discord_username");
+
+const eligibleUserIds = new Set(
+  (tradingProfiles || [])
+    .filter(
+      (p: any) =>
+        p.discord_username &&
+        p.discord_username.trim() !== ""
+    )
+    .map((p: any) => p.user_id)
+);
       const profileMap: Record<string, any> = {};
 profiles?.forEach((p: any) => {
   profileMap[p.id] = {
@@ -263,6 +277,7 @@ setLeaders(
   allUsersSorted
     .filter(
       (u: any) =>
+        eligibleUserIds.has(u.id) &&
         u.username !== "HeiManTou (Chinese Collector)"
     )
     .slice(0, 12)
@@ -401,12 +416,35 @@ style={{
     Top Collectors
   </h1>
 
-  {/* Decorative underline */}
-  <div className="flex items-center justify-center gap-3 relative">
-    <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-purple-300" />
-    <div className="w-3 h-3 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 shadow-md" />
-    <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-purple-300" />
-  </div>
+{/* Decorative underline */}
+<div className="flex items-center justify-center gap-3 relative">
+  <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-purple-300" />
+  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 shadow-md" />
+  <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-purple-300" />
+</div>
+
+{/* Leaderboard Disclaimer */}
+<p
+  className="
+    mt-4
+    mx-auto
+    max-w-3xl
+    text-center
+    text-[10px]
+    sm:text-[11px]
+    md:text-xs
+    font-medium
+    leading-relaxed
+    px-4
+  "
+  style={{
+    color: "#e6cf84",
+  }}
+>
+  You are only eligible for this leaderboard if you have your Discord
+  username set in your profile and you have verified that you are a North
+  American English collector.
+</p>
 </div>
   </div>
 

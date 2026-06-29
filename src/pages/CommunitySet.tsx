@@ -253,7 +253,7 @@ const isoSets = [
 }
 ];
 
-const medals = ["🥇", "🥈", "🥉"];
+const medals = ["🥇", "🥇", "🥇"];
 const forcedStillCollecting = [""];
 
 const manualPlacements: Record<string, string[]> = {
@@ -289,8 +289,22 @@ const CommunitySet = () => {
 );
 
       const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url");
+  .from("profiles")
+  .select("id, username, avatar_url");
+
+const { data: tradingProfiles } = await supabase
+  .from("trading_profiles")
+  .select("user_id, discord_username");
+
+const eligibleUserIds = new Set(
+  (tradingProfiles || [])
+    .filter(
+      (p: any) =>
+        p.discord_username &&
+        p.discord_username.trim() !== ""
+    )
+    .map((p: any) => p.user_id)
+);
 
       if (!progress || !profiles) return;
 
@@ -303,6 +317,10 @@ const CommunitySet = () => {
 const finished: any[] = [];
 
 progress.forEach((row: any) => {
+
+  if (!eligibleUserIds.has(row.user_id)) {
+    return;
+  }
 
  let owned = 0;
 
@@ -446,10 +464,11 @@ if (manualPlacements[id || "HeiManTou (Chinese Collector)"]) {
 
 } else {
 
-  finished.sort(
-    (a, b) =>
-      new Date(a.updated).getTime() - new Date(b.updated).getTime()
-  );
+finished.sort(
+  (a, b) =>
+    new Date(a.completed_at).getTime() -
+    new Date(b.completed_at).getTime()
+);
 
 }
 

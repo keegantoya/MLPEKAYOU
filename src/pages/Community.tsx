@@ -144,8 +144,8 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
   avatar_url: "avatar010.webp"
 },
   "fantasywonderland": {
-  username: "Mari",
-  avatar_url: "avatar021.webp"
+  username: "derpypony",
+  avatar_url: "avatar015.webp"
 },
 };
 
@@ -332,13 +332,27 @@ bestUser = {
 
 useEffect(() => {
 const loadSetTopThree = async () => {
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, username, avatar_url");
+const { data: profiles } = await supabase
+  .from("profiles")
+  .select("id, username, avatar_url");
 
-  const { data: allProgress } = await supabase
-    .from("collection_progress_raw")
-    .select("user_id, set_id, progress, updated_at");
+const { data: tradingProfiles } = await supabase
+  .from("trading_profiles")
+  .select("user_id, discord_username");
+
+const eligibleUserIds = new Set(
+  (tradingProfiles || [])
+    .filter(
+      (p: any) =>
+        p.discord_username &&
+        p.discord_username.trim() !== ""
+    )
+    .map((p: any) => p.user_id)
+);
+
+const { data: allProgress } = await supabase
+  .from("collection_progress_raw")
+  .select("user_id, set_id, progress, updated_at");
 
   if (!profiles || !allProgress) return;
 
@@ -353,7 +367,8 @@ const loadSetTopThree = async () => {
     "5": ["Keegan", "Jacob", "Mari"],
     "2": ["Jacob", "Mari", "SillyPony"],
     "8": ["Mari", "Keegan", "Jacob"],
-  };
+    "fantasywonderland": ["derpypony", "Mari"],
+};
 
   const results: Record<string, any[]> = {};
 
@@ -370,8 +385,9 @@ for (const set of sets) {
     (row) => String(row.set_id) === actualSetId
   );
 
-    let leaderboard = rows
-      .map((row) => {
+let leaderboard = rows
+  .filter((row) => eligibleUserIds.has(row.user_id))
+  .map((row) => {
         let owned = 0;
 
 if (set.id === "friendshipsbegin") {
@@ -624,9 +640,10 @@ if (set.id === "friendshipsbegin") {
           Categories
         </h2>
 
-        <p className="text-sm text-orange-300/80 leading-relaxed mb-6">
-          Explore leaderboards for each card game and set collection.
-        </p>
+        <p className="text-[10px] sm:text-[11px] text-orange-300/60 leading-relaxed mb-6 max-w-sm">
+  To appear on these leaderboards, you must verify your Discord username in your
+  profile and you must be reachable. These leaderboards are only for North American English collectors.
+</p>
 <div className="space-y-3">
   {/* Star (empty for now) */}
   <button

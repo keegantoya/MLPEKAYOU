@@ -217,9 +217,29 @@ const sets = [
 },
 ];
 
-const binders = ["Star", "Moon", "Rainbow", "Fun Moments", "TCG", "Promos"];
+const binders = [
+  "CCG",
+  "Moon",
+  "Star",
+  "Rainbow",
+  "Fun Moments",
+  "TCG",
+  "Promos",
+];
 
 const binderSets = {
+
+CCG: [
+  { id: "1", label: "Moon One" },
+  { id: "5", label: "Rainbow One" },
+  { id: "7", label: "Fun Moments One" },
+  { id: "2", label: "Moon Two" },
+  { id: "8", label: "Fun Moments Two" },
+  { id: "3", label: "Moon Three" },
+  { id: "11", label: "Fun Moments Three" },
+  { id: "4", label: "Star One" },
+  { id: "6", label: "Rainbow Two" },
+],
   Moon: [
     { id: "1", label: "Eternal Moon One" },
     { id: "2", label: "Eternal Moon Two" },
@@ -265,7 +285,10 @@ const [searchResults, setSearchResults] = useState<any[]>([]);
 const searchRef = useRef<HTMLDivElement>(null);
   const [spread, setSpread] = useState(1);
   const [layout, setLayout] = useState<"3x3" | "4x3" | "2x2">("3x3");
-  const [organization, setOrganization] = useState<"standard" | "full">("standard");
+  const [organization] = useState<"standard">("standard");
+  const [showCustomization, setShowCustomization] = useState(false);
+  const [previewLayout, setPreviewLayout] = useState<"3x3" | "4x3" | "2x2">("3x3");
+  const [startSlot, setStartSlot] = useState(0);
 
     const touchStartX = useRef(0);
 
@@ -297,14 +320,18 @@ const {
 if (!viewingUserId && user) {
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username, avatar_url")
+    .select("id, username, avatar_url, iso_hidden_sets_ccg")
     .eq("id", user.id)
     .single();
 
-  if (profile) {
-    setViewingProfile(profile);
-    setViewingUsername(profile.username);
-  }
+if (profile) {
+  setViewingProfile(profile);
+  setViewingUsername(profile.username);
+
+  setHiddenCCGSets(
+    profile.iso_hidden_sets_ccg || []
+  );
+}
 }
 
 const targetUserId = viewingUserId ?? user?.id;
@@ -347,15 +374,28 @@ console.log(map);
 
 }, [viewingUserId]);
 
-const selectedSet = useMemo(() => {
+const defaultCCGOrder = [
+  "1",
+  "5",
+  "7",
+  "2",
+  "8",
+  "3",
+  "11",
+  "4",
+  "6",
+];
 
-  return sets.find(s => s.id === selectedSetId);
+const [hiddenCCGSets, setHiddenCCGSets] = useState<string[]>([]);
 
-}, [selectedSetId]);
+const visibleCCGOrder = defaultCCGOrder.filter(
+  id => !hiddenCCGSets.includes(id)
+);
 
-if (!selectedSet) {
-  return null;
-}
+const activeSetIds =
+  selectedBinder === "CCG"
+    ? visibleCCGOrder
+    : [selectedSetId];
 
 const slugMap: Record<string, string> = {
   "1": "1",
@@ -373,9 +413,24 @@ const slugMap: Record<string, string> = {
   "tcgpromos": "tcgpromos",
 };
 
-const resolvedSetId = slugMap[selectedSetId] || selectedSetId;
+const selectedSet =
+  sets.find(
+    s =>
+      s.id ===
+      activeSetIds[0]
+  );
 
-const progress = progressMap[resolvedSetId] || {};
+if (!selectedSet) {
+  return null;
+}
+
+const progress =
+  selectedBinder === "CCG"
+    ? progressMap
+    : progressMap[
+        slugMap[selectedSetId] ||
+          selectedSetId
+      ] || {};
 
 let cards: any[] = [];
 
@@ -524,6 +579,46 @@ cards =
 
 }
 
+// Build one continuous CCG binder
+if (selectedBinder === "CCG") {
+  const combinedCards: any[] = [];
+
+visibleCCGOrder.forEach((setId) => {
+    const set = sets.find((s) => s.id === setId);
+    if (!set) return;
+
+    const setCards = Object.entries(set.rarities).flatMap(
+      ([rarity, count]) =>
+        Array.from({ length: count as number }, (_, i) => {
+          const fileRarity =
+            rarity === "SHINING ZR"
+              ? "SZR"
+              : rarity;
+
+          return {
+            rarity,
+            number: i + 1,
+            key: `${set.id}-${rarity}-${i + 1}`,
+            progressKey: `${rarity}-${i + 1}`,
+            setId: set.id,
+            image:
+              set.id === "3" &&
+              rarity === "SZR" &&
+              i === 0
+                ? "/card-backs/third-moon-edition-backs/M3SZRBINDERVER.webp"
+                : `/cards/${set.folder}/${set.prefix}${fileRarity}${String(
+                    i + 1
+                  ).padStart(3, "0")}.webp`,
+          };
+        })
+    );
+
+    combinedCards.push(...setCards);
+  });
+
+  cards = combinedCards;
+}
+
 const ownedCards = cards;
 
 useEffect(() => {
@@ -532,7 +627,7 @@ useEffect(() => {
     img.src = card.image;
     img.decode?.().catch(() => {});
   });
-}, [selectedSetId, layout]);
+}, [selectedBinder, selectedSetId, layout]);
 
 const layoutMap = {
   "2x2": { cols: 2, rows: 2, width: 240 },
@@ -544,38 +639,87 @@ const { cols, rows, width } = layoutMap[layout];
 
 const slotsPerPage = cols * rows;
 
-const totalPages = Math.ceil(cards.length / slotsPerPage);
-const totalSpreads = Math.max(1, Math.ceil(totalPages / 2));
+// Count the empty sleeves before the first card so the binder
+// always ends on a complete spread.
+const totalSleeves = startSlot + cards.length;
+
+const totalPages = Math.ceil(totalSleeves / slotsPerPage);
+
+// Always render complete left/right spreads.
+const totalSpreads = Math.max(
+  1,
+  Math.ceil(totalPages / 2)
+);
+
+const getCCGSpreadForSet = (setId: string) => {
+  let cardsBefore = 0;
+
+  for (const id of visibleCCGOrder) {
+    if (id === setId) break;
+
+    const set = sets.find(s => s.id === id);
+    if (!set) continue;
+
+    cardsBefore += Object.values(set.rarities).reduce(
+      (a, b) => a + (b as number),
+      0
+    );
+  }
+
+  const slotsPerSpread = slotsPerPage * 2;
+
+  return Math.floor(cardsBefore / slotsPerSpread) + 1;
+};
+
+const getCurrentCCGSet = () => {
+  if (selectedBinder !== "CCG") {
+    return selectedSetId;
+  }
+
+  const currentCard = (spread - 1) * (slotsPerPage * 2);
+
+  let cardsSeen = 0;
+
+  for (const id of visibleCCGOrder) {
+    const set = sets.find((s) => s.id === id);
+    if (!set) continue;
+
+    const count = Object.values(set.rarities).reduce(
+      (a, b) => a + (b as number),
+      0
+    );
+
+    if (currentCard >= cardsSeen && currentCard < cardsSeen + count) {
+      return id;
+    }
+
+    cardsSeen += count;
+  }
+
+  return visibleCCGOrder[0] ?? selectedSetId;
+};
+
+const currentSidebarSet = getCurrentCCGSet();
+
+const hidden =
+  selectedBinder !== "CCG" &&
+  hiddenCCGSets.includes(selectedSetId);
+
+const showClosedBinder = hidden;
 
 const renderPage = (page: number, isRightPage = false) => {
   return Array.from({ length: slotsPerPage }).map((_, slot) => {
 
-    let cardIndex: number;
-if (organization === "standard") {
+const pageIndex = page + (isRightPage ? 1 : 0);
 
-  const start =
-    page * slotsPerPage +
-    (isRightPage ? slotsPerPage : 0);
+const globalSleeve =
+  pageIndex * slotsPerPage +
+  slot;
 
-  cardIndex = start + slot;
+// Which card belongs in this sleeve.
+const cardIndex = globalSleeve - startSlot;
 
-} else {
-
-  // Treat the two pages as one continuous 6-column page.
-  const spreadStart = (spread - 1) * (slotsPerPage * 2);
-
-  const row = Math.floor(slot / cols);
-  const col = slot % cols;
-
-  cardIndex =
-    spreadStart +
-    row * (cols * 2) +
-    (isRightPage ? cols : 0) +
-    col;
-
-}
-
-    if (cardIndex >= cards.length) {
+    if (cardIndex < 0 || cardIndex >= cards.length) {
       return (
         <div
           key={slot}
@@ -608,8 +752,10 @@ if (selectedSet.id === "9" && card.number === 6) {
 }
 
 const owned =
-  progress[card.key] ||
-  progress[`BONUS-${card.key}`];
+  selectedBinder === "CCG"
+    ? progressMap[card.setId]?.[card.progressKey]
+    : progress[card.key] ||
+      progress[`BONUS-${card.key}`];
 
 if (!owned) {
   return (
@@ -649,11 +795,32 @@ return (
     }}
   >
 
-<div className="mb-6 flex items-center justify-center gap-4 w-full">
+<div className="relative mb-6 flex items-center justify-center gap-4 w-full">
+
+  <button
+    onClick={() => setShowCustomization(true)}
+    className="absolute right-20 top-1/2 -translate-y-1/2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold shadow transition hover:bg-gray-100"
+  >
+    Customization
+  </button>
+
+<div className="md:hidden flex flex-col items-center w-20 flex-shrink-0">
+  <img
+    src={getAvatar(viewingProfile?.avatar_url)}
+    alt={viewingUsername}
+    className="h-12 w-12 rounded-full border-2 border-purple-400 object-cover"
+  />
+
+  <span
+    className="mt-1 w-full text-center text-xs font-semibold text-purple-700 leading-tight truncate"
+  >
+    {viewingUsername}
+  </span>
+</div>
 
 <div
   ref={searchRef}
-  className="relative w-[220px] md:w-full md:max-w-md"
+  className="relative flex-1 max-w-[220px] md:w-full md:max-w-md"
 >
 
 <input
@@ -741,9 +908,9 @@ setSearchResults(
 )}
 </div>
 
-      {/* Binder Selection */}
-      <div
-  className="mb-8 flex justify-center gap-1 md:gap-3 flex-nowrap overflow-x-auto md:overflow-visible px-2 md:px-0"
+{/* Binder Selection */}
+<div
+  className="mb-6 flex justify-center gap-1 md:gap-3 flex-nowrap overflow-x-auto md:overflow-visible px-2 md:px-0 md:pl-[260px]"
 >
         {binders.map((binder) => (
           <button
@@ -802,6 +969,7 @@ setSearchResults(
   </div>
 )}
 
+
 <div className="min-w-0 flex-1 flex items-center gap-2">
 
   <span
@@ -822,60 +990,61 @@ setSearchResults(
 </div>
 </div>
 
+
 </div>
-<>
-  <button
-    onClick={() => {
-      const layouts = ["3x3", "4x3", "2x2"] as const;
-      const next =
-        layouts[(layouts.indexOf(layout) + 1) % layouts.length];
 
-      setLayout(next);
-      setSpread(1);
-    }}
-    className="w-full rounded-xl border bg-white py-3 font-semibold shadow transition hover:bg-gray-100"
-  >
-    Change Binder Size
-  </button>
+<button
+  onClick={() => {
+    const layouts = ["3x3", "4x3", "2x2"] as const;
+    const next =
+      layouts[(layouts.indexOf(layout) + 1) % layouts.length];
 
-  <button
-    onClick={() =>
-      setOrganization((o) =>
-        o === "standard" ? "full" : "standard"
-      )
-    }
-    className="w-full rounded-xl border bg-white py-3 font-semibold shadow transition hover:bg-gray-100"
-  >
-    {organization === "standard"
-      ? "Standard Organization"
-      : "Full Length Organization"}
-  </button>
-</>
+    setLayout(next);
+    setPreviewLayout(next);
+    setSpread(1);
+  }}
+  className="w-full rounded-xl border bg-white px-4 py-3 text-base font-semibold shadow transition hover:bg-gray-100"
+>
+  Click to change view ({layout})
+</button>
 
   <div className="rounded-xl border bg-gray-100 p-5 shadow">
     <h2 className="mb-4 text-xl font-bold">{selectedBinder}</h2>
 
     <div className="space-y-2">
 
-      {binderSets[selectedBinder as keyof typeof binderSets].map((set) => (
+      {binderSets[selectedBinder as keyof typeof binderSets].map((set) => {
+
+  const hidden =
+    selectedBinder === "CCG" &&
+    hiddenCCGSets.includes(set.id);
+
+  return (
 
         <button
           key={set.id}
-          onClick={() => {
-  setSelectedSetId(set.id);
-  setSpread(1);
-  setOrganization("standard");
+onClick={() => {
+  if (selectedBinder === "CCG") {
+    setSpread(getCCGSpreadForSet(set.id));
+  } else {
+    setSelectedSetId(set.id);
+    setSpread(1);
+  }
 }}
           className={`block w-full rounded-lg px-3 py-2 text-left transition ${
-            selectedSetId === set.id
-              ? "bg-purple-600 text-white"
-              : "hover:bg-gray-200"
-          }`}
+  currentSidebarSet === set.id
+    ? "bg-purple-600 text-white"
+    : "hover:bg-gray-200"
+} ${
+  hidden ? "opacity-40 line-through" : ""
+}`}
+disabled={hidden}
         >
           {set.label}
         </button>
 
-      ))}
+      );
+})}
 
     </div>
   </div>
@@ -885,55 +1054,68 @@ setSearchResults(
 <div className="md:hidden mb-4 flex flex-col gap-3 px-4">
 
 <div className="flex gap-2">
+
   <button
     onClick={() => {
       const layouts = ["3x3", "4x3", "2x2"] as const;
-      const next = layouts[(layouts.indexOf(layout) + 1) % layouts.length];
+      const next =
+        layouts[(layouts.indexOf(layout) + 1) % layouts.length];
+
       setLayout(next);
+      setPreviewLayout(next);
       setSpread(1);
     }}
-    className="flex-1 rounded-lg border bg-white py-2 text-sm font-semibold shadow"
+    className="flex-1 rounded-xl border bg-white px-3 py-3 text-sm font-semibold shadow transition hover:bg-gray-100"
   >
-    Binder Size
+    View ({layout})
   </button>
 
   <button
-    onClick={() =>
-      setOrganization(o =>
-        o === "standard" ? "full" : "standard"
-      )
-    }
-    className="flex-1 rounded-lg border bg-white py-2 text-sm font-semibold shadow"
+    onClick={() => setShowCustomization(true)}
+    className="flex-1 rounded-xl border bg-white px-3 py-3 text-sm font-semibold shadow transition hover:bg-gray-100"
   >
-    {organization === "standard"
-      ? "Standard"
-      : "Full Length"}
+    Customize
   </button>
+
 </div>
 
-  {/* Categories */}
-  <div className="rounded-xl border bg-gray-100 p-5 shadow">
+{/* Categories */}
+{selectedBinder !== "CCG" && (
+<div className="rounded-xl border bg-gray-100 p-5 shadow">
     <div className="space-y-2">
-      {binderSets[selectedBinder as keyof typeof binderSets].map((set) => (
+      {binderSets[selectedBinder as keyof typeof binderSets].map((set) => {
+
+  const hidden =
+    selectedBinder === "CCG" &&
+    hiddenCCGSets.includes(set.id);
+
+  return (
         <button
           key={set.id}
-          onClick={() => {
-            setSelectedSetId(set.id);
-            setSpread(1);
-            setOrganization("standard");
-          }}
+onClick={() => {
+  if (selectedBinder === "CCG") {
+    setSpread(getCCGSpreadForSet(set.id));
+  } else {
+    setSelectedSetId(set.id);
+    setSpread(1);
+  }
+}}
           className={`block w-full rounded-lg px-3 py-2 text-left transition ${
-            selectedSetId === set.id
-              ? "bg-purple-600 text-white"
-              : "hover:bg-gray-200"
-          }`}
+  currentSidebarSet === set.id
+    ? "bg-purple-600 text-white"
+    : "hover:bg-gray-200"
+} ${
+  hidden ? "opacity-40 line-through" : ""
+}`}
+disabled={hidden}
         >
           {set.label}
         </button>
-      ))}
+      );
+})}
     </div>
   </div>
-
+)}
   <p className="text-center text-xs text-gray-500">
   Swipe left or right on the binder to change pages.
 </p>
@@ -941,7 +1123,21 @@ setSearchResults(
 </div>
 
 
+
 {/* Main Content Area */}
+
+{showClosedBinder ? (
+  <div className="flex flex-1 items-center justify-center py-24">
+    <div className="text-center max-w-md">
+      <p className="text-base md:text-2xl font-bold text-gray-500 leading-relaxed px-6">
+  In your ISO, you marked this set
+  <br />
+  as one you are not wanting to collect.
+</p>
+    </div>
+  </div>
+) : (
+
 <div
   className="flex justify-center md:ml-[280px]"
 >
@@ -1072,7 +1268,7 @@ setSearchResults(
 </button>
 {/* Left Page */}
 <div
- key={`left-${selectedSetId}-${layout}-${spread}-${organization}`}
+ key={`left-${selectedSetId}-${layout}-${spread}`}
  className="relative rounded-xl px-3 py-3 shadow-inner overflow-visible"
 style={{
   background: "rgba(250,250,250,0.72)",
@@ -1175,7 +1371,7 @@ style={{
 
 {/* Right Page */}
 <div
-  key={`right-${selectedSetId}-${layout}-${spread}-${organization}`}
+  key={`right-${selectedSetId}-${layout}-${spread}`}
   className="relative rounded-xl px-3 py-3 shadow-inner overflow-visible"
 style={{
   background: "rgba(250,250,250,0.72)",
@@ -1203,7 +1399,211 @@ style={{
   </div>
 </div>
 </div>
-          </div>
+
+)}
+
+{showCustomization && (
+  <div
+  className="fixed inset-0 flex items-center justify-center"
+  style={{
+    zIndex: 2147483647,
+  }}
+>
+    {/* Blurred background */}
+    <div
+      className="absolute inset-0 bg-black/25 backdrop-blur-md"
+      onClick={() => setShowCustomization(false)}
+    />
+
+    {/* Popup */}
+    <div className="relative z-10 w-[92%] max-w-2xl rounded-3xl bg-white p-8 shadow-2xl">
+      <div className="relative mb-6">
+  <h2 className="text-center text-2xl font-bold text-purple-700">
+    Viewing Customization
+  </h2>
+
+  <button
+    onClick={() => setShowCustomization(false)}
+    className="absolute right-0 top-1/2 -translate-y-1/2 rounded-lg px-3 py-1 text-xl font-bold text-gray-500 transition hover:bg-gray-100"
+  >
+    ✕
+  </button>
+</div>
+
+<p className="mb-8 text-center text-[10px] leading-4 text-gray-500">
+    Select the slot below where your set starts to shift the organization.
+</p>
+
+<div className="mb-6 flex justify-center gap-3">
+
+  <button
+    onClick={() => {
+  setLayout("3x3");
+  setPreviewLayout("3x3");
+  setStartSlot(0);
+  setSpread(1);
+}}
+    className={`rounded-lg px-4 py-2 font-semibold transition ${
+      layout === "3x3"
+        ? "bg-purple-600 text-white"
+        : "bg-gray-200 hover:bg-gray-300"
+    }`}
+  >
+    3×3
+  </button>
+
+  <button
+    onClick={() => {
+  setLayout("4x3");
+  setPreviewLayout("4x3");
+  setStartSlot(0);
+  setSpread(1);
+}}
+    className={`rounded-lg px-4 py-2 font-semibold transition ${
+      layout === "4x3"
+        ? "bg-purple-600 text-white"
+        : "bg-gray-200 hover:bg-gray-300"
+    }`}
+  >
+    4×3
+  </button>
+
+  <button
+   onClick={() => {
+  setLayout("2x2");
+  setPreviewLayout("2x2");
+  setStartSlot(0);
+  setSpread(1);
+}}
+    className={`rounded-lg px-4 py-2 font-semibold transition ${
+      layout === "2x2"
+        ? "bg-purple-600 text-white"
+        : "bg-gray-200 hover:bg-gray-300"
+    }`}
+  >
+    2×2
+  </button>
+
+</div>
+
+<div className="flex justify-center overflow-x-auto">
+  <div
+    className="rounded-[28px] p-5 origin-top"
+    style={{
+      transform:
+        typeof window !== "undefined" && window.innerWidth < 768
+          ? "scale(0.68)"
+          : "scale(1)",
+      background:
+        "linear-gradient(145deg,#31115d 0%,#50208d 20%,#2b0f55 55%,#18052f 100%)",
+      boxShadow:
+        "0 20px 40px rgba(0,0,0,.35), inset 0 2px 2px rgba(255,255,255,.12)",
+    }}
+  >
+    <div className="flex items-center gap-4">
+
+      {/* LEFT PAGE */}
+      <div
+        className="grid rounded-xl bg-white/70 p-3"
+        style={{
+          gridTemplateColumns:
+            previewLayout === "2x2"
+              ? "repeat(2,52px)"
+              : previewLayout === "4x3"
+              ? "repeat(4,52px)"
+              : "repeat(3,52px)",
+          gap: "8px",
+        }}
+      >
+        {Array.from({
+          length:
+            previewLayout === "2x2"
+              ? 4
+              : previewLayout === "4x3"
+              ? 12
+              : 9,
+        }).map((_, i) => (
+          <button
+  key={`left-${i}`}
+onClick={() => {
+  setStartSlot(i);
+}}
+  className={`aspect-[2.5/3.5] rounded border-2 transition ${
+    startSlot === i
+      ? "border-purple-600 bg-purple-200"
+      : "border-gray-300 bg-white hover:border-purple-500 hover:bg-purple-50"
+  }`}
+/>
+        ))}
+      </div>
+
+      {/* SPINE */}
+      <div
+        style={{
+          width: "24px",
+          alignSelf: "stretch",
+          borderRadius: "999px",
+          background:
+            "linear-gradient(90deg,#1b0833,#43216f,#1b0833)",
+        }}
+      />
+
+      {/* RIGHT PAGE */}
+      <div
+        className="grid rounded-xl bg-white/70 p-3"
+        style={{
+          gridTemplateColumns:
+            previewLayout === "2x2"
+              ? "repeat(2,52px)"
+              : previewLayout === "4x3"
+              ? "repeat(4,52px)"
+              : "repeat(3,52px)",
+          gap: "8px",
+        }}
+      >
+        {Array.from({
+          length:
+            previewLayout === "2x2"
+              ? 4
+              : previewLayout === "4x3"
+              ? 12
+              : 9,
+        }).map((_, i) => (
+          <button
+  key={`right-${i}`}
+onClick={() => {
+  setStartSlot(
+    i +
+      (previewLayout === "2x2"
+        ? 4
+        : previewLayout === "4x3"
+        ? 12
+        : 9)
+  );
+}}
+           className={`aspect-[2.5/3.5] rounded border-2 transition ${
+  startSlot ===
+  i +
+    (previewLayout === "2x2"
+      ? 4
+      : previewLayout === "4x3"
+      ? 12
+      : 9)
+    ? "border-purple-600 bg-purple-200"
+    : "border-gray-300 bg-white hover:border-purple-500 hover:bg-purple-50"
+}`}
+          />
+        ))}
+      </div>
+
+    </div>
+  </div>
+</div>
+    </div>
+  </div>
+)}
+
+</div>
         </div>
 
   );
