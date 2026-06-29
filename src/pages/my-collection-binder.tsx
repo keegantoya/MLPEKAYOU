@@ -915,16 +915,18 @@ setSearchResults(
         {binders.map((binder) => (
           <button
             key={binder}
-            onClick={() => {
-
+onClick={() => {
   setSelectedBinder(binder);
 
-  setSelectedSetId(
-    binderSets[binder as keyof typeof binderSets][0].id
-  );
+  if (binder === "CCG") {
+    setSelectedSetId(visibleCCGOrder[0] ?? "1");
+  } else {
+    setSelectedSetId(
+      binderSets[binder as keyof typeof binderSets][0].id
+    );
+  }
 
   setSpread(1);
-
 }}
             className={`flex-shrink-0 rounded-lg px-2 py-1 text-[11px] md:px-5 md:py-2 md:text-base font-semibold transition ${
               selectedBinder === binder
