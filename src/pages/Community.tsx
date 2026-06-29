@@ -135,6 +135,10 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
     username: "Keegan",
     avatar_url: "keeganpfpnmn.webp"
   },
+  "6": {
+  username: "Mari",
+  avatar_url: "avatar021.webp"
+  },
   "8": {
   username: "Mari",
   avatar_url: "avatar021.webp"
@@ -147,6 +151,10 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
   username: "derpypony",
   avatar_url: "avatar015.webp"
 },
+  "friendshipsbegin": {
+  username: "Mari",
+  avatar_url: "avatar021.webp"
+  },
 };
 
 const VERIFIED_USERS: Record<
@@ -367,7 +375,9 @@ const { data: allProgress } = await supabase
     "5": ["Keegan", "Jacob", "Mari"],
     "2": ["Jacob", "Mari", "SillyPony"],
     "8": ["Mari", "Keegan", "Jacob"],
+    "6": ["Mari"],
     "fantasywonderland": ["derpypony", "Mari"],
+    "friendshipsbegin": ["Mari"],
 };
 
   const results: Record<string, any[]> = {};
@@ -642,7 +652,7 @@ if (set.id === "friendshipsbegin") {
 
         <p className="text-[10px] sm:text-[11px] text-orange-300/60 leading-relaxed mb-6 max-w-sm">
   To appear on these leaderboards, you must verify your Discord username in your
-  profile and you must be reachable. These leaderboards are only for North American English collectors.
+  profile and you must be reachable. These leaderboards are only for North American   English collectors.
 </p>
 <div className="space-y-3">
   {/* Star (empty for now) */}
