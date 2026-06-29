@@ -621,14 +621,6 @@ visibleCCGOrder.forEach((setId) => {
 
 const ownedCards = cards;
 
-useEffect(() => {
-  cards.forEach((card) => {
-    const img = new Image();
-    img.src = card.image;
-    img.decode?.().catch(() => {});
-  });
-}, [selectedBinder, selectedSetId, layout]);
-
 const layoutMap = {
   "2x2": { cols: 2, rows: 2, width: 240 },
   "3x3": { cols: 3, rows: 3, width: 360 },
