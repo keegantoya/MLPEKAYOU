@@ -9,6 +9,7 @@ const MoonOne = () => {
   const [lastSavedProgress, setLastSavedProgress] = useState("");
 
   const [viewMode, setViewMode] = useState(false);
+  const [selectedRarity, setSelectedRarity] = useState("R");
 
   const [zoomedCard, setZoomedCard] = useState<string | null>(null);
   const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
@@ -257,14 +258,27 @@ useEffect(() => {
   {Object.keys(set.rarities).map((rarity) => (
     <button
       key={rarity}
-      onClick={() =>
-        document
-          .getElementById(`rarity-${rarity}`)
-          ?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          })
-      }
+      onClick={() => {
+  if (window.innerWidth < 768) {
+    setSelectedRarity(rarity);
+
+    requestAnimationFrame(() => {
+      document
+        .getElementById(`rarity-${rarity}`)
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    });
+  } else {
+    document
+      .getElementById(`rarity-${rarity}`)
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  }
+}}
       className={`rounded-lg border p-2 text-sm font-bold transition-all
 
       ${
@@ -282,7 +296,7 @@ useEffect(() => {
               </div>
 
               {/* View Mode */}
-<div className="hidden md:block border-t border-gray-200 p-6">
+<div className="border-t border-gray-200 p-6">
   <button
     onClick={() => setViewMode(!viewMode)}
     className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
@@ -355,7 +369,11 @@ useEffect(() => {
 >
 
             {/* Section */}
-            {Object.entries(set.rarities).map(([rarity, count], index) => (
+            {Object.entries(set.rarities)
+  .filter(([rarity]) =>
+    window.innerWidth >= 768 || rarity === selectedRarity
+  )
+  .map(([rarity, count], index) => (
   <section
   key={rarity}
   id={`rarity-${rarity}`}

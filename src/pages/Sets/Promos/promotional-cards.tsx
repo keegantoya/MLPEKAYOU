@@ -9,6 +9,7 @@ const PromotionalCards = () => {
   const [lastSavedProgress, setLastSavedProgress] = useState("");
 
   const [viewMode, setViewMode] = useState(false);
+  const [selectedRarity, setSelectedRarity] = useState("PR");
 
   const [zoomedCard, setZoomedCard] = useState<string | null>(null);
   const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
@@ -225,7 +226,7 @@ const saveProgress = async () => {
               </div>
 
               {/* View Mode */}
-<div className="hidden md:block border-t border-gray-200 p-6">
+<div className="border-t border-gray-200 p-6">
   <button
     onClick={() => setViewMode(!viewMode)}
     className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
