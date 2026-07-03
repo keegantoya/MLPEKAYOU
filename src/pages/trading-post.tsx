@@ -60,7 +60,6 @@ const sets = [
   { id: "4", name: "Star First Edition", released: true },
   { id: "6", name: "Rainbow Second Edition", released: true },
   { id: "9", name: "CCG Promos", released: true },
-  { id: "10", name: "Serialized & Limited Cards", released: true },
   { id: "FW", name: "Fantasy Wonderland", released: true },
   { id: "friendshipsbegin", name: "Friendships Begin", released: true },
   {
@@ -79,9 +78,6 @@ const getCardImage = (card: any) => {
   if (set_id === "tcgpromos") {
   return `/tcgpromos/RR${String(number).padStart(2, "0")}.webp`;
 }
-  if (set_id === "10") {
-    return `/serialized-limited-cards/andypricepromo.webp`;
-  }
 if (set_id === "FW") {
   const key = `BP01${rarity}${String(number).padStart(2, "0")}`;
 
@@ -304,7 +300,6 @@ const COUNTED_SET_IDS = [
   "friendshipsbegin",
   "FW",
   "9",
-  "10",
   "tcgpromos",
 ];
 
@@ -321,12 +316,11 @@ const CARD_TOTALS: Record<string, number> = {
   "friendshipsbegin": 191,
   "FW": 191,
   "9": 6,
-  "10": 1,
-  "tcgpromos": 6,
+  "tcgpromos": 12,
 };
 
 // These sets are EXCLUDED from the set counters only.
-const EXCLUDED_FROM_SET_COUNTS = ["9", "10", "tcgpromos"];
+const EXCLUDED_FROM_SET_COUNTS = ["9", "tcgpromos"];
 
 const normalizeSetId = (setId: string) => {
   if (setId === "SD") return "friendshipsbegin";
@@ -697,7 +691,6 @@ const renderSet = (set: any) => {
     "FW": "/thumbnails/fantasy-wonderland-thumbnail.webp",
     "friendshipsbegin": "/thumbnails/friendship-begins-thumbnail.webp",
     "9": "/thumbnails/promos-thumbnail.webp",
-    "10": "/thumbnails/limited-promos-thumbnail.webp",
     "tcgpromos": "/thumbnails/tcgpromosthumbnail.webp",
   };
   
@@ -717,7 +710,6 @@ const setDescriptions: Record<string, string> = {
   "FW": "BP01",
   "friendshipsbegin": "SD01",
   "9": "MLPE-PR",
-  "10": "PR",
   "tcgpromos": "PR",
 };
 

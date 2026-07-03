@@ -238,7 +238,7 @@ const allUsersSorted = (profiles || [])
 );
 
 // RANK-WORTHY COLLECTORS
-// Users with 3+ completed sets, excluding promos and limited cards
+// Users with 3+ completed sets, excluding promos
 const rankWorthy = (profiles || []).filter(
   (u: any) => u.rank_worthy === true
 );

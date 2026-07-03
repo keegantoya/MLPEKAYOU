@@ -119,7 +119,7 @@ const tradeCards = Object.entries(isoStatuses)
 const visibleHideSets = allSets.filter((set) => {
 const isAllowed =
   mode === "CCG"
-    ? ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"].includes(set.id)
+    ? ["1", "2", "3", "4", "5", "6", "7", "8", "9", "11"].includes(set.id)
     : ["SD_STARTERS", "SD_BONUS", "FW", "TCG_PROMOS"].includes(set.id);
 
   if (!isAllowed) {
@@ -205,7 +205,7 @@ onChange={(e) =>
 .replace(/<N/g, "◇N")
   )
 }
-      placeholder="Search card code..."
+      placeholder="Type # for ※ <> for ◇"
       className="
         w-full
         px-4 py-2.5

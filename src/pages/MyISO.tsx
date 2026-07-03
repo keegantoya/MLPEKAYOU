@@ -146,13 +146,6 @@ const sets = [
   promoNumbers: [1, 2, 3, 4, 5, 7],
   rarities: { PR: 6 }
 },
-  {
-    id: "10",
-    name: "Serialized & Limited Cards",
-    folder: "serialized-limited-cards",
-    prefix: "LC",
-    rarities: { LC: 1 }
-  }
 ];
 
 const MyISO = () => {
@@ -453,7 +446,6 @@ if (setId === "5" && rarity === "SSR") {
     "7": "FME01",
     "8": "FME02",
     "9": "PR",
-    "10": "LC",
   };
 if (setId === "7" && rarity === "SN") {
   return `FME01-◇N-${cardNumber}`;
@@ -585,10 +577,6 @@ if (setId === "11" && rarity === "SCR") {
 
 if (setId === "9") {
   return `MLPE-PR-${cardNumber}`;
-}
-
-if (setId === "10") {
-  return "MLPE-PR-005";
 }
 
 if (setId === "6" && rarity === "R") {
@@ -804,7 +792,7 @@ return (
   mode={mode as "CCG" | "TCG"}
 availableSets={[
 ...(mode === "TCG" &&
-Array.from({ length: 6 }, (_, i) => {
+Array.from({ length: 12 }, (_, i) => {
   const key = `RR${String(i + 1).padStart(2, "0")}`;
   return owned[`tcgpromos-${key}`];
 }).every(Boolean) === false
@@ -822,7 +810,7 @@ Array.from({ length: 6 }, (_, i) => {
   }
 
   if (mode === "CCG") {
-    return ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"].includes(set.id);
+    return ["1", "2", "3", "4", "5", "6", "7", "8", "9", "11"].includes(set.id);
   }
 
   return ["SD_STARTERS", "SD_BONUS", "FW"].includes(set.id);
@@ -902,7 +890,6 @@ return false;
 onSelectRarity={setSelectedRarity}
 availableRarities={
   selectedSetId === "9" ||
-  selectedSetId === "10" ||
   selectedSetId === "TCG_PROMOS"
     ? []
 
@@ -1069,7 +1056,7 @@ onToggleHiddenSet={toggleSet}
  (!selectedSetId || selectedSetId === "TCG_PROMOS") &&
  (
    viewAllCardCodes ||
-   Array.from({ length: 6 }, (_, i) => {
+   Array.from({ length: 12 }, (_, i) => {
      const key = `RR${String(i + 1).padStart(2, "0")}`;
      return owned[`tcgpromos-${key}`];
    }).every(Boolean) === false
@@ -1081,7 +1068,7 @@ onToggleHiddenSet={toggleSet}
     </h2>
 
     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-{Array.from({ length: 6 }, (_, i) => {
+{Array.from({ length: 12 }, (_, i) => {
   const num = i + 1;
   const key = `RR${String(num).padStart(2, "0")}`;
   const stateKey = `tcgpromos-${key}`;
@@ -1104,7 +1091,11 @@ onToggleHiddenSet={toggleSet}
 
         <div className="px-3 py-2">
           <div className="min-w-0 text-[8px] sm:text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
-            <span>{`PR${String(num).padStart(2, "0")}`}</span>
+            <span>
+  {num <= 6
+    ? `RR${String(num).padStart(2, "0")}`
+    : `※BP01-CR${String(num - 5).padStart(2, "0")}`}
+</span>
 
             {isoStatuses[stateKey] === "trade_in_progress" && (
               <span className="text-[#7c5aa6] text-xs">✔</span>
@@ -1704,8 +1695,7 @@ return key;
           const imageSrc =
             set.id === "9"
               ? `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`
-              : set.id === "10"
-              ? "/serialized-limited-cards/andypricepromo.webp"
+
              : `/cards/${set.folder}/${set.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}${
     set.id === "6" &&
     ["TR", "TGR", "ST"].includes(rarity)
@@ -1926,8 +1916,6 @@ onClick={() => {
         src={
           set.id === "9"
             ? `/promo-cards/mlpepr${String(card.number).padStart(3, "0")}.webp`
-            : set.id === "10"
-            ? "/serialized-limited-cards/andypricepromo.webp"
             : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}${
     set.id === "6" &&
     ["TR", "TGR", "ST"].includes(card.rarity)
@@ -1952,7 +1940,6 @@ const setCodeMap: Record<string, string> = {
   "7": "FME01",
   "8": "FME02",
   "9": "PR",
-  "10": "LC",
   "11": "FME03",
 };
 
@@ -2133,7 +2120,7 @@ else if (selectedCardKey.startsWith("SD-BONUS-")) {
 }
 
 const VALID_SET_IDS = [
-  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+  "1", "2", "3", "4", "5", "6", "7", "8", "9", "11",
   "SD", "FW", "tcgpromos"
 ];
 

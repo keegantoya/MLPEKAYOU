@@ -183,15 +183,6 @@ const sets = [
     },
   },
   {
-    id: "10",
-    name: "Serialized & Limited Cards",
-    folder: "serialized-limited-cards",
-    prefix: "LC",
-    rarities: {
-      LC: 1,
-    },
-  },
-  {
   id: "SD",
   name: "Friendships Begin",
   folder: "friendships-begin",
@@ -235,7 +226,7 @@ const sets = [
     folder: "tcgpromos",
     prefix: "RR",
     rarities: {
-      RR: 6,
+      RR: 12,
     },
   },
 ];
@@ -259,7 +250,7 @@ const setGroups = [
 },
   {
     label: "Promos",
-    setIds: ["9", "10", "tcgpromos"],
+    setIds: ["9", "tcgpromos"],
   },
   {
     label: "TCG",
@@ -360,7 +351,7 @@ if (setId === "FW") {
 }
 
   if (setId === "tcgpromos") {
-    return Array.from({ length: 6 }, (_, i) => ({
+    return Array.from({ length: 12 }, (_, i) => ({
       set_id: "tcgpromos",
       rarity: "PR",
       card_key: `RR${String(i + 1).padStart(2, "0")}`,
@@ -404,10 +395,6 @@ function getWishlistCardImage(card: {
   if (String(card.set_id) === "9") {
     const number = String(card.card_key).split("-")[1];
     return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
-  }
-
-  if (String(card.set_id) === "10") {
-    return "/serialized-limited-cards/andypricepromo.webp";
   }
 
   const [rarityRaw, number] = String(card.card_key).split("-");
@@ -906,7 +893,7 @@ const cards =
           
 
 {/* Rarity Navigation */}
-{!["9", "10", "tcgpromos"].includes(selectedSet.id) && (
+{!["9", "tcgpromos"].includes(selectedSet.id) && (
   <div className="flex flex-wrap justify-center gap-2 mb-6">
     {[...new Set(cards.map((card) => card.rarity))].map((rarity) => (
       <button
@@ -962,7 +949,7 @@ const cards =
   id={`rarity-${rarity}`}
   className="scroll-mt-32"
 >
-  {!["9", "10", "tcgpromos"].includes(selectedSet.id) && (
+  {!["9", "tcgpromos"].includes(selectedSet.id) && (
     <div className="flex items-center justify-center gap-3 mb-4">
       <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
       <span className="text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
@@ -1002,8 +989,6 @@ const cards =
                     3,
                     "0"
                   )}.webp`
-                : selectedSet.id === "10"
-                ? "/serialized-limited-cards/andypricepromo.webp"
                 : `/cards/${selectedSet.folder}/${selectedSet.prefix}${getRarityCode(
   card.rarity
 )}${String(card.number).padStart(3, "0")}${

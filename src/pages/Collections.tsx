@@ -121,32 +121,14 @@ const collections: Collection[] = [
     title: "Promotional",
     setName: "Cards",
     imageUrl: "/thumbnails/promos-thumbnail.webp",
-    totalCards: 6,
+    totalCards: 18,
     category: "promos",
     released: true,
   },
-  {
-    id: "10",
-    title: "Limited",
-    setName: "Cards",
-    imageUrl: "/thumbnails/limited-promos-thumbnail.webp",
-    totalCards: 1,
-    category: "promos",
-    released: true,
-  },
-  {
-  id: "tcgpromos",
-  title: "TCG",
-  setName: "Promos",
-  imageUrl: "/thumbnails/tcgpromosthumbnail.webp",
-  totalCards: 6,
-  category: "promos",
-  released: true,
-},
 {
     id: "OTHERMERCH",
     title: "Kayou US",
-    setName: "Non-Card Merch",
+    setName: "Leaping Ponies",
     imageUrl: "/thumbnails/other-merch-tn.webp",
     totalCards: 6,
     category: "merch",
@@ -232,21 +214,26 @@ const mergedBySet: Record<string, Record<string, boolean>> = {};
 const progressMap: Record<string, number> = {};
 
 Object.entries(mergedBySet).forEach(([setId, progress]) => {
- const validPromoCards = [
-  "PR-1",
-  "PR-2",
-  "PR-3",
-  "PR-4",
-  "PR-5",
-  "PR-7",
-];
+  const validPromoCards = [
+    "PR-1",
+    "PR-2",
+    "PR-3",
+    "PR-4",
+    "PR-5",
+    "PR-7",
+  ];
 
-const count =
-  setId === "9"
-    ? Object.keys(progress).filter((key) =>
-        validPromoCards.includes(key)
-      ).length
-    : Object.keys(progress).length;
+  const ccgPromoCount =
+    setId === "9"
+      ? Object.keys(progress).filter((key) =>
+          validPromoCards.includes(key)
+        ).length
+      : 0;
+
+  const count =
+    setId === "9"
+      ? ccgPromoCount
+      : Object.keys(progress).length;
 
   if (setId === "FW") {
     progressMap["tcg"] = count;
@@ -254,6 +241,8 @@ const count =
     progressMap["friendshipsbegin"] = count;
   } else if (setId === "OTHERMERCH") {
     progressMap["OTHERMERCH"] = count;
+  } else if (setId === "tcgpromos") {
+    progressMap["9"] = (progressMap["9"] || 0) + count;
   } else {
     progressMap[setId] = count;
   }
@@ -452,7 +441,7 @@ backgroundImage: `
 );
 
     const countedSets = releasedSets.filter(
-  (set) => !["9", "10", "tcgpromos"].includes(set.id)
+  (set) => !["9", "tcgpromos"].includes(set.id)
 );
 
 const totalSets = countedSets.length;
@@ -566,7 +555,7 @@ const completedSets = countedSets.filter(
 );
 
     const countedSets = releasedSets.filter(
-  (set) => !["9", "10", "tcgpromos"].includes(set.id)
+  (set) => !["9", "tcgpromos"].includes(set.id)
 );
 
 const totalSets = countedSets.length;
@@ -698,13 +687,8 @@ const completedSets = countedSets.filter(
   </p>
 )}
 
-          {activeCategory === "limited" ? (
+          {activeCategory === "" ? (
             <div className="flex items-center justify-center py-20">
-              <p className="text-yellow-500 text-center max-w-xl leading-relaxed">
-                The only serialized or limited card from English My Little Pony Kayou is the signed Andy Price MLPE-PR-005.
-                There are no known pictures of this card. Kayou has not sent me a file to upload, and it is likely one does not exist.
-                When someone uploads the card, it will be here.
-              </p>
             </div>
           ) : (
            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">

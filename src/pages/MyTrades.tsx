@@ -292,11 +292,11 @@ if (activeFilter === "rainbow") {
 }
 
 // Promotional
+// Promotional
 if (activeFilter === "promos") {
   return (
     col.id === "9" ||              // Promotional Cards
-    col.id === "tcgpromos" ||      // TCG Promos
-    col.id === "limitedpromos"     // Limited Promos
+    col.id === "tcgpromos"         // TCG Promos
   );
 }
 

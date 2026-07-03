@@ -42,7 +42,6 @@ const setImages: Record<string, string> = {
   "4": "/thumbnails/s1-thumbnail.webp",
   "6": "/thumbnails/rainbow2thumbnail.webp",
   "9": "/thumbnails/promos-thumbnail.webp",
-  "10": "/thumbnails/limited-promos-thumbnail.webp",
 };
 
 const setBadgeImages: Record<string, string> = {
@@ -139,23 +138,16 @@ const sets = [
   XR: 8
 }
   },
-  {
-  id: "10",
-  name: "Serialized & Limited Cards",
-  total: 1,
-  rarities: { LC: 1 }
-  },
   ];
 
 const releasedRoutes: Record<string, string> = {
-  "1": "/eternal-moon-one",
-  "2": "/eternal-moon-two",
+  "1": "/moon-one",
+  "2": "/moon-two",
   "5": "/rainbow-one",
-  "3": "/eternal-moon-three",
+  "3": "/moon-three",
   "7": "/fun-moments-one",
   "11": "/fun-moments-three",
   "9": "/promos",
-  "10": "/limited-cards",
   "8": "/fun-moments-two",
   "4": "/star-one",
   "6": "/rainbow-two",
@@ -241,13 +233,13 @@ const mainSets = sets.filter((s) =>
 );
 
 const promoSets = sets.filter((s) =>
-  ["9", "10"].includes(s.id)
+  ["9"].includes(s.id)
 );
 
 const visibleSets = sets.filter(
   (set) =>
     !hiddenSets.includes(set.id) &&
-    !["9", "10"].includes(set.id) &&
+    !["9"].includes(set.id) &&
     !!releasedRoutes[set.id]
 );
 
@@ -395,7 +387,7 @@ return (
                     {
                       sets.filter(
                         (set) =>
-                          !["9", "10"].includes(set.id) &&
+                          !["9"].includes(set.id) &&
                           set.total > 0 &&
                           (progress[set.id] || 0) === set.total
                       ).length
@@ -411,13 +403,13 @@ return (
                     {Math.round(
                       (
                         sets
-                          .filter((set) => !["9", "10"].includes(set.id))
+                          .filter((set) => !["9"].includes(set.id))
                           .reduce(
                             (sum, set) => sum + (progress[set.id] || 0),
                             0
                           ) /
                         sets
-                          .filter((set) => !["9", "10"].includes(set.id))
+                          .filter((set) => !["9"].includes(set.id))
                           .reduce((sum, set) => sum + set.total, 0)
                       ) * 100
                     ) || 0}
@@ -625,7 +617,7 @@ const showBadgeImage = !!badgeImage;
 const visibleSets = sets.filter(
   (set) =>
     !hiddenSets.includes(set.id) &&
-    !["9", "10"].includes(set.id) &&
+    !["9",].includes(set.id) &&
     !!releasedRoutes[set.id]
 );
 
@@ -673,7 +665,7 @@ const overallVisiblePercent =
                 ),
                 ...sets.filter(
                   (set) =>
-                    ["9", "10"].includes(set.id) &&
+                    ["9"].includes(set.id) &&
                     releasedRoutes[set.id] &&
                     !hiddenSets.includes(set.id)
                 ),

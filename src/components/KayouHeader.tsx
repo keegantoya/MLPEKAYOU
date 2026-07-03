@@ -1,10 +1,6 @@
 import {
   Home,
     Ghost,
-    Candy,
-    Cat,
-    Skull,
-    Moon,
   Trophy,
   Medal,
   Tag,
@@ -313,6 +309,7 @@ useEffect(() => {
 
     return () => subscription.unsubscribe();
   }, []);
+  
 
 useEffect(() => {
   const hasSeen = localStorage.getItem("seenAnnouncement");
@@ -790,14 +787,14 @@ isActive("/")
   </button>
 
   <button
-    onClick={() => requireLogin("/forum")}
+    onClick={() => requireLogin("/explore")}
 className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
 isActive("/")
   ? "bg-[#cbc5d4] border-white shadow-md scale-105"
   : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
-    <Candy className="h-5 w-5" />
+    <Users className="h-5 w-5" />
   </button>
 
   <button
@@ -808,7 +805,7 @@ isActive("/")
   : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
-    <Skull className="h-5 w-5" />
+    <Sparkles className="h-5 w-5" />
   </button>
 
     <button
@@ -851,7 +848,7 @@ isActive("/")
   : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
 }`}
   >
-    <Cat className="h-5 w-5" />
+    <ArrowLeftRight className="h-5 w-5" />
   </button>
 
   <button
@@ -1535,7 +1532,7 @@ left:
     ? "30%"
     : location.pathname.startsWith("/trading-post")
     ? "50%"
-    : location.pathname.startsWith("/forum")
+    : location.pathname.startsWith("/explore")
     ? "70%"
     : "90%",
 
@@ -1547,7 +1544,7 @@ borderRadius:
     ? "18px"
     : location.pathname.startsWith("/trading-post")
     ? "18px"
-    : location.pathname.startsWith("/forum")
+    : location.pathname.startsWith("/explore")
     ? "18px"
     : "14px 30px 30px 14px",
     transition:
@@ -1611,7 +1608,7 @@ ${
 }
 `}
   >
-    <Skull className="h-6 w-6" />
+    <Sparkles className="h-6 w-6" />
   </button>
 
   {/* TRADES */}
@@ -1632,7 +1629,7 @@ mobileNavCollapsed
 }
 `}
   >
-    <Cat className="h-6 w-6" />
+    <ArrowLeftRight className="h-6 w-6" />
   </button>
 
   {/* FORUM */}
@@ -1642,7 +1639,7 @@ mobileNavCollapsed
       setShowMobileIsoMenu(false);
       setShowMobileLeaderboardMenu(false);
       setShowMobileHomeMenu(false);
-      navigate("/forum");
+      navigate("/explore");
     }}
     className={`
 relative z-10 flex items-center justify-center h-full px-3 text-[#ee8ad5]   
@@ -1654,7 +1651,7 @@ mobileNavCollapsed
 }
 `}
   >
-    <Candy className="h-6 w-6" />
+    <Users className="h-6 w-6" />
   </button>
 
 {/* PROFILE */}
@@ -1686,7 +1683,7 @@ mobileNavCollapsed
 }
 `}
 >
-  <Moon className="h-6 w-6" />
+  <User className="h-6 w-6" />
 </button>
 </div>
 </>

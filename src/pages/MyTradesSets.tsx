@@ -248,9 +248,9 @@ setTradeCards((prev) => ({
   };
 
 const slugMap: Record<string, string> = {
-  "eternal-moon-one": "1",
-  "eternal-moon-two": "2",
-  "eternal-moon-three": "3",
+  "moon-one": "1",
+  "moon-two": "2",
+  "moon-three": "3",
   "star-one": "4",
   "rainbow-one": "5",
   "rainbow-two": "6",

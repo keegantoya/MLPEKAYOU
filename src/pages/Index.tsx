@@ -176,7 +176,6 @@ useEffect(() => {
       { id: "3", rarities: { R:60, SR:40, SSR:40, HR:60, UR:18, LSR:32, SGR:16, ZR:14, SC:7, "SZR":1 }},
       { id: "11", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR: 9, CR:12, SCR: 12 }},
       { id: "8", rarities: { N:20, SN:20, R:35, SR:15, SSR:15, UR:10, UGR:9, CR:12 }},
-      { id: "10", rarities: { LC: 1 } },
       { id: "6", rarities: { BASE: 18, R: 30, SR: 14, ST: 20, SSR: 15, FR: 18, TR: 12, TGR: 8, UR: 19, USR: 8, XR: 8 }},
       { id: "4", rarities: { SSR: 20, SCR: 18, UR:18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 }},
     ];
@@ -201,8 +200,8 @@ useEffect(() => {
   total += count;
 });
 
-      // skip promo and limited
-      if (set.id === "9" || set.id === "10") return;
+      // skip promo and
+      if (set.id === "9") return;
 
       if (total > 0 && owned === total) {
         completedCount++;
@@ -486,7 +485,8 @@ backgroundImage: `
           {/* Description */}
           <p className="mt-8 max-w-xl mx-auto lg:mx-0 text-lg text-[#A991C7] leading-relaxed">
             Track your progress, your inventory, and your place on the board.
-            KAYOU US is not owned or run by Kayou, but the owner is a partner of Kayou's US E-Commerce branch.
+            MLPEKAYOU is not owned or run by Kayou. The developer is a partner of 
+            Kayou US. MLPEKAYOU is reserved for North American English cards only.
           </p>
 
           {/* Mobile Card Fan */}

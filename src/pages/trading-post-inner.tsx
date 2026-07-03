@@ -28,7 +28,6 @@ const rarityMap: Record<string, string[]> = {
   "8": ["N", "SN","R","SR","SSR","UR","UGR","CR"],
   "11": ["N", "SN","R","SR","SSR","UR","UGR","CR", "SCR"],
   "9": ["PR"],
-  "10": ["LC"],
   "tcgpromos": ["PR"],
   "friendshipsbegin": ["C", "U", "SR", "SPR", "ER", "GR", "CR", "PER", "PRR"],
   "FW": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
@@ -95,9 +94,6 @@ if (card.set_id === "FW") {
     return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
 
-  if (card.set_id === "10") {
-    return `/serialized-limited-cards/andypricepromo.webp`;
-  }
   if (card.set_id === "tcgpromos") {
   return `/tcgpromos/${card.card_key}.webp`;
 }
@@ -154,7 +150,6 @@ const [selectedRarity, setSelectedRarity] = useState<string | null>(
   "4": "Star: First Edition",
   "6": "Rainbow: Second Edition",
   "9": "Promo Cards",
-  "10": "Serialized & Limited Cards",
   "friendshipsbegin": "Friendships Begin",
   "FW": "Fantasy Wonderland",
   "tcgpromos": "TCG Promos",

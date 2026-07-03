@@ -46,24 +46,23 @@ const getLink = () => {
   switch (id) {
 
     case "1":
-      return "/eternal-moon-one";
+      return "/moon-one";
 
     case "2":
-      return "/eternal-moon-two";
+      return "/moon-two";
 
     case "5":
       return "/rainbow-one";
 
     case "3":
-  return "/eternal-moon-three";
+      return "/moon-three";
 
     case "4":
-    case "star1":
       return "/star-one";
 
-case "6":
-case "rainbow2":
-  return "/rainbow-two";
+    case "6":
+    case "rainbow2":
+      return "/rainbow-two";
 
     case "tcg":
       return "/fantasy-wonderland";
@@ -73,9 +72,6 @@ case "rainbow2":
 
     case "9":
       return "/promotional-cards";
-      
-    case "10":
-      return "/limited-cards";
 
     case "7":
       return "/fun-moments-one";
@@ -86,11 +82,8 @@ case "rainbow2":
     case "11":
       return "/fun-moments-three";
 
-    case "tcgpromos":
-      return "/tcg-promos";
-
       case "OTHERMERCH":
-  return "/other-kayou-merch";
+  return "/leaping-ponies";
 
     default:
       return `/collection/${id}`;
