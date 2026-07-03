@@ -577,7 +577,7 @@ const completionPercentage =
 <div className="flex-1 relative">
   <button
     type="button"
-    onClick={() => navigate("/forum")}
+    onClick={() => navigate("/explore")}
    className="
   w-full h-12 rounded-full
   border border-purple-400/30
