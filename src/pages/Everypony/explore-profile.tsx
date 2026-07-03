@@ -154,6 +154,8 @@ const [collapsedSets, setCollapsedSets] =
   const [selectedSet, setSelectedSet] = useState("ALL");
 const [selectedSection, setSelectedSection] =
   useState<"iso" | "trade" | "wishlist">("iso");
+
+const [quickViewCard, setQuickViewCard] = useState<any>(null);
   const avatar =
     avatarMap[String(user?.avatar_url || "").trim()] || avatar001;
 
@@ -755,7 +757,23 @@ const [selectedSection, setSelectedSection] =
   loadProfile();
 }, [user?.id]);
 
+useEffect(() => {
+  if (!quickViewCard) return;
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setQuickViewCard(null);
+    }
+  };
+
+  document.body.style.overflow = "hidden";
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    document.body.style.overflow = "";
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [quickViewCard]);
 
 function getTradeCardImage(card: any) {
   if (!card) return "";
@@ -1027,60 +1045,84 @@ ${
           This collector isn't looking for any cards.
         </p>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
           {filteredIsoCards.map((card) => (
-            <div
-              key={card.id}
-              className={`rounded-xl border bg-slate-50 p-3 text-center ${
-                isMoon3DoubleWide(card) ? "col-span-2" : ""
-              }`}
-            >
-              <img
-                src={getTradeCardImage(card)}
-                alt={card.card_key}
-                className={`rounded-lg object-cover ${
-                  String(card.set_id) === "tcgpromos"
-                    ? "w-full aspect-[5/7]"
-                    : "w-full"
-                }`}
-              />
-            </div>
+<div
+  key={card.id}
+  onClick={() => setQuickViewCard(card)}
+  className={`self-start cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
+    isMoon3DoubleWide(card) ? "col-span-2" : ""
+  } ${
+    !isMoon3DoubleWide(card) &&
+    String(card.set_id) === "tcgpromos" &&
+    ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+      ? "aspect-[63/88]"
+      : ""
+  }`}
+>
+  <img
+    src={getTradeCardImage(card)}
+    alt={card.card_key}
+    className={`block w-full ${
+      isMoon3DoubleWide(card)
+        ? "h-auto object-contain"
+        : String(card.set_id) === "tcgpromos" &&
+          ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+        ? "h-full object-cover object-center"
+        : "h-full object-contain"
+    }`}
+  />
+</div>
           ))}
         </div>
       )}
     </>
   )
 ) : selectedSection === "trade" ? (
-  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
+  <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
     {filteredTradeCards.map((card) => (
-      <div
-        key={`${card.set_id}-${card.card_key}`}
-        className={`rounded-xl border bg-slate-50 p-3 text-center ${
-          isMoon3DoubleWide(card) ? "col-span-2" : ""
-        }`}
-      >
-        <div
-          className={`mb-2 rounded-full px-2 py-1 text-xs font-bold text-white ${
-            card.type === "trade"
-              ? "bg-blue-600"
-              : "bg-green-600"
-          }`}
-        >
-          {card.type === "trade"
-            ? "FOR TRADE"
-            : "FOR SALE"}
-        </div>
+<div
+  key={`${card.set_id}-${card.card_key}`}
+  onClick={() => setQuickViewCard(card)}
+  className={`cursor-pointer rounded-xl border bg-slate-50 p-3 text-center transition hover:scale-[1.02] ${
+    isMoon3DoubleWide(card) ? "col-span-2" : ""
+  }`}
+>
+  <div
+    className={`mb-2 rounded-full px-2 py-1 text-xs font-bold text-white ${
+      card.type === "trade"
+        ? "bg-blue-600"
+        : "bg-green-600"
+    }`}
+  >
+    {card.type === "trade"
+      ? "FOR TRADE"
+      : "FOR SALE"}
+  </div>
 
-        <img
-          src={getTradeCardImage(card)}
-          alt={card.card_key}
-          className={`rounded-lg object-cover ${
-            String(card.set_id) === "tcgpromos"
-              ? "w-full aspect-[5/7]"
-              : "w-full"
-          }`}
-        />
-      </div>
+  <div
+    className={`overflow-hidden rounded-lg ${
+      !isMoon3DoubleWide(card) &&
+      String(card.set_id) === "tcgpromos" &&
+      ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+        ? "aspect-[63/88]"
+        : ""
+    }`}
+  >
+    <img
+      src={getTradeCardImage(card)}
+      alt={card.card_key}
+      className={`block w-full ${
+        isMoon3DoubleWide(card)
+          ? "h-auto object-contain"
+          : String(card.set_id) === "tcgpromos" &&
+            ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+          ? "h-full object-cover object-center"
+          : "h-full object-contain"
+      }`}
+    />
+  </div>
+</div>
     ))}
   </div>
 ) : (
@@ -1089,30 +1131,52 @@ ${
       This collector has hidden their wishlist.
     </p>
   ) : (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
+    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
       {userWishlistCards.map((card) => (
-        <div
-          key={card.id}
-          className={`rounded-xl border bg-slate-50 p-3 text-center ${
-            isMoon3DoubleWide(card) ? "col-span-2" : ""
-          }`}
-        >
-          <img
-            src={getTradeCardImage(card)}
-            alt={card.card_key}
-            className={`rounded-lg object-cover ${
-              String(card.set_id) === "tcgpromos"
-                ? "w-full aspect-[5/7]"
-                : "w-full"
-            }`}
-          />
-        </div>
+<div
+  key={card.id}
+  onClick={() => setQuickViewCard(card)}
+  className={`cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
+    isMoon3DoubleWide(card) ? "col-span-2" : ""
+  }`}
+>
+  <img
+    src={getTradeCardImage(card)}
+    alt={card.card_key}
+    className="block w-full h-full object-contain"
+  />
+</div>
       ))}
     </div>
   )
 )}
 
 </div>
+
+{quickViewCard && (
+  <div
+    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-6"
+    onClick={() => setQuickViewCard(null)}
+  >
+    <button
+      onClick={() => setQuickViewCard(null)}
+      className="absolute right-6 top-6 text-5xl font-bold text-white hover:text-yellow-400"
+    >
+      ×
+    </button>
+
+    <img
+      onClick={(e) => e.stopPropagation()}
+      src={getTradeCardImage(quickViewCard)}
+      alt={quickViewCard.card_key}
+      className={`max-h-[75vh] max-w-[70vw] object-contain drop-shadow-2xl ${
+  isMoon3DoubleWide(quickViewCard)
+    ? "w-[75vw] max-w-[900px]"
+    : ""
+}`}
+    />
+  </div>
+)}
 
     </div>
   );
