@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import TiltCard from "@/components/TiltCards";
 
 const MoonOne = () => {
   const navigate = useNavigate();
@@ -455,37 +456,38 @@ className={`relative w-full h-full transform-style-preserve-3d transition-all du
 
       </div>
 
-      {zoomedCard && (
+{zoomedCard && (
+  <div
+    className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+    onClick={() => setZoomedCard(null)}
+  >
+    <TiltCard>
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          setZoomedCardFlipped(!zoomedCardFlipped);
+        }}
+      >
         <div
-          className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setZoomedCard(null)}
+          className={`relative transition-transform duration-500 transform-style-preserve-3d ${
+            zoomedCardFlipped ? "rotate-y-180" : ""
+          }`}
         >
-          <div
-            style={{ perspective: "1200px" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setZoomedCardFlipped(!zoomedCardFlipped);
-            }}
-          >
-            <div
-              className={`relative transition-transform duration-500 transform-style-preserve-3d ${
-                zoomedCardFlipped ? "rotate-y-180" : ""
-              }`}
-            >
-              <img
-                src={zoomedCard}
-                className="absolute inset-0 max-h-[65vh] max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
-              />
+          <img
+            src={zoomedCard}
+            className="absolute inset-0 max-h-[88vh] max-w-[90vw] md:max-h-[65vh] md:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
+          />
 
-              <img
-                src={zoomedCardBack || ""}
-                className="max-h-[65vh] max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
-                style={{ transform: "rotateY(180deg)" }}
-              />
-            </div>
-          </div>
+          <img
+            src={zoomedCardBack || ""}
+            className="max-h-[88vh] max-w-[90vw] md:max-h-[65vh] md:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
+            style={{ transform: "rotateY(180deg)" }}
+          />
         </div>
-      )}
+      </div>
+    </TiltCard>
+  </div>
+)}
     </div>
   );
 };

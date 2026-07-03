@@ -314,19 +314,24 @@ return true;
   .map((col) => (
                 <div
                   key={col.id}
-                  onClick={() => {
-  const fullName =
-    ["friendshipsbegin", "FW", "9", "tcgpromos"].includes(col.id)
-      ? `${col.title} ${col.setName}`
-      : `${col.title}: ${col.setName}`;
+onClick={() => {
+  const slugMap: Record<string, string> = {
+    "1": "moon-one",
+    "2": "moon-two",
+    "3": "moon-three",
+    "4": "star-one",
+    "5": "rainbow-one",
+    "6": "rainbow-two",
+    "7": "fun-moments-one",
+    "8": "fun-moments-two",
+    "11": "fun-moments-three",
+    "9": "promotional-cards",
+    "FW": "fantasy-wonderland",
+    "friendshipsbegin": "friendships-begin",
+    "tcgpromos": "tcg-promos",
+  };
 
-  const slug = fullName
-    .toLowerCase()
-    .replace(/:/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
-  navigate(`/inventory/${slug}`, { replace: true });
+  navigate(`/inventory/${slugMap[col.id]}`);
 }}
                   className="cursor-pointer w-full max-w-[150px] transition hover:scale-[1.02]"
                 >

@@ -775,50 +775,73 @@ style={{
   }}
 >
   {/* LEFT OF LOGO */}
+<div className="relative group">
   <button
     onClick={() => navigate("/")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
   >
     <Ghost className="h-5 w-5" />
   </button>
 
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 whitespace-nowrap">
+    Homepage
+  </div>
+</div>
+
+  <div className="relative group">
   <button
     onClick={() => requireLogin("/explore")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
   >
     <Users className="h-5 w-5" />
   </button>
 
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+    Explore
+  </div>
+</div>
+
+<div className="relative group">
   <button
     onClick={() => navigate("/collections")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
   >
     <Sparkles className="h-5 w-5" />
   </button>
 
-    <button
-  onClick={() => navigate("/leaderboard")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
-  title="Top Collectors"
->
-  <Medal className="h-5 w-5" />
-</button>
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+    Checklists
+  </div>
+</div>
+
+<div className="relative group">
+  <button
+    onClick={() => navigate("/leaderboard")}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
+  >
+    <Medal className="h-5 w-5" />
+  </button>
+
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+    Leaderboard
+  </div>
+</div>
 
   {/* LOGO */}
   <img
@@ -829,49 +852,73 @@ isActive("/")
 />
 
   {/* RIGHT OF LOGO */}
+<div className="relative group">
   <button
     onClick={() => navigate("/community")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/community")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
   >
     <Trophy className="h-5 w-5" />
   </button>
 
-    <button
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+    First Finishers
+  </div>
+</div>
+
+<div className="relative group">
+  <button
     onClick={() => requireLogin("/trading-post")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/trading-post")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
   >
     <ArrowLeftRight className="h-5 w-5" />
   </button>
 
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+    Trading Post
+  </div>
+</div>
+
+<div className="relative group">
   <button
     onClick={() => navigate("/selling")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/selling")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
   >
     <Tag className="h-5 w-5" />
   </button>
 
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+    Selling
+  </div>
+</div>
+
+<div className="relative group">
   <button
     onClick={() => navigate("/faq")}
-className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all ${
-isActive("/")
-  ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-  : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb]"
-}`}
+    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
+      isActive("/faq")
+        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
+        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
+    }`}
   >
     <Search className="h-5 w-5" />
   </button>
+
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+    FAQ
+  </div>
+</div>
 </div>
 
 {/* RIGHT SIDE */}

@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabase";
 import ScrollToTop from "@/components/ScrollToTop";
 import KayouHeader from "@/components/KayouHeader";
+import TiltCard from "@/components/TiltCards";
 
 import Index from "./pages/Index";
 import Collections from "./pages/Collections";
@@ -48,8 +49,10 @@ import FriendshipsBegin from "./pages/Sets/Trading Card Game/friendships-begin";
 import PromotionalCards from "./pages/Sets/Promos/promotional-cards";
 /// OTHERS
 import LeapingPonies from "./pages/Sets/Others/leaping-ponies";
-/// EXPLORE
+/// OTHER PAGES
 import Explore from "./pages/Everypony/explore";
+
+import Support from "./pages/Main Pages/support-mlpekayou";
 
 const queryClient = new QueryClient();
 
@@ -268,6 +271,7 @@ const AppRoutes = () => {
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="/inventory/:setId" element={<MyTradesSets />} />
       <Route path="/faq" element={<FAQ />} />
+            <Route path="/support-mlpekayou" element={<Support />} />
       <Route
   path="/UserMenu"
   element={
