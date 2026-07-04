@@ -1559,21 +1559,35 @@ style={{
 
 </div>
 
-<div className="flex justify-center overflow-x-auto">
+<div className="flex w-full justify-center overflow-hidden">
   <div
-    className="rounded-[28px] p-5 origin-top"
+    className="rounded-[28px] p-5"
     style={{
-      transform:
-        isMobile
-          ? "scale(0.68)"
-          : "scale(1)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+
+      transform: isMobile
+        ? previewLayout === "4x3"
+          ? "scale(0.53)"
+          : "scale(0.68)"
+        : previewLayout === "4x3"
+        ? "scale(0.92)"
+        : "scale(1)",
+
+      transformOrigin: "center center",
+
       background:
         "linear-gradient(145deg,#31115d 0%,#50208d 20%,#2b0f55 55%,#18052f 100%)",
-      boxShadow:
-        "0 20px 40px rgba(0,0,0,.35), inset 0 2px 2px rgba(255,255,255,.12)",
     }}
   >
-    <div className="flex items-center gap-4">
+    <div
+  className="flex items-center justify-center gap-4"
+  style={{
+    width: "fit-content",
+    margin: "0 auto",
+  }}
+>
 
       {/* LEFT PAGE */}
       <div

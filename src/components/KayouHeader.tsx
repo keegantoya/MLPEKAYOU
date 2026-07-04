@@ -778,11 +778,27 @@ style={{
 <div className="relative group">
   <button
     onClick={() => navigate("/")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <Ghost className="h-5 w-5" />
   </button>
@@ -795,11 +811,27 @@ style={{
   <div className="relative group">
   <button
     onClick={() => requireLogin("/explore")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/explore") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <Users className="h-5 w-5" />
   </button>
@@ -812,11 +844,27 @@ style={{
 <div className="relative group">
   <button
     onClick={() => navigate("/collections")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/collections") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <Sparkles className="h-5 w-5" />
   </button>
@@ -829,11 +877,27 @@ style={{
 <div className="relative group">
   <button
     onClick={() => navigate("/leaderboard")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/leaderboard") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <Medal className="h-5 w-5" />
   </button>
@@ -855,11 +919,27 @@ style={{
 <div className="relative group">
   <button
     onClick={() => navigate("/community")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/community")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/community") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <Trophy className="h-5 w-5" />
   </button>
@@ -872,11 +952,27 @@ style={{
 <div className="relative group">
   <button
     onClick={() => requireLogin("/trading-post")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/trading-post")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/trading-post") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <ArrowLeftRight className="h-5 w-5" />
   </button>
@@ -889,11 +985,27 @@ style={{
 <div className="relative group">
   <button
     onClick={() => navigate("/selling")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/selling")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/selling") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <Tag className="h-5 w-5" />
   </button>
@@ -906,11 +1018,27 @@ style={{
 <div className="relative group">
   <button
     onClick={() => navigate("/faq")}
-    className={`flex-shrink-0 w-10 h-10 min-w-10 min-h-10 rounded-full border flex items-center justify-center text-white transition-all duration-200 ${
-      isActive("/faq")
-        ? "bg-[#cbc5d4] border-white shadow-md scale-105"
-        : "bg-[#cbc5d4] border-white hover:bg-[#c0b9cb] hover:-translate-y-1 hover:scale-110 hover:shadow-xl"
-    }`}
+className={`
+flex-shrink-0
+w-10 h-10
+min-w-10 min-h-10
+rounded-full
+border
+flex
+items-center
+justify-center
+text-white
+transition-all
+duration-200
+
+bg-[#cbc5d4]
+hover:bg-[#c0b9cb]
+hover:-translate-y-1
+hover:scale-110
+hover:shadow-xl
+
+${isActive("/faq") ? "border-white shadow-md scale-105" : "border-white"}
+`}
   >
     <Search className="h-5 w-5" />
   </button>
