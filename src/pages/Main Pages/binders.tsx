@@ -803,22 +803,18 @@ const androidScale =
     : mobileScale;
 
 return (
-  <div
-    className="min-h-screen bg-white flex flex-col items-center py-12"
-    style={{
-      touchAction: "pan-x",
-      overscrollBehavior: "none",
-    }}
-  >
+<div
+  className="min-h-screen bg-white flex flex-col items-center py-12"
+>
 
 <div className="relative mb-6 flex items-center justify-center gap-4 w-full">
 
-  <button
-    onClick={() => setShowCustomization(true)}
-    className="absolute right-20 top-1/2 -translate-y-1/2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold shadow transition hover:bg-gray-100"
-  >
-    Customization
-  </button>
+<button
+  onClick={() => setShowCustomization(true)}
+  className="hidden md:block absolute right-20 top-1/2 -translate-y-1/2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold shadow transition hover:bg-gray-100"
+>
+  Customization
+</button>
 
 <div className="md:hidden flex flex-col items-center w-20 flex-shrink-0">
   <img
@@ -925,36 +921,94 @@ setSearchResults(
 </div>
 
 {/* Binder Selection */}
-<div
-  className="mb-6 flex justify-center gap-1 md:gap-3 flex-nowrap overflow-x-auto md:overflow-visible px-2 md:px-0 md:pl-[260px]"
->
-        {binders.map((binder) => (
-          <button
-            key={binder}
-onClick={() => {
-  setSelectedBinder(binder);
 
-  if (binder === "CCG") {
-    setSelectedSetId(visibleCCGOrder[0] ?? "1");
-  } else {
-    setSelectedSetId(
-      binderSets[binder as keyof typeof binderSets][0].id
-    );
-  }
+{/* Desktop */}
+<div className="hidden md:flex mb-6 justify-center gap-3 pl-[260px]">
+  {binders.map((binder) => (
+    <button
+      key={binder}
+      onClick={() => {
+        setSelectedBinder(binder);
 
-  setSpread(1);
-}}
-            className={`flex-shrink-0 rounded-lg px-2 py-1 text-[11px] md:px-5 md:py-2 md:text-base font-semibold transition ${
-              selectedBinder === binder
-                ? "bg-purple-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            {binder}
-          </button>
-        ))}
-      </div>
+        if (binder === "CCG") {
+          setSelectedSetId(visibleCCGOrder[0] ?? "1");
+        } else {
+          setSelectedSetId(
+            binderSets[binder as keyof typeof binderSets][0].id
+          );
+        }
 
+        setSpread(1);
+      }}
+      className={`rounded-lg px-5 py-2 font-semibold transition ${
+        selectedBinder === binder
+          ? "bg-purple-600 text-white"
+          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+      }`}
+    >
+      {binder}
+    </button>
+  ))}
+</div>
+
+{/* Mobile */}
+<div className="md:hidden mb-6 flex flex-col items-center gap-2 px-3">
+  <div className="flex justify-center gap-2 flex-wrap">
+    {binders.slice(0, 5).map((binder) => (
+      <button
+        key={binder}
+        onClick={() => {
+          setSelectedBinder(binder);
+
+          if (binder === "CCG") {
+            setSelectedSetId(visibleCCGOrder[0] ?? "1");
+          } else {
+            setSelectedSetId(
+              binderSets[binder as keyof typeof binderSets][0].id
+            );
+          }
+
+          setSpread(1);
+        }}
+        className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+          selectedBinder === binder
+            ? "bg-purple-600 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
+      >
+        {binder}
+      </button>
+    ))}
+  </div>
+
+  <div className="flex justify-center gap-2">
+    {binders.slice(5).map((binder) => (
+      <button
+        key={binder}
+        onClick={() => {
+          setSelectedBinder(binder);
+
+          if (binder === "CCG") {
+            setSelectedSetId(visibleCCGOrder[0] ?? "1");
+          } else {
+            setSelectedSetId(
+              binderSets[binder as keyof typeof binderSets][0].id
+            );
+          }
+
+          setSpread(1);
+        }}
+        className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+          selectedBinder === binder
+            ? "bg-purple-600 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
+      >
+        {binder}
+      </button>
+    ))}
+  </div>
+</div>
 {/* Sidebar + Binder */}
 <div className="relative w-full">
 
@@ -1188,7 +1242,7 @@ transform:
   onTouchStart={(e) => {
     touchStartX.current = e.touches[0].clientX;
   }}
-onTouchEnd={(e) => {
+  onTouchEnd={(e) => {
     if (!isMobile) return;
 
     const delta =
@@ -1203,18 +1257,19 @@ onTouchEnd={(e) => {
     }
   }}
   style={{
+    touchAction: "pan-x",
     padding: "34px",
     borderRadius: "30px",
-      background:
-        "linear-gradient(145deg,#31115d 0%,#50208d 20%,#2b0f55 55%,#18052f 100%)",
-      boxShadow:
-        `
-        0 40px 70px rgba(0,0,0,.45),
-        inset 0 3px 2px rgba(255,255,255,.15),
-        inset 0 -8px 18px rgba(0,0,0,.45)
-        `,
-    }}
-  >
+    background:
+      "linear-gradient(145deg,#31115d 0%,#50208d 20%,#2b0f55 55%,#18052f 100%)",
+    boxShadow:
+      `
+      0 40px 70px rgba(0,0,0,.45),
+      inset 0 3px 2px rgba(255,255,255,.15),
+      inset 0 -8px 18px rgba(0,0,0,.45)
+      `,
+  }}
+>
     {/* Leather Border */}
 <div
   style={{
