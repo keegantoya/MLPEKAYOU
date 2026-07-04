@@ -213,7 +213,7 @@ const sets = [
   name: "TCG Promos",
   folder: "tcgpromos",
   prefix: "RR",
-  rarities: { PR: 6 }
+  rarities: { PR: 12 }
 },
 ];
 
@@ -538,7 +538,7 @@ cards = STRUCTURE.flatMap(({ prefix, count }) => {
 
 } else if (selectedSet.id === "tcgpromos") {
 
-  cards = Array.from({ length: 6 }, (_, i) => ({
+  cards = Array.from({ length: 12 }, (_, i) => ({
     rarity: "PR",
     number: i + 1,
     key: `RR${String(i + 1).padStart(2, "0")}`,
