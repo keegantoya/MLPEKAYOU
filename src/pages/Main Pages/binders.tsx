@@ -292,6 +292,11 @@ const searchRef = useRef<HTMLDivElement>(null);
 
     const touchStartX = useRef(0);
 
+    const isMobile = useMemo(
+  () => window.matchMedia("(max-width: 767px)").matches,
+  []
+);
+
 useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -778,6 +783,25 @@ style={{
   });
 };
 
+const binderWidth =
+  layout === "2x2"
+    ? 560
+    : layout === "4x3"
+    ? 900
+    : 980;
+
+const mobileScale =
+  layout === "2x2"
+    ? 0.48
+    : layout === "3x3"
+    ? 0.36
+    : 0.27;
+
+const androidScale =
+  /Android/i.test(navigator.userAgent)
+    ? mobileScale * 0.92
+    : mobileScale;
+
 return (
   <div
     className="min-h-screen bg-white flex flex-col items-center py-12"
@@ -1137,35 +1161,35 @@ disabled={hidden}
 >
 {/* Binder */}
 <div
-  style={{
-    width:
-      layout === "2x2"
-        ? "560px"
-        : layout === "4x3"
-        ? "900px"
-        : "980px",
-    display: "flex",
-    justifyContent: "center",
-    transform:
-  typeof window !== "undefined" && window.innerWidth < 768
-    ? layout === "2x2"
-      ? "scale(.48)"
-      : layout === "3x3"
-      ? "scale(.36)"
-      : "scale(.27)"
-    : layout === "4x3"
-    ? "translateX(-8px) scale(.68)"
-    : "scale(.76)",
-    transformOrigin: "top center",
-  }}
+style={{
+  width: "100%",
+  maxWidth:
+    layout === "2x2"
+      ? "560px"
+      : layout === "4x3"
+      ? "900px"
+      : "980px",
+
+  display: "flex",
+  justifyContent: "center",
+
+transform:
+  isMobile
+    ? `scale(${androidScale})`
+      : layout === "4x3"
+      ? "translateX(-8px) scale(.68)"
+      : "scale(.76)",
+
+  transformOrigin: "top center",
+}}
 >
 <div
   className="relative flex items-center gap-0"
   onTouchStart={(e) => {
     touchStartX.current = e.touches[0].clientX;
   }}
-  onTouchEnd={(e) => {
-    if (window.innerWidth >= 768) return;
+onTouchEnd={(e) => {
+    if (!isMobile) return;
 
     const delta =
       e.changedTouches[0].clientX - touchStartX.current;
@@ -1485,7 +1509,7 @@ style={{
     className="rounded-[28px] p-5 origin-top"
     style={{
       transform:
-        typeof window !== "undefined" && window.innerWidth < 768
+        isMobile
           ? "scale(0.68)"
           : "scale(1)",
       background:

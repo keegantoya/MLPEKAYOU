@@ -30,8 +30,9 @@ import FAQ from "@/pages/FAQ";
 import MyProgressTCG from "./pages/MyProgressTCG";
 import UserMenu from "@/pages/UserMenu";
 import Wishlist from "./pages/Wishlist";
-import MyCollectionBinder from "./pages/my-collection-binder";
 import LinksPage from "./pages/linkspage";
+/// PERSONAL PAGES
+
 /// CCG SETS
 import MoonOne from "./pages/Sets/Moon Editions/moon-one";
 import MoonTwo from "./pages/Sets/Moon Editions/moon-two";
@@ -51,8 +52,11 @@ import PromotionalCards from "./pages/Sets/Promos/promotional-cards";
 import LeapingPonies from "./pages/Sets/Others/leaping-ponies";
 /// OTHER PAGES
 import Explore from "./pages/Everypony/explore";
-
+import Binders from "./pages/Main Pages/binders";
 import Support from "./pages/Main Pages/support-mlpekayou";
+
+
+
 
 const queryClient = new QueryClient();
 
@@ -246,14 +250,6 @@ const AppRoutes = () => {
   }
 />
 <Route
-  path="/my-collection-binder"
-  element={
-    <RequireAuth>
-      <MyCollectionBinder />
-    </RequireAuth>
-  }
-/>
-<Route
   path="/inventory"
   element={
     <RequireAuth>
@@ -271,7 +267,13 @@ const AppRoutes = () => {
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="/inventory/:setId" element={<MyTradesSets />} />
       <Route path="/faq" element={<FAQ />} />
-            <Route path="/support-mlpekayou" element={<Support />} />
+
+
+
+
+
+                <Route path="/support-mlpekayou" element={<Support />} />
+                <Route path="/binders" element={<Binders />} />
       <Route
   path="/UserMenu"
   element={

@@ -1022,7 +1022,7 @@ useEffect(() => {
 </button>
 
 <button
-  onClick={() => navigate("/my-collection-binder")}
+  onClick={() => navigate("/binders")}
   className="w-full flex items-center justify-between px-4 py-4 text-left"
 >
   <span className="text-[15px] font-medium text-gray-900">
