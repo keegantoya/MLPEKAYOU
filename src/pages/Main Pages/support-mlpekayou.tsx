@@ -41,7 +41,7 @@ const products = [
   className="min-h-screen bg-zinc-950 text-white"
   style={{ fontFamily: '"Oxanium", sans-serif' }}
 >
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-10 pb-20 sm:pb-10">
         {/* Hero */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-10 mb-10">
           <h1 className="text-5xl font-bold text-yellow-200">

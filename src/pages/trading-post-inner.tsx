@@ -468,7 +468,7 @@ const filteredCards = cards.filter(c => {
                     {tradingProfiles[userId] && (
                       <div className="text-sm text-zinc-400 mb-4">
                         Discord:{" "}
-                        <span className="text-zinc-100 font-semibold">
+                        <span className="text-zinc-700 font-semibold">
                           {tradingProfiles[userId]}
                         </span>
                       </div>

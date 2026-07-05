@@ -63,8 +63,8 @@ const sets = [
 ];
 
 const releasedRoutes: Record<string, string> = {
-  "friendshipsbegin_bonus": "/friendshipsbegin",
-  "friendshipsbegin_decks": "/friendshipsbegin",
+  "friendshipsbegin_bonus": "/friendships-begin",
+  "friendshipsbegin_decks": "/friendships-begin",
   "FW": "/fantasy-wonderland",
   "tcgpromos": "/promotional-cards",
 };
