@@ -184,26 +184,79 @@ const toggleActive = async () => {
 };
 
   return (
-    <div className="min-h-screen bg-background pb-[100px] sm:pb-0">
+<div
+  className="min-h-screen pb-[100px] sm:pb-0"
+  style={{
+    background: `
+      radial-gradient(circle at top, rgba(255,255,255,.035), transparent 45%),
+      linear-gradient(180deg,#090909 0%,#111111 45%,#0a0a0a 100%)
+    `,
+  }}
+>
 
-      <div className="container py-8">
+<div className="max-w-7xl mx-auto px-5 py-8">
 
-        <div className="flex justify-center sm:justify-start mb-6">
-  <button
-    onClick={() => navigate("/inventory")}
-    className="group flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#d4af37]/50 bg-gradient-to-r from-[#2a163d]/95 to-[#4b2a6b]/95 hover:from-[#3a1f55] hover:to-[#5b357d] text-[#f6e27a] font-semibold shadow-lg shadow-purple-900/30 transition-all duration-200 hover:scale-105"
-  >
-    <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
-    Back to My Trades
-  </button>
-</div>
+  <div className="mb-10">
+    <button
+      onClick={() => navigate("/inventory")}
+      className="
+        group
+        inline-flex
+        items-center
+        gap-3
+        rounded-2xl
+        border
+        border-[#2f2f2f]
+        bg-[#181818]
+        px-5
+        py-3
+        text-white
+        transition-all
+        duration-200
+        hover:border-[#d4af37]
+        hover:bg-[#202020]
+        hover:-translate-y-0.5
+      "
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#393939] bg-[#232323]">
+        <ArrowLeft className="h-5 w-5" />
+      </div>
 
-        <h1 className="text-3xl sm:text-4xl font-black text-center mb-2 bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
-          Your Active Duplicates
-        </h1>
-        <p className="text-center text-sm text-muted-foreground mb-8">
-  Manage your active trades and purchase offers. Click on a card to mark it as complete, or if you are in the process of trading it, mark it as actively trading.
-</p>
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.28em] text-[#808080]">
+          Inventory
+        </div>
+        <div className="font-semibold">
+          Back to My Trades
+        </div>
+      </div>
+    </button>
+  </div>
+
+  <div className="relative overflow-hidden rounded-[34px] border border-[#2b2b2b] bg-gradient-to-b from-[#1d1d1d] via-[#171717] to-[#101010] shadow-[0_22px_60px_rgba(0,0,0,.65)] mb-10">
+
+    <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,.06),transparent_55%)] pointer-events-none" />
+
+    <div className="relative z-10 px-10 py-10 text-center">
+
+      <div className="text-[11px] uppercase tracking-[0.4em] text-[#7f7f7f] mb-3">
+        Trade Inventory
+      </div>
+
+      <h1 className="text-5xl font-black text-[#f5f5f5] tracking-tight">
+        Your Active Duplicates
+      </h1>
+
+      <div className="mx-auto mt-6 mb-7 h-[3px] w-28 rounded-full bg-gradient-to-r from-[#8a6b19] via-[#d4af37] to-[#8a6b19]" />
+
+      <p className="mx-auto max-w-3xl text-[15px] leading-7 text-[#b9b9b9]">
+        Manage your active trades and purchase offers. Click a card to mark it as completed or indicate that it is actively being traded.
+      </p>
+
+    </div>
+
+  </div>
 
         {loading && <div className="text-center">Loading...</div>}
 
@@ -396,35 +449,44 @@ card.card_key === "N-10" ? (
       transform: "translateX(-50%)",
     }}
   >
-
     <div
       ref={popupRef}
-      className="bg-background/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl w-52 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+      className="rounded-2xl overflow-hidden border border-[#2f2f2f] bg-[#181818] shadow-[0_20px_50px_rgba(0,0,0,.65)] w-60"
     >
-      
+
+      <div className="px-4 py-3 border-b border-[#2c2c2c] bg-[#202020]">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-[#808080]">
+          Card Options
+        </p>
+      </div>
+
       <button
         onClick={markCompleted}
-        className="w-full px-4 py-2 text-sm text-left hover:bg-green-500/10 transition flex items-center justify-between"
+        className="w-full px-5 py-4 text-left transition hover:bg-[#232323] flex items-center justify-between"
       >
-        <span>Mark as Completed</span>
-        <span className="text-green-500">✓</span>
+        <span className="font-medium text-[#f5f5f5]">
+          Mark as Completed
+        </span>
+        <span className="text-[#d4af37] text-lg">✓</span>
       </button>
 
-      <div className="h-px bg-white/10" />
+      <div className="h-px bg-[#2c2c2c]" />
 
       <button
         onClick={toggleActive}
-        className="w-full px-4 py-2 text-sm text-left hover:bg-purple-500/10 transition flex items-center justify-between"
+        className="w-full px-5 py-4 text-left transition hover:bg-[#232323] flex items-center justify-between"
       >
-        <span>Actively Trading</span>
-        <span className="text-purple-400">●</span>
+        <span className="font-medium text-[#f5f5f5]">
+          Actively Trading
+        </span>
+        <span className="text-[#d4af37] text-lg">●</span>
       </button>
 
-      <div className="h-px bg-white/10" />
+      <div className="h-px bg-[#2c2c2c]" />
 
       <button
         onClick={() => setSelectedCard(null)}
-        className="w-full px-4 py-2 text-sm text-left text-muted-foreground hover:bg-white/5 transition"
+        className="w-full px-5 py-4 text-left text-[#9d9d9d] transition hover:bg-[#232323]"
       >
         Cancel
       </button>

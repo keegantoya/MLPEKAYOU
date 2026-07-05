@@ -483,69 +483,152 @@ const rarityOrders: Record<string, string[]> = {
 };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container py-8">
-
-        <button
-  onClick={() => navigate("/inventory")}
-  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#d4af37]/40 shadow-sm text-[#5a3e84] font-medium hover:bg-[#faf6ea] transition mb-6"
+    <div
+  className="min-h-screen"
+  style={{
+    background: `
+      radial-gradient(circle at top, rgba(255,255,255,.035), transparent 45%),
+      linear-gradient(180deg,#090909 0%,#111111 45%,#0a0a0a 100%)
+    `,
+  }}
 >
-  ← Back to My Inventory
-</button>
-
-        <div className="relative overflow-hidden rounded-3xl border border-[#d4af37]/40 bg-gradient-to-br from-[#fffdf6] via-[#faf7ef] to-[#f4efe3] shadow-xl p-8 mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#5a3e84] drop-shadow-sm mb-3 text-center">
-  {set.name}
-</h1>
-          <p className="text-[#6b5b3f] text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-  {set.id === "friendshipsbegin"
-    ? "Starter Deck cards cannot be traded, but you can still edit your inventory. Only Bonus Pack cards may be marked for trade."
-    : "Cards can be marked for trade by tapping on them. Cards marked for trade will appear in the bottom of the inventory main page. On mobile, use the arrows to add or delete from inventory. On PC, click the existing number and type in the new value."
-  }
-</p>
-          <div className="flex justify-center gap-3 mt-4">
+      <div className="max-w-7xl mx-auto px-5 py-8">
+<div className="mb-10">
   <button
-    onClick={() => setListingMode("trade")}
-    className={`px-5 py-2 rounded-xl font-semibold transition ${
-      listingMode === "trade"
-        ? "bg-green-600 text-white"
-        : "bg-white border"
-    }`}
+    onClick={() => navigate("/inventory")}
+    className="
+group
+inline-flex
+items-center
+gap-3
+rounded-2xl
+border
+border-[#2f2f2f]
+bg-[#181818]
+px-5
+py-3
+text-white
+transition-all
+duration-200
+hover:border-[#d4af37]
+hover:bg-[#202020]
+hover:-translate-y-0.5
+"
   >
-    For Trade
-  </button>
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#393939] bg-[#232323]">
+      ←
+    </div>
 
-  <button
-  onClick={() => setEditMode(!editMode)}
-  className={`px-5 py-2 rounded-xl font-semibold transition ${
-    editMode
-      ? "bg-[#5a3e84] text-white"
-      : "bg-white border"
-  }`}
->
-  {editMode ? "Done Editing" : "Edit Inventory"}
-</button>
-
-  <button
-    onClick={() => setListingMode("purchase")}
-    className={`px-5 py-2 rounded-xl font-semibold transition ${
-      listingMode === "purchase"
-        ? "bg-blue-600 text-white"
-        : "bg-white border"
-    }`}
-  >
-    For Purchase
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.28em] text-[#808080]">
+        Collection
+      </div>
+      <div className="font-semibold">
+        Back to Inventory
+      </div>
+    </div>
   </button>
 </div>
-        </div>
+
+<div className="relative overflow-hidden rounded-[34px] border border-[#2b2b2b] bg-gradient-to-b from-[#1d1d1d] via-[#171717] to-[#101010] shadow-[0_22px_60px_rgba(0,0,0,.65)] mb-10">
+
+  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,.06),transparent_55%)] pointer-events-none" />
+
+  <div className="px-10 py-10 relative z-10">
+
+    <div className="text-center">
+
+      <div className="text-[11px] uppercase tracking-[0.4em] text-[#7f7f7f] mb-3">
+        Collection Inventory
+      </div>
+
+      <h1 className="text-5xl font-black tracking-tight text-[#f5f5f5]">
+        {set.name}
+      </h1>
+
+      <div className="mx-auto mt-6 mb-7 h-[3px] w-28 rounded-full bg-gradient-to-r from-[#8a6b19] via-[#d4af37] to-[#8a6b19]" />
+
+      <p className="mx-auto max-w-3xl text-[15px] leading-7 text-[#b9b9b9]">
+        {set.id === "friendshipsbegin"
+          ? "Starter Deck cards cannot be traded, but you can still edit your inventory. Only Bonus Pack cards may be marked for trade."
+          : "Tap cards to mark them for trade or purchase. Enable Edit Inventory to adjust your quantities."}
+      </p>
+
+      <div className="mt-9 flex flex-wrap justify-center gap-4">
+
+        <button
+          onClick={() => setListingMode("trade")}
+          className={`rounded-2xl border px-7 py-3 font-semibold transition-all ${
+            listingMode === "trade"
+              ? "border-[#d4af37] bg-[#d4af37] text-[#111111] shadow-[0_0_18px_rgba(212,175,55,.25)]"
+              : "border-[#3b3b3b] bg-[#232323] text-[#f5f5f5] hover:border-[#d4af37] hover:bg-[#2a2a2a]"
+          }`}
+        >
+          For Trade
+        </button>
+
+        <button
+          onClick={() => setEditMode(!editMode)}
+          className={`rounded-2xl border px-7 py-3 font-semibold transition-all ${
+            editMode
+              ? "border-[#d4af37] bg-[#d4af37] text-[#111111] shadow-[0_0_18px_rgba(212,175,55,.25)]"
+              : "border-[#3b3b3b] bg-[#232323] text-[#f5f5f5] hover:border-[#d4af37] hover:bg-[#2a2a2a]"
+          }`}
+        >
+          {editMode ? "Done Editing" : "Edit Inventory"}
+        </button>
+
+        <button
+          onClick={() => setListingMode("purchase")}
+          className={`rounded-2xl border px-7 py-3 font-semibold transition-all ${
+            listingMode === "purchase"
+              ? "border-[#d4af37] bg-[#d4af37] text-[#111111] shadow-[0_0_18px_rgba(212,175,55,.25)]"
+              : "border-[#3b3b3b] bg-[#232323] text-[#f5f5f5] hover:border-[#d4af37] hover:bg-[#2a2a2a]"
+          }`}
+        >
+          For Purchase
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
         {(set.id === "friendshipsbegin"
   ? ownedBonusCards.length === 0 && !hasStarterDeck
   : ownedBonusCards.length === 0
 ) ? (
-          <div className="text-center text-gray-500">
-            You don’t own any cards in this set.
-          </div>
+        <div
+  className="
+    rounded-3xl
+    border
+    border-[#2c2c2c]
+    bg-[#181818]
+    shadow-[0_18px_50px_rgba(0,0,0,.55)]
+    px-8
+    py-16
+    text-center
+  "
+>
+  <div className="text-[11px] uppercase tracking-[0.35em] text-[#7f7f7f] mb-3">
+    Inventory
+  </div>
+
+  <h2 className="text-3xl font-black text-[#f5f5f5]">
+    No Cards Found
+  </h2>
+
+  <div className="mx-auto mt-5 mb-6 h-[2px] w-20 rounded-full bg-[#d4af37]" />
+
+  <p className="mx-auto max-w-xl text-[15px] leading-7 text-[#b3b3b3]">
+    You don't currently own any cards in this set. Add cards to your collection
+    first, then they'll appear here for trading or purchase listings.
+  </p>
+</div>
         ) : (
             <>
 
@@ -737,9 +820,21 @@ const indexB = currentOrder.indexOf(b);
             className="relative w-full flex items-center justify-center gap-3 mb-3 group"
           >
 
-            <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
+            <div className="h-px bg-[#2f2f2f] flex-1 max-w-[120px]" />
 
-            <span className="px-4 py-1 rounded-full bg-[#fff8e1] border border-[#d4af37]/30 text-[10px] sm:text-xs tracking-[0.25em] font-bold text-[#8b6a2b] uppercase shadow-sm">
+            <span className="
+px-4
+py-1.5
+rounded-full
+bg-[#202020]
+border
+border-[#3a3a3a]
+text-[#d4af37]
+text-[11px]
+tracking-[0.22em]
+font-bold
+uppercase
+">
   {rarity === "SHINING ZR" || rarity === "SZR"
     ? "◇ZR"
     : rarity === "SN"
@@ -749,7 +844,7 @@ const indexB = currentOrder.indexOf(b);
     : rarity}
 </span>
 
-            <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
+            <div className="h-px bg-[#2f2f2f] flex-1 max-w-[120px]" />
 
             <div className="absolute right-0 text-[#8b6a2b] text-sm">
               {isCollapsed ? "+" : "−"}

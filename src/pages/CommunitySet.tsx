@@ -504,52 +504,49 @@ const getAvatar = (avatar?: string, username?: string) => {
   if (!set) return null;
 
 return (
-  <div
-    className="min-h-screen"
-    style={{
-      backgroundColor: "#0d0816",
-      backgroundImage: `
-        radial-gradient(circle at 20% 15%, rgba(255,119,0,0.12) 0%, transparent 30%),
-        radial-gradient(circle at 80% 20%, rgba(139,92,246,0.12) 0%, transparent 30%),
-        radial-gradient(circle at 25% 80%, rgba(255,119,0,0.08) 0%, transparent 35%),
-        radial-gradient(circle at 75% 75%, rgba(168,85,247,0.08) 0%, transparent 35%),
-        linear-gradient(
-          180deg,
-          #12091d 0%,
-          #0d0816 35%,
-          #090611 70%,
-          #05030a 100%
-        )
-      `,
-    }}
+<div
+  className="min-h-screen font-['Oxanium']"
+  style={{
+    background: `
+      radial-gradient(circle at 15% 10%, rgba(255,215,0,0.05), transparent 30%),
+      radial-gradient(circle at 85% 80%, rgba(255,215,0,0.04), transparent 35%),
+      linear-gradient(
+        180deg,
+        #1b1b1b 0%,
+        #141414 40%,
+        #0d0d0d 100%
+      )
+    `,
+  }}
 >
       <div className="container max-w-6xl px-4 sm:px-6 py-6 sm:py-8 pb-24 md:pb-8">
   {/* Back Button */}
-  <button
-    onClick={() => navigate("/community")}
-    className="
-      inline-flex items-center gap-2
-      text-sm font-medium text-orange-300
-      hover:text-orange-200
-      mb-4 sm:mb-6
-      transition-colors
-    "
-  >
-    <ArrowLeft className="h-4 w-4" />
-    Back to Community
-  </button>
+  {/* Back Button */}
+<button
+  onClick={() => navigate("/community")}
+  className="
+    inline-flex items-center gap-2
+    text-sm font-semibold
+    text-[#d7b04c]
+    hover:text-[#f4d47c]
+    transition-colors
+    mb-6
+  "
+>
+  <ArrowLeft className="h-4 w-4" />
+  Back to Community
+</button>
 
-  {/* Page Header */}
-  <div className="mb-6 sm:mb-8">
-    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-orange-200 leading-tight">
-      {set.name} Leaderboard
-    </h1>
+<div className="mb-10">
+  <h1 className="text-4xl font-black tracking-wide text-[#f5e4b5]">
+    {set.name}
+  </h1>
 
-    <p className="mt-2 text-sm sm:text-base text-orange-300/80 max-w-3xl leading-relaxed">
-      This page shows the top ten closest collectors from completion,
-      along with everyone who has already finished the set in completion order from first to most recent.
-    </p>
-  </div>
+  <p className="mt-3 max-w-3xl text-[#b9b9b9] leading-relaxed">
+    View the collectors closest to completing this set along with everyone who has
+    already completed it in completion order.
+  </p>
+</div>
 
   {/* Layout */}
 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -557,31 +554,37 @@ return (
   <div
     className="
   xl:col-span-1
-      rounded-3xl
-      bg-black/40 backdrop-blur-xl
-border border-purple-900/60
-shadow-[0_12px_40px_rgba(0,0,0,0.5)]
+rounded-3xl
+bg-gradient-to-b
+from-[#2d2d2d]
+via-[#1b1b1b]
+to-[#111111]
+border
+border-[#c79b32]
+shadow-[0_18px_40px_rgba(0,0,0,.45)]
       p-5 sm:p-6
     "
   >
-    <h2 className="text-xl font-bold text-orange-200 mb-5">
-      Completed Sets
+    <h2 className="text-xl font-black tracking-wide text-[#f4d47c] mb-5">
+      Completed
     </h2>
 
     <div className="space-y-3">
       {(showAllFinishers ? completed : completed.slice(0, 3)).map(
         (user, index) => (
-          <div
-            key={index}
-            className="
-              flex items-center gap-3
-              rounded-2xl
-              bg-black/30
-border border-purple-900/50
-              px-3 py-3 sm:px-4
-              shadow-sm
-            "
-          >
+<div
+  key={index}
+  className="
+    flex items-center gap-3
+    rounded-2xl
+    bg-[#181818]
+    border border-[#3d3d3d]
+    hover:border-[#c79b32]
+    transition-colors
+    px-3 py-3 sm:px-4
+    shadow-sm
+  "
+>
             <span className="text-2xl shrink-0">
               {medals[index] || "🏅"}
             </span>
@@ -591,7 +594,7 @@ border border-purple-900/50
               className="
                 w-10 h-10 sm:w-11 sm:h-11
                 rounded-full
-                border-2 border-white
+                border-[3px] border-[#d7b04c]
                 shadow
                 shrink-0
               "
@@ -641,17 +644,8 @@ text-orange-200
 
       {completed.length === 0 && (
   <div className="flex flex-col items-center py-6">
-    <img
-      src={spider}
-      alt="Spider"
-      className="w-14 h-auto animate-[spiderSwing_4s_ease-in-out_infinite]"
-      style={{
-        transformOrigin: "top center",
-      }}
-    />
-
-    <div className="mt-3 text-sm text-purple-300/70 italic text-center">
-      No one has completed this set yet...
+    <div className="mt-3 text-sm text-[#f4d47c] italic text-center">
+      Nopony has completed this set yet...
     </div>
   </div>
 )}
@@ -662,14 +656,18 @@ text-orange-200
   <div
     className="
   xl:col-span-2
-      rounded-3xl
-      bg-black/40 backdrop-blur-xl
-border border-purple-900/60
-shadow-[0_12px_40px_rgba(0,0,0,0.5)]
+rounded-3xl
+bg-gradient-to-b
+from-[#2d2d2d]
+via-[#1b1b1b]
+to-[#111111]
+border
+border-[#c79b32]
+shadow-[0_18px_40px_rgba(0,0,0,.45)]
       p-5 sm:p-6
     "
   >
-    <h2 className="text-xl font-bold text-orange-200 mb-5">
+    <h2 className="text-xl font-black tracking-wide text-[#f4d47c] mb-5">
       Still Collecting
     </h2>
 
@@ -678,10 +676,12 @@ shadow-[0_12px_40px_rgba(0,0,0,0.5)]
         <div
           key={index}
           className="
-            flex items-center justify-between gap-3
-            rounded-2xl
-            bg-black/30
-border border-purple-900/50
+flex items-center
+rounded-2xl
+bg-[#181818]
+border border-[#3d3d3d]
+hover:border-[#c79b32]
+transition-colors
             px-3 py-3 sm:px-4
             shadow-sm
           "
@@ -702,7 +702,7 @@ border border-purple-900/50
               className="
                 w-10 h-10 sm:w-11 sm:h-11
                 rounded-full
-                border-2 border-white
+                border-[3px] border-[#d7b04c]
                 shadow
                 shrink-0
               "

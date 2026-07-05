@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-const logo = "/website-assets/mlpekayouwiki.webp";
+const logo = "/website-assets/mlpekayouwiki3.webp";
 
 export default function AccountConfirmation() {
   const navigate = useNavigate();

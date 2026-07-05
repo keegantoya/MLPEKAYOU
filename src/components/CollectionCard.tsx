@@ -105,26 +105,28 @@ const handleClick = async (
   <Link to={getLink()}>
     <div className="transition cursor-pointer">
 
-      <div className="text-center text-sm font-semibold text-[#3b2a1a] mb-1 leading-tight">
+<div className="mb-2 text-center leading-tight">
   <div
-  className="font-semibold tracking-wide text-[#e8e2ff]"
-  style={{
-    textShadow: "0 0 6px rgba(220, 210, 255, 0.45)",
-  }}
->
-  {title}
-</div>
-
-{setName && (
-  <div
-    className="text-xs font-semibold tracking-wide text-[#e8e2ff]"
+    className="font-['Oxanium'] text-sm font-bold tracking-[0.04em] text-[#f5e6a8]"
     style={{
-      textShadow: "0 0 6px rgba(220, 210, 255, 0.45)",
+      textShadow:
+        "0 2px 10px rgba(0,0,0,.35)",
     }}
   >
-    {setName}
+    {title}
   </div>
-)}
+
+  {setName && (
+    <div
+      className="font-['Oxanium'] text-xs font-semibold tracking-[0.08em] uppercase text-[#d4af37]"
+      style={{
+        textShadow:
+          "0 2px 8px rgba(0,0,0,.35)",
+      }}
+    >
+      {setName}
+    </div>
+  )}
 </div>
       <div className="relative rounded-xl overflow-visible">
         <img

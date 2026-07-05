@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
-const logo = "/website-assets/mlpekayouwiki.webp";
+const logo = "/website-assets/mlpekayouwiki3.webp";
 import { Button } from "@/components/ui/button";
 
 export default function PasswordReset() {

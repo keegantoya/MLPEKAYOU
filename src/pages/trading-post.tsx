@@ -495,7 +495,7 @@ const completionPercentage =
     <h1
       className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-[0.9]"
       style={{
-        fontFamily: "Cinzel, serif",
+        fontFamily: "Oxanium, sans-serif",
         color: "#F8E7A3",
         textShadow: "0 3px 12px rgba(0,0,0,0.18)",
       }}
@@ -505,7 +505,7 @@ const completionPercentage =
       POST
     </h1>
 
-    <p className="mt-3 text-white/95 text-sm sm:text-base leading-relaxed max-w-sm mx-auto lg:mx-0">
+<p className="mt-3 text-white/95 text-xs sm:text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
       All users who appear on the trading post must have their Discord
       username set on their profile so others can find you off-app.
     </p>

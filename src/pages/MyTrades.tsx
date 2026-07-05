@@ -10,7 +10,8 @@ export default function MyTrades() {
   const [sortBy, setSortBy] = useState("set");
 
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-  const [tradeSets, setTradeSets] = useState<string[]>([]);
+const [ownedSets, setOwnedSets] = useState<string[]>([]);
+const [tradeSets, setTradeSets] = useState<string[]>([]);
 
   useEffect(() => {
   const loadData = async (userOverride?: any) => {
@@ -35,16 +36,31 @@ export default function MyTrades() {
 
     setHiddenSets(profile?.iso_hidden_sets || []);
 
-    const { data: trades } = await supabase
+const { data: progress } = await supabase
+  .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
+
+const owned =
+  (progress || [])
+    .filter((row) => {
+      const cards = row.progress || {};
+      return Object.values(cards).some(Boolean);
+    })
+    .map((row) => String(row.set_id).trim());
+
+setOwnedSets([...new Set(owned)]);
+
+const { data: trades } = await supabase
   .from("for_trade")
   .select("set_id")
   .eq("user_id", user.id);
 
-    const uniqueSets = [
-      ...new Set((trades || []).map((t) => String(t.set_id).trim()))
-    ];
+const activeTrades = [
+  ...new Set((trades || []).map((t) => String(t.set_id).trim()))
+];
 
-    setTradeSets(uniqueSets);
+setTradeSets(activeTrades);
   };
 
   loadData();
@@ -168,109 +184,112 @@ export default function MyTrades() {
 return (
   <>
 
-    <div
-      className="min-h-screen"
-      style={{
-       backgroundColor: "#0b0613",
-backgroundImage: `
-  radial-gradient(circle at 20% 20%, rgba(120, 70, 180, 0.12) 0%, transparent 35%),
-  radial-gradient(circle at 80% 15%, rgba(80, 40, 140, 0.12) 0%, transparent 30%),
-  radial-gradient(circle at 25% 75%, rgba(100, 60, 160, 0.10) 0%, transparent 35%),
-  linear-gradient(
-    180deg,
-    #09050f 0%,
-    #12071d 35%,
-    #1a0d2b 65%,
-    #0d0717 100%
-  )
-`,
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+<div
+  className="min-h-screen"
+  style={{
+    backgroundColor: "#090909",
+    backgroundImage: `
+      radial-gradient(circle at top, rgba(212,175,55,.06) 0%, transparent 42%),
+      radial-gradient(circle at 15% 30%, rgba(255,255,255,.025) 0%, transparent 26%),
+      radial-gradient(circle at 85% 18%, rgba(255,255,255,.02) 0%, transparent 22%),
+      linear-gradient(
+        180deg,
+        #090909 0%,
+        #111111 38%,
+        #151515 68%,
+        #0b0b0b 100%
+      )
+    `,
+  }}
+>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-28 sm:pb-6">
 
         {/* PAGE HEADER */}
         <div className="text-center mb-6">
-          <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-none"
-            style={{
-              fontFamily: "Cinzel, serif",
-              color: "#d8c7ff",
-              textShadow:
-              "0 0 12px rgba(150,100,255,0.5)",
-            }}
-          >
-            My Inventory
-          </h1>
+<h1
+  className="text-4xl sm:text-5xl lg:text-6xl font-black leading-none"
+  style={{
+    fontFamily: "Oxanium",
+    background:
+      "linear-gradient(180deg,#fff7c2 0%,#f8e38c 22%,#e7bf45 58%,#c88a0a 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    textShadow: "0 4px 18px rgba(0,0,0,.35)",
+  }}
+>
+  My Inventory
+</h1>
         </div>
 
         {/* INVENTORY PANEL */}
-        <div
-          className="
-            rounded-[2rem]
-            border border-[#3b2457]
-bg-[#140a22]/90
-shadow-[0_10px_40px_rgba(0,0,0,0.45)]
-            p-4 sm:p-6
-          "
-        >
+<div
+  className="
+    rounded-[2rem]
+    border border-[#2d2d2d]
+    bg-[#181818]
+    shadow-[0_18px_50px_rgba(0,0,0,.55)]
+    p-4 sm:p-6
+  "
+>
 
-          {/* FILTER / SORT BAR */}
+{/* FILTER TABS */}
 <div
   className="
     flex flex-col lg:flex-row lg:items-center lg:justify-between
     gap-4
     mb-5
-    pb-4
-    border-b border-[#35204d]
+    pb-5
+    border-b border-[#2d2d2d]
   "
 >
-  {/* Filter Tabs */}
-{/* Filter Tabs */}
-<div className="flex flex-wrap items-center gap-2">
-  {[
-    { id: "all", label: "All Cards" },
-    { id: "moon", label: "Moon Edition" },
-    { id: "star", label: "Star Edition" },
-    { id: "fun", label: "Fun Moments Edition" },
-    { id: "rainbow", label: "Rainbow Edition" },
-    { id: "promos", label: "Promotional" },
-    { id: "tcg", label: "TCG Sets" },
-  ].map((tab) => (
-    <button
-      key={tab.id}
-      onClick={() => setActiveFilter(tab.id)}
-      className={`
-        px-4 py-2
-        rounded-full
-        text-sm font-semibold
-        transition-all duration-200
-        ${
+  <div className="flex flex-wrap items-center gap-2">
+    {[
+      { id: "all", label: "All Cards" },
+      { id: "moon", label: "Moon Edition" },
+      { id: "star", label: "Star Edition" },
+      { id: "fun", label: "Fun Moments Edition" },
+      { id: "rainbow", label: "Rainbow Edition" },
+      { id: "promos", label: "Promotional" },
+      { id: "tcg", label: "TCG Sets" },
+    ].map((tab) => (
+      <button
+        key={tab.id}
+        onClick={() => setActiveFilter(tab.id)}
+        className={`
+          px-5 py-2.5
+          rounded-full
+          text-sm font-semibold
+          border
+          transition-all duration-200
+          ${
+            activeFilter === tab.id
+              ? "border-[#d4af37] text-[#1b1b1b] shadow-lg"
+              : "border-[#3a3a3a] bg-[#232323] text-[#f5e6a8] hover:bg-[#2d2d2d] hover:border-[#d4af37]"
+          }
+        `}
+        style={
           activeFilter === tab.id
-            ? "text-white shadow-md"
-            : "text-[#d8c7ff] bg-[#1a1028] border border-[#3b2457] hover:bg-[#241437]"
+            ? {
+                background:
+                  "linear-gradient(180deg,#f8e38c 0%,#e7bf45 55%,#c88a0a 100%)",
+              }
+            : {}
         }
-      `}
-      style={
-        activeFilter === tab.id
-          ? {
-              background:
-  "linear-gradient(135deg, #5f2d91 0%, #3c1b61 100%)",
-            }
-          : {}
-      }
-    >
-      {tab.label}
-    </button>
-  ))}
-</div>
+      >
+        {tab.label}
+      </button>
+    ))}
+  </div>
 </div>
           {/* COLLECTIONS */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 justify-items-center">
             {collections
   .filter((col) => {
-    // Hide any sets the user has chosen to hide
-    if (hiddenSets.includes(col.id)) return false;
+// Hide any sets the user has chosen to hide
+if (hiddenSets.includes(col.id)) return false;
 
+// Only show sets that have cards in them
+if (!ownedSets.includes(String(col.id).trim())) return false;
 // Apply filter tabs
 if (activeFilter === "moon") {
   return col.id === "1" || col.id === "2" || col.id === "3";
@@ -341,33 +360,33 @@ onClick={() => {
           </div>
         </div>
 
-        {/* MY TRADES */}
-        <div className="mt-8">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="flex-1 max-w-[200px] h-px bg-[#3b2457]" />
-            <h2
-              className="text-2xl sm:text-3xl font-bold"
-              style={{
-                fontFamily: "Cinzel, serif",
-                color: "#d8c7ff",
-textShadow:
-  "0 0 10px rgba(150,100,255,0.45)",
-              }}
-            >
-              My Trades
-            </h2>
-            <div className="flex-1 max-w-[200px] h-px bg-[#3b2457]" />
-          </div>
+{/* MY TRADES */}
+<div className="mt-10">
+  <div className="flex items-center justify-center gap-5 mb-6">
+    <div className="flex-1 max-w-[220px] h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
 
-          <div
-            className="
-              rounded-[2rem]
-              border border-[#3b2457]
-bg-[#140a22]/90
-shadow-[0_10px_40px_rgba(0,0,0,0.45)]
-              p-4 sm:p-6
-            "
-          >
+    <h2
+      className="text-3xl sm:text-4xl font-black text-[#f5e6a8]"
+      style={{
+        fontFamily: "Oxanium",
+        textShadow: "0 3px 14px rgba(0,0,0,.35)",
+      }}
+    >
+      My Trades
+    </h2>
+
+    <div className="flex-1 max-w-[220px] h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+  </div>
+
+<div
+  className="
+    rounded-[2rem]
+    border border-[#2d2d2d]
+    bg-[#181818]
+    shadow-[0_18px_50px_rgba(0,0,0,.55)]
+    p-4 sm:p-6
+  "
+>
             {tradeSets.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
@@ -376,50 +395,50 @@ shadow-[0_10px_40px_rgba(0,0,0,0.45)]
                       tradeSets.includes(String(col.id).trim())
 )
 .map((col) => (
-  <button
-    key={col.id}
-    onClick={() => navigate(`/my-trades/view/${col.id}`)}
+<button
+  key={col.id}
+  onClick={() => navigate(`/my-trades/view/${col.id}`)}
+  className="
+    flex items-center gap-4
+    w-full
+    rounded-2xl
+    border border-[#333333]
+    bg-[#202020]
+    px-5 py-4
+    text-left
+    transition-all duration-200
+    hover:border-[#d4af37]
+    hover:bg-[#282828]
+    hover:-translate-y-1
+    hover:shadow-[0_12px_28px_rgba(0,0,0,.45)]
+  "
+>
+  <img
+    src={col.imageUrl}
+    alt={col.title}
     className="
-      px-4 py-3
+      w-11 h-11
       rounded-full
-      text-left
-      text-white
-      shadow-[0_6px_18px_rgba(91,54,149,0.15)]
-      flex items-center gap-3
+      object-cover
+      border-2 border-[#d4af37]
+      flex-shrink-0
     "
-    style={{
-      background:
-  "linear-gradient(135deg, #5f2d91 0%, #3c1b61 100%)",
-    }}
-  >
-    {/* Circular Thumbnail */}
-    <img
-      src={col.imageUrl}
-      alt={col.title}
-      className="
-        w-10 h-10
-        rounded-full
-        object-cover
-        border-2 border-white/40
-        flex-shrink-0
-      "
-    />
+  />
 
-    {/* Text */}
-    <div className="flex-1 min-w-0">
-      <div className="font-semibold text-sm leading-tight">
-        {col.setName
-          ? ["friendshipsbegin", "FW", "9"].includes(col.id)
-            ? `${col.title} ${col.setName}`
-            : `${col.title} (${col.setName})`
-          : col.title}
-      </div>
+<div className="flex-1 min-w-0">
+  <div className="text-sm font-bold leading-tight text-[#f5e6a8]">
+    {col.setName
+      ? ["friendshipsbegin", "FW", "9"].includes(col.id)
+        ? `${col.title} ${col.setName}`
+        : `${col.title} (${col.setName})`
+      : col.title}
+  </div>
 
-      <div className="text-xs text-white/80 mt-1">
-        View trades →
-      </div>
-    </div>
-  </button>
+  <div className="mt-1 text-xs font-medium text-[#d4af37]">
+    View trades →
+  </div>
+</div>
+</button>
 ))}
                 </div>
               </>

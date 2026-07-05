@@ -195,7 +195,7 @@ useEffect(() => {
 }, [flipped, loaded, lastSavedProgress]);
 
   return (
-    <div className="min-h-screen bg-[#f8f8f8]">
+    <div className="min-h-screen bg-[#e3e3e3]">
       <div className="mx-auto max-w-[1800px] px-6 py-8">
 
         <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-8">
@@ -205,18 +205,18 @@ useEffect(() => {
   className="sidebar-scroll xl:sticky xl:top-[84px] self-start max-h-[calc(100vh-100px)] overflow-y-auto pr-2"
 >
 
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-zinc-800 border border-zinc-600 rounded-xl shadow-lg overflow-hidden text-zinc-100">
 
              {/* Set Header */}
-<div className="p-6 border-b border-gray-200">
+<div className="p-6 border-b border-zinc-700">
 
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
                   Eternal Friendship
                 </p>
 
                 <button
   onClick={() => navigate("/collections")}
-  className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-black transition-colors"
+  className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
 >
   ← Back to Collections
 </button>
@@ -225,7 +225,7 @@ useEffect(() => {
                   Star Edition
                 </h1>
 
-                <p className="mt-2 text-lg text-gray-500">
+                <p className="mt-2 text-lg text-zinc-400">
   Series 1
 </p>
 
@@ -240,7 +240,7 @@ useEffect(() => {
               {/* Rarities */}
               <div className="p-6">
 
-                <div className="flex justify-between mb-4 text-gray-500 text-sm font-semibold uppercase">
+                <div className="flex justify-between mb-4 text-zinc-400 text-sm font-semibold uppercase">
                   <span>8 Rarity Tiers</span>
 <span>105 Cards</span>
                 </div>
@@ -288,19 +288,19 @@ useEffect(() => {
               </div>
 
               {/* View Mode */}
-<div className="border-t border-gray-200 p-6">
+<div className="border-t border-zinc-700 p-6">
   <button
     onClick={() => setViewMode(!viewMode)}
-    className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
-      viewMode
-        ? "bg-yellow-500 text-white hover:bg-yellow-600"
-        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-    }`}
+className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
+  viewMode
+    ? "bg-yellow-500 text-white hover:bg-yellow-600"
+    : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
+}`}
   >
     {viewMode ? "View Mode: ON" : "View Mode: OFF"}
   </button>
 
-  <p className="mt-2 text-xs text-gray-500">
+  <p className="mt-2 text-xs text-zinc-400">
     {viewMode
       ? "Click a card to view the front and back without marking it as owned."
       : "Click cards to mark them as owned."}
@@ -308,7 +308,7 @@ useEffect(() => {
 </div>
 
               {/* Product Info */}
-              <div className="border-t border-gray-200 p-6">
+              <div className="border-t border-zinc-700 p-6">
 
                 <h2 className="text-lg font-bold uppercase mb-5">
                   Product Information
@@ -317,7 +317,7 @@ useEffect(() => {
                 <div className="space-y-5">
 
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-500">
+                    <p className="text-xs uppercase tracking-wider text-zinc-400">
                       Product Name
                     </p>
 
@@ -327,7 +327,7 @@ useEffect(() => {
                   </div>
 
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-500">
+                    <p className="text-xs uppercase tracking-wider text-zinc-400">
                       Release Date
                     </p>
 
@@ -337,7 +337,7 @@ useEffect(() => {
                   </div>
 
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-500">
+                    <p className="text-xs uppercase tracking-wider text-zinc-400">
                       Pull Rates
                     </p>
 
@@ -377,7 +377,7 @@ useEffect(() => {
 
         <h2 className="text-5xl font-black leading-none">
 {rarity === "SAR" ? "◇AR" : rarity}
-  <span className="ml-3 text-3xl font-light text-gray-500">
+  <span className="ml-3 text-3xl font-light text-zinc-400">
     {rarityNames[rarity]}
   </span>
 </h2>

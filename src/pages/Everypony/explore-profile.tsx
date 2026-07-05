@@ -637,16 +637,24 @@ const [quickViewCard, setQuickViewCard] = useState<any>(null);
     );
     
       // Load owned card count
-      const { data: collection } = await supabase
-        .from("collection_progress_raw")
-        .select("progress")
-        .eq("user_id", user.id);
-    
-      let owned = 0;
-    
-      (collection || []).forEach((row: any) => {
-        owned += Object.values(row.progress || {}).filter(Boolean).length;
-      });
+const { data: collection } = await supabase
+  .from("collection_progress_raw")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
+
+let owned = 0;
+
+(collection || []).forEach((row: any) => {
+  if (row.set_id === "OTHERMERCH") {
+    return;
+  }
+
+  owned += Object.values(row.progress || {}).filter(
+    (value: any) =>
+      value === true ||
+      (typeof value === "object" && value?.owned === true)
+  ).length;
+});
     
       // Load collection progress for completed sets
     
@@ -896,10 +904,37 @@ const allTradeCards = [
   })),
 ];
 
+const TRADE_SET_TABS = [
+  { id: "ALL", name: "All" },
+  ...Array.from(
+    new Set(allTradeCards.map((card) => String(card.set_id)))
+  ).map((setId) => ({
+    id: setId,
+    name: getSetName(setId),
+  })),
+];
+
+const WISHLIST_SET_TABS = [
+  { id: "ALL", name: "All" },
+  ...Array.from(
+    new Set(userWishlistCards.map((card) => String(card.set_id)))
+  ).map((setId) => ({
+    id: setId,
+    name: getSetName(setId),
+  })),
+];
+
 const filteredTradeCards =
   selectedSet === "ALL"
     ? allTradeCards
     : allTradeCards.filter(
+        (card) => String(card.set_id) === selectedSet
+      );
+
+      const filteredWishlistCards =
+  selectedSet === "ALL"
+    ? userWishlistCards
+    : userWishlistCards.filter(
         (card) => String(card.set_id) === selectedSet
       );
 
@@ -914,12 +949,9 @@ const filteredTradeCards =
             ← Back to Explore
           </button>
 
-          <h1 className="text-4xl font-bold text-slate-900">
-            {user?.username}'s Profile
-          </h1>
 
           <div className="mt-3 flex items-center gap-2">
-            <span className="text-xl font-semibold text-slate-800">
+            <span className="text-xl font-semibold text-slate-400">
               {user?.username}
             </span>
 
@@ -934,7 +966,7 @@ const filteredTradeCards =
           </div>
 
           <p className="text-slate-500 mt-2 text-lg">
-            {tradingProfile?.discord_username || "No Discord username"}
+            Discord: {tradingProfile?.discord_username || "No Discord username"}
           </p>
         </div>
 
@@ -982,7 +1014,7 @@ const filteredTradeCards =
 <div className="flex flex-wrap gap-3 mb-6">
 <button
   onClick={() => setSelectedSection("iso")}
-  className={`group relative overflow-hidden rounded-xl px-5 py-2 font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
+  className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
 ${
   selectedSection === "iso"
     ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
@@ -993,8 +1025,11 @@ ${
   </button>
 
   <button
-    onClick={() => setSelectedSection("trade")}
-className={`group relative overflow-hidden rounded-xl px-5 py-2 font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
+    onClick={() => {
+  setSelectedSection("trade");
+  setSelectedSet("ALL");
+}}
+className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
 ${
   selectedSection === "trade"
     ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
@@ -1006,7 +1041,7 @@ ${
 
   <button
     onClick={() => setSelectedSection("wishlist")}
-className={`group relative overflow-hidden rounded-xl px-5 py-2 font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
+className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
 ${
   selectedSection === "wishlist"
     ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
@@ -1029,7 +1064,7 @@ ${
           <button
             key={set.id}
             onClick={() => setSelectedSet(set.id)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+           className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
               selectedSet === set.id
                 ? "bg-yellow-400 text-slate-900"
                 : "bg-slate-200 text-slate-700 hover:bg-slate-300"
@@ -1045,12 +1080,12 @@ ${
           This collector isn't looking for any cards.
         </p>
       ) : (
-        <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
           {filteredIsoCards.map((card) => (
 <div
   key={card.id}
   onClick={() => setQuickViewCard(card)}
-  className={`self-start cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
+  className={`self-start cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
     isMoon3DoubleWide(card) ? "col-span-2" : ""
   } ${
     !isMoon3DoubleWide(card) &&
@@ -1079,29 +1114,58 @@ ${
     </>
   )
 ) : selectedSection === "trade" ? (
-  <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
-    {filteredTradeCards.map((card) => (
+  <>
+    <div className="flex flex-wrap gap-2 mb-6">
+      {TRADE_SET_TABS.map((set) => (
+        <button
+          key={set.id}
+          onClick={() => setSelectedSet(set.id)}
+          className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
+            selectedSet === set.id
+              ? "bg-yellow-400 text-slate-900"
+              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+          }`}
+        >
+          {set.name}
+        </button>
+      ))}
+    </div>
+
+    {filteredTradeCards.length === 0 ? (
+      <p className="text-slate-500">
+        This collector has no cards listed for trade or sale.
+      </p>
+    ) : (
+      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
+        {filteredTradeCards.map((card) => (
 <div
   key={`${card.set_id}-${card.card_key}`}
   onClick={() => setQuickViewCard(card)}
-  className={`cursor-pointer rounded-xl border bg-slate-50 p-3 text-center transition hover:scale-[1.02] ${
-    isMoon3DoubleWide(card) ? "col-span-2" : ""
-  }`}
+className={`
+  relative
+  overflow-hidden
+  rounded-lg sm:rounded-2xl
+  border border-slate-200
+  bg-white
+  shadow-sm
+  transition
+  hover:-translate-y-1
+  hover:shadow-xl
+  ${isMoon3DoubleWide(card) ? "col-span-2" : ""}
+`}
 >
   <div
-    className={`mb-2 rounded-full px-2 py-1 text-xs font-bold text-white ${
+    className={`absolute left-2 top-2 z-10 rounded-full px-3 py-1 text-[10px] font-bold tracking-wide text-white shadow-lg ${
       card.type === "trade"
         ? "bg-blue-600"
-        : "bg-green-600"
+        : "bg-emerald-600"
     }`}
   >
-    {card.type === "trade"
-      ? "FOR TRADE"
-      : "FOR SALE"}
+    {card.type === "trade" ? "TRADE" : "SALE"}
   </div>
 
   <div
-    className={`overflow-hidden rounded-lg ${
+    className={`bg-gradient-to-b from-slate-100 to-white ${
       !isMoon3DoubleWide(card) &&
       String(card.set_id) === "tcgpromos" &&
       ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
@@ -1122,32 +1186,64 @@ ${
       }`}
     />
   </div>
-</div>
-    ))}
+
+<div className="border-t bg-slate-50 px-3 py-2 text-center">
+<div className="text-[8px] sm:text-xs font-semibold text-slate-700 truncate">
+    {getSetName(String(card.set_id))}
   </div>
+</div>
+</div>
+        ))}
+      </div>
+    )}
+  </>
 ) : (
   userProfileSettings.hide_wishlist ? (
     <p className="text-slate-500">
       This collector has hidden their wishlist.
     </p>
   ) : (
-    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
-      {userWishlistCards.map((card) => (
-<div
-  key={card.id}
-  onClick={() => setQuickViewCard(card)}
-  className={`cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
-    isMoon3DoubleWide(card) ? "col-span-2" : ""
-  }`}
->
-  <img
-    src={getTradeCardImage(card)}
-    alt={card.card_key}
-    className="block w-full h-full object-contain"
-  />
-</div>
-      ))}
-    </div>
+    <>
+      <div className="flex flex-wrap gap-2 mb-6">
+        {WISHLIST_SET_TABS.map((set) => (
+          <button
+            key={set.id}
+            onClick={() => setSelectedSet(set.id)}
+            className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
+              selectedSet === set.id
+                ? "bg-yellow-400 text-slate-900"
+                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
+            }`}
+          >
+            {set.name}
+          </button>
+        ))}
+      </div>
+
+      {filteredWishlistCards.length === 0 ? (
+        <p className="text-slate-500">
+          This collector has no wishlist cards.
+        </p>
+      ) : (
+        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
+          {filteredWishlistCards.map((card) => (
+            <div
+              key={card.id}
+              onClick={() => setQuickViewCard(card)}
+              className={`cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
+                isMoon3DoubleWide(card) ? "col-span-2" : ""
+              }`}
+            >
+              <img
+                src={getTradeCardImage(card)}
+                alt={card.card_key}
+                className="block w-full h-full object-contain"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   )
 )}
 
@@ -1169,7 +1265,7 @@ ${
       onClick={(e) => e.stopPropagation()}
       src={getTradeCardImage(quickViewCard)}
       alt={quickViewCard.card_key}
-      className={`max-h-[75vh] max-w-[70vw] object-contain drop-shadow-2xl ${
+className={`max-h-[75vh] max-w-[70vw] rounded-2xl object-contain drop-shadow-2xl ${
   isMoon3DoubleWide(quickViewCard)
     ? "w-[75vw] max-w-[900px]"
     : ""

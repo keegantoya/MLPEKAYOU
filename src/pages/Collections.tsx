@@ -204,11 +204,17 @@ const mergedBySet: Record<string, Record<string, boolean>> = {};
     mergedBySet[row.set_id] = {};
   }
 
-  Object.entries(row.progress || {}).forEach(([key, value]) => {
-    if (Boolean(value)) {
-      mergedBySet[row.set_id][key] = true;
-    }
-  });
+Object.entries(row.progress || {}).forEach(([key, value]) => {
+  const isOwned =
+    value === true ||
+    (typeof value === "object" &&
+      value !== null &&
+      (value as any).owned === true);
+
+  if (isOwned) {
+    mergedBySet[row.set_id][key] = true;
+  }
+});
 });
 
 const progressMap: Record<string, number> = {};
@@ -291,7 +297,22 @@ const mappedHiddenSets: string[] = [
 
 setHiddenSets([...new Set(mappedHiddenSets)]);
 const updated = collections.map((set) => {
-  const collected = progressMap[set.id] || 0;
+  let collected = progressMap[set.id] || 0;
+
+  // Match Index.tsx exactly for the promo set.
+  if (set.id === "9") {
+    const ccgPromos = progressMap["9"] || 0;
+
+    const tcgPromoRow = rawData?.find(
+      (row: any) => row.set_id === "tcgpromos"
+    );
+
+    const tcgPromos = tcgPromoRow
+      ? Object.values(tcgPromoRow.progress || {}).filter(Boolean).length
+      : 0;
+
+    collected = ccgPromos + tcgPromos;
+  }
 
   const percent =
     set.totalCards > 0
@@ -357,7 +378,7 @@ const filtered = (
   });
   return (
  <div
-  className="min-h-screen relative overflow-hidden"
+  className="min-h-screen relative overflow-hidden font-['Oxanium']"
 style={{
   backgroundColor: "#0d0816",
 backgroundImage: `
@@ -523,14 +544,13 @@ const completedSets = countedSets.filter(
 
   {/* Title */}
   <div className="mt-4">
-    <h1
-      className="text-xl font-semibold leading-[0.95] tracking-[0.06em] text-[#f5e6a8] text-center"
-      style={{
-        fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
-        textShadow:
-          "0 2px 0 rgba(91,46,134,0.45), 0 4px 18px rgba(0,0,0,0.22)",
-      }}
-    >
+<h1
+  className="font-['Oxanium'] text-4xl font-semibold leading-[0.95] tracking-[0.06em] text-[#f5e6a8] text-center"
+  style={{
+    textShadow:
+      "0 2px 0 rgba(91,46,134,0.45), 0 4px 18px rgba(0,0,0,0.22)",
+  }}
+>
       <span className="block">KAYOU US</span>
       <span className="block">COLLECTIONS</span>
     </h1>
@@ -627,14 +647,13 @@ const completedSets = countedSets.filter(
 
   {/* CENTER: Title */}
   <div className="flex justify-center">
-    <h1
-      className="text-2xl md:text-3xl lg:text-4xl font-semibold leading-[0.95] tracking-[0.06em] text-[#f5e6a8] text-center"
-      style={{
-        fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
-        textShadow:
-          "0 2px 0 rgba(91,46,134,0.45), 0 4px 18px rgba(0,0,0,0.22)",
-      }}
-    >
+<h1
+  className="font-['Oxanium'] text-4xl font-semibold leading-[0.95] tracking-[0.06em] text-[#f5e6a8] text-center"
+  style={{
+    textShadow:
+      "0 2px 0 rgba(91,46,134,0.45), 0 4px 18px rgba(0,0,0,0.22)",
+  }}
+>
       <span className="block">KAYOU US</span>
       <span className="block">COLLECTIONS</span>
     </h1>

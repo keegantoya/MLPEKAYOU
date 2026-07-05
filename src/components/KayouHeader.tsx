@@ -1,4 +1,5 @@
 import {
+  ShoppingBag, 
   Home,
     Ghost,
   Trophy,
@@ -25,7 +26,7 @@ import { useRef } from "react";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
 
-const logo = "/website-assets/mlpekayouwikinmn.webp";
+const logo = "/website-assets/mlpekayouwiki3.webp";
 
 import avatar001 from "@/assets/avatars/avatar001.webp";
 import avatar002 from "@/assets/avatars/avatar002.webp";
@@ -497,13 +498,13 @@ return (
 )}
 
 <header
-  className={`fixed left-0 right-0 z-[20000] text-[#f5e6a8] shadow-md ${
+  className={`fixed left-0 right-0 z-[20000] text-[#E7C84B] shadow-md ${
     !window.matchMedia('(display-mode: standalone)').matches
       ? 'top-0'
       : 'top-0'
   }`}
 style={{
-  background: "#ece8f1",
+  background: "#161616",
   WebkitTransform: "translateZ(0)",
   transform: "translateZ(0)",
 }}
@@ -532,7 +533,21 @@ style={{
 
   {!user && (
     <Button
-  className="hidden sm:flex h-10 px-5 bg-[#f4a261] hover:bg-[#ee964b] text-white border border-[#e48c3f] font-semibold shadow-sm"
+  className="
+hidden sm:flex
+h-10 px-5
+rounded-xl
+bg-[#202020]
+hover:bg-[#2a2a2a]
+text-[#E7C84B]
+border border-[#E7C84B]
+font-semibold
+shadow-md
+transition-all
+duration-200
+hover:-translate-y-0.5
+hover:shadow-lg
+"
       onClick={() => {
         setAuthMode("signup");
         setLoginError("");
@@ -552,16 +567,36 @@ style={{
   }}
 >
   {!user ? (
-    <Button
-      size="sm"
-      className="h-8 px-3 text-xs bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110"
-      onClick={() => {
-        setAuthMode("login");
-        setShowLogin(true);
-      }}
-    >
-      Login
-    </Button>
+<Button
+className="
+flex
+items-center
+justify-center
+h-8
+px-4
+text-sm
+rounded-lg
+font-semibold
+text-[#1b1b1b]
+bg-gradient-to-b
+from-[#f6d76c]
+to-[#c99f30]
+border
+border-[#f3e19a]
+shadow-md
+transition-all
+duration-200
+active:scale-95
+"
+  onClick={() => {
+    setAuthMode("login");
+    setLoginError("");
+    setShowForgot(false);
+    setShowLogin(true);
+  }}
+>
+  Login
+</Button>
   ) : (
     <>
       <button
@@ -569,12 +604,12 @@ style={{
         className="
           flex items-center justify-center
           w-8 h-8 rounded-full
-          border border-white
-          bg-[#cbc5d4]
-          text-white
+          border border-[#E7C84B]
+          bg-[#202020]
+          text-[#E7C84B]
           shadow-md
           transition-all
-          hover:bg-[#c0b9cb]
+          hover:bg-[#2a2a2a]
         "
       >
         <Trophy className="h-4 w-4" />
@@ -585,12 +620,12 @@ style={{
         className="
           flex items-center justify-center
           w-8 h-8 rounded-full
-          border border-white
-          bg-[#cbc5d4]
-          text-white
+          border border-[#E7C84B]
+          bg-[#202020]
+          text-[#E7C84B]
           shadow-md
           transition-all
-          hover:bg-[#c0b9cb]
+          hover:bg-[#2a2a2a]
         "
       >
         <Medal className="h-4 w-4" />
@@ -611,7 +646,7 @@ style={{
          className={`h-10 w-10 rounded-full object-cover border-2 shadow-md transition-all duration-300 hover:scale-110 hover:shadow-xl hover:border-[#d4af37]/60 ${
   open
     ? "scale-110 shadow-xl border-[#d4af37]/60"
-    : "border-white/30"
+    : "border-[#E7C84B]/30"
 }`}
         />
       </button>
@@ -619,7 +654,7 @@ style={{
 
 <SheetContent
   side="left"
-  className="top-16 h-[calc(100vh-64px)] w-[260px] bg-[#ece8f1] border-r border-white text-[#5a3e84] [&>button]:hidden p-0"
+  className="top-16 h-[calc(100vh-64px)] w-[260px] bg-[#161616] border-r border-[#E7C84B] text-[#E7C84B] [&>button]:hidden p-0"
 >
       <div className="flex flex-col h-full">
         {/* Header */}
@@ -627,11 +662,11 @@ style={{
           <img
             src={avatarSrc || avatar001}
             alt="avatar"
-            className="h-16 w-16 rounded-full object-cover border-3 border-white shadow-lg"
+            className="h-16 w-16 rounded-full object-cover border-3 border-[#E7C84B] shadow-lg"
           />
 
           <div className="mt-2 flex items-center justify-center gap-2">
-  <div className="text-xl font-semibold text-[#5a3e84]">
+  <div className="text-xl font-semibold text-[#E7C84B]">
     {profile?.username || "My Profile"}
   </div>
 
@@ -653,7 +688,7 @@ style={{
               navigate("/UserMenu");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
           >
             Edit My Profile
           </button>
@@ -663,7 +698,7 @@ style={{
               navigate("/my-progress");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
           >
             My CCG Progress
           </button>
@@ -673,7 +708,7 @@ style={{
               navigate("/progress-tcg");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
           >
             My TCG Progress
           </button>
@@ -683,7 +718,7 @@ style={{
               navigate("/inventory");
               setOpen(false);
             }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
           >
             My Inventory
           </button>
@@ -693,7 +728,7 @@ style={{
     navigate("/my-iso");
     setOpen(false);
   }}
-  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
 >
   My ISO
 </button>
@@ -702,7 +737,7 @@ style={{
     navigate("/wishlist");
     setOpen(false);
   }}
- className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+ className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
 >
   My Wishlist
 </button>
@@ -711,13 +746,13 @@ style={{
     navigate("/binders");
     setOpen(false);
   }}
-  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] hover:border-[#d4af37]/30 transition-all"
+  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
 >
   My Binders
 </button>
         </div>
 {/* Social Links */}
-<div className="pt-2 border-t border-white">
+<div className="pt-2 border-t border-[#E7C84B]">
   <div className="flex items-center justify-center gap-3 py-2">
     <button
       onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
@@ -748,7 +783,7 @@ style={{
       handleLogout();
       setOpen(false);
     }}
-    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-3 rounded-2xl bg-[#cbc5d4] hover:bg-[#c0b9cb] border border-white text-[#5a3e84] transition-all"
+    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-3 rounded-2xl bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] transition-all"
   >
     Logout
   </button>
@@ -777,7 +812,7 @@ style={{
   {/* LEFT OF LOGO */}
 <div className="relative group">
   <button
-    onClick={() => navigate("/")}
+    onClick={() => navigate("/support-mlpekayou")}
 className={`
 flex-shrink-0
 w-10 h-10
@@ -787,24 +822,24 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/support-mlpekayou") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
-    <Ghost className="h-5 w-5" />
+    <ShoppingBag  className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 whitespace-nowrap">
-    Homepage
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 whitespace-nowrap">
+    Shop
   </div>
 </div>
 
@@ -820,23 +855,23 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/explore") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/explore") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
     <Users className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
     Explore
   </div>
 </div>
@@ -853,23 +888,23 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/collections") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/collections") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
     <Sparkles className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
     Checklists
   </div>
 </div>
@@ -886,23 +921,23 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/leaderboard") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/leaderboard") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
     <Medal className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
     Leaderboard
   </div>
 </div>
@@ -928,23 +963,23 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/community") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/community") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
     <Trophy className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
     First Finishers
   </div>
 </div>
@@ -961,23 +996,23 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/trading-post") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/trading-post") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
     <ArrowLeftRight className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
     Trading Post
   </div>
 </div>
@@ -994,23 +1029,23 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/selling") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/selling") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
     <Tag className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
     Selling
   </div>
 </div>
@@ -1027,23 +1062,23 @@ border
 flex
 items-center
 justify-center
-text-white
+text-[#E7C84B]
 transition-all
 duration-200
 
-bg-[#cbc5d4]
-hover:bg-[#c0b9cb]
+bg-[#202020]
+hover:bg-[#2a2a2a]
 hover:-translate-y-1
 hover:scale-110
 hover:shadow-xl
 
-${isActive("/faq") ? "border-white shadow-md scale-105" : "border-white"}
+${isActive("/faq") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
 `}
   >
     <Search className="h-5 w-5" />
   </button>
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#5a3e84] px-2 py-1 text-xs text-[#f5e6a8] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
     FAQ
   </div>
 </div>
@@ -1052,28 +1087,36 @@ ${isActive("/faq") ? "border-white shadow-md scale-105" : "border-white"}
 {/* RIGHT SIDE */}
 <div className="hidden sm:flex items-center gap-3 min-w-[40px]">
   {!user && (
-    <Button
-      className="
-        flex items-center justify-center
-        h-10 px-5
-        rounded-xl
-        border border-[#e48c3f]
-        bg-[#f4a261]
-        text-white
-        font-semibold
-        shadow-sm
-        transition-all
-        hover:bg-[#ee964b]
-      "
-      onClick={() => {
-        setAuthMode("login");
-        setLoginError("");
-        setShowForgot(false);
-        setShowLogin(true);
-      }}
-    >
-      Login
-    </Button>
+<Button
+className="
+flex
+items-center
+justify-center
+h-11
+px-8
+rounded-xl
+font-bold
+text-[#1b1b1b]
+bg-gradient-to-b
+from-[#f6d76c]
+to-[#c99f30]
+border
+border-[#f3e19a]
+shadow-lg
+transition-all
+duration-200
+hover:brightness-110
+hover:scale-[1.02]
+"
+  onClick={() => {
+    setAuthMode("login");
+    setLoginError("");
+    setShowForgot(false);
+    setShowLogin(true);
+  }}
+>
+  Login
+</Button>
   )}
 </div>
 
@@ -1089,12 +1132,12 @@ ${isActive("/faq") ? "border-white shadow-md scale-105" : "border-white"}
 flex items-center justify-center
 w-8 h-8
 rounded-full
-border border-white
-bg-[#cbc5d4]
-text-white
+border border-[#E7C84B]
+bg-[#202020]
+text-[#E7C84B]
 shadow-md
 transition-all
-hover:bg-[#c0b9cb]
+hover:bg-[#2a2a2a]
 "
   >
     $
@@ -1106,79 +1149,18 @@ hover:bg-[#c0b9cb]
 flex items-center justify-center
 w-8 h-8
 rounded-full
-border border-white
-bg-[#cbc5d4]
-text-white
+border border-[#E7C84B]
+bg-[#202020]
+text-[#E7C84B]
 shadow-md
 transition-all
-hover:bg-[#c0b9cb]
+hover:bg-[#2a2a2a]
 "
   >
     ?
   </button>
 </div>
 </header>
-
-{showMobilePrompt && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-
-{/* Pink Glitter Around Popup */}
-<div className="pointer-events-none absolute inset-0">
-
-  {[...Array(20)].map((_, i) => (
-    <span key={i} className={`glitter glitter-${i}`} />
-  ))}
-
-</div>
-
-    <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
-
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-  <img
-    src={logo}
-    className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
-  />
-</div>
-
-     <div className="text-center mb-6 text-gray-700">
-  
-  <div className="text-lg font-semibold mb-2 text-red-500 text-center">
-    MLPEKAYOU UPDATE NOTICE
-  </div>
-
-  <div className="text-sm text-gray-700 mb-4">
-    The mobile version of this website has recieved a large update that may not longer be visually compatible with browsers.
-  </div>
-
-<div className="text-sm text-gray-500 mb-3">
-  iPhone users: In the bottom right corner on Safari, hit "...", click "Share", "View More", and "Add to homescreen."
-</div>
-
-<div className="text-sm text-gray-500">
-  All other mobile devices: Find "..." in the top right corner, and select "Add to Home Screen."
-</div>
-
-</div>
-
-      <div className="flex-1 flex items-center justify-center gap-3">
-      </div>
-
-<div className="absolute -bottom-5 left-1/2 -translate-x-1/2">
-  <Button
-    className="bg-pink-100 hover:bg-pink-200 text-neutral-700 rounded-xl px-6 shadow-md border border-pink-200"
-    onClick={() => {
-  localStorage.setItem("seenAnnouncement", "true");
-  setShowMobilePrompt(false);
-}}
-  >
-    Understood.
-  </Button>
-</div>
-
-</div>
-
-  </div>
-)}
 
 <style>
 {`
@@ -1277,70 +1259,12 @@ hover:bg-[#c0b9cb]
     transform: rotate(-6deg);
   }
 }
-
-.glitter {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #f9a8d4;
-  border-radius: 50%;
-  opacity: 0.9;
-  animation: sparkle 3s infinite ease-in-out;
-  box-shadow: 
-    0 0 6px #f9a8d4,
-    0 0 12px #f9a8d4,
-    0 0 18px #fbcfe8;
-}
-
-.glitter:nth-child(odd) {
-  width: 5px;
-  height: 5px;
-}
-
-.glitter:nth-child(even) {
-  width: 9px;
-  height: 9px;
-}
-
-.glitter-0 { top: 10%; left: 20%; }
-.glitter-1 { top: 20%; right: 15%; }
-.glitter-2 { bottom: 15%; left: 30%; }
-.glitter-3 { bottom: 20%; right: 20%; }
-.glitter-4 { top: 50%; left: 10%; }
-.glitter-5 { top: 60%; right: 10%; }
-.glitter-6 { top: 30%; left: 50%; }
-.glitter-7 { bottom: 40%; right: 40%; }
-.glitter-8 { top: 15%; left: 70%; }
-.glitter-9 { bottom: 10%; left: 60%; }
-.glitter-10 { top: 35%; right: 25%; }
-.glitter-11 { bottom: 25%; left: 15%; }
-.glitter-12 { top: 65%; right: 35%; }
-.glitter-13 { top: 45%; left: 75%; }
-.glitter-14 { bottom: 35%; right: 10%; }
-.glitter-15 { top: 5%; left: 45%; }
-.glitter-16 { bottom: 5%; right: 50%; }
-.glitter-17 { top: 55%; left: 35%; }
-.glitter-18 { bottom: 45%; left: 55%; }
-.glitter-19 { top: 25%; right: 5%; }
-
-@keyframes sparkle {
-  0% { opacity: 0; transform: scale(0.5) translateY(0px); }
-  50% { opacity: 1; transform: scale(1.2) translateY(-6px); }
-  100% { opacity: 0; transform: scale(0.5) translateY(0px); }
-}
 `}
 </style>
 
 {/* SIGNUP SUCCESS POPUP */}
 {showSignupSuccess && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-
-    {/* Glitter */}
-    <div className="pointer-events-none absolute inset-0">
-      {[...Array(20)].map((_, i) => (
-        <span key={i} className={`glitter glitter-${i}`} />
-      ))}
-    </div>
 
     <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
 
@@ -1353,7 +1277,13 @@ hover:bg-[#c0b9cb]
 
       <div className="text-center mb-6 text-gray-700">
 
-        <div className="text-lg font-semibold mb-2">
+        <div
+  className="text-3xl font-bold mb-2 tracking-wide"
+  style={{
+    color: "#ffffff",
+    textShadow: "0 2px 12px rgba(0,0,0,.45)",
+  }}
+>
           Account Created!
         </div>
 
@@ -1374,7 +1304,7 @@ hover:bg-[#c0b9cb]
 
       <div className="flex justify-center">
         <Button
-          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
+          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#E7C84B] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
           onClick={() => setShowSignupSuccess(false)}
         >
           Got it!
@@ -1389,13 +1319,6 @@ hover:bg-[#c0b9cb]
 {showResetSent && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
 
-    {/* Glitter */}
-    <div className="pointer-events-none absolute inset-0">
-      {[...Array(20)].map((_, i) => (
-        <span key={i} className={`glitter glitter-${i}`} />
-      ))}
-    </div>
-
     <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
 
       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -1407,7 +1330,13 @@ hover:bg-[#c0b9cb]
 
       <div className="text-center mb-6 text-gray-700">
 
-        <div className="text-lg font-semibold mb-2">
+        <div
+  className="text-3xl font-bold mb-2 tracking-wide"
+  style={{
+    color: "#ffffff",
+    textShadow: "0 2px 12px rgba(0,0,0,.45)",
+  }}
+>
           Password Reset Sent
         </div>
 
@@ -1422,7 +1351,7 @@ hover:bg-[#c0b9cb]
 
       <div className="flex justify-center">
         <Button
-          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
+          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#E7C84B] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
           onClick={() => setShowResetSent(false)}
         >
           Got it
@@ -1439,7 +1368,7 @@ hover:bg-[#c0b9cb]
     <div className="relative w-[92%] max-w-lg bg-white rounded-2xl shadow-2xl p-6">
 
       <div className="text-center">
-        <div className="text-xl font-semibold mb-3 text-[#5a3e84]">
+        <div className="text-xl font-semibold mb-3 text-[#E7C84B]">
           Login Required
         </div>
 
@@ -1448,7 +1377,7 @@ hover:bg-[#c0b9cb]
         </div>
 
         <Button
-          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8]"
+          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#E7C84B]"
           onClick={() => setShowLoginRequired(false)}
         >
           Okay
@@ -1463,16 +1392,25 @@ hover:bg-[#c0b9cb]
       {showLogin && (
        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
 
-{/* Pink Glitter Around Popup */}
-<div className="pointer-events-none absolute inset-0">
-
-  {[...Array(20)].map((_, i) => (
-    <span key={i} className={`glitter glitter-${i}`} />
-  ))}
-
-</div>
-
-          <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-12 flex flex-col ">
+<div
+className="relative w-[92%] max-w-lg rounded-[28px] border flex flex-col p-8 pt-12 pb-8"
+  style={{
+    background: `
+      linear-gradient(
+        180deg,
+        #444444 0%,
+        #2f2f2f 55%,
+        #1a1a1a 100%
+      )
+    `,
+    borderColor: "#8b8b8b",
+    boxShadow: `
+      0 24px 80px rgba(0,0,0,.75),
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 0 0 1px rgba(255,255,255,.04)
+    `,
+  }}
+>
 
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
   <img
@@ -1491,14 +1429,20 @@ hover:bg-[#c0b9cb]
   }}
 >
 
-          <div className="text-center mb-5 text-gray-700">
-  <div className="text-lg font-semibold mb-2">
+          <div className="text-center mb-7 text-white">
+  <div
+  className="text-3xl font-bold mb-2 tracking-wide"
+  style={{
+    color: "#ffffff",
+    textShadow: "0 2px 12px rgba(0,0,0,.45)",
+  }}
+>
     {authMode === "login"
       ? "Sign In"
       : "Create Your Account"}
   </div>
 
-  <div className="text-sm text-gray-500 mb-4">
+ <div className="text-sm text-[#c7c7c7] mb-6">
     {authMode === "login"
       ? "Enter your email and password."
       : "Enter your email and create a password."}
@@ -1510,7 +1454,24 @@ hover:bg-[#c0b9cb]
   placeholder="Email"
   value={loginEmail}
   autoComplete="email"
-  className="w-full border rounded-lg px-3 py-2 mb-2"
+  className="
+w-full
+rounded-xl
+border
+border-[#6c6c6c]
+bg-[#242424]
+text-white
+placeholder:text-[#8d8d8d]
+px-4
+py-3
+mb-3
+transition-all
+duration-200
+focus:border-[#d8b64d]
+focus:ring-2
+focus:ring-[#d8b64d]/25
+outline-none
+"
   onChange={(e) => {
   setLoginEmail(e.target.value);
   setEmailError("");
@@ -1530,7 +1491,24 @@ hover:bg-[#c0b9cb]
   placeholder="Password"
   value={loginPassword}
   autoComplete="current-password"
-  className="w-full border rounded-lg px-3 py-2 mb-2"
+  className="
+w-full
+rounded-xl
+border
+border-[#6c6c6c]
+bg-[#242424]
+text-white
+placeholder:text-[#8d8d8d]
+px-4
+py-3
+mb-3
+transition-all
+duration-200
+focus:border-[#d8b64d]
+focus:ring-2
+focus:ring-[#d8b64d]/25
+outline-none
+"
   onChange={(e) => {
   setLoginPassword(e.target.value);
   setLoginError("");
@@ -1545,7 +1523,24 @@ hover:bg-[#c0b9cb]
       placeholder="Confirm Password"
       value={confirmPassword}
       autoComplete="new-password"
-      className="w-full border rounded-lg px-3 py-2 mb-2"
+      className="
+w-full
+rounded-xl
+border
+border-[#6c6c6c]
+bg-[#242424]
+text-white
+placeholder:text-[#8d8d8d]
+px-4
+py-3
+mb-3
+transition-all
+duration-200
+focus:border-[#d8b64d]
+focus:ring-2
+focus:ring-[#d8b64d]/25
+outline-none
+"
       onChange={(e) => setConfirmPassword(e.target.value)}
     />
 
@@ -1564,19 +1559,19 @@ hover:bg-[#c0b9cb]
 {showForgot && (
   <button
     onClick={handleForgotPassword}
-    className="text-sm text-pink-500 hover:text-pink-600 mb-4"
+    className="text-sm text-[#d8b64d] hover:text-[#f2d36d] mb-5 transition-colors"
   >
     Forgot your password? Request a reset here.
   </button>
 )}
 
-<div className="flex justify-between items-center gap-2">
+<div className="flex flex-col sm:flex-row items-center gap-3 sm:justify-between">
 
   {/* MOBILE CREATE ACCOUNT */}
-  <div className="sm:hidden">
+  <div className="sm:hidden w-full flex justify-center">
     {authMode === "login" && (
 <Button
-  className="h-8 px-3 rounded-xl bg-gradient-to-r from-pink-400 to-pink-500 text-white border border-pink-200/40 shadow-md hover:brightness-110"
+  className="h-9 px-4 rounded-xl bg-[#2b2b2b] border border-[#666] text-white hover:bg-[#353535] transition-all"
         onClick={() => {
           setAuthMode("signup");
           setLoginError("");
@@ -1589,7 +1584,7 @@ hover:bg-[#c0b9cb]
     {authMode === "signup" && (
 <Button
   variant="ghost"
-  className="text-pink-500 hover:text-pink-400 hover:bg-transparent"
+  className="text-[#d8b64d] hover:text-[#f2d36d] hover:bg-transparent"
         onClick={() => {
           setAuthMode("login");
           setLoginError("");
@@ -1600,18 +1595,38 @@ hover:bg-[#c0b9cb]
     )}
   </div>
 
-  <div className="flex gap-2 ml-auto">
+  <div className="flex flex-1 justify-end gap-2 sm:ml-auto">
 
-    <Button
-      variant="ghost"
-      onClick={() => setShowLogin(false)}
-    >
+<Button
+  variant="ghost"
+  className="text-white hover:bg-[#2d2d2d]"
+  onClick={() => setShowLogin(false)}
+>
       Cancel
     </Button>
 
     <Button
     type="submit"
-      className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/40 hover:brightness-110 hover:bg-[#e8e8e0]"
+className="
+flex
+items-center
+justify-center
+h-11
+px-8
+rounded-xl
+font-bold
+text-[#1b1b1b]
+bg-gradient-to-b
+from-[#f6d76c]
+to-[#c99f30]
+border
+border-[#f3e19a]
+shadow-lg
+transition-all
+duration-200
+hover:brightness-110
+hover:scale-[1.02]
+"
     >
       Continue
     </Button>
@@ -1750,7 +1765,7 @@ z-50
 flex
 items-center
 justify-center
-text-[#d5d1d6] 
+text-[#e3dc5e] 
 transition-all
 duration-300
 h-full
@@ -1774,7 +1789,7 @@ ${
       navigate("/collections");
     }}
     className={`
-relative z-10 flex items-center justify-center h-full px-3 text-[#d9d4da] 
+relative z-10 flex items-center justify-center h-full px-3 text-[#e3dc5e] 
 transition-all duration-300
 ${
   mobileNavCollapsed
@@ -1796,7 +1811,7 @@ ${
       navigate("/trading-post");
     }}
     className={`
-relative z-10 flex items-center justify-center h-full px-3 text-[#666467] 
+relative z-10 flex items-center justify-center h-full px-3 text-[#e3dc5e] 
 ${
 mobileNavCollapsed
   ? "hidden"
@@ -1817,7 +1832,7 @@ mobileNavCollapsed
       navigate("/explore");
     }}
     className={`
-relative z-10 flex items-center justify-center h-full px-3 text-[#ee8ad5]   
+relative z-10 flex items-center justify-center h-full px-3 text-[#e3dc5e] 
 transition-all duration-300
 ${
 mobileNavCollapsed

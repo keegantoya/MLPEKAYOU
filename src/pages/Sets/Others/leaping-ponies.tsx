@@ -70,7 +70,7 @@ useEffect(() => {
 }, []);
 
   return (
-    <div className="min-h-screen bg-[#f8f8f8]">
+    <div className="min-h-screen bg-[#e3e3e3]">
       <div className="mx-auto max-w-[1800px] px-6 py-8">
 
         <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-8">
@@ -80,18 +80,18 @@ useEffect(() => {
   className="sidebar-scroll xl:sticky xl:top-[84px] self-start max-h-[calc(100vh-100px)] overflow-y-auto pr-2"
 >
 
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-zinc-800 border border-zinc-600 rounded-xl shadow-lg overflow-hidden text-zinc-100">
 
              {/* Set Header */}
-<div className="p-6 border-b border-gray-200">
+<div className="p-6 border-b border-zinc-700">
 
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
                  Plushie Collections
                 </p>
 
                 <button
   onClick={() => navigate("/collections")}
-  className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-black transition-colors"
+  className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
 >
   ← Back to Collections
 </button>
@@ -100,7 +100,7 @@ useEffect(() => {
                   Plushies
                 </h1>
 
-                <p className="mt-2 text-lg text-gray-500">
+                <p className="mt-2 text-lg text-zinc-400">
   Leaping Ponies
 </p>
 
@@ -112,7 +112,7 @@ useEffect(() => {
               </div>
 
               {/* Product Info */}
-              <div className="border-t border-gray-200 p-6">
+              <div className="border-t border-zinc-700 p-6">
 
                 <h2 className="text-lg font-bold uppercase mb-5">
                   Product Information
@@ -121,7 +121,7 @@ useEffect(() => {
                 <div className="space-y-5">
 
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-gray-500">
+                    <p className="text-xs uppercase tracking-wider text-zinc-400">
                       Product Name
                     </p>
 

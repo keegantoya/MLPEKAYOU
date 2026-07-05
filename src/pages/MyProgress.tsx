@@ -1,3 +1,7 @@
+import "@fontsource/oxanium/400.css";
+import "@fontsource/oxanium/600.css";
+import "@fontsource/oxanium/700.css";
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -147,7 +151,7 @@ const releasedRoutes: Record<string, string> = {
   "3": "/moon-three",
   "7": "/fun-moments-one",
   "11": "/fun-moments-three",
-  "9": "/promos",
+  "9": "/promotional-cards",
   "8": "/fun-moments-two",
   "4": "/star-one",
   "6": "/rainbow-two",
@@ -265,125 +269,101 @@ const overallVisiblePercent =
     : 0;
 
 return (
-  <div
-    className="min-h-screen flex flex-col"
-    style={{
-      background: `
-        radial-gradient(circle at 10% 15%, rgba(255,255,255,0.75), transparent 28%),
-        radial-gradient(circle at 90% 10%, rgba(255,223,128,0.18), transparent 24%),
-        radial-gradient(circle at 75% 30%, rgba(251,207,232,0.16), transparent 26%),
-        radial-gradient(circle at 20% 65%, rgba(196,181,253,0.18), transparent 32%),
-        radial-gradient(circle at 80% 85%, rgba(147,197,253,0.14), transparent 30%),
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.35), transparent 45%),
-        linear-gradient(
-          180deg,
-          #fcf8ff 0%,
-          #f8f1ff 22%,
-          #f4ecff 48%,
-          #efe6ff 72%,
-          #e8ddff 100%
-        )
-      `,
-    }}
-  >
+<div
+  className="min-h-screen flex flex-col"
+  style={{
+    background: `
+      radial-gradient(circle at 15% 15%, rgba(212,175,55,.08), transparent 28%),
+      radial-gradient(circle at 85% 10%, rgba(212,175,55,.06), transparent 26%),
+      radial-gradient(circle at 50% 80%, rgba(255,255,255,.03), transparent 40%),
+      linear-gradient(
+        180deg,
+        #202020 0%,
+        #181818 28%,
+        #111111 65%,
+        #0b0b0b 100%
+      )
+    `,
+  }}
+>
 
     <div className="container py-8 flex-1">
       {/* HERO */}
       <div className="max-w-6xl mx-auto mb-6">
         <div
-          className="relative overflow-hidden rounded-[2rem] border border-[#f3d98b]/50 shadow-[0_10px_30px_rgba(168,85,247,0.08)]"
+          className="
+relative
+overflow-hidden
+rounded-[2rem]
+border
+border-[#caa43a]
+bg-gradient-to-b
+from-[#2a2a2a]
+via-[#1d1d1d]
+to-[#121212]
+shadow-[0_25px_60px_rgba(0,0,0,.45)]
+"
           style={{
             background: `
-              radial-gradient(circle at 20% 30%, rgba(255,255,255,0.85), transparent 25%),
-              radial-gradient(circle at 80% 20%, rgba(255,255,255,0.75), transparent 22%),
-              radial-gradient(circle at 50% 10%, rgba(255,255,255,0.65), transparent 18%),
-              linear-gradient(
-                180deg,
-                #d8c8ff 0%,
-                #eadfff 18%,
-                #f8f3ff 42%,
-                #fff9ff 72%,
-                #f7eeff 100%
-              )
-            `,
+linear-gradient(
+180deg,
+#313131 0%,
+#252525 22%,
+#191919 60%,
+#111111 100%
+)
+`,
           }}
         >
-          {/* Background Artwork */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Castle */}
-            <div
-              className="absolute left-0 bottom-0 w-[30%] h-full opacity-20"
-              style={{
-                background:
-                  "url('/website-assets/twilightcastle.webp') left bottom / contain no-repeat",
-              }}
-            />
-
-            {/* Rainbow */}
-            <div
-              className="absolute right-0 bottom-8 w-[35%] h-[45%] opacity-20"
-              style={{
-                background:
-                  "url('/website-assets/rainbow.webp') right center / contain no-repeat",
-              }}
-            />
-
-            {/* Clouds */}
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/90 via-white/50 to-transparent" />
-
-            {/* Cutie Marks */}
-            {Array.from({ length: 80 }).map((_, i) => (
-              <img
-                key={i}
-                src={cutieMarks[i % cutieMarks.length]}
-                alt=""
-                className="absolute select-none"
-                style={{
-                  left: `${(i * 13) % 100}%`,
-                  top: `${(i * 19) % 100}%`,
-                  width: `${14 + (i % 6) * 6}px`,
-                  opacity: 0.08,
-                  transform: `rotate(${(i * 37) % 360}deg)`,
-                }}
-              />
-            ))}
-          </div>
 
           {/* Content */}
           <div className="relative z-10 px-4 md:px-6 py-2 md:py-3 text-center">
             {/* Title */}
 <h1
-  className="text-3xl md:text-4xl font-black leading-none mb-1"
-  style={{
-    fontFamily: "Georgia, 'Times New Roman', serif",
-    color: "#7c3aed",
-    textShadow: `
-      0 0 0 #d4af37,
-      0 4px 0 #d4af37,
-      0 8px 20px rgba(124,58,237,0.25)
-    `,
-    letterSpacing: "0.03em",
-  }}
+className="text-4xl md:text-5xl font-black mb-2 tracking-[.12em]"
+style={{
+fontFamily:"Oxanium",
+color:"#f5d37a",
+textShadow:"0 0 25px rgba(212,175,55,.25)"
+}}
 >
   CCG Progress
 </h1>
 
-<div className="text-sm mb-2 text-[#f5c542] drop-shadow-sm">✦</div>
-
             {/* Stats Strip */}
-            <div className="max-w-2xl mx-auto mb-2 rounded-xl bg-white/85 backdrop-blur-sm border border-[#f3d98b]/40 shadow-sm px-3 py-2">
+            <div className="
+max-w-3xl
+mx-auto
+rounded-2xl
+bg-[#151515]/95
+border
+border-[#caa43a]
+backdrop-blur-xl
+shadow-[0_12px_30px_rgba(0,0,0,.45)]
+px-6
+py-5
+">
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <div className="text-2xl md:text-3xl font-black text-[#7c3aed]">
+                  <div
+  className="text-2xl md:text-3xl font-black text-[#f5d37a]"
+  style={{ fontFamily: "Oxanium, sans-serif" }}
+>
   {visibleSets.length}
 </div>
-                  <div className="text-sm uppercase tracking-[0.15em] text-[#7c5aa6] mt-1">
+                  <div
+  className="text-sm uppercase tracking-[0.15em] text-[#a6a6a6] mt-1"
+  style={{ fontFamily: "Oxanium, sans-serif" }}
+>
                     Total Sets
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-2xl md:text-3xl font-black text-[#d4af37]">
+                  <div
+  className="text-2xl md:text-3xl font-black text-[#f5d37a]"
+  style={{ fontFamily: "Oxanium, sans-serif" }}
+>
                     {
                       sets.filter(
                         (set) =>
@@ -393,13 +373,19 @@ return (
                       ).length
                     }
                   </div>
-                  <div className="text-sm uppercase tracking-[0.15em] text-[#7c5aa6] mt-1">
+                  <div
+  className="text-sm uppercase tracking-[0.15em] text-[#a6a6a6] mt-1"
+  style={{ fontFamily: "Oxanium, sans-serif" }}
+>
                     Mastered
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-2xl md:text-3xl font-black text-[#ec4899]">
+                  <div
+  className="text-2xl md:text-3xl font-black text-[#f5d37a]"
+  style={{ fontFamily: "Oxanium, sans-serif" }}
+>
                     {Math.round(
                       (
                         sets
@@ -415,7 +401,10 @@ return (
                     ) || 0}
                     %
                   </div>
-                  <div className="text-sm uppercase tracking-[0.15em] text-[#7c5aa6] mt-1">
+                  <div
+  className="text-sm uppercase tracking-[0.15em] text-[#a6a6a6] mt-1"
+  style={{ fontFamily: "Oxanium, sans-serif" }}
+>
                     Overall Progress
                   </div>
                 </div>
@@ -433,8 +422,8 @@ return (
         <h2
           className="text-xl md:text-3xl font-semibold tracking-[0.08em] uppercase text-[#44306a]"
           style={{
-            fontFamily: "Georgia, Cambria, 'Times New Roman', serif",
-          }}
+  fontFamily: "Oxanium, sans-serif",
+}}
         >
           {title}
         </h2>
@@ -442,62 +431,71 @@ return (
       </div>
     );
 
-   const renderSetCard = (set: any) => {
+const renderSetCard = (set: any) => {
   const owned = progress[set.id] || 0;
   const percent =
     set.total > 0 ? Math.round((owned / set.total) * 100) : 0;
+
   const isMastered = percent === 100;
   const isHidden = hiddenSets.includes(set.id);
   const route = releasedRoutes[set.id];
   const image = setImages[set.id];
   const badgeImage = setBadgeImages[set.id];
-const showBadgeImage = !!badgeImage;
 
   return (
     <button
       key={set.id}
       onClick={() => route && navigate(route)}
-      className="group relative overflow-hidden rounded-[2rem]
-  border-2 border-white/80 bg-white/95 backdrop-blur-sm
-  shadow-[0_18px_45px_rgba(168,85,247,0.14),0_6px_18px_rgba(212,175,55,0.10)]
-  hover:-translate-y-2
-  hover:shadow-[0_30px_70px_rgba(168,85,247,0.22),0_10px_25px_rgba(212,175,55,0.16)]
-  transition-all duration-500 text-left
-  w-full
-  scale-100 sm:scale-[0.8] origin-top"
+      className="
+        group
+        relative
+        overflow-hidden
+        rounded-[2rem]
+        border
+        border-[#caa43a]
+        bg-gradient-to-b
+        from-[#2b2b2b]
+        via-[#1d1d1d]
+        to-[#121212]
+        shadow-[0_18px_45px_rgba(0,0,0,.35)]
+        hover:border-[#f5d37a]
+        hover:-translate-y-1
+        transition-all
+        duration-300
+
+        aspect-square
+        sm:aspect-auto
+        sm:scale-[0.8]
+        origin-top
+      "
     >
-      {/* Thumbnail */}
-      <div className="relative h-36 overflow-hidden rounded-t-[2rem]">
+      {/* IMAGE */}
+      <div className="relative h-[55%] sm:h-36 overflow-hidden">
+
         <img
           src={image}
           alt={set.name}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
 
-        {/* Glow Overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(circle at 20% 20%, rgba(255,255,255,0.28), transparent 30%),
-              radial-gradient(circle at 80% 15%, rgba(255,255,255,0.18), transparent 22%),
-              linear-gradient(to top, rgba(47,33,80,0.18), rgba(47,33,80,0.02))
-            `,
-          }}
-        />
-        {/* Top-right collectible badge */}
-{showBadgeImage && (
+{badgeImage && (
   <div
-    className="absolute top-2 right-2 z-20 w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl p-0.5 sm:p-1"
-    style={{
-  backgroundColor: "#ffffff",
-  border: "2px solid #8b5cf6",
-  boxShadow: `
-    inset 0 0 0 1px rgba(255,255,255,1),
-    0 0 12px rgba(139,92,246,0.35),
-    0 8px 20px rgba(0,0,0,0.18)
-  `,
-}}
+    className="
+      hidden
+      sm:flex
+      absolute
+      top-2
+      right-2
+      w-14
+      h-14
+      rounded-xl
+      bg-white
+      border-2
+      border-[#8b5cf6]
+      p-1
+      items-center
+      justify-center
+    "
   >
     <img
       src={badgeImage}
@@ -507,109 +505,114 @@ const showBadgeImage = !!badgeImage;
   </div>
 )}
 
-        {/* New Ribbon */}
-                {["3", "11", "4", "6"].includes(set.id) && (
-          <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-gradient-to-r from-[#ff6fb3] to-[#f9a8d4] text-white text-[10px] font-bold tracking-[0.12em] shadow-lg uppercase">
-            New
+        {[""].includes(set.id) && (
+          <div className="absolute left-2 top-2 px-3 py-1 rounded-full bg-[#ffe470] text-[#222] text-[10px] font-bold uppercase">
+            NEW
           </div>
         )}
 
-        {/* Mastered Ribbon */}
-        {isMastered && !isHidden && (
-          <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e] text-white text-[10px] font-bold tracking-[0.12em] shadow-lg uppercase">
-            Mastered
+        {isMastered && (
+          <div className="absolute left-2 top-2 px-3 py-1 rounded-full bg-[#d4af37] text-[#111] text-[10px] font-bold uppercase">
+            MASTERED
           </div>
         )}
 
-        {/* Hidden Ribbon */}
         {isHidden && (
-          <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#6b4a97]/90 text-[#f5e6a8] text-[10px] font-bold tracking-[0.12em] shadow-lg uppercase">
-            Hidden
+          <div className="absolute left-2 top-2 px-3 py-1 rounded-full bg-[#555] text-white text-[10px] font-bold uppercase">
+            HIDDEN
           </div>
         )}
       </div>
 
-      {/* Content */}
-      <div
-        className="relative overflow-visible px-5 pb-5 pt-0 h-[210px] flex flex-col"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.98) 100%)",
-        }}
-      >
-        {/* Cutie Mark Background Pattern */}
-        <div className="absolute inset-0 pointer-events-none">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <img
-              key={i}
-              src={cutieMarks[i % cutieMarks.length]}
-              alt=""
-              className="absolute select-none"
+      {/* BODY */}
+      <div className="flex flex-col flex-1 p-3 sm:p-5">
+
+        <div className="flex justify-center -mt-10 sm:-mt-12 mb-3 z-10">
+
+          <div
+  className="
+    px-5
+    py-2
+    rounded-full
+    border
+    border-[#d4af37]
+    bg-gradient-to-b
+    from-[#2d2d2d]
+    to-[#171717]
+    shadow-[0_8px_18px_rgba(0,0,0,.45)]
+    flex
+    items-center
+    justify-center
+    mx-auto
+  "
+>
+  <span
+    className="
+      text-xl
+      sm:text-2xl
+      font-black
+      tracking-wide
+      text-[#f5d37a]
+    "
+    style={{
+      fontFamily: "Oxanium, sans-serif",
+      textShadow: "0 0 10px rgba(212,175,55,.35)",
+    }}
+  >
+    {percent}%
+  </span>
+</div>
+
+        </div>
+
+        <h3
+          className="
+            text-center
+            text-sm
+            sm:text-lg
+            font-semibold
+            text-[#f4ead0]
+            leading-tight
+            line-clamp-2
+            min-h-[2.8rem]
+            sm:min-h-[3.5rem]
+          "
+          style={{ fontFamily: "Oxanium, sans-serif" }}
+        >
+          {set.name}
+        </h3>
+
+        <div className="hidden sm:block mt-auto">
+
+          <div className="h-2 rounded-full bg-[#333] overflow-hidden">
+
+            <div
+              className="h-full rounded-full"
               style={{
-                left: `${(i * 23) % 100}%`,
-                top: `${(i * 37) % 100}%`,
-                width: `${14 + (i % 4) * 4}px`,
-                opacity: 0.08,
-                transform: `rotate(${(i * 41) % 360}deg)`,
+                width: `${percent}%`,
+                background:
+                  "linear-gradient(90deg,#b48b24,#d4af37,#f7e28f)",
               }}
             />
-          ))}
-        </div>
 
-        <div className="relative z-10 flex flex-col h-full">
-          {/* Floating Percent Circle */}
-          <div className="relative -mt-6 mb-4 flex justify-center z-30">
-            <div
-              className="w-20 h-20 rounded-full border-4 border-white shadow-xl flex items-center justify-center"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(245,238,255,0.98) 100%)",
-              }}
-            >
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f9a8d4 100%)",
-                  color: "white",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.15)",
-                }}
-              >
-                {percent}%
-              </div>
-            </div>
           </div>
 
-          {/* Title */}
-          <h3 className="font-semibold text-[#2f2150] text-base md:text-lg leading-snug text-center mb-2">
-            {set.name}
-          </h3>
+          <div className="flex justify-between mt-3 text-sm">
 
-          {/* Progress Area */}
-          <div className="mt-auto">
-            <div className="h-2 rounded-full bg-[#ede7f7] overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${percent}%`,
-                  background:
-                    "linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #d4af37 100%)",
-                }}
-              />
-            </div>
+            <span className="text-[#f4ead0] font-semibold">
+              {owned} / {set.total}
+            </span>
 
-            <div className="pt-3 flex justify-between items-center text-sm">
-              <span className="font-semibold text-[#2f2150]">
-                {owned} / {set.total}
-              </span>
+            <span className="text-[#9f9f9f]">
+              {set.total} cards
+            </span>
 
-              <span className="text-[#7c5aa6] font-medium">
-                {set.total} cards
-              </span>
-            </div>
           </div>
+
         </div>
+
       </div>
+
     </button>
   );
 };
@@ -673,27 +676,115 @@ const overallVisiblePercent =
                 .filter((set) => (progress[set.id] || 0) < set.total)
                 .map(renderSetCard)}
             </div>
-            {/* Mastered Set Plates */}
-<div className="flex flex-wrap justify-center gap-1.5 max-w-5xl mx-auto mt-8 pb-32 px-4">
-  {sets
-    .filter((set) => {
-      const owned = progress[set.id] || 0;
-      return set.total > 0 && owned === set.total;
-    })
-    .map((set) => (
-      <div
-        key={`mastered-${set.id}`}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/92 border border-[#d4af37]/40 shadow-md"
-      >
-        <span className="text-xs md:text-sm font-semibold text-[#2f2150]">
-          {set.name}
-        </span>
+{/* MASTERED COLLECTION */}
+<div className="max-w-7xl mx-auto mt-16 pb-32">
 
-        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-[#f5e6a8] via-[#d4af37] to-[#b8962e] text-white text-[10px] font-bold shadow-sm">
-          ✓
-        </span>
+  <div className="flex items-center gap-5 mb-8">
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#caa43a]/40 to-transparent" />
+
+    <h2
+      className="text-2xl md:text-3xl font-bold tracking-[0.25em] text-[#f5d37a]"
+      style={{ fontFamily: "Oxanium, sans-serif" }}
+    >
+      MASTERED COLLECTION
+    </h2>
+
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#caa43a]/40 to-transparent" />
+  </div>
+
+  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5">
+
+    {sets
+      .filter((set) => {
+        const owned = progress[set.id] || 0;
+        return set.total > 0 && owned === set.total;
+      })
+      .map((set) => {
+
+        const image =
+          set.id === "9"
+            ? "/promo-cards/mlpepr002.webp"
+            : setBadgeImages[set.id];
+
+return (
+  <button
+    key={set.id}
+    onClick={() => releasedRoutes[set.id] && navigate(releasedRoutes[set.id])}
+    className="
+      relative
+      overflow-hidden
+      rounded-3xl
+      border
+      border-[#caa43a]
+      bg-gradient-to-b
+      from-[#262626]
+      via-[#1a1a1a]
+      to-[#101010]
+      hover:border-[#f5d37a]
+      hover:-translate-y-1
+      transition-all
+      duration-300
+      shadow-[0_12px_30px_rgba(0,0,0,.45)]
+      p-5
+      text-left
+    "
+  >
+
+    {/* White Artwork Display */}
+    <div
+      className="
+        rounded-2xl
+        bg-white
+        border
+        border-[#e5e5e5]
+        h-36
+        flex
+        items-center
+        justify-center
+        p-4
+        shadow-inner
+      "
+    >
+      <img
+        src={image}
+        alt={set.name}
+        className="max-h-full max-w-full object-contain"
+      />
+    </div>
+
+    <h3
+      className="mt-5 text-center text-sm font-semibold text-[#f4ead0] min-h-[42px]"
+      style={{ fontFamily: "Oxanium, sans-serif" }}
+    >
+      {set.name}
+    </h3>
+
+    <div className="mt-4 flex justify-center">
+      <div
+        className="
+          px-4
+          py-1.5
+          rounded-full
+          bg-gradient-to-r
+          from-[#b88a24]
+          via-[#d4af37]
+          to-[#f5d37a]
+          text-[#151515]
+          text-xs
+          font-bold
+          tracking-[0.18em]
+        "
+      >
+        MASTERED
       </div>
-    ))}
+    </div>
+
+  </button>
+);
+      })}
+
+  </div>
+
 </div>
           </div>
         );

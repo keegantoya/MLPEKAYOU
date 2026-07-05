@@ -542,24 +542,8 @@ const toggleHideWishlist = async () => {
 
   return (
 <div
-  className="relative min-h-screen"
-    style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
-}}
-    >
+  className="relative min-h-screen bg-[#2f2f2f]"
+>
 
 
 {/* Background Cutie Marks */}
@@ -654,136 +638,158 @@ const toggleHideWishlist = async () => {
 </div>
 
       <div className="relative z-10 container py-8 pb-28 sm:pb-8">
-        {/* Header */}
-        <div className="relative z-40 rounded-3xl border border-[#d4af37]/40 bg-white/70 backdrop-blur-md shadow-lg px-5 py-5 mb-8">
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
-<div className="flex items-center justify-center gap-3">
+{/* Header */}
+<div className="relative z-40 rounded-3xl border border-zinc-700 bg-[#3a3a3a] shadow-2xl px-6 py-6 mb-8">
+  <div className="flex flex-col items-center justify-center gap-4 text-center">
 
-  <h1
-    className="text-4xl sm:text-5xl md:text-6xl font-bold
-               tracking-[0.04em] text-[#5a3e84]"
-    style={{
-      fontFamily:
-        '"Playfair Display", "Cormorant Garamond", "Garamond", serif',
-      fontStyle: "italic",
-      letterSpacing: "0.06em",
-    }}
-  >
-    Wishlist
-  </h1>
-</div>
+    <h1
+      className="text-4xl sm:text-5xl md:text-6xl font-black text-yellow-400"
+      style={{
+        fontFamily:
+          '"Playfair Display","Cormorant Garamond","Garamond",serif',
+      }}
+    >
+      Wishlist
+    </h1>
 
-            <p className="text-sm sm:text-base text-gray-600 max-w-2xl">
-              You can choose to display your wishlist and your ISO, or hide your ISO from public view and display only your wishlist.
-            </p>
+    <div className="h-px w-48 bg-yellow-500/40" />
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-2">
+    <p className="max-w-2xl text-sm sm:text-base text-zinc-300">
+      Choose whether to publicly display your ISO, your wishlist, or both.
+    </p>
+
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+
+<div className="relative group flex items-center gap-2">
   <button
     onClick={toggleHideISO}
-    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition ${
-      hideISO
-        ? "bg-[#5a3e84] text-[#f5e6a8] border-[#d4af37]"
-        : "bg-white text-[#5a3e84] border-[#d4af37]/40"
-    }`}
+className={`rounded-xl border px-4 py-2 text-xs sm:text-sm font-semibold transition ${
+  hideISO
+    ? "bg-yellow-500 text-black border-yellow-400"
+    : "bg-[#4a4a4a] text-yellow-400 border-zinc-700"
+}`}
   >
-    {hideISO ? "✓ " : ""}DO NOT SHOW ISO
+    {hideISO ? "✓ " : ""}
+    DO NOT SHOW ISO
   </button>
 
+ <div className="flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-zinc-600 bg-[#444444] text-[11px] font-bold text-yellow-400 transition group-hover:bg-[#555555] group-hover:border-yellow-400">
+    ?
+  </div>
+
+  <div className="pointer-events-none absolute left-0 top-full z-50 mt-2 w-72 rounded-xl border border-zinc-700 bg-[#2f2f2f] p-3 text-xs leading-relaxed text-zinc-300 opacity-0 shadow-2xl transition-all duration-200 group-hover:opacity-100">
+    Removes your ISO from public view but does not affect your personal collection or ISO page.
+  </div>
+</div>
+
+<div className="relative group flex items-center gap-2">
   <button
     onClick={toggleHideWishlist}
-    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition ${
+    className={`rounded-xl border px-4 py-2 text-xs sm:text-sm font-semibold transition ${
       hideWishlist
-        ? "bg-[#5a3e84] text-[#f5e6a8] border-[#d4af37]"
-        : "bg-white text-[#5a3e84] border-[#d4af37]/40"
+        ? "bg-yellow-500 text-black border-yellow-400"
+        : "bg-[#4a4a4a] text-yellow-400 border-zinc-700"
     }`}
   >
-    {hideWishlist ? "✓ " : ""}DO NOT SHOW WISHLIST
+    {hideWishlist ? "✓ " : ""}
+    DO NOT SHOW WISHLIST
   </button>
+
+  <div className="flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-zinc-600 bg-[#444444] text-[11px] font-bold text-yellow-400 transition group-hover:bg-[#555555] group-hover:border-yellow-400">
+    ?
+  </div>
+
+  <div className="pointer-events-none absolute left-0 top-full z-50 mt-2 w-72 rounded-xl border border-zinc-700 bg-[#2f2f2f] p-3 text-xs leading-relaxed text-zinc-300 opacity-0 shadow-2xl transition-all duration-200 group-hover:opacity-100">
+    Keep your wishlist personal and not public.
+  </div>
 </div>
-          </div>
-        </div>
+    </div>
+  </div>
+</div>
 
 {/* CONTENT AREA */}
-<div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4 lg:gap-6">
+<div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
   {/* LEFT SIDEBAR — ALL SETS */}
-  <div className="rounded-3xl border border-[#d4af37]/40 bg-white/70 backdrop-blur-md shadow-lg p-3 sm:p-4 h-fit">
-    <button
+  <div className="rounded-3xl border border-zinc-700 bg-[#3a3a3a] shadow-2xl p-4 h-fit">
+<button
   onClick={() => setSelectedSetId("FULL_WISHLIST")}
   className={`w-full mb-4 px-4 py-3 rounded-2xl border font-semibold text-sm transition ${
     selectedSetId === "FULL_WISHLIST"
-      ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white border-pink-400 shadow-md"
-      : "bg-white/80 text-pink-600 border-pink-200 hover:bg-pink-50"
+      ? "bg-yellow-500 text-black border-yellow-400 shadow-lg"
+      : "bg-[#4a4a4a] text-yellow-400 border-zinc-700 hover:bg-[#555]"
   }`}
 >
   See Full Wishlist
 </button>
 
 <button
-onClick={() => setShowSetList(!showSetList)}
-  className="w-full flex items-center justify-between mb-4 px-4 py-3 rounded-2xl border bg-white/50 hover:bg-white border-transparent hover:border-[#d4af37]/30 text-[#5a3e84] transition"
+  onClick={() => setShowSetList(!showSetList)}
+  className="w-full flex items-center justify-between mb-4 px-4 py-3 rounded-2xl border border-zinc-700 bg-[#4a4a4a] hover:bg-[#555] text-yellow-400 transition"
 >
-  <span className="text-xs tracking-[0.25em] font-semibold uppercase text-[#8b6a2b]">
+  <span className="text-xs tracking-[0.25em] font-bold uppercase">
     All Sets
   </span>
-  <span className="text-lg leading-none">
-    {expandedGroup === "__ALL_SETS__" ? "−" : "+"}
+
+  <span className="text-lg">
+    {showSetList ? "−" : "+"}
   </span>
 </button>
 
 {showSetList && (
   <div className="space-y-2">
-  {setGroups.map((group) => (
-    <div key={group.label} className="space-y-2">
-      {/* Category Button */}
-      <button
-        onClick={() =>
-          setExpandedGroup(
-            expandedGroup === group.label ? null : group.label
-          )
-        }
-        className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border bg-white/50 hover:bg-white border-transparent hover:border-[#d4af37]/30 text-[#5a3e84] transition"
-      >
-        <span className="font-semibold text-sm">
-          {group.label}
-        </span>
-        <span className="text-lg leading-none">
-          {expandedGroup === group.label ? "−" : "+"}
-        </span>
-      </button>
+    {setGroups.map((group) => (
+      <div key={group.label} className="space-y-2">
 
-      {/* Set Buttons */}
-      {expandedGroup === group.label &&
-        group.setIds.map((setId) => {
-          const set = sets.find((s) => s.id === setId);
-          if (!set) return null;
+        <button
+          onClick={() =>
+            setExpandedGroup(
+              expandedGroup === group.label ? null : group.label
+            )
+          }
+          className="w-full flex items-center justify-between rounded-2xl border border-zinc-700 bg-[#4a4a4a] px-4 py-3 text-yellow-400 transition hover:bg-[#555]"
+        >
+          <span className="font-semibold text-sm">
+            {group.label}
+          </span>
 
-          return (
-            <button
-              key={set.id}
-              onClick={() => setSelectedSetId(set.id)}
-              className={`w-full text-left px-4 py-2 rounded-xl border transition ${
-                selectedSetId === set.id
-                  ? "bg-gray-200 text-[#5a3e84] border-gray-300 shadow-sm"
-                  : "bg-white/40 hover:bg-white border-transparent hover:border-[#d4af37]/30 text-[#5a3e84]"
-              }`}
-            >
-              <div className="font-medium text-sm leading-tight text-gray-500">
-{set.name
-  .replace(/^Eternal Moon:?\s*/, "")
-  .replace(/^Rainbow:?\s*/, "")
-  .replace(/^Fun Moments:?\s*/, "")}
-              </div>
-            </button>
-          );
-        })}
-    </div>
-  ))}
+          <span className="text-lg">
+            {expandedGroup === group.label ? "−" : "+"}
+          </span>
+        </button>
+
+        {expandedGroup === group.label &&
+          group.setIds.map((setId) => {
+            const set = sets.find((s) => s.id === setId);
+            if (!set) return null;
+
+            return (
+              <button
+                key={set.id}
+                onClick={() => setSelectedSetId(set.id)}
+                className={`w-full rounded-xl border px-4 py-2 text-left transition ${
+                  selectedSetId === set.id
+                    ? "bg-yellow-500 text-black border-yellow-400"
+                    : "bg-[#3f3f3f] text-zinc-200 border-zinc-700 hover:bg-[#505050]"
+                }`}
+              >
+                <div className="text-sm font-medium">
+                  {set.name
+                    .replace(/^Eternal Moon:?\s*/, "")
+                    .replace(/^Rainbow:?\s*/, "")
+                    .replace(/^Fun Moments:?\s*/, "")}
+                </div>
+              </button>
+            );
+          })}
+
+      </div>
+    ))}
   </div>
 )}
   </div>
 
   {/* RIGHT CONTENT — WISHLIST CARDS */}
-  <div className="rounded-3xl border border-[#d4af37]/40 bg-gradient-to-br from-white/80 to-[#f6f0ff]/70 backdrop-blur-sm shadow-lg p-3 sm:p-6 lg:p-8">
+  <div className="rounded-3xl border border-zinc-700 bg-[#3a3a3a] shadow-2xl p-3 sm:p-6 lg:p-8">
     {(() => {
         if (selectedSetId === "FULL_WISHLIST") {
 const wishlistCards = Array.from(wishlist)
@@ -794,12 +800,50 @@ const wishlistCards = Array.from(wishlist)
   });
 
   if (wishlistCards.length === 0) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        Your wishlist is empty.
-      </div>
-    );
-  }
+  return (
+    <div className="py-12 text-center text-zinc-400">
+      Your wishlist is empty.
+    </div>
+  );
+}
+
+return (
+  <div>
+<div className="mb-4">
+  <div className="flex items-center justify-center gap-4">
+    <div className="h-px flex-1 max-w-[140px] bg-zinc-700" />
+    <span className="text-xs font-bold uppercase tracking-[0.3em] text-yellow-400">
+      Full Wishlist
+    </span>
+    <div className="h-px flex-1 max-w-[140px] bg-zinc-700" />
+  </div>
+
+  <p className="mt-2 text-center text-xs text-zinc-400">
+    Tap a card to remove it from your wishlist.
+  </p>
+</div>
+
+    <div className="grid grid-cols-3 gap-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      {wishlistCards.map((card) => (
+        <div
+          key={`${card.set_id}:${card.card_key}`}
+          className={`relative w-full cursor-pointer ${
+            card.set_id === "3" && card.card_key === "SZR-001"
+              ? "col-span-2 aspect-[10/7]"
+              : "aspect-[5/7]"
+          }`}
+          onClick={() => toggleWishlist(card.set_id, card.card_key)}
+        >
+<img
+  src={getWishlistCardImage(card)}
+  alt={card.card_key}
+className="h-full w-full rounded-xl object-cover shadow-lg border-[2px] sm:border-[4px] border-pink-400"
+/>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
   return (
     <div>
@@ -896,18 +940,29 @@ const cards =
 {!["9", "tcgpromos"].includes(selectedSet.id) && (
   <div className="flex flex-wrap justify-center gap-2 mb-6">
     {[...new Set(cards.map((card) => card.rarity))].map((rarity) => (
-      <button
-        key={rarity}
-        onClick={() => {
-          document
-            .getElementById(`rarity-${rarity}`)
-            ?.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-        }}
-        className="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-white border border-[#d4af37]/40 text-[#5a3e84] hover:bg-[#f8f3ff] transition"
-      >
+<button
+  key={rarity}
+  onClick={() => {
+    document
+      .getElementById(`rarity-${rarity}`)
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  }}
+  className="
+    rounded-full
+    border border-zinc-700
+    bg-[#444444]
+    px-3 py-1.5
+    text-xs sm:text-sm
+    font-semibold
+    text-yellow-400
+    transition
+    hover:bg-[#555555]
+    hover:border-yellow-500
+  "
+>
         {rarity === "LC"
           ? "PR"
           : rarity === "SHINING ZR"
@@ -1058,34 +1113,38 @@ return (
       </div>
 
 {showBackToTop && (
-  <button
-    onClick={() =>
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      })
-    }
-    className="
-      fixed
-      bottom-32 sm:bottom-6
-      right-4 sm:right-6
-      z-[99999]
-      w-11 h-11
-      rounded-full
-      bg-gradient-to-r
-      from-[#7c5aa6]
-      to-[#5a3e84]
-      text-[#f5e6a8]
-      border border-[#d4af37]/60
-      shadow-2xl
-      active:scale-95
-      transition
-      flex items-center justify-center
-    "
-    aria-label="Back to top"
-  >
-    <ChevronUp className="w-5 h-5" />
-  </button>
+<button
+  onClick={() =>
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
+  }
+  className="
+    fixed
+    bottom-32 sm:bottom-6
+    right-4 sm:right-6
+    z-[99999]
+    flex
+    h-11
+    w-11
+    items-center
+    justify-center
+    rounded-full
+    border
+    border-yellow-400
+    bg-[#444444]
+    text-yellow-400
+    shadow-2xl
+    transition
+    hover:bg-[#555555]
+    hover:scale-105
+    active:scale-95
+  "
+  aria-label="Back to top"
+>
+  <ChevronUp className="h-5 w-5" />
+</button>
 )}
     </div>
   );

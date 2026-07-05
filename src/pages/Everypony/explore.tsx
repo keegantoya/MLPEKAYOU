@@ -190,53 +190,13 @@ const { data, error } = await supabase
 
   setSearchingUsers(false);
 }
-
-  const placeholderCollectors = [
-    {
-      username: "TwilightCollector",
-      completion: "98.4%",
-      cards: "6,842",
-      trader: true,
-    },
-    {
-      username: "RainbowDashFan",
-      completion: "91.7%",
-      cards: "6,412",
-      trader: true,
-    },
-    {
-      username: "FluttershyCards",
-      completion: "87.3%",
-      cards: "6,025",
-      trader: false,
-    },
-    {
-      username: "Applejack",
-      completion: "82.1%",
-      cards: "5,771",
-      trader: true,
-    },
-    {
-      username: "PinkiePie",
-      completion: "76.4%",
-      cards: "5,208",
-      trader: false,
-    },
-    {
-      username: "PrincessLuna",
-      completion: "72.8%",
-      cards: "4,931",
-      trader: true,
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="max-w-7xl mx-auto px-6 py-10">
+    <div className="min-h-screen bg-[#2e2e2e] font-['Oxanium']">
+     <div className="max-w-7xl mx-auto px-5 py-10 pb-24 md:pb-10">
 
 {/* Header */}
 <div
-  className="relative overflow-hidden rounded-3xl shadow-lg border border-slate-200 mb-8"
+  className="relative overflow-hidden rounded-3xl shadow-lg border border-slate-400 mb-8"
   style={{
     backgroundImage: "url('/website-assets/exploreequestria.webp')",
     backgroundSize: "cover",
@@ -282,7 +242,7 @@ const { data, error } = await supabase
   value={userSearch}
   onChange={(e) => searchUsers(e.target.value)}
   placeholder="Search collectors..."
-            className="w-full rounded-xl border border-slate-300 bg-white pl-12 pr-4 py-4 text-slate-900 placeholder:text-slate-400 shadow-sm"
+            className="w-full rounded-xl border border-slate-600 bg-[#202020] pl-12 pr-4 py-4 text-slate-400 placeholder:text-slate-400 shadow-sm"
           />
 
 {(userSearch.trim() || searchResults.length > 0) && (
@@ -370,20 +330,20 @@ onClick={async () => {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-              <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-                <Users className="text-blue-500 mb-3" size={30} />
-                <h3 className="text-4xl font-bold text-slate-900">
+              <div className="rounded-2xl bg-[#535252] border-slate-100 shadow-sm p-6">
+                <Users className="text-[#dad89a] mb-3" size={30} />
+                <h3 className="text-4xl font-bold text-[#dad89a]">
                   {collectorCount.toLocaleString()}
                 </h3>
-                <p className="text-slate-500 mt-1">Collectors</p>
+                <p className="text-slate-200 mt-1">Collectors</p>
               </div>
 
-              <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-                <Repeat2 className="text-emerald-500 mb-3" size={30} />
-                <h3 className="text-4xl font-bold text-slate-900">
+              <div className="rounded-2xl bg-[#535252] border-slate-200 shadow-sm p-6">
+                <Repeat2 className="text-[#dad89a]" size={30} />
+                <h3 className="text-4xl font-bold text-[#dad89a]">
                   {activeTraders.toLocaleString()}
                 </h3>
-                <p className="text-slate-500 mt-1">Active Traders</p>
+                <p className="text-slate-200 mt-1">Active Traders</p>
               </div>
 
             </div>

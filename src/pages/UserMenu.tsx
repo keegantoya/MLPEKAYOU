@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { calculateCollectionTotal } from "@/lib/CalculateCollectionTotal";
 import {
   ArrowLeftRight,
   Pencil,
@@ -220,17 +221,24 @@ const [selectedCardImage, setSelectedCardImage] = useState<string | null>(null);
 
       if (!session?.user) return;
 
-      // Total cards owned
-      const { data: collection } = await supabase
-        .from("collection_progress_raw")
-        .select("progress")
-        .eq("user_id", session.user.id);
+// Total cards owned
+const { data: collection } = await supabase
+  .from("collection_progress_raw")
+  .select("set_id, progress")
+  .eq("user_id", session.user.id);
 
-      let owned = 0;
+const filtered = (collection || []).filter(
+  (row: any) => row.set_id !== "OTHERMERCH"
+);
 
-      (collection || []).forEach((row: any) => {
-        owned += Object.values(row.progress || {}).filter(Boolean).length;
-      });
+let owned = 0;
+
+filtered.forEach((row: any) => {
+  owned += Object.values(row.progress || {}).filter((value: any) =>
+    value === true ||
+    (typeof value === "object" && value?.owned === true)
+  ).length;
+});
 
       // Completed sets
       const { data: progress } = await supabase
@@ -965,6 +973,56 @@ useEffect(() => {
 
   {/* Mercari Style Menu */}
   <div className="mt-3 border border-gray-200 rounded-xl overflow-hidden bg-white">
+
+<button
+  onClick={() => navigate("/support-mlpekayou")}
+  className="
+    relative
+    overflow-hidden
+    w-full
+    flex
+    items-center
+    justify-between
+    px-4
+    py-4
+    border-b
+    border-[#d4af37]/30
+    text-left
+    bg-gradient-to-r
+    from-[#3b3b3b]
+    via-[#474747]
+    to-[#3b3b3b]
+    shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
+    transition-all
+    duration-300
+    hover:brightness-110
+    hover:border-[#d4af37]/70
+    group
+  "
+>
+  <span
+    className="
+      absolute
+      inset-0
+      -translate-x-full
+      bg-gradient-to-r
+      from-transparent
+      via-white/20
+      to-transparent
+      group-hover:translate-x-full
+      transition-transform
+      duration-1000
+    "
+  />
+
+  <span className="relative text-[15px] font-bold text-[#e6c35a] tracking-[0.02em]">
+    ✨ Support MLPEKAYOU
+  </span>
+
+  <span className="relative text-xl text-[#e6c35a]">
+    ›
+  </span>
+</button>
 
     <button
       onClick={() => navigate("/inventory")}

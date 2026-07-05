@@ -66,7 +66,7 @@ export default function Selling() {
         ["CRYSTAL ZR", "$35"],
         ["HIDDEN ZR", "$150"],
         ["SC", "$62"],
-        ["HIDDEN SC", "$200"],
+        ["HIDDEN SC", "$245"],
         ["CHILDHOOD ◇ZR", "UNKNOWN"],
         ["CRYSTAL ◇ZR", "UNKNOWN"],
       ],
@@ -87,7 +87,7 @@ export default function Selling() {
       rows: [
         ["USR", "$15"],
         ["XR", "$28"],
-        ["HIDDEN XR", "$75"],
+        ["HIDDEN XR", "UNKNOWN"],
       ],
     },
     {
@@ -165,58 +165,64 @@ const filteredPricingCards =
       });
 
   return (
-    <div
-      className="min-h-screen text-neutral-800"
-    style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
-}}
-    >
-
+<div
+  className="min-h-screen bg-[#333333] text-zinc-900 pb-24 sm:pb-0"
+>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-5">
         {/* HERO */}
         <section className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/80 border border-yellow-300 shadow-md -mt-1 mb-6">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-zinc-800 border border-zinc-600 shadow-lg text-zinc-100 -mt-1 mb-6">
             <span className="text-yellow-500">✦</span>
-            <span className="text-sm sm:text-base font-semibold tracking-wide text-violet-800">
+            <span className="text-sm sm:text-base font-semibold tracking-wide text-zinc-100">
               Unofficial Community Price Guide
             </span>
             <span className="text-yellow-500">✦</span>
           </div>
 
-          {/* DESCRIPTION CARD */}
-          <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm border border-yellow-300 rounded-[28px] shadow-xl p-6 sm:p-8 mb-8">
-            <div className="flex flex-col sm:flex-row items-center gap-5">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-100 to-white border-4 border-yellow-200 shadow-lg p-1 shrink-0">
-  <img
-    src={KeeganAvatar}
-    alt="Princess Luna"
-    className="w-full h-full rounded-full object-cover"
-  />
-</div>
+{/* INTRODUCTION */}
+<div className="max-w-5xl mx-auto mb-10">
 
-              <p className="text-sm sm:text-base leading-8 text-violet-900 text-center sm:text-left">
-                Prices are established by a council of experienced collectors
-                based on pull rates, rarity, and sealed product costs. These
-                values are intended to promote fair trading and preserve the
-                accessibility of MLP Kayou for every collector. My Little Pony
-                Kayou products are not intended for profiting like Pokemon. Please
-                refrain from buying cards simply to sell.
-              </p>
-            </div>
-          </div>
+  <div className="flex items-center gap-5 mb-5">
+    <img
+      src={KeeganAvatar}
+      alt="Pricing Guide"
+      className="w-16 h-16 rounded-lg border border-zinc-600 shadow-lg"
+    />
+
+    <div>
+
+      <h2 className="text-4xl font-black uppercase leading-none text-zinc-900">
+        How Prices Are Determined
+      </h2>
+    </div>
+  </div>
+
+  <div className="border-t-2 border-yellow-500 mb-6" />
+
+  <div className="bg-zinc-800 border border-zinc-600 rounded-xl overflow-hidden">
+
+    <div className="px-6 py-6">
+
+      <p className="text-zinc-300 leading-8">
+        Prices are established by an experienced council of collectors who were
+        collecting long before the arrival of North American Kayou products.
+        Values are based on rarity, pull rates, product availability, and
+        long-term collector demand rather than inflated resale listings or
+        speculative pricing.
+      </p>
+
+      <p className="mt-5 text-zinc-300 leading-8">
+        This guide exists to encourage fair trades within the community. Trading
+        Card Game products are intentionally excluded because their values are
+        driven by gameplay and fluctuate too frequently to maintain reliable
+        community pricing.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
 
           {/* STATS */}
           <div className="grid grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
@@ -239,76 +245,76 @@ const filteredPricingCards =
           </div>
         </section>
 
-        {/* TIER CARDS */}
-        <section className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* LOWER */}
-          <div className="bg-white/90 border border-violet-200 rounded-[32px] shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-violet-100 to-white px-6 py-5 border-b border-violet-100">
-              <div className="bg-gradient-to-r from-violet-100 to-white px-6 py-5 border-b border-violet-100">
-  <h2 className="text-3xl font-bold text-violet-900 flex items-center gap-3">
-    <img
-      src="/website-assets/elementoflaughter.webp"
-      alt="Lower Tier"
-      className="w-10 h-10 object-contain drop-shadow-sm"
-    />
-    <span>Lower Tier Cards</span>
-  </h2>
-</div>
-            </div>
+{/* CARDS WITH VALUE */}
+<section className="mb-12">
 
-            <div className="p-6 space-y-3">
-              {lowerTier.map(([name, rarities]) => (
-                <div
-                  key={name}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-violet-100 last:border-0 last:pb-0"
-                >
-                  <span className="text-sm sm:text-base text-violet-900">
-                    <span className="font-semibold">{name}</span> — {rarities}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-xs font-semibold whitespace-nowrap">
-                    Common
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+  <div className="flex items-center gap-4 mb-6">
 
-          {/* HIGHER */}
-          <div className="bg-white/90 border border-yellow-300 rounded-[32px] shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-yellow-100 to-amber-50 px-6 py-5 border-b border-yellow-200">
-              <div className="bg-gradient-to-r from-yellow-100 to-amber-50 px-6 py-5 border-b border-yellow-200">
-  <h2 className="text-3xl font-bold text-violet-900 flex items-center gap-3">
-    <img
-      src="/website-assets/elementofgenerosity.webp"
-      alt="Higher Tier"
-      className="w-10 h-10 object-contain drop-shadow-sm"
-    />
-    <span>Higher Tier Cards</span>
-  </h2>
-</div>
-            </div>
+    <div>
+      <p className="text-xs uppercase tracking-[0.3em] text-zinc-600 font-semibold">
+        Community Guide
+      </p>
 
-            <div className="p-6 space-y-3">
-              {higherTier.map(([name, rarities]) => (
-                <div
-                  key={name}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-yellow-100 last:border-0 last:pb-0"
-                >
-                  <span className="text-sm sm:text-base text-violet-900">
-                    <span className="font-semibold">{name}</span> — {rarities}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-yellow-100 text-amber-700 text-xs font-semibold whitespace-nowrap">
-                    Valuable
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+      <h2 className="text-4xl font-black uppercase leading-none text-zinc-900">
+        Cards with Value
+      </h2>
+    </div>
+  </div>
 
-        {/* FILTER BAR */}
-<section className="bg-white/80 backdrop-blur-sm border border-violet-100 rounded-2xl shadow-lg p-4 mb-8">
-  <div className="flex flex-wrap gap-2 justify-center">
+  <div className="border-t-2 border-yellow-500 mb-6" />
+
+  <div className="bg-zinc-800 border border-zinc-600 rounded-xl overflow-hidden">
+
+    {higherTier.map(([name, rarities], index) => (
+      <div
+        key={name}
+        className={`flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 px-6 py-5 ${
+          index !== higherTier.length - 1
+            ? "border-b border-zinc-700"
+            : ""
+        }`}
+      >
+        <div>
+          <h3 className="text-lg font-bold text-zinc-100">
+            {name}
+          </h3>
+
+          <p className="mt-1 text-sm text-zinc-400">
+            {rarities}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="px-3 py-1 rounded-md bg-gradient-to-r from-[#fff7c2] via-[#f6d365] to-[#d4af37] text-[#4a3200] text-xs font-bold uppercase tracking-wide">
+            Valuable
+          </span>
+        </div>
+      </div>
+    ))}
+
+  </div>
+
+</section>
+
+{/* SET FILTER */}
+<section className="mb-10">
+
+  <div className="flex items-center justify-between mb-4">
+    <div>
+      <p className="text-xs uppercase tracking-[0.3em] font-semibold text-zinc-500">
+        General Estimates
+      </p>
+
+      <h2 className="text-3xl font-black uppercase leading-none text-zinc-900 mt-1">
+        Filter by Set
+      </h2>
+    </div>
+  </div>
+
+  <div className="h-px bg-yellow-500 mb-6" />
+
+  <div className="flex flex-wrap gap-3">
+
     {[
       "All Sets",
       "Moon",
@@ -319,16 +325,18 @@ const filteredPricingCards =
       <button
         key={filter}
         onClick={() => setSelectedFilter(filter)}
-        className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+        className={`px-5 py-3 rounded-lg border text-sm font-bold uppercase tracking-wide transition-all duration-200 ${
           selectedFilter === filter
-            ? "bg-gradient-to-r from-violet-600 to-purple-500 text-white shadow-md"
-            : "bg-white border border-violet-200 text-violet-700 hover:bg-violet-50"
+            ? "text-[#4a3200] border-[#d4af37] bg-gradient-to-br from-[#fff7c2] via-[#f6d365] to-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.45)]"
+            : "bg-zinc-800 border-zinc-600 text-zinc-100 hover:bg-zinc-700 hover:border-zinc-500"
         }`}
       >
         {filter}
       </button>
     ))}
+
   </div>
+
 </section>
 
         {/* PRICING GRID */}
@@ -336,7 +344,7 @@ const filteredPricingCards =
           {filteredPricingCards.map((card) => (
             <div
               key={card.title}
-              className="bg-white/95 backdrop-blur-sm rounded-[28px] overflow-hidden border border-white shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all duration-300"
+              className="bg-zinc-800 rounded-xl overflow-hidden border border-zinc-600 shadow-lg hover:-translate-y-1 hover:shadow-2xl transition-all duration-300"
             >
 <div
   className="relative px-5 py-4 overflow-hidden"
@@ -371,18 +379,18 @@ const filteredPricingCards =
                   {card.rows.map(([rarity, price]) => (
                     <div
                       key={`${card.title}-${rarity}`}
-                      className="flex items-center justify-between py-1 border-b border-violet-50 last:border-0"
+                      className="flex items-center justify-between py-1 border-b border-zinc-700 last:border-0"
                     >
-                      <span className="text-sm font-medium text-violet-900">
+                      <span className="text-sm font-medium text-zinc-100">
                         {rarity}
                       </span>
 
                       {price === "UNK" ? (
-                        <span className="px-3 py-1 rounded-full bg-violet-100 text-violet-600 text-xs font-bold">
+                        <span className="px-3 py-1 rounded-full bg-zinc-700 text-zinc-100 text-xs font-bold">
                           UNK
                         </span>
                       ) : (
-                        <span className="px-3 py-1 rounded-full bg-yellow-100 text-amber-700 text-xs font-bold">
+                        <span className="px-3 py-1 rounded-full bg-gradient-to-r from-[#fff7c2] via-[#f6d365] to-[#d4af37] text-[#4a3200] text-xs font-bold">
                           {price}
                         </span>
                       )}
@@ -390,30 +398,27 @@ const filteredPricingCards =
                   ))}
                 </div>
 
-                {card.note && (
-                  <div className="mt-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 leading-relaxed">
-                    {card.note}
-                  </div>
-                )}
-
               </div>
             </div>
           ))}
         </section>
 
-        {/* FOOTER NOTE */}
-        <section className="mt-8">
-          <div className="max-w-3xl mx-auto bg-white/80 border border-violet-100 rounded-full shadow-md px-6 py-4 text-center">
-            <p className="text-sm font-medium text-violet-700">
-              Prices reflect consistent changes as sets get older
-              and go out of print. Rarity worth may change as the
-              Kayou community itself decides a certain rarity isn't
-              sought after even despite its hit rate. For TCG prices,
-              please refer to eBay's recently sold. Those are a whole
-              different monster.
-            </p>
-          </div>
-        </section>
+{/* FOOTER NOTE */}
+<section className="mt-12 border-t border-zinc-500 pt-8">
+  <div className="max-w-5xl mx-auto">
+    <h3 className="text-lg font-bold uppercase tracking-wide text-zinc-500 mb-3">
+      Pricing Disclaimer
+    </h3>
+
+    <p className="text-sm leading-7 text-zinc-300">
+      Prices reflect changes as products age and become more difficult to
+      obtain. Community demand also influences value, meaning rarities with
+      lower pull rates are not always the most desirable. Trading Card Game
+      prices fluctuate independently and should be referenced using recently
+      completed eBay sales.
+    </p>
+  </div>
+</section>
       </main>
     </div>
   );

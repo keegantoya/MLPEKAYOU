@@ -804,27 +804,54 @@ const androidScale =
 
 return (
 <div
-  className="min-h-screen bg-white flex flex-col items-center py-12"
+  className="
+    min-h-screen
+    flex
+    flex-col
+    items-center
+    py-12
+    bg-[#2b2b2b]
+    text-[#f5f5f5]
+  "
 >
-
 <div className="relative mb-6 flex items-center justify-center gap-4 w-full">
 
 <button
   onClick={() => setShowCustomization(true)}
-  className="hidden md:block absolute right-20 top-1/2 -translate-y-1/2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold shadow transition hover:bg-gray-100"
+  className="
+    hidden
+    md:block
+    absolute
+    right-20
+    top-1/2
+    -translate-y-1/2
+    rounded-xl
+    border
+    border-[#5a5a5a]
+    bg-[#232323]
+    px-4
+    py-2
+    text-sm
+    font-semibold
+    text-[#e6c35a]
+    shadow-lg
+    transition
+    hover:bg-[#2d2d2d]
+    hover:border-[#d4af37]
+    hover:text-[#ffd86a]
+  "
 >
   Customization
 </button>
-
 <div className="md:hidden flex flex-col items-center w-20 flex-shrink-0">
   <img
     src={getAvatar(viewingProfile?.avatar_url)}
     alt={viewingUsername}
-    className="h-12 w-12 rounded-full border-2 border-purple-400 object-cover"
+    className="h-12 w-12 rounded-full border-2 border-[#d4af37] object-cover"
   />
 
   <span
-    className="mt-1 w-full text-center text-xs font-semibold text-purple-700 leading-tight truncate"
+    className="mt-1 w-full truncate text-center text-xs font-semibold leading-tight text-[#e6c35a]"
   >
     {viewingUsername}
   </span>
@@ -871,18 +898,39 @@ setSearchResults(
 );
     }}
     placeholder="Search collectors..."
-    className="block w-[220px] md:w-full md:max-w-none mx-auto md:mx-0 rounded-lg border px-4 py-2"
+    className="
+      block
+      w-[220px]
+      md:w-full
+      md:max-w-none
+      mx-auto
+      md:mx-0
+      rounded-xl
+      border
+      border-[#5a5a5a]
+      bg-[#232323]
+      px-4
+      py-2
+      text-white
+      placeholder:text-[#8a8a8a]
+      caret-[#d4af37]
+      outline-none
+      transition
+      focus:border-[#d4af37]
+      focus:ring-2
+      focus:ring-[#d4af37]/30
+    "
   />
 
   {searchResults.length > 0 && (
 
-    <div className="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg z-50">
+    <div className="absolute left-0 right-0 mt-2 overflow-hidden rounded-xl border border-[#5a5a5a] bg-[#232323] shadow-2xl z-50">
 
 {searchResults.map((u) => (
 
   <button
     key={u.id}
-    className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-gray-100"
+    className="flex w-full items-center gap-3 px-4 py-3 text-left text-white transition hover:bg-[#313131]"
     onClick={() => {
       setViewingUserId(u.id);
       setViewingUsername(u.username);
@@ -895,10 +943,12 @@ setSearchResults(
     <img
       src={getAvatar(u.avatar_url)}
       alt={u.username}
-      className="h-10 w-10 rounded-full object-cover border border-gray-300"
+      className="h-10 w-10 rounded-full border border-[#666666] object-cover"
     />
 
-    <span>{u.username}</span>
+    <span className="font-medium text-white">
+      {u.username}
+    </span>
   </button>
 
 ))}
@@ -906,18 +956,35 @@ setSearchResults(
     </div>
 
   )}
- </div>
- {viewingUserId && (
+</div>
+
+{viewingUserId && (
   <button
     onClick={() => {
-  setViewingUserId(null);
-}}
-    className="rounded-lg bg-purple-600 px-5 py-2 font-semibold text-white hover:bg-purple-700 whitespace-nowrap"
+      setViewingUserId(null);
+    }}
+    className="
+      whitespace-nowrap
+      rounded-xl
+      border
+      border-[#d4af37]
+      bg-[#232323]
+      px-5
+      py-2
+      font-semibold
+      text-[#e6c35a]
+      shadow-lg
+      transition
+      hover:bg-[#2d2d2d]
+      hover:border-[#f0cf66]
+      hover:text-[#ffd86a]
+    "
   >
     <span className="md:hidden">Back</span>
-<span className="hidden md:inline">Back to My Collection</span>
+    <span className="hidden md:inline">Back to My Collection</span>
   </button>
 )}
+
 </div>
 
 {/* Binder Selection */}
@@ -940,10 +1007,10 @@ setSearchResults(
 
         setSpread(1);
       }}
-      className={`rounded-lg px-5 py-2 font-semibold transition ${
+      className={`rounded-xl px-5 py-2 font-semibold shadow-lg transition ${
         selectedBinder === binder
-          ? "bg-purple-600 text-white"
-          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          ? "border border-[#d4af37] bg-[#d4af37] text-[#1b1b1b]"
+          : "border border-[#555555] bg-[#232323] text-[#d8d8d8] hover:bg-[#2f2f2f] hover:border-[#d4af37] hover:text-[#e6c35a]"
       }`}
     >
       {binder}
@@ -970,10 +1037,10 @@ setSearchResults(
 
           setSpread(1);
         }}
-        className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+        className={`rounded-xl px-3 py-2 text-sm font-semibold shadow-lg transition ${
           selectedBinder === binder
-            ? "bg-purple-600 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            ? "border border-[#d4af37] bg-[#d4af37] text-[#1b1b1b]"
+            : "border border-[#555555] bg-[#232323] text-[#d8d8d8] hover:bg-[#2f2f2f] hover:border-[#d4af37] hover:text-[#e6c35a]"
         }`}
       >
         {binder}
@@ -982,32 +1049,32 @@ setSearchResults(
   </div>
 
   <div className="flex justify-center gap-2">
-    {binders.slice(5).map((binder) => (
-      <button
-        key={binder}
-        onClick={() => {
-          setSelectedBinder(binder);
+  {binders.slice(5).map((binder) => (
+    <button
+      key={binder}
+      onClick={() => {
+        setSelectedBinder(binder);
 
-          if (binder === "CCG") {
-            setSelectedSetId(visibleCCGOrder[0] ?? "1");
-          } else {
-            setSelectedSetId(
-              binderSets[binder as keyof typeof binderSets][0].id
-            );
-          }
+        if (binder === "CCG") {
+          setSelectedSetId(visibleCCGOrder[0] ?? "1");
+        } else {
+          setSelectedSetId(
+            binderSets[binder as keyof typeof binderSets][0].id
+          );
+        }
 
-          setSpread(1);
-        }}
-        className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-          selectedBinder === binder
-            ? "bg-purple-600 text-white"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-        }`}
-      >
-        {binder}
-      </button>
-    ))}
-  </div>
+        setSpread(1);
+      }}
+      className={`rounded-xl px-3 py-2 text-sm font-semibold shadow-lg transition ${
+        selectedBinder === binder
+          ? "border border-[#d4af37] bg-[#d4af37] text-[#1b1b1b]"
+          : "border border-[#555555] bg-[#232323] text-[#d8d8d8] hover:bg-[#2f2f2f] hover:border-[#d4af37] hover:text-[#e6c35a]"
+      }`}
+    >
+      {binder}
+    </button>
+  ))}
+</div>
 </div>
 {/* Sidebar + Binder */}
 <div className="relative w-full">
@@ -1022,30 +1089,29 @@ setSearchResults(
     zIndex: 50,
   }}
 >
-    <div className="rounded-xl border border-purple-300 bg-gradient-to-r from-purple-50 to-white p-4 shadow">
+  <div className="rounded-3xl border border-[#4d4d4d] bg-[#232323] p-5 shadow-2xl">
 
-  <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-    Viewing Binders
-  </div>
+    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a9a9a]">
+      Viewing Binders
+    </div>
 
- <div className="mt-2 flex items-center gap-3">
-{viewingProfile?.avatar_url ? (
- <img
-  src={getAvatar(viewingProfile?.avatar_url)}
-  alt={viewingUsername}
-  className="h-11 w-11 rounded-full object-cover border-2 border-purple-400"
-/>
-) : (
-  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-purple-600 text-white">
-    👤
-  </div>
-)}
-
+    <div className="mt-3 flex items-center gap-3">
+      {viewingProfile?.avatar_url ? (
+        <img
+          src={getAvatar(viewingProfile?.avatar_url)}
+          alt={viewingUsername}
+          className="h-11 w-11 rounded-full border-2 border-[#d4af37] object-cover"
+        />
+      ) : (
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#d4af37] text-[#1b1b1b]">
+          👤
+        </div>
+      )}
 
 <div className="min-w-0 flex-1 flex items-center gap-2">
 
   <span
-    className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-xl text-purple-700"
+    className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-xl text-[#e6c35a]"
     title={viewingUsername}
   >
     {viewingUsername}
@@ -1075,47 +1141,71 @@ setSearchResults(
     setPreviewLayout(next);
     setSpread(1);
   }}
-  className="w-full rounded-xl border bg-white px-4 py-3 text-base font-semibold shadow transition hover:bg-gray-100"
+  className="
+    w-full
+    rounded-xl
+    border
+    border-[#5a5a5a]
+    bg-[#232323]
+    px-4
+    py-3
+    text-base
+    font-semibold
+    text-[#e6c35a]
+    shadow-lg
+    transition
+    hover:bg-[#2d2d2d]
+    hover:border-[#d4af37]
+    hover:text-[#ffd86a]
+  "
 >
   Click to change view ({layout})
 </button>
 
-  <div className="rounded-xl border bg-gray-100 p-5 shadow">
+  <div className="
+rounded-3xl
+border
+border-[#3c3c3c]
+bg-[#222222]
+p-5
+shadow-xl
+">
     <h2 className="mb-4 text-xl font-bold">{selectedBinder}</h2>
 
     <div className="space-y-2">
 
       {binderSets[selectedBinder as keyof typeof binderSets].map((set) => {
 
-  const hidden =
-    selectedBinder === "CCG" &&
-    hiddenCCGSets.includes(set.id);
+ const hidden =
+  selectedBinder === "CCG" &&
+  hiddenCCGSets.includes(set.id);
 
-  return (
+return (
 
-        <button
-          key={set.id}
-onClick={() => {
-  if (selectedBinder === "CCG") {
-    setSpread(getCCGSpreadForSet(set.id));
-  } else {
-    setSelectedSetId(set.id);
-    setSpread(1);
-  }
-}}
-          className={`block w-full rounded-lg px-3 py-2 text-left transition ${
-  currentSidebarSet === set.id
-    ? "bg-purple-600 text-white"
-    : "hover:bg-gray-200"
-} ${
-  hidden ? "opacity-40 line-through" : ""
-}`}
-disabled={hidden}
-        >
-          {set.label}
-        </button>
+  <button
+    key={set.id}
+    onClick={() => {
+      if (selectedBinder === "CCG") {
+        setSpread(getCCGSpreadForSet(set.id));
+      } else {
+        setSelectedSetId(set.id);
+        setSpread(1);
+      }
+    }}
+    className={`block w-full rounded-xl px-3 py-2 text-left font-medium shadow-sm transition ${
+      currentSidebarSet === set.id
+        ? "border border-[#d4af37] bg-[#d4af37] text-[#1b1b1b]"
+        : "border border-transparent bg-transparent text-[#d7d7d7] hover:border-[#d4af37] hover:bg-[#2d2d2d] hover:text-[#e6c35a]"
+    } ${
+      hidden ? "opacity-40 line-through" : ""
+    }`}
+    disabled={hidden}
+  >
+    {set.label}
+  </button>
 
-      );
+);
+
 })}
 
     </div>
@@ -1127,68 +1217,101 @@ disabled={hidden}
 
 <div className="flex gap-2">
 
-  <button
-    onClick={() => {
-      const layouts = ["3x3", "4x3", "2x2"] as const;
-      const next =
-        layouts[(layouts.indexOf(layout) + 1) % layouts.length];
+<button
+  onClick={() => {
+    const layouts = ["3x3", "4x3", "2x2"] as const;
+    const next =
+      layouts[(layouts.indexOf(layout) + 1) % layouts.length];
 
-      setLayout(next);
-      setPreviewLayout(next);
-      setSpread(1);
-    }}
-    className="flex-1 rounded-xl border bg-white px-3 py-3 text-sm font-semibold shadow transition hover:bg-gray-100"
-  >
-    View ({layout})
-  </button>
+    setLayout(next);
+    setPreviewLayout(next);
+    setSpread(1);
+  }}
+  className="
+    flex-1
+    rounded-xl
+    border
+    border-[#5a5a5a]
+    bg-[#232323]
+    px-3
+    py-3
+    text-sm
+    font-semibold
+    text-[#e6c35a]
+    shadow-lg
+    transition
+    hover:bg-[#2d2d2d]
+    hover:border-[#d4af37]
+    hover:text-[#ffd86a]
+  "
+>
+  View ({layout})
+</button>
 
-  <button
-    onClick={() => setShowCustomization(true)}
-    className="flex-1 rounded-xl border bg-white px-3 py-3 text-sm font-semibold shadow transition hover:bg-gray-100"
-  >
-    Customize
-  </button>
+<button
+  onClick={() => setShowCustomization(true)}
+  className="
+    flex-1
+    rounded-xl
+    border
+    border-[#5a5a5a]
+    bg-[#232323]
+    px-3
+    py-3
+    text-sm
+    font-semibold
+    text-[#e6c35a]
+    shadow-lg
+    transition
+    hover:bg-[#2d2d2d]
+    hover:border-[#d4af37]
+    hover:text-[#ffd86a]
+  "
+>
+  Customize
+</button>
 
 </div>
 
 {/* Categories */}
 {selectedBinder !== "CCG" && (
-<div className="rounded-xl border bg-gray-100 p-5 shadow">
+  <div className="rounded-3xl border border-[#4d4d4d] bg-[#232323] p-5 shadow-2xl">
     <div className="space-y-2">
       {binderSets[selectedBinder as keyof typeof binderSets].map((set) => {
 
-  const hidden =
-    selectedBinder === "CCG" &&
-    hiddenCCGSets.includes(set.id);
+        const hidden =
+          selectedBinder === "CCG" &&
+          hiddenCCGSets.includes(set.id);
 
-  return (
-        <button
-          key={set.id}
-onClick={() => {
-  if (selectedBinder === "CCG") {
-    setSpread(getCCGSpreadForSet(set.id));
-  } else {
-    setSelectedSetId(set.id);
-    setSpread(1);
-  }
-}}
-          className={`block w-full rounded-lg px-3 py-2 text-left transition ${
-  currentSidebarSet === set.id
-    ? "bg-purple-600 text-white"
-    : "hover:bg-gray-200"
-} ${
-  hidden ? "opacity-40 line-through" : ""
-}`}
-disabled={hidden}
-        >
-          {set.label}
-        </button>
-      );
-})}
+        return (
+          <button
+            key={set.id}
+            onClick={() => {
+              if (selectedBinder === "CCG") {
+                setSpread(getCCGSpreadForSet(set.id));
+              } else {
+                setSelectedSetId(set.id);
+                setSpread(1);
+              }
+            }}
+            className={`block w-full rounded-xl px-3 py-2 text-left font-medium transition ${
+              currentSidebarSet === set.id
+                ? "border border-[#d4af37] bg-[#d4af37] text-[#1b1b1b]"
+                : "border border-transparent text-[#d8d8d8] hover:border-[#d4af37] hover:bg-[#2f2f2f] hover:text-[#e6c35a]"
+            } ${
+              hidden ? "opacity-40 line-through" : ""
+            }`}
+            disabled={hidden}
+          >
+            {set.label}
+          </button>
+        );
+      })}
     </div>
   </div>
 )}
-  <p className="text-center text-xs text-gray-500">
+
+<p className="text-center text-xs text-[#8d8d8d]">
   Swipe left or right on the binder to change pages.
 </p>
 
@@ -1256,64 +1379,64 @@ transform:
       setSpread((s) => Math.max(1, s - 1));
     }
   }}
-  style={{
-    touchAction: "pan-x",
-    padding: "34px",
-    borderRadius: "30px",
-    background:
-      "linear-gradient(145deg,#31115d 0%,#50208d 20%,#2b0f55 55%,#18052f 100%)",
-    boxShadow:
-      `
-      0 40px 70px rgba(0,0,0,.45),
-      inset 0 3px 2px rgba(255,255,255,.15),
-      inset 0 -8px 18px rgba(0,0,0,.45)
-      `,
-  }}
+ style={{
+  touchAction: "pan-x",
+  padding: "34px",
+  borderRadius: "30px",
+  background:
+    "linear-gradient(145deg,#7a7a7a 0%,#696969 18%,#5d5d5d 45%,#515151 70%,#474747 100%)",
+  boxShadow:
+    `
+    0 40px 70px rgba(0,0,0,.45),
+    inset 0 3px 2px rgba(255,255,255,.18),
+    inset 0 -10px 20px rgba(0,0,0,.35)
+    `,
+}}
 >
-    {/* Leather Border */}
-<div
-  style={{
-    position: "absolute",
-    inset: "10px",
-    borderRadius: "22px",
-    border: "2px solid rgba(255,255,255,.05)",
-    boxShadow:
-      "inset 0 0 0 2px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.08)",
-    pointerEvents: "none",
-  }}
-/>
+  {/* Leather Border */}
+  <div
+    style={{
+      position: "absolute",
+      inset: "10px",
+      borderRadius: "22px",
+      border: "2px solid rgba(255,255,255,.12)",
+      boxShadow:
+        "inset 0 0 0 2px rgba(0,0,0,.25), inset 0 1px 2px rgba(255,255,255,.18)",
+      pointerEvents: "none",
+    }}
+  />
 
-{/* Outer Stitching */}
-<div
-  style={{
-    position: "absolute",
-    inset: "18px",
-    borderRadius: "16px",
-    border: "2px dashed rgba(230,215,175,.9)",
-    boxSizing: "border-box",
-    pointerEvents: "none",
-    opacity: 1,
-  }}
-/>
+  {/* Outer Stitching */}
+  <div
+    style={{
+      position: "absolute",
+      inset: "18px",
+      borderRadius: "16px",
+      border: "2px dashed rgba(212,175,55,.9)",
+      boxSizing: "border-box",
+      pointerEvents: "none",
+      opacity: 1,
+    }}
+  />
 
-{/* Leather Spine */}
-<div
-  style={{
-    position: "absolute",
-    left: "50%",
-    transform: "translateX(-50%)",
-    top: "12px",
-    bottom: "12px",
-    width: "96px",
-    borderRadius: "18px",
-    background:
-      "linear-gradient(90deg,#19062d,#2c0d4f,#47227c,#2c0d4f,#19062d)",
-    boxShadow:
-      "inset 8px 0 12px rgba(0,0,0,.45), inset -8px 0 12px rgba(0,0,0,.45)",
-    pointerEvents: "none",
-    zIndex: 0,
-  }}
-/>
+  {/* Leather Spine */}
+  <div
+    style={{
+      position: "absolute",
+      left: "50%",
+      transform: "translateX(-50%)",
+      top: "12px",
+      bottom: "12px",
+      width: "96px",
+      borderRadius: "18px",
+      background:
+        "linear-gradient(90deg,#444444,#5a5a5a,#737373,#5a5a5a,#444444)",
+      boxShadow:
+        "inset 8px 0 12px rgba(0,0,0,.35), inset -8px 0 12px rgba(0,0,0,.35)",
+      pointerEvents: "none",
+      zIndex: 0,
+    }}
+  />
 {/* Left Edge Arrow */}
 <button
   onClick={() => setSpread((s) => Math.max(1, s - 1))}

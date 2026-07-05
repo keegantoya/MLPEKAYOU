@@ -212,33 +212,45 @@ profiles?.forEach((p: any) => {
     hiddenSets: p.iso_hidden_sets || []
   };
 });
+
+const { data: rawProgress } = await supabase
+  .from("collection_progress_raw")
+  .select("user_id, set_id, progress");
+
+const totals = new Map<string, number>();
+
+(rawProgress || []).forEach((row: any) => {
+  if (row.set_id === "OTHERMERCH") {
+    return;
+  }
+
+  const current = totals.get(row.user_id) || 0;
+
+  const owned = Object.values(row.progress || {}).filter(
+    (value: any) =>
+      value === true ||
+      (typeof value === "object" && value?.owned === true)
+  ).length;
+
+  totals.set(row.user_id, current + owned);
+});
+
 const allUsersSorted = (profiles || [])
   .map((u: any) => ({
     id: u.id,
     username: u.username || "Anonymous",
     avatar: u.avatar_url,
-    total: u.collection_total || 0,
+    total: totals.get(u.id) || 0,
   }))
   .sort((a: any, b: any) => b.total - a.total);
 
- const excludedMasteredSets = [
-  "Promo Cards",
-  "TCG Promos",
-  "Andy Price Promo",
-];
-
-  console.log(
-  allUsersSorted.slice(0, 20).map((u, index) => ({
-    user_id: u.id,
-    username: u.username,
-    avatar_url: u.avatar,
-    total: u.total,
-    rank: index + 1,
-  }))
+const leaderboardUsers = allUsersSorted.filter(
+  (u: any) =>
+    eligibleUserIds.has(u.id) &&
+    u.username !== "HeiManTou (Chinese Collector)"
 );
 
 // RANK-WORTHY COLLECTORS
-// Users with 3+ completed sets, excluding promos
 const rankWorthy = (profiles || []).filter(
   (u: any) => u.rank_worthy === true
 );
@@ -261,7 +273,7 @@ const {
 const currentUserId = session?.user?.id;
 
 if (currentUserId) {
-  const rankIndex = allUsersSorted.findIndex(
+  const rankIndex = leaderboardUsers.findIndex(
     (u: any) => u.id === currentUserId
   );
 
@@ -272,6 +284,8 @@ if (currentUserId) {
   setYourCurrentRank(null);
 }
 
+// SHOW ONLY TOP 12 ON THE PAGE
+setLeaders(leaderboardUsers.slice(0, 12));
 // SHOW ONLY TOP 12 ON THE PAGE
 setLeaders(
   allUsersSorted
@@ -317,7 +331,7 @@ const getAvatar = (avatar?: string) => {
 
   return (
 <div
-  className="min-h-screen relative overflow-hidden"
+  className="min-h-screen relative overflow-hidden font-['Oxanium']"
 style={{
   background: `
     radial-gradient(circle at 20% 15%, rgba(124,90,166,0.12), transparent 22%),
@@ -379,42 +393,37 @@ style={{
   {/* HERO TITLE */}
   <div className="text-center mb-10">
     <div className="relative inline-block">
-  {/* Soft glow behind title */}
-  <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-yellow-200/30 via-purple-200/20 to-pink-200/30 rounded-full scale-150" />
-
   {/* Subtitle */}
-  <div className="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-[0.5em] text-purple-400 mb-2 relative">
+  <div className="text-[10px] sm:text-xs md:text-sm font-['Oxanium'] uppercase tracking-[0.5em] text-purple-400 mb-2 relative">
     Hall of Fame
   </div>
 
   {/* Main Title */}
-  <h1
-    className="
-      relative
-      text-5xl sm:text-6xl md:text-7xl lg:text-8xl
-      font-black
-      tracking-[-0.03em]
-      leading-none
-      mb-2
-    "
-    style={{
-      fontFamily: "Cinzel, serif",
-      background: `
-        linear-gradient(
-          180deg,
-          #fff7c2 0%,
-          #f8e38c 22%,
-          #e7bf45 55%,
-          #c88a0a 100%
-        )
-      `,
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-      filter: "drop-shadow(0 4px 12px rgba(212,160,23,0.18))",
-    }}
-  >
-    Top Collectors
-  </h1>
+<h1
+  className="
+    relative
+    text-5xl sm:text-6xl md:text-7xl lg:text-8xl
+    font-['Oxanium']
+    tracking-[-0.03em]
+    leading-none
+    mb-2
+  "
+  style={{
+    background: `
+      linear-gradient(
+        180deg,
+        #fff7c2 0%,
+        #f8e38c 22%,
+        #e7bf45 55%,
+        #c88a0a 100%
+      )
+    `,
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+  }}
+>
+  Top Collectors
+</h1>
 
 {/* Decorative underline */}
 <div className="flex items-center justify-center gap-3 relative">
@@ -433,7 +442,7 @@ style={{
     text-[10px]
     sm:text-[11px]
     md:text-xs
-    font-medium
+    font-['Oxanium']
     leading-relaxed
     px-4
   "
@@ -499,11 +508,11 @@ border border-[#7c5aa6]/40 shadow-sm">
           <span className="text-xl sm:text-2xl">🌟</span>
         </div>
 
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
+        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
           Rank-Worthy Collectors
         </div>
 
-        <div className="text-3xl sm:text-4xl md:text-5xl font-black text-purple-900 leading-none">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none">
           {rankWorthyCollectors.toLocaleString()}
         </div>
 
@@ -521,11 +530,11 @@ border border-[#7c5aa6]/40 shadow-sm">
           <span className="text-xl sm:text-2xl">❤️</span>
         </div>
 
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
+        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
           Cards Collected on MLPEKAYOU
         </div>
 
-        <div className="text-3xl sm:text-4xl md:text-5xl font-black text-purple-900 leading-none break-words">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none break-words">
           {totalCardsSitewide.toLocaleString()}
         </div>
 
@@ -541,11 +550,11 @@ border border-[#7c5aa6]/40 shadow-sm">
           <span className="text-xl sm:text-2xl">👑</span>
         </div>
 
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-bold uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
+        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
           Your Current Rank
         </div>
 
-        <div className="text-3xl sm:text-4xl md:text-5xl font-black text-purple-900 leading-none">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none">
           {yourCurrentRank ? `#${yourCurrentRank.toLocaleString()}` : "—"}
         </div>
 

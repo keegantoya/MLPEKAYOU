@@ -278,60 +278,34 @@ if (showLoginModal) {
 }
   return (
 <div
-  className="min-h-screen relative overflow-hidden"
-    style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
-}}
-  >
+  className="min-h-screen bg-[#e3e3e3]"
+>
 
       <div className="container py-8">
 
         <button
           onClick={() => navigate("/trading-post")}
-          className="flex items-center gap-2 text-sm text-muted-foreground mb-4"
+          className="flex items-center gap-2 text-sm font-semibold text-zinc-600 hover:text-zinc-900 transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Trading Post
         </button>
 
-        <h1
-  className="
-    block
-    w-fit
-    max-w-full
-    mx-auto
-    mb-6
-    px-4 sm:px-6
-    py-2
-    text-center
-    rounded-lg
-    bg-gradient-to-b
-    from-[#7c5aa6]
-    to-[#5a3e84]
-    border border-[#d4af37]/40
-    font-bold
-    text-xl sm:text-3xl
-    tracking-wide
-    text-[#f5e6a8]
-    [text-shadow:1px_1px_0_#3b2a6a,-1px_-1px_0_#ffffff40]
-    shadow-sm
-  "
->
-  {setNames[setId || ""] || `Set ${setId}`}
-</h1>
+<div className="mb-10">
+
+  <p className="text-xs uppercase tracking-[0.3em] font-semibold text-zinc-500">
+    Trading Post
+  </p>
+
+  <h1 className="text-5xl font-black uppercase leading-none text-zinc-900 mt-2">
+    {setNames[setId || ""] || `Set ${setId}`}
+  </h1>
+
+  <p className="mt-3 text-zinc-500">
+    Browse collectors currently offering cards from this set.
+  </p>
+
+</div>
 
         {/* RARITY FILTER */}
         {setId &&
@@ -348,10 +322,10 @@ if (showLoginModal) {
                       selectedRarity === rarity ? null : rarity
                     )
                   }
-                  className={`px-4 py-1.5 text-xs font-medium rounded-full border border-gray-300 bg-white/80 backdrop-blur-sm text-gray-800 shadow-sm transition-all duration-150 ${
-  selectedRarity === rarity
-    ? "bg-[#d4af37] text-black border-[#d4af37] shadow-md scale-105"
-    : "hover:bg-gray-100 hover:shadow-sm hover:scale-105"
+                  className={`px-4 py-2 rounded-lg border font-bold text-sm transition-all ${
+selectedRarity === rarity
+    ? "text-[#4a3200] border-[#d4af37] bg-gradient-to-br from-[#fff7c2] via-[#f6d365] to-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.45)]"
+    : "bg-zinc-800 border-zinc-600 text-zinc-100 hover:bg-zinc-700"
 }`}
                 >
                  {(() => {
@@ -385,7 +359,9 @@ if (rarity === "SAR") return "◇AR";
           </>
         )}
 
-        {loading && <div className="text-center">Loading...</div>}
+        {loading && <div className="text-center text-zinc-600 font-semibold py-10">
+  Loading Trading Post...
+</div>}
 
         {!loading && (
           <div className="space-y-6 max-w-5xl mx-auto">
@@ -461,7 +437,7 @@ const filteredCards = cards.filter(c => {
                   <div key={userId} className="border rounded-xl p-4 bg-card w-full shadow-sm">
 
                     {/* USER HEADER */}
-                    <div className="flex items-center flex-wrap gap-2 font-semibold mb-1">
+                    <div className="flex items-center flex-wrap gap-2 font-bold text-lg mb-2">
   <span>
     {profiles[userId]?.username || userId}
   </span>
@@ -479,7 +455,7 @@ const filteredCards = cards.filter(c => {
     <span className="text-green-500 text-xs">●</span>
   )}
 
-<span className="text-xs text-muted-foreground">
+<span className="text-xs uppercase tracking-wider text-zinc-400">
   ({
     filteredCards.filter(c => c.listing_type !== "purchase").length
   } for trade • {
@@ -490,9 +466,9 @@ const filteredCards = cards.filter(c => {
 
                     {/* DISCORD */}
                     {tradingProfiles[userId] && (
-                      <div className="text-xs text-muted-foreground mb-3">
+                      <div className="text-sm text-zinc-400 mb-4">
                         Discord:{" "}
-                        <span className="text-foreground font-medium">
+                        <span className="text-zinc-100 font-semibold">
                           {tradingProfiles[userId]}
                         </span>
                       </div>
@@ -540,7 +516,7 @@ const filteredCards = cards.filter(c => {
           />
 
           {card.actively_trading && (
-  <div className="absolute inset-0 bg-purple-900/80 flex items-center justify-center">
+  <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
     <span className="text-white text-[9px] sm:text-xs md:text-sm font-bold text-center px-1 leading-tight">
       ACTIVELY<br />TRADING
     </span>
@@ -549,9 +525,9 @@ const filteredCards = cards.filter(c => {
 
 <div
   className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg border-2 border-white/20 z-10 ${
-    card.listing_type === "trade"
-      ? "bg-green-500"
-      : "bg-blue-500"
+card.listing_type === "trade"
+      ? "bg-[#5a3e84]"
+      : "bg-[#d4af37] text-[#4a3200]"
   }`}
 >
   {card.listing_type === "trade" ? "⇄" : "$"}

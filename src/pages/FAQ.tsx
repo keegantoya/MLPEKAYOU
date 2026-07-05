@@ -1,8 +1,4 @@
 import { useState } from "react";
-import authentic1 from "@/faq-assets/authenticseal1.webp";
-import authentic2 from "@/faq-assets/authenticseal2.webp";
-import fake1 from "@/faq-assets/fakeseal.webp";
-import fake2 from "@/faq-assets/fakeseal2.webp";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -102,26 +98,26 @@ const FAQItem = ({ question, children }) => {
   };
 
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-white/80 shadow-sm">
+    <div className="mb-4 overflow-hidden rounded-2xl border border-[#5a5a5a] bg-[#3a3a3a] shadow-lg">
       <button
         onClick={toggleQuestion}
-        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/60 transition"
+        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#474747]"
       >
-        <h2 className="font-semibold text-xl text-[#2f1b4d]">
+        <h2 className="text-xl font-semibold text-white">
           {question}
         </h2>
 
-        <div className="w-10 h-10 rounded-full bg-[#5a3e84] text-[#f5e6a8] flex items-center justify-center shadow-md shrink-0">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#555555] text-white">
           {isOpen ? (
-            <ChevronUp className="w-5 h-5" />
+            <ChevronUp className="h-5 w-5" />
           ) : (
-            <ChevronDown className="w-5 h-5" />
+            <ChevronDown className="h-5 w-5" />
           )}
         </div>
       </button>
 
       {isOpen && (
-        <div className="px-5 pb-5 text-sm text-[#5c4022] leading-7">
+        <div className="border-t border-zinc-700 px-5 py-5 text-sm leading-7 text-zinc-300">
           {children}
         </div>
       )}
@@ -172,8 +168,8 @@ const TutorialCard = ({ image, flipped, onClick }) => {
             if (targetIndex !== -1) setActive(targetIndex);
           }}
           className="w-full text-left px-5 py-4 rounded-2xl font-semibold
-                     bg-violet-50 text-violet-900 hover:bg-violet-100
-                     border border-violet-100 transition"
+                     bg-[#4a4a4a] text-zinc-100 hover:bg-[#5a5a5a]
+                     border border-[#5a5a5a] transition"
         >
           {topic}
         </button>
@@ -203,8 +199,8 @@ const TutorialCard = ({ image, flipped, onClick }) => {
             if (targetIndex !== -1) setActive(targetIndex);
           }}
           className="w-full text-left px-5 py-4 rounded-2xl font-semibold
-                     bg-violet-50 text-violet-900 hover:bg-violet-100
-                     border border-violet-100 transition"
+                     bg-[#4a4a4a] text-zinc-100 hover:bg-[#5a5a5a]
+                     border border-[#5a5a5a] transition"
         >
           {topic}
         </button>
@@ -216,27 +212,27 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   title: "How do I track my collection?",
   content: (
     <div className="space-y-8">
-      <div className="rounded-3xl border border-violet-100 bg-white/80 backdrop-blur-sm shadow-lg p-6 sm:p-8">
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+      <div className="rounded-3xl border border-[#5a5a5a] bg-[#4e4e4e] shadow-xl p-6 sm:p-8">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I track the cards I own?
         </h2>
 
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed mb-8">
-          Open the set you are tracking in{" "}
-          <Link
-            to="/collections"
-            className="text-violet-600 font-semibold hover:underline"
-          >
-            Collections
-          </Link>{" "}
-          and flip over the cards you already own.
-        </p>
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed mb-8">
+  Open the set you are tracking in{" "}
+  <Link
+    to="/collections"
+    className="font-semibold text-[#d4af37] hover:text-[#f4d47c] hover:underline transition-colors"
+  >
+    Collections
+  </Link>{" "}
+  and flip over the cards you already own.
+</p>
 
-        {/* Tutorial Cards */}
-        <div className="text-center mb-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-500 mb-4">
-            Tap on these cards to flip them over!
-          </p>
+{/* Tutorial Cards */}
+<div className="text-center mb-6">
+  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#d4af37] mb-4">
+    Tap on these cards to flip them over!
+  </p>
 
           <div className="flex justify-center gap-6 flex-wrap">
             <TutorialCard
@@ -285,50 +281,50 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   title: "How do I use my ISO?",
   content: (
     <div className="space-y-8">
-      <div className="rounded-3xl border border-violet-100 bg-white/80 backdrop-blur-sm shadow-lg p-6 sm:p-8">
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+      <div className="rounded-3xl border border-[#5a5a5a] bg-[#4a4a4a] shadow-lg p-6 sm:p-8">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I use my ISO?
         </h2>
 
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           Your ISO is curated based on the idea of mastersetting every collection. On a fresh account with zero cards owned,
           every card in every set will already populate in your ISO.
         </p>
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I hide sets I don't want to collect?
         </h2>
 
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           In your ISO bar, you'll see a button called "Hide Sets." If you check off a set, it will disappear from
           your personal ISO and your public ISO, as well as disappear from your collections page. If you still want to see
           that set, you can. Go to collections and toggle the set's category in the sidebar - for example, to bring up a hidden
           Moon 2 set, you'd click "Eternal Moon."
         </p>
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           Removing the set from your view will also remove it from the progress bar at the top of collections, meaning it will no 
           longer be counted toward the overall progress on your account.
         </p>
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I keep track of cards that I have on the way?
         </h2>
 
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           In your ISO, you can tap on a card to bring up a small menu. On that menu, you can mark a card as "Trade in Progress," or
           "Purchase in Progress." A checkmark will appear beside that card's code. This will leave the card marked as uncollected until you
           have it in your hands, and will remove the card from your public ISO.
         </p>
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           What if I only want some specific cards?
         </h2>
 
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           If you are a free-floater who only collects cards they find appealing, you can go to "My Wishlist" for
           instructions on how to curate your account to that.
         </p>
-         <h2 className="text-3xl font-bold text-violet-900 mb-3">
+         <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I know if people can see my ISO?
         </h2>
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           Go to the forum and look yourself up.
         </p>
       </div>
@@ -339,26 +335,26 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   title: "How do I use my wishlist?",
   content: (
     <div className="space-y-8">
-      <div className="rounded-3xl border border-violet-100 bg-white/80 backdrop-blur-sm shadow-lg p-6 sm:p-8">
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+      <div className="rounded-3xl border border-[#5a5a5a] bg-[#4a4a4a] shadow-lg p-6 sm:p-8">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I use my wishlist?
         </h2>
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           Your wishlist is for special curations. If you'd like to remove your entire ISO from public view, but keep it
           in your personal view, you can click "DO NOT SHOW ISO" in your wishlist. You may also use your wishlist personally,
           but hide it from public view by clicking "DO NOT SHOW WISHLIST."
         </p>
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I set my wishlist?
         </h2>
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           Click on any card in your wishlist to add it to your wishlist, which updates both personally and publicly. Simply click
           a card a second time to remove it from your wishlist.
         </p>
-        <h2 className="text-3xl font-bold text-violet-900 mb-3">
+        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
           How do I know if people can see my wishlist?
         </h2>
-        <p className="text-base sm:text-lg text-gray-500 leading-relaxed">
+        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
           Go to the forum and look yourself up. Adding one card to your wishlist will activate it for public view, unless you select that
           you do not want it to be publicly viewable.
         </p>
@@ -372,7 +368,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
     <div className="space-y-6">
 
       <div className="text-center">
-  <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
     STAR ONE
   </span>
 </div>
@@ -409,7 +405,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   content: (
     <div className="space-y-6">
       <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
           MOON ONE
         </span>
       </div>
@@ -433,7 +429,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
       />
 
       <div className="text-center pt-4">
-        <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
           MOON TWO
         </span>
       </div>
@@ -499,7 +495,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
 />
 
 <div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
     MOON THREE
   </span>
 </div>
@@ -542,7 +538,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   content: (
     <div className="space-y-6">
       <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
           RAINBOW ONE
         </span>
       </div>
@@ -566,7 +562,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
       />
 
       <div className="text-center pt-4">
-        <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
           RAINBOW TWO
         </span>
 
@@ -597,7 +593,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   content: (
     <div className="space-y-6">
       <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
           FUN MOMENTS ONE
         </span>
       </div>
@@ -621,7 +617,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
       />
 
       <div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
     FUN MOMENTS TWO
   </span>
 </div>
@@ -653,7 +649,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
 />
 
 <div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
     FUN MOMENTS THREE
   </span>
 </div>
@@ -694,7 +690,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
     <div className="space-y-6">
 
       <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
           FANTASY WONDERLAND
         </span>
       </div>
@@ -724,7 +720,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
       />
 
 <div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
     FRIENDSHIPS BEGIN
   </span>
 </div>
@@ -763,7 +759,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
     <div className="space-y-6">
 
       <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-bold tracking-[0.3em]">
+        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
           PLUSH MERCH
         </span>
       </div>
@@ -780,7 +776,7 @@ const TutorialCard = ({ image, flipped, onClick }) => {
         className="w-full h-auto rounded-lg"
       />
 
-      <p className="text-sm text-violet-900 leading-7">
+      <p className="text-sm text-white leading-7">
         These plushies showed up on CrossingTCG's website alongside the release
         of Kayou's trading cards. They are over a foot tall (16.5in) and over
         a foot long (17.3in). They retail for $29.99 each. Purchase through{" "}
@@ -804,59 +800,36 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   return (
     <div
       className="min-h-screen"
-    style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
+style={{
+  background: "#2e2e2e",
 }}
     >
 
 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
   {/* HERO HEADER */}
-  <section className="relative mb-8 overflow-hidden rounded-[32px] border border-white/70 bg-white/85 backdrop-blur-xl shadow-2xl">
-    <div className="absolute inset-0 bg-gradient-to-r from-violet-100/60 via-white/30 to-yellow-100/50" />
-    <div className="absolute top-0 inset-x-0 h-px bg-white/80" />
+<section className="relative mb-8 overflow-hidden rounded-[32px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl">
 
-    <div className="relative z-10 px-8 py-10 text-center">
-    <div className="flex flex-col items-center">
-  <h1
-    className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight
-           bg-gradient-to-r from-violet-700 via-purple-600 to-violet-400
-           bg-clip-text text-transparent drop-shadow-sm"
-    style={{
-      fontFamily: '"Cinzel Decorative", "Trajan Pro", serif',
-      textShadow: "0 4px 20px rgba(124, 58, 237, 0.15)",
-    }}
-  >
-    KAYOUUS FAQ
-  </h1>
+  <div className="px-8 py-10 text-center">
 
-  <div className="mt-4 flex items-center gap-3">
-    <div className="h-px w-16 bg-gradient-to-r from-transparent to-yellow-400" />
-    <span className="text-yellow-500 text-xl">✦</span>
-    <div className="h-px w-16 bg-gradient-to-l from-transparent to-yellow-400" />
+<h1
+  className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-yellow-400"
+  style={{ fontFamily: "Oxanium, sans-serif" }}
+>
+  MLPEKAYOU FAQ
+</h1>
+
+    <div className="mx-auto mt-5 mb-5 h-px w-56 bg-yellow-500/40" />
+
+    <p className="mx-auto max-w-3xl text-base sm:text-lg leading-relaxed text-zinc-300">
+      If the answer to your question does not lie in this FAQ, feel free to leave it
+      in the questions section of the MLPEKAYOU Discord server. A staff member or the
+      server owner will get back to you as soon as possible.
+    </p>
+
   </div>
-</div>
 
-      <p className="mt-4 max-w-3xl mx-auto text-base sm:text-lg text-violet-800 leading-relaxed">
-        If the answer to your question does not lie in this FAQ, feel free to leave it
-        in the questions section of the MLPEKAYOU Discord server. A staff member or server owner
-        will get back to you as soon as possible.
-      </p>
-    </div>
-  </section>
+</section>
 
 {/* MOBILE CATEGORY SELECTOR */}
 <div className="md:hidden mb-6">
@@ -891,69 +864,68 @@ const TutorialCard = ({ image, flipped, onClick }) => {
         {/* Current Parent Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="w-full px-5 py-4 rounded-2xl bg-white/90 backdrop-blur-sm border border-violet-100 shadow-lg text-violet-900 font-semibold flex items-center justify-between"
+          className="w-full px-5 py-4 rounded-2xl bg-[#444444] border border-[#5a5a5a] text-yellow-400 font-bold flex items-center justify-between"
         >
           <span>{selectedGroup.title}</span>
           <span className="text-xl">{mobileMenuOpen ? "▲" : "▾"}</span>
         </button>
+{mobileMenuOpen && (
+  <div className="mt-3 p-2 rounded-2xl bg-[#3a3a3a] border border-[#5a5a5a] shadow-xl">
+    {/* Parent Categories */}
+    <div className="space-y-2">
+      {groups.map((group) => (
+        <button
+          key={group.title}
+          onClick={() => setMenuOpen(group.title)}
+          className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition ${
+            menuOpen === group.title
+              ? "bg-gradient-to-r from-[#d4af37] via-[#c79b32] to-[#b8860b] text-[#1b1b1b] shadow-md"
+              : "bg-[#444444] text-[#f4d47c] hover:bg-[#505050]"
+          }`}
+        >
+          {group.title}
+        </button>
+      ))}
+    </div>
 
-        {mobileMenuOpen && (
-          <div className="mt-3 p-2 rounded-2xl bg-white/95 backdrop-blur-sm border border-violet-100 shadow-xl">
-            {/* Parent Categories */}
-            <div className="space-y-2">
-              {groups.map((group) => (
-                <button
-                  key={group.title}
-                  onClick={() => setMenuOpen(group.title)}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition ${
-                    menuOpen === group.title
-                      ? "bg-gradient-to-r from-[#6E4BA8] via-[#7C5CB8] to-[#8E72CC] text-white shadow-md"
-                      : "text-violet-900 hover:bg-violet-50"
-                  }`}
-                >
-                  {group.title}
-                </button>
-              ))}
-            </div>
+    {/* Children of Selected Parent */}
+    <div className="mt-3 pt-3 border-t border-[#5a5a5a] space-y-2">
+      {selectedGroup.children.map((child) => {
+        const index = sections.findIndex(
+          (section) => section.title === child
+        );
 
-            {/* Children of Selected Parent */}
-            <div className="mt-3 pt-3 border-t border-violet-100 space-y-2">
-              {selectedGroup.children.map((child) => {
-                const index = sections.findIndex(
-                  (section) => section.title === child
-                );
+        if (index === -1) return null;
 
-                if (index === -1) return null;
+        return (
+          <button
+            key={child}
+            onClick={() => {
+              setActive(index);
 
-                return (
-                  <button
-                    key={child}
-                    onClick={() => {
-  setActive(index);
+              const parentGroup = groups.find((group) =>
+                group.children.includes(child)
+              );
 
-  const parentGroup = groups.find((group) =>
-    group.children.includes(child)
-  );
+              if (parentGroup) {
+                setMenuOpen(parentGroup.title);
+              }
 
-  if (parentGroup) {
-    setMenuOpen(parentGroup.title);
-  }
-
-  setMobileMenuOpen(false);
-}}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition ${
-                      active === index
-                        ? "bg-violet-600 text-white shadow-md"
-                        : "bg-violet-50 text-violet-900 hover:bg-violet-100"
-                    }`}
-                  >
-                    {child}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition ${
+              active === index
+                ? "bg-[#d4af37] text-[#1b1b1b] shadow-md"
+                : "bg-[#4a4a4a] text-[#f4d47c] hover:bg-[#5a5a5a]"
+            }`}
+          >
+            {child}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
       </>
     );
   })()}
@@ -964,8 +936,8 @@ const TutorialCard = ({ image, flipped, onClick }) => {
 
 {/* LEFT SIDEBAR */}
 <aside className="sticky top-24">
-  <div className="rounded-[28px] border border-white/70 bg-white/90 backdrop-blur-xl shadow-2xl overflow-hidden">
-    <div className="px-6 py-5 bg-gradient-to-r from-[#6E4BA8] via-[#7C5CB8] to-[#8E72CC]">
+  <div className="rounded-[28px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl overflow-hidden">
+    <div className="px-6 py-5 bg-[#444444] border-b border-zinc-700">
       <h2 className="text-white text-xl font-bold tracking-wide">
         Help Topics
       </h2>
@@ -1002,10 +974,12 @@ const TutorialCard = ({ image, flipped, onClick }) => {
               onClick={() =>
                 setMenuOpen(isOpen ? null : group.title)
               }
-              className="w-full flex items-center justify-between px-4 py-3 rounded-2xl
-                         font-bold text-left bg-gradient-to-r
-                         from-[#6E4BA8] via-[#7C5CB8] to-[#8E72CC]
-                         text-white shadow-lg"
+className="w-full flex items-center justify-between px-4 py-3 rounded-2xl
+           font-bold text-left
+           bg-[#444444]
+           border border-[#5a5a5a]
+           text-yellow-400
+           shadow-lg"
             >
               <span>{group.title}</span>
               <span className="text-lg">
@@ -1030,8 +1004,8 @@ const TutorialCard = ({ image, flipped, onClick }) => {
                       className={`w-full text-left px-4 py-2 rounded-xl
                                  text-sm font-semibold transition ${
                         active === index
-                          ? "bg-violet-600 text-white shadow-md"
-                          : "bg-violet-50 text-violet-900 hover:bg-violet-100"
+                          ? "bg-yellow-500 text-black border border-yellow-400 shadow-md"
+                          : "bg-[#4a4a4a] text-zinc-100 hover:bg-[#5a5a5a]"
                       }`}
                     >
                       {child}
@@ -1048,9 +1022,9 @@ const TutorialCard = ({ image, flipped, onClick }) => {
 </aside>
 
     {/* MAIN CONTENT */}
-    <main className="rounded-[32px] border border-white/70 bg-white/90 backdrop-blur-xl shadow-2xl overflow-hidden">
-      <div className="px-8 py-6 border-b border-violet-100 bg-gradient-to-r from-violet-50 to-white">
-        <h1 className="text-3xl font-bold text-violet-900">
+    <main className="rounded-[32px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl overflow-hidden">
+      <div className="px-8 py-6 border-b border-zinc-700 bg-[#444444]">
+        <h1 className="text-3xl font-bold text-white">
           {sections[active].title}
         </h1>
       </div>
@@ -1062,9 +1036,9 @@ const TutorialCard = ({ image, flipped, onClick }) => {
   </div>
 
   {/* MOBILE CONTENT */}
-  <div className="md:hidden rounded-[28px] border border-white/70 bg-white/90 backdrop-blur-xl shadow-2xl overflow-hidden">
-    <div className="px-6 py-5 border-b border-violet-100 bg-gradient-to-r from-violet-50 to-white">
-      <h1 className="text-2xl font-bold text-violet-900">
+  <div className="md:hidden rounded-[28px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl overflow-hidden">
+    <div className="px-6 py-5 border-b border-zinc-700 bg-[#444444]">
+      <h1 className="text-2xl font-bold text-white">
         {sections[active].title}
       </h1>
     </div>

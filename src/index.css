@@ -3,6 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -77,7 +78,7 @@ html {
 
 body {
   @apply text-foreground;
-  font-family: 'Inter', sans-serif;
+  font-family: "Oxanium", sans-serif;
   overscroll-behavior: none;
   background: linear-gradient(to right, #7c5aa6, #5a3e84);
 }

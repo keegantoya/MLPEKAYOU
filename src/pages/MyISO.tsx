@@ -166,6 +166,7 @@ const [selectedCardKey, setSelectedCardKey] = useState<string | null>(null);
 const [viewAllCardCodes, setViewAllCardCodes] = useState(false);
 const [cardCodeSearch, setCardCodeSearch] = useState("");
 const [showScrollTop, setShowScrollTop] = useState(false);
+const [mobileViewMode, setMobileViewMode] = useState<2 | 3 | 4 | 5>(2);
 
 useEffect(() => {
   const handleScroll = () => {
@@ -766,25 +767,25 @@ const saveISOStatus = async (
 };
 
 return (
-  <div
-    className="min-h-screen"
-    style={{
-  backgroundColor: "#F8F3FF",
-  backgroundImage: `
-    radial-gradient(circle at 15% 20%, rgba(244, 200, 74, 0.12) 0%, transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(236, 72, 153, 0.08) 0%, transparent 30%),
-    radial-gradient(circle at 25% 75%, rgba(168, 85, 247, 0.10) 0%, transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 30%),
-    linear-gradient(
-      180deg,
-      #FCF9FF 0%,
-      #F8F1FF 35%,
-      #F5EEFF 65%,
-      #FAF6FF 100%
-    )
-  `,
-}}
-  >
+<div
+  className="min-h-screen font-['Oxanium']"
+  style={{
+    backgroundColor: "#1b1b1b",
+    backgroundImage: `
+      radial-gradient(circle at 15% 20%, rgba(212,175,55,0.10) 0%, transparent 35%),
+      radial-gradient(circle at 85% 15%, rgba(255,255,255,0.03) 0%, transparent 30%),
+      radial-gradient(circle at 25% 75%, rgba(212,175,55,0.05) 0%, transparent 35%),
+      radial-gradient(circle at 75% 80%, rgba(255,255,255,0.02) 0%, transparent 30%),
+      linear-gradient(
+        180deg,
+        #2d2d2d 0%,
+        #252525 35%,
+        #1f1f1f 65%,
+        #181818 100%
+      )
+    `,
+  }}
+>
 
     <div className="container py-6 sm:py-8 pb-28 sm:pb-8">
   <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-start">
@@ -1007,41 +1008,10 @@ isoStatuses={isoStatuses}
 allSets={sets}
 hiddenSets={mode === "CCG" ? hiddenSetsCCG : hiddenSetsTCG}
 onToggleHiddenSet={toggleSet}
+mobileViewMode={mobileViewMode}
+onMobileViewModeChange={setMobileViewMode}
 />
     <div className="flex-1">
-      {/* HERO HEADER */}
-      <div className="relative z-0 rounded-3xl border border-[#d4af37]/40 bg-white/75 backdrop-blur-xl shadow-2xl px-5 sm:px-8 py-6 sm:py-7 mb-6 sm:mb-8">
-        <div className="flex flex-col items-center justify-center gap-4 text-center">
-          <div className="flex flex-col items-center">
-  <h1
-    className="
-      text-3xl sm:text-4xl md:text-5xl
-      font-extrabold
-      tracking-[0.12em]
-      uppercase
-      text-[#6b46a3]
-      drop-shadow-sm
-    "
-    style={{
-      textShadow: "0 2px 8px rgba(107, 70, 163, 0.15)",
-    }}
-  >
-    Personal ISO
-  </h1>
-
-  <div className="mt-3 flex items-center gap-3 w-full justify-center">
-    <div className="h-px w-16 sm:w-24 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
-
-    <span className="text-[10px] sm:text-xs tracking-[0.35em] font-semibold text-[#8b6a2b] uppercase">
-      What You're Missing
-    </span>
-
-    <div className="h-px w-16 sm:w-24 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
-  </div>
-</div>
-        </div>
-        </div>
-
         {/* GRID FIX */}
 <div>
   {loading ? (
@@ -1336,7 +1306,15 @@ return key;
         </button>
 
         {!isCollapsed && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+          <div className={`grid ${
+  mobileViewMode === 2
+    ? "grid-cols-2"
+    : mobileViewMode === 3
+    ? "grid-cols-3"
+    : mobileViewMode === 4
+    ? "grid-cols-4"
+    : "grid-cols-5"
+} sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2`}>
 
             {cards.map((key) => {
   const imageSrc = `/friendships-begin/${key}.webp`;
@@ -1490,7 +1468,15 @@ return key;
         </button>
 
         {!isCollapsed && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+          <div className={`grid ${
+  mobileViewMode === 2
+    ? "grid-cols-2"
+    : mobileViewMode === 3
+    ? "grid-cols-3"
+    : mobileViewMode === 4
+    ? "grid-cols-4"
+    : "grid-cols-5"
+} sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2`}>
 
             {cards.map((key) => {
   const imageSrc =
@@ -1564,7 +1550,15 @@ return key;
 
   <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px]" />
 </div>
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+    <div className={`grid ${
+  mobileViewMode === 2
+    ? "grid-cols-2"
+    : mobileViewMode === 3
+    ? "grid-cols-3"
+    : mobileViewMode === 4
+    ? "grid-cols-4"
+    : "grid-cols-5"
+} sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2`}>
       {Object.entries(isoStatuses)
         .filter(
           ([, status]) =>
@@ -1817,15 +1811,15 @@ if (missing.length === 0) {
   key={set.id}
   className="mb-8"
 >
-            <div className="flex items-center justify-center gap-3 mb-5">
+<div className="flex items-center justify-center gap-3 mb-5">
 
-  <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px]" />
+  <div className="h-px flex-1 max-w-[120px] bg-[#d4af37]/40" />
 
-  <span className="text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d7d7d7]">
     {set.name}
   </span>
 
-  <div className="h-px bg-[#d4af37]/50 flex-1 max-w-[120px]" />
+  <div className="h-px flex-1 max-w-[120px] bg-[#d4af37]/40" />
 
 </div>
 
@@ -1883,7 +1877,15 @@ if (missing.length === 0) {
 
       {/* CARD GRID */}
       {!isCollapsed && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+        <div className={`grid ${
+  mobileViewMode === 2
+    ? "grid-cols-2"
+    : mobileViewMode === 3
+    ? "grid-cols-3"
+    : mobileViewMode === 4
+    ? "grid-cols-4"
+    : "grid-cols-5"
+} sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2`}>
 
           {rarityCards.map((card) => {
             const isDoubleCard =
@@ -2297,7 +2299,7 @@ setOwned((prev) => {
         </div>
       </div>
     </div>
-    {showScrollTop && (
+ {showScrollTop && (
   <button
     onClick={() =>
       window.scrollTo({
@@ -2310,25 +2312,29 @@ setOwned((prev) => {
       bottom-32 sm:bottom-6
       right-4 sm:right-6
       z-[99999]
-      w-11 h-11
+      flex
+      h-11
+      w-11
+      items-center
+      justify-center
       rounded-full
-      bg-gradient-to-r
-      from-[#7c5aa6]
-      to-[#5a3e84]
-      text-[#f5e6a8]
-      border border-[#d4af37]/60
-      shadow-2xl
-      active:scale-95
+      border
+      border-[#d4af37]
+      bg-[#232323]
+      text-[#e6c35a]
+      shadow-[0_8px_24px_rgba(0,0,0,.45)]
       transition
-      flex items-center justify-center
-      hover:brightness-110
+      hover:bg-[#2d2d2d]
+      hover:border-[#f0cf66]
+      hover:text-[#ffd86a]
+      active:scale-95
     "
     aria-label="Back to top"
   >
-    <ChevronUp className="w-5 h-5" />
+    <ChevronUp className="h-5 w-5" />
   </button>
 )}
-  </div>
+</div>
 );
 };
 
