@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
 import avatar001 from "@/assets/avatars/avatar001.webp";
 import avatar002 from "@/assets/avatars/avatar002.webp";
 import avatar003 from "@/assets/avatars/avatar003.webp";
@@ -118,17 +117,17 @@ const VERIFIED_USERS: Record<
   },
 };
 
-interface ExploreProfileProps {
+interface FriendsProfilesProps {
   user: any;
   tradingProfile: any;
   onClose: () => void;
 }
 
-const ExploreProfile = ({
+const FriendsProfiles = ({
   user,
   tradingProfile,
   onClose,
-}: ExploreProfileProps) => {
+}: FriendsProfilesProps) => {
 
     const [userStats, setuserStats] = useState({
   trades: 0,
@@ -160,9 +159,7 @@ const [quickViewCard, setQuickViewCard] = useState<any>(null);
 const [currentUserId, setCurrentUserId] = useState("");
 const [sendingRequest, setSendingRequest] = useState(false);
 const [requestPending, setRequestPending] = useState(false);
-const [notAcceptingRequests, setNotAcceptingRequests] = useState(false);
-const navigate = useNavigate();
-const [alreadyFriends, setAlreadyFriends] = useState(false);
+const [isFriend, setIsFriend] = useState(false);
 
   const avatar =
     avatarMap[String(user?.avatar_url || "").trim()] || avatar001;
@@ -181,17 +178,6 @@ const [alreadyFriends, setAlreadyFriends] = useState(false);
 setCurrentUserId(session?.user?.id || "");
 
 if (session?.user && session.user.id !== user.id) {
-  const { data: friendship } = await supabase
-    .from("friends")
-    .select("id")
-    .eq("user_id", session.user.id)
-    .eq("friend_id", user.id)
-    .maybeSingle();
-
-  setAlreadyFriends(!!friendship);
-}
-
-if (session?.user && session.user.id !== user.id) {
   const { data: existingRequest } = await supabase
     .from("friend_requests")
     .select("id")
@@ -201,6 +187,17 @@ if (session?.user && session.user.id !== user.id) {
     .maybeSingle();
 
   setRequestPending(!!existingRequest);
+}
+
+if (session?.user && session.user.id !== user.id) {
+  const { data: friendship } = await supabase
+    .from("friends")
+    .select("id")
+    .eq("user_id", session.user.id)
+    .eq("friend_id", user.id)
+    .maybeSingle();
+
+  setIsFriend(!!friendship);
 }
     
       // Load trading profile (Discord username)
@@ -896,7 +893,7 @@ async function sendFriendRequest() {
     .single();
 
   if (profile && !profile.allow_friend_requests) {
-    setNotAcceptingRequests(true);
+    alert("This collector isn't accepting friend requests.");
     setSendingRequest(false);
     return;
   }
@@ -909,11 +906,11 @@ async function sendFriendRequest() {
       status: "pending",
     });
 
-  if (!error) {
-    setRequestPending(true);
-  }
+if (!error) {
+  setRequestPending(true);
+}
 
-  setSendingRequest(false);
+setSendingRequest(false);
 }
 
 function isMoon3DoubleWide(card: any) {
@@ -1008,158 +1005,158 @@ const filteredTradeCards =
     : userWishlistCards.filter(
         (card) => String(card.set_id) === selectedSet
       );
+      
 
       const isJacob =
   user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
 
   return (
     <div className="w-full">
-      <div className="flex items-start justify-between mb-8">
+<div className="relative overflow-hidden rounded-3xl border border-yellow-500/30 bg-[#1b1b1b] shadow-2xl mb-8">
+
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,.12),transparent_55%)]" />
+
+  <div className="relative p-8">
+
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+
+      <div className="flex items-center gap-6">
+
+        <div className="relative shrink-0">
+
+          <img
+            src={avatar}
+            alt={user?.username}
+            className="w-36 h-36 rounded-full border-4 border-yellow-400 object-cover shadow-[0_0_30px_rgba(212,175,55,.35)]"
+          />
+
+          {isJacob &&
+            [
+              { left: "24%", delay: "0s" },
+              { left: "50%", delay: ".45s" },
+              { left: "76%", delay: ".9s" },
+            ].map((line, i) => (
+              <div
+                key={i}
+                className="absolute pointer-events-none"
+                style={{
+                  left: line.left,
+                  top: "-16px",
+                  animation: "stinkFloat 2s ease-in-out infinite",
+                  animationDelay: line.delay,
+                }}
+              >
+                <svg width="18" height="42" viewBox="0 0 18 42" fill="none">
+                  <path
+                    d="M9 42C9 32 2 30 2 22C2 16 14 14 14 7C14 4 12 2 10 0"
+                    stroke="#4ade80"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            ))}
+
+        </div>
+
         <div>
+
           <button
             onClick={onClose}
             className="mb-5 rounded-xl bg-yellow-400 px-5 py-2 font-semibold text-slate-900 hover:bg-yellow-300"
           >
-            ← Back to Explore
+            ← Back
           </button>
 
+          <div className="flex items-center gap-3">
 
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-xl font-semibold text-slate-400">
+            <h1 className="text-2xl font-bold text-white">
               {user?.username}
-            </span>
+            </h1>
 
             {badge && (
               <img
                 src={badge.badge}
                 alt={badge.label}
                 title={badge.label}
-                className="w-6 h-6 object-contain"
+                className="h-8 w-8"
               />
             )}
+
           </div>
 
-          <p className="text-slate-500 mt-2 text-lg">
-            Discord: {tradingProfile?.discord_username || "No Discord username"}
+          <p className="mt-3 text-lg text-slate-400">
+            {tradingProfile?.discord_username || "No Discord Username"}
           </p>
 
-{currentUserId !== user.id && (
+          {currentUserId !== user.id && (
   <button
-    onClick={() => {
-      if (alreadyFriends) {
-        navigate("/inbox");
-        return;
-      }
-
-      if (!requestPending && !notAcceptingRequests) {
-        sendFriendRequest();
-      }
-    }}
-    disabled={
-      sendingRequest ||
-      (requestPending && !alreadyFriends) ||
-      notAcceptingRequests
-    }
-    className={`mt-4 rounded-xl px-5 py-2 font-semibold transition ${
-      alreadyFriends
-        ? "bg-blue-600 hover:bg-blue-700 text-white"
-        : notAcceptingRequests
-        ? "bg-red-600 text-white cursor-not-allowed"
+    onClick={!isFriend ? sendFriendRequest : undefined}
+    disabled={isFriend || sendingRequest || requestPending}
+    className={`mt-6 rounded-xl px-6 py-3 font-semibold transition ${
+      isFriend
+        ? "bg-yellow-400 text-black cursor-default"
         : requestPending
-        ? "bg-slate-500 text-white cursor-not-allowed"
-        : "bg-yellow-400 text-slate-900 hover:bg-yellow-300"
+        ? "bg-slate-600 text-white"
+        : "bg-yellow-400 text-black hover:bg-yellow-300"
     }`}
   >
-    {alreadyFriends
-      ? "Manage Friendship"
-      : notAcceptingRequests
-      ? "Not accepting friend requests"
+    {isFriend
+      ? "Friends"
       : requestPending
       ? "Friend Request Pending"
       : sendingRequest
       ? "Sending..."
-      : "Send Friend Request"}
+      : "Add Friend"}
   </button>
 )}
+
         </div>
 
-<div className="relative">
-  <img
-    src={avatar}
-    alt={user?.username}
-    className="w-40 h-40 rounded-full border-4 border-white shadow-xl object-cover"
-  />
+      </div>
 
-  {isJacob && (
-    <>
-      {[
-        { left: "24%", delay: "0s" },
-        { left: "50%", delay: ".45s" },
-        { left: "76%", delay: ".9s" },
-      ].map((line, i) => (
-        <div
-          key={i}
-          className="absolute pointer-events-none"
-          style={{
-            left: line.left,
-            top: "-16px",
-            animation: "stinkFloat 2s ease-in-out infinite",
-            animationDelay: line.delay,
-          }}
-        >
-          <svg
-            width="18"
-            height="42"
-            viewBox="0 0 18 42"
-            fill="none"
-          >
-            <path
-              d="M9 42C9 32 2 30 2 22C2 16 14 14 14 7C14 4 12 2 10 0"
-              stroke="#4ade80"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-      ))}
-    </>
-  )}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 w-full lg:w-auto">
+
+        <div className="rounded-2xl border border-yellow-500/30 bg-[#232323] px-8 py-6 flex sm:block items-center justify-between text-center sm:text-center">
+  <div className="text-lg sm:text-4xl font-bold text-yellow-400">
+    {userStats.owned}
+  </div>
+
+  <div className="mt-0 sm:mt-2 text-sm text-slate-400">
+    Cards
+  </div>
 </div>
+
+<div className="rounded-2xl border border-yellow-500/30 bg-[#232323] px-8 py-6 flex sm:block items-center justify-between text-center sm:text-center">
+  <div className="text-lg sm:text-4xl font-bold text-yellow-400">
+    {userStats.completed}
+  </div>
+
+  <div className="mt-0 sm:mt-2 text-xs sm:text-sm text-slate-400">
+    Mastersets
+  </div>
+</div>
+
+<div className="rounded-2xl border border-yellow-500/30 bg-[#232323] px-8 py-6 flex sm:block items-center justify-between text-center sm:text-center">
+  <div className="text-lg sm:text-4xl font-bold text-yellow-400">
+    {userStats.trades}
+  </div>
+
+  <div className="mt-0 sm:mt-2 text-xs sm:text-sm text-slate-400">
+    Listings
+  </div>
+</div>
+
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-
-  <div className="grid grid-cols-3 gap-6">
-
-    <div>
-      <div className="text-4xl font-bold">
-        {userStats.owned}
-      </div>
-
-      <div>Owned Cards</div>
-    </div>
-
-    <div>
-      <div className="text-4xl font-bold">
-        {userStats.completed}
-      </div>
-
-      <div>Completed Sets</div>
-    </div>
-
-    <div>
-      <div className="text-4xl font-bold">
-        {userStats.trades}
-      </div>
-
-      <div>Trades</div>
     </div>
 
   </div>
 
 </div>
 
-<div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+
+<div className="rounded-2xl border border-yellow-500/30 bg-[#323232] p-8 shadow-sm">
 
 <div className="flex flex-wrap gap-3 mb-6">
 <button
@@ -1428,4 +1425,4 @@ className={`max-h-[75vh] max-w-[70vw] rounded-2xl object-contain drop-shadow-2xl
   );
 };
 
-export default ExploreProfile;
+export default FriendsProfiles;

@@ -134,6 +134,7 @@ const UserMenu = () => {
 const [editingUsername, setEditingUsername] = useState(false);
 const [usernameDraft, setUsernameDraft] = useState("");
 const [usernameTaken, setUsernameTaken] = useState(false);
+const [pendingFriendRequests, setPendingFriendRequests] = useState(0);
 const [showNightmarePromo, setShowNightmarePromo] = useState(false);
 
 const [showCollectionMenu, setShowCollectionMenu] = useState(false);
@@ -152,6 +153,19 @@ const [desktopTab, setDesktopTab] = useState<"showcase" | "trades">(
   completed: 0,
   trades: 0,
 });
+
+const loadPendingFriendRequests = async (userId: string) => {
+  const { count } = await supabase
+    .from("friend_requests")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .eq("receiver_id", userId)
+    .eq("status", "pending");
+
+  setPendingFriendRequests(count ?? 0);
+};
 
 useEffect(() => {
   const loadProfile = async () => {
@@ -174,6 +188,7 @@ useEffect(() => {
       if (data) {
         setProfile(data);
         setUsernameDraft(data.username || "");
+        loadPendingFriendRequests(session.user.id);
       }
 
       const { data: tradingProfile } = await supabase
@@ -864,6 +879,27 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  if (!profile?.id) return;
+
+  const channel = supabase
+    .channel("user-menu-friend-requests")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "friend_requests",
+      },
+      () => loadPendingFriendRequests(profile.id)
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [profile?.id]);
+
 // THE RETURN THAT GOES INTO THE OFFICIAL DATA. KEEGAN STOP MESSING THIS UP.
 
   return (
@@ -1022,6 +1058,25 @@ useEffect(() => {
   <span className="relative text-xl text-[#e6c35a]">
     ›
   </span>
+</button>
+
+<button
+  onClick={() => navigate("/inbox")}
+  className="relative w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
+>
+  <span className="text-[15px] font-medium text-gray-900">
+    My Inbox and Friends
+  </span>
+
+  <div className="flex items-center gap-3">
+    {pendingFriendRequests > 0 && (
+      <span className="min-w-[22px] h-[22px] rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center px-1">
+        {pendingFriendRequests}
+      </span>
+    )}
+
+    <span className="text-xl text-gray-400">›</span>
+  </div>
 </button>
 
     <button

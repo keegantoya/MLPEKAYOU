@@ -73,7 +73,7 @@ const products = [
             {products.map((product) => (
   <a
     key={product.name}
-    href="https://stonestradingco.com/collections/kayou"
+    href="https://stonestradingco.com/collections/my-little-pony"
     target="_blank"
     rel="noopener noreferrer"
     className="flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 transition hover:border-yellow-400 hover:-translate-y-1"

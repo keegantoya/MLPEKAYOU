@@ -54,6 +54,8 @@ import LeapingPonies from "./pages/Sets/Others/leaping-ponies";
 import Explore from "./pages/Everypony/explore";
 import Binders from "./pages/Main Pages/binders";
 import Support from "./pages/Main Pages/support-mlpekayou";
+import Inbox from "./pages/Friends/inbox";
+import FriendsProfiles from "./pages/Friends/friends-profiles";
 
 
 
@@ -274,11 +276,21 @@ const AppRoutes = () => {
 
                 <Route path="/support-mlpekayou" element={<Support />} />
                 <Route path="/binders" element={<Binders />} />
+
       <Route
   path="/UserMenu"
   element={
     <RequireAuth>
       <UserMenu />
+    </RequireAuth>
+  }
+/>
+
+      <Route
+  path="/Inbox"
+  element={
+    <RequireAuth>
+      <Inbox />
     </RequireAuth>
   }
 />

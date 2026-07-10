@@ -220,40 +220,33 @@ Object.entries(row.progress || {}).forEach(([key, value]) => {
 const progressMap: Record<string, number> = {};
 
 Object.entries(mergedBySet).forEach(([setId, progress]) => {
-  const validPromoCards = [
-    "PR-1",
-    "PR-2",
-    "PR-3",
-    "PR-4",
-    "PR-5",
-    "PR-7",
-  ];
+  const count = Object.keys(progress).length;
 
-  const ccgPromoCount =
-    setId === "9"
-      ? Object.keys(progress).filter((key) =>
-          validPromoCards.includes(key)
-        ).length
-      : 0;
+  switch (setId) {
+    case "FW":
+      progressMap["tcg"] = count;
+      break;
 
-  const count =
-    setId === "9"
-      ? ccgPromoCount
-      : Object.keys(progress).length;
+    case "SD":
+      progressMap["friendshipsbegin"] = count;
+      break;
 
-  if (setId === "FW") {
-    progressMap["tcg"] = count;
-  } else if (setId === "SD") {
-    progressMap["friendshipsbegin"] = count;
-  } else if (setId === "OTHERMERCH") {
-    progressMap["OTHERMERCH"] = count;
-  } else if (setId === "tcgpromos") {
-    progressMap["9"] = (progressMap["9"] || 0) + count;
-  } else {
-    progressMap[setId] = count;
+    case "OTHERMERCH":
+      progressMap["OTHERMERCH"] = count;
+      break;
+
+    case "9":
+      progressMap["9"] = count;
+      break;
+
+    case "tcgpromos":
+      progressMap["9"] = (progressMap["9"] || 0) + count;
+      break;
+
+    default:
+      progressMap[setId] = count;
   }
 });
-
 const { data: profile } = await supabase
   .from("profiles")
   .select(
@@ -298,21 +291,6 @@ const mappedHiddenSets: string[] = [
 setHiddenSets([...new Set(mappedHiddenSets)]);
 const updated = collections.map((set) => {
   let collected = progressMap[set.id] || 0;
-
-  // Match Index.tsx exactly for the promo set.
-  if (set.id === "9") {
-    const ccgPromos = progressMap["9"] || 0;
-
-    const tcgPromoRow = rawData?.find(
-      (row: any) => row.set_id === "tcgpromos"
-    );
-
-    const tcgPromos = tcgPromoRow
-      ? Object.values(tcgPromoRow.progress || {}).filter(Boolean).length
-      : 0;
-
-    collected = ccgPromos + tcgPromos;
-  }
 
   const percent =
     set.totalCards > 0

@@ -619,14 +619,51 @@ border border-[#7c5aa6]/40 shadow-sm">
             {actualIndex + 1}
           </div>
 
-          {/* Avatar */}
-          <img
-            src={getAvatar(user.avatar)}
-            className={`
-              mx-auto rounded-full border-4 mb-4 object-cover
-              ${isFirst ? "w-28 h-28 border-yellow-300" : "w-20 h-20 border-white"}
-            `}
-          />
+{/* Avatar */}
+<div className="relative mx-auto w-fit mb-4">
+  <img
+    src={getAvatar(user.avatar)}
+    className={`
+      mx-auto rounded-full border-4 object-cover
+      ${isFirst ? "w-28 h-28 border-yellow-300" : "w-20 h-20 border-white"}
+    `}
+  />
+
+  {user.id === "94a1c998-d040-4dd2-b2fb-5f606287139d" && (
+    <>
+      {[
+        { left: "24%", delay: "0s" },
+        { left: "50%", delay: ".45s" },
+        { left: "76%", delay: ".9s" },
+      ].map((line, i) => (
+        <div
+          key={i}
+          className="absolute pointer-events-none"
+          style={{
+            left: line.left,
+            top: "-16px",
+            animation: "stinkFloat 2s ease-in-out infinite",
+            animationDelay: line.delay,
+          }}
+        >
+          <svg
+            width="18"
+            height="42"
+            viewBox="0 0 18 42"
+            fill="none"
+          >
+            <path
+              d="M9 42C9 32 2 30 2 22C2 16 14 14 14 7C14 4 12 2 10 0"
+              stroke="#4ade80"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      ))}
+    </>
+  )}
+</div>
 
           {/* Username + Verified Badge */}
 <div className="flex items-center justify-center gap-2 mb-2">
@@ -727,11 +764,48 @@ style={{
     #{rank}
   </div>
 
-  {/* Avatar */}
+{/* Avatar */}
+<div className="relative shrink-0">
   <img
     src={getAvatar(user.avatar)}
-    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-2 border-white shadow-sm shrink-0"
+    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-2 border-white shadow-sm"
   />
+
+  {user.id === "94a1c998-d040-4dd2-b2fb-5f606287139d" && (
+    <>
+      {[
+        { left: "24%", delay: "0s" },
+        { left: "50%", delay: ".45s" },
+        { left: "76%", delay: ".9s" },
+      ].map((line, i) => (
+        <div
+          key={i}
+          className="absolute pointer-events-none"
+          style={{
+            left: line.left,
+            top: "-16px",
+            animation: "stinkFloat 2s ease-in-out infinite",
+            animationDelay: line.delay,
+          }}
+        >
+          <svg
+            width="18"
+            height="42"
+            viewBox="0 0 18 42"
+            fill="none"
+          >
+            <path
+              d="M9 42C9 32 2 30 2 22C2 16 14 14 14 7C14 4 12 2 10 0"
+              stroke="#4ade80"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      ))}
+    </>
+  )}
+</div>
 
 {/* Username + Verified Badge */}
 <div className="flex-1 min-w-0">

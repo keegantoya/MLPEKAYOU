@@ -553,3 +553,47 @@ body::-webkit-scrollbar,
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@keyframes stinkFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(1.05);
+  }
+}
+
+.kayou-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #d4af37 transparent;
+}
+
+.kayou-scrollbar::-webkit-scrollbar {
+  width: 26px; /* Increase for vertical scrollbar */
+  height: 26px; /* Increase for horizontal scrollbar */
+}
+
+.kayou-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kayou-scrollbar::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 999px;
+  border: 5px solid transparent;
+  background-clip: padding-box;
+}
+
+.kayou-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #f6d85b;
+  background-clip: padding-box;
+}
+
+.kayou-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}

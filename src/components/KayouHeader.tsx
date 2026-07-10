@@ -197,6 +197,7 @@ const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
 const [showProgressMenu, setShowProgressMenu] = useState(false);
+const [pendingFriendRequests, setPendingFriendRequests] = useState(0);
 
 const [showSpider, setShowSpider] = useState(true);
 const [spiderLeaving, setSpiderLeaving] = useState(false);
@@ -225,6 +226,20 @@ const verification =
 
 setProfile(data);
 };
+
+const loadPendingFriendRequests = async (userId: string) => {
+  const { count } = await supabase
+    .from("friend_requests")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .eq("receiver_id", userId)
+    .eq("status", "pending");
+
+  setPendingFriendRequests(count ?? 0);
+};
+
 
 useEffect(() => {
   const handleProfileUpdated = (event: Event) => {
@@ -289,6 +304,7 @@ useEffect(() => {
 
   if (currentUser) {
     getProfile(currentUser.id);
+    loadPendingFriendRequests(currentUser.id);
   }
 };
 
@@ -303,6 +319,7 @@ useEffect(() => {
 
   if (currentUser && !profile) {
   getProfile(currentUser.id);
+  loadPendingFriendRequests(currentUser.id);
 } else {
   
   }
@@ -386,6 +403,29 @@ useEffect(() => {
   setLoginError("");
   setShowForgot(false);
 };
+
+useEffect(() => {
+  if (!user) return;
+
+  loadPendingFriendRequests(user.id);
+
+  const channel = supabase
+    .channel("friend-request-badge")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "friend_requests",
+      },
+      () => loadPendingFriendRequests(user.id)
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [user]);
 
 const handleForgotPassword = async () => {
   try {
@@ -692,6 +732,22 @@ active:scale-95
           >
             Edit My Profile
           </button>
+
+          <button
+  onClick={() => {
+    navigate("/inbox");
+    setOpen(false);
+  }}
+  className="relative w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
+>
+  My Inbox and Friends
+
+  {pendingFriendRequests > 0 && (
+    <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-red-600 text-white text-xs font-bold px-1">
+      {pendingFriendRequests}
+    </span>
+  )}
+</button>
 
           <button
             onClick={() => {
