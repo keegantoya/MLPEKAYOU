@@ -198,9 +198,7 @@ const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
 const [showProgressMenu, setShowProgressMenu] = useState(false);
 const [pendingFriendRequests, setPendingFriendRequests] = useState(0);
-
-const [showSpider, setShowSpider] = useState(true);
-const [spiderLeaving, setSpiderLeaving] = useState(false);
+const [pendingMessages, setPendingMessages] = useState(0);
 
 const menuRef = useRef<HTMLDivElement>(null);
 
@@ -228,7 +226,7 @@ setProfile(data);
 };
 
 const loadPendingFriendRequests = async (userId: string) => {
-  const { count } = await supabase
+  const { count: friendCount } = await supabase
     .from("friend_requests")
     .select("*", {
       count: "exact",
@@ -237,7 +235,17 @@ const loadPendingFriendRequests = async (userId: string) => {
     .eq("receiver_id", userId)
     .eq("status", "pending");
 
-  setPendingFriendRequests(count ?? 0);
+  const { count: messageCount } = await supabase
+    .from("messages")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .eq("receiver", userId)
+    .is("read_at", null);
+
+  setPendingFriendRequests(friendCount ?? 0);
+  setPendingMessages(messageCount ?? 0);
 };
 
 
@@ -379,12 +387,6 @@ useEffect(() => {
   };
 }, [mobileNavCollapsed]);
 
-useEffect(() => {
-  if (sessionStorage.getItem("spiderDismissed")) {
-    setShowSpider(false);
-  }
-}, []);
-
   const handleLoginSubmit = async () => {
   const { error } = await supabase.auth.signInWithPassword({
     email: loginEmail,
@@ -403,29 +405,55 @@ useEffect(() => {
   setLoginError("");
   setShowForgot(false);
 };
-
 useEffect(() => {
-  if (!user) return;
+  let channel: any;
 
-  loadPendingFriendRequests(user.id);
+  const setup = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-  const channel = supabase
-    .channel("friend-request-badge")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "friend_requests",
-      },
-      () => loadPendingFriendRequests(user.id)
-    )
-    .subscribe();
+    if (!session?.user) return;
+
+    const userId = session.user.id;
+
+    await loadPendingFriendRequests(userId);
+
+    channel = supabase
+      .channel(`header-badges-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+        },
+        async () => {
+          await loadPendingFriendRequests(userId);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "friend_requests",
+        },
+        async () => {
+          await loadPendingFriendRequests(userId);
+        }
+      )
+      .subscribe();
+  };
+
+  setup();
 
   return () => {
-    supabase.removeChannel(channel);
+    if (channel) {
+      supabase.removeChannel(channel);
+    }
   };
-}, [user]);
+}, []);
 
 const handleForgotPassword = async () => {
   try {
@@ -498,15 +526,6 @@ const requireLogin = (path: string) => {
     navigate("/");
   };
 
-  const dismissSpider = () => {
-  setSpiderLeaving(true);
-
-  setTimeout(() => {
-    sessionStorage.setItem("spiderDismissed", "true");
-    setShowSpider(false);
-  }, 1200);
-};
-
   const isActive = (path: string) => {
   if (path === "/") {
     return location.pathname === "/";
@@ -517,25 +536,6 @@ const requireLogin = (path: string) => {
 
 return (
   <>
-{showSpider && (
-  <button
-    onClick={dismissSpider}
-    className={`fixed left-1/2 z-[19999] bg-transparent border-0 p-0 cursor-pointer ${
-      spiderLeaving ? "spider-up" : "spider-down"
-    }`}
-    aria-label="Spider"
-  >
-    <div className={spiderLeaving ? "" : "spider-sway"}>
-      <div className="spider-web" />
-
-      <img
-        src="/website-assets/nmnspidernoweb.webp"
-        alt="Spider"
-        className="w-20 sm:w-24 h-auto select-none pointer-events-none"
-      />
-    </div>
-  </button>
-)}
 
 <header
   className={`fixed left-0 right-0 z-[20000] text-[#E7C84B] shadow-md ${
@@ -722,7 +722,7 @@ active:scale-95
         </div>
 
         {/* Menu Items */}
-        <div className="py-3 space-y-1.5">
+        <div className="py-2 space-y-1">
           <button
             onClick={() => {
               navigate("/UserMenu");
@@ -742,11 +742,6 @@ active:scale-95
 >
   My Inbox and Friends
 
-  {pendingFriendRequests > 0 && (
-    <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center min-w-[22px] h-[22px] rounded-full bg-red-600 text-white text-xs font-bold px-1">
-      {pendingFriendRequests}
-    </span>
-  )}
 </button>
 
           <button

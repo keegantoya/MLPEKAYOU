@@ -9,30 +9,43 @@ const products = [
     name: "Fun Moments 1 Booster Box",
     category: "Fun Moments",
     price: "$23.88",
-    image: "/set-pictures/funmomentsonebox.webp",
+    image: "/set-pictures/funmomentsoneposterstone.webp",
     scale: "scale-95",
+    link: "https://stonestradingco.com/collections/my-little-pony/products/my-little-pony-friendship-eternal-cards-fun-moments-english-series-1-display-box-w-promo-card",
   },
   {
     name: "Rainbow 2 Booster Box",
     category: "Rainbow",
     price: "$39.80",
-    image: "/set-pictures/rainbowtwobox.webp",
+    image: "/set-pictures/rainbowtwoposterstone.webp",
     scale: "scale-125",
+    link: "https://stonestradingco.com/collections/my-little-pony/products/kayou-my-little-pony-friendship-eternal-cards-rainbow-edition-english-series-2-display-box",
   },
   {
     name: "Star 1 Booster Box",
     category: "Star",
     price: "$127.84",
-    image: "/set-pictures/staronebox.webp",
+    image: "/set-pictures/staroneposterstone.webp",
     scale: "scale-115",
-    disclaimer: "Use code MLPEKAYOU at checkout for 20% off any purchase of Star 1",
+    disclaimer:
+      "Use code MLPEKAYOU at checkout for 20% off any purchase of Star 1",
+    link: "https://stonestradingco.com/collections/my-little-pony/products/kayou-my-little-pony-friendship-eternal-cards-star-edition-english-series-1-display-box",
   },
   {
     name: "Moon 3 Booster Box",
     category: "Moon",
     price: "$47.88",
-    image: "/set-pictures/moonthreebox.webp",
+    image: "/set-pictures/moonthreeposterstone.webp",
     scale: "scale-95",
+    link: "https://stonestradingco.com/collections/my-little-pony/products/kayou-my-little-pony-friendship-eternal-cards-moon-edition-english-series-3-display-box",
+  },
+  {
+    name: "Fun Moments 3 Booster Box PREORDER",
+    category: "Fun Moments",
+    price: "$39.80",
+    image: "/set-pictures/funmomentsthreeposterstone.webp",
+    scale: "scale-95",
+    link: "https://stonestradingco.com/collections/my-little-pony/products/kayou-mlp-fun-moments-3-friendship-eternal",
   },
 ];
 
@@ -73,16 +86,16 @@ const products = [
             {products.map((product) => (
   <a
     key={product.name}
-    href="https://stonestradingco.com/collections/my-little-pony"
+    href={product.link}
     target="_blank"
     rel="noopener noreferrer"
     className="flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 transition hover:border-yellow-400 hover:-translate-y-1"
   >
-<div className="aspect-square flex items-center justify-center overflow-hidden bg-zinc-950 p-6">
+<div className="aspect-[3/4] overflow-hidden bg-zinc-950">
   <img
     src={product.image}
     alt={product.name}
-    className={`max-h-full max-w-full object-contain transition ${product.scale}`}
+    className="h-full w-full object-cover transition duration-300 hover:scale-105"
   />
 </div>
 

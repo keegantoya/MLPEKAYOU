@@ -56,7 +56,7 @@ import Binders from "./pages/Main Pages/binders";
 import Support from "./pages/Main Pages/support-mlpekayou";
 import Inbox from "./pages/Friends/inbox";
 import FriendsProfiles from "./pages/Friends/friends-profiles";
-
+import Messages from "./pages/Friends/messages";
 
 
 

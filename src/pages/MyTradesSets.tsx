@@ -835,13 +835,13 @@ tracking-[0.22em]
 font-bold
 uppercase
 ">
-  {rarity === "SHINING ZR" || rarity === "SZR"
-    ? "◇ZR"
-    : rarity === "SN"
-    ? "◇N"
-    : rarity === "SCR"
-    ? "◇CR"
-    : rarity}
+{rarity === "SHINING ZR" || rarity === "SZR"
+  ? "◇ZR"
+  : rarity === "SN"
+  ? "◇N"
+  : rarity === "SCR" && set.id !== "4"
+  ? "◇CR"
+  : rarity}
 </span>
 
             <div className="h-px bg-[#2f2f2f] flex-1 max-w-[120px]" />

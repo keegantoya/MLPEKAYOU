@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Messages from "./messages";
 import avatar001 from "@/assets/avatars/avatar001.webp";
 import avatar002 from "@/assets/avatars/avatar002.webp";
 import avatar003 from "@/assets/avatars/avatar003.webp";
@@ -160,6 +161,9 @@ const [currentUserId, setCurrentUserId] = useState("");
 const [sendingRequest, setSendingRequest] = useState(false);
 const [requestPending, setRequestPending] = useState(false);
 const [isFriend, setIsFriend] = useState(false);
+const [friendNickname, setFriendNickname] = useState("");
+const [showMessages, setShowMessages] = useState(false);
+const [unreadMessages, setUnreadMessages] = useState(0);
 
   const avatar =
     avatarMap[String(user?.avatar_url || "").trim()] || avatar001;
@@ -176,6 +180,17 @@ const [isFriend, setIsFriend] = useState(false);
 } = await supabase.auth.getSession();
 
 setCurrentUserId(session?.user?.id || "");
+
+if (session?.user) {
+  const { data: nicknameRow } = await supabase
+    .from("friend_nicknames")
+    .select("nickname")
+    .eq("user_id", session.user.id)
+    .eq("friend_id", user.id)
+    .maybeSingle();
+
+  setFriendNickname(nicknameRow?.nickname ?? "");
+}
 
 if (session?.user && session.user.id !== user.id) {
   const { data: existingRequest } = await supabase
@@ -199,7 +214,24 @@ if (session?.user && session.user.id !== user.id) {
 
   setIsFriend(!!friendship);
 }
-    
+
+if (session?.user && session.user.id !== user.id) {
+const { data: unread } = await supabase
+  .from("messages")
+  .select("id")
+  .eq("sender", user.id)
+  .eq("receiver", session.user.id)
+  .is("read_at", null);
+
+const count = unread?.length ?? 0;
+
+setUnreadMessages(count);
+
+window.dispatchEvent(
+  new CustomEvent("header-message-update")
+);
+}
+
       // Load trading profile (Discord username)
       const { data: tradingProfile } = await supabase
         .from("trading_profiles")
@@ -797,6 +829,25 @@ let owned = 0;
   
   
   loadProfile();
+
+  const channel = supabase
+  .channel(`friend-profile-${user.id}`)
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "messages",
+    },
+    () => {
+      loadProfile();
+    }
+  )
+  .subscribe();
+
+return () => {
+  supabase.removeChannel(channel);
+};
 }, [user?.id]);
 
 useEffect(() => {
@@ -1061,18 +1112,12 @@ const filteredTradeCards =
 
         <div>
 
-          <button
-            onClick={onClose}
-            className="mb-5 rounded-xl bg-yellow-400 px-5 py-2 font-semibold text-slate-900 hover:bg-yellow-300"
-          >
-            ← Back
-          </button>
 
           <div className="flex items-center gap-3">
 
             <h1 className="text-2xl font-bold text-white">
-              {user?.username}
-            </h1>
+  {friendNickname || user?.username}
+</h1>
 
             {badge && (
               <img
@@ -1089,26 +1134,58 @@ const filteredTradeCards =
             {tradingProfile?.discord_username || "No Discord Username"}
           </p>
 
-          {currentUserId !== user.id && (
-  <button
-    onClick={!isFriend ? sendFriendRequest : undefined}
-    disabled={isFriend || sendingRequest || requestPending}
-    className={`mt-6 rounded-xl px-6 py-3 font-semibold transition ${
-      isFriend
-        ? "bg-yellow-400 text-black cursor-default"
+{currentUserId !== user.id && (
+  <div className="mt-6 flex items-center gap-3">
+
+    <button
+      onClick={!isFriend ? sendFriendRequest : undefined}
+      disabled={isFriend || sendingRequest || requestPending}
+      className={`rounded-xl px-6 py-3 font-semibold transition ${
+        isFriend
+          ? "bg-yellow-400 text-black cursor-default"
+          : requestPending
+          ? "bg-slate-600 text-white"
+          : "bg-yellow-400 text-black hover:bg-yellow-300"
+      }`}
+    >
+      {isFriend
+        ? "Friends"
         : requestPending
-        ? "bg-slate-600 text-white"
-        : "bg-yellow-400 text-black hover:bg-yellow-300"
-    }`}
-  >
-    {isFriend
-      ? "Friends"
-      : requestPending
-      ? "Friend Request Pending"
-      : sendingRequest
-      ? "Sending..."
-      : "Add Friend"}
-  </button>
+        ? "Friend Request Pending"
+        : sendingRequest
+        ? "Sending..."
+        : "Add Friend"}
+    </button>
+
+{isFriend && (
+  <div className="relative">
+    <button
+      onClick={() => setShowMessages(true)}
+      title="Messages"
+      className="flex h-12 w-12 items-center justify-center rounded-full bg-[#5b5b5b] text-white shadow-lg transition hover:scale-105 hover:bg-[#707070]"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="26"
+        height="26"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+      </svg>
+    </button>
+
+    {unreadMessages > 0 && (
+      <div
+        className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white"
+      >
+        {unreadMessages > 99 ? "99+" : unreadMessages}
+      </div>
+    )}
+  </div>
+)}
+
+  </div>
 )}
 
         </div>
@@ -1418,6 +1495,81 @@ className={`max-h-[75vh] max-w-[70vw] rounded-2xl object-contain drop-shadow-2xl
     : ""
 }`}
     />
+  </div>
+)}
+
+{showMessages && (
+  <div
+    className="fixed inset-0 z-[10000] flex items-start justify-center bg-black/70 backdrop-blur-sm pt-28"
+    onClick={async () => {
+  setShowMessages(false);
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) return;
+
+  const { data: unread } = await supabase
+    .from("messages")
+    .select("id")
+    .eq("sender", user.id)
+    .eq("receiver", session.user.id)
+    .is("read_at", null);
+
+  const count = unread?.length ?? 0;
+
+setUnreadMessages(count);
+
+window.dispatchEvent(
+  new CustomEvent("header-message-update")
+);
+}}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="relative h-[520px] w-[420px] max-h-[80vh] max-w-[95vw] overflow-hidden rounded-[28px] border border-[#3a3a3c] bg-[#1c1c1e] shadow-2xl"
+    >
+      <div className="flex h-14 items-center justify-between border-b border-[#3a3a3c] bg-[#2c2c2e] px-5">
+        <div className="font-semibold text-white">
+          {friendNickname || user.username}
+        </div>
+
+        <button
+          onClick={async () => {
+  setShowMessages(false);
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) return;
+
+  const { data: unread } = await supabase
+    .from("messages")
+    .select("id")
+    .eq("sender", user.id)
+    .eq("receiver", session.user.id)
+    .is("read_at", null);
+
+  const count = unread?.length ?? 0;
+
+setUnreadMessages(count);
+
+window.dispatchEvent(
+  new CustomEvent("header-message-update")
+);
+}}
+          className="text-2xl text-gray-400 hover:text-white"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="h-[calc(100%-56px)] overflow-hidden">
+        <Messages otherUserId={user.id} />
+      </div>
+    </div>
   </div>
 )}
 

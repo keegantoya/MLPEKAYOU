@@ -1060,7 +1060,7 @@ onMobileViewModeChange={setMobileViewMode}
         </div>
 
         <div className="px-3 py-2">
-          <div className="min-w-0 text-[8px] sm:text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+          <div className="min-w-0 text-[8px] sm:text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
             <span>
   {num <= 6
     ? `RR${String(num).padStart(2, "0")}`
@@ -1068,7 +1068,7 @@ onMobileViewModeChange={setMobileViewMode}
 </span>
 
             {isoStatuses[stateKey] === "trade_in_progress" && (
-              <span className="text-[#7c5aa6] text-xs">✔</span>
+              <span className="text-[#d4af37] text-xs">✔</span>
             )}
 
             {isoStatuses[stateKey] === "purchase_in_progress" && (
@@ -1197,11 +1197,11 @@ onMobileViewModeChange={setMobileViewMode}
       </div>
 
       <div className="px-3 py-2">
-        <div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+        <div className="text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
           <span>{deck.code}</span>
 
           {isoStatuses[deck.code] === "trade_in_progress" && (
-            <span className="text-[#7c5aa6] text-xs">✔</span>
+            <span className="text-[#d4af37] text-xs">✔</span>
           )}
 
           {isoStatuses[deck.code] === "purchase_in_progress" && (
@@ -1338,11 +1338,11 @@ return key;
     </div>
 
     <div className="px-3 py-2">
-      <div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+      <div className="text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
         <span>{getTCGCardDisplayCode(key)}</span>
 
         {isoStatuses[key] === "trade_in_progress" && (
-          <span className="text-[#7c5aa6] text-xs">✔</span>
+          <span className="text-[#d4af37] text-xs">✔</span>
         )}
 
         {isoStatuses[key] === "purchase_in_progress" && (
@@ -1505,11 +1505,11 @@ return key;
     </div>
 
     <div className="px-3 py-2">
-      <div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+      <div className="text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
         <span>{getTCGCardDisplayCode(key)}</span>
 
         {isoStatuses[key] === "trade_in_progress" && (
-          <span className="text-[#7c5aa6] text-xs">✔</span>
+          <span className="text-[#d4af37] text-xs">✔</span>
         )}
 
         {isoStatuses[key] === "purchase_in_progress" && (
@@ -1586,11 +1586,11 @@ return key;
                   </div>
 
                   <div className="px-3 py-2">
-                    <div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+                    <div className="text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
                       <span>{`PR${promoNumber}`}</span>
 
                       {status === "trade_in_progress" && (
-                        <span className="text-[#7c5aa6] text-xs">✔</span>
+                        <span className="text-[#d4af37] text-xs">✔</span>
                       )}
 
                       {status === "purchase_in_progress" && (
@@ -1648,11 +1648,11 @@ return key;
                   </div>
 
                   <div className="px-3 py-2">
-                    <div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+                    <div className="text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
                       <span>{getTCGCardDisplayCode(cardKey)}</span>
 
                       {status === "trade_in_progress" && (
-                        <span className="text-[#7c5aa6] text-xs">✔</span>
+                        <span className="text-[#d4af37] text-xs">✔</span>
                       )}
 
                       {status === "purchase_in_progress" && (
@@ -1717,13 +1717,13 @@ return key;
                 </div>
 
                 <div className="px-3 py-2">
-                  <div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+                  <div className="text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
                     <span>
                       {getDisplayCardCode(set.id, rarity, number)}
                     </span>
 
                     {status === "trade_in_progress" && (
-                      <span className="text-[#7c5aa6] text-xs">✔</span>
+                      <span className="text-[#d4af37] text-xs">✔</span>
                     )}
 
                     {status === "purchase_in_progress" && (
@@ -1930,7 +1930,7 @@ onClick={() => {
     </div>
 
     <div className="px-2 py-2 min-w-0">
-<div className="text-[11px] font-semibold text-[#4b2e83] truncate flex items-center gap-1">
+<div className="text-[11px] font-semibold text-[#d4af37] truncate flex items-center gap-1">
   {(() => {
 const setCodeMap: Record<string, string> = {
   "1": "MLPME01",
@@ -1989,7 +1989,7 @@ const getTCGCardDisplayCode = (cardKey: string) => {
         <span className="truncate">{fullCode}</span>
 
         {status === "trade_in_progress" && (
-  <span className="text-[#7c5aa6] text-xs">✔</span>
+  <span className="text-[#d4af37] text-xs">✔</span>
 )}
 
 {status === "purchase_in_progress" && (
@@ -2031,7 +2031,7 @@ const getTCGCardDisplayCode = (cardKey: string) => {
 {selectedCardKey && (
   <div className="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none">
     <div className="pointer-events-auto w-[280px] rounded-2xl border border-[#d4af37]/40 bg-white shadow-2xl p-4">
-      <h3 className="text-sm font-semibold text-[#4b2e83] mb-3">
+      <h3 className="text-sm font-semibold text-[#d4af37] mb-3">
         Update Card Status
       </h3>
 
@@ -2044,7 +2044,7 @@ const getTCGCardDisplayCode = (cardKey: string) => {
             );
             setSelectedCardKey(null);
           }}
-          className="w-full px-3 py-2 rounded-xl bg-[#7c5aa6] text-white text-sm font-semibold hover:bg-[#6a4b95] transition"
+          className="w-full px-3 py-2 rounded-xl bg-[#d4af37] text-white text-sm font-semibold hover:bg-[#b8902f] transition"
         >
           Trade In Progress
         </button>

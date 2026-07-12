@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, Bell } from "lucide-react";
+import { Users, Bell, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import FriendsProfiles from "./friends-profiles";
 
@@ -133,6 +133,8 @@ interface FriendRequest {
 interface Friend {
   id: string;
   username: string;
+  nickname?: string;
+  unreadMessages?: number;
   profile: any;
   tradingProfile: any;
 }
@@ -149,24 +151,55 @@ export default function Inbox() {
   const [allowFriendRequests, setAllowFriendRequests] = useState(true);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [confirmUnfriend, setConfirmUnfriend] = useState<string | null>(null);
+  const [editingNickname, setEditingNickname] = useState<string | null>(null);
+const [nicknameInput, setNicknameInput] = useState("");
 
 useEffect(() => {
-  loadInbox();
+  void loadInbox();
 
-  const channel = supabase
-    .channel("friend_requests")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "friend_requests",
-      },
-      () => {
-        loadInbox();
-      }
-    )
-    .subscribe();
+const channel = supabase
+  .channel("inbox-updates")
+.on(
+  "postgres_changes",
+  {
+    event: "*",
+    schema: "public",
+    table: "messages",
+  },
+  async (payload) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user) return;
+
+    const row = payload.new as any;
+
+    if (
+      row.sender !== session.user.id &&
+      row.receiver !== session.user.id
+    ) {
+      return;
+    }
+
+    setFriends((current) =>
+      current.map((friend) => {
+        if (friend.id !== row.sender) return friend;
+
+        const unread =
+          row.receiver === session.user.id && row.read_at == null
+            ? (friend.unreadMessages ?? 0) + 1
+            : Math.max((friend.unreadMessages ?? 1) - 1, 0);
+
+        return {
+          ...friend,
+          unreadMessages: unread,
+        };
+      })
+    );
+  }
+)
+  .subscribe();
 
   return () => {
     supabase.removeChannel(channel);
@@ -242,15 +275,36 @@ const merged = requestRows.map((request) => {
   .from("profiles")
   .select("*")
   .in("id", ids);
-  const { data: tradingProfiles } = await supabase
+const { data: tradingProfiles } = await supabase
   .from("trading_profiles")
   .select("*")
   .in("user_id", ids);
+
+const { data: nicknames } = await supabase
+  .from("friend_nicknames")
+  .select("*")
+  .eq("user_id", userId);
+const { data: unreadRows } = await supabase
+  .from("messages")
+  .select("sender")
+  .eq("receiver", userId)
+  .is("read_at", null);
+
+const unreadCounts = (unreadRows ?? []).reduce(
+  (acc: Record<string, number>, row: any) => {
+    acc[row.sender] = (acc[row.sender] ?? 0) + 1;
+    return acc;
+  },
+  {}
+);
 
 setFriends(
   profiles?.map((p) => ({
     id: p.id,
     username: p.username,
+    nickname:
+      nicknames?.find((n) => n.friend_id === p.id)?.nickname ?? "",
+    unreadMessages: unreadCounts[p.id] ?? 0,
     profile: p,
     tradingProfile:
       tradingProfiles?.find((t) => t.user_id === p.id) ?? null,
@@ -272,7 +326,7 @@ async function acceptRequest(request: FriendRequest) {
     prev.filter((r) => r.id !== request.id)
   );
 
-  loadInbox();
+  void loadInbox();
 }
 
   async function toggleFriendRequests() {
@@ -313,9 +367,48 @@ async function unfriend(friendId: string) {
   });
 
   setConfirmUnfriend(null);
-  loadInbox();
+  void loadInbox();
 }
 
+async function saveNickname(friendId: string) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) return;
+
+  const { error } = await supabase
+    .from("friend_nicknames")
+    .upsert(
+      {
+        user_id: session.user.id,
+        friend_id: friendId,
+        nickname: nicknameInput.trim(),
+      },
+      {
+        onConflict: "user_id,friend_id",
+      }
+    );
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  setFriends((prev) =>
+    prev.map((friend) =>
+      friend.id === friendId
+        ? {
+            ...friend,
+            nickname: nicknameInput.trim(),
+          }
+        : friend
+    )
+  );
+
+  setEditingNickname(null);
+  setNicknameInput("");
+}
 return (
   <div className="min-h-screen bg-[#171717] text-white px-4 py-8">
     <div className="max-w-5xl mx-auto">
@@ -331,10 +424,13 @@ return (
           </button>
 
           <FriendsProfiles
-            user={selectedFriend.profile}
-            tradingProfile={selectedFriend.tradingProfile}
-            onClose={() => setSelectedFriend(null)}
-          />
+  user={selectedFriend.profile}
+  tradingProfile={selectedFriend.tradingProfile}
+  onClose={() => {
+    setSelectedFriend(null);
+    void loadInbox();
+  }}
+/>
         </>
 
       ) : (
@@ -505,20 +601,70 @@ return (
 
                     <div className="flex items-center gap-4">
 
+<div className="relative">
   <img
-src={
-  avatarMap[
-    String(friend.profile?.avatar_url || "").trim()
-  ] || avatar001
-}
-    alt={friend.username}
+    src={
+      avatarMap[
+        String(friend.profile?.avatar_url || "").trim()
+      ] || avatar001
+    }
+    alt={friend.nickname || friend.username}
     className="h-14 w-14 rounded-full border-2 border-yellow-400 object-cover"
   />
 
-  <div className="text-xl font-semibold">
-    {friend.username}
-  </div>
+  {friend.unreadMessages! > 0 && (
+    <div className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white">
+      {friend.unreadMessages! > 99 ? "99+" : friend.unreadMessages}
+    </div>
+  )}
+</div>
 
+<div className="flex min-w-0 flex-1 items-center gap-2">
+  {editingNickname === friend.id ? (
+    <>
+      <input
+        value={nicknameInput}
+        onChange={(e) => setNicknameInput(e.target.value)}
+        autoFocus
+        maxLength={24}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            saveNickname(friend.id);
+          }
+
+          if (e.key === "Escape") {
+            setEditingNickname(null);
+            setNicknameInput("");
+          }
+        }}
+        className="min-w-0 flex-1 rounded bg-[#333] px-2 py-1 text-sm sm:text-base text-white"
+      />
+
+      <button
+        onClick={() => saveNickname(friend.id)}
+        className="flex-shrink-0 rounded bg-green-600 px-2 py-1 text-xs font-semibold text-white hover:bg-green-700 sm:px-3 sm:text-sm"
+      >
+        Save
+      </button>
+    </>
+  ) : (
+    <>
+      <div className="truncate text-lg sm:text-xl font-semibold">
+        {friend.nickname || friend.username}
+      </div>
+
+      <button
+        onClick={() => {
+          setEditingNickname(friend.id);
+          setNicknameInput(friend.nickname || "");
+        }}
+        className="flex-shrink-0 text-gray-400 hover:text-yellow-400 transition"
+      >
+        <Pencil size={16} />
+      </button>
+    </>
+  )}
+</div>
 </div>
 
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -583,6 +729,9 @@ src={
 
       )}
 
+      <div className="block sm:hidden pt-10 pb-6 text-center text-xs text-zinc-600">
+        Keegan says hello.
+      </div>
     </div>
   </div>
 );

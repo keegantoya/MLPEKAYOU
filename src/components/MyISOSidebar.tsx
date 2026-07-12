@@ -605,8 +605,8 @@ const isAllowed =
     className={`w-full text-left px-4 py-2 rounded-xl
                 text-sm font-medium transition-all ${
       selectedRarity === rarity
-        ? "bg-gradient-to-r from-[#7c5aa6] to-[#8b63b6] text-white shadow-lg"
-        : "text-white/85 hover:bg-white/10 hover:text-white"
+  ? "bg-[#d4af37] text-[#1b1b1b] shadow-lg border border-[#d4af37]"
+  : "text-white/85 hover:bg-[#2f2f2f] hover:text-[#e6c35a]"
     }`}
   >
     {rarity === "SN"
