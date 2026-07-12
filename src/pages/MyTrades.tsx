@@ -156,7 +156,7 @@ setTradeSets(activeTrades);
   category: "fantasy-wonderland",
 },
 {
-  id: "friendshipsbegin",
+  id: "SD",
   title: "Friendships",
   setName: "Begin",
   imageUrl: "/thumbnails/friendship-begins-thumbnail.webp",
@@ -322,7 +322,7 @@ if (activeFilter === "promos") {
 // TCG Sets
 if (activeFilter === "tcg") {
   return (
-    col.id === "friendshipsbegin" ||
+    col.id === "SD" ||
     col.id === "FW"
   );
 }
@@ -346,7 +346,7 @@ onClick={() => {
     "11": "fun-moments-three",
     "9": "promotional-cards",
     "FW": "fantasy-wonderland",
-    "friendshipsbegin": "friendships-begin",
+    "SD": "friendships-begin",
     "tcgpromos": "tcg-promos",
   };
 
