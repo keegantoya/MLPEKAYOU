@@ -11,8 +11,9 @@ const FriendshipsBegin = () => {
   const [loaded, setLoaded] = useState(false);
   const [lastSavedProgress, setLastSavedProgress] = useState("");
 
-  const [viewMode, setViewMode] = useState(false);
+const [viewMode, setViewMode] = useState(false);
 const [selectedRarity, setSelectedRarity] = useState("C");
+const [hoverEffects, setHoverEffects] = useState(true);
 
   const [zoomedCard, setZoomedCard] = useState<string | null>(null);
   const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
@@ -335,6 +336,23 @@ className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
   </p>
 </div>
 
+<div className="hidden md:block border-t border-zinc-700 p-6">
+  <button
+    onClick={() => setHoverEffects(!hoverEffects)}
+    className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
+      hoverEffects
+        ? "bg-yellow-500 text-white hover:bg-yellow-600"
+        : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
+    }`}
+  >
+    {hoverEffects ? "Hover Effects: ON" : "Hover Effects: OFF"}
+  </button>
+
+  <p className="mt-2 text-xs text-zinc-400">
+    Enable or disable the hover animation on collection cards.
+  </p>
+</div>
+
               {/* Product Info */}
               <div className="border-t border-zinc-700 p-6">
 
@@ -485,15 +503,13 @@ className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
             onClick={() => toggleFlip(viewMode ? key : stateKey)}
           >
             <div
-             className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
-  md:hover:-translate-y-2
-  md:hover:scale-[1.04]
-  md:hover:rotate-1
-  md:hover:shadow-2xl
-  md:hover:z-20
+className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
   ${
-    flipped[stateKey] && !viewMode ? "rotate-y-180" : ""
-  }`}
+    hoverEffects
+      ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
+      : ""
+  }
+  ${flipped[stateKey] && !viewMode ? "rotate-y-180" : ""}`}
             >
 
               {/* FRONT */}
@@ -575,7 +591,7 @@ className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
 
     <div className="h-px bg-yellow-400 mb-8" />
 
-    <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
 
       {cards
         .filter(card => card.rarity === rarity)
@@ -591,15 +607,13 @@ const owned = flipped[stateKey];
   onClick={() => toggleFlip(viewMode ? key : stateKey)}
 >
       <div
-        className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
-  md:hover:-translate-y-2
-  md:hover:scale-[1.04]
-  md:hover:rotate-1
-  md:hover:shadow-2xl
-  md:hover:z-20
+className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
   ${
-    flipped[stateKey] && !viewMode ? "rotate-y-180" : ""
-  }`}
+    hoverEffects
+      ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
+      : ""
+  }
+  ${flipped[stateKey] && !viewMode ? "rotate-y-180" : ""}`}
       >
         {/* FRONT */}
         <img
