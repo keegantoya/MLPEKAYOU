@@ -923,6 +923,13 @@ before:pointer-events-none">
   },
 
   {
+  id: "moon12",
+  image: "/website-assets/moon12.webp",
+  username: "KAYOU CN",
+  caption: "Kayou China has just announced the release of Moon 12! Special thanks to MyPrismaTCG's team for this promotional image.",
+},
+
+  {
     id: "discord",
     image: "/nightmarenight-assets/discordposter.webp",
     username: "KAYOU US",
@@ -1115,6 +1122,13 @@ before:pointer-events-none">
     username: "MLPEKAYOU",
     caption: "NIGHTMARE NIGHT LOOMS AROUND THE DARKENING CORNERS OF EQUESTRIA, THREATENING TO BRING NEW KAYOU US PRODUCTS TO YOU!",
   },
+
+    {
+  id: "moon12",
+  image: "/website-assets/moon12.webp",
+  username: "KAYOU CN",
+  caption: "Kayou China has just announced the release of Moon 12! Special thanks to MyPrismaTCG's team for this promotional image.",
+},
 
   {
     id: "discord",
