@@ -243,7 +243,7 @@ window.dispatchEvent(
     const { data: profileSettings } = await supabase
       .from("profiles")
       .select(
-        "hide_iso, hide_wishlist, iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
+        "hide_iso, hide_wishlist, iso_hidden_sets, iso_hidden_sets"
       )
       .eq("id", user.id)
       .single();
@@ -252,11 +252,11 @@ window.dispatchEvent(
       profileSettings?.iso_hidden_sets || [];
     
     const hiddenIsoSets: string[] = [
-      ...(profileSettings?.iso_hidden_sets_ccg?.length
-        ? profileSettings.iso_hidden_sets_ccg
+      ...(profileSettings?.iso_hidden_sets?.length
+        ? profileSettings.iso_hidden_sets
         : legacyHidden),
-      ...(profileSettings?.iso_hidden_sets_tcg?.length
-        ? profileSettings.iso_hidden_sets_tcg
+      ...(profileSettings?.iso_hidden_sets?.length
+        ? profileSettings.iso_hidden_sets
         : legacyHidden),
     ];
     

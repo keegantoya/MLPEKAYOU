@@ -61,12 +61,13 @@ const sets = [
   { id: "6", name: "Rainbow Second Edition", released: true },
   { id: "9", name: "CCG Promos", released: true },
   { id: "FW", name: "Fantasy Wonderland", released: true },
+  { id: "12", name: "Discord", released: true },
   { id: "friendshipsbegin", name: "Friendships Begin", released: true },
   {
-  id: "tcgpromos",
-  name: "TCG Promos",
-  released: true
-},
+    id: "tcgpromos",
+    name: "TCG Promos",
+    released: true
+  },
 ];
 
 const getCardImage = (card: any) => {
@@ -297,8 +298,9 @@ const COUNTED_SET_IDS = [
   "7",
   "8",
   "11",
-  "friendshipsbegin",
   "FW",
+  "12",
+  "friendshipsbegin",
   "9",
   "tcgpromos",
 ];
@@ -313,10 +315,11 @@ const CARD_TOTALS: Record<string, number> = {
   "7": 127,
   "8": 136,
   "11": 148,
-  "friendshipsbegin": 191,
   "FW": 191,
+  "12": 191,
+  "friendshipsbegin": 191,
   "9": 6,
-  "tcgpromos": 12,
+  "tcgpromos": 18,
 };
 
 // These sets are EXCLUDED from the set counters only.
@@ -324,9 +327,9 @@ const EXCLUDED_FROM_SET_COUNTS = ["9", "tcgpromos"];
 
 const normalizeSetId = (setId: string) => {
   if (setId === "SD") return "friendshipsbegin";
+  if (setId === "discord") return "12";
   return setId;
 };
-
 const releasedSets = sets.filter(
   (set) =>
     COUNTED_SET_IDS.includes(set.id) &&
@@ -666,6 +669,7 @@ const completionPercentage =
 const tcg = sets.filter(s =>
   s.released && (
     s.id === "FW" ||
+    s.id === "12" ||
     s.id === "friendshipsbegin"
   )
 );
@@ -688,10 +692,11 @@ const renderSet = (set: any) => {
     "7": "/thumbnails/fme01TN.webp",
     "8": "/thumbnails/fme02TN.webp",
     "11": "/thumbnails/fme03TN.webp",
-    "FW": "/thumbnails/fantasy-wonderland-thumbnail.webp",
-    "friendshipsbegin": "/thumbnails/friendship-begins-thumbnail.webp",
-    "9": "/thumbnails/promos-thumbnail.webp",
-    "tcgpromos": "/thumbnails/tcgpromosthumbnail.webp",
+"FW": "/thumbnails/fantasy-wonderland-thumbnail.webp",
+"12": "/thumbnails/discord.webp",
+"friendshipsbegin": "/thumbnails/friendship-begins-thumbnail.webp",
+"9": "/thumbnails/promos-thumbnail.webp",
+"tcgpromos": "/thumbnails/tcgpromosthumbnail.webp",
   };
   
 
@@ -707,10 +712,11 @@ const setDescriptions: Record<string, string> = {
   "7": "FME01 • INT01-R • INT02-R • INT02-UR",
   "8": "FME02 • INT02-R • INT03-R • INT03-UR",
   "11": "FME03 • MLPME02-R • MLPME03-R • MLPME03-SR • RBE02-UR",
-  "FW": "BP01",
-  "friendshipsbegin": "SD01",
-  "9": "MLPE-PR",
-  "tcgpromos": "PR",
+"FW": "BP01",
+"12": "BP02",
+"friendshipsbegin": "SD01",
+"9": "MLPE-PR",
+"tcgpromos": "PR",
 };
 
 const setDescription = setDescriptions[set.id] || "Add codes here";

@@ -214,7 +214,7 @@ if (session?.user && session.user.id !== user.id) {
     const { data: profileSettings } = await supabase
       .from("profiles")
       .select(
-        "hide_iso, hide_wishlist, iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
+        "hide_iso, hide_wishlist, iso_hidden_sets, iso_hidden_sets"
       )
       .eq("id", user.id)
       .single();
@@ -223,11 +223,11 @@ if (session?.user && session.user.id !== user.id) {
       profileSettings?.iso_hidden_sets || [];
     
     const hiddenIsoSets: string[] = [
-      ...(profileSettings?.iso_hidden_sets_ccg?.length
-        ? profileSettings.iso_hidden_sets_ccg
+      ...(profileSettings?.iso_hidden_sets?.length
+        ? profileSettings.iso_hidden_sets
         : legacyHidden),
-      ...(profileSettings?.iso_hidden_sets_tcg?.length
-        ? profileSettings.iso_hidden_sets_tcg
+      ...(profileSettings?.iso_hidden_sets?.length
+        ? profileSettings.iso_hidden_sets
         : legacyHidden),
     ];
     
@@ -364,11 +364,12 @@ if (session?.user && session.user.id !== user.id) {
       { id: "7", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
       { id: "8", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
       { id: "11", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 } },
-      { id: "9", rarities: { PR: 6 } },
-      { id: "SD", rarities: {} },
-    { id: "FW", rarities: {} },
-    { id: "tcgpromos", rarities: {} },
-    ];
+  { id: "9", rarities: { PR: 6 } },
+  { id: "SD", rarities: {} },
+  { id: "FW", rarities: {} },
+  { id: "12", rarities: {} },
+  { id: "tcgpromos", rarities: {} },
+];
     
     isoSets.forEach((set) => {
       if (set.id === "9") {
@@ -446,6 +447,60 @@ if (session?.user && session.user.id !== user.id) {
     
       return;
     }
+
+    if (set.id === "12") {
+  const progressRow = (isoProgress || []).find(
+    (row: any) => String(row.set_id) === "12"
+  );
+
+  const progress = progressRow?.progress || {};
+
+const DISCORD_STRUCTURE = [
+  { prefix: "BP02-C", count: 48 },
+  { prefix: "BP02-U", count: 18 },
+  { prefix: "BP02-ER", count: 6 },
+  { prefix: "BP02-SR", count: 14 },
+  { prefix: "BP02-SPR", count: 28 },
+  { prefix: "BP02-GR", count: 12 },
+  { prefix: "BP02-CR", count: 12 },
+  { prefix: "BP02-RR", count: 6 },
+  { prefix: "BP02-PER", count: 12 },
+  { prefix: "BP02-PSPR", count: 11 },
+  { prefix: "BP02-PGR", count: 6 },
+  { prefix: "BP02-PCR", count: 12 },
+  { prefix: "BP02-PRR", count: 6 },
+];
+
+  DISCORD_STRUCTURE.forEach(({ prefix, count }) => {
+    for (let i = 0; i < count; i++) {
+      let cardKey = "";
+
+if (prefix === "BP02-PER") {
+  const num = Math.floor(i / 2) + 1;
+  const side = i % 2 === 0 ? "A2" : "B2";
+
+  cardKey = `${prefix}${String(num).padStart(2, "0")}-${side}`;
+} else if (prefix === "BP02-PSPR") {
+  cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
+} else {
+  cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
+}
+
+      if (
+        progress[cardKey] !== true &&
+        !inProgressCards.has(cardKey)
+      ) {
+        isoCards.push({
+          id: `12-${cardKey}`,
+          set_id: "12",
+          card_key: cardKey,
+        });
+      }
+    }
+  });
+
+  return;
+}
     
     if (
       set.id === "SD" &&
@@ -598,6 +653,21 @@ if (session?.user && session.user.id !== user.id) {
             "C", "U", "SR", "SPR", "GR", "CR", "ER",
             "※ER", "※RR",
           ],
+          "12": [
+  "C",
+  "U",
+  "ER",
+  "SR",
+  "SPR",
+  "GR",
+  "CR",
+  "RR",
+  "※ER",
+  "※SPR",
+  "※GR",
+  "※CR",
+  "※RR",
+],
         };
     
     const extractRarity = (card: any) => {
@@ -605,9 +675,10 @@ if (session?.user && session.user.id !== user.id) {
       const key = String(card.card_key);
     
       // Standard checklist sets
-      if (
-        setId !== "FW" &&
-        setId !== "SD" &&
+if (
+  setId !== "FW" &&
+  setId !== "12" &&
+  setId !== "SD" &&
         setId !== "friendshipsbegin" &&
         setId !== "tcgpromos"
       ) {
@@ -835,6 +906,11 @@ if (
   return `/friendships-begin/${key}.webp`;
 }
 
+// Discord
+if (String(card.set_id) === "12") {
+  return `/cards/discord/${card.card_key}.webp`;
+}
+
 // Fantasy Wonderland
 if (String(card.set_id) === "FW") {
   const key = String(card.card_key);
@@ -939,6 +1015,7 @@ function getSetName(setId: string) {
     "11": "Fun Moments Three",
     "9": "Promotional Cards",
     "FW": "Fantasy Wonderland",
+    "12": "Discord",
     "SD": "Friendships Begin",
     "friendshipsbegin": "Friendships Begin",
     "tcgpromos": "TCG Promos",

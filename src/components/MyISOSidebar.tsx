@@ -1,7 +1,3 @@
-import "@fontsource/oxanium/400.css";
-import "@fontsource/oxanium/600.css";
-import "@fontsource/oxanium/700.css";
-
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -129,7 +125,7 @@ const visibleHideSets = allSets.filter((set) => {
 const isAllowed =
   mode === "CCG"
     ? ["1", "2", "3", "4", "5", "6", "7", "8", "9", "11"].includes(set.id)
-    : ["SD_STARTERS", "SD_BONUS", "FW", "TCG_PROMOS"].includes(set.id);
+    : ["SD_STARTERS", "SD_BONUS", "FW", "12", "TCG_PROMOS"].includes(set.id);
 
   if (!isAllowed) {
     return false;

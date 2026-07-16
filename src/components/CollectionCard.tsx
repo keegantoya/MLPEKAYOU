@@ -82,6 +82,9 @@ const getLink = () => {
     case "11":
       return "/fun-moments-three";
 
+      case "12":
+      return "/discord";
+
       case "OTHERMERCH":
   return "/leaping-ponies";
 

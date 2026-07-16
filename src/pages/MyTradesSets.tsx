@@ -88,11 +88,18 @@ const sets = [
   rarities: {}
 },
 {
+  id: "12",
+  name: "Discord",
+  folder: "discord",
+  prefix: "BP02",
+  rarities: {}
+},
+{
   id: "tcgpromos",
   name: "TCG Promos",
   folder: "tcgpromos",
   prefix: "RR",
-  rarities: { PR: 6 }
+  rarities: { PR: 18 }
 },
 ];
 
@@ -260,6 +267,7 @@ const slugMap: Record<string, string> = {
   "promotional-cards": "9",
   "fantasy-wonderland": "FW",
   "friendships-begin": "friendshipsbegin",
+  "discord": "12",
   "tcg-promos": "tcgpromos",
 };
 
@@ -368,6 +376,54 @@ for (let i = 1; i <= count; i++) {
   });
 }
 });
+
+} else if (set.id === "12") {
+
+  const DISCORD_STRUCTURE = [
+    { prefix: "BP02-C", count: 48 },
+    { prefix: "BP02-U", count: 18 },
+    { prefix: "BP02-ER", count: 6 },
+    { prefix: "BP02-SR", count: 14 },
+    { prefix: "BP02-SPR", count: 28 },
+    { prefix: "BP02-GR", count: 12 },
+    { prefix: "BP02-CR", count: 12 },
+    { prefix: "BP02-RR", count: 6 },
+    { prefix: "BP02-PER", count: 12 },
+    { prefix: "BP02-PSPR", count: 11 },
+    { prefix: "BP02-PGR", count: 6 },
+    { prefix: "BP02-PCR", count: 12 },
+    { prefix: "BP02-PRR", count: 6 },
+  ];
+
+  DISCORD_STRUCTURE.forEach(({ prefix, count }) => {
+
+    if (prefix === "BP02-PER") {
+      for (let i = 0; i < 6; i++) {
+        const num = String(i + 1).padStart(2, "0");
+
+        cards.push({
+          key: `BP02-PER${num}-A2`,
+          image: `/cards/discord/BP02-PER${num}-A2.webp`,
+        });
+
+        cards.push({
+          key: `BP02-PER${num}-B2`,
+          image: `/cards/discord/BP02-PER${num}-B2.webp`,
+        });
+      }
+      return;
+    }
+
+    for (let i = 1; i <= count; i++) {
+      const num = String(i).padStart(2, "0");
+
+      cards.push({
+        key: `${prefix}${num}`,
+        image: `/cards/discord/${prefix}${num}.webp`,
+      });
+    }
+  });
+
 
 } else if (set.id === "tcgpromos") {
 

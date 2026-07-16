@@ -358,7 +358,7 @@ className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
                     </p>
 
                     <p className="font-semibold">
-                      March 2025
+                      March 2026
                     </p>
                   </div>
 

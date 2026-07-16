@@ -139,19 +139,14 @@ const [showNightmarePromo, setShowNightmarePromo] = useState(false);
 
 const [showCollectionMenu, setShowCollectionMenu] = useState(false);
 
-const [tradeCards, setTradeCards] = useState<any[]>([]);
 const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
 
 const navigate = useNavigate();
-const [activeTab, setActiveTab] = useState<"collection" | "trades">("collection");
-const [desktopTab, setDesktopTab] = useState<"showcase" | "trades">(
-  "showcase"
-);
+const desktopTab = "showcase";
 
-  const [stats, setStats] = useState({
+const [stats, setStats] = useState({
   owned: 0,
   completed: 0,
-  trades: 0,
 });
 
 const loadPendingFriendRequests = async (userId: string) => {
@@ -359,183 +354,16 @@ if (fwRow) {
   }
 }
 
-      // Total cards listed for trade
-      const { data: trades } = await supabase
-        .from("for_trade")
-        .select("id")
-        .eq("user_id", session.user.id);
-
-      setStats({
-        owned,
-        completed,
-        trades: trades?.length || 0,
-      });
+setStats({
+  owned,
+  completed,
+});
     } catch (error) {
       console.error("Failed to load stats:", error);
     }
   };
 
   loadStats();
-}, []);
-
-useEffect(() => {
-  const loadTradeCards = async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.user) return;
-
-      const { data } = await supabase
-  .from("for_trade")
-  .select("id, set_id, card_key, listing_type")
-  .eq("user_id", session.user.id);
-
-const setOrder = [
-  "1",
-  "2",
-  "5",
-  "7",
-  "8",
-  "3",
-  "4",
-  "6",
-  "9",
-  "11",
-  "FW",
-  "friendshipsbegin",
-  "tcgpromos",
-];
-
-const rarityOrders: Record<string, string[]> = {
-  // Eternal Star
-  "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
-
-  // Eternal Moon
-  "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
-  "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
-  "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
-
-  // Rainbow
-  "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
-  "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
-
-  // Fun Moments
-  "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
-  "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
-  "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],
-
-  // Fantasy Wonderland
-  "FW": [
-    "C",
-    "U",
-    "ER",
-    "SR",
-    "SPR",
-    "GR",
-    "CR",
-    "RR",
-    "※ER",
-    "※SPR",
-    "※GR",
-    "※CR",
-    "※RR",
-  ],
-
-  // Friendships Begin
-  "friendshipsbegin": [
-    "C",
-    "U",
-    "SR",
-    "SPR",
-    "GR",
-    "CR",
-    "ER",
-    "※ER",
-    "※RR",
-  ],
-
-  // Promos
-  "9": ["PR"],
-  "tcgpromos": ["PR"],
-};
-
-const extractRarity = (card: any) => {
-  // Standard sets
-  if (
-    card.set_id !== "FW" &&
-    card.set_id !== "friendshipsbegin" &&
-    card.set_id !== "tcgpromos"
-  ) {
-    return card.card_key.split("-")[0];
-  }
-
-  // TCG Promos
-  if (card.set_id === "tcgpromos") {
-    return "PR";
-  }
-
-  // Fantasy Wonderland + Friendships Begin
-  const match = card.card_key.match(
-    /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/
-  );
-
-  let rarity = match?.[0] || "OTHER";
-
-  if (rarity === "PER") rarity = "※ER";
-  if (rarity === "PSPR") rarity = "※SPR";
-  if (rarity === "PCR") rarity = "※CR";
-  if (rarity === "PRR") rarity = "※RR";
-  if (rarity === "PGR") rarity = "※GR";
-
-  return rarity;
-};
-
-const extractNumber = (card: any) => {
-  const match = card.card_key.match(/(\d+)(?!.*\d)/);
-  return match ? parseInt(match[1], 10) : 0;
-};
-
-const sorted = (data || []).sort((a, b) => {
-  // 1. Sort by set using your custom order
-  const setIndexA = setOrder.indexOf(String(a.set_id));
-  const setIndexB = setOrder.indexOf(String(b.set_id));
-
-  if (setIndexA !== setIndexB) {
-    return (
-      (setIndexA === -1 ? 999 : setIndexA) -
-      (setIndexB === -1 ? 999 : setIndexB)
-    );
-  }
-
-  // 2. Sort by set-specific rarity order
-  const currentOrder = rarityOrders[String(a.set_id)] || [];
-
-  const rarityA = extractRarity(a);
-  const rarityB = extractRarity(b);
-
-  const rarityIndexA = currentOrder.indexOf(rarityA);
-  const rarityIndexB = currentOrder.indexOf(rarityB);
-
-  if (rarityIndexA !== rarityIndexB) {
-    return (
-      (rarityIndexA === -1 ? 999 : rarityIndexA) -
-      (rarityIndexB === -1 ? 999 : rarityIndexB)
-    );
-  }
-
-  // 3. Sort numerically within the rarity
-  return extractNumber(a) - extractNumber(b);
-});
-
-setTradeCards(sorted);
-    } catch (error) {
-      console.error("Failed to load trade cards:", error);
-    }
-  };
-
-  loadTradeCards();
 }, []);
 
   const displayName = profile?.username || "Twilight Sparkle";
@@ -596,6 +424,7 @@ useEffect(() => {
         "9",
         "FW",
         "friendshipsbegin",
+        "12",
         "tcgpromos",
       ];
 
@@ -618,6 +447,7 @@ useEffect(() => {
   if (
     setId === "FW" ||
     setId === "SD" ||
+    setId === "12" ||
     setId === "tcgpromos"
   ) {
     return key.includes("PRR") ? "PRR" : "";
@@ -789,14 +619,18 @@ if (
     return `/fantasy-wonderland/${card.card_key}.webp`;
   }
 
-  if (card.set_id === "9") {
-    const number = card.card_key.split("-")[1];
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
-  }
+if (card.set_id === "9") {
+  const number = card.card_key.split("-")[1];
+  return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
+}
 
-  if (card.set_id === "tcgpromos") {
-    return `/tcgpromos/${card.card_key}.webp`;
-  }
+if (card.set_id === "12") {
+  return `/cards/discord/${card.card_key}.webp`;
+}
+
+if (card.set_id === "tcgpromos") {
+  return `/tcgpromos/${card.card_key}.webp`;
+}
 
   const [rarityRaw, number] = card.card_key.split("-");
   const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
@@ -842,6 +676,7 @@ const getSetName = (setId: string) => {
 
     "FW": "Fantasy Wonderland",
     "SD": "Friendships Begin",
+    "12": "Discord",
     "friendshipsbegin": "Friendships Begin",
 
 
@@ -938,20 +773,6 @@ useEffect(() => {
   {/* Stats */}
 {/* Stats */}
 <div className="flex-1 grid grid-cols-3 text-center">
-  <div>
-    <div className="text-xl font-semibold tracking-tight text-gray-900">
-      {stats.trades.toLocaleString()}
-    </div>
-
-    <div className="mt-0.5 flex flex-col items-center leading-tight">
-      <span className="text-[8px] font-semibold tracking-[0.12em] uppercase text-gray-400">
-        Trades
-      </span>
-      <span className="text-[10px] font-semibold tracking-[0.12em] uppercase text-gray-400">
-        Active
-      </span>
-    </div>
-  </div>
 
   <div>
     <div className="text-xl font-semibold tracking-tight text-gray-900">
@@ -1080,6 +901,17 @@ useEffect(() => {
 </button>
 
     <button
+      onClick={() => navigate("/kayou-news")}
+      className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
+    >
+      <span className="text-[15px] font-medium text-gray-900">
+        Kayou US Official News
+      </span>
+
+      <span className="text-xl text-gray-400">›</span>
+    </button>
+
+    <button
       onClick={() => navigate("/inventory")}
       className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
     >
@@ -1113,7 +945,7 @@ useEffect(() => {
     </button>
 
     <button
-      onClick={() => navigate("/my-iso")}
+      onClick={() => navigate("/iso")}
       className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
     >
       <span className="text-[15px] font-medium text-gray-900">
@@ -1590,14 +1422,6 @@ if (editingUsername) {
 
         {/* Stats */}
         <div className="space-y-3 mb-6">
-          <div className="text-center bg-[#f8f5ff] rounded-2xl p-4 border border-[#d4af37]/10">
-            <div className="text-3xl font-bold text-[#5a3e84]">
-              {stats.trades.toLocaleString()}
-            </div>
-            <div className="text-xs uppercase tracking-widest text-gray-500 mt-1">
-              Trades Active
-            </div>
-          </div>
 
           <div className="text-center bg-[#f8f5ff] rounded-2xl p-4 border border-[#d4af37]/10">
             <div className="text-3xl font-bold text-[#5a3e84]">
@@ -1654,7 +1478,7 @@ if (editingUsername) {
           <Button
             variant="outline"
             className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
-            onClick={() => navigate("/my-iso")}
+            onClick={() => navigate("/iso")}
           >
             My ISO
           </Button>
@@ -1675,38 +1499,11 @@ if (editingUsername) {
     {/* Header + Toggle */}
     <div className="flex items-center justify-between mb-6 gap-4">
       <h2 className="text-2xl font-bold text-[#5a3e84]">
-        {desktopTab === "showcase" ? "Rarest Cards" : "Extra Cards"}
-      </h2>
-
-      <div className="flex items-center bg-[#f8f5ff] rounded-full p-1 border border-[#d4af37]/20 shadow-sm">
-        <button
-          type="button"
-          onClick={() => setDesktopTab("showcase")}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-            desktopTab === "showcase"
-              ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-sm"
-              : "text-[#5a3e84] hover:bg-white/70"
-          }`}
-        >
-          Showcase
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setDesktopTab("trades")}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-            desktopTab === "trades"
-              ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] shadow-sm"
-              : "text-[#5a3e84] hover:bg-white/70"
-          }`}
-        >
-          Extras
-        </button>
-      </div>
+  Rarest Cards
+</h2>
     </div>
     {/* Showcase Content */}
-    {desktopTab === "showcase" ? (
-      showcaseCards.length > 0 ? (
+{showcaseCards.length > 0 ? (
         <div className="space-y-8">
           {[
             {
@@ -1742,6 +1539,7 @@ if (editingUsername) {
 
     return (
       (setId === "FW" ||
+        setId === "12" ||
         setId === "friendshipsbegin" ||
         setId === "SD") &&
       key.includes("PRR")
@@ -1757,15 +1555,7 @@ if (editingUsername) {
               </h3>
 
               <div className="relative">
-{(
-  (
-    desktopTab === "showcase"
-      ? showcaseCards
-          .filter((card) => section.cards.includes(card)).length
-      : tradeCards
-          .filter((card) => section.cards.includes(card)).length
-  ) >= 7
-) && (
+{showcaseCards.filter((card) => section.cards.includes(card)).length >= 7 && (
   <>
     {/* Left Arrow */}
     <button
@@ -1838,29 +1628,34 @@ if (editingUsername) {
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 px-2 py-0.5 rounded-full bg-[#5a3e84] text-[#f5e6a8] text-[10px] font-bold tracking-wide shadow-md border border-[#d4af37]/40 whitespace-nowrap">
               {(() => {
                 if (
-                  String(card.set_id) === "FW" ||
-                  String(card.set_id) === "SD" ||
-                  String(card.set_id) === "friendshipsbegin" ||
-                  String(card.set_id) === "tcgpromos"
-                ) {
-                  const cleanKey = String(card.card_key)
-                    .replace(/^BONUS-/, "")
-                    .replace(/^STARTER-/, "");
+  String(card.set_id) === "FW" ||
+  String(card.set_id) === "SD" ||
+  String(card.set_id) === "friendshipsbegin" ||
+  String(card.set_id) === "12" ||
+  String(card.set_id) === "tcgpromos"
+) {
+  if (String(card.set_id) === "12") {
+    return "※RR";
+  }
 
-                  const match = cleanKey.match(
-                    /(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C|PR)/
-                  );
+  const cleanKey = String(card.card_key)
+    .replace(/^BONUS-/, "")
+    .replace(/^STARTER-/, "");
 
-                  let rarity = match?.[0] || "";
+  const match = cleanKey.match(
+    /(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C|PR)/
+  );
 
-                  if (rarity === "PER") rarity = "※ER";
-                  if (rarity === "PSPR") rarity = "※SPR";
-                  if (rarity === "PCR") rarity = "※CR";
-                  if (rarity === "PGR") rarity = "※GR";
-                  if (rarity === "PRR") rarity = "※RR";
+  let rarity = match?.[0] || "";
 
-                  return rarity;
-                }
+  if (rarity === "PER") rarity = "※ER";
+  if (rarity === "PSPR") rarity = "※SPR";
+  if (rarity === "PCR") rarity = "※CR";
+  if (rarity === "PGR") rarity = "※GR";
+  if (rarity === "PRR") rarity = "※RR";
+
+  return rarity;
+}
 
                 let rarity = String(card.card_key).split("-")[0];
 
@@ -1906,167 +1701,7 @@ if (rarity === "SAR") {
           No rare cards collected yet.
         </div>
       )
-    ) : (
-      /* Trades Content */
-      tradeCards.length > 0 ? (
-        <div className="space-y-8">
-          {Array.from(
-  new Set(tradeCards.map((card) => String(card.set_id)))
-).map((setId) => (
-            <div key={setId}>
-              <h3 className="text-sm font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4">
-                {getSetName(setId)}
-              </h3>
-
-              <div className="relative">
-{tradeCards
-  .filter((card) => String(card.set_id) === setId).length >= 7 && (
-  <>
-    {/* Left Arrow */}
-    <button
-      type="button"
-      onClick={(e) => {
-        const row = e.currentTarget.parentElement?.querySelector(
-          ".card-scroll-row"
-        ) as HTMLDivElement | null;
-
-        row?.scrollBy({
-          left: -720,
-          behavior: "smooth",
-        });
-      }}
-      className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-sm text-[#5a3e84] text-xs hover:scale-105 transition-all"
-    >
-      ‹
-    </button>
-
-    {/* Right Arrow */}
-    <button
-      type="button"
-      onClick={(e) => {
-        const row = e.currentTarget.parentElement?.querySelector(
-          ".card-scroll-row"
-        ) as HTMLDivElement | null;
-
-        row?.scrollBy({
-          left: 720,
-          behavior: "smooth",
-        });
-      }}
-      className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-white/95 border border-[#d4af37]/20 shadow-sm text-[#5a3e84] text-xs hover:scale-105 transition-all"
-    >
-      ›
-    </button>
-  </>
-)}
-
-  {/* Scroll Container */}
-  <div
-    className="card-scroll-row overflow-x-auto overflow-y-visible px-6 pt-3 pb-4"
-    style={{
-      scrollbarWidth: "none",
-      msOverflowStyle: "none",
-    }}
-  >
-    <div
-      className="grid grid-flow-col gap-3 w-full"
-      style={{
-        gridAutoColumns: "calc((100% - 3.75rem) / 6)",
-      }}
-    >
-      {tradeCards
-  .filter((card) => String(card.set_id) === setId)
-  .map((card) => (
-          <div
-            key={card.id}
-            onClick={() => setSelectedCardImage(getTradeCardImage(card))}
-            className="relative aspect-[5/7] rounded-xl overflow-visible bg-white shadow-sm cursor-pointer hover:scale-105 hover:shadow-lg transition-all"
-          >
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 px-2 py-0.5 rounded-full bg-[#5a3e84] text-[#f5e6a8] text-[10px] font-bold tracking-wide shadow-md border border-[#d4af37]/40 whitespace-nowrap">
-              {(() => {
-                if (
-                  String(card.set_id) === "FW" ||
-                  String(card.set_id) === "SD" ||
-                  String(card.set_id) === "friendshipsbegin" ||
-                  String(card.set_id) === "tcgpromos"
-                ) {
-                  const cleanKey = String(card.card_key)
-                    .replace(/^BONUS-/, "")
-                    .replace(/^STARTER-/, "");
-
-                  const match = cleanKey.match(
-                    /(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C|PR)/
-                  );
-
-                  let rarity = match?.[0] || "";
-
-                  if (rarity === "PER") rarity = "※ER";
-                  if (rarity === "PSPR") rarity = "※SPR";
-                  if (rarity === "PCR") rarity = "※CR";
-                  if (rarity === "PGR") rarity = "※GR";
-                  if (rarity === "PRR") rarity = "※RR";
-
-                  return rarity;
-                }
-
-                let rarity = String(card.card_key).split("-")[0];
-
-                if (rarity === "SHINING ZR") rarity = "⬦ZR";
-if (rarity === "SZR") rarity = "⬦ZR";
-
-if (
-  rarity === "SCR" &&
-  String(card.set_id) !== "4"
-) {
-  rarity = "◇CR";
 }
-
-if (
-  rarity === "SAR" &&
-  String(card.set_id) === "4"
-) {
-  rarity = "◇AR";
-}
-
-                return rarity;
-              })()}
-            </div>
-
-            <img
-  src={getTradeCardImage(card)}
-  alt={card.card_key}
-  className={`w-full h-full ${
-    String(card.set_id) === "FW" ||
-    String(card.set_id) === "SD" ||
-    String(card.set_id) === "friendshipsbegin"
-      ? "object-contain p-1"
-      : "object-cover"
-  }`}
-/>
-
-<div
-  className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg border-2 border-white/20 z-20 ${
-    card.listing_type === "purchase"
-      ? "bg-blue-500"
-      : "bg-green-500"
-  }`}
->
-  {card.listing_type === "purchase" ? "$" : "⇄"}
-</div>
-          </div>
-        ))}
-    </div>
-  </div>
-</div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-gray-500 text-center py-12">
-          No cards marked for trade.
-        </div>
-      )
-    )}
   </div>
 </div>
     </div>
@@ -2545,7 +2180,7 @@ await supabase.from("profiles").upsert({
 
       {/* My ISO List */}
       <button
-        onClick={() => navigate("/my-iso")}
+        onClick={() => navigate("/iso")}
         className="w-full flex items-center px-4 py-4 active:bg-gray-50"
       >
         <div className="w-8 flex justify-center text-gray-900">

@@ -25,7 +25,7 @@ const set = {
 
 const ccgCards = [1, 2, 3, 4, 5, 7];
 
-const tcgCards = Array.from({ length: 12 }, (_, i) => i + 1);
+const tcgCards = Array.from({ length: 18 }, (_, i) => i + 1);
 
 const getCardBack = () => "/card-backs/M1R-SR-SGR-SCBACK.webp";
 
@@ -196,7 +196,7 @@ const saveProgress = async () => {
 
                 <div className="flex justify-between mb-4 text-zinc-400 text-sm font-semibold uppercase">
                   <span>2 Types</span>
-                  <span>12 Cards</span>
+                  <span>24 Cards</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">

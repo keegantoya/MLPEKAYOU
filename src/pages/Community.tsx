@@ -119,7 +119,13 @@ const sets = [
     PCR: 12,
     PRR: 6,
   }
-}
+},
+{
+  id: "discord",
+  dbId: "12",
+  name: "Discord",
+  total: 191,
+},
 ];
 
 const manualFirstFinishers: Record<string, { username: string; avatar_url?: string }> = {
@@ -152,6 +158,10 @@ const manualFirstFinishers: Record<string, { username: string; avatar_url?: stri
   avatar_url: "avatar015.webp"
 },
   "friendshipsbegin": {
+  username: "Mari",
+  avatar_url: "avatar021.webp"
+  },
+    "3": {
   username: "Mari",
   avatar_url: "avatar021.webp"
   },
@@ -272,22 +282,39 @@ const row = progressMap.get(
 
   let ownedCount = 0;
 
-  if (dbId === "FW") {
-    const STRUCTURE = [
-      { prefix: "BP01C", count: 48 },
-      { prefix: "BP01U", count: 18 },
-      { prefix: "BP01ER", count: 6 },
-      { prefix: "BP01SR", count: 14 },
-      { prefix: "BP01SPR", count: 28 },
-      { prefix: "BP01GR", count: 12 },
-      { prefix: "BP01CR", count: 12 },
-      { prefix: "BP01RR", count: 6 },
-      { prefix: "BP01PER", count: 12 },
-      { prefix: "BP01PSPR", count: 11 },
-      { prefix: "BP01PGR", count: 6 },
-      { prefix: "BP01PCR", count: 12 },
-      { prefix: "BP01PRR", count: 6 },
-    ];
+if (dbId === "FW" || dbId === "12") {
+const STRUCTURE =
+  dbId === "FW"
+    ? [
+        { prefix: "BP01C", count: 48 },
+        { prefix: "BP01U", count: 18 },
+        { prefix: "BP01ER", count: 6 },
+        { prefix: "BP01SR", count: 14 },
+        { prefix: "BP01SPR", count: 28 },
+        { prefix: "BP01GR", count: 12 },
+        { prefix: "BP01CR", count: 12 },
+        { prefix: "BP01RR", count: 6 },
+        { prefix: "BP01PER", count: 12 },
+        { prefix: "BP01PSPR", count: 11 },
+        { prefix: "BP01PGR", count: 6 },
+        { prefix: "BP01PCR", count: 12 },
+        { prefix: "BP01PRR", count: 6 },
+      ]
+    : [
+        { prefix: "BP02-C", count: 48 },
+        { prefix: "BP02-U", count: 18 },
+        { prefix: "BP02-ER", count: 6 },
+        { prefix: "BP02-SR", count: 14 },
+        { prefix: "BP02-SPR", count: 28 },
+        { prefix: "BP02-GR", count: 12 },
+        { prefix: "BP02-CR", count: 12 },
+        { prefix: "BP02-RR", count: 6 },
+        { prefix: "BP02-PER", count: 12 },
+        { prefix: "BP02-PSPR", count: 11 },
+        { prefix: "BP02-PGR", count: 6 },
+        { prefix: "BP02-PCR", count: 12 },
+        { prefix: "BP02-PRR", count: 6 },
+      ];
 
     const validKeys = new Set(
       STRUCTURE.flatMap(({ prefix, count }) => {
@@ -804,7 +831,13 @@ text-[#111] text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
 
 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 mb-10">
   {sets
-    .filter((set) => ["fantasywonderland", "friendshipsbegin"].includes(set.id))
+    .filter((set) =>
+  [
+    "fantasywonderland",
+    "discord",
+    "friendshipsbegin"
+  ].includes(set.id)
+)
     .map((set) => (
 
       <button

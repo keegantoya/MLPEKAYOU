@@ -21,6 +21,7 @@ const setImages: Record<string, string> = {
   friendshipsbegin_bonus: "/thumbnails/friendship-begins-bonus-thumbnail.webp",
   friendshipsbegin_decks: "/thumbnails/friendship-begins-thumbnail.webp",
   FW: "/thumbnails/fantasy-wonderland-thumbnail.webp",
+  discord: "/thumbnails/discord.webp",
   tcgpromos: "/thumbnails/tcgpromosthumbnail.webp",
 };
 
@@ -54,9 +55,16 @@ const sets = [
     isNew: false,
   },
   {
+  id: "discord",
+  name: "Discord",
+  total: 191,
+  rarities: {},
+  isNew: false,
+},
+  {
   id: "tcgpromos",
   name: "TCG Promos",
-  total: 12,
+  total: 18,
   rarities: null,
   isNew: false,
 },
@@ -66,6 +74,7 @@ const releasedRoutes: Record<string, string> = {
   "friendshipsbegin_bonus": "/friendships-begin",
   "friendshipsbegin_decks": "/friendships-begin",
   "FW": "/fantasy-wonderland",
+  "discord": "/discord",
   "tcgpromos": "/promotional-cards",
 };
 
@@ -81,40 +90,42 @@ const MyProgressTCG = () => {
 
       if (!user) return;
 
-      const { data: collectionData } = await supabase
+const { data: collectionData } = await supabase
   .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
+
+const { data: rawCollectionData } = await supabase
+  .from("collection_progress_raw")
   .select("set_id, progress")
   .eq("user_id", user.id);
 
 const { data: profile } = await supabase
   .from("profiles")
-  .select("iso_hidden_sets_tcg")
+  .select("iso_hidden_sets")
   .eq("id", user.id)
   .single();
 
-setHiddenSets(profile?.iso_hidden_sets_tcg || []);
+setHiddenSets(profile?.iso_hidden_sets || []);
 
-      const progressMap = new Map(
-        collectionData?.map((row) => [String(row.set_id), row]) || []
-      );
+const progressMap = new Map(
+  [
+    ...(collectionData || []),
+    ...(rawCollectionData || []),
+  ].map((row) => [String(row.set_id), row])
+);
 
-const { data: rawPromos } = await supabase
-  .from("collection_progress_raw")
-  .select("progress")
-  .eq("user_id", user.id)
-  .eq("set_id", "tcgpromos")
-  .maybeSingle();
-
-const tcgPromosProgress = rawPromos?.progress || {};
+const tcgPromosProgress =
+  rawCollectionData?.find((row) => row.set_id === "tcgpromos")?.progress || {};
 
       const newProgress: Record<string, number> = {};
 
       sets.forEach((set) => {
-        const found =
-          set.id === "friendshipsbegin_bonus" ||
-          set.id === "friendshipsbegin_decks"
-            ? progressMap.get("SD")
-            : progressMap.get(set.id);
+const found =
+  set.id === "friendshipsbegin_bonus" ||
+  set.id === "friendshipsbegin_decks"
+    ? progressMap.get("SD")
+    : progressMap.get(set.id);
 
         // BONUS
         if (set.id === "friendshipsbegin_bonus") {
@@ -203,15 +214,30 @@ decks.forEach((deck) => {
           return;
         }
 
-        // TCG PROMOS
+// TCG PROMOS
 if (set.id === "tcgpromos") {
   const owned = Object.values(tcgPromosProgress).filter(Boolean).length;
   newProgress[set.id] = owned;
   return;
 }
 
-        // FANTASY WONDERLAND
+// DISCORD
+if (set.id === "discord") {
+  const progressData = progressMap.get("12")?.progress || {};
 
+  const owned = Object.values(progressData).filter(
+    (value) =>
+      value === true ||
+      (typeof value === "object" &&
+        value !== null &&
+        (value as any).owned === true)
+  ).length;
+
+  newProgress[set.id] = owned;
+  return;
+}
+
+// FANTASY WONDERLAND
 const STRUCTURE = [
   { prefix: "BP01C", count: 48 },
   { prefix: "BP01U", count: 18 },
@@ -228,9 +254,8 @@ const STRUCTURE = [
   { prefix: "BP01PRR", count: 6 },
 ];
 
-        const validKeys = new Set(
+const validKeys = new Set(
   STRUCTURE.flatMap(({ prefix, count }) => {
-
     if (prefix === "BP01ER") {
       return Array.from({ length: 6 }, (_, i) =>
         `BP01ER${String(i + 7).padStart(2, "0")}`
@@ -238,7 +263,7 @@ const STRUCTURE = [
     }
 
     if (prefix === "BP01PSPR") {
-      return [1,2,3,5,7,8,9,12,13,18,21].map(n =>
+      return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(n =>
         `BP01PSPR${String(n).padStart(2, "0")}`
       );
     }
@@ -631,6 +656,7 @@ const renderSetCard = (set: any) => {
           "friendshipsbegin_bonus",
           "friendshipsbegin_decks",
           "FW",
+          "discord",
         ].includes(set.id) &&
         releasedRoutes[set.id] &&
         !hiddenSets.includes(set.id)

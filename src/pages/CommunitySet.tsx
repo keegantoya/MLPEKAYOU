@@ -125,6 +125,7 @@ const sets: Record<string, { name: string; total: number }> = {
   "11": { name: "Fun Moments Third Edition", total: 148 },
   "friendshipsbegin": { name: "Friendships Begin", total: 194 },
   "fantasywonderland": { name: "Fantasy Wonderland", total: 191 },
+  "discord": { name: "Discord", total: 191 },
 };
 
 const isoSets = [
@@ -250,6 +251,27 @@ const isoSets = [
     PCR: 12,
     PRR: 6
   }
+},
+{
+  id: "discord",
+  name: "Discord",
+  folder: "discord",
+  prefix: "BP02",
+  rarities: {
+    C: 48,
+    U: 18,
+    ER: 6,
+    SR: 14,
+    SPR: 28,
+    GR: 12,
+    CR: 12,
+    RR: 6,
+    PER: 12,
+    PSPR: 11,
+    PGR: 6,
+    PCR: 12,
+    PRR: 6
+  }
 }
 ];
 
@@ -279,12 +301,14 @@ const CommunitySet = () => {
       const { data: progress } = await supabase
   .from("collection_progress_raw")
   .select("user_id, progress, updated_at")
-        .eq(
+.eq(
   "set_id",
   id === "friendshipsbegin"
     ? "SD"
     : id === "fantasywonderland"
     ? "FW"
+    : id === "discord"
+    ? "12"
     : id
 );
 
@@ -384,7 +408,7 @@ BONUS_STRUCTURE.forEach(({ prefix, count }) => {
     let actualIndex = i;
 
     if (prefix === "SD01PER") {
-      actualIndex = i + 6; 
+      actualIndex = i + 6;
     }
 
     const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
@@ -396,14 +420,20 @@ BONUS_STRUCTURE.forEach(({ prefix, count }) => {
   }
 });
 
+} else if (id === "discord") {
+
+  owned = Object.values(row.progress || {}).filter(
+    (v: any) => v === true || v?.owned === true
+  ).length;
+
 } else {
 
   const isoSet = isoSets.find(s => s.id === id);
   if (!isoSet) return;
 
-owned = Object.values(row.progress || {}).filter((v: any) =>
-  v === true || v?.owned === true
-).length;
+  owned = Object.values(row.progress || {}).filter(
+    (v: any) => v === true || v?.owned === true
+  ).length;
 
 }
 

@@ -10,9 +10,9 @@ import KayouHeader from "@/components/KayouHeader";
 import TiltCard from "@/components/TiltCards";
 
 import Index from "./pages/Index";
+import KayouNews from "./pages/Main Pages/kayou-news";
 import Collections from "./pages/Collections";
 import MyProgress from "./pages/MyProgress";
-import MyISO from "./pages/MyISO";
 import Community from "./pages/Community";
 import CommunitySet from "./pages/CommunitySet";
 import Leaderboard from "./pages/Leaderboard";
@@ -32,6 +32,15 @@ import UserMenu from "@/pages/UserMenu";
 import Wishlist from "./pages/Wishlist";
 import LinksPage from "./pages/linkspage";
 /// PERSONAL PAGES
+import ISO from "./pages/ISO/iso";
+import ISOMOON from "./pages/ISO/iso-moon";
+import ISOFUN from "./pages/ISO/iso-fun";
+import ISORAINBOW from "./pages/ISO/iso-rainbow";
+import ISOSTAR from "./pages/ISO/iso-star";
+import ISOTCG from "./pages/ISO/iso-tcg";
+import ISPROMOS from "./pages/ISO/iso-promos";
+import ISOCONTROLS from "./pages/ISO/iso-controls";
+import ISOCHECKING from "./pages/ISO/iso-checking";
 
 /// CCG SETS
 import MoonOne from "./pages/Sets/Moon Editions/moon-one";
@@ -46,6 +55,7 @@ import StarOne from "./pages/Sets/Star Editions/star-one";
 /// TCG SETS
 import FantasyWonderland from "./pages/Sets/Trading Card Game/fantasy-wonderland";
 import FriendshipsBegin from "./pages/Sets/Trading Card Game/friendships-begin";
+import Discord from "./pages/Sets/Trading Card Game/discord";
 /// PROMOS
 import PromotionalCards from "./pages/Sets/Promos/promotional-cards";
 /// OTHERS
@@ -201,6 +211,15 @@ const AppRoutes = () => {
 />
 
 <Route
+  path="/discord"
+  element={
+    <RequireAuth>
+      <Discord />
+    </RequireAuth>
+  }
+/>
+
+<Route
   path="/promotional-cards"
   element={
     <RequireAuth>
@@ -236,14 +255,6 @@ const AppRoutes = () => {
   }
 />
 <Route
-  path="/my-iso"
-  element={
-    <RequireAuth>
-      <MyISO />
-    </RequireAuth>
-  }
-/>
-<Route
   path="/Wishlist"
   element={
     <RequireAuth>
@@ -259,6 +270,14 @@ const AppRoutes = () => {
     </RequireAuth>
   }
 />
+<Route
+  path="/iso"
+  element={
+    <RequireAuth>
+      <ISO />
+    </RequireAuth>
+  }
+/>
 
       <Route path="/community" element={<Community />} />
       <Route path="/community/:id" element={<CommunitySet />} />
@@ -269,6 +288,7 @@ const AppRoutes = () => {
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="/inventory/:setId" element={<MyTradesSets />} />
       <Route path="/faq" element={<FAQ />} />
+      <Route path="/kayou-news" element={<KayouNews />} />
 
 
 
@@ -276,6 +296,15 @@ const AppRoutes = () => {
 
                 <Route path="/support-mlpekayou" element={<Support />} />
                 <Route path="/binders" element={<Binders />} />
+
+<Route
+  path="/iso"
+  element={
+    <RequireAuth>
+      <ISO />
+    </RequireAuth>
+  }
+/>
 
       <Route
   path="/UserMenu"

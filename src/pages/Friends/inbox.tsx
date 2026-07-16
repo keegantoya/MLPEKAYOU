@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, Bell, Pencil } from "lucide-react";
+import { Users, Bell, Pencil, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import FriendsProfiles from "./friends-profiles";
 
@@ -135,6 +135,7 @@ interface Friend {
   username: string;
   nickname?: string;
   unreadMessages?: number;
+  favorite?: boolean;
   profile: any;
   tradingProfile: any;
 }
@@ -284,6 +285,14 @@ const { data: nicknames } = await supabase
   .from("friend_nicknames")
   .select("*")
   .eq("user_id", userId);
+  const { data: favorites } = await supabase
+  .from("favorite_friends")
+  .select("friend_id")
+  .eq("user_id", userId);
+
+const favoriteIds = new Set(
+  favorites?.map((f) => f.friend_id) ?? []
+);
 const { data: unreadRows } = await supabase
   .from("messages")
   .select("sender")
@@ -298,18 +307,30 @@ const unreadCounts = (unreadRows ?? []).reduce(
   {}
 );
 
-setFriends(
+const loadedFriends =
   profiles?.map((p) => ({
     id: p.id,
     username: p.username,
     nickname:
       nicknames?.find((n) => n.friend_id === p.id)?.nickname ?? "",
     unreadMessages: unreadCounts[p.id] ?? 0,
+    favorite: favoriteIds.has(p.id),
     profile: p,
     tradingProfile:
       tradingProfiles?.find((t) => t.user_id === p.id) ?? null,
-  })) || []
-);
+  })) || [];
+
+loadedFriends.sort((a, b) => {
+  if (a.favorite !== b.favorite) {
+    return Number(b.favorite) - Number(a.favorite);
+  }
+
+  return (a.nickname || a.username).localeCompare(
+    b.nickname || b.username
+  );
+});
+
+setFriends(loadedFriends);
     } else {
       setFriends([]);
     }
@@ -368,6 +389,60 @@ async function unfriend(friendId: string) {
 
   setConfirmUnfriend(null);
   void loadInbox();
+}
+
+async function toggleFavorite(friendId: string) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) return;
+
+  const friend = friends.find((f) => f.id === friendId);
+
+  if (!friend) return;
+
+if (friend.favorite) {
+  const { error } = await supabase
+    .from("favorite_friends")
+    .delete()
+    .eq("user_id", session.user.id)
+    .eq("friend_id", friendId);
+
+  console.log(error);
+} else {
+  const { error } = await supabase
+    .from("favorite_friends")
+    .insert({
+      user_id: session.user.id,
+      friend_id: friendId,
+    });
+
+  console.log(error);
+}
+
+setFriends((current) => {
+  const updated = current.map((f) =>
+    f.id === friendId
+      ? {
+          ...f,
+          favorite: !f.favorite,
+        }
+      : f
+  );
+
+  updated.sort((a, b) => {
+    if (a.favorite !== b.favorite) {
+      return Number(b.favorite) - Number(a.favorite);
+    }
+
+    return (a.nickname || a.username).localeCompare(
+      b.nickname || b.username
+    );
+  });
+
+  return [...updated];
+});
 }
 
 async function saveNickname(friendId: string) {
@@ -596,7 +671,11 @@ return (
 
                   <div
                     key={friend.id}
-                    className="bg-[#222222] border border-[#333] rounded-xl p-5 flex items-center justify-between"
+                    className={`rounded-xl p-5 flex items-center justify-between border ${
+  friend.favorite
+    ? "bg-[#262112] border-yellow-400"
+    : "bg-[#222222] border-[#333]"
+}`}
                   >
 
                     <div className="flex items-center gap-4">
@@ -662,6 +741,15 @@ return (
       >
         <Pencil size={16} />
       </button>
+      <button
+  onClick={() => toggleFavorite(friend.id)}
+  className="flex-shrink-0 text-gray-400 hover:text-yellow-400 transition"
+>
+  <Star
+    size={16}
+    fill={friend.favorite ? "#facc15" : "none"}
+  />
+</button>
     </>
   )}
 </div>

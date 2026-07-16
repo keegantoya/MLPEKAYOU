@@ -209,6 +209,13 @@ const sets = [
   rarities: {}
 },
 {
+  id: "discord",
+  name: "Discord",
+  folder: "discord",
+  prefix: "BP02",
+  rarities: {}
+},
+{
   id: "tcgpromos",
   name: "TCG Promos",
   folder: "tcgpromos",
@@ -261,10 +268,11 @@ CCG: [
     { id: "11", label: "Fun Moments Three" },
   ],
 
-  TCG: [
-    { id: "FW", label: "Fantasy Wonderland" },
-    { id: "friendshipsbegin", label: "Friendships Begin" },
-  ],
+TCG: [
+  { id: "FW", label: "Fantasy Wonderland" },
+  { id: "discord", label: "Discord" },
+  { id: "friendshipsbegin", label: "Friendships Begin" },
+],
 
   Promos: [
     { id: "tcgpromos", label: "TCG Promos" },
@@ -284,10 +292,10 @@ const [userSearch, setUserSearch] = useState("");
 const [searchResults, setSearchResults] = useState<any[]>([]);
 const searchRef = useRef<HTMLDivElement>(null);
   const [spread, setSpread] = useState(1);
-  const [layout, setLayout] = useState<"3x3" | "4x3" | "2x2">("3x3");
+  const [layout, setLayout] = useState<"3x3" | "4x3" | "4x4" | "2x2">("3x3");
   const [organization] = useState<"standard">("standard");
   const [showCustomization, setShowCustomization] = useState(false);
-  const [previewLayout, setPreviewLayout] = useState<"3x3" | "4x3" | "2x2">("3x3");
+  const [previewLayout, setPreviewLayout] = useState<"3x3" | "4x3" | "4x4" | "2x2">("3x3");
   const [startSlot, setStartSlot] = useState(0);
 
     const touchStartX = useRef(0);
@@ -325,7 +333,7 @@ const {
 if (!viewingUserId && user) {
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username, avatar_url, iso_hidden_sets_ccg")
+    .select("id, username, avatar_url, iso_hidden_sets")
     .eq("id", user.id)
     .single();
 
@@ -334,7 +342,7 @@ if (profile) {
   setViewingUsername(profile.username);
 
   setHiddenCCGSets(
-    profile.iso_hidden_sets_ccg || []
+    profile.iso_hidden_sets || []
   );
 }
 }
@@ -414,6 +422,7 @@ const slugMap: Record<string, string> = {
   "11": "11",
   "9": "9",
   "FW": "FW",
+  "discord": "12",
   "friendshipsbegin": "SD",
   "tcgpromos": "tcgpromos",
 };
@@ -456,54 +465,101 @@ if (selectedSet.id === "FW") {
     { prefix: "BP01PCR", count: 12 },
     { prefix: "BP01PRR", count: 6 },
   ];
-cards = STRUCTURE.flatMap(({ prefix, count }) => {
-  if (prefix === "BP01ER") {
-    return Array.from({ length: 6 }, (_, i) => {
-      const num = String(i + 7).padStart(2, "0");
 
-      return {
-        rarity: "ER",
-        key: `BP01ER${num}`,
-        image: `/fantasy-wonderland/SD01ER${num}.webp`,
-      };
-    });
-  }
+  cards = STRUCTURE.flatMap(({ prefix, count }) => {
+    if (prefix === "BP01ER") {
+      return Array.from({ length: 6 }, (_, i) => {
+        const num = String(i + 7).padStart(2, "0");
 
-  if (prefix === "BP01PER") {
-    return Array.from({ length: 12 }, (_, i) => {
+        return {
+          rarity: "ER",
+          key: `BP01ER${num}`,
+          image: `/fantasy-wonderland/BP01ER${num}.webp`,
+        };
+      });
+    }
+
+    if (prefix === "BP01PER") {
+      return Array.from({ length: 12 }, (_, i) => {
+        const num = String(i + 1).padStart(2, "0");
+
+        return {
+          rarity: "PER",
+          key: `BP01PER${num}`,
+          image: `/fantasy-wonderland/BP01PER${num}.webp`,
+        };
+      });
+    }
+
+    if (prefix === "BP01PSPR") {
+      const numbers = [1,2,3,5,7,8,9,12,13,18,21];
+
+      return numbers.map((n) => ({
+        rarity: "PSPR",
+        key: `BP01PSPR${String(n).padStart(2, "0")}`,
+        image: `/fantasy-wonderland/BP01PSPR${String(n).padStart(2, "0")}.webp`,
+      }));
+    }
+
+    return Array.from({ length: count }, (_, i) => {
       const num = String(i + 1).padStart(2, "0");
 
       return {
-        rarity: "PER",
-        key: `BP01PER${num}`,
-        image: `/fantasy-wonderland/SD01PER${num}.webp`,
+        rarity: prefix.replace("BP01", ""),
+        key: `${prefix}${num}`,
+        image: `/fantasy-wonderland/${prefix}${num}.webp`,
       };
     });
+  });
+
+} else if (selectedSet.id === "discord") {
+
+  const STRUCTURE = [
+    { prefix: "BP02C", count: 48 },
+    { prefix: "BP02U", count: 18 },
+    { prefix: "BP02ER", count: 6 },
+    { prefix: "BP02SR", count: 14 },
+    { prefix: "BP02SPR", count: 28 },
+    { prefix: "BP02GR", count: 12 },
+    { prefix: "BP02CR", count: 12 },
+    { prefix: "BP02RR", count: 6 },
+    { prefix: "BP02PER", count: 12 },
+    { prefix: "BP02PSPR", count: 11 },
+    { prefix: "BP02PGR", count: 6 },
+    { prefix: "BP02PCR", count: 12 },
+    { prefix: "BP02PRR", count: 6 },
+  ];
+
+cards = STRUCTURE.flatMap(({ prefix, count }) => {
+  if (prefix === "BP02PER") {
+    return Array.from({ length: 6 }, (_, i) => [
+      {
+        rarity: "PER",
+        key: `BP02-PER${String(i + 1).padStart(2, "0")}-A2`,
+        image: `/cards/discord/BP02-PER${String(i + 1).padStart(2, "0")}-A2.webp`,
+      },
+      {
+        rarity: "PER",
+        key: `BP02-PER${String(i + 1).padStart(2, "0")}-B2`,
+        image: `/cards/discord/BP02-PER${String(i + 1).padStart(2, "0")}-B2.webp`,
+      },
+    ]).flat();
   }
 
-  if (prefix === "BP01PSPR") {
-    const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
-
-    return numbers.map((n) => ({
-      rarity: "PSPR",
-      key: `BP01PSPR${String(n).padStart(2, "0")}`,
-      image: `/fantasy-wonderland/BP01PSPR${String(n).padStart(2, "0")}.webp`,
-    }));
-  }
+  const rarity = prefix.replace("BP02", "");
 
   return Array.from({ length: count }, (_, i) => {
     const num = String(i + 1).padStart(2, "0");
 
     return {
-      rarity: prefix.replace("BP01", ""),
-      key: `${prefix}${num}`,
-      image: `/fantasy-wonderland/${prefix}${num}.webp`,
+      rarity,
+      key: `BP02-${rarity}${num}`,
+      image: `/cards/discord/BP02-${rarity}${num}.webp`,
     };
   });
 });
 
 } else if (selectedSet.id === "friendshipsbegin") {
-
   const BONUS_STRUCTURE = [
     { prefix: "SD01C", count: 9 },
     { prefix: "SD01U", count: 7 },
@@ -538,7 +594,7 @@ cards = STRUCTURE.flatMap(({ prefix, count }) => {
 
 } else if (selectedSet.id === "tcgpromos") {
 
-  cards = Array.from({ length: 12 }, (_, i) => ({
+  cards = Array.from({ length: 18 }, (_, i) => ({
     rarity: "PR",
     number: i + 1,
     key: `RR${String(i + 1).padStart(2, "0")}`,
@@ -630,6 +686,7 @@ const layoutMap = {
   "2x2": { cols: 2, rows: 2, width: 240 },
   "3x3": { cols: 3, rows: 3, width: 360 },
   "4x3": { cols: 4, rows: 3, width: 480 },
+  "4x4": { cols: 4, rows: 4, width: 480 },
 };
 
 const { cols, rows, width } = layoutMap[layout];
@@ -786,7 +843,7 @@ style={{
 const binderWidth =
   layout === "2x2"
     ? 560
-    : layout === "4x3"
+    : layout === "4x3" || layout === "4x4"
     ? 900
     : 980;
 
@@ -795,7 +852,9 @@ const mobileScale =
     ? 0.48
     : layout === "3x3"
     ? 0.36
-    : 0.27;
+    : layout === "4x3"
+    ? 0.27
+    : 0.23;
 
 const androidScale =
   /Android/i.test(navigator.userAgent)
@@ -1133,7 +1192,7 @@ setSearchResults(
 
 <button
   onClick={() => {
-    const layouts = ["3x3", "4x3", "2x2"] as const;
+    const layouts = ["3x3", "4x3", "4x4", "2x2"] as const;
     const next =
       layouts[(layouts.indexOf(layout) + 1) % layouts.length];
 
@@ -1219,7 +1278,7 @@ return (
 
 <button
   onClick={() => {
-    const layouts = ["3x3", "4x3", "2x2"] as const;
+    const layouts = ["3x3", "4x3", "4x4", "2x2"] as const;
     const next =
       layouts[(layouts.indexOf(layout) + 1) % layouts.length];
 
@@ -1331,7 +1390,9 @@ return (
 </p>
     </div>
   </div>
+  
 ) : (
+  
 
 <div
   className="flex justify-center md:ml-[280px]"
@@ -1340,12 +1401,12 @@ return (
 <div
 style={{
   width: "100%",
-  maxWidth:
-    layout === "2x2"
-      ? "560px"
-      : layout === "4x3"
-      ? "900px"
-      : "980px",
+maxWidth:
+  layout === "2x2"
+    ? "560px"
+    : layout === "4x3" || layout === "4x4"
+    ? "900px"
+    : "980px",
 
   display: "flex",
   justifyContent: "center",
@@ -1353,9 +1414,11 @@ style={{
 transform:
   isMobile
     ? `scale(${androidScale})`
-      : layout === "4x3"
-      ? "translateX(-8px) scale(.68)"
-      : "scale(.76)",
+: layout === "4x3"
+? "translateX(-8px) scale(.68)"
+: layout === "4x4"
+? "translateX(-8px) scale(.58)"
+: "scale(.76)",
 
   transformOrigin: "top center",
 }}
@@ -1440,7 +1503,7 @@ transform:
 {/* Left Edge Arrow */}
 <button
   onClick={() => setSpread((s) => Math.max(1, s - 1))}
-  className="absolute z-50 hidden md:flex h-14 w-14 items-center justify-center rounded-full bg-white shadow hover:bg-gray-100"
+  className="absolute z-50 hidden md:flex h-14 w-14 items-center justify-center rounded-full bg-[#232323] border border-[#5a5a5a] text-[#e6c35a] shadow-lg transition hover:bg-[#2d2d2d] hover:border-[#d4af37] hover:text-[#ffd86a]"
   style={{
     left: "-28px",
     top: "50%",
@@ -1453,7 +1516,7 @@ transform:
 {/* Right Edge Arrow */}
 <button
   onClick={() => setSpread((s) => Math.min(totalSpreads, s + 1))}
-  className="absolute z-50 hidden md:flex h-14 w-14 items-center justify-center rounded-full bg-white shadow hover:bg-gray-100"
+  className="absolute z-50 hidden md:flex h-14 w-14 items-center justify-center rounded-full bg-[#232323] border border-[#5a5a5a] text-[#e6c35a] shadow-lg transition hover:bg-[#2d2d2d] hover:border-[#d4af37] hover:text-[#ffd86a]"
   style={{
     right: "-28px",
     top: "50%",
@@ -1639,11 +1702,11 @@ style={{
   setStartSlot(0);
   setSpread(1);
 }}
-    className={`rounded-lg px-4 py-2 font-semibold transition ${
-      layout === "3x3"
-        ? "bg-purple-600 text-white"
-        : "bg-gray-200 hover:bg-gray-300"
-    }`}
+    className={`rounded-xl border px-5 py-2 font-semibold transition ${
+  layout === "3x3"
+    ? "border-[#d4af37] bg-[#d4af37] text-[#1b1b1b] shadow-md"
+    : "border-[#555555] bg-[#232323] text-[#e6c35a] hover:border-[#d4af37] hover:bg-[#2d2d2d] hover:text-[#ffd86a]"
+}`}
   >
     3×3
   </button>
@@ -1655,14 +1718,30 @@ style={{
   setStartSlot(0);
   setSpread(1);
 }}
-    className={`rounded-lg px-4 py-2 font-semibold transition ${
-      layout === "4x3"
-        ? "bg-purple-600 text-white"
-        : "bg-gray-200 hover:bg-gray-300"
-    }`}
+    className={`rounded-xl border px-5 py-2 font-semibold transition ${
+  layout === "3x3"
+    ? "border-[#d4af37] bg-[#d4af37] text-[#1b1b1b] shadow-md"
+    : "border-[#555555] bg-[#232323] text-[#e6c35a] hover:border-[#d4af37] hover:bg-[#2d2d2d] hover:text-[#ffd86a]"
+}`}
   >
     4×3
   </button>
+
+  <button
+  onClick={() => {
+    setLayout("4x4");
+    setPreviewLayout("4x4");
+    setStartSlot(0);
+    setSpread(1);
+  }}
+ className={`rounded-xl border px-5 py-2 font-semibold transition ${
+  layout === "3x3"
+    ? "border-[#d4af37] bg-[#d4af37] text-[#1b1b1b] shadow-md"
+    : "border-[#555555] bg-[#232323] text-[#e6c35a] hover:border-[#d4af37] hover:bg-[#2d2d2d] hover:text-[#ffd86a]"
+}`}
+>
+  4×4
+</button>
 
   <button
    onClick={() => {
@@ -1671,11 +1750,11 @@ style={{
   setStartSlot(0);
   setSpread(1);
 }}
-    className={`rounded-lg px-4 py-2 font-semibold transition ${
-      layout === "2x2"
-        ? "bg-purple-600 text-white"
-        : "bg-gray-200 hover:bg-gray-300"
-    }`}
+   className={`rounded-xl border px-5 py-2 font-semibold transition ${
+  layout === "3x3"
+    ? "border-[#d4af37] bg-[#d4af37] text-[#1b1b1b] shadow-md"
+    : "border-[#555555] bg-[#232323] text-[#e6c35a] hover:border-[#d4af37] hover:bg-[#2d2d2d] hover:text-[#ffd86a]"
+}`}
   >
     2×2
   </button>
@@ -1690,13 +1769,17 @@ style={{
       justifyContent: "center",
       alignItems: "center",
 
-      transform: isMobile
-        ? previewLayout === "4x3"
-          ? "scale(0.53)"
-          : "scale(0.68)"
-        : previewLayout === "4x3"
-        ? "scale(0.92)"
-        : "scale(1)",
+transform: isMobile
+  ? previewLayout === "4x4"
+    ? "scale(0.43)"
+    : previewLayout === "4x3"
+    ? "scale(0.53)"
+    : "scale(0.68)"
+  : previewLayout === "4x4"
+  ? "scale(0.78)"
+  : previewLayout === "4x3"
+  ? "scale(0.92)"
+  : "scale(1)",
 
       transformOrigin: "center center",
 
@@ -1716,27 +1799,39 @@ style={{
       <div
         className="grid rounded-xl bg-white/70 p-3"
         style={{
-          gridTemplateColumns:
-            previewLayout === "2x2"
-              ? "repeat(2,52px)"
-              : previewLayout === "4x3"
-              ? "repeat(4,52px)"
-              : "repeat(3,52px)",
+gridTemplateColumns:
+  previewLayout === "2x2"
+    ? "repeat(2,52px)"
+    : previewLayout === "4x3" || previewLayout === "4x4"
+    ? "repeat(4,52px)"
+    : "repeat(3,52px)",
           gap: "8px",
         }}
       >
         {Array.from({
-          length:
-            previewLayout === "2x2"
-              ? 4
-              : previewLayout === "4x3"
-              ? 12
-              : 9,
+length:
+  previewLayout === "2x2"
+    ? 4
+    : previewLayout === "4x3"
+    ? 12
+    : previewLayout === "4x4"
+    ? 16
+    : 9,
         }).map((_, i) => (
           <button
   key={`left-${i}`}
 onClick={() => {
-  setStartSlot(i);
+  const pageSize =
+    previewLayout === "2x2"
+      ? 4
+      : previewLayout === "3x3"
+      ? 9
+      : previewLayout === "4x3"
+      ? 12
+      : 16;
+
+  setSpread(1);
+  setStartSlot(i % pageSize);
 }}
   className={`aspect-[2.5/3.5] rounded border-2 transition ${
     startSlot === i
@@ -1762,42 +1857,49 @@ onClick={() => {
       <div
         className="grid rounded-xl bg-white/70 p-3"
         style={{
-          gridTemplateColumns:
-            previewLayout === "2x2"
-              ? "repeat(2,52px)"
-              : previewLayout === "4x3"
-              ? "repeat(4,52px)"
-              : "repeat(3,52px)",
+gridTemplateColumns:
+  previewLayout === "2x2"
+    ? "repeat(2,52px)"
+    : previewLayout === "4x3" || previewLayout === "4x4"
+    ? "repeat(4,52px)"
+    : "repeat(3,52px)",
           gap: "8px",
         }}
       >
         {Array.from({
-          length:
-            previewLayout === "2x2"
-              ? 4
-              : previewLayout === "4x3"
-              ? 12
-              : 9,
+length:
+  previewLayout === "2x2"
+    ? 4
+    : previewLayout === "4x3"
+    ? 12
+    : previewLayout === "4x4"
+    ? 16
+    : 9,
         }).map((_, i) => (
           <button
   key={`right-${i}`}
 onClick={() => {
-  setStartSlot(
-    i +
-      (previewLayout === "2x2"
-        ? 4
-        : previewLayout === "4x3"
-        ? 12
-        : 9)
-  );
+  const pageSize =
+    previewLayout === "2x2"
+      ? 4
+      : previewLayout === "3x3"
+      ? 9
+      : previewLayout === "4x3"
+      ? 12
+      : 16;
+
+  setSpread(1);
+  setStartSlot((i % pageSize) + pageSize);
 }}
-           className={`aspect-[2.5/3.5] rounded border-2 transition ${
+className={`aspect-[2.5/3.5] rounded border-2 transition ${
   startSlot ===
   i +
     (previewLayout === "2x2"
       ? 4
       : previewLayout === "4x3"
       ? 12
+      : previewLayout === "4x4"
+      ? 16
       : 9)
     ? "border-purple-600 bg-purple-200"
     : "border-gray-300 bg-white hover:border-purple-500 hover:bg-purple-50"

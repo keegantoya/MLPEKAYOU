@@ -218,15 +218,36 @@ const sets = [
     PGR: 6,
     PCR: 12,
     PRR: 6,
-    },
   },
+},
+{
+  id: "12",
+  name: "Discord",
+  folder: "discord",
+  prefix: "BP02",
+  rarities: {
+    C: 48,
+    U: 18,
+    ER: 6,
+    SR: 14,
+    SPR: 28,
+    GR: 12,
+    CR: 12,
+    RR: 6,
+    PER: 12,
+    PSPR: 11,
+    PGR: 6,
+    PCR: 12,
+    PRR: 6,
+  },
+},
   {
     id: "tcgpromos",
     name: "TCG Promos",
     folder: "tcgpromos",
     prefix: "RR",
     rarities: {
-      RR: 12,
+      RR: 18,
     },
   },
 ];
@@ -252,10 +273,10 @@ const setGroups = [
     label: "Promos",
     setIds: ["9", "tcgpromos"],
   },
-  {
-    label: "TCG",
-    setIds: ["FW", "SD"],
-  },
+{
+  label: "TCG",
+  setIds: ["FW", "SD", "12"],
+},
 ];
 
 function getWishlistCardsForSet(setId: string) {
@@ -283,62 +304,19 @@ function getWishlistCardsForSet(setId: string) {
 
 if (setId === "FW") {
   const structures: Record<string, string[]> = {
-    C: Array.from(
-      { length: 48 },
-      (_, i) => `BP01C${String(i + 1).padStart(2, "0")}`
-    ),
-    U: Array.from(
-      { length: 18 },
-      (_, i) => `BP01U${String(i + 1).padStart(2, "0")}`
-    ),
-
-    ER: Array.from(
-      { length: 6 },
-      (_, i) => `BP01ER${String(i + 7).padStart(2, "0")}`
-    ),
-
-    SR: Array.from(
-      { length: 14 },
-      (_, i) => `BP01SR${String(i + 1).padStart(2, "0")}`
-    ),
-    SPR: Array.from(
-      { length: 28 },
-      (_, i) => `BP01SPR${String(i + 1).padStart(2, "0")}`
-    ),
-    GR: Array.from(
-      { length: 12 },
-      (_, i) => `BP01GR${String(i + 1).padStart(2, "0")}`
-    ),
-    CR: Array.from(
-      { length: 12 },
-      (_, i) => `BP01CR${String(i + 1).padStart(2, "0")}`
-    ),
-    RR: Array.from(
-      { length: 6 },
-      (_, i) => `BP01RR${String(i + 1).padStart(2, "0")}`
-    ),
-
-    PER: Array.from(
-      { length: 12 },
-      (_, i) => `BP01PER${String(i + 1).padStart(2, "0")}`
-    ),
-
-    PSPR: [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
-      (n) => `BP01PSPR${String(n).padStart(2, "0")}`
-    ),
-
-    PGR: Array.from(
-      { length: 6 },
-      (_, i) => `BP01PGR${String(i + 1).padStart(2, "0")}`
-    ),
-    PCR: Array.from(
-      { length: 12 },
-      (_, i) => `BP01PCR${String(i + 1).padStart(2, "0")}`
-    ),
-    PRR: Array.from(
-      { length: 6 },
-      (_, i) => `BP01PRR${String(i + 1).padStart(2, "0")}`
-    ),
+    C: Array.from({ length: 48 }, (_, i) => `BP01C${String(i + 1).padStart(2, "0")}`),
+    U: Array.from({ length: 18 }, (_, i) => `BP01U${String(i + 1).padStart(2, "0")}`),
+    ER: Array.from({ length: 6 }, (_, i) => `BP01ER${String(i + 7).padStart(2, "0")}`),
+    SR: Array.from({ length: 14 }, (_, i) => `BP01SR${String(i + 1).padStart(2, "0")}`),
+    SPR: Array.from({ length: 28 }, (_, i) => `BP01SPR${String(i + 1).padStart(2, "0")}`),
+    GR: Array.from({ length: 12 }, (_, i) => `BP01GR${String(i + 1).padStart(2, "0")}`),
+    CR: Array.from({ length: 12 }, (_, i) => `BP01CR${String(i + 1).padStart(2, "0")}`),
+    RR: Array.from({ length: 6 }, (_, i) => `BP01RR${String(i + 1).padStart(2, "0")}`),
+    PER: Array.from({ length: 12 }, (_, i) => `BP01PER${String(i + 1).padStart(2, "0")}`),
+    PSPR: [1,2,3,5,7,8,9,12,13,18,21].map(n => `BP01PSPR${String(n).padStart(2,"0")}`),
+    PGR: Array.from({ length: 6 }, (_, i) => `BP01PGR${String(i + 1).padStart(2, "0")}`),
+    PCR: Array.from({ length: 12 }, (_, i) => `BP01PCR${String(i + 1).padStart(2, "0")}`),
+    PRR: Array.from({ length: 6 }, (_, i) => `BP01PRR${String(i + 1).padStart(2, "0")}`),
   };
 
   return Object.entries(structures).flatMap(([rarity, keys]) =>
@@ -350,8 +328,37 @@ if (setId === "FW") {
   );
 }
 
+if (setId === "12") {
+  const structures: Record<string, string[]> = {
+    C: Array.from({ length: 48 }, (_, i) => `BP02-C${String(i + 1).padStart(2, "0")}`),
+    U: Array.from({ length: 18 }, (_, i) => `BP02-U${String(i + 1).padStart(2, "0")}`),
+    ER: Array.from({ length: 6 }, (_, i) => `BP02-ER${String(i + 1).padStart(2, "0")}`),
+    SR: Array.from({ length: 14 }, (_, i) => `BP02-SR${String(i + 1).padStart(2, "0")}`),
+    SPR: Array.from({ length: 28 }, (_, i) => `BP02-SPR${String(i + 1).padStart(2, "0")}`),
+    GR: Array.from({ length: 12 }, (_, i) => `BP02-GR${String(i + 1).padStart(2, "0")}`),
+    CR: Array.from({ length: 12 }, (_, i) => `BP02-CR${String(i + 1).padStart(2, "0")}`),
+    RR: Array.from({ length: 6 }, (_, i) => `BP02-RR${String(i + 1).padStart(2, "0")}`),
+    PER: Array.from({ length: 6 }, (_, i) => [
+      `BP02-PER${String(i + 1).padStart(2, "0")}-A2`,
+      `BP02-PER${String(i + 1).padStart(2, "0")}-B2`,
+    ]).flat(),
+    PSPR: Array.from({ length: 11 }, (_, i) => `BP02-PSPR${String(i + 1).padStart(2, "0")}`),
+    PGR: Array.from({ length: 6 }, (_, i) => `BP02-PGR${String(i + 1).padStart(2, "0")}`),
+    PCR: Array.from({ length: 12 }, (_, i) => `BP02-PCR${String(i + 1).padStart(2, "0")}`),
+    PRR: Array.from({ length: 6 }, (_, i) => `BP02-PRR${String(i + 1).padStart(2, "0")}`),
+  };
+
+  return Object.entries(structures).flatMap(([rarity, keys]) =>
+    keys.map((card_key) => ({
+      set_id: "12",
+      rarity,
+      card_key,
+    }))
+  );
+}
+
   if (setId === "tcgpromos") {
-    return Array.from({ length: 12 }, (_, i) => ({
+    return Array.from({ length: 18 }, (_, i) => ({
       set_id: "tcgpromos",
       rarity: "PR",
       card_key: `RR${String(i + 1).padStart(2, "0")}`,
@@ -378,16 +385,19 @@ function getWishlistCardImage(card: {
     return `/friendships-begin/${key}.webp`;
   }
 
-  if (String(card.set_id) === "FW") {
-    const key = String(card.card_key);
+if (String(card.set_id) === "FW") {
+  const key = String(card.card_key);
 
-    return key.startsWith("BP01ER")
-      ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
-      : key.startsWith("BP01PER")
-      ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
-      : `/fantasy-wonderland/${key}.webp`;
-  }
+  return key.startsWith("BP01ER")
+    ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
+    : key.startsWith("BP01PER")
+    ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
+    : `/fantasy-wonderland/${key}.webp`;
+}
 
+if (String(card.set_id) === "12") {
+  return `/cards/discord/${card.card_key}.webp`;
+}
   if (String(card.set_id) === "tcgpromos") {
     return `/tcgpromos/${card.card_key}.webp`;
   }
@@ -907,8 +917,9 @@ const cards =
         number,
       }))
     : selectedSet.id === "SD" ||
-      selectedSet.id === "FW" ||
-      selectedSet.id === "tcgpromos"
+selectedSet.id === "FW" ||
+selectedSet.id === "12" ||
+selectedSet.id === "tcgpromos"
     ? getWishlistCardsForSet(selectedSet.id)
     : Object.entries(selectedSet.rarities).flatMap(
         ([rarity, count]) =>

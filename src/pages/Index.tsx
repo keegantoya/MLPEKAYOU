@@ -508,7 +508,7 @@ backgroundImage: `
           {/* Buttons */}
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <button
-  onClick={() => navigate("/inventory")}
+  onClick={() => navigate("/binders")}
 className="
   px-8 py-4 rounded-2xl
 
@@ -701,101 +701,6 @@ className="
 
       {/* STATS */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-        {/* Cards Owned */}
-        <div className="rounded-[28px]
-bg-gradient-to-br
-from-[#121A33]
-via-[#17244D]
-to-[#22366A]
-
-text-white
-p-6
-shadow-[0_15px_40px_rgba(0,0,0,0.50)]
-border border-[#D8B45A]
-
-relative overflow-hidden
-
-before:content-['']
-before:absolute
-before:inset-[4px]
-before:rounded-[24px]
-before:border
-before:border-[#F8E38C]/60
-before:pointer-events-none">
-          <div className="flex items-center gap-3 mb-3">
-            <BookOpen className="w-6 h-6 text-[#F8E38C]" />
-            <span className="text-sm uppercase tracking-wide font-semibold text-[#DCCEEF]">
-              total cards owned
-            </span>
-          </div>
-          <div className="text-4xl font-bold">
-            {stats.owned.toLocaleString()}
-          </div>
-        </div>
-
-        {/* Sets Completed */}
-        <div className="rounded-[28px]
-bg-gradient-to-br
-from-[#121A33]
-via-[#17244D]
-to-[#22366A]
-
-text-white
-p-6
-shadow-[0_15px_40px_rgba(0,0,0,0.50)]
-border border-[#D8B45A]
-
-relative overflow-hidden
-
-before:content-['']
-before:absolute
-before:inset-[4px]
-before:rounded-[24px]
-before:border
-before:border-[#F8E38C]/60
-before:pointer-events-none">
-          <div className="flex items-center gap-3 mb-3">
-            <Trophy className="w-6 h-6 text-[#F8E38C]" />
-            <span className="text-sm uppercase tracking-wide font-semibold text-[#DCCEEF]">
-              Completed Sets
-            </span>
-          </div>
-          <div className="text-4xl font-bold">{stats.completed}</div>
-          <p className="text-xs mt-2 opacity-80">
-            Promotional sets do not count.
-          </p>
-        </div>
-
-        {/* Cards for Trade */}
-        <div className="rounded-[28px]
-bg-gradient-to-br
-from-[#121A33]
-via-[#17244D]
-to-[#22366A]
-
-text-white
-p-6
-shadow-[0_15px_40px_rgba(0,0,0,0.50)]
-border border-[#D8B45A]
-
-relative overflow-hidden
-
-before:content-['']
-before:absolute
-before:inset-[4px]
-before:rounded-[24px]
-before:border
-before:border-[#F8E38C]/60
-before:pointer-events-none">
-          <div className="flex items-center gap-3 mb-3">
-            <ArrowLeftRight className="w-6 h-6 text-[#F8E38C]" />
-            <span className="text-sm uppercase tracking-wide font-semibold text-[#DCCEEF]">
-              total for trade
-            </span>
-          </div>
-          <div className="text-4xl font-bold">{stats.trades}</div>
-        </div>
-
         {/* Mobile Social Icons */}
 <div className="sm:hidden mt-8 flex items-center justify-center gap-6">
   <button

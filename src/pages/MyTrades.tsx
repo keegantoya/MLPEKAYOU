@@ -164,6 +164,14 @@ setTradeSets(activeTrades);
   category: "friendships-begin",
 },
 {
+  id: "12",
+  title: "Discord",
+  setName: "TCG",
+  imageUrl: "/thumbnails/discord.webp",
+  totalCards: 191,
+  category: "discord",
+},
+{
   id: "9",
   title: "Promotional",
   setName: "Cards",
@@ -176,7 +184,7 @@ setTradeSets(activeTrades);
   title: "TCG",
   setName: "Promos",
   imageUrl: "/thumbnails/tcgpromosthumbnail.webp",
-  totalCards: 6,
+  totalCards: 18,
   category: "tcgpromos",
 },
   ];
@@ -323,7 +331,8 @@ if (activeFilter === "promos") {
 if (activeFilter === "tcg") {
   return (
     col.id === "SD" ||
-    col.id === "FW"
+    col.id === "FW" ||
+     col.id === "12"
   );
 }
 
@@ -347,6 +356,7 @@ onClick={() => {
     "9": "promotional-cards",
     "FW": "fantasy-wonderland",
     "SD": "friendships-begin",
+    "12": "discord",
     "tcgpromos": "tcg-promos",
   };
 

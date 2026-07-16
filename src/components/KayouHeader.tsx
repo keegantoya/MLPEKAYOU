@@ -698,13 +698,7 @@ active:scale-95
 >
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex flex-col items-center pt-5 pb-3">
-          <img
-            src={avatarSrc || avatar001}
-            alt="avatar"
-            className="h-16 w-16 rounded-full object-cover border-3 border-[#E7C84B] shadow-lg"
-          />
-
+        <div className="flex flex-col items-center pt-2 pb-2">
           <div className="mt-2 flex items-center justify-center gap-2">
   <div className="text-xl font-semibold text-[#E7C84B]">
     {profile?.username || "My Profile"}
@@ -722,88 +716,268 @@ active:scale-95
         </div>
 
         {/* Menu Items */}
-        <div className="py-2 space-y-1">
-          <button
-            onClick={() => {
-              navigate("/UserMenu");
-              setOpen(false);
-            }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
-          >
-            Edit My Profile
-          </button>
+{/* Menu Items */}
+<div className="py-2 px-3 space-y-4">
 
-          <button
-  onClick={() => {
-    navigate("/inbox");
-    setOpen(false);
-  }}
-  className="relative w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
->
-  My Inbox and Friends
+  {/* ACCOUNT */}
+  <div className="space-y-2">
+    <button
+      onClick={() => {
+        navigate("/UserMenu");
+        setOpen(false);
+      }}
+      className="w-full px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-left"
+    >
+      Edit Profile
+    </button>
 
-</button>
+    <button
+      onClick={() => {
+        navigate("/kayou-news");
+        setOpen(false);
+      }}
+      className="w-full px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-left"
+    >
+      Kayou US Events
+    </button>
 
-          <button
-            onClick={() => {
-              navigate("/my-progress");
-              setOpen(false);
-            }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
-          >
-            My CCG Progress
-          </button>
+    <button
+      onClick={() => {
+        navigate("/inbox");
+        setOpen(false);
+      }}
+      className="w-full px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-left"
+    >
+      Inbox & Friends
+    </button>
+  </div>
 
-          <button
-            onClick={() => {
-              navigate("/progress-tcg");
-              setOpen(false);
-            }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
-          >
-            My TCG Progress
-          </button>
+  {/* PROGRESS */}
+  <div>
+    <div className="text-[11px] uppercase tracking-[0.2em] text-[#8e7a2d] mb-2 px-1">
+      Progress
+    </div>
 
-          <button
-            onClick={() => {
-              navigate("/inventory");
-              setOpen(false);
-            }}
-            className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
-          >
-            My Inventory
-          </button>
+    <div className="grid grid-cols-2 gap-2">
+      <button
+        onClick={() => {
+          navigate("/my-progress");
+          setOpen(false);
+        }}
+        className="
+w-full
+px-3
+py-2
+rounded-xl
+text-sm
+text-left
+bg-[#202020]
+border
+border-[#E7C84B]
 
-          <button
-  onClick={() => {
-    navigate("/my-iso");
-    setOpen(false);
-  }}
-  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
->
-  My ISO
-</button>
-<button
-  onClick={() => {
-    navigate("/wishlist");
-    setOpen(false);
-  }}
- className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
->
-  My Wishlist
-</button>
-<button
-  onClick={() => {
-    navigate("/binders");
-    setOpen(false);
-  }}
-  className="w-[calc(100%-1.5rem)] ml-3 text-left px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] hover:border-[#d4af37]/30 transition-all"
->
-  My Binders
-</button>
-        </div>
+!transition-all
+!duration-200
+
+hover:!bg-[#353535]
+hover:!border-[#FFD54A]
+hover:!text-white
+hover:!scale-[1.02]
+hover:!shadow-xl
+
+active:scale-[0.99]
+"
+      >
+        CCG
+      </button>
+
+      <button
+        onClick={() => {
+          navigate("/progress-tcg");
+          setOpen(false);
+        }}
+        className="
+w-full
+px-3
+py-2
+rounded-xl
+text-sm
+text-left
+bg-[#202020]
+border
+border-[#E7C84B]
+
+!transition-all
+!duration-200
+
+hover:!bg-[#353535]
+hover:!border-[#FFD54A]
+hover:!text-white
+hover:!scale-[1.02]
+hover:!shadow-xl
+
+active:scale-[0.99]
+"
+      >
+        TCG
+      </button>
+    </div>
+  </div>
+
+  {/* COLLECTION */}
+  <div>
+    <div className="text-[11px] uppercase tracking-[0.2em] text-[#8e7a2d] mb-2 px-1">
+      Collection
+    </div>
+
+    <div className="grid grid-cols-2 gap-2">
+      <button
+        onClick={() => {
+          navigate("/inventory");
+          setOpen(false);
+        }}
+        className="
+w-full
+px-3
+py-2
+rounded-xl
+text-sm
+text-left
+bg-[#202020]
+border
+border-[#E7C84B]
+
+!transition-all
+!duration-200
+
+hover:!bg-[#353535]
+hover:!border-[#FFD54A]
+hover:!text-white
+hover:!scale-[1.02]
+hover:!shadow-xl
+
+active:scale-[0.99]
+"
+      >
+        Inventory
+      </button>
+
+      <button
+        onClick={() => {
+          navigate("/binders");
+          setOpen(false);
+        }}
+        className="
+w-full
+px-3
+py-2
+rounded-xl
+text-sm
+text-left
+bg-[#202020]
+border
+border-[#E7C84B]
+
+!transition-all
+!duration-200
+
+hover:!bg-[#353535]
+hover:!border-[#FFD54A]
+hover:!text-white
+hover:!scale-[1.02]
+hover:!shadow-xl
+
+active:scale-[0.99]
+"
+      >
+        Binders
+      </button>
+    </div>
+  </div>
+
+  {/* TRADING */}
+  <div>
+    <div className="text-[11px] uppercase tracking-[0.2em] text-[#8e7a2d] mb-2 px-1">
+      Trading
+    </div>
+
+    <div className="grid grid-cols-2 gap-2">
+      <button
+        onClick={() => {
+          navigate("/iso");
+          setOpen(false);
+        }}
+        className="
+w-full
+px-3
+py-2
+rounded-xl
+text-sm
+text-left
+bg-[#202020]
+border
+border-[#E7C84B]
+
+!transition-all
+!duration-200
+
+hover:!bg-[#353535]
+hover:!border-[#FFD54A]
+hover:!text-white
+hover:!scale-[1.02]
+hover:!shadow-xl
+
+active:scale-[0.99]
+"
+      >
+        ISO
+      </button>
+
+      <button
+        onClick={() => {
+          navigate("/wishlist");
+          setOpen(false);
+        }}
+        className="
+w-full
+px-3
+py-2
+rounded-xl
+text-sm
+text-left
+bg-[#202020]
+border
+border-[#E7C84B]
+
+!transition-all
+!duration-200
+
+hover:!bg-[#353535]
+hover:!border-[#FFD54A]
+hover:!text-white
+hover:!scale-[1.02]
+hover:!shadow-xl
+
+active:scale-[0.99]
+"
+      >
+        Wishlist
+      </button>
+    </div>
+  </div>
+  {/* Logout */}
+  <button
+    onClick={() => {
+      handleLogout();
+      setOpen(false);
+    }}
+    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-2.5 rounded-2xl bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] transition-all"
+  >
+    Logout
+  </button>
+</div>
+
 {/* Social Links */}
-<div className="pt-2 border-t border-[#E7C84B]">
+<div className="pt-2">
   <div className="flex items-center justify-center gap-3 py-2">
     <button
       onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
@@ -827,17 +1001,6 @@ active:scale-95
       />
     </button>
   </div>
-
-  {/* Logout */}
-  <button
-    onClick={() => {
-      handleLogout();
-      setOpen(false);
-    }}
-    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-3 rounded-2xl bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] transition-all"
-  >
-    Logout
-  </button>
 </div>
       </div>
     </SheetContent>

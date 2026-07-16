@@ -116,12 +116,21 @@ const collections: Collection[] = [
     category: "rainbow",
     released: true,
   },
+     {
+    id: "12",
+    title: "Discord",
+    setName: "TCG",
+    imageUrl: "/thumbnails/discord.webp",
+    totalCards: 191,
+    category: "tcg",
+    released: true,
+  },
   {
     id: "9",
     title: "Promotional",
     setName: "Cards",
     imageUrl: "/thumbnails/promos-thumbnail.webp",
-    totalCards: 18,
+    totalCards: 24,
     category: "promos",
     released: true,
   },
@@ -250,7 +259,7 @@ Object.entries(mergedBySet).forEach(([setId, progress]) => {
 const { data: profile } = await supabase
   .from("profiles")
   .select(
-    "iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg"
+    "iso_hidden_sets, iso_hidden_sets"
   )
   .eq("id", user.id)
   .single();
@@ -258,13 +267,13 @@ const { data: profile } = await supabase
 const legacyHidden = profile?.iso_hidden_sets || [];
 
 const hiddenCCG =
-  profile?.iso_hidden_sets_ccg?.length
-    ? profile.iso_hidden_sets_ccg
+  profile?.iso_hidden_sets?.length
+    ? profile.iso_hidden_sets
     : legacyHidden;
 
 const hiddenTCG =
-  profile?.iso_hidden_sets_tcg?.length
-    ? profile.iso_hidden_sets_tcg
+  profile?.iso_hidden_sets?.length
+    ? profile.iso_hidden_sets
     : legacyHidden;
 
 // Convert stored hidden IDs to the collection IDs used on this page

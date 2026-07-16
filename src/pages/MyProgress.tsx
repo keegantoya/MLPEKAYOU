@@ -183,15 +183,15 @@ const MyProgress = () => {
 
 const { data: profile } = await supabase
   .from("profiles")
-  .select("iso_hidden_sets, iso_hidden_sets_ccg")
+  .select("iso_hidden_sets, iso_hidden_sets")
   .eq("id", user.id)
   .single();
 
 const legacyHidden = profile?.iso_hidden_sets || [];
 
 const hiddenCCG =
-  profile?.iso_hidden_sets_ccg?.length
-    ? profile.iso_hidden_sets_ccg
+  profile?.iso_hidden_sets?.length
+    ? profile.iso_hidden_sets
     : legacyHidden;
 
 setHiddenSets(hiddenCCG);

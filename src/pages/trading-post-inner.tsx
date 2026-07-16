@@ -31,6 +31,7 @@ const rarityMap: Record<string, string[]> = {
   "tcgpromos": ["PR"],
   "friendshipsbegin": ["C", "U", "SR", "SPR", "ER", "GR", "CR", "PER", "PRR"],
   "FW": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
+  "12": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
 };
 
 const VERIFIED_USERS = {
@@ -88,6 +89,10 @@ if (card.set_id === "FW") {
   }
 
   return `/fantasy-wonderland/${card.card_key}.webp`;
+}
+
+if (card.set_id === "12") {
+  return `/cards/discord/${card.card_key}.webp`;
 }
 
   if (card.set_id === "9") {
@@ -152,7 +157,8 @@ const [selectedRarity, setSelectedRarity] = useState<string | null>(
   "9": "Promo Cards",
   "friendshipsbegin": "Friendships Begin",
   "FW": "Fantasy Wonderland",
-  "tcgpromos": "TCG Promos",
+"12": "Discord",
+"tcgpromos": "TCG Promos",
 };
 
 useEffect(() => {
@@ -385,14 +391,21 @@ const getRarity = (key: string) => {
     return match ? match[1] : "";
   }
 
-  if (setId === "FW") {
-    const match = key.match(/BP01([A-Z]+)\d+/);
-    return match ? match[1] : "";
-  }
+if (setId === "FW") {
+  const match = key.match(/BP01([A-Z]+)\d+/);
+  return match ? match[1] : "";
+}
 
-  if (key.includes("-")) {
-    return key.split("-")[0].trim();
-  }
+if (setId === "12") {
+  if (key.startsWith("BP02-PER")) return "PER";
+
+  const match = key.match(/BP02-([A-Z]+)\d+/);
+  return match ? match[1] : "";
+}
+
+if (key.includes("-")) {
+  return key.split("-")[0].trim();
+}
 
   return "";
 };
@@ -424,12 +437,21 @@ const filteredCards = cards.filter(c => {
     return match && match[1] === selectedRarity;
   }
 
-  if (setId === "FW") {
-    const match = c.card_key.match(/BP01([A-Z]+)\d+/);
-    return match && match[1] === selectedRarity;
+if (setId === "FW") {
+  const match = c.card_key.match(/BP01([A-Z]+)\d+/);
+  return match && match[1] === selectedRarity;
+}
+
+if (setId === "12") {
+  if (c.card_key.startsWith("BP02-PER")) {
+    return selectedRarity === "PER";
   }
 
-  return c.card_key.split("-")[0].trim() === selectedRarity;
+  const match = c.card_key.match(/BP02-([A-Z]+)\d+/);
+  return match && match[1] === selectedRarity;
+}
+
+return c.card_key.split("-")[0].trim() === selectedRarity;
 });
                 if (filteredCards.length === 0) return null;
 

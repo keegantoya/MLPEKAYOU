@@ -106,6 +106,10 @@ if (card.set_id === "FW") {
   return `/fantasy-wonderland/${card.card_key}.webp`;
 }
 
+if (card.set_id === "12") {
+  return `/cards/discord/${card.card_key}.webp`;
+}
+
   if (card.set_id === "9") {
     const number = card.card_key.split("-")[1];
     return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
@@ -274,7 +278,11 @@ const toggleActive = async () => {
   let rarity = card.card_key.split("-")[0];
 
   // Fantasy Wonderland + Friendships Begin
-  if (card.set_id === "FW" || card.set_id === "friendshipsbegin") {
+if (
+  card.set_id === "FW" ||
+  card.set_id === "12" ||
+  card.set_id === "friendshipsbegin"
+) {
 
     const match = card.card_key.match(
       /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/
@@ -301,20 +309,68 @@ if (rarity === "PGR") rarity = "※GR";
   )
     .sort(([a], [b]) => {
 
-  const rarityOrders: Record<string, string[]> = {
-    "1": ["R","SR","SSR","HR","UR","LSR","SGR","SC"],
-    "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
-    "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
-    "4": ["SSR","SCR","UR","USR","AR","OR","BP","SAR"],
-    "5": ["R","SR","FR","TR","TGR","MTR","SSR","UR","USR","XR"],
-    "6": ["BASE","R","SR","ST","SSR","FR","TR","TGR","UR","USR","XR"],
-    "7": ["N","SN","R","SR","SSR","UR","CR"],
-    "8": ["N","SN","R","SR","SSR","UR","UGR","CR"],
-    "11": ["N","SN","R","SR","SSR","UR","UGR","CR","SCR"],
-  };
+const rarityOrders: Record<string, string[]> = {
+  "1": ["R","SR","SSR","HR","UR","LSR","SGR","SC"],
+  "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
+  "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
+  "4": ["SSR","SCR","UR","USR","AR","OR","BP","SAR"],
+  "5": ["R","SR","FR","TR","TGR","MTR","SSR","UR","USR","XR"],
+  "6": ["BASE","R","SR","ST","SSR","FR","TR","TGR","UR","USR","XR"],
+  "7": ["N","SN","R","SR","SSR","UR","CR"],
+  "8": ["N","SN","R","SR","SSR","UR","UGR","CR"],
+  "11": ["N","SN","R","SR","SSR","UR","UGR","CR","SCR"],
 
-  const currentOrder =
-    rarityOrders[String(setId)] || [];
+  "FW": [
+    "C",
+    "U",
+    "ER",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "RR",
+    "※ER",
+    "※SPR",
+    "※GR",
+    "※CR",
+    "※RR",
+  ],
+
+  "12": [
+    "C",
+    "U",
+    "ER",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "RR",
+    "※ER",
+    "※SPR",
+    "※GR",
+    "※CR",
+    "※RR",
+  ],
+
+  "friendshipsbegin": [
+    "C",
+    "U",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "ER",
+    "※ER",
+    "※RR",
+  ],
+
+  "tcgpromos": ["PR"],
+};
+
+const currentOrder =
+  rarityOrders[
+    String(setId) === "discord" ? "12" : String(setId)
+  ] || [];
 
   return (
     currentOrder.indexOf(a) -
