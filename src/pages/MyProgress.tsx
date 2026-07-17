@@ -65,7 +65,7 @@ const sets = [
   id: "9",
   name: "Promotional Cards",
   total: 6,
-  rarities: { PR: 6 }
+  rarities: { PR: 12 }
   },
   {
     id: "1",

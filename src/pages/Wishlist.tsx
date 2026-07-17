@@ -179,7 +179,7 @@ const sets = [
     folder: "promo-cards",
     prefix: "PR",
     rarities: {
-      PR: 6,
+      PR: 12,
     },
   },
   {
@@ -912,7 +912,7 @@ className="h-full w-full rounded-xl object-cover shadow-lg border-[2px] sm:borde
 
 const cards =
   selectedSet.id === "9"
-    ? [1, 2, 3, 4, 5, 7].map((number) => ({
+    ? [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13].map((number) => ({
         rarity: "PR",
         number,
       }))

@@ -176,7 +176,7 @@ setTradeSets(activeTrades);
   title: "Promotional",
   setName: "Cards",
   imageUrl: "/thumbnails/promos-thumbnail.webp",
-  totalCards: 6,
+  totalCards: 12,
   category: "promo-cards",
 },
 {

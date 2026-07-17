@@ -71,7 +71,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 6 }
+    rarities: { PR: 12 }
   },
   {
   id: "FW",

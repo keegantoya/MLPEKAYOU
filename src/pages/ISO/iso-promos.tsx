@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
 import { supabase } from "@/lib/supabase";
 
-const ccgCards = [1, 2, 3, 4, 5, 7];
+const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
 
 const tcgCards = Array.from({ length: 12 }, (_, i) => i + 1);
 

@@ -23,7 +23,7 @@ const set = {
   setId: "9",
 };
 
-const ccgCards = [1, 2, 3, 4, 5, 7];
+const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
 
 const tcgCards = Array.from({ length: 18 }, (_, i) => i + 1);
 

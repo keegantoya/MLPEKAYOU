@@ -78,9 +78,9 @@ const getCardBack = (rarity: string, number: number) => {
     return "/card-backs/rainbow-two/R2BASEBACKS.webp";
   }
 
-  if (rarity === "R") {
-    return `/card-backs/rainbow-two/R2BACKR${String(number).padStart(3, "0")}.webp`;
-  }
+if (rarity === "R") {
+  return "/card-backs/rainbow-two/R2USRBACK.webp";
+}
 
   if (rarity === "SR") {
     return "/card-backs/rainbow-two/R2SRBACK.webp";

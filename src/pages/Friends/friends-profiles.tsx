@@ -396,28 +396,42 @@ window.dispatchEvent(
       { id: "9", rarities: { PR: 6 } },
       { id: "SD", rarities: {} },
     { id: "FW", rarities: {} },
+    { id: "12", rarities: {} },
     { id: "tcgpromos", rarities: {} },
     ];
     
     isoSets.forEach((set) => {
-      if (set.id === "9") {
-      ["PR-1","PR-2","PR-3","PR-4","PR-5","PR-7"].forEach((cardKey) => {
-        const fullKey = `${set.id}-${cardKey}`;
-    
-        if (
-          !ownedCards[fullKey] &&
-          !inProgressCards.has(fullKey)
-        ) {
-          isoCards.push({
-            id: fullKey,
-            set_id: set.id,
-            card_key: cardKey,
-          });
-        }
+if (set.id === "9") {
+  [
+    "PR-1",
+    "PR-2",
+    "PR-3",
+    "PR-4",
+    "PR-5",
+    "PR-7",
+    "PR-8",
+    "PR-9",
+    "PR-10",
+    "PR-11",
+    "PR-12",
+    "PR-13",
+  ].forEach((cardKey) => {
+    const fullKey = `${set.id}-${cardKey}`;
+
+    if (
+      !ownedCards[fullKey] &&
+      !inProgressCards.has(fullKey)
+    ) {
+      isoCards.push({
+        id: fullKey,
+        set_id: set.id,
+        card_key: cardKey,
       });
-    
-      return;
     }
+  });
+
+  return;
+}
       if (hiddenIsoSets.includes(String(set.id))) {
         return;
       }
@@ -538,25 +552,72 @@ window.dispatchEvent(
       return;
     }
     
-    if (set.id === "tcgpromos") {
-      for (let i = 1; i <= 12; i++) {
-        const cardKey = `RR${String(i).padStart(2, "0")}`;
-        const fullKey = `tcgpromos-${cardKey}`;
-    
-        if (
-          !ownedCards[fullKey] &&
-          !inProgressCards.has(fullKey)
-        ) {
-          isoCards.push({
-            id: fullKey,
-            set_id: "tcgpromos",
-            card_key: cardKey,
-          });
-        }
-      }
-    
-      return;
+if (set.id === "tcgpromos") {
+  for (let i = 1; i <= 12; i++) {
+    const cardKey = `RR${String(i).padStart(2, "0")}`;
+    const fullKey = `tcgpromos-${cardKey}`;
+
+    if (
+      !ownedCards[fullKey] &&
+      !inProgressCards.has(fullKey)
+    ) {
+      isoCards.push({
+        id: fullKey,
+        set_id: "tcgpromos",
+        card_key: cardKey,
+      });
     }
+  }
+
+  return;
+}
+
+if (set.id === "12") {
+  const DISCORD_STRUCTURE = [
+{ prefix: "BP02-C", count: 48 },
+{ prefix: "BP02-U", count: 18 },
+{ prefix: "BP02-ER", count: 6 },
+{ prefix: "BP02-SR", count: 14 },
+{ prefix: "BP02-SPR", count: 28 },
+{ prefix: "BP02-GR", count: 12 },
+{ prefix: "BP02-CR", count: 12 },
+{ prefix: "BP02-RR", count: 6 },
+{ prefix: "BP02-PER", count: 12 },
+{ prefix: "BP02-PSPR", count: 11 },
+{ prefix: "BP02-PGR", count: 6 },
+{ prefix: "BP02-PCR", count: 12 },
+{ prefix: "BP02-PRR", count: 6 },
+  ];
+
+  DISCORD_STRUCTURE.forEach(({ prefix, count }) => {
+    for (let i = 1; i <= count; i++) {
+      let cardKey: string;
+
+      if (prefix === "BP02-PER") {
+        const number = ((i - 1) % 6) + 1;
+        const variant = i <= 6 ? "A2" : "B2";
+        cardKey = `BP02-PER${String(number).padStart(2, "0")}-${variant}`;
+      } else {
+        cardKey = `${prefix}${String(i).padStart(2, "0")}`;
+      }
+
+      const fullKey = `12-${cardKey}`;
+
+      if (
+        !ownedCards[fullKey] &&
+        !inProgressCards.has(fullKey)
+      ) {
+        isoCards.push({
+          id: fullKey,
+          set_id: "12",
+          card_key: cardKey,
+        });
+      }
+    }
+  });
+
+  return;
+}
     
       // Existing logic for CCG sets
       Object.entries(set.rarities).forEach(([rarity, count]) => {
@@ -591,13 +652,14 @@ window.dispatchEvent(
           "8",
           "3",
           "11",
-          "9",
           "4",
           "6",
           "FW",
           "SD",
           "friendshipsbegin",
+          "12",
           "tcgpromos",
+          "9",
         ];
     
         const rarityOrders: Record<string, string[]> = {
@@ -612,7 +674,21 @@ window.dispatchEvent(
           "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR" ],
           "9": ["PR"],
           "tcgpromos": ["PR"],
-    
+          "12": [
+  "C",
+  "U",
+  "ER",
+  "SR",
+  "SPR",
+  "GR",
+  "CR",
+  "RR",
+  "※ER",
+  "※SPR",
+  "※GR",
+  "※CR",
+  "※RR",
+],
           "FW": [
             "C", "U", "ER", "SR", "SPR", "GR", "CR", "RR",
             "※ER", "※SPR", "※GR", "※CR", "※RR",
@@ -634,14 +710,15 @@ window.dispatchEvent(
       const key = String(card.card_key);
     
       // Standard checklist sets
-      if (
-        setId !== "FW" &&
-        setId !== "SD" &&
-        setId !== "friendshipsbegin" &&
-        setId !== "tcgpromos"
-      ) {
-        return key.split("-")[0];
-      }
+if (
+  setId !== "FW" &&
+  setId !== "SD" &&
+  setId !== "friendshipsbegin" &&
+  setId !== "tcgpromos" &&
+  setId !== "12"
+) {
+  return key.split("-")[0];
+}
     
       // TCG Promos
       if (setId === "tcgpromos") {
@@ -883,6 +960,12 @@ if (
   return `/friendships-begin/${key}.webp`;
 }
 
+// Discord
+
+if (String(card.set_id) === "12") {
+  return `/cards/discord/${card.card_key}.webp`;
+}
+
 // Fantasy Wonderland
 if (String(card.set_id) === "FW") {
   const key = String(card.card_key);
@@ -990,6 +1073,7 @@ function getSetName(setId: string) {
     "SD": "Friendships Begin",
     "friendshipsbegin": "Friendships Begin",
     "tcgpromos": "TCG Promos",
+    "12": "Discord",
   };
 
   return names[String(setId)] || `Set ${setId}`;

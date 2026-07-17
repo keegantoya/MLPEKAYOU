@@ -318,7 +318,7 @@ const CARD_TOTALS: Record<string, number> = {
   "FW": 191,
   "12": 191,
   "friendshipsbegin": 191,
-  "9": 6,
+  "9": 12,
   "tcgpromos": 18,
 };
 

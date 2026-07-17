@@ -220,7 +220,7 @@ const sets = [
   name: "TCG Promos",
   folder: "tcgpromos",
   prefix: "RR",
-  rarities: { PR: 12 }
+  rarities: { PR: 18 }
 },
 ];
 
