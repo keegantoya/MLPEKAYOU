@@ -573,8 +573,10 @@ border border-[#7c5aa6]/40 shadow-sm">
         </div>
 
         <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
-          CCG Cards Collected on MLPEKAYOU
-        </div>
+  {leaderboardMode === "ccg"
+    ? "CCG Cards Collected on MLPEKAYOU"
+    : "TCG Cards Collected on MLPEKAYOU"}
+</div>
 
         <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none break-words">
           {totalCardsSitewide.toLocaleString()}

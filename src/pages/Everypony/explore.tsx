@@ -177,17 +177,26 @@ const Explore = () => {
 const { data, error } = await supabase
   .from("profiles")
   .select("id, username, avatar_url")
-  .ilike("username", `%${query}%`)
-  .order("username")
-  .limit(10);
+  .ilike("username", `${query}%`)
+  .limit(100);
 
-  if (error) {
-    console.error(error);
-    setSearchResults([]);
-  } else {
-    setSearchResults(data || []);
-  }
+if (error) {
+  console.error(error);
+  setSearchResults([]);
+} else {
+  const sorted = (data || []).sort((a, b) => {
+    const aq = a.username.toLowerCase();
+    const bq = b.username.toLowerCase();
+    const q = query.toLowerCase();
 
+    if (aq === q) return -1;
+    if (bq === q) return 1;
+
+    return aq.localeCompare(bq);
+  });
+
+  setSearchResults(sorted);
+}
   setSearchingUsers(false);
 }
 return (
