@@ -106,7 +106,46 @@ const { data: profile } = await supabase
   .eq("id", user.id)
   .single();
 
-setHiddenSets(profile?.iso_hidden_sets || []);
+const rawHidden = profile?.iso_hidden_sets || [];
+
+const mappedHidden: string[] = [];
+
+rawHidden.forEach((id: string) => {
+  switch (id) {
+    case "SD":
+      mappedHidden.push(
+        "friendshipsbegin_bonus",
+        "friendshipsbegin_decks"
+      );
+      break;
+
+    case "SD_BONUS":
+      mappedHidden.push("friendshipsbegin_bonus");
+      break;
+
+    case "SD_STARTERS":
+      mappedHidden.push("friendshipsbegin_decks");
+      break;
+
+    case "FW":
+      mappedHidden.push("FW");
+      break;
+
+    case "12":
+      mappedHidden.push("discord");
+      break;
+
+    case "TCG_PROMOS":
+      mappedHidden.push("tcgpromos");
+      break;
+
+    default:
+      mappedHidden.push(id);
+      break;
+  }
+});
+
+setHiddenSets([...new Set(mappedHidden)]);
 
 const progressMap = new Map(
   [

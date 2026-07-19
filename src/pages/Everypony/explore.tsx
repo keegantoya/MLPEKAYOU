@@ -190,9 +190,28 @@ const { data, error } = await supabase
 
   setSearchingUsers(false);
 }
-  return (
-    <div className="min-h-screen bg-[#2e2e2e] font-['Oxanium']">
-     <div className="max-w-7xl mx-auto px-5 py-10 pb-24 md:pb-10">
+return (
+  <div className="relative min-h-screen overflow-hidden bg-[#2e2e2e] font-['Oxanium']">
+
+{/* KAYOU BACKGROUND */}
+<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+  {Array.from({ length: 15 }).map((_, row) => (
+    <div
+      key={row}
+      className="kayou-row"
+      style={{
+        top: `${row * 300 - 1500}px`,
+        animationDelay: `-${row * 4}s`,
+      }}
+    >
+      {Array.from({ length: 80 }).map((_, i) => (
+        <span key={i}>KAYOU U.S.</span>
+      ))}
+    </div>
+  ))}
+</div>
+
+    <div className="relative z-10 max-w-7xl mx-auto px-5 py-10 pb-24 md:pb-10">
 
 {/* Header */}
 <div

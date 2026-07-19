@@ -278,18 +278,30 @@ const hiddenTCG =
 
 // Convert stored hidden IDs to the collection IDs used on this page
 const mappedHiddenSets: string[] = [
-  ...hiddenCCG,
+  ...hiddenCCG.flatMap((id: string) => {
+    switch (id) {
+      case "SD":
+      case "SD_STARTERS":
+      case "SD_BONUS":
+        return ["friendshipsbegin"];
+
+      default:
+        return [id];
+    }
+  }),
+
   ...hiddenTCG.flatMap((id: string) => {
     switch (id) {
       case "FW":
         return ["tcg"];
 
-      case "TCG_PROMOS":
-        return ["tcgpromos"];
-
+      case "SD":
       case "SD_STARTERS":
       case "SD_BONUS":
         return ["friendshipsbegin"];
+
+      case "TCG_PROMOS":
+        return ["tcgpromos"];
 
       default:
         return [id];

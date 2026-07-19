@@ -585,3 +585,39 @@ body::-webkit-scrollbar,
 .kayou-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+.kayou-row {
+  position: absolute;
+  left: -2500px;
+  right: -2500px;
+
+  display: flex;
+  gap: 110px;
+  white-space: nowrap;
+
+  transform: rotate(-30deg);
+  transform-origin: center;
+
+  animation: kayouMove 90s linear infinite;
+}
+
+.kayou-row span {
+  font-family: Oxanium, sans-serif;
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: .18em;
+
+  color: rgba(212,175,55,.035);
+
+  user-select: none;
+}
+
+@keyframes kayouMove {
+  from {
+    transform: translateX(0) rotate(-30deg);
+  }
+
+  to {
+    transform: translateX(1800px) rotate(-30deg);
+  }
+}

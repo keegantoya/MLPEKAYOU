@@ -168,20 +168,17 @@ const missing = cards.filter((card) => {
 
   const search = cardCodeSearch.trim().toUpperCase();
 
-if (
-  search &&
-  !displayCode.startsWith(search)
-) {
-  return false;
-}
+  if (search !== "" && !displayCode.startsWith(search)) {
+    return false;
+  }
 
-const key = `${card.rarity}-${card.number}`;
+  const key = `${card.rarity}-${card.number}`;
 
-if (searchAllCards) {
-  return true;
-}
+  if (searchAllCards) {
+    return true;
+  }
 
-return !owned[`${set.id}-${card.rarity}-${card.number}`];
+  return !owned[`${set.id}-${card.rarity}-${card.number}`];
 });
 
         if (missing.length === 0) return null;
@@ -205,7 +202,7 @@ return !owned[`${set.id}-${card.rarity}-${card.number}`];
 </h2>
 
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
-              {(searchAllCards ? cards : missing).map((card) => {
+              {missing.map((card) => {
 
 
 return (

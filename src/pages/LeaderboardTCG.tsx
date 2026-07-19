@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import LeaderboardTCG from "./LeaderboardTCG";
 
 import avatar001 from "@/assets/avatars/avatar001.webp";
 import avatar002 from "@/assets/avatars/avatar002.webp";
@@ -119,13 +118,12 @@ const VERIFIED_USERS = {
   },
 };
 
-const Leaderboard = () => {
+const LeaderboardTCG = () => {
   const [leaders, setLeaders] = useState<any[]>([]);
     const [rankWorthyCollectors, setRankWorthyCollectors] = useState(0);
     const [totalCardsSitewide, setTotalCardsSitewide] = useState(0);
     const [yourCurrentRank, setYourCurrentRank] = useState<number | null>(null);
 const [fallingCandies, setFallingCandies] = useState<any[]>([]);
-const [leaderboardMode, setLeaderboardMode] = useState<"ccg" | "tcg">("ccg");
 
 useEffect(() => {
   const candies = [candy1, candy2, candy3];
@@ -187,7 +185,7 @@ top: y,
   return () => clearInterval(interval);
 }, []);
 
-useEffect(() => {
+  useEffect(() => {
 const load = async () => {
         
 const { data: profiles } = await supabase
@@ -221,30 +219,17 @@ const { data: rawProgress } = await supabase
 
 const totals = new Map<string, number>();
 
-const ACTIVE_SET_IDS =
-  leaderboardMode === "ccg"
-    ? new Set([
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-      ])
-    : new Set([
-        "10",
-        "11",
-        "12",
-        "SD",
-        "tcgpromos",
-      ]);
+const TCG_SET_IDS = new Set([
+  "10",
+  "11",
+  "12",
+  "tcgpromos",
+  "SD",
+]);
 
 (rawProgress || []).forEach((row: any) => {
-  // Ignore everything except CCG sets
-  if (!ACTIVE_SET_IDS.has(String(row.set_id))) {
+  // Only count TCG sets
+  if (!TCG_SET_IDS.has(String(row.set_id))) {
     return;
   }
 
@@ -323,7 +308,7 @@ setLeaders(
     };
 
     load();
-  }, [leaderboardMode]);
+  }, []);
 
 const getAvatar = (avatar?: string) => {
   if (!avatar) return avatar001;
@@ -449,30 +434,11 @@ style={{
   Top Collectors
 </h1>
 
-<div className="flex justify-center mt-6 mb-8">
-  <div className="inline-flex rounded-xl overflow-hidden border border-[#7c5aa6]/40">
-    <button
-      onClick={() => setLeaderboardMode("ccg")}
-      className={`px-6 py-2 font-bold transition ${
-        leaderboardMode === "ccg"
-          ? "bg-yellow-500 text-black"
-          : "bg-[#261733] text-white hover:bg-[#342048]"
-      }`}
-    >
-      CCG
-    </button>
-
-    <button
-      onClick={() => setLeaderboardMode("tcg")}
-      className={`px-6 py-2 font-bold transition ${
-        leaderboardMode === "tcg"
-          ? "bg-yellow-500 text-black"
-          : "bg-[#261733] text-white hover:bg-[#342048]"
-      }`}
-    >
-      TCG
-    </button>
-  </div>
+{/* Decorative underline */}
+<div className="flex items-center justify-center gap-3 relative">
+  <div className="h-px w-12 md:w-20 bg-gradient-to-r from-transparent to-purple-300" />
+  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-yellow-300 to-amber-500 shadow-md" />
+  <div className="h-px w-12 md:w-20 bg-gradient-to-l from-transparent to-purple-300" />
 </div>
 
 {/* Leaderboard Disclaimer */}
@@ -574,7 +540,7 @@ border border-[#7c5aa6]/40 shadow-sm">
         </div>
 
         <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
-          CCG Cards Collected on MLPEKAYOU
+          TCG Cards Collected on MLPEKAYOU
         </div>
 
         <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none break-words">
@@ -888,4 +854,4 @@ style={{
   );
 };
 
-export default Leaderboard;
+export default LeaderboardTCG;

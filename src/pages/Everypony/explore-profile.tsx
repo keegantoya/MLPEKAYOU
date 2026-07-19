@@ -354,26 +354,26 @@ if (session?.user && session.user.id !== user.id) {
     // Generate missing cards for supported CCG sets
     const isoCards: any[] = [];
     
-    const isoSets = [
-      { id: "1", rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } },
-      { id: "2", rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 } },
-      { id: "3", rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, SZR: 3 } },
-      { id: "4", rarities: { SSR: 20, SCR: 18, UR:18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 }},
-      { id: "5", rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 } },
-      { id: "6", rarities: { BASE: 18, R: 30, SR: 14, ST: 20, SSR: 15, FR: 18, TR: 12, TGR: 8, UR: 19, USR: 8, XR: 8 }},
-      { id: "7", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
-      { id: "8", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
-      { id: "11", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 } },
-  { id: "9", rarities: { PR: 6 } },
+const isoSets = [
+  { id: "1", rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } },
+  { id: "2", rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 } },
+  { id: "3", rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, SZR: 3 } },
+  { id: "4", rarities: { SSR: 20, SCR: 18, UR: 18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 } },
+  { id: "5", rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 } },
+  { id: "6", rarities: { BASE: 18, R: 30, SR: 14, ST: 20, SSR: 15, FR: 18, TR: 12, TGR: 8, UR: 19, USR: 8, XR: 8 } },
+  { id: "7", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
+  { id: "8", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
+  { id: "11", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 } },
+  { id: "9", rarities: { PR: 12 } },
   { id: "SD", rarities: {} },
   { id: "FW", rarities: {} },
   { id: "12", rarities: {} },
-  { id: "tcgpromos", rarities: {} },
+  { id: "tcgpromos", rarities: { RR: 18 } },
 ];
     
     isoSets.forEach((set) => {
       if (set.id === "9") {
-      ["PR-1","PR-2","PR-3","PR-4","PR-5","PR-7"].forEach((cardKey) => {
+      ["PR-1","PR-2","PR-3","PR-4","PR-5","PR-7", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13"].forEach((cardKey) => {
         const fullKey = `${set.id}-${cardKey}`;
     
         if (
@@ -565,7 +565,7 @@ if (prefix === "BP02-PER") {
     }
     
     if (set.id === "tcgpromos") {
-      for (let i = 1; i <= 12; i++) {
+  for (let i = 1; i <= 18; i++) {
         const cardKey = `RR${String(i).padStart(2, "0")}`;
         const fullKey = `tcgpromos-${cardKey}`;
     

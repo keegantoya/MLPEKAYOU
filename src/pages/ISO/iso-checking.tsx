@@ -27,6 +27,7 @@ export default function ISOChecking({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
+  const [openAbove, setOpenAbove] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -211,75 +212,107 @@ onComplete?.();
 
 
   return (
-    <div
-  className={`relative inline-block w-full ${className ?? ""}`}
+<div
+  className={`relative inline-block w-full transition-opacity duration-200 ${
+    open ? "z-[60]" : ""
+  } ${className ?? ""}`}
   ref={menuRef}
 >
-      <div
-        className="relative cursor-pointer"
-        onClick={() => setOpen((v) => !v)}
+<div
+className={`relative cursor-pointer transition-all duration-200 ${
+  open
+  ? "z-50 scale-[1.01] -translate-y-2 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
+  : ""
+}`}
+        onClick={(e) => {
+  const rect = (
+    e.currentTarget as HTMLDivElement
+  ).getBoundingClientRect();
+
+  const menuHeight = 185;
+
+  const spaceBelow =
+    window.innerHeight - rect.bottom;
+
+  setOpenAbove(spaceBelow < menuHeight);
+  setOpen((v) => !v);
+}}
       >
         {children}
 
 
-        {status === "purchase_in_progress" && (
-          <div className="absolute left-0 right-0 top-0 rounded-t-lg bg-red-600/70 py-1 text-center text-[10px] font-bold uppercase text-white">
-            PURCHASING
-          </div>
-        )}
+{status === "purchase_in_progress" && (
+  <div className="absolute bottom-0 left-0 right-0 rounded-b-lg bg-red-600/90 py-1 text-center text-[11px] font-semibold text-white pointer-events-none">
+    Purchase In Progress
+  </div>
+)}
 
-
-        {status === "trade_in_progress" && (
-          <div className="absolute left-0 right-0 top-0 rounded-t-lg bg-green-800/70 py-1 text-center text-[10px] font-bold uppercase text-white">
-            TRADING FOR
-          </div>
-        )}
+{status === "trade_in_progress" && (
+  <div className="absolute bottom-0 left-0 right-0 rounded-b-lg bg-green-700/90 py-1 text-center text-[11px] font-semibold text-white pointer-events-none">
+    Trade In Progress
+  </div>
+)}
       </div>
 
 
-      {open && (
-        <div className="absolute left-1/2 top-full z-50 mt-2 w-56 -translate-x-1/2 overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
+{open && (
+  <div
+    className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[1px]"
+    onClick={() => setOpen(false)}
+  />
+)}
 
-          <button
-            onClick={() =>
-              saveStatus("purchase_in_progress")
-            }
-            className="w-full px-4 py-3 text-left hover:bg-zinc-800"
-          >
-            🛒 Purchase In Progress
-          </button>
+{open && (
+  <div
+    className={`absolute left-1/2 z-[60]  w-72 -translate-x-1/2 rounded-2xl border border-[#4a4a4a] bg-[#1b1b1b] p-3 shadow-2xl ${
+      openAbove
+        ? "bottom-full mb-3"
+        : "top-full mt-3"
+    }`}
+  >
+    <div className="mb-3 border-b border-zinc-700 pb-2 text-center">
+      <div className="text-sm font-bold uppercase tracking-[0.15em] text-[#d4af37]">
+        Card Status
+      </div>
+    </div>
 
+    <button
+      onClick={() => saveStatus("purchase_in_progress")}
+      className="mb-2 w-full rounded-xl border border-red-700/40 bg-[#242424] px-4 py-3 text-left transition hover:border-red-500 hover:bg-red-900/20"
+    >
+      <div className="font-semibold text-white">
+        Purchase In Progress
+      </div>
+      <div className="mt-1 text-xs text-zinc-400">
+        Mark this card as one you're currently buying.
+      </div>
+    </button>
 
-          <button
-            onClick={() =>
-              saveStatus("trade_in_progress")
-            }
-            className="w-full px-4 py-3 text-left hover:bg-zinc-800"
-          >
-            🤝 Trade In Progress
-          </button>
+    <button
+      onClick={() => saveStatus("trade_in_progress")}
+      className="mb-2 w-full rounded-xl border border-green-700/40 bg-[#242424] px-4 py-3 text-left transition hover:border-green-500 hover:bg-green-900/20"
+    >
+      <div className="font-semibold text-white">
+        Trade In Progress
+      </div>
+      <div className="mt-1 text-xs text-zinc-400">
+        Mark this card as one you're actively trading for.
+      </div>
+    </button>
 
-
-          <button
-            onClick={markComplete}
-            className="w-full px-4 py-3 text-left hover:bg-zinc-800"
-          >
-            ✅ Complete
-          </button>
-
-
-          <div className="border-t border-zinc-700" />
-
-
-          <button
-            onClick={removeStatus}
-            className="w-full px-4 py-3 text-left text-red-400 hover:bg-zinc-800"
-          >
-            Obtained
-          </button>
-
-        </div>
-      )}
+    <button
+      onClick={markComplete}
+      className="w-full rounded-xl border border-[#d4af37]/40 bg-[#242424] px-4 py-3 text-left transition hover:border-[#d4af37] hover:bg-[#303030]"
+    >
+      <div className="font-semibold text-[#d4af37]">
+        Mark as Complete
+      </div>
+      <div className="mt-1 text-xs text-zinc-400">
+        Remove this card from your ISO list.
+      </div>
+    </button>
+  </div>
+)}
     </div>
   );
 }

@@ -309,7 +309,8 @@ const toggleSet = async (setId: string) => {
       name: "TCG",
       children: [
         { id: "FW", name: "Fantasy Wonderland" },
-{ id: "SD", name: "Friendships Begin" },
+        { id: "SD", name: "Friendships Begin" },
+        { id: "12", name: "Discord" },
         { id: "tcgpromos", name: "TCG Promos" },
       ],
     },

@@ -553,7 +553,7 @@ if (set.id === "9") {
     }
     
 if (set.id === "tcgpromos") {
-  for (let i = 1; i <= 12; i++) {
+  for (let i = 1; i <= 18; i++) {
     const cardKey = `RR${String(i).padStart(2, "0")}`;
     const fullKey = `tcgpromos-${cardKey}`;
 

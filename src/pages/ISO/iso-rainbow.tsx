@@ -266,20 +266,17 @@ const missing = cards.filter((card) => {
 
   const search = cardCodeSearch.trim().toUpperCase();
 
-if (
-  search &&
-  !displayCode.startsWith(search)
-) {
-  return false;
-}
+  if (search !== "" && !displayCode.startsWith(search)) {
+    return false;
+  }
 
-const key = `${card.rarity}-${card.number}`;
+  const key = `${card.rarity}-${card.number}`;
 
-if (searchAllCards) {
-  return true;
-}
+  if (searchAllCards) {
+    return true;
+  }
 
-return !owned[`${set.id}-${card.rarity}-${card.number}`];
+  return !owned[`${set.id}-${card.rarity}-${card.number}`];
 });
 
         if (missing.length === 0) return null;

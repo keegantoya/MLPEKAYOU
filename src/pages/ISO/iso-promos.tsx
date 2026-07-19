@@ -4,14 +4,35 @@ import { supabase } from "@/lib/supabase";
 
 const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
 
-const tcgCards = Array.from({ length: 12 }, (_, i) => i + 1);
+const tcgCards = Array.from({ length: 18 }, (_, i) => i + 1);
 
 const getDisplayCardCode = (
   setId: string,
   number: number
 ) => {
   if (setId === "9") {
-    return `MLPE-PR-${String(number).padStart(3, "0")}`;
+    // Standard CCG Promos
+    if (number <= 7) {
+      return `MLPE-PR-${String(number).padStart(3, "0")}`;
+    }
+
+    // SDCC Promos
+    return `SDCC-${String(number - 7).padStart(3, "0")}`;
+  }
+
+  if (setId === "tcgpromos") {
+    // RR-01 through RR-06
+    if (number <= 6) {
+      return `RR-${String(number).padStart(2, "0")}`;
+    }
+
+    // RR-07 through RR-12
+    if (number <= 12) {
+      return `※BP01-CR${String(number).padStart(2, "0")}`;
+    }
+
+    // RR-13 through RR-18
+    return `※BP02-CR${String(number - 12).padStart(2, "0")}`;
   }
 
   return `RR-${String(number).padStart(2, "0")}`;
@@ -167,16 +188,16 @@ const cards = set.cards.map((number) => ({
 }));
 
 const missing = cards.filter((card) => {
-  const displayCode = getDisplayCardCode(
-    set.id,
-    card.number
-  ).toUpperCase();
+const displayCode = getDisplayCardCode(
+  set.id,
+  card.number
+).toUpperCase();
 
-  const search = cardCodeSearch.trim().toUpperCase();
+const search = cardCodeSearch.trim().toUpperCase();
 
-  if (search && !displayCode.startsWith(search)) {
-    return false;
-  }
+if (search !== "" && !displayCode.startsWith(search)) {
+  return false;
+}
 
   const key = getCardKey(set.id, card.number);
 

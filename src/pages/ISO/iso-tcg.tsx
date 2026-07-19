@@ -463,15 +463,9 @@ const missing = cards.filter((card) => {
 
 const search = cardCodeSearch.trim().toUpperCase();
 
-const normalizedDisplayCode = displayCode
-  .toUpperCase()
-  .replace(/^※/, "");
-
-const normalizedSearch = search.replace(/^※/, "");
-
 if (
-  normalizedSearch &&
-  !normalizedDisplayCode.startsWith(normalizedSearch)
+  search !== "" &&
+  !displayCode.toUpperCase().startsWith(search)
 ) {
   return false;
 }
@@ -513,7 +507,7 @@ return !owned[card.key];
 </h2>
 
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
-              {(searchAllCards ? cards : missing).map((card) => {
+              {missing.map((card) => {
 
 
 return (

@@ -294,30 +294,27 @@ className={`min-w-[100px] rounded-lg border px-5 py-3 text-sm font-semibold tran
         );
 
 const missing = cards.filter((card) => {
-const displayCode = getDisplayCardCode(
-  set.id,
-  card.rarity,
-  card.number
-).toUpperCase();
+  const displayCode = getDisplayCardCode(
+    set.id,
+    card.rarity,
+    card.number
+  ).toUpperCase();
 
-const search = cardCodeSearch
-  .trim()
-  .toUpperCase();
+  const search = cardCodeSearch
+    .trim()
+    .toUpperCase();
 
-if (
-  search &&
-  !displayCode.startsWith(search)
-) {
-  return false;
-}
+  if (search !== "" && !displayCode.startsWith(search)) {
+    return false;
+  }
 
-const key = `${card.rarity}-${card.number}`;
+  const key = `${card.rarity}-${card.number}`;
 
-if (searchAllCards) {
-  return true;
-}
+  if (searchAllCards) {
+    return true;
+  }
 
-return !owned[`${set.id}-${card.rarity}-${card.number}`];
+  return !owned[`${set.id}-${card.rarity}-${card.number}`];
 });
 
         if (missing.length === 0) return null;
