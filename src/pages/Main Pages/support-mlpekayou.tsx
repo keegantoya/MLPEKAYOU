@@ -6,14 +6,6 @@ export default function Support() {
 
 const products = [
   {
-    name: "Fun Moments 1 Booster Box",
-    category: "Fun Moments",
-    price: "$23.88",
-    image: "/set-pictures/funmomentsoneposterstone.webp",
-    scale: "scale-95",
-    link: "https://stonestradingco.com/collections/my-little-pony/products/my-little-pony-friendship-eternal-cards-fun-moments-english-series-1-display-box-w-promo-card",
-  },
-  {
     name: "Rainbow 2 Booster Box",
     category: "Rainbow",
     price: "$39.80",

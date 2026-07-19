@@ -152,7 +152,7 @@ const [userTab, setuserTab] =
 
 const [collapsedSets, setCollapsedSets] =
   useState<Record<string, boolean>>({});
-  const [selectedSet, setSelectedSet] = useState("ALL");
+  const [selectedSet, setSelectedSet] = useState("");
 const [selectedSection, setSelectedSection] =
   useState<"iso" | "trade" | "wishlist">("iso");
 
@@ -1090,7 +1090,9 @@ const ISO_SET_TABS = [
 ];
 
 const filteredIsoCards =
-  selectedSet === "ALL"
+  selectedSet === ""
+    ? []
+    : selectedSet === "ALL"
     ? userIsoCards
     : userIsoCards.filter(
         (card) => String(card.set_id) === selectedSet
@@ -1128,14 +1130,18 @@ const WISHLIST_SET_TABS = [
 ];
 
 const filteredTradeCards =
-  selectedSet === "ALL"
+  selectedSet === ""
+    ? []
+    : selectedSet === "ALL"
     ? allTradeCards
     : allTradeCards.filter(
         (card) => String(card.set_id) === selectedSet
       );
 
-      const filteredWishlistCards =
-  selectedSet === "ALL"
+const filteredWishlistCards =
+  selectedSet === ""
+    ? []
+    : selectedSet === "ALL"
     ? userWishlistCards
     : userWishlistCards.filter(
         (card) => String(card.set_id) === selectedSet
@@ -1383,7 +1389,11 @@ ${
         ))}
       </div>
 
-      {userIsoCards.length === 0 ? (
+      {selectedSet === "" ? (
+  <p className="text-slate-500">
+    Select a set to view.
+  </p>
+) : userIsoCards.length === 0 ? (
         <p className="text-slate-500">
           This collector isn't looking for any cards.
         </p>
@@ -1439,7 +1449,11 @@ ${
       ))}
     </div>
 
-    {filteredTradeCards.length === 0 ? (
+    {selectedSet === "" ? (
+  <p className="text-slate-500">
+    Select a set to view.
+  </p>
+) : filteredTradeCards.length === 0 ? (
       <p className="text-slate-500">
         This collector has no cards listed for trade or sale.
       </p>
@@ -1528,7 +1542,11 @@ className={`
         ))}
       </div>
 
-      {filteredWishlistCards.length === 0 ? (
+      {selectedSet === "" ? (
+  <p className="text-slate-500">
+    Select a set to view.
+  </p>
+) : filteredWishlistCards.length === 0 ? (
         <p className="text-slate-500">
           This collector has no wishlist cards.
         </p>
