@@ -16,7 +16,6 @@ import MyProgress from "./pages/MyProgress";
 import Community from "./pages/Community";
 import CommunitySet from "./pages/CommunitySet";
 import Leaderboard from "./pages/Leaderboard";
-import LeaderboardTCG from "./pages/LeaderboardTCG";
 import NotFound from "./pages/NotFound";
 import Selling from "@/pages/selling";
 import PasswordReset from "./pages/password-reset";
@@ -283,7 +282,6 @@ const AppRoutes = () => {
       <Route path="/community" element={<Community />} />
       <Route path="/community/:id" element={<CommunitySet />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
-      <Route path="/leaderboardtcg" element={<LeaderboardTCG />} />
       <Route path="/password-reset" element={<PasswordReset />} />
       <Route path="/selling" element={<Selling />} />
       <Route path="/trading-post" element={<TradingPost />} />

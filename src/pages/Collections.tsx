@@ -76,7 +76,7 @@ const collections: Collection[] = [
     title: "Friendships",
     setName: "Begin",
     imageUrl: "/thumbnails/friendship-begins-thumbnail.webp",
-    totalCards: 191,
+    totalCards: 194,
     category: "tcg",
     released: true,
   },
