@@ -1554,12 +1554,19 @@ hover:bg-[#2a2a2a]
           Password Reset Sent
         </div>
 
-        <div className="text-sm text-gray-500">
-          If an email exists for this account, you will find
-          a password reset link in your junk mail. Please recheck
-          the email you entered if you don't find it. The most common
-          error is an invalid email entered at login.
-        </div>
+        <div className="text-sm text-gray-500 space-y-3">
+  <p>
+    If an email exists for this account, you will find a password reset
+    link in your inbox or junk mail. Please recheck the email you entered
+    if you don't find it. The most common error is an invalid email entered
+    at login.
+  </p>
+
+  <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-yellow-800">
+    <strong>Important:</strong> The word "Reset Password" will be the link. You may be required to authorize
+    the email from your junk and refresh it in order to access the link.
+  </div>
+</div>
 
       </div>
 
@@ -1775,7 +1782,7 @@ outline-none
     onClick={handleForgotPassword}
     className="text-sm text-[#d8b64d] hover:text-[#f2d36d] mb-5 transition-colors"
   >
-    Forgot your password? Request a reset here.
+    Forgot your password? Request a reset here. 
   </button>
 )}
 

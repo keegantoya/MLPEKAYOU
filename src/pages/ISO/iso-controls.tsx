@@ -4,6 +4,9 @@ interface ISOControlsProps {
   cardCodeSearch: string;
   onCardCodeSearchChange: (value: string) => void;
 
+  characterSearch: string;
+  onCharacterSearchChange: (value: string) => void;
+
   searchAllCards: boolean;
   onSearchAllCardsChange: (value: boolean) => void;
 
@@ -24,6 +27,8 @@ interface ISOControlsProps {
 export default function ISOCONTROLS({
   cardCodeSearch,
   onCardCodeSearchChange,
+  characterSearch,
+  onCharacterSearchChange,
   searchAllCards,
   onSearchAllCardsChange,
   availableSets,
@@ -46,6 +51,12 @@ export default function ISOCONTROLS({
     onCardCodeSearchChange(value);
   };
 
+  const handleCharacterSearchChange = (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  onCharacterSearchChange(e.target.value);
+};
+
 const [showHideSets, setShowHideSets] = useState(false);
 const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -65,6 +76,39 @@ const [expanded, setExpanded] = useState<string | null>(null);
           value={cardCodeSearch}
           onChange={handleSearchChange}
           placeholder="Type # for ※   <> for ◇"
+          autoComplete="off"
+          spellCheck={false}
+          className="
+            w-full
+            rounded-xl
+            border
+            border-[#5a5a5a]
+            bg-[#232323]
+            px-4
+            py-2.5
+            text-base
+            text-white
+            placeholder:text-[#8d8d8d]
+            caret-[#d4af37]
+            outline-none
+            transition
+            focus:border-[#d4af37]
+            focus:ring-2
+            focus:ring-[#d4af37]/30
+          "
+        />
+      </div>
+
+      <div className="mt-5 space-y-2">
+        <label className="text-sm font-semibold text-[#e6c35a]">
+          Character Search
+        </label>
+
+        <input
+          type="text"
+          value={characterSearch}
+          onChange={handleCharacterSearchChange}
+          placeholder="Twilight Sparkle..."
           autoComplete="off"
           spellCheck={false}
           className="

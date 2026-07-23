@@ -467,29 +467,29 @@ if (selectedSet.id === "FW") {
   ];
 
   cards = STRUCTURE.flatMap(({ prefix, count }) => {
-    if (prefix === "BP01ER") {
-      return Array.from({ length: 6 }, (_, i) => {
-        const num = String(i + 7).padStart(2, "0");
+if (prefix === "BP01ER") {
+  return Array.from({ length: 6 }, (_, i) => {
+    const num = String(i + 7).padStart(2, "0");
 
-        return {
-          rarity: "ER",
-          key: `BP01ER${num}`,
-          image: `/fantasy-wonderland/BP01ER${num}.webp`,
-        };
-      });
-    }
+    return {
+      rarity: "ER",
+      key: `BP01ER${num}`,
+      image: `/fantasy-wonderland/SD01ER${num}.webp`,
+    };
+  });
+}
 
-    if (prefix === "BP01PER") {
-      return Array.from({ length: 12 }, (_, i) => {
-        const num = String(i + 1).padStart(2, "0");
+if (prefix === "BP01PER") {
+  return Array.from({ length: 12 }, (_, i) => {
+    const num = String(i + 1).padStart(2, "0");
 
-        return {
-          rarity: "PER",
-          key: `BP01PER${num}`,
-          image: `/fantasy-wonderland/BP01PER${num}.webp`,
-        };
-      });
-    }
+    return {
+      rarity: "PER",
+      key: `BP01PER${num}`,
+      image: `/fantasy-wonderland/SD01PER${num}.webp`,
+    };
+  });
+}
 
     if (prefix === "BP01PSPR") {
       const numbers = [1,2,3,5,7,8,9,12,13,18,21];
@@ -605,7 +605,7 @@ cards = STRUCTURE.flatMap(({ prefix, count }) => {
 
 cards =
   selectedSet.id === "9"
-    ? [1, 2, 3, 4, 5, 6, 7].map((number) => ({
+    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((number) => ({
         rarity: "PR",
         number,
         key: `PR-${number}`,

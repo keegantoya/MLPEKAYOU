@@ -232,12 +232,12 @@ const ACTIVE_SET_IDS =
         "7",
         "8",
         "9",
+        "11",
       ])
     : new Set([
-        "10",
-        "11",
         "12",
         "SD",
+        "FW",
         "tcgpromos",
       ]);
 
@@ -307,9 +307,8 @@ if (currentUserId) {
   setYourCurrentRank(null);
 }
 
-// SHOW ONLY TOP 12 ON THE PAGE
-setLeaders(leaderboardUsers.slice(0, 12));
-// SHOW ONLY TOP 12 ON THE PAGE
+// SHOW ONLY TOP 6 ON THE PAGE
+setLeaders(leaderboardUsers.slice(0, 6));
 setLeaders(
   allUsersSorted
     .filter(
@@ -317,7 +316,7 @@ setLeaders(
         eligibleUserIds.has(u.id) &&
         u.username !== "HeiManTou (Chinese Collector)"
     )
-    .slice(0, 12)
+    .slice(0, 6)
 );
     };
 
@@ -355,45 +354,20 @@ const getAvatar = (avatar?: string) => {
   return (
 <div
   className="min-h-screen relative overflow-hidden font-['Oxanium']"
-style={{
-  background: `
-    radial-gradient(circle at 20% 15%, rgba(124,90,166,0.12), transparent 22%),
-    radial-gradient(circle at 80% 25%, rgba(255,255,255,0.04), transparent 18%),
-    radial-gradient(circle at 35% 70%, rgba(124,90,166,0.10), transparent 20%),
-    linear-gradient(
-      180deg,
-      #1a1028 0%,
-      #120b1d 45%,
-      #090611 100%
-    )
-  `,
-}}
+  style={{
+    background: `
+      radial-gradient(circle at 15% 15%, rgba(212,175,55,.08), transparent 28%),
+      radial-gradient(circle at 85% 25%, rgba(255,215,90,.05), transparent 22%),
+      radial-gradient(circle at 50% 100%, rgba(212,175,55,.04), transparent 45%),
+      linear-gradient(
+        180deg,
+        #0b0b0b 0%,
+        #141414 45%,
+        #1a1a1a 100%
+      )
+    `,
+  }}
 >
-
-<div className="absolute top-0 left-0 right-0 h-[3000px] pointer-events-none overflow-hidden select-none">
-  {Array.from({ length: 70 }).map((_, index) => {
-    const row = Math.floor(index / 10);
-    const col = index % 10;
-
-    return (
-      <img
-        key={index}
-        src={nightmareMoonEye}
-        alt=""
-        className="absolute"
-        style={{
-          top: `${row * 220 + (col % 2 ? 60 : 0)}px`,
-          left: `${col * 10}%`,
-          width: `${40 + ((index * 7) % 20)}px`,
-          height: "auto",
-          opacity: 0.12,
-          transform: `rotate(${(index * 17) % 360}deg)`,
-          filter: "blur(0.3px)",
-        }}
-      />
-    );
-  })}
-</div>
 
 <div className="candy-rain-layer">
   {fallingCandies.map((candy) => (
@@ -417,7 +391,7 @@ style={{
   <div className="text-center mb-10">
     <div className="relative inline-block">
   {/* Subtitle */}
-  <div className="text-[10px] sm:text-xs md:text-sm font-['Oxanium'] uppercase tracking-[0.5em] text-purple-400 mb-2 relative">
+  <div className="text-[10px] sm:text-xs md:text-sm font-['Oxanium'] uppercase tracking-[0.5em] text-[#8d8d8d] mb-2 relative">
     Hall of Fame
   </div>
 
@@ -448,14 +422,21 @@ style={{
   Top Collectors
 </h1>
 
-<div className="flex justify-center mt-6 mb-8">
-  <div className="inline-flex rounded-xl overflow-hidden border border-[#7c5aa6]/40">
+<div className="flex justify-center mt-8 mb-10">
+  <div
+    className="inline-flex overflow-hidden rounded-2xl border"
+    style={{
+      borderColor: "#3d3d3d",
+      background: "#171717",
+      boxShadow: "0 10px 30px rgba(0,0,0,.45)",
+    }}
+  >
     <button
       onClick={() => setLeaderboardMode("ccg")}
       className={`px-6 py-2 font-bold transition ${
         leaderboardMode === "ccg"
           ? "bg-yellow-500 text-black"
-          : "bg-[#261733] text-white hover:bg-[#342048]"
+          : "bg-[#1f1f1f] text-[#d7d7d7] hover:bg-[#2a2a2a]"
       }`}
     >
       CCG
@@ -466,7 +447,7 @@ style={{
       className={`px-6 py-2 font-bold transition ${
         leaderboardMode === "tcg"
           ? "bg-yellow-500 text-black"
-          : "bg-[#261733] text-white hover:bg-[#342048]"
+          : "bg-[#1f1f1f] text-[#d7d7d7] hover:bg-[#2a2a2a]"
       }`}
     >
       TCG
@@ -514,95 +495,96 @@ style={{
 <div className="mb-16">
   <div
     className="
-  relative overflow-hidden
-  backdrop-blur-md
-  border border-[#7c5aa6]/35
-  rounded-3xl md:rounded-[2rem]
-  shadow-[0_20px_60px_rgba(0,0,0,0.55)]
-  px-4 sm:px-6 md:px-8
-  py-4 sm:py-5 md:py-6
-"
-style={{
-  background: `
-    linear-gradient(
-      180deg,
-      rgba(52,32,72,0.92) 0%,
-      rgba(38,23,51,0.95) 50%,
-      rgba(26,16,40,0.98) 100%
-    )
-  `,
-}}
+      relative overflow-hidden
+      rounded-[28px]
+      border
+      backdrop-blur-xl
+      shadow-[0_25px_80px_rgba(0,0,0,.55)]
+      px-4 sm:px-6 md:px-8
+      py-5 md:py-7
+    "
+    style={{
+      borderColor: "rgba(212,175,55,.18)",
+      background: `
+        linear-gradient(
+          180deg,
+          rgba(34,34,34,.96) 0%,
+          rgba(25,25,25,.97) 45%,
+          rgba(18,18,18,.98) 100%
+        )
+      `,
+    }}
   >
     {/* Decorative Glow */}
     <div className="absolute inset-0 pointer-events-none">
       <div className="absolute -top-12 left-1/4 w-24 h-24 md:w-32 md:h-32 bg-[#d4af37]/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-10 right-1/4 w-28 h-28 md:w-40 md:h-40 bg-[#7c5aa6]/15 rounded-full blur-3xl" />
+      <div className="absolute -bottom-10 right-1/4 w-28 h-28 md:w-40 md:h-40 rounded-full blur-3xl bg-[#d4af37]/10" />
     </div>
 
     <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0">
 
       {/* Rank-Worthy Collectors */}
       <div className="relative text-center py-3 md:py-1">
-        <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-purple-200 to-transparent" />
+        <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-[#4a4a4a] to-transparent" />
 
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#342048] to-[#261733]
-border border-[#7c5aa6]/40 shadow-sm">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#2a2a2a] to-[#171717]
+border border-[#d4af37]/20 shadow-sm">
           <span className="text-xl sm:text-2xl">🌟</span>
         </div>
 
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
+        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-[#a5a5a5] mb-2 leading-tight px-2">
           Rank-Worthy Collectors
         </div>
 
-        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-[#ffd54a] leading-none">
           {rankWorthyCollectors.toLocaleString()}
         </div>
 
-        <div className="text-[11px] sm:text-xs text-purple-400 mt-2 px-2 leading-tight">
+        <div className="text-[11px] sm:text-xs text-[#8d8d8d] mt-2 px-2 leading-tight">
           Completed at least one full set
         </div>
       </div>
 
       {/* Total Cards */}
-      <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-purple-100">
-        <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-purple-200 to-transparent" />
+      <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-[#343434]">
+        <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-[#4a4a4a] to-transparent" />
 
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#342048] to-[#261733]
-border border-[#7c5aa6]/40 shadow-sm">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#2a2a2a] to-[#171717]
+border border-[#d4af37]/20 shadow-sm">
           <span className="text-xl sm:text-2xl">❤️</span>
         </div>
 
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
+        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-[#a5a5a5] mb-2 leading-tight px-2">
   {leaderboardMode === "ccg"
     ? "CCG Cards Collected on MLPEKAYOU"
     : "TCG Cards Collected on MLPEKAYOU"}
 </div>
 
-        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none break-words">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-[#ffd54a] leading-none break-words">
           {totalCardsSitewide.toLocaleString()}
         </div>
 
-        <div className="text-[11px] sm:text-xs text-purple-400 mt-2 px-2 leading-tight">
+        <div className="text-[11px] sm:text-xs text-[#8d8d8d] mt-2 px-2 leading-tight">
           Owned across all collectors
         </div>
       </div>
 
       {/* Your Current Rank */}
-      <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-purple-100">
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#342048] to-[#261733]
-border border-[#7c5aa6]/40 shadow-sm">
+      <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-[#343434]">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#2a2a2a] to-[#171717]
+border border-[#d4af37]/20 shadow-sm">
           <span className="text-xl sm:text-2xl">👑</span>
         </div>
 
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-purple-500 mb-2 leading-tight px-2">
+        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-[#a5a5a5] mb-2 leading-tight px-2">
           Your Current Rank
         </div>
 
-        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-purple-900 leading-none">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-[#ffd54a] leading-none">
           {yourCurrentRank ? `#${yourCurrentRank.toLocaleString()}` : "—"}
         </div>
 
-        <div className="text-[11px] sm:text-xs text-purple-400 mt-2 px-2 leading-tight">
+        <div className="text-[11px] sm:text-xs text-[#8d8d8d] mt-2 px-2 leading-tight">
           Your place on the Leaderboard
         </div>
       </div>

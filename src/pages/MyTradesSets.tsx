@@ -427,7 +427,7 @@ for (let i = 1; i <= count; i++) {
 
 } else if (set.id === "tcgpromos") {
 
-  for (let i = 1; i <= 6; i++) {
+  for (let i = 1; i <= 18; i++) {
     const num = String(i).padStart(2, "0");
 
     cards.push({

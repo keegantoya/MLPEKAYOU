@@ -24,17 +24,17 @@ export default function KayouNews() {
     {
       date: "August 2026",
       title: "My Little Pony TCG: Discord!",
-      notes: "",
+      notes: "Will release on the seventh of August.",
     },
     {
       date: "October 2026",
-      title: "Moon Edition: Four",
-      notes: "Date subject to change.",
+      title: "Moon: Volume Four",
+      notes: "U.S. Moon Four will be a reprint of Chinese Moon 11.",
     },
     {
       date: "November 2026",
-      title: "Fun Moments Edition: Three",
-      notes: "Date subject to change.",
+      title: "Fun Moments: Volume Four",
+      notes: "No allowed notes at this time.",
     },
   ];
 

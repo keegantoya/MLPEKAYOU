@@ -32,7 +32,8 @@ export default function ISO() {
 
   const [showControls, setShowControls] = useState(false);
 
- const [cardCodeSearch, setCardCodeSearch] = useState("");
+const [cardCodeSearch, setCardCodeSearch] = useState("");
+const [characterSearch, setCharacterSearch] = useState("");
 const [searchAllCards, setSearchAllCards] = useState(false);
 const [hiddenSets, setHiddenSets] = useState<string[]>([]);
 const [userId, setUserId] = useState<string | null>(null);
@@ -80,7 +81,7 @@ const toggleSet = async (setId: string) => {
 };
 
   return (
-    <div className="min-h-screen bg-[#171717] text-white">
+    <div className="min-h-screen bg-[#171717] text-white kayou-scrollbar">
 
       {/* Mobile Navigation */}
       <div className="md:hidden border-b border-zinc-800 bg-[#1b1b1b] pt-8">
@@ -102,8 +103,9 @@ const toggleSet = async (setId: string) => {
             <button
               key={item.id}
               onClick={() => {
-  setCardCodeSearch("");
-  setSelectedSection(item.id as Section);
+setCardCodeSearch("");
+setCharacterSearch("");
+setSelectedSection(item.id as Section);
 }}
               className={`whitespace-nowrap px-4 py-3 text-sm font-semibold transition ${
                 selectedSection === item.id
@@ -120,7 +122,7 @@ const toggleSet = async (setId: string) => {
       <div className="flex">
 
         {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-64 shrink-0 border-r border-zinc-800 bg-[#1b1b1b]">
+        <aside className="hidden md:block sticky top-0 h-screen w-64 shrink-0 border-r border-zinc-800 bg-[#1b1b1b] overflow-y-auto kayou-scrollbar">
           <div className="border-b border-zinc-800 px-4 py-5">
             <h1 className="text-3xl font-bold">
               ISO (BETA)
@@ -132,8 +134,9 @@ const toggleSet = async (setId: string) => {
               <button
                 key={item.id}
                 onClick={() => {
-  setCardCodeSearch("");
-  setSelectedSection(item.id as Section);
+setCardCodeSearch("");
+setCharacterSearch("");
+setSelectedSection(item.id as Section);
 }}
                 className={`block w-full px-4 py-3 text-left transition-colors ${
                   selectedSection === item.id
@@ -157,42 +160,54 @@ const toggleSet = async (setId: string) => {
 
 </aside>
 {/* Content */}
-<main className="flex-1 px-8 pb-8 pt-0 md:px-8 md:pb-8 md:pt-0">
+<main
+  className={`flex-1 h-screen overflow-y-scroll kayou-scrollbar px-8 pb-8 md:px-8 md:pb-8 ${
+    cardCodeSearch || characterSearch.trim()
+      ? "pt-6 md:pt-0"
+      : "pt-0"
+  }`}
+>
 
-  {cardCodeSearch !== "" ? (
+  {cardCodeSearch !== "" || characterSearch.trim() !== "" ? (
     <>
 <ISOMOON
   cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
 
 <ISOFUN
   cardCodeSearch={cardCodeSearch}
+      characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
 
 <ISORAINBOW
   cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
 
 <ISOSTAR
   cardCodeSearch={cardCodeSearch}
+    characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
 
 <ISOTCG
   cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
 
 <ISOPROMOS
   cardCodeSearch={cardCodeSearch}
+      characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -203,6 +218,7 @@ const toggleSet = async (setId: string) => {
       {selectedSection === "moon" && (
 <ISOMOON
   cardCodeSearch=""
+    characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -211,6 +227,7 @@ const toggleSet = async (setId: string) => {
       {selectedSection === "fun" && (
 <ISOFUN
   cardCodeSearch=""
+    characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -219,6 +236,7 @@ const toggleSet = async (setId: string) => {
       {selectedSection === "rainbow" && (
 <ISORAINBOW
   cardCodeSearch=""
+  characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -227,6 +245,7 @@ const toggleSet = async (setId: string) => {
       {selectedSection === "star" && (
 <ISOSTAR
   cardCodeSearch=""
+    characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -235,6 +254,7 @@ const toggleSet = async (setId: string) => {
       {selectedSection === "tcg" && (
 <ISOTCG
   cardCodeSearch=""
+  characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -243,6 +263,7 @@ const toggleSet = async (setId: string) => {
       {selectedSection === "promos" && (
 <ISOPROMOS
   cardCodeSearch=""
+      characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -268,6 +289,8 @@ const toggleSet = async (setId: string) => {
 <ISOCONTROLS
   cardCodeSearch={cardCodeSearch}
   onCardCodeSearchChange={setCardCodeSearch}
+  characterSearch={characterSearch}
+  onCharacterSearchChange={setCharacterSearch}
   searchAllCards={searchAllCards}
   onSearchAllCardsChange={setSearchAllCards}
   availableSets={[

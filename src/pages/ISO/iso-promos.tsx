@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
 import { supabase } from "@/lib/supabase";
+import { promoCharacterMap } from "./Card Characters/card-characters-promos";
 
 const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
 
@@ -74,11 +75,13 @@ const sets = [
 ]; 
 interface ISOPROMOSProps {
   cardCodeSearch: string;
+  characterSearch: string;
   searchAllCards: boolean;
   hiddenSets: string[];
 }
 export default function ISOPROMOS({
   cardCodeSearch,
+  characterSearch,
   searchAllCards,
   hiddenSets,
 }: ISOPROMOSProps) {
@@ -135,7 +138,8 @@ return (
   <div className="space-y-6">
 
     {/* MOBILE SET NAVIGATION */}
-    <div className="md:hidden sticky top-0 z-20 bg-[#171717] py-2">
+    {!(cardCodeSearch || characterSearch.trim()) && (
+  <div className="md:hidden sticky top-0 z-20 bg-[#171717] py-2">
       <div className="flex justify-center gap-2">
         {[
   { id: "9", label: "CCG Promos" },
@@ -174,30 +178,57 @@ className={`min-w-[100px] rounded-lg border px-5 py-3 text-sm font-semibold tran
         ))}
       </div>
     </div>
-
+)}
 {sets
   .filter((set) => !hiddenSets.includes(set.id))
-  .filter(
-    (set) =>
-      window.innerWidth >= 768 ||
-      selectedSet === set.id
-  )
+.filter((set) => {
+  if (cardCodeSearch || characterSearch.trim()) {
+    return true;
+  }
+
+  return (
+    window.innerWidth >= 768 ||
+    selectedSet === set.id
+  );
+})
   .map((set) => {
 const cards = set.cards.map((number) => ({
   number,
+  characters:
+    promoCharacterMap[
+      `${set.id}-${getCardKey(set.id, number)}`
+    ] ?? [],
 }));
 
 const missing = cards.filter((card) => {
-const displayCode = getDisplayCardCode(
-  set.id,
-  card.number
-).toUpperCase();
+  const displayCode = getDisplayCardCode(
+    set.id,
+    card.number
+  ).toUpperCase();
 
-const search = cardCodeSearch.trim().toUpperCase();
+  const codeSearch = cardCodeSearch
+    .trim()
+    .toUpperCase();
 
-if (search !== "" && !displayCode.startsWith(search)) {
-  return false;
-}
+  if (
+    codeSearch !== "" &&
+    !displayCode.startsWith(codeSearch)
+  ) {
+    return false;
+  }
+
+  const character = characterSearch
+    .trim()
+    .toLowerCase();
+
+  if (
+    character !== "" &&
+    !card.characters.some((name) =>
+      name.toLowerCase().includes(character)
+    )
+  ) {
+    return false;
+  }
 
   const key = getCardKey(set.id, card.number);
 
@@ -207,24 +238,31 @@ if (search !== "" && !displayCode.startsWith(search)) {
 
   return !owned[`${set.id}-${key}`];
 });
-
         if (missing.length === 0) return null;
 
         return (
 <section
   id={`set-${set.id}`}
   key={set.id}
-  className="
+  className={`
     p-0
+    ${cardCodeSearch || characterSearch.trim() ? "mt-8" : ""}
+    md:mt-0
     md:rounded-lg
     md:border
     md:border-zinc-700
     md:bg-[#202020]
     md:p-6
-  "
+  `}
 >
 
-<h2 className="hidden md:block mb-6 text-2xl font-semibold">
+<h2
+  className={`mb-6 text-2xl font-semibold ${
+    cardCodeSearch || characterSearch.trim()
+      ? "block"
+      : "hidden md:block"
+  }`}
+>
   {set.name}
 </h2>
 
@@ -232,38 +270,46 @@ if (search !== "" && !displayCode.startsWith(search)) {
               {missing.map((card) => {
 
 
-return (
-<ISOChecking
-  key={getCardKey(set.id, card.number)}
-  userId={userId}
-  setId={set.id}
-  cardKey={getCardKey(set.id, card.number)}
-  onComplete={() =>
-    setOwned((prev) => ({
-      ...prev,
-      [`${set.id}-${getCardKey(set.id, card.number)}`]: true,
-    }))
-  }
->
-  <div className="cursor-pointer">
+const cardContent = (
+  <div className={searchAllCards ? "" : "cursor-pointer"}>
     <div className="mb-1 text-center text-[9px] md:text-xs font-bold tracking-tight md:tracking-wide text-zinc-300 whitespace-nowrap">
       {getDisplayCardCode(set.id, card.number)}
     </div>
 
-<div className="aspect-[5/7] overflow-hidden rounded-lg">
-  <img
-    src={getImage(set.id, card.number)}
-    className={`h-full w-full object-cover ${
-      set.id === "tcgpromos" &&
-      card.number >= 9 &&
-      card.number <= 12
-        ? "scale-[1.02] object-center"
-        : ""
-    }`}
-  />
-</div>
+    <div className="aspect-[5/7] overflow-hidden rounded-lg">
+      <img
+        src={getImage(set.id, card.number)}
+        className={`h-full w-full object-cover ${
+          set.id === "tcgpromos" &&
+          card.number >= 9 &&
+          card.number <= 12
+            ? "scale-[1.02] object-center"
+            : ""
+        }`}
+      />
+    </div>
   </div>
-</ISOChecking>
+);
+
+return searchAllCards ? (
+  <div key={getCardKey(set.id, card.number)}>
+    {cardContent}
+  </div>
+) : (
+  <ISOChecking
+    key={getCardKey(set.id, card.number)}
+    userId={userId}
+    setId={set.id}
+    cardKey={getCardKey(set.id, card.number)}
+    onComplete={() =>
+      setOwned((prev) => ({
+        ...prev,
+        [`${set.id}-${getCardKey(set.id, card.number)}`]: true,
+      }))
+    }
+  >
+    {cardContent}
+  </ISOChecking>
 );
 })}
             </div>

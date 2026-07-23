@@ -130,7 +130,7 @@ const collections: Collection[] = [
     title: "Promotional",
     setName: "Cards",
     imageUrl: "/thumbnails/promos-thumbnail.webp",
-    totalCards: 24,
+    totalCards: 30,
     category: "promos",
     released: true,
   },

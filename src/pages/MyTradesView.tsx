@@ -275,27 +275,31 @@ const toggleActive = async () => {
   {Object.entries(
     cards.reduce((acc: Record<string, TradeCard[]>, card) => {
 
-  let rarity = card.card_key.split("-")[0];
+let rarity = card.card_key.split("-")[0];
 
-  // Fantasy Wonderland + Friendships Begin
-if (
+if (card.set_id === "tcgpromos") {
+  rarity = "PR";
+}
+
+// Fantasy Wonderland + Friendships Begin
+else if (
   card.set_id === "FW" ||
   card.set_id === "12" ||
   card.set_id === "friendshipsbegin"
 ) {
 
-    const match = card.card_key.match(
-      /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/
-    );
+  const match = card.card_key.match(
+    /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/
+  );
 
-    rarity = match?.[0] || "OTHER";
+  rarity = match?.[0] || "OTHER";
 
-if (rarity === "PER") rarity = "※ER";
-if (rarity === "PSPR") rarity = "※SPR";
-if (rarity === "PCR") rarity = "※CR";
-if (rarity === "PRR") rarity = "※RR";
-if (rarity === "PGR") rarity = "※GR";
-  }
+  if (rarity === "PER") rarity = "※ER";
+  if (rarity === "PSPR") rarity = "※SPR";
+  if (rarity === "PCR") rarity = "※CR";
+  if (rarity === "PRR") rarity = "※RR";
+  if (rarity === "PGR") rarity = "※GR";
+}
 
   if (!acc[rarity]) {
     acc[rarity] = [];

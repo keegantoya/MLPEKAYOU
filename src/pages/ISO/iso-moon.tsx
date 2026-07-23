@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
+import { moonCharacterMap } from "./Card Characters/card-characters-moon";
 
 const getRarityCode = (rarity: string) => {
   if (rarity === "SHINING ZR") return "SZR";
@@ -92,16 +93,18 @@ const sets = [
       SZR: 3,
     },
   },
-];
+]
 
 interface ISOMOONProps {
   cardCodeSearch: string;
+  characterSearch: string;
   searchAllCards: boolean;
   hiddenSets: string[];
 }
 
 export default function ISOMOON({
   cardCodeSearch,
+  characterSearch,
   searchAllCards,
   hiddenSets,
 }: ISOMOONProps) {
@@ -158,7 +161,8 @@ return (
   <div className="space-y-6">
 
     {/* MOBILE SET NAVIGATION */}
-    <div className="md:hidden sticky top-0 z-20 bg-[#171717] py-2">
+    {!(cardCodeSearch || characterSearch.trim()) && (
+  <div className="md:hidden sticky top-0 z-20 bg-[#171717] py-2">
       <div className="flex justify-center gap-2">
         {[
           { id: "1", label: "Moon 1" },
@@ -198,22 +202,30 @@ className={`min-w-[100px] rounded-lg border px-5 py-3 text-sm font-semibold tran
         ))}
       </div>
     </div>
-
+)}
 {sets
   .filter((set) => !hiddenSets.includes(set.id))
-  .filter(
-    (set) =>
-      window.innerWidth >= 768 ||
-      selectedSet === set.id
-  )
+.filter((set) => {
+  if (cardCodeSearch || characterSearch.trim()) {
+    return true;
+  }
+
+  return (
+    window.innerWidth >= 768 ||
+    selectedSet === set.id
+  );
+})
   .map((set) => {
-        const cards = Object.entries(set.rarities).flatMap(
-          ([rarity, count]) =>
-            Array.from({ length: count as number }, (_, i) => ({
-              rarity,
-              number: i + 1,
-            }))
-        );
+const cards = Object.entries(set.rarities).flatMap(
+  ([rarity, count]) =>
+    Array.from({ length: count as number }, (_, i) => ({
+      rarity,
+      number: i + 1,
+
+characters:
+  moonCharacterMap[`${set.id}-${rarity}-${i + 1}`] ?? [],
+    }))
+);
 
 const missing = cards.filter((card) => {
   const displayCode = getDisplayCardCode(
@@ -222,19 +234,33 @@ const missing = cards.filter((card) => {
     card.number
   ).toUpperCase();
 
-  const search = cardCodeSearch.trim().toUpperCase();
+const codeSearch = cardCodeSearch.trim().toUpperCase();
 
-  if (search !== "" && !displayCode.startsWith(search)) {
-    return false;
-  }
+if (
+  codeSearch !== "" &&
+  !displayCode.startsWith(codeSearch)
+) {
+  return false;
+}
 
-  const key = `${card.rarity}-${card.number}`;
+const character = characterSearch.trim().toLowerCase();
 
-  if (searchAllCards) {
-    return true;
-  }
+if (
+  character !== "" &&
+  !card.characters.some((name) =>
+    name.toLowerCase().includes(character)
+  )
+) {
+  return false;
+}
 
-  return !owned[`${set.id}-${key}`];
+const key = `${card.rarity}-${card.number}`;
+
+if (searchAllCards) {
+  return true;
+}
+
+return !owned[`${set.id}-${key}`];
 });
 
         if (missing.length === 0) return null;
@@ -243,17 +269,25 @@ const missing = cards.filter((card) => {
 <section
   id={`set-${set.id}`}
   key={set.id}
-  className="
+  className={`
     p-0
+    ${cardCodeSearch || characterSearch.trim() ? "mt-8" : ""}
+    md:mt-0
     md:rounded-lg
     md:border
     md:border-zinc-700
     md:bg-[#202020]
     md:p-6
-  "
+  `}
 >
 
-<h2 className="hidden md:block mb-6 text-2xl font-semibold">
+<h2
+  className={`mb-6 text-2xl font-semibold ${
+    cardCodeSearch || characterSearch.trim()
+      ? "block"
+      : "hidden md:block"
+  }`}
+>
   {set.name}
 </h2>
 
@@ -264,21 +298,8 @@ const missing = cards.filter((card) => {
     card.rarity === "SZR" &&
     card.number === 1;
 
-  return (
-<ISOChecking
-  key={`${card.rarity}-${card.number}`}
-  className={isDoubleWide ? "col-span-2" : ""}
-  userId={userId}
-  setId={set.id}
-  cardKey={`${card.rarity}-${card.number}`}
-  onComplete={() =>
-    setOwned((prev) => ({
-      ...prev,
-      [`${set.id}-${card.rarity}-${card.number}`]: true,
-    }))
-  }
->
-  <div className="cursor-pointer">
+const cardContent = (
+  <div className={searchAllCards ? "" : "cursor-pointer"}>
     <div className="mb-1 text-center text-[9px] md:text-xs font-bold tracking-tight md:tracking-wide text-zinc-300 whitespace-nowrap">
       {getDisplayCardCode(
         set.id,
@@ -289,13 +310,31 @@ const missing = cards.filter((card) => {
 
     <img
       src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
-      className={`w-full rounded-lg ${
-        isDoubleWide ? "aspect-[10/7]" : "aspect-[5/7]"
-      }`}
+      className="w-full rounded-lg aspect-[5/7]"
     />
   </div>
-</ISOChecking>
-  );
+);
+
+return searchAllCards ? (
+  <div key={`${card.rarity}-${card.number}`}>
+    {cardContent}
+  </div>
+) : (
+  <ISOChecking
+    key={`${card.rarity}-${card.number}`}
+    userId={userId}
+    setId={set.id}
+    cardKey={`${card.rarity}-${card.number}`}
+    onComplete={() =>
+      setOwned((prev) => ({
+        ...prev,
+        [`${set.id}-${card.rarity}-${card.number}`]: true,
+      }))
+    }
+  >
+    {cardContent}
+  </ISOChecking>
+);
 })}
             </div>
           </section>
