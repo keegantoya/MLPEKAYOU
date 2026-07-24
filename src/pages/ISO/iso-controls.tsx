@@ -183,11 +183,13 @@ if (wishlistCharacterOnly) {
 
 <div className="mt-6 space-y-4">
 
-  <label
-  className={`flex min-h-[84px] cursor-pointer items-start justify-between rounded-xl border px-4 py-3 transition ${
-    searchAllCards
-      ? "border-yellow-500 bg-yellow-500/10"
-      : "border-zinc-700 bg-[#232323] hover:border-yellow-500/50"
+<label
+  className={`flex min-h-[84px] items-start justify-between rounded-xl border px-4 py-3 transition ${
+    wishlistMode
+      ? "cursor-not-allowed border-zinc-800 bg-[#1a1a1a] opacity-50"
+      : searchAllCards
+      ? "cursor-pointer border-yellow-500 bg-yellow-500/10"
+      : "cursor-pointer border-zinc-700 bg-[#232323] hover:border-yellow-500/50"
   }`}
 >
   <div>
@@ -203,18 +205,19 @@ if (wishlistCharacterOnly) {
   <input
     type="checkbox"
     checked={searchAllCards}
-    onChange={(e) =>
-      onSearchAllCardsChange(e.target.checked)
-    }
-    className="mt-1 h-5 w-5 shrink-0 accent-yellow-500"
+    disabled={wishlistMode}
+    onChange={(e) => onSearchAllCardsChange(e.target.checked)}
+    className="mt-1 h-5 w-5 shrink-0 accent-yellow-500 disabled:cursor-not-allowed"
   />
 </label>
 
 <label
-  className={`flex min-h-[84px] cursor-pointer items-start justify-between rounded-xl border px-4 py-3 transition ${
-    wishlistMode
-      ? "border-pink-500 bg-pink-500/10"
-      : "border-zinc-700 bg-[#232323] hover:border-pink-500/50"
+  className={`flex min-h-[84px] items-start justify-between rounded-xl border px-4 py-3 transition ${
+    searchAllCards
+      ? "cursor-not-allowed border-zinc-800 bg-[#1a1a1a] opacity-50"
+      : wishlistMode
+      ? "cursor-pointer border-pink-500 bg-pink-500/10"
+      : "cursor-pointer border-zinc-700 bg-[#232323] hover:border-pink-500/50"
   }`}
 >
   <div>
@@ -232,10 +235,9 @@ if (wishlistCharacterOnly) {
   <input
     type="checkbox"
     checked={wishlistMode}
-    onChange={(e) =>
-      onWishlistModeChange(e.target.checked)
-    }
-    className="mt-1 h-5 w-5 shrink-0 accent-pink-500"
+    disabled={searchAllCards}
+    onChange={(e) => onWishlistModeChange(e.target.checked)}
+    className="mt-1 h-5 w-5 shrink-0 accent-pink-500 disabled:cursor-not-allowed"
   />
 </label>
 

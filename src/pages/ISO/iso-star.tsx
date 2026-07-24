@@ -202,13 +202,13 @@ const missing = cards.filter((card) => {
     return false;
   }
 
-  if (searchAllCards) {
-    return true;
-  }
+if (searchAllCards || wishlistMode) {
+  return true;
+}
 
-  return !owned[
-    `${set.id}-${card.rarity}-${card.number}`
-  ];
+return !owned[
+  `${set.id}-${card.rarity}-${card.number}`
+];
 });
 
         if (missing.length === 0) return null;

@@ -234,13 +234,13 @@ const missing = cards.filter((card) => {
     return false;
   }
 
-  const key = getCardKey(set.id, card.number);
+const key = getCardKey(set.id, card.number);
 
-  if (searchAllCards) {
-    return true;
-  }
+if (searchAllCards || wishlistMode) {
+  return true;
+}
 
-  return !owned[key];
+return !owned[key];
 });
 
         if (missing.length === 0) return null;
