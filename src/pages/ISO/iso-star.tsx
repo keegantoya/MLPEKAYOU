@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
+import { useWishlist } from "./wishlist-in-iso";
 import { starCharacterMap } from "./Card Characters/card-characters-star";
 
 const getRarityCode = (rarity: string) => {
@@ -47,6 +48,7 @@ interface ISOSTARProps {
   characterSearch: string;
   searchAllCards: boolean;
   hiddenSets: string[];
+  wishlistMode: boolean;
 }
 
 export default function ISOSTAR({
@@ -54,10 +56,12 @@ export default function ISOSTAR({
   characterSearch,
   searchAllCards,
   hiddenSets,
+  wishlistMode,
 }: ISOSTARProps) {
   const [owned, setOwned] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState("");
+const [userId, setUserId] = useState("");
+const { wishlist, toggleWishlist } = useWishlist();
 
 const [selectedSet, setSelectedSet] =
   useState<string | null>(
@@ -239,6 +243,13 @@ const missing = cards.filter((card) => {
               {missing.map((card) => {
 
 
+const fullKey = `${set.id}:${card.rarity}-${card.number}`;
+const isWishlisted =
+  wishlist.has(fullKey) ||
+  wishlist.has(
+    `${set.id}:${card.rarity}-${String(card.number).padStart(3, "0")}`
+  );
+
 const cardContent = (
   <div className={searchAllCards ? "" : "cursor-pointer"}>
     <div className="mb-1 text-center text-[9px] md:text-xs font-bold tracking-tight md:tracking-wide text-zinc-300 whitespace-nowrap">
@@ -249,14 +260,16 @@ const cardContent = (
       )}
     </div>
 
-    <img
-      src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
-      className="w-full rounded-lg aspect-[5/7]"
-    />
+<img
+  src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
+  className={`w-full rounded-lg aspect-[5/7] ${
+    isWishlisted ? "ring-4 ring-pink-400 ring-offset-2" : ""
+  }`}
+/>
   </div>
 );
 
-return searchAllCards ? (
+return searchAllCards && !wishlistMode ? (
   <div key={`${card.rarity}-${card.number}`}>
     {cardContent}
   </div>
@@ -266,6 +279,9 @@ return searchAllCards ? (
     userId={userId}
     setId={set.id}
     cardKey={`${card.rarity}-${card.number}`}
+    wishlistMode={wishlistMode}
+    isWishlisted={isWishlisted}
+    toggleWishlist={toggleWishlist}
     onComplete={() =>
       setOwned((prev) => ({
         ...prev,

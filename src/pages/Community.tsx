@@ -217,7 +217,11 @@ const [activeCategory, setActiveCategory] = useState<
 >("ccg");
 
   const [firstFinishers, setFirstFinishers] = useState<any>({});
-  const [topCollector, setTopCollector] = useState<any>(null);
+  const topCollector = {
+  id: "94a1c998-d040-4dd2-b2fb-5f606287139d",
+  username: "Mari",
+  avatar_url: "avatar021.webp",
+};
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
@@ -236,148 +240,7 @@ const getAvatar = (avatar?: string) => {
 };
 
 useEffect(() => {
-const loadTopCollector = async () => {
   setFirstFinishers(manualFirstFinishers);
-
-  // Get all profiles
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, username, avatar_url");
-
-  if (!profiles || profiles.length === 0) return;
-
-  // Get all collection progress rows
-  const { data: allProgress } = await supabase
-    .from("collection_progress_raw")
-    .select("user_id, set_id, progress");
-
-  if (!allProgress) return;
-
-  const progressMap = new Map();
-
-for (const row of allProgress) {
-  progressMap.set(
-    `${row.user_id}-${String(row.set_id)}`,
-    row
-  );
-}
-
-  let bestUser = null;
-  let bestCompleted = 0;
-
-    for (const profile of profiles) {
-    // Disqualify HeiManTou from Top Collector calculations
-    if (profile.id === "cd439365-992b-486c-8f03-928fb7bb6683") {
-      continue;
-    }
-    // Count how many sets this user has fully completed
- const completedSets = sets.filter((set) => {
-  const dbId = set.dbId ?? set.id;
-
-const row = progressMap.get(
-  `${profile.id}-${String(dbId)}`
-);
-
-  if (!row?.progress) return false;
-
-  let ownedCount = 0;
-
-if (dbId === "FW" || dbId === "12") {
-const STRUCTURE =
-  dbId === "FW"
-    ? [
-        { prefix: "BP01C", count: 48 },
-        { prefix: "BP01U", count: 18 },
-        { prefix: "BP01ER", count: 6 },
-        { prefix: "BP01SR", count: 14 },
-        { prefix: "BP01SPR", count: 28 },
-        { prefix: "BP01GR", count: 12 },
-        { prefix: "BP01CR", count: 12 },
-        { prefix: "BP01RR", count: 6 },
-        { prefix: "BP01PER", count: 12 },
-        { prefix: "BP01PSPR", count: 11 },
-        { prefix: "BP01PGR", count: 6 },
-        { prefix: "BP01PCR", count: 12 },
-        { prefix: "BP01PRR", count: 6 },
-      ]
-    : [
-        { prefix: "BP02-C", count: 48 },
-        { prefix: "BP02-U", count: 18 },
-        { prefix: "BP02-ER", count: 6 },
-        { prefix: "BP02-SR", count: 14 },
-        { prefix: "BP02-SPR", count: 28 },
-        { prefix: "BP02-GR", count: 12 },
-        { prefix: "BP02-CR", count: 12 },
-        { prefix: "BP02-RR", count: 6 },
-        { prefix: "BP02-PER", count: 12 },
-        { prefix: "BP02-PSPR", count: 11 },
-        { prefix: "BP02-PGR", count: 6 },
-        { prefix: "BP02-PCR", count: 12 },
-        { prefix: "BP02-PRR", count: 6 },
-      ];
-
-    const validKeys = new Set(
-      STRUCTURE.flatMap(({ prefix, count }) => {
-        if (prefix === "BP01ER") {
-          return Array.from({ length: 6 }, (_, i) =>
-            `BP01ER${String(i + 7).padStart(2, "0")}`
-          );
-        }
-
-        if (prefix === "BP01PSPR") {
-          return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
-            (n) => `BP01PSPR${String(n).padStart(2, "0")}`
-          );
-        }
-
-        return Array.from({ length: count }, (_, i) =>
-          `${prefix}${String(i + 1).padStart(2, "0")}`
-        );
-      })
-    );
-
-    ownedCount = Object.entries(row.progress).filter(
-      ([key, value]) => value && validKeys.has(key)
-    ).length;
-  } else {
-    ownedCount = Object.values(row.progress).filter(Boolean).length;
-  }
-
-  return ownedCount >= set.total;
-}).length;
-
-    // Track the highest total
-    if (completedSets > bestCompleted) {
-      bestCompleted = completedSets;
-const totalCardsOwned = allProgress
-  .filter(
-    (p) =>
-      p.user_id === profile.id &&
-      String(p.set_id) !== "OTHERMERCH"
-  )
-  .reduce((total, row) => {
-    const count = Object.values(row.progress || {}).filter(
-      (value: any) =>
-        value === true ||
-        (typeof value === "object" && value?.owned === true)
-    ).length;
-
-    return total + count;
-  }, 0);
-
-bestUser = {
-  ...profile,
-  completed_sets: completedSets,
-  total_cards_owned: totalCardsOwned,
-};
-    }
-  }
-
-  if (bestUser) {
-    setTopCollector(bestUser);
-  }
-};
-  loadTopCollector();
 }, []);
 
   return (
@@ -473,29 +336,15 @@ style={{
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+     <div className="text-center mb-6">
+  <div className="text-2xl font-black text-[#f4d47c]">
+    Mari
+  </div>
 
-        <div className="rounded-2xl bg-[#151515] border border-[#3a3a3a] p-4 text-center">
-          <div className="text-3xl font-black text-[#f4d47c]">
-            {(topCollector?.total_cards_owned ?? 0).toLocaleString()}
-          </div>
-
-          <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#8f8f8f]">
-            Cards
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-[#151515] border border-[#3a3a3a] p-4 text-center">
-          <div className="text-3xl font-black text-[#f4d47c]">
-            {topCollector?.completed_sets ?? 0}
-          </div>
-
-          <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#8f8f8f]">
-            Sets
-          </div>
-        </div>
-
-      </div>
+  <div className="mt-2 text-[11px] uppercase tracking-[0.25em] text-[#8f8f8f]">
+    Most Completed Sets
+  </div>
+</div>
 
       {/* Footer */}
       <div className="border-t border-[#b98a2b]/30 pt-4 text-center">
@@ -1000,29 +849,15 @@ className="
     </div>
 
     {/* Stats */}
-    <div className="grid grid-cols-2 gap-3 mb-6">
+<div className="text-center mb-6">
+  <div className="text-2xl font-black text-[#f4d47c]">
+    Mari
+  </div>
 
-      <div className="rounded-2xl bg-[#151515] border border-[#3a3a3a] p-4 text-center">
-        <div className="text-3xl font-black text-[#f4d47c]">
-          {(topCollector?.total_cards_owned ?? 0).toLocaleString()}
-        </div>
-
-        <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#8f8f8f]">
-          Cards
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-[#151515] border border-[#3a3a3a] p-4 text-center">
-        <div className="text-3xl font-black text-[#f4d47c]">
-          {topCollector?.completed_sets ?? 0}
-        </div>
-
-        <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#8f8f8f]">
-          Sets
-        </div>
-      </div>
-
-    </div>
+  <div className="mt-2 text-[11px] uppercase tracking-[0.25em] text-[#8f8f8f]">
+    Most Completed Sets
+  </div>
+</div>
 
     {/* Footer */}
     <div className="border-t border-[#b98a2b]/30 pt-4 text-center">

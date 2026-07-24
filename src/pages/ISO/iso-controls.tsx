@@ -10,6 +10,10 @@ interface ISOControlsProps {
   searchAllCards: boolean;
   onSearchAllCardsChange: (value: boolean) => void;
 
+  wishlistMode: boolean;
+wishlistCharacterOnly?: boolean;
+onWishlistModeChange: (value: boolean) => void;
+
   availableSets: {
     id: string;
     name: string;
@@ -22,6 +26,9 @@ interface ISOControlsProps {
   hiddenSetIds: string[];
 
   onHideSet: (setId: string) => void;
+
+  hideISO: boolean;
+  onToggleHideISO: () => void;
 }
 
 export default function ISOCONTROLS({
@@ -31,9 +38,14 @@ export default function ISOCONTROLS({
   onCharacterSearchChange,
   searchAllCards,
   onSearchAllCardsChange,
+  wishlistMode,
+  wishlistCharacterOnly = false,
+  onWishlistModeChange,
   availableSets,
   hiddenSetIds,
   onHideSet,
+  hideISO,
+  onToggleHideISO,
 }: ISOControlsProps) {
   const handleSearchChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -59,6 +71,43 @@ export default function ISOCONTROLS({
 
 const [showHideSets, setShowHideSets] = useState(false);
 const [expanded, setExpanded] = useState<string | null>(null);
+
+if (wishlistCharacterOnly) {
+  return (
+    <div className="mb-6 rounded-3xl bg-[#1b1b1b] p-6 text-white">
+      <label className="mb-2 block text-sm font-semibold text-[#e6c35a]">
+        Character Search
+      </label>
+
+      <input
+        type="text"
+        value={characterSearch}
+        onChange={handleCharacterSearchChange}
+        placeholder="Twilight Sparkle..."
+        autoComplete="off"
+        spellCheck={false}
+        className="
+          w-full
+          rounded-xl
+          border
+          border-[#5a5a5a]
+          bg-[#232323]
+          px-4
+          py-2.5
+          text-base
+          text-white
+          placeholder:text-[#8d8d8d]
+          caret-[#d4af37]
+          outline-none
+          transition
+          focus:border-[#d4af37]
+          focus:ring-2
+          focus:ring-[#d4af37]/30
+        "
+      />
+    </div>
+  );
+}
 
   return (
     <aside className="w-[330px] rounded-3xl bg-[#1b1b1b] p-6 text-white">
@@ -132,43 +181,112 @@ const [expanded, setExpanded] = useState<string | null>(null);
         />
       </div>
 
-      <label className="mt-6 flex cursor-pointer items-start gap-3">
-        <input
-          type="checkbox"
-          checked={searchAllCards}
-          onChange={(e) =>
-            onSearchAllCardsChange(e.target.checked)
-          }
-          className="mt-1 h-5 w-5 accent-yellow-500"
-        />
+<div className="mt-6 space-y-4">
 
-        <span className="text-sm leading-5 text-zinc-300">
-          Check this box if you want to search all existing cards,
-          not just cards you are missing.
-        </span>
-      </label>
-     <button
-  type="button"
-  onClick={() => setShowHideSets(true)}
-  className="
-    mt-6
-    w-full
-    rounded-xl
-    border
-    border-[#d4af37]/40
-    bg-[#232323]
-    px-4
-    py-3
-    text-sm
-    font-semibold
-    text-[#f5e6a8]
-    transition
-    hover:border-[#d4af37]
-    hover:bg-[#2c2c2c]
-  "
+  <label
+  className={`flex min-h-[84px] cursor-pointer items-start justify-between rounded-xl border px-4 py-3 transition ${
+    searchAllCards
+      ? "border-yellow-500 bg-yellow-500/10"
+      : "border-zinc-700 bg-[#232323] hover:border-yellow-500/50"
+  }`}
 >
-  Click here to hide sets
-</button>
+  <div>
+    <div className="font-semibold text-white">
+      Search All Cards
+    </div>
+
+    <div className="mt-1 text-xs text-zinc-400">
+      Show every card instead of only cards you're missing.
+    </div>
+  </div>
+
+  <input
+    type="checkbox"
+    checked={searchAllCards}
+    onChange={(e) =>
+      onSearchAllCardsChange(e.target.checked)
+    }
+    className="mt-1 h-5 w-5 shrink-0 accent-yellow-500"
+  />
+</label>
+
+<label
+  className={`flex min-h-[84px] cursor-pointer items-start justify-between rounded-xl border px-4 py-3 transition ${
+    wishlistMode
+      ? "border-pink-500 bg-pink-500/10"
+      : "border-zinc-700 bg-[#232323] hover:border-pink-500/50"
+  }`}
+>
+  <div>
+    <div className="font-semibold text-white">
+      Wishlist Mode
+    </div>
+
+    <div className="mt-1 text-xs text-zinc-400">
+      Add or remove cards from your wishlist.
+      <br />
+      Manage the cards you want to collect.
+    </div>
+  </div>
+
+  <input
+    type="checkbox"
+    checked={wishlistMode}
+    onChange={(e) =>
+      onWishlistModeChange(e.target.checked)
+    }
+    className="mt-1 h-5 w-5 shrink-0 accent-pink-500"
+  />
+</label>
+
+</div>
+
+<div className="mt-4">
+  <div className="relative group flex items-center gap-2">
+    <button
+      type="button"
+      onClick={onToggleHideISO}
+      className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+        hideISO
+          ? "border-yellow-400 bg-yellow-500 text-black"
+          : "border-zinc-700 bg-[#232323] text-yellow-400 hover:border-yellow-500"
+      }`}
+    >
+      {hideISO ? "✓ " : ""}
+      MAKE MY ISO PRIVATE
+    </button>
+
+    <div className="flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-zinc-600 bg-[#444444] text-[11px] font-bold text-yellow-400 transition group-hover:bg-[#555555] group-hover:border-yellow-400">
+      ?
+    </div>
+
+    <div className="pointer-events-none absolute left-0 top-full z-50 mt-2 w-72 rounded-xl border border-zinc-700 bg-[#2f2f2f] p-3 text-xs leading-relaxed text-zinc-300 opacity-0 shadow-2xl transition-all duration-200 group-hover:opacity-100">
+      Removes your ISO from public view but does not affect your personal collection or ISO page.
+    </div>
+  </div>
+</div>
+
+<div className="relative group mt-6 flex items-center gap-2">
+  <button
+    type="button"
+    onClick={() => setShowHideSets(true)}
+    className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+        hideISO
+          ? "border-yellow-400 bg-yellow-500 text-black"
+          : "border-zinc-700 bg-[#232323] text-yellow-400 hover:border-yellow-500"
+      }`}
+  >
+    Click here to hide specific sets
+  </button>
+
+  <div className="flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-zinc-600 bg-[#444444] text-[11px] font-bold text-yellow-400 transition group-hover:bg-[#555555] group-hover:border-yellow-400">
+    ?
+  </div>
+
+  <div className="pointer-events-none absolute left-0 top-full z-50 mt-2 w-72 rounded-xl border border-zinc-700 bg-[#2f2f2f] p-3 text-xs leading-relaxed text-zinc-300 opacity-0 shadow-2xl transition-all duration-200 group-hover:opacity-100">
+    Hide only specific sets you don't want to collect from personal and public views.
+  </div>
+</div>
 
 {showHideSets && (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70">

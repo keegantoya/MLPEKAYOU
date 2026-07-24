@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useWishlist } from "./wishlist-in-iso";
 import ISOChecking from "./iso-checking";
 import { moonCharacterMap } from "./Card Characters/card-characters-moon";
 
@@ -100,6 +101,7 @@ interface ISOMOONProps {
   characterSearch: string;
   searchAllCards: boolean;
   hiddenSets: string[];
+  wishlistMode: boolean;
 }
 
 export default function ISOMOON({
@@ -107,10 +109,12 @@ export default function ISOMOON({
   characterSearch,
   searchAllCards,
   hiddenSets,
+  wishlistMode,
 }: ISOMOONProps) {
   const [owned, setOwned] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState("");
+  const { wishlist, toggleWishlist } = useWishlist();
 
   const [selectedSet, setSelectedSet] = useState<string | null>(
   window.innerWidth >= 768 ? "1" : null
@@ -298,6 +302,11 @@ return !owned[`${set.id}-${key}`];
     card.rarity === "SZR" &&
     card.number === 1;
 
+const fullKey = `${set.id}:${card.rarity}-${card.number}`;
+const isWishlisted =
+  wishlist.has(fullKey) ||
+  wishlist.has(`${set.id}:${card.rarity}-${String(card.number).padStart(3, "0")}`);
+
 const cardContent = (
   <div className={searchAllCards ? "" : "cursor-pointer"}>
     <div className="mb-1 text-center text-[9px] md:text-xs font-bold tracking-tight md:tracking-wide text-zinc-300 whitespace-nowrap">
@@ -308,32 +317,46 @@ const cardContent = (
       )}
     </div>
 
-    <img
-      src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
-      className="w-full rounded-lg aspect-[5/7]"
-    />
+<img
+  src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
+  className={`w-full rounded-lg ${
+    isDoubleWide ? "aspect-[10/7]" : "aspect-[5/7]"
+  } ${
+    isWishlisted ? "ring-4 ring-pink-400 ring-offset-2" : ""
+  }`}
+/>
   </div>
 );
 
-return searchAllCards ? (
-  <div key={`${card.rarity}-${card.number}`}>
+return searchAllCards && !wishlistMode ? (
+  <div
+    key={`${card.rarity}-${card.number}`}
+    className={isDoubleWide ? "col-span-2" : ""}
+  >
     {cardContent}
   </div>
 ) : (
-  <ISOChecking
+  <div
     key={`${card.rarity}-${card.number}`}
-    userId={userId}
-    setId={set.id}
-    cardKey={`${card.rarity}-${card.number}`}
-    onComplete={() =>
-      setOwned((prev) => ({
-        ...prev,
-        [`${set.id}-${card.rarity}-${card.number}`]: true,
-      }))
-    }
+    className={isDoubleWide ? "col-span-2" : ""}
   >
-    {cardContent}
-  </ISOChecking>
+    <ISOChecking
+      userId={userId}
+      setId={set.id}
+      cardKey={`${card.rarity}-${card.number}`}
+      wishlistMode={wishlistMode}
+      isWishlisted={isWishlisted}
+      toggleWishlist={toggleWishlist}
+      onComplete={() =>
+        setOwned((prev) => ({
+          ...prev,
+          [`${set.id}-${card.rarity}-${card.number}`]: true,
+        }))
+      }
+    >
+      {cardContent}
+    </ISOChecking>
+  </div>
 );
 })}
             </div>

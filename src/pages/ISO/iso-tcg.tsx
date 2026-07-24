@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
+import { useWishlist } from "./wishlist-in-iso";
 import { TCGCharacterMap } from "./Card Characters/card-characters-tcg";
 
 const getRarityCode = (rarity: string) => {
@@ -121,6 +122,7 @@ interface ISOTCGProps {
   characterSearch: string;
   searchAllCards: boolean;
   hiddenSets: string[];
+  wishlistMode: boolean;
 }
 
 export default function ISOTCG({
@@ -128,10 +130,12 @@ export default function ISOTCG({
   characterSearch,
   searchAllCards,
   hiddenSets,
+  wishlistMode,
 }: ISOTCGProps) {
   const [owned, setOwned] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState("");
+const [userId, setUserId] = useState("");
+const { wishlist, toggleWishlist } = useWishlist();
 
 const [selectedSet, setSelectedSet] =
   useState<string | null>("SD");
@@ -232,7 +236,8 @@ className={`min-w-[100px] rounded-lg border px-5 py-3 text-sm font-semibold tran
       </div>
     </div>
 )}
-{selectedSet === "SD" &&
+{!(cardCodeSearch || characterSearch.trim()) &&
+selectedSet === "SD" &&
 !hiddenSets.includes("SD") &&
 starterDeckGroups.some((deck) => {
   const deckCards = [];
@@ -337,6 +342,15 @@ starterDeckGroups.some((deck) => {
 
   return true;
 })
+
+.filter((set) => {
+  if ((cardCodeSearch || characterSearch.trim()) && set.id === "SD") {
+    return false;
+  }
+
+  return true;
+})
+
 .filter((set) => {
   if (cardCodeSearch || characterSearch.trim()) {
     return true;
@@ -509,9 +523,9 @@ if (
 ) {
   return false;
 }
-  if (searchAllCards) {
-    return true;
-  }
+if (wishlistMode || searchAllCards) {
+  return true;
+}
 
 if (set.id === "SD") {
   return !owned[`BONUS-${card.key}`];
@@ -557,6 +571,16 @@ return !owned[card.key];
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
               {missing.map((card) => {
 
+const fullKey =
+  set.id === "SD"
+    ? `${set.id}:BONUS-${card.key}`
+    : `${set.id}:${card.key}`;
+
+const isWishlisted = wishlist.has(fullKey);
+  wishlist.has(fullKey) ||
+  wishlist.has(
+    `${set.id}:${card.key.padStart?.(0) ?? card.key}`
+  );
 
 const cardContent = (
   <>
@@ -665,12 +689,14 @@ const cardContent = (
           ? `/fantasy-wonderland/SD01PER${card.key.slice(-2)}.webp`
           : `/${set.folder}/${card.key}.webp`
       }
-      className="w-full rounded-lg aspect-[5/7]"
+      className={`w-full rounded-lg aspect-[5/7] ${
+  isWishlisted ? "ring-4 ring-pink-400 ring-offset-2" : ""
+}`}
     />
   </>
 );
 
-return searchAllCards ? (
+return searchAllCards && !wishlistMode ? (
   <div key={`${card.rarity}-${card.key}`}>
     {cardContent}
   </div>
@@ -679,11 +705,14 @@ return searchAllCards ? (
     key={`${card.rarity}-${card.key}`}
     userId={userId}
     setId={set.id}
-    cardKey={
-      set.id === "SD"
-        ? `BONUS-${card.key}`
-        : card.key
-    }
+cardKey={
+  set.id === "SD"
+    ? `BONUS-${card.key}`
+    : card.key
+}
+    wishlistMode={wishlistMode}
+    isWishlisted={isWishlisted}
+    toggleWishlist={toggleWishlist}
     onComplete={() =>
       setOwned((prev) => ({
         ...prev,

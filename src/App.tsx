@@ -29,7 +29,6 @@ import RequireAuth from "./components/RequireAuth";
 import FAQ from "@/pages/FAQ";
 import MyProgressTCG from "./pages/MyProgressTCG";
 import UserMenu from "@/pages/UserMenu";
-import Wishlist from "./pages/Wishlist";
 import LinksPage from "./pages/linkspage";
 /// PERSONAL PAGES
 import ISO from "./pages/ISO/iso";
@@ -251,14 +250,6 @@ const AppRoutes = () => {
   element={
     <RequireAuth>
       <MyProgress />
-    </RequireAuth>
-  }
-/>
-<Route
-  path="/Wishlist"
-  element={
-    <RequireAuth>
-      <Wishlist />
     </RequireAuth>
   }
 />

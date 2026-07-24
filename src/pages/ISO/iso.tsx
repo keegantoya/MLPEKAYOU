@@ -7,6 +7,7 @@ import ISOSTAR from "./iso-star";
 import ISOTCG from "./iso-tcg";
 import ISOCONTROLS from "./iso-controls";
 import ISOPROMOS from "./iso-promos";
+import { useWishlist } from "./wishlist-in-iso";
 
 type Section =
   | "moon"
@@ -35,8 +36,11 @@ export default function ISO() {
 const [cardCodeSearch, setCardCodeSearch] = useState("");
 const [characterSearch, setCharacterSearch] = useState("");
 const [searchAllCards, setSearchAllCards] = useState(false);
+const [wishlistMode, setWishlistMode] = useState(false);
 const [hiddenSets, setHiddenSets] = useState<string[]>([]);
 const [userId, setUserId] = useState<string | null>(null);
+const [hideISO, setHideISO] = useState(false);
+const { wishlist, toggleWishlist } = useWishlist();
 
 useEffect(() => {
   const load = async () => {
@@ -50,14 +54,15 @@ useEffect(() => {
     const { data: profile } = await supabase
       .from("profiles")
       .select(
-        "iso_hidden_sets, iso_hidden_sets"
-      )
+  "iso_hidden_sets, hide_iso"
+)
       .eq("id", user.id)
       .single();
 
     const p = profile as any;
 
 setHiddenSets(p?.iso_hidden_sets || []);
+setHideISO(p?.hide_iso ?? false);
   };
 
   load();
@@ -80,13 +85,30 @@ const toggleSet = async (setId: string) => {
     .eq("id", userId);
 };
 
+const toggleHideISO = async () => {
+  if (!userId) return;
+
+  const next = !hideISO;
+  setHideISO(next);
+
+  await supabase
+    .from("profiles")
+    .update({
+      hide_iso: next,
+    })
+    .eq("id", userId);
+};
+
+const isSearching =
+  cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
+
   return (
     <div className="min-h-screen bg-[#171717] text-white kayou-scrollbar">
 
       {/* Mobile Navigation */}
       <div className="md:hidden border-b border-zinc-800 bg-[#1b1b1b] pt-8">
 <div className="flex items-center justify-between px-4 pb-3">
-  <h1 className="text-2xl font-bold">
+  <h1 className="text-2xl font-bold tracking-tight">
     Missing Cards
   </h1>
 
@@ -107,7 +129,7 @@ setCardCodeSearch("");
 setCharacterSearch("");
 setSelectedSection(item.id as Section);
 }}
-              className={`whitespace-nowrap px-4 py-3 text-sm font-semibold transition ${
+              className={`mx-1 whitespace-nowrap rounded-t-lg px-4 py-3 text-sm font-semibold transition-all ${
                 selectedSection === item.id
                   ? "border-b-2 border-yellow-500 text-yellow-400"
                   : "text-zinc-400"
@@ -124,9 +146,13 @@ setSelectedSection(item.id as Section);
         {/* Desktop Sidebar */}
         <aside className="hidden md:block sticky top-0 h-screen w-64 shrink-0 border-r border-zinc-800 bg-[#1b1b1b] overflow-y-auto kayou-scrollbar">
           <div className="border-b border-zinc-800 px-4 py-5">
-            <h1 className="text-3xl font-bold">
-              ISO (BETA)
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+  Missing Cards
+</h1>
+
+<p className="mt-1 text-sm text-zinc-400">
+  Search your ISO or find any card's origin.
+</p>
           </div>
 
           <nav className="py-2">
@@ -138,11 +164,11 @@ setCardCodeSearch("");
 setCharacterSearch("");
 setSelectedSection(item.id as Section);
 }}
-                className={`block w-full px-4 py-3 text-left transition-colors ${
-                  selectedSection === item.id
-                    ? "bg-yellow-500 text-black font-semibold"
-                    : "text-white hover:bg-zinc-800"
-                }`}
+                className={`mx-2 my-1 block w-[calc(100%-1rem)] rounded-lg px-4 py-3 text-left transition-all duration-200 ${
+  selectedSection === item.id
+    ? "bg-yellow-500 text-black font-semibold shadow-lg shadow-yellow-500/20"
+    : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+}`}
               >
                 {item.label}
               </button>
@@ -152,7 +178,7 @@ setSelectedSection(item.id as Section);
 <div className="border-t border-zinc-800 p-4">
   <button
     onClick={() => setShowControls(true)}
-    className="w-full rounded-lg bg-yellow-500 px-4 py-3 font-semibold text-black"
+    className="w-full rounded-xl bg-yellow-500 px-4 py-3 font-semibold text-black shadow-lg shadow-yellow-500/20 transition hover:scale-[1.02] hover:bg-yellow-400"
   >
     ISO Controls
   </button>
@@ -161,18 +187,99 @@ setSelectedSection(item.id as Section);
 </aside>
 {/* Content */}
 <main
-  className={`flex-1 h-screen overflow-y-scroll kayou-scrollbar px-8 pb-8 md:px-8 md:pb-8 ${
+  className={`flex-1 h-screen overflow-y-scroll bg-[#171717] kayou-scrollbar px-8 pb-8 md:px-8 md:pb-12 ${
     cardCodeSearch || characterSearch.trim()
       ? "pt-6 md:pt-0"
       : "pt-0"
   }`}
 >
 
-  {cardCodeSearch !== "" || characterSearch.trim() !== "" ? (
+{wishlistMode ? (
+  <>
+    <div className="mb-6">
+<ISOCONTROLS
+  cardCodeSearch={cardCodeSearch}
+  onCardCodeSearchChange={setCardCodeSearch}
+  characterSearch={characterSearch}
+  onCharacterSearchChange={setCharacterSearch}
+  searchAllCards={searchAllCards}
+  onSearchAllCardsChange={setSearchAllCards}
+  wishlistMode={wishlistMode}
+  onWishlistModeChange={setWishlistMode}
+  availableSets={[]}
+  hiddenSetIds={[]}
+  onHideSet={() => {}}
+  wishlistCharacterOnly
+  hideISO={hideISO}
+onToggleHideISO={toggleHideISO}
+/>
+    </div>
+    {selectedSection === "moon" && (
+      <ISOMOON
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        wishlistMode={wishlistMode}
+        searchAllCards
+        hiddenSets={hiddenSets}
+      />
+    )}
+
+    {selectedSection === "fun" && (
+      <ISOFUN
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        searchAllCards
+        hiddenSets={hiddenSets}
+        wishlistMode={wishlistMode}
+      />
+    )}
+
+    {selectedSection === "rainbow" && (
+<ISORAINBOW
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
+  searchAllCards={searchAllCards}
+  hiddenSets={hiddenSets}
+/>
+    )}
+
+    {selectedSection === "star" && (
+      <ISOSTAR
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
+  searchAllCards={searchAllCards}
+  hiddenSets={hiddenSets}
+      />
+    )}
+
+    {selectedSection === "tcg" && (
+      <ISOTCG
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
+  searchAllCards={searchAllCards}
+  hiddenSets={hiddenSets}
+      />
+    )}
+
+    {selectedSection === "promos" && (
+      <ISOPROMOS
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
+  searchAllCards={searchAllCards}
+  hiddenSets={hiddenSets}
+      />
+    )}
+  </>
+) : isSearching ? (
     <>
 <ISOMOON
   cardCodeSearch={cardCodeSearch}
   characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -182,18 +289,21 @@ setSelectedSection(item.id as Section);
       characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
+    wishlistMode={wishlistMode}
 />
 
 <ISORAINBOW
   cardCodeSearch={cardCodeSearch}
   characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
 
 <ISOSTAR
   cardCodeSearch={cardCodeSearch}
-    characterSearch={characterSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -201,13 +311,15 @@ setSelectedSection(item.id as Section);
 <ISOTCG
   cardCodeSearch={cardCodeSearch}
   characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
 
 <ISOPROMOS
   cardCodeSearch={cardCodeSearch}
-      characterSearch={characterSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -217,8 +329,9 @@ setSelectedSection(item.id as Section);
     <>
       {selectedSection === "moon" && (
 <ISOMOON
-  cardCodeSearch=""
+  cardCodeSearch={cardCodeSearch}
     characterSearch={characterSearch}
+    wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -226,17 +339,19 @@ setSelectedSection(item.id as Section);
 
       {selectedSection === "fun" && (
 <ISOFUN
-  cardCodeSearch=""
+  cardCodeSearch={cardCodeSearch}
     characterSearch={characterSearch}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
+    wishlistMode={wishlistMode}
 />
       )}
 
       {selectedSection === "rainbow" && (
 <ISORAINBOW
-  cardCodeSearch=""
+  cardCodeSearch={cardCodeSearch}
   characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -244,8 +359,9 @@ setSelectedSection(item.id as Section);
 
       {selectedSection === "star" && (
 <ISOSTAR
-  cardCodeSearch=""
-    characterSearch={characterSearch}
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -253,8 +369,9 @@ setSelectedSection(item.id as Section);
 
       {selectedSection === "tcg" && (
 <ISOTCG
-  cardCodeSearch=""
+  cardCodeSearch={cardCodeSearch}
   characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -262,8 +379,9 @@ setSelectedSection(item.id as Section);
 
       {selectedSection === "promos" && (
 <ISOPROMOS
-  cardCodeSearch=""
-      characterSearch={characterSearch}
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
   searchAllCards={searchAllCards}
   hiddenSets={hiddenSets}
 />
@@ -293,6 +411,8 @@ setSelectedSection(item.id as Section);
   onCharacterSearchChange={setCharacterSearch}
   searchAllCards={searchAllCards}
   onSearchAllCardsChange={setSearchAllCards}
+  wishlistMode={wishlistMode}
+  onWishlistModeChange={setWishlistMode}
   availableSets={[
     {
       id: "moon",
@@ -346,7 +466,9 @@ setSelectedSection(item.id as Section);
     },
   ]}
 hiddenSetIds={hiddenSets}
-  onHideSet={toggleSet}
+onHideSet={toggleSet}
+hideISO={hideISO}
+onToggleHideISO={toggleHideISO}
 />
           </div>
         </div>

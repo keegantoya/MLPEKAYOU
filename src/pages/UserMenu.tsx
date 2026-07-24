@@ -949,22 +949,11 @@ useEffect(() => {
       className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
     >
       <span className="text-[15px] font-medium text-gray-900">
-        My ISO
+        Missing Cards and Wishlist
       </span>
 
       <span className="text-xl text-gray-400">›</span>
     </button>
-
-    <button
-  onClick={() => navigate("/wishlist")}
-  className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-200 text-left"
->
-  <span className="text-[15px] font-medium text-gray-900">
-    My Wishlist
-  </span>
-
-  <span className="text-xl text-gray-400">›</span>
-</button>
 
 <button
   onClick={() => navigate("/binders")}
@@ -1480,15 +1469,7 @@ if (editingUsername) {
             className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
             onClick={() => navigate("/iso")}
           >
-            My ISO
-          </Button>
-
-          <Button
-            variant="outline"
-            className="w-full border-[#d4af37]/30 text-[#5a3e84] hover:bg-[#f8f5ff]"
-            onClick={() => navigate("/wishlist")}
-          >
-            My Wishlist
+            My ISO and Wishlist
           </Button>
         </div>
       </div>
@@ -2211,27 +2192,6 @@ await supabase.from("profiles").upsert({
       <div className="ml-16 border-t border-gray-100" />
 
       <div className="ml-16 border-t border-gray-100" />
-
-{/* Wishlist */}
-<button
-  onClick={() => navigate("/wishlist")}
-  className="w-full flex items-center px-4 py-4 active:bg-gray-50"
->
-  <div className="w-8 flex justify-center text-gray-900">
-    <Heart className="w-6 h-6" />
-  </div>
-
-  <div className="ml-4 flex-1 text-left">
-    <div className="text-[17px] font-normal text-gray-900">
-      Wishlist
-    </div>
-    <div className="text-sm text-gray-500">
-      View and manage your most wanted cards.
-    </div>
-  </div>
-
-  <span className="text-2xl text-gray-400">›</span>
-</button>
 
       {/* My Trades */}
       <button

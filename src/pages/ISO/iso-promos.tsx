@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
+import { useWishlist } from "./wishlist-in-iso";
 import { supabase } from "@/lib/supabase";
 import { promoCharacterMap } from "./Card Characters/card-characters-promos";
 
@@ -78,16 +79,19 @@ interface ISOPROMOSProps {
   characterSearch: string;
   searchAllCards: boolean;
   hiddenSets: string[];
+  wishlistMode: boolean;
 }
 export default function ISOPROMOS({
   cardCodeSearch,
   characterSearch,
   searchAllCards,
   hiddenSets,
+  wishlistMode,
 }: ISOPROMOSProps) {
   const [owned, setOwned] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState("");
+const [userId, setUserId] = useState("");
+const { wishlist, toggleWishlist } = useWishlist();
 
 const [selectedSet, setSelectedSet] = useState<string | null>(
   window.innerWidth >= 768 ? "9" : null
@@ -109,18 +113,18 @@ const [selectedSet, setSelectedSet] = useState<string | null>(
       const allOwned: Record<string, boolean> = {};
 
 for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
-        const { data: progress } = await supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", user.id)
-          .eq("set_id", set.id)
-          .single();
+       const { data: progress } = await supabase
+  .from("collection_progress_raw")
+  .select("progress")
+  .eq("user_id", user.id)
+  .eq("set_id", set.id)
+  .maybeSingle();
 
-        Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-          if (value) {
-            allOwned[`${set.id}-${key}`] = true;
-          }
-        });
+Object.entries(progress?.progress || {}).forEach(([key, value]) => {
+  if (value) {
+    allOwned[key] = true;
+  }
+});
       }
 
       setOwned(allOwned);
@@ -236,8 +240,9 @@ const missing = cards.filter((card) => {
     return true;
   }
 
-  return !owned[`${set.id}-${key}`];
+  return !owned[key];
 });
+
         if (missing.length === 0) return null;
 
         return (
@@ -269,6 +274,8 @@ const missing = cards.filter((card) => {
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
               {missing.map((card) => {
 
+                const fullKey = `${set.id}:${getCardKey(set.id, card.number)}`;
+const isWishlisted = wishlist.has(fullKey);
 
 const cardContent = (
   <div className={searchAllCards ? "" : "cursor-pointer"}>
@@ -276,7 +283,13 @@ const cardContent = (
       {getDisplayCardCode(set.id, card.number)}
     </div>
 
-    <div className="aspect-[5/7] overflow-hidden rounded-lg">
+    <div
+  className={`aspect-[5/7] overflow-hidden rounded-lg ${
+    isWishlisted
+      ? "ring-4 ring-pink-400 ring-offset-2"
+      : ""
+  }`}
+>
       <img
         src={getImage(set.id, card.number)}
         className={`h-full w-full object-cover ${
@@ -291,7 +304,7 @@ const cardContent = (
   </div>
 );
 
-return searchAllCards ? (
+return searchAllCards && !wishlistMode ? (
   <div key={getCardKey(set.id, card.number)}>
     {cardContent}
   </div>
@@ -301,12 +314,15 @@ return searchAllCards ? (
     userId={userId}
     setId={set.id}
     cardKey={getCardKey(set.id, card.number)}
-    onComplete={() =>
-      setOwned((prev) => ({
-        ...prev,
-        [`${set.id}-${getCardKey(set.id, card.number)}`]: true,
-      }))
-    }
+    wishlistMode={wishlistMode}
+    isWishlisted={isWishlisted}
+    toggleWishlist={toggleWishlist}
+onComplete={() =>
+  setOwned((prev) => ({
+    ...prev,
+    [getCardKey(set.id, card.number)]: true,
+  }))
+}
   >
     {cardContent}
   </ISOChecking>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
+import { useWishlist } from "./wishlist-in-iso";
 import { supabase } from "@/lib/supabase";
 import { rainbowCharacterMap } from "./Card Characters/card-characters-rainbow";
 
@@ -151,6 +152,7 @@ interface ISORAINBOWProps {
   characterSearch: string;
   searchAllCards: boolean;
   hiddenSets: string[];
+  wishlistMode: boolean;
 }
 
 export default function ISORAINBOW({
@@ -158,10 +160,12 @@ export default function ISORAINBOW({
   characterSearch,
   searchAllCards,
   hiddenSets,
+  wishlistMode,
 }: ISORAINBOWProps) {
   const [owned, setOwned] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState("");
+const [userId, setUserId] = useState("");
+const { wishlist, toggleWishlist } = useWishlist();
 
   const [selectedSet, setSelectedSet] = useState<string | null>(
   window.innerWidth >= 768 ? "5" : null
@@ -268,7 +272,7 @@ const cards = Object.entries(set.rarities).flatMap(
         rainbowCharacterMap[`${set.id}-${rarity}-${i + 1}`] ?? [],
     }))
 );
-const missing = cards.filter((card) => {
+const visibleCards = cards.filter((card) => {
   const displayCode = getDisplayCardCode(
     set.id,
     card.rarity,
@@ -292,14 +296,14 @@ if (
   return false;
 }
 
-  if (searchAllCards) {
-    return true;
-  }
+if (wishlistMode || searchAllCards) {
+  return true;
+}
 
-  return !owned[`${set.id}-${card.rarity}-${card.number}`];
+return !owned[`${set.id}-${card.rarity}-${card.number}`];
 });
 
-        if (missing.length === 0) return null;
+        if (visibleCards.length === 0) return null;
 
         return (
 <section
@@ -328,9 +332,12 @@ if (
 </h2>
 
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
-              {missing.map((card) => {
+              {visibleCards.map((card) => {
                 
 
+
+const fullKey = `${set.id}:${card.rarity}-${card.number}`;
+const isWishlisted = wishlist.has(fullKey);
 
 const cardContent = (
   <div className={searchAllCards ? "" : "cursor-pointer"}>
@@ -344,12 +351,14 @@ const cardContent = (
 
     <img
       src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
-      className="w-full rounded-lg aspect-[5/7]"
+      className={`w-full rounded-lg aspect-[5/7] ${
+        isWishlisted ? "ring-4 ring-pink-400 ring-offset-2" : ""
+      }`}
     />
   </div>
 );
 
-return searchAllCards ? (
+return searchAllCards && !wishlistMode ? (
   <div key={`${card.rarity}-${card.number}`}>
     {cardContent}
   </div>
@@ -359,6 +368,9 @@ return searchAllCards ? (
     userId={userId}
     setId={set.id}
     cardKey={`${card.rarity}-${card.number}`}
+    wishlistMode={wishlistMode}
+    isWishlisted={isWishlisted}
+    toggleWishlist={toggleWishlist}
     onComplete={() =>
       setOwned((prev) => ({
         ...prev,

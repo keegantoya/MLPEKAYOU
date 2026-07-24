@@ -896,84 +896,51 @@ active:scale-[0.99]
 
   {/* TRADING */}
   <div>
-    <div className="text-[11px] uppercase tracking-[0.2em] text-[#8e7a2d] mb-2 px-1">
-      Trading
-    </div>
-
-    <div className="grid grid-cols-2 gap-2">
-      <button
-        onClick={() => {
-          navigate("/iso");
-          setOpen(false);
-        }}
-        className="
-w-full
-px-3
-py-2
-rounded-xl
-text-sm
-text-left
-bg-[#202020]
-border
-border-[#E7C84B]
-
-!transition-all
-!duration-200
-
-hover:!bg-[#353535]
-hover:!border-[#FFD54A]
-hover:!text-white
-hover:!scale-[1.02]
-hover:!shadow-xl
-
-active:scale-[0.99]
-"
-      >
-        ISO
-      </button>
-
-      <button
-        onClick={() => {
-          navigate("/wishlist");
-          setOpen(false);
-        }}
-        className="
-w-full
-px-3
-py-2
-rounded-xl
-text-sm
-text-left
-bg-[#202020]
-border
-border-[#E7C84B]
-
-!transition-all
-!duration-200
-
-hover:!bg-[#353535]
-hover:!border-[#FFD54A]
-hover:!text-white
-hover:!scale-[1.02]
-hover:!shadow-xl
-
-active:scale-[0.99]
-"
-      >
-        Wishlist
-      </button>
-    </div>
-  </div>
-  {/* Logout */}
+   <div className="grid grid-cols-1 gap-2">
   <button
     onClick={() => {
-      handleLogout();
+      navigate("/iso");
       setOpen(false);
     }}
-    className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-2.5 rounded-2xl bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] transition-all"
+    className="
+w-full
+px-3
+py-2
+rounded-xl
+text-sm
+text-left
+bg-[#202020]
+border
+border-[#E7C84B]
+
+!transition-all
+!duration-200
+
+hover:!bg-[#353535]
+hover:!border-[#FFD54A]
+hover:!text-white
+hover:!scale-[1.02]
+hover:!shadow-xl
+
+active:scale-[0.99]
+"
   >
-    Logout
+    ISO and Wishlist
   </button>
+</div>
+  </div>
+<div className="mx-4 my-4 border-t border-zinc-700" />
+
+{/* Logout */}
+<button
+  onClick={() => {
+    handleLogout();
+    setOpen(false);
+  }}
+  className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-2.5 rounded-2xl bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] transition-all"
+>
+  Logout
+</button>
 </div>
 
 {/* Social Links */}

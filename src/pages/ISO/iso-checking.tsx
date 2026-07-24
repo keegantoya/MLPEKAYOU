@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useWishlist } from "./wishlist-in-iso";
 
 type Status =
   | "purchase_in_progress"
@@ -11,6 +12,9 @@ interface ISOCheckingProps {
   setId: string;
   cardKey: string;
   children: React.ReactNode;
+  wishlistMode?: boolean;
+  isWishlisted?: boolean;
+  toggleWishlist?: (setId: string, cardKey: string) => Promise<void>;
   onStatusChange?: (status: Status | null) => void;
   onComplete?: () => void;
 }
@@ -21,6 +25,9 @@ export default function ISOChecking({
   setId,
   cardKey,
   children,
+  wishlistMode = false,
+isWishlisted = false,
+toggleWishlist,
   onStatusChange,
   onComplete,
 }: ISOCheckingProps) {
@@ -219,10 +226,14 @@ onComplete?.();
   ref={menuRef}
 >
 <div
-className={`relative cursor-pointer transition-all duration-200 ${
+className={`relative cursor-pointer overflow-hidden rounded-lg transition-all duration-200 ${
+  isWishlisted
+    ? "ring-4 ring-pink-500"
+    : ""
+} ${
   open
-  ? "z-50 scale-[1.01] -translate-y-2 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
-  : ""
+    ? "z-50 scale-[1.01] -translate-y-2 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
+    : ""
 }`}
         onClick={(e) => {
   const rect = (
@@ -258,7 +269,7 @@ className={`relative cursor-pointer transition-all duration-200 ${
 {open && (
   <div
     className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[1px]"
-    onClick={() => setOpen(false)}
+    onMouseDown={() => setOpen(false)}
   />
 )}
 
@@ -270,6 +281,52 @@ className={`relative cursor-pointer transition-all duration-200 ${
         : "top-full mt-3"
     }`}
   >
+{wishlistMode ? (
+  <>
+    <div className="mb-3 border-b border-zinc-700 pb-2 text-center">
+      <div className="text-sm font-bold uppercase tracking-[0.15em] text-pink-400">
+        Wishlist
+      </div>
+    </div>
+
+<button
+  onClick={async () => {
+    if (!isWishlisted && toggleWishlist) {
+      await toggleWishlist(setId, cardKey);
+    }
+    setOpen(false);
+  }}
+  className="mb-2 w-full rounded-xl border border-pink-500/40 bg-[#242424] px-4 py-3 text-left transition hover:border-pink-500 hover:bg-pink-900/20"
+>
+  <div className="font-semibold text-pink-400">
+    I want this card
+  </div>
+
+  <div className="mt-1 text-xs text-zinc-400">
+    Add this card to your wishlist.
+  </div>
+</button>
+
+<button
+  onClick={async () => {
+    if (isWishlisted && toggleWishlist) {
+      await toggleWishlist(setId, cardKey);
+    }
+    setOpen(false);
+  }}
+  className="w-full rounded-xl border border-zinc-600 bg-[#242424] px-4 py-3 text-left transition hover:border-zinc-400 hover:bg-zinc-800/30"
+>
+  <div className="font-semibold text-zinc-200">
+    I no longer want this card
+  </div>
+
+  <div className="mt-1 text-xs text-zinc-400">
+    Remove this card from your wishlist.
+  </div>
+</button>
+  </>
+) : (
+  <>
     <div className="mb-3 border-b border-zinc-700 pb-2 text-center">
       <div className="text-sm font-bold uppercase tracking-[0.15em] text-[#d4af37]">
         Card Status
@@ -311,6 +368,8 @@ className={`relative cursor-pointer transition-all duration-200 ${
         Remove this card from your ISO list.
       </div>
     </button>
+  </>
+)}
   </div>
 )}
     </div>

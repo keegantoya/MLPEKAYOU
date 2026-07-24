@@ -616,20 +616,20 @@ border border-[#d4af37]/20 shadow-sm">
       isFirst
         ? "border border-[#f5e6a8]/70 shadow-[0_0_30px_rgba(245,230,168,0.12)]"
         : isSecond
-        ? "border border-[#cbbcf0]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
-        : "border border-[#b38b6d]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+  ? "border border-[#E7C84B]/35 shadow-[0_10px_30px_rgba(0,0,0,.45)]"
+        : "border border-[#A77D1D]/35 shadow-[0_10px_30px_rgba(0,0,0,.45)]"
     }
   `}
-  style={{
-    background: `
-      linear-gradient(
-        180deg,
-        rgba(52,32,72,0.92) 0%,
-        rgba(38,23,51,0.95) 50%,
-        rgba(26,16,40,0.98) 100%
-      )
-    `,
-  }}
+style={{
+  background: `
+    linear-gradient(
+      180deg,
+      rgba(38,38,38,.98) 0%,
+      rgba(28,28,28,.98) 50%,
+      rgba(18,18,18,.99) 100%
+    )
+  `,
+}}
 >
           {/* Medal */}
           <div
@@ -693,7 +693,7 @@ border border-[#d4af37]/20 shadow-sm">
 
           {/* Username + Verified Badge */}
 <div className="flex items-center justify-center gap-2 mb-2">
-  <div className="text-2xl font-bold text-[#e8e2ff]">
+  <div className="text-2xl font-bold text-[#F5F5F5]">
     {user.username}
   </div>
 
@@ -709,7 +709,7 @@ border border-[#d4af37]/20 shadow-sm">
 
           {/* Badge */}
           {isFirst && (
-            <div className="inline-block mb-3 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold">
+            <div className="inline-block mb-3 px-3 py-1 rounded-full bg-[#E7C84B] text-[#171717] text-xs font-semibold">
               Top Collector
             </div>
           )}
@@ -717,14 +717,14 @@ border border-[#d4af37]/20 shadow-sm">
           {/* Card Count */}
           <div
             className={`
-              font-bold text-[#f5e6a8]
+              font-bold text-[#E7C84B]
               ${isFirst ? "text-5xl" : "text-4xl"}
             `}
           >
             {user.total.toLocaleString()}
           </div>
 
-          <div className="text-sm text-[#cbbcf0] mt-1">
+          <div className="text-sm text-[#9D9D9D] mt-1">
   cards collected
 </div>
 
@@ -768,7 +768,7 @@ border border-[#d4af37]/20 shadow-sm">
   rounded-2xl
   px-6 py-4
   backdrop-blur-md
-  border border-[#7c5aa6]/35
+  border border-[#E7C84B]/18
   shadow-[0_10px_30px_rgba(0,0,0,0.45)]
   hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)]
   transition-all duration-300
@@ -777,16 +777,16 @@ style={{
   background: `
     linear-gradient(
       180deg,
-      rgba(52,32,72,0.92) 0%,
-      rgba(38,23,51,0.95) 50%,
-      rgba(26,16,40,0.98) 100%
+      rgba(38,38,38,.98) 0%,
+      rgba(28,28,28,.98) 50%,
+      rgba(18,18,18,.99) 100%
     )
   `,
 }}
         >
 <div className="flex items-center gap-3 sm:gap-4">
   {/* Rank */}
-  <div className="w-10 sm:w-12 md:w-16 text-lg sm:text-2xl md:text-3xl font-bold text-[#f5e6a8] shrink-0">
+  <div className="w-10 sm:w-12 md:w-16 text-lg sm:text-2xl md:text-3xl font-bold text-[#E7C84B] shrink-0">
     #{rank}
   </div>
 
@@ -836,7 +836,7 @@ style={{
 {/* Username + Verified Badge */}
 <div className="flex-1 min-w-0">
   <div className="flex items-center gap-2 min-w-0">
-    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-[#e8e2ff] truncate">
+    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-[#F5F5F5] truncate">
       {user.username}
     </div>
 
@@ -856,7 +856,7 @@ style={{
     <div className="text-lg sm:text-2xl md:text-3xl font-bold text-[#f5e6a8] leading-none">
       {user.total.toLocaleString()}
     </div>
-    <div className="text-[10px] sm:text-xs md:text-sm text-[#cbbcf0]">
+    <div className="text-[10px] sm:text-xs md:text-sm text-[#9D9D9D]">
       cards
     </div>
   </div>
