@@ -121,7 +121,6 @@ const VERIFIED_USERS = {
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState<any[]>([]);
     const [rankWorthyCollectors, setRankWorthyCollectors] = useState(0);
-    const [totalCardsSitewide, setTotalCardsSitewide] = useState(0);
     const [yourCurrentRank, setYourCurrentRank] = useState<number | null>(null);
 const [fallingCandies, setFallingCandies] = useState<any[]>([]);
 const [leaderboardMode, setLeaderboardMode] = useState<"ccg" | "tcg">("ccg");
@@ -286,14 +285,6 @@ const rankWorthy = (profiles || []).filter(
 );
 
 setRankWorthyCollectors(rankWorthy.length);
-
-// TOTAL CARDS SITEWIDE
-const totalCards = allUsersSorted.reduce(
-  (sum, u) => sum + u.total,
-  0
-);
-
-setTotalCardsSitewide(totalCards);
 
 // YOUR CURRENT RANK
 const {
@@ -480,9 +471,10 @@ const getAvatar = (avatar?: string) => {
     color: "#e6cf84",
   }}
 >
-  You are only eligible for this leaderboard if you have your Discord
-  username set in your profile and you have verified that you are a North
-  American English collector.
+  The leaderboard is currently under construction in order to offload much of the website's 
+  workload. The functions of the leaderboard will return when a solution is found. Only
+  North American collectors are eligible for the leaderboard, and only those with a verified
+  Discord profile that are present in the MLPEKayou Discord server.
 </p>
 </div>
   </div>
@@ -496,108 +488,6 @@ const getAvatar = (avatar?: string) => {
     alt=""
     className="w-full h-auto"
   />
-</div>
-
-{/* STATS BAR */}
-<div className="mb-16">
-  <div
-    className="
-      relative overflow-hidden
-      rounded-[28px]
-      border
-      backdrop-blur-xl
-      shadow-[0_25px_80px_rgba(0,0,0,.55)]
-      px-4 sm:px-6 md:px-8
-      py-5 md:py-7
-    "
-    style={{
-      borderColor: "rgba(212,175,55,.18)",
-      background: `
-        linear-gradient(
-          180deg,
-          rgba(34,34,34,.96) 0%,
-          rgba(25,25,25,.97) 45%,
-          rgba(18,18,18,.98) 100%
-        )
-      `,
-    }}
-  >
-    {/* Decorative Glow */}
-    <div className="absolute inset-0 pointer-events-none">
-      <div className="absolute -top-12 left-1/4 w-24 h-24 md:w-32 md:h-32 bg-[#d4af37]/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-10 right-1/4 w-28 h-28 md:w-40 md:h-40 rounded-full blur-3xl bg-[#d4af37]/10" />
-    </div>
-
-    <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-0">
-
-      {/* Rank-Worthy Collectors */}
-      <div className="relative text-center py-3 md:py-1">
-        <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-[#4a4a4a] to-transparent" />
-
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#2a2a2a] to-[#171717]
-border border-[#d4af37]/20 shadow-sm">
-          <span className="text-xl sm:text-2xl">🌟</span>
-        </div>
-
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-[#a5a5a5] mb-2 leading-tight px-2">
-          Rank-Worthy Collectors
-        </div>
-
-        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-[#ffd54a] leading-none">
-          {rankWorthyCollectors.toLocaleString()}
-        </div>
-
-        <div className="text-[11px] sm:text-xs text-[#8d8d8d] mt-2 px-2 leading-tight">
-          Completed at least one full set
-        </div>
-      </div>
-
-      {/* Total Cards */}
-      <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-[#343434]">
-        <div className="absolute inset-y-4 right-0 hidden md:block w-px bg-gradient-to-b from-transparent via-[#4a4a4a] to-transparent" />
-
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#2a2a2a] to-[#171717]
-border border-[#d4af37]/20 shadow-sm">
-          <span className="text-xl sm:text-2xl">❤️</span>
-        </div>
-
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-[#a5a5a5] mb-2 leading-tight px-2">
-  {leaderboardMode === "ccg"
-    ? "CCG Cards Collected on MLPEKAYOU"
-    : "TCG Cards Collected on MLPEKAYOU"}
-</div>
-
-        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-[#ffd54a] leading-none break-words">
-          {totalCardsSitewide.toLocaleString()}
-        </div>
-
-        <div className="text-[11px] sm:text-xs text-[#8d8d8d] mt-2 px-2 leading-tight">
-          Owned across all collectors
-        </div>
-      </div>
-
-      {/* Your Current Rank */}
-      <div className="relative text-center py-3 md:py-1 border-t md:border-t-0 border-[#343434]">
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-2xl bg-gradient-to-br from-[#2a2a2a] to-[#171717]
-border border-[#d4af37]/20 shadow-sm">
-          <span className="text-xl sm:text-2xl">👑</span>
-        </div>
-
-        <div className="text-[10px] sm:text-[11px] md:text-xs font-['Oxanium'] uppercase tracking-[0.18em] sm:tracking-[0.25em] text-[#a5a5a5] mb-2 leading-tight px-2">
-          Your Current Rank
-        </div>
-
-        <div className="text-3xl sm:text-4xl md:text-5xl font-['Oxanium'] text-[#ffd54a] leading-none">
-          {yourCurrentRank ? `#${yourCurrentRank.toLocaleString()}` : "—"}
-        </div>
-
-        <div className="text-[11px] sm:text-xs text-[#8d8d8d] mt-2 px-2 leading-tight">
-          Your place on the Leaderboard
-        </div>
-      </div>
-
-    </div>
-  </div>
 </div>
 
   {/* TOP 3 PODIUM */}
@@ -623,19 +513,19 @@ border border-[#d4af37]/20 shadow-sm">
       isFirst
         ? "border border-[#f5e6a8]/70 shadow-[0_0_30px_rgba(245,230,168,0.12)]"
         : isSecond
-        ? "border border-[#cbbcf0]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+        ? "border border-[#9a9a9a]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
         : "border border-[#b38b6d]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
     }
   `}
   style={{
-    background: `
-      linear-gradient(
-        180deg,
-        rgba(52,32,72,0.92) 0%,
-        rgba(38,23,51,0.95) 50%,
-        rgba(26,16,40,0.98) 100%
-      )
-    `,
+background: `
+  linear-gradient(
+    180deg,
+    rgba(34,34,34,.96) 0%,
+    rgba(24,24,24,.98) 55%,
+    rgba(15,15,15,1) 100%
+  )
+`,
   }}
 >
           {/* Medal */}
@@ -700,7 +590,7 @@ border border-[#d4af37]/20 shadow-sm">
 
           {/* Username + Verified Badge */}
 <div className="flex items-center justify-center gap-2 mb-2">
-  <div className="text-2xl font-bold text-[#e8e2ff]">
+  <div className="text-2xl font-bold text-[#f5f5f5]">
     {user.username}
   </div>
 
@@ -731,7 +621,7 @@ border border-[#d4af37]/20 shadow-sm">
             {user.total.toLocaleString()}
           </div>
 
-          <div className="text-sm text-[#cbbcf0] mt-1">
+          <div className="text-sm text-[#9d9d9d] mt-1">
   cards collected
 </div>
 
@@ -775,20 +665,20 @@ border border-[#d4af37]/20 shadow-sm">
   rounded-2xl
   px-6 py-4
   backdrop-blur-md
-  border border-[#7c5aa6]/35
+  border border-[#3b3b3b]
   shadow-[0_10px_30px_rgba(0,0,0,0.45)]
   hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)]
   transition-all duration-300
 "
 style={{
-  background: `
-    linear-gradient(
-      180deg,
-      rgba(52,32,72,0.92) 0%,
-      rgba(38,23,51,0.95) 50%,
-      rgba(26,16,40,0.98) 100%
-    )
-  `,
+background: `
+  linear-gradient(
+    180deg,
+    rgba(34,34,34,.96) 0%,
+    rgba(24,24,24,.98) 55%,
+    rgba(15,15,15,1) 100%
+  )
+`,
 }}
         >
 <div className="flex items-center gap-3 sm:gap-4">
@@ -843,7 +733,7 @@ style={{
 {/* Username + Verified Badge */}
 <div className="flex-1 min-w-0">
   <div className="flex items-center gap-2 min-w-0">
-    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-[#e8e2ff] truncate">
+    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-[#f5f5f5] truncate">
       {user.username}
     </div>
 
@@ -863,7 +753,7 @@ style={{
     <div className="text-lg sm:text-2xl md:text-3xl font-bold text-[#f5e6a8] leading-none">
       {user.total.toLocaleString()}
     </div>
-    <div className="text-[10px] sm:text-xs md:text-sm text-[#cbbcf0]">
+    <div className="text-[10px] sm:text-xs md:text-sm text-[#9d9d9d]">
       cards
     </div>
   </div>
