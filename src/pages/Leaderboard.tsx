@@ -276,7 +276,8 @@ const allUsersSorted = (profiles || [])
 const leaderboardUsers = allUsersSorted.filter(
   (u: any) =>
     eligibleUserIds.has(u.id) &&
-    u.username !== "HeiManTou (Chinese Collector)"
+    u.username !== "HeiManTou (Chinese Collector)" &&
+    u.id !== "6151aa9f-0b2d-4f8f-ab3b-1a09b989e5af"
 );
 
 // RANK-WORTHY COLLECTORS
@@ -312,7 +313,8 @@ setLeaders(
     .filter(
       (u: any) =>
         eligibleUserIds.has(u.id) &&
-        u.username !== "HeiManTou (Chinese Collector)"
+        u.username !== "HeiManTou (Chinese Collector)" &&
+        u.id !== "6151aa9f-0b2d-4f8f-ab3b-1a09b989e5af"
     )
     .slice(0, 6)
 );
