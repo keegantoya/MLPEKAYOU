@@ -189,9 +189,13 @@ top: y,
 useEffect(() => {
 const load = async () => {
         
+const minimumCards =
+  leaderboardMode === "ccg" ? 1300 : 450;
+
 const { data: profiles } = await supabase
   .from("profiles")
-  .select("id, username, avatar_url, iso_hidden_sets, collection_total, rank_worthy");
+  .select("id, username, avatar_url, iso_hidden_sets, collection_total, rank_worthy")
+  .gte("collection_total", minimumCards);
 
 const { data: tradingProfiles } = await supabase
   .from("trading_profiles")
@@ -214,9 +218,12 @@ profiles?.forEach((p: any) => {
   };
 });
 
+const eligibleIds = (profiles || []).map((p: any) => p.id);
+
 const { data: rawProgress } = await supabase
   .from("collection_progress_raw")
-  .select("user_id, set_id, progress");
+  .select("user_id, set_id, progress")
+  .in("user_id", eligibleIds);
 
 const totals = new Map<string, number>();
 
@@ -270,8 +277,7 @@ const allUsersSorted = (profiles || [])
 const leaderboardUsers = allUsersSorted.filter(
   (u: any) =>
     eligibleUserIds.has(u.id) &&
-    u.username !== "HeiManTou (Chinese Collector)" &&
-    u.id !== "6151aa9f-0b2d-4f8f-ab3b-1a09b989e5af"
+    u.username !== "HeiManTou (Chinese Collector)"
 );
 
 // RANK-WORTHY COLLECTORS
@@ -315,8 +321,7 @@ setLeaders(
     .filter(
       (u: any) =>
         eligibleUserIds.has(u.id) &&
-        u.username !== "HeiManTou (Chinese Collector)" &&
-        u.id !== "6151aa9f-0b2d-4f8f-ab3b-1a09b989e5af"
+        u.username !== "HeiManTou (Chinese Collector)"
     )
     .slice(0, 6)
 );
@@ -618,20 +623,20 @@ border border-[#d4af37]/20 shadow-sm">
       isFirst
         ? "border border-[#f5e6a8]/70 shadow-[0_0_30px_rgba(245,230,168,0.12)]"
         : isSecond
-  ? "border border-[#E7C84B]/35 shadow-[0_10px_30px_rgba(0,0,0,.45)]"
-        : "border border-[#A77D1D]/35 shadow-[0_10px_30px_rgba(0,0,0,.45)]"
+        ? "border border-[#cbbcf0]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+        : "border border-[#b38b6d]/60 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
     }
   `}
-style={{
-  background: `
-    linear-gradient(
-      180deg,
-      rgba(38,38,38,.98) 0%,
-      rgba(28,28,28,.98) 50%,
-      rgba(18,18,18,.99) 100%
-    )
-  `,
-}}
+  style={{
+    background: `
+      linear-gradient(
+        180deg,
+        rgba(52,32,72,0.92) 0%,
+        rgba(38,23,51,0.95) 50%,
+        rgba(26,16,40,0.98) 100%
+      )
+    `,
+  }}
 >
           {/* Medal */}
           <div
@@ -695,7 +700,7 @@ style={{
 
           {/* Username + Verified Badge */}
 <div className="flex items-center justify-center gap-2 mb-2">
-  <div className="text-2xl font-bold text-[#F5F5F5]">
+  <div className="text-2xl font-bold text-[#e8e2ff]">
     {user.username}
   </div>
 
@@ -711,7 +716,7 @@ style={{
 
           {/* Badge */}
           {isFirst && (
-            <div className="inline-block mb-3 px-3 py-1 rounded-full bg-[#E7C84B] text-[#171717] text-xs font-semibold">
+            <div className="inline-block mb-3 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold">
               Top Collector
             </div>
           )}
@@ -719,14 +724,14 @@ style={{
           {/* Card Count */}
           <div
             className={`
-              font-bold text-[#E7C84B]
+              font-bold text-[#f5e6a8]
               ${isFirst ? "text-5xl" : "text-4xl"}
             `}
           >
             {user.total.toLocaleString()}
           </div>
 
-          <div className="text-sm text-[#9D9D9D] mt-1">
+          <div className="text-sm text-[#cbbcf0] mt-1">
   cards collected
 </div>
 
@@ -770,7 +775,7 @@ style={{
   rounded-2xl
   px-6 py-4
   backdrop-blur-md
-  border border-[#E7C84B]/18
+  border border-[#7c5aa6]/35
   shadow-[0_10px_30px_rgba(0,0,0,0.45)]
   hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)]
   transition-all duration-300
@@ -779,16 +784,16 @@ style={{
   background: `
     linear-gradient(
       180deg,
-      rgba(38,38,38,.98) 0%,
-      rgba(28,28,28,.98) 50%,
-      rgba(18,18,18,.99) 100%
+      rgba(52,32,72,0.92) 0%,
+      rgba(38,23,51,0.95) 50%,
+      rgba(26,16,40,0.98) 100%
     )
   `,
 }}
         >
 <div className="flex items-center gap-3 sm:gap-4">
   {/* Rank */}
-  <div className="w-10 sm:w-12 md:w-16 text-lg sm:text-2xl md:text-3xl font-bold text-[#E7C84B] shrink-0">
+  <div className="w-10 sm:w-12 md:w-16 text-lg sm:text-2xl md:text-3xl font-bold text-[#f5e6a8] shrink-0">
     #{rank}
   </div>
 
@@ -838,7 +843,7 @@ style={{
 {/* Username + Verified Badge */}
 <div className="flex-1 min-w-0">
   <div className="flex items-center gap-2 min-w-0">
-    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-[#F5F5F5] truncate">
+    <div className="text-sm sm:text-lg md:text-2xl font-semibold text-[#e8e2ff] truncate">
       {user.username}
     </div>
 
@@ -858,7 +863,7 @@ style={{
     <div className="text-lg sm:text-2xl md:text-3xl font-bold text-[#f5e6a8] leading-none">
       {user.total.toLocaleString()}
     </div>
-    <div className="text-[10px] sm:text-xs md:text-sm text-[#9D9D9D]">
+    <div className="text-[10px] sm:text-xs md:text-sm text-[#cbbcf0]">
       cards
     </div>
   </div>
