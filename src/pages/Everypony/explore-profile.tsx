@@ -1601,18 +1601,7 @@ className={`
 <img
   src={getTradeCardImage(quickViewCard)}
   alt={quickViewCard.card_key}
-  className={`block w-full h-[75vh] ${
-    String(quickViewCard.set_id) === "12" ||
-    String(quickViewCard.set_id) === "FW" ||
-    String(quickViewCard.set_id) === "SD"
-      ? "object-contain"
-      : String(quickViewCard.set_id) === "tcgpromos" &&
-        ["RR09", "RR10", "RR11", "RR12"].includes(String(quickViewCard.card_key))
-      ? "object-cover object-center"
-      : String(quickViewCard.set_id) === "tcgpromos"
-      ? "object-contain"
-      : "object-cover object-center"
-  }`}
+  className="block max-w-full max-h-[75vh] w-auto h-auto object-contain"
 />
 </div>
   </div>

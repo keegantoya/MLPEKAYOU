@@ -36,7 +36,7 @@ const heroCards = [
   return (
    <main className="min-h-screen overflow-x-hidden bg-[#171717] text-white">
 
-      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
 
 {/* HERO */}
 
@@ -156,7 +156,7 @@ const heroCards = [
 
         </div>
 
-        <h1 className="mt-8 text-[3.4rem] leading-[0.9] font-black uppercase">
+        <h1 className="mt-6 text-[2.5rem] sm:text-[3rem] leading-[0.9] font-black uppercase break-words">
           Every
           <br />
           Collection
@@ -173,9 +173,9 @@ const heroCards = [
 
       </div>
 
-      <div className="relative mx-auto mt-0 h-[340px] w-[320px]">
+      <div className="relative mx-auto mt-2 h-[280px] w-[260px] sm:h-[320px] sm:w-[300px]">
 
-        <div className="absolute left-1/2 top-0 z-30 w-[180px] -translate-x-1/2 rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_30px_60px_rgba(0,0,0,.45)]">
+        <div className="absolute left-1/2 top-0 z-30 w-[150px] sm:w-[175px] -translate-x-1/2 rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_30px_60px_rgba(0,0,0,.45)]">
           <img
             src="/cards/star-one/S1SAR008.webp"
             draggable={false}
