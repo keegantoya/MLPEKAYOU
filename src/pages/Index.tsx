@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export default function Index() {
-  const products = [1, 2, 3, 4];
+  const [activeTab, setActiveTab] = useState<
+    "collections" | "community" | "tutorial"
+  >("collections");
 
 const heroCards = [
   {
@@ -31,130 +34,182 @@ const heroCards = [
 ];
 
   return (
-    <main className="min-h-screen bg-[#171717] text-white">
+   <main className="min-h-screen overflow-x-hidden bg-[#171717] text-white">
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
 
-        {/* HERO */}
+{/* HERO */}
 
-        <section className="grid lg:grid-cols-[1.4fr_.9fr] gap-6">
+<section className="relative pt-16 pb-24">
 
-          <div className="rounded-3xl bg-[#202020] border border-[#2f2f2f] p-10">
+  <div className="relative max-w-7xl mx-auto px-8">
 
-            <span className="inline-block px-3 py-1 rounded-full bg-[#2a2a2a] text-[#E7C84B] text-xs uppercase tracking-[.3em]">
-              MY LITTLE PONY KAYOU
-            </span>
+    {/* DESKTOP */}
+    <div className="hidden lg:grid lg:grid-cols-[1.1fr_.9fr] items-center gap-8">
 
-            <h1 className="mt-6 text-6xl font-black uppercase leading-none">
-              Track
-              <br />
-              Every Card.
-            </h1>
+      {/* LEFT */}
 
-            <p className="mt-6 max-w-lg text-gray-400">
-              MLPEKAYOU is owned and run by Keegan, but backed and supported
-              by Kayou US. All resources and permissions are provided by Kayou U.S.
-              All rights to card images and information belong to Kayou U.S.
-            </p>
+      <div>
 
-            <div className="mt-8 flex gap-3">
+        <div className="flex items-center gap-4">
 
-              <Link
-                to="/collections"
-                className="rounded-xl bg-[#E7C84B] text-black px-6 py-3 font-bold"
-              >
-                Collections
-              </Link>
+          <div className="h-px w-16 bg-[#E7C84B]" />
 
-              <Link
-                to="/explore"
-                className="rounded-xl border border-[#3a3a3a] bg-[#262626] px-6 py-3"
-              >
-                Community
-              </Link>
-
-            </div>
-
-          </div>
-
-<div className="rounded-3xl bg-[#202020] border border-[#2f2f2f] p-5">
-
-  <div className="grid grid-cols-3 gap-3">
-
-    {heroCards.map((card, index) => (
-
-      <Link
-        key={index}
-        to={card.link}
-        className="group relative overflow-hidden rounded-2xl"
-      >
-
-        <div className="absolute inset-0 rounded-2xl bg-[#E7C84B]/20 opacity-0 blur-xl transition-all duration-500 group-hover:opacity-100 group-hover:scale-125" />
-
-        <div
-          className="
-  relative
-  overflow-hidden
-  rounded-[20px]
-  border
-  border-[#3b3b3b]
-  bg-[#202020]
-  transition-all
-  duration-500
-  group-hover:border-[#E7C84B]
-  group-hover:-translate-y-2
-  group-hover:rotate-[1.5deg]
-  group-hover:scale-[1.04]
-"
-        >
-
-<img
-  src={card.image}
-  alt=""
-  draggable={false}
-  className="
-    block
-    w-full
-    scale-[1.06]
-    rounded-[18px]
-    transition-all
-    duration-700
-    group-hover:scale-[1.16]
-  "
-/>
-
-          <div
-            className="
-              pointer-events-none
-              absolute
-              inset-0
-              -translate-x-[160%]
-              skew-x-[-20deg]
-              bg-gradient-to-r
-              from-transparent
-              via-white/25
-              to-transparent
-              transition-transform
-              duration-700
-              group-hover:translate-x-[180%]
-            "
-          />
+          <span className="text-xs tracking-[.5em] uppercase text-[#E7C84B]">
+            MLPEKAYOU
+          </span>
 
         </div>
 
-      </Link>
+        <h1 className="mt-10 text-[6rem] leading-[0.88] font-black uppercase">
+          Every
+          <br />
+          Collection
+          <br />
+          Starts
+          <br />
+          Somewhere.
+        </h1>
 
-    ))}
+        <p className="mt-5 text-sm font-medium uppercase tracking-[0.35em] text-gray-400">
+  Start in the Right Place
+</p>
 
-  </div>
+        <div className="mt-10 flex gap-8">
+
+<div className="mt-10 flex gap-8">
+
+  <button
+    onClick={() => setActiveTab("collections")}
+    className={`text-lg font-bold pb-2 border-b-2 transition ${
+      activeTab === "collections"
+        ? "border-[#E7C84B] text-[#E7C84B]"
+        : "border-transparent text-gray-500 hover:text-white"
+    }`}
+  >
+    Collections
+  </button>
+
+  <button
+    onClick={() => setActiveTab("community")}
+    className={`text-lg font-bold pb-2 border-b-2 transition ${
+      activeTab === "community"
+        ? "border-[#E7C84B] text-[#E7C84B]"
+        : "border-transparent text-gray-500 hover:text-white"
+    }`}
+  >
+    Community
+  </button>
 
 </div>
 
-        </section>
+        </div>
+
+      </div>
+
+      {/* RIGHT */}
+
+      <div className="relative h-[620px]">
+
+        <div className="absolute right-20 top-4 z-30 w-[340px] rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_35px_70px_rgba(0,0,0,.45)]">
+          <img
+            src="/cards/star-one/S1SAR008.webp"
+            draggable={false}
+            className="block w-full scale-[1.049]"
+          />
+        </div>
+
+        <div className="absolute right-0 top-[300px] w-[220px] rotate-[10deg] overflow-hidden rounded-[10px] shadow-[0_20px_40px_rgba(0,0,0,.35)]">
+          <img
+            src="/cards/rainbow-two/R2USR007.webp"
+            draggable={false}
+            className="block w-full scale-[1.049]"
+          />
+        </div>
+
+        <div className="absolute right-60 top-[240px] w-[220px] -rotate-[12deg] overflow-hidden rounded-[10px] opacity-70 shadow-[0_20px_40px_rgba(0,0,0,.35)]">
+          <img
+            src="/cards/third-edition-moon/M3ZR006.webp"
+            draggable={false}
+            className="block w-full scale-[1.04]"
+          />
+        </div>
+
+      </div>
+
+    </div>
+
+    {/* MOBILE */}
+    <div className="lg:hidden">
+
+      <div className="text-center">
+
+        <div className="flex items-center justify-center gap-3">
+
+          <div className="h-px w-10 bg-[#E7C84B]" />
+
+          <span className="text-[10px] tracking-[.45em] uppercase text-[#E7C84B]">
+            MLPEKAYOU
+          </span>
+
+          <div className="h-px w-10 bg-[#E7C84B]" />
+
+        </div>
+
+        <h1 className="mt-8 text-[3.4rem] leading-[0.9] font-black uppercase">
+          Every
+          <br />
+          Collection
+          <br />
+          Starts
+          <br />
+          Somewhere.
+        </h1>
+
+        <div className="mt-8 flex justify-center gap-8">
+<div className="mt-10 flex gap-8">
+</div>
+        </div>
+
+      </div>
+
+      <div className="relative mx-auto mt-0 h-[340px] w-[320px]">
+
+        <div className="absolute left-1/2 top-0 z-30 w-[180px] -translate-x-1/2 rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_30px_60px_rgba(0,0,0,.45)]">
+          <img
+            src="/cards/star-one/S1SAR008.webp"
+            draggable={false}
+            className="block w-full scale-[1.049]"
+          />
+        </div>
+
+        <div className="absolute left-2 bottom-4 w-[120px] -rotate-[14deg] overflow-hidden rounded-[10px] shadow-[0_20px_40px_rgba(0,0,0,.35)]">
+          <img
+            src="/cards/third-edition-moon/M3ZR006.webp"
+            draggable={false}
+            className="block w-full scale-[1.04]"
+          />
+        </div>
+
+        <div className="absolute right-2 bottom-4 w-[120px] rotate-[14deg] overflow-hidden rounded-[10px] shadow-[0_20px_40px_rgba(0,0,0,.35)]">
+          <img
+            src="/cards/rainbow-two/R2USR007.webp"
+            draggable={false}
+            className="block w-full scale-[1.049]"
+          />
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
 
         {/* PONYREC */}
 
-<section className="rounded-2xl border border-[#3a3a3a] bg-[#1d1d1d] px-6 py-5">
+<section className="rounded-2xl border border-[#3a3a3a] bg-[#1d1d1d] px-8 py-5">
 
   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
@@ -231,8 +286,8 @@ const heroCards = [
   },
   {
     title: "Moon Edition Twelve (CN)",
-    status: "Coming to America in 2027",
-    date: "Month not yet known",
+    status: "2027 (NA)",
+    date: "August 2026 CN, UNKNOWN 2027 NA",
     note: "",
     image: "/set-pictures/moontwelvecnposter.webp",
   },

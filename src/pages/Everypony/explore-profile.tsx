@@ -1204,79 +1204,160 @@ const filteredTradeCards =
 </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+<div className="relative overflow-hidden border border-[#2B2B2B] bg-[#080808]">
 
-  <div className="grid grid-cols-3 gap-6">
+  <div
+    className="absolute inset-0 opacity-[0.05]"
+    style={{
+      backgroundImage: `
+        linear-gradient(rgba(231,200,75,.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231,200,75,.2) 1px, transparent 1px)
+      `,
+      backgroundSize: "26px 26px",
+    }}
+  />
 
-    <div>
-      <div className="text-4xl font-bold">
+  <div className="relative border-b border-[#232323] px-6 py-3">
+
+    <div className="text-[11px] uppercase tracking-[0.35em] text-[#E7C84B]">
+      Collector Statistics
+    </div>
+
+  </div>
+
+  <div className="relative grid grid-cols-3">
+
+    <div className="border-r border-[#232323] p-8">
+
+      <div className="text-[11px] uppercase tracking-[0.3em] text-[#666]">
+        Owned
+      </div>
+
+      <div className="mt-3 text-5xl font-black text-white">
         {userStats.owned}
       </div>
 
-      <div>Owned Cards</div>
+      <div className="mt-4 h-[3px] w-full bg-[#1A1A1A]">
+
+        <div className="h-full w-full bg-[#E7C84B]" />
+
+      </div>
+
     </div>
 
-    <div>
-      <div className="text-4xl font-bold">
+    <div className="border-r border-[#232323] p-8">
+
+      <div className="text-[11px] uppercase tracking-[0.3em] text-[#666]">
+        Completed
+      </div>
+
+      <div className="mt-3 text-5xl font-black text-white">
         {userStats.completed}
       </div>
 
-      <div>Completed Sets</div>
+      <div className="mt-4 h-[3px] w-full bg-[#1A1A1A]">
+
+        <div className="h-full w-3/4 bg-[#E7C84B]" />
+
+      </div>
+
     </div>
 
-    <div>
-      <div className="text-4xl font-bold">
+    <div className="p-8">
+
+      <div className="text-[11px] uppercase tracking-[0.3em] text-[#666]">
+        Listings
+      </div>
+
+      <div className="mt-3 text-5xl font-black text-white">
         {userStats.trades}
       </div>
 
-      <div>Trades</div>
+      <div className="mt-4 h-[3px] w-full bg-[#1A1A1A]">
+
+        <div className="h-full w-1/2 bg-[#E7C84B]" />
+
+      </div>
+
     </div>
 
   </div>
 
 </div>
 
-<div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+<div className="border border-[#2A2A2A] bg-[radial-gradient(circle_at_top,#151515_0%,#0E0E0E_45%,#080808_100%)] p-8 shadow-[0_0_40px_rgba(0,0,0,.45)]">
 
-<div className="flex flex-wrap gap-3 mb-6">
-<button
-  onClick={() => setSelectedSection("iso")}
-  className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
-${
-  selectedSection === "iso"
-    ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
-    : "bg-slate-200 text-slate-700 hover:bg-slate-300 hover:scale-105"
-}`}
->
-    ISO
-  </button>
+<div className="mb-8 border border-[#2A2A2A] bg-[#090909]">
 
-  <button
-    onClick={() => {
-  setSelectedSection("trade");
-  setSelectedSet("ALL");
-}}
-className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
-${
-  selectedSection === "trade"
-    ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
-    : "bg-slate-200 text-slate-700 hover:bg-slate-300 hover:scale-105"
-}`}
-  >
-    Trades & Sales
-  </button>
+  <div className="border-b border-[#1C1C1C] px-5 py-3">
 
-  <button
-    onClick={() => setSelectedSection("wishlist")}
-className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
-${
-  selectedSection === "wishlist"
-    ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
-    : "bg-slate-200 text-slate-700 hover:bg-slate-300 hover:scale-105"
-}`}
-  >
-    Wishlist
-  </button>
+    <span className="text-[10px] uppercase tracking-[0.35em] text-[#777]">
+      DATABASE MODULE
+    </span>
+
+  </div>
+
+  <div className="grid grid-cols-3">
+
+    <button
+      onClick={() => {
+        setSelectedSection("iso");
+        setSelectedSet("ALL");
+      }}
+      className={`relative py-4 text-sm font-semibold uppercase tracking-[0.2em] transition-all duration-200 border-r border-[#1C1C1C]
+      ${
+        selectedSection === "iso"
+          ? "bg-[#111111] text-[#E7C84B]"
+          : "bg-[#090909] text-[#777] hover:bg-[#121212] hover:text-white"
+      }`}
+    >
+      {selectedSection === "iso" && (
+        <div className="absolute left-0 top-0 h-full w-1 bg-[#E7C84B]" />
+      )}
+
+      ISO
+    </button>
+
+    <button
+      onClick={() => {
+        setSelectedSection("trade");
+        setSelectedSet("ALL");
+      }}
+      className={`relative py-4 text-sm font-semibold uppercase tracking-[0.2em] transition-all duration-200 border-r border-[#1C1C1C]
+      ${
+        selectedSection === "trade"
+          ? "bg-[#111111] text-[#E7C84B]"
+          : "bg-[#090909] text-[#777] hover:bg-[#121212] hover:text-white"
+      }`}
+    >
+      {selectedSection === "trade" && (
+        <div className="absolute left-0 top-0 h-full w-1 bg-[#E7C84B]" />
+      )}
+
+      TRADES
+    </button>
+
+    <button
+      onClick={() => {
+        setSelectedSection("wishlist");
+        setSelectedSet("ALL");
+      }}
+      className={`relative py-4 text-sm font-semibold uppercase tracking-[0.2em] transition-all duration-200
+      ${
+        selectedSection === "wishlist"
+          ? "bg-[#111111] text-[#E7C84B]"
+          : "bg-[#090909] text-[#777] hover:bg-[#121212] hover:text-white"
+      }`}
+    >
+      {selectedSection === "wishlist" && (
+        <div className="absolute left-0 top-0 h-full w-1 bg-[#E7C84B]" />
+      )}
+
+      WISHLIST
+    </button>
+
+  </div>
+
 </div>
 
 {selectedSection === "iso" ? (
@@ -1312,7 +1393,7 @@ ${
 <div
   key={card.id}
   onClick={() => setQuickViewCard(card)}
-  className={`self-start cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
+  className={`self-start cursor-pointer overflow-hidden rounded-md border border-[#2A2A2A] bg-[#111111] transition duration-200 hover:scale-[1.04] ${
     isMoon3DoubleWide(card) ? "col-span-2" : ""
   } ${
     !isMoon3DoubleWide(card) &&
@@ -1325,14 +1406,21 @@ ${
   <img
     src={getTradeCardImage(card)}
     alt={card.card_key}
-    className={`block w-full ${
-      isMoon3DoubleWide(card)
-        ? "h-auto object-contain"
-        : String(card.set_id) === "tcgpromos" &&
-          ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-        ? "h-full object-cover object-center"
-        : "h-full object-contain"
-    }`}
+className={`block w-full transition-transform duration-200 ${
+String(card.set_id) === "12" ||
+String(card.set_id) === "FW" ||
+String(card.set_id) === "SD" ||
+String(card.set_id) === "tcgpromos"
+  ? ""
+  : "scale-[1.055]"
+} ${
+  isMoon3DoubleWide(card)
+    ? "h-auto object-contain"
+    : String(card.set_id) === "tcgpromos" &&
+      ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+    ? "h-full object-cover object-center"
+    : "h-full object-contain"
+}`}
   />
 </div>
           ))}
@@ -1400,18 +1488,25 @@ className={`
         : ""
     }`}
   >
-    <img
-      src={getTradeCardImage(card)}
-      alt={card.card_key}
-      className={`block w-full ${
-        isMoon3DoubleWide(card)
-          ? "h-auto object-contain"
-          : String(card.set_id) === "tcgpromos" &&
-            ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-          ? "h-full object-cover object-center"
-          : "h-full object-contain"
-      }`}
-    />
+<img
+  src={getTradeCardImage(card)}
+  alt={card.card_key}
+  className={`block w-full transition-transform duration-200 ${
+    String(card.set_id) === "12" ||
+    String(card.set_id) === "FW" ||
+    String(card.set_id) === "SD" ||
+    String(card.set_id) === "tcgpromos"
+      ? ""
+      : "scale-[1.055]"
+  } ${
+    isMoon3DoubleWide(card)
+      ? "h-auto object-contain"
+      : String(card.set_id) === "tcgpromos" &&
+        ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+      ? "h-full object-cover object-center"
+      : "h-full object-contain"
+  }`}
+/>
   </div>
 
 <div className="border-t bg-slate-50 px-3 py-2 text-center">
@@ -1454,19 +1549,26 @@ className={`
       ) : (
         <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
           {filteredWishlistCards.map((card) => (
-            <div
-              key={card.id}
-              onClick={() => setQuickViewCard(card)}
-              className={`cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
-                isMoon3DoubleWide(card) ? "col-span-2" : ""
-              }`}
-            >
-              <img
-                src={getTradeCardImage(card)}
-                alt={card.card_key}
-                className="block w-full h-full object-contain"
-              />
-            </div>
+           <div
+  key={card.id}
+  onClick={() => setQuickViewCard(card)}
+  className={`cursor-pointer overflow-hidden rounded-md border border-[#2A2A2A] bg-[#111111] transition duration-200 hover:scale-[1.04] ${
+    isMoon3DoubleWide(card) ? "col-span-2" : ""
+  }`}
+>
+  <img
+    src={getTradeCardImage(card)}
+    alt={card.card_key}
+    className={`block w-full h-full transition-transform duration-200 ${
+      String(card.set_id) === "12" ||
+      String(card.set_id) === "FW" ||
+      String(card.set_id) === "SD" ||
+      String(card.set_id) === "tcgpromos"
+        ? ""
+        : "scale-[1.055]"
+    } object-contain`}
+  />
+</div>
           ))}
         </div>
       )}
@@ -1488,16 +1590,31 @@ className={`
       ×
     </button>
 
-    <img
-      onClick={(e) => e.stopPropagation()}
-      src={getTradeCardImage(quickViewCard)}
-      alt={quickViewCard.card_key}
-className={`max-h-[75vh] max-w-[70vw] rounded-2xl object-contain drop-shadow-2xl ${
-  isMoon3DoubleWide(quickViewCard)
-    ? "w-[75vw] max-w-[900px]"
-    : ""
-}`}
-    />
+<div
+  onClick={(e) => e.stopPropagation()}
+  className={`overflow-hidden rounded-2xl ${
+    isMoon3DoubleWide(quickViewCard)
+      ? "max-w-[900px] w-[75vw]"
+      : "max-w-[70vw]"
+  }`}
+>
+<img
+  src={getTradeCardImage(quickViewCard)}
+  alt={quickViewCard.card_key}
+  className={`block w-full h-[75vh] ${
+    String(quickViewCard.set_id) === "12" ||
+    String(quickViewCard.set_id) === "FW" ||
+    String(quickViewCard.set_id) === "SD"
+      ? "object-contain"
+      : String(quickViewCard.set_id) === "tcgpromos" &&
+        ["RR09", "RR10", "RR11", "RR12"].includes(String(quickViewCard.card_key))
+      ? "object-cover object-center"
+      : String(quickViewCard.set_id) === "tcgpromos"
+      ? "object-contain"
+      : "object-cover object-center"
+  }`}
+/>
+</div>
   </div>
 )}
 

@@ -622,3 +622,14 @@ body::-webkit-scrollbar,
   }
 }
 
+@keyframes scan {
+
+  0% {
+    transform: translateY(-150%);
+  }
+
+  100% {
+    transform: translateY(600%);
+  }
+
+}

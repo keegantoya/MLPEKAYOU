@@ -349,15 +349,27 @@ const cardContent = (
       )}
     </div>
 
-    <img
-      src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
-      className={`w-full rounded-lg aspect-[5/7] ${
-        isWishlisted ? "ring-4 ring-pink-400 ring-offset-2" : ""
+    <div
+      className={`relative overflow-hidden rounded-lg aspect-[5/7] ${
+        isWishlisted
+          ? "ring-4 ring-pink-400 ring-offset-2"
+          : ""
       }`}
-    />
+    >
+      <img
+        src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
+        className="absolute"
+        style={{
+          width: "100%",
+          height: "calc(100% + 12px)",
+          left: 0,
+          top: "-6px",
+          objectFit: "cover",
+        }}
+      />
+    </div>
   </div>
 );
-
 return searchAllCards && !wishlistMode ? (
   <div key={`${card.rarity}-${card.number}`}>
     {cardContent}

@@ -36,6 +36,10 @@ toggleWishlist,
   const [status, setStatus] = useState<Status | null>(null);
   const [openAbove, setOpenAbove] = useState(false);
 
+  const [menuPosition, setMenuPosition] = useState<
+  "left" | "center" | "right"
+>("center");
+
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -235,17 +239,33 @@ className={`relative cursor-pointer overflow-hidden rounded-lg transition-all du
     ? "z-50 scale-[1.01] -translate-y-2 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
     : ""
 }`}
-        onClick={(e) => {
+onClick={(e) => {
   const rect = (
     e.currentTarget as HTMLDivElement
   ).getBoundingClientRect();
 
   const menuHeight = 185;
+  const menuWidth = 288;
+  const padding = 12;
 
   const spaceBelow =
     window.innerHeight - rect.bottom;
 
   setOpenAbove(spaceBelow < menuHeight);
+
+  const centerX = rect.left + rect.width / 2;
+
+  if (centerX < menuWidth / 2 + padding) {
+    setMenuPosition("left");
+  } else if (
+    centerX >
+    window.innerWidth - menuWidth / 2 - padding
+  ) {
+    setMenuPosition("right");
+  } else {
+    setMenuPosition("center");
+  }
+
   setOpen((v) => !v);
 }}
       >
@@ -274,13 +294,19 @@ className={`relative cursor-pointer overflow-hidden rounded-lg transition-all du
 )}
 
 {open && (
-  <div
-    className={`absolute left-1/2 z-[60]  w-72 -translate-x-1/2 rounded-2xl border border-[#4a4a4a] bg-[#1b1b1b] p-3 shadow-2xl ${
-      openAbove
-        ? "bottom-full mb-3"
-        : "top-full mt-3"
-    }`}
-  >
+<div
+  className={`absolute z-[60] w-72 rounded-2xl border border-[#4a4a4a] bg-[#1b1b1b] p-3 shadow-2xl ${
+    menuPosition === "left"
+      ? "left-0"
+      : menuPosition === "right"
+      ? "right-0"
+      : "left-1/2 -translate-x-1/2"
+  } ${
+    openAbove
+      ? "bottom-full mb-3"
+      : "top-full mt-3"
+  }`}
+>
 {wishlistMode ? (
   <>
     <div className="mb-3 border-b border-zinc-700 pb-2 text-center">

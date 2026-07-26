@@ -200,142 +200,291 @@ if (error) {
   setSearchingUsers(false);
 }
 return (
-  <div className="relative min-h-screen overflow-hidden bg-[#2e2e2e] font-['Oxanium']">
+<div className="relative min-h-screen overflow-hidden bg-[#090909] font-['Oxanium']">
 
-{/* KAYOU BACKGROUND */}
-<div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-  {Array.from({ length: 15 }).map((_, row) => (
+  {/* Background */}
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+
+    {/* Base Gradient */}
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#1a1a1a_0%,#0d0d0d_45%,#050505_100%)]" />
+
+    {/* Gold Glow */}
+    <div className="absolute -top-64 left-1/2 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-[#E7C84B]/10 blur-[180px]" />
+
+    {/* Bottom Glow */}
+    <div className="absolute bottom-[-250px] right-[-150px] h-[550px] w-[550px] rounded-full bg-[#E7C84B]/5 blur-[170px]" />
+
+    {/* Circuit Grid */}
     <div
-      key={row}
-      className="kayou-row"
+      className="absolute inset-0 opacity-[0.06]"
       style={{
-        top: `${row * 300 - 1500}px`,
-        animationDelay: `-${row * 4}s`,
+        backgroundImage: `
+          linear-gradient(rgba(231,200,75,.25) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(231,200,75,.25) 1px, transparent 1px)
+        `,
+        backgroundSize: "70px 70px",
       }}
-    >
-      {Array.from({ length: 80 }).map((_, i) => (
-        <span key={i}>KAYOU U.S.</span>
-      ))}
-    </div>
-  ))}
-</div>
+    />
+
+    {/* Fine Grid */}
+    <div
+      className="absolute inset-0 opacity-[0.03]"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)
+        `,
+        backgroundSize: "14px 14px",
+      }}
+    />
+
+    {/* Scan Lines */}
+    <div
+      className="absolute inset-0 opacity-[0.04]"
+      style={{
+        background:
+          "repeating-linear-gradient(180deg, transparent 0px, transparent 3px, rgba(255,255,255,.25) 4px)",
+      }}
+    />
+
+    {/* Animated Vertical Lines */}
+    <div className="absolute left-[18%] top-0 h-full w-px bg-gradient-to-b from-transparent via-[#E7C84B]/40 to-transparent animate-pulse" />
+    <div className="absolute left-[42%] top-0 h-full w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+    <div className="absolute left-[71%] top-0 h-full w-px bg-gradient-to-b from-transparent via-[#E7C84B]/30 to-transparent animate-pulse" />
+
+    {/* Animated Horizontal Lines */}
+    <div className="absolute top-[20%] left-0 h-px w-full bg-gradient-to-r from-transparent via-[#E7C84B]/20 to-transparent" />
+    <div className="absolute top-[63%] left-0 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+    {/* Floating Orbs */}
+    <div className="absolute top-24 left-24 h-2 w-2 rounded-full bg-[#E7C84B]/80 shadow-[0_0_25px_#E7C84B] animate-pulse" />
+    <div className="absolute top-1/3 right-40 h-3 w-3 rounded-full bg-[#E7C84B]/70 shadow-[0_0_35px_#E7C84B] animate-pulse" />
+    <div className="absolute bottom-36 left-1/3 h-2 w-2 rounded-full bg-white/60 shadow-[0_0_18px_white] animate-pulse" />
+
+  </div>
 
     <div className="relative z-10 max-w-7xl mx-auto px-5 py-10 pb-24 md:pb-10">
 
-{/* Header */}
-<div
-  className="relative overflow-hidden rounded-3xl shadow-lg border border-slate-400 mb-8"
-  style={{
-    backgroundImage: "url('/website-assets/exploreequestria.webp')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  }}
->
-  {/* Dark overlay for readability */}
-  <div className="absolute inset-0 bg-black/35" />
+{/* COMMAND CENTER HEADER */}
+<div className="relative mb-10 overflow-hidden rounded-[32px] border border-[#E7C84B]/30 bg-[#111111] shadow-[0_0_80px_rgba(231,200,75,.15)]">
 
-  <div className="relative p-12 text-center">
-    <h1 className="text-5xl font-bold text-white drop-shadow-lg">
-      Explore Equestria
-    </h1>
+  {/* Background */}
+  <div
+    className="absolute inset-0 opacity-25"
+    style={{
+      backgroundImage:
+        "url('/website-assets/exploreequestria.webp')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    }}
+  />
 
-    <p className="mt-3 text-lg text-white/95 drop-shadow">
-      Search collectors, browse public profiles, and discover new trading partners.
-    </p>
+  {/* Dark Overlay */}
+  <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-[#171717]/70 to-black/90" />
+
+  {/* Animated Grid */}
+  <div
+    className="absolute inset-0 opacity-10"
+    style={{
+      backgroundImage: `
+        linear-gradient(rgba(231,200,75,.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231,200,75,.15) 1px, transparent 1px)
+      `,
+      backgroundSize: "40px 40px",
+    }}
+  />
+
+  {/* Glow */}
+  <div className="absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[#E7C84B]/20 blur-[120px]" />
+
+  {/* Scan Line */}
+  <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute h-32 w-full bg-gradient-to-b from-transparent via-[#E7C84B]/10 to-transparent animate-[scan_8s_linear_infinite]" />
   </div>
-</div>
 
-        {/* Coming Soon */}
-        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-6 mb-8 shadow-sm">
-          <h2 className="text-2xl font-bold text-amber-700 mb-2">
-            🚧 EXPLORE WILL BE REPLACING THE FORUM
-          </h2>
+  <div className="relative px-10 py-14">
 
-          <p className="text-slate-700">
-            This page was coded from scratch on 07/02/2026. If you notice any bugs or errors,
-            please report them in the MLPEKAYOU Discord server. Keegan is not very good with the
-            cosmetic side of things, so if you have any suggestions for design improvements, please
-            speak up in server meetings! This page is still being optimized for mobile usage.
-          </p>
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+
+      <div>
+
+        <div className="flex items-center gap-3 mb-4">
+
+          <div className="h-3 w-3 rounded-full bg-green-400 animate-pulse" />
+
+          <span className="uppercase tracking-[0.35em] text-xs text-[#E7C84B]">
+            SEARCHING FOR FRIENDSHIP QUEST...
+          </span>
+
         </div>
+
+        <h1 className="text-6xl font-black tracking-tight text-white">
+
+          Explore{" "}
+
+          <span className="text-[#E7C84B]">
+            Equestria
+          </span>
+
+        </h1>
+
+        <p className="mt-5 max-w-2xl text-lg text-gray-300 leading-8">
+          Search collectors, inspect public profiles, discover active traders,
+          and connect with the global Kayou collecting community.
+        </p>
+
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 min-w-[320px]">
+
+        <div className="rounded-2xl border border-[#E7C84B]/20 bg-black/40 backdrop-blur-xl p-5">
+
+          <div className="text-xs uppercase tracking-widest text-gray-400">
+            Collectors
+          </div>
+
+          <div className="mt-2 text-4xl font-bold text-[#E7C84B]">
+            {collectorCount.toLocaleString()}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
         {/* Search */}
         <div className="relative mb-8 max-w-3xl">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            size={20}
-          />
+<Search
+  size={20}
+  className="absolute left-6 top-1/2 -translate-y-1/2 text-[#E7C84B] z-10 pointer-events-none transition-colors duration-300"
+/>
 
-          <input
+<input
   value={userSearch}
   onChange={(e) => searchUsers(e.target.value)}
-  placeholder="Search collectors..."
-            className="w-full rounded-xl border border-slate-600 bg-[#202020] pl-12 pr-4 py-4 text-slate-400 placeholder:text-slate-400 shadow-sm"
-          />
+  placeholder="Search Collector Database..."
+  spellCheck={false}
+  autoComplete="off"
+  className="
+    w-full
+    h-16
+    bg-[#0B0B0B]
+    border
+    border-[#2F2F2F]
+    focus:border-[#E7C84B]
+    focus:ring-0
+    pl-16
+    pr-6
+    text-white
+    placeholder:text-[#666]
+    tracking-wide
+    shadow-[inset_0_0_20px_rgba(0,0,0,.45)]
+    transition-all
+    duration-300
+    hover:border-[#555]
+  "
+/>
 
 {(userSearch.trim() || searchResults.length > 0) && (
-  <div className="absolute left-0 right-0 mt-2 rounded-2xl border border-slate-200 bg-white shadow-xl max-h-96 overflow-y-auto z-50">
+  <div className="
+absolute
+left-0
+right-0
+mt-3
+z-50
+overflow-hidden
+border
+border-[#2F2F2F]
+bg-[#090909]
+shadow-[0_20px_60px_rgba(0,0,0,.8)]
+max-h-96
+overflow-y-auto
+
+[scrollbar-width:none]
+[-ms-overflow-style:none]
+[&::-webkit-scrollbar]:hidden
+">
 
     {searchingUsers ? (
-      <div className="px-4 py-4 text-slate-500">
-        Searching...
+      <div className="px-6 py-5 border-b border-[#1F1F1F] text-[#E7C84B] uppercase tracking-[0.25em] font-mono">
+        Searching Database...
       </div>
     ) : searchResults.length > 0 ? (
       searchResults.map((user) => (
-  <button
-    key={user.id}
-onClick={async () => {
-  setSelectedUser(user);
+        <button
+          key={user.id}
+          onClick={async () => {
+            setSelectedUser(user);
 
-  const { data: tradingProfile } = await supabase
-    .from("trading_profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
+            const { data: tradingProfile } = await supabase
+              .from("trading_profiles")
+              .select("*")
+              .eq("user_id", user.id)
+              .single();
 
-  setSelectedUserTradingProfile(tradingProfile || null);
+            setSelectedUserTradingProfile(tradingProfile || null);
 
-  setSearchResults([]);
-  setUserSearch("");
-}}
-  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 transition text-left"
->
-  <img
-    src={
-      avatarMap[String(user.avatar_url || "").trim()] ||
-      avatar001
-    }
-    alt={user.username}
-    className="w-10 h-10 rounded-full object-cover border border-slate-200"
-  />
+            setSearchResults([]);
+            setUserSearch("");
+          }}
+          className="group relative flex w-full items-center gap-4 border-b border-[#1B1B1B] bg-[#090909] px-5 py-4 text-left transition-all duration-200 hover:bg-[#131313]"
+        >
+          <div className="absolute left-0 top-0 h-full w-1 bg-transparent transition-colors group-hover:bg-[#E7C84B]" />
 
-<div>
-  <div className="flex items-center gap-2">
+          <img
+            src={
+              avatarMap[String(user.avatar_url || "").trim()] ||
+              avatar001
+            }
+            alt={user.username}
+            className="h-11 w-11 rounded-md border border-[#333] object-cover transition-colors group-hover:border-[#E7C84B]"
+          />
 
-    <div className="font-semibold text-slate-900">
-      {user.username}
-    </div>
+          <div className="flex-1">
 
-    {VERIFIED_USERS[user.id] && (
-      <img
-        src={VERIFIED_USERS[user.id].badge}
-        alt={VERIFIED_USERS[user.id].label}
-        title={VERIFIED_USERS[user.id].label}
-        className="w-5 h-5"
-      />
-    )}
+            <div className="flex items-center gap-2">
 
-  </div>
+              <span className="font-semibold text-white">
+                {user.username}
+              </span>
 
-  <div className="text-xs text-slate-500">
-    View Profile
-  </div>
-</div>
-</button>
+              {VERIFIED_USERS[user.id] && (
+                <img
+                  src={VERIFIED_USERS[user.id].badge}
+                  alt={VERIFIED_USERS[user.id].label}
+                  title={VERIFIED_USERS[user.id].label}
+                  className="h-5 w-5"
+                />
+              )}
+
+            </div>
+
+            <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-[#666]">
+              Collector Profile
+            </div>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <div className="h-2 w-2 rounded-full bg-green-400 opacity-60 transition-opacity group-hover:opacity-100" />
+
+            <span className="text-xl text-[#E7C84B] opacity-0 transition-opacity group-hover:opacity-100">
+              →
+            </span>
+
+          </div>
+
+        </button>
       ))
     ) : (
-      <div className="px-4 py-4 text-slate-500">
-        No collectors found.
+      <div className="px-6 py-6 text-center uppercase tracking-[0.25em] text-[#666]">
+        No Collectors Found
       </div>
     )}
 
@@ -355,26 +504,6 @@ onClick={async () => {
 />
 ) : (
           <>
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-
-              <div className="rounded-2xl bg-[#535252] border-slate-100 shadow-sm p-6">
-                <Users className="text-[#dad89a] mb-3" size={30} />
-                <h3 className="text-4xl font-bold text-[#dad89a]">
-                  {collectorCount.toLocaleString()}
-                </h3>
-                <p className="text-slate-200 mt-1">Collectors</p>
-              </div>
-
-              <div className="rounded-2xl bg-[#535252] border-slate-200 shadow-sm p-6">
-                <Repeat2 className="text-[#dad89a]" size={30} />
-                <h3 className="text-4xl font-bold text-[#dad89a]">
-                  {activeTraders.toLocaleString()}
-                </h3>
-                <p className="text-slate-200 mt-1">Active Traders</p>
-              </div>
-
-            </div>
           </>
         )}
 

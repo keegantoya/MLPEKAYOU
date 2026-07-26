@@ -283,24 +283,36 @@ const cardContent = (
       {getDisplayCardCode(set.id, card.number)}
     </div>
 
-    <div
-  className={`aspect-[5/7] overflow-hidden rounded-lg ${
+<div
+  className={`relative overflow-hidden rounded-lg aspect-[5/7] ${
     isWishlisted
       ? "ring-4 ring-pink-400 ring-offset-2"
       : ""
   }`}
 >
-      <img
-        src={getImage(set.id, card.number)}
-        className={`h-full w-full object-cover ${
-          set.id === "tcgpromos" &&
-          card.number >= 9 &&
-          card.number <= 12
-            ? "scale-[1.02] object-center"
-            : ""
-        }`}
-      />
-    </div>
+  {set.id === "9" ? (
+    <img
+      src={getImage(set.id, card.number)}
+      className="absolute"
+      style={{
+        width: "100%",
+        height: "calc(100% + 12px)",
+        left: 0,
+        top: "-6px",
+        objectFit: "cover",
+      }}
+    />
+  ) : (
+    <img
+      src={getImage(set.id, card.number)}
+      className={`h-full w-full object-cover ${
+        card.number >= 9 && card.number <= 12
+          ? "scale-[1.02] object-center"
+          : ""
+      }`}
+    />
+  )}
+</div>
   </div>
 );
 
