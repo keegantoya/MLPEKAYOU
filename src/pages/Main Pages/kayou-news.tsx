@@ -36,6 +36,16 @@ export default function KayouNews() {
       title: "Fun Moments: Volume Four",
       notes: "No allowed notes at this time.",
     },
+        {
+      date: "October 2026",
+      title: "My Little Pony TCG: Nightmare Night",
+      notes: "No allowed notes at this time.",
+    },
+        {
+      date: "October 2026",
+      title: "My Little Pony TCG: Nightmare Night Binder Set",
+      notes: "No allowed notes at this time.",
+    },
   ];
 
   const sdccActivations: Activation[] = [

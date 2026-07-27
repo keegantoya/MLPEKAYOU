@@ -271,7 +271,7 @@ const heroCards = [
 
 {[
   {
-    title: "Discord TCG (BP03)",
+    title: "Discord TCG (BP02)",
     status: "Coming Soon",
     date: "August 7, 2026",
     note: "",
@@ -281,7 +281,7 @@ const heroCards = [
     title: "Moon Edition Four",
     status: "Coming Soon",
     date: "September 2026",
-    note: "Date subject to change • Poster shown is the Chinese placeholder.",
+    note: "Date subject to change • Poster shown is the Chinese placeholder",
     image: "/set-pictures/moonfourpostercn.webp",
   },
   {
@@ -292,10 +292,10 @@ const heroCards = [
     image: "/set-pictures/moontwelvecnposter.webp",
   },
   {
-    title: "Nightmare Night TCG (BP04)",
+    title: "Nightmare Night TCG (BP03)",
     status: "Coming Soon",
     date: "October 2026",
-    note: "Date subject to change • Poster shown is the Chinese placeholder.",
+    note: "Date subject to change • Poster shown is the Chinese placeholder",
     image: "/nightmarenight-assets/nightmarenightposter.webp",
   },
 ].map((product) => (
