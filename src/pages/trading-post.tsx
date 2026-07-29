@@ -1,1278 +1,198 @@
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-
-const tradePostCards = "/website-assets/tradingpostcardsnmn.webp";
-
-const avatarMap: Record<string, string> = {
-  avatar001,
-  avatar002,
-  avatar003,
-  avatar004,
-  avatar005,
-  avatar006,
-  avatar007,
-  avatar008,
-  avatar009,
-  avatar010,
-  avatar011,
-  avatar012,
-  avatar013,
-  avatar014,
-  avatar015,
-};
-
-const rarityDisplayMap: Record<string, string> = {
-  SZR: "⬦ZR",
-  SN:  "⬦N",
-  PER: "※ER",
-  PSPR: "※SPR",
-  PGR: "※GR",
-  PCR: "※CR",
-  PRR: "※RR",
-  LC:  "PR",
-};
-
-const sets = [
-  { id: "1", name: "Eternal Moon First Edition", released: true },
-  { id: "5", name: "Rainbow First Edition", released: true },
-  { id: "7", name: "Fun Moments First Edition", released: true },
-  { id: "2", name: "Eternal Moon Second Edition", released: true },
-  { id: "8", name: "Fun Moments Second Edition", released: true },
-  { id: "3", name: "Eternal Moon Third Edition", released: true },
-  { id: "11", name: "Fun Moments Third Edition", released: true },
-  { id: "4", name: "Star First Edition", released: true },
-  { id: "6", name: "Rainbow Second Edition", released: true },
-  { id: "9", name: "CCG Promos", released: true },
-  { id: "FW", name: "Fantasy Wonderland", released: true },
-  { id: "12", name: "Discord", released: true },
-  { id: "friendshipsbegin", name: "Friendships Begin", released: true },
+const setButtons = [
   {
-    id: "tcgpromos",
-    name: "TCG Promos",
-    released: true
+    title: "Eternal Moon I",
+    subtitle: "186 Cards",
+    to: "/trading-post/1",
+    image: "/thumbnails/moon-fe.webp",
+  },
+  {
+    title: "Eternal Moon II",
+    subtitle: "189 Cards",
+    to: "/trading-post/2",
+    image: "/thumbnails/moon-se.webp",
+  },
+  {
+    title: "Eternal Moon III",
+    subtitle: "290 Cards",
+    to: "/trading-post/3",
+    image: "/thumbnails/moon-te.webp",
+  },
+  {
+    title: "Star I",
+    subtitle: "105 Cards",
+    to: "/trading-post/4",
+    image: "/thumbnails/s1-thumbnail.webp",
+  },
+  {
+    title: "Rainbow I",
+    subtitle: "146 Cards",
+    to: "/trading-post/5",
+    image: "/thumbnails/rainbow1thumbnail.webp",
+  },
+  {
+    title: "Rainbow II",
+    subtitle: "170 Cards",
+    to: "/trading-post/6",
+    image: "/thumbnails/rainbow2thumbnail.webp",
+  },
+  {
+    title: "Fun Moments I",
+    subtitle: "127 Cards",
+    to: "/trading-post/7",
+    image: "/thumbnails/fme01TN.webp",
+  },
+  {
+    title: "Fun Moments II",
+    subtitle: "136 Cards",
+    to: "/trading-post/8",
+    image: "/thumbnails/fme02TN.webp",
+  },
+  {
+    title: "Fun Moments III",
+    subtitle: "188 Cards",
+    to: "/trading-post/11",
+    image: "/thumbnails/fme03TN.webp",
+  },
+  {
+    title: "Promo Cards",
+    subtitle: "5 Cards",
+    to: "/trading-post/9",
+    image: "/thumbnails/promos-thumbnail.webp",
+  },
+  {
+    title: "Friendships Begin",
+    subtitle: "244 Cards",
+    to: "/trading-post/friendshipsbegin",
+    image: "/thumbnails/friendship-begins-thumbnail.webp",
+  },
+  {
+    title: "Fantasy Wonderland",
+    subtitle: "201 Cards",
+    to: "/trading-post/FW",
+    image: "/thumbnails/fantasy-wonderland-thumbnail.webp",
+  },
+  {
+    title: "Discord",
+    subtitle: "191 Cards",
+    to: "/trading-post/12",
+    image: "/thumbnails/discord.webp",
+  },
+  {
+    title: "TCG Promos",
+    subtitle: "18 Cards",
+    to: "/trading-post/tcgpromos",
+    image: "/thumbnails/tcgpromosthumbnail.webp",
   },
 ];
 
-const getCardImage = (card: any) => {
-  const { set_id, rarity, number } = card;
+export default function TradingPost() {
 
-  if (set_id === "9") {
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
-  }
-  if (set_id === "tcgpromos") {
-  return `/tcgpromos/RR${String(number).padStart(2, "0")}.webp`;
-}
-if (set_id === "FW") {
-  const key = `BP01${rarity}${String(number).padStart(2, "0")}`;
-
-  if (key.startsWith("BP01ER")) {
-    return `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`;
-  }
-
-  if (key.startsWith("BP01PER")) {
-    return `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`;
-  }
-
-  return `/fantasy-wonderland/${key}.webp`;
-}
-  if (set_id === "friendshipsbegin" || set_id === "SD") {
-  return `/friendships-begin/SD01${rarity}${String(number).padStart(2, "0")}.webp`;
-}
-
-const config: any = {
-  "1": { folder: "first-edition-moon", prefix: "M1" },
-  "2": { folder: "second-edition-moon", prefix: "M2" },
-  "3": { folder: "third-edition-moon", prefix: "M3" },
-  "4": { folder: "star-one", prefix: "S1" },
-  "5": { folder: "rainbow-one", prefix: "R1" },
-  "6": { folder: "rainbow-two", prefix: "R2" },
-  "7": { folder: "fun-moments-one", prefix: "FM1" },
-  "8": { folder: "fun-moments-two", prefix: "FM2" },
-  "11": { folder: "fun-moments-three", prefix: "FM3"},
-};
-
-  const c = config[set_id];
-  if (!c) return "";
-
-  return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}${
-  set_id === "6" &&
-  ["ST", "TR", "TGR"].includes(rarity)
-    ? ".webp"
-    : ".webp"
-}`;
-};
-
-const TradingPost = () => {
-  const stars = Array.from({ length: 180 }, () => ({
-  left: Math.random() * 100,
-  top: Math.random() * 100,
-  size: 1 + Math.random() * 5,
-  opacity: 0.15 + Math.random() * 0.55,
-}));
-  const navigate = useNavigate();
-
-  const [search, setSearch] = useState("");
-const [results, setResults] = useState<any[]>([]);
-const [selectedUser, setSelectedUser] = useState<any | null>(null);
-
-const [userTrades, setUserTrades] = useState<Record<string, Record<string, any[]>>>({});
-const [selectedSet, setSelectedSet] = useState<string | null>(null);
-const [selectedRarity, setSelectedRarity] = useState<string | null>(null);
-
-  const [discord, setDiscord] = useState("");
-  const [savedDiscord, setSavedDiscord] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const [allProgress, setAllProgress] = useState<any[]>([]);
-const [currentUserId, setCurrentUserId] = useState<string>("");
-const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-
-  useEffect(() => {
-    const loadDiscord = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("trading_profiles")
-        .select("discord_username")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!error && data?.discord_username) {
-        setSavedDiscord(data.discord_username);
-      }
-    };
-
-    loadDiscord();
-  }, []);
-
-  useEffect(() => {
-  const loadCollectionProgress = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    setCurrentUserId(user.id);
-
-    const { data: profile } = await supabase
-  .from("profiles")
-  .select("iso_hidden_sets")
-  .eq("id", user.id)
-  .single();
-
-setHiddenSets(profile?.iso_hidden_sets || []);
-
-    const { data, error } = await supabase
-      .from("collection_progress")
-      .select("user_id, set_id, progress")
-      .eq("user_id", user.id);
-
-    if (!error) {
-      setAllProgress(data || []);
-    }
-  };
-
-  loadCollectionProgress();
-}, []);
-
-const handleSearch = async (value: string) => {
-  setSearch(value);
-
-  if (value.length < 2) {
-    setResults([]);
-    return;
-  }
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("id, username, avatar_url")
-    .ilike("username", `%${value}%`)
-    .limit(10);
-
-  setResults(data || []);
-};
-
-const loadUserTrades = async (user: any) => {
-  setSelectedUser(user);
-
-  const { data: trades } = await supabase
-    .from("for_trade")
-    .select("*")
-    .eq("user_id", user.id);
-
-  const grouped: Record<string, Record<string, any[]>> = {};
-
-(trades || []).forEach((card: any) => {
-  let rarity = "";
-  let number = 0;
-
-  const key = card.card_key;
-
-  // DASH FORMAT (SR-012)
-  if (key.includes("-")) {
-    const parts = key.split("-");
-    rarity = parts[0];
-    number = parseInt(parts[1]);
-  }
-
-  else {
-    const cleaned = key.replace("SD01", "").replace("BP01", "");
-
-    rarity = cleaned.replace(/\d+/g, "");
-    number = parseInt(cleaned.replace(/[A-Z]+/g, ""));
-  }
-
-  if (!grouped[card.set_id]) grouped[card.set_id] = {};
-  if (!grouped[card.set_id][rarity]) {
-    grouped[card.set_id][rarity] = [];
-  }
-
-  grouped[card.set_id][rarity].push({
-  set_id: card.set_id,
-  rarity,
-  number,
-  actively_trading: card.actively_trading
-});
-});
-
-  setUserTrades(grouped);
-  setSelectedSet(null);
-  setSelectedRarity(null);
-};
-
-const handleSaveDiscord = async () => {
-  if (!discord.trim()) return;
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    alert("You must be logged in");
-    return;
-  }
-
-  setSaving(true);
-
-  const { error } = await supabase
-    .from("trading_profiles")
-    .upsert({
-      user_id: user.id,
-      discord_username: discord.trim()
-    });
-
-  if (error) {
-    console.error(error);
-    alert("Failed to save Discord");
-  } else {
-    setSavedDiscord(discord.trim());
-  }
-
-  setSaving(false);
-};
-
-const COUNTED_SET_IDS = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "11",
-  "FW",
-  "12",
-  "friendshipsbegin",
-  "9",
-  "tcgpromos",
-];
-
-const CARD_TOTALS: Record<string, number> = {
-  "1": 186,
-  "2": 189,
-  "3": 290,
-  "4": 105,
-  "5": 146,
-  "6": 170,
-  "7": 127,
-  "8": 136,
-  "11": 148,
-  "FW": 191,
-  "12": 191,
-  "friendshipsbegin": 191,
-  "9": 12,
-  "tcgpromos": 18,
-};
-
-// These sets are EXCLUDED from the set counters only.
-const EXCLUDED_FROM_SET_COUNTS = ["9", "tcgpromos"];
-
-const normalizeSetId = (setId: string) => {
-  if (setId === "SD") return "friendshipsbegin";
-  if (setId === "discord") return "12";
-  return setId;
-};
-const releasedSets = sets.filter(
-  (set) =>
-    COUNTED_SET_IDS.includes(set.id) &&
-    !hiddenSets.includes(set.id)
-);
-
-const visibleCountedSetIds = COUNTED_SET_IDS.filter(
-  (setId) => !hiddenSets.includes(setId)
-);
-
-const countedSets = visibleCountedSetIds.filter(
-  (setId) => !EXCLUDED_FROM_SET_COUNTS.includes(setId)
-);
-
-const totalSets = countedSets.length;
-
-const totalCardsAvailable = visibleCountedSetIds.reduce(
-  (sum, setId) => sum + CARD_TOTALS[setId],
-  0
-);
-
-const totalCardsCollected = visibleCountedSetIds.reduce((sum, setId) => {
-  const row = allProgress.find(
-    (r: any) =>
-      r.user_id === currentUserId &&
-      normalizeSetId(r.set_id) === setId
-  );
-
-  if (!row?.progress) return sum;
-
-  const ownedCount = Object.values(row.progress).filter(
-    (value: any) =>
-      value === true ||
-      (typeof value === "object" && value?.owned === true)
-  ).length;
-
-  return sum + Math.min(ownedCount, CARD_TOTALS[setId]);
-}, 0);
-
-const completedSets = countedSets.filter((setId) => {
-  const row = allProgress.find(
-    (r: any) =>
-      r.user_id === currentUserId &&
-      normalizeSetId(r.set_id) === setId
-  );
-
-  if (!row?.progress) return false;
-
-  const ownedCount = Object.values(row.progress).filter(
-    (value: any) =>
-      value === true ||
-      (typeof value === "object" && value?.owned === true)
-  ).length;
-
-  return ownedCount >= CARD_TOTALS[setId];
-}).length;
-
-const missingCards = Math.max(0, totalCardsAvailable - totalCardsCollected);
-const incompleteSets = Math.max(0, totalSets - completedSets);
-
-const completionPercentage =
-  totalCardsAvailable > 0
-    ? Math.max(
-        0,
-        Math.round(
-          ((totalCardsAvailable - totalCardsCollected) /
-            totalCardsAvailable) *
-            100
-        )
-      )
-    : 0;
+const [activeGroup, setActiveGroup] = useState("Moon");
 
   return (
-<div
-  className="min-h-screen relative overflow-hidden"
-  style={{
-    backgroundColor: "#0d0816",
-    backgroundImage: `
-  linear-gradient(
-    180deg,
-    #1a1028 0%,
-    #120b1d 45%,
-    #090611 100%
-  )
-`,
-  }}
->
+    <div className="relative min-h-screen overflow-hidden bg-[#121212] text-white">
 
-<div className="absolute top-16 left-16 w-64 h-64 pointer-events-none z-20">
-  <div className="moon-glow" />
+  <div className="pointer-events-none absolute left-1/2 top-[-300px] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-yellow-400/10 blur-[180px]" />
 
-  <img
-    src="/nightmarenight-assets/mareinthemoon.webp"
-    alt=""
-    className="relative w-full h-auto opacity-60"
-  />
-</div>
+  <div className="pointer-events-none absolute bottom-[-250px] right-[-200px] h-[600px] w-[600px] rounded-full bg-yellow-500/5 blur-[180px]" />
 
-<div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
-  {stars.map((star, i) => (
-    <div
-      key={i}
-      className="absolute rounded-full bg-white"
-      style={{
-        left: `${star.left}%`,
-        top: `${star.top}%`,
-        width: `${star.size}px`,
-        height: `${star.size}px`,
-        opacity: star.opacity,
-      }}
-    />
-  ))}
-</div>
+  <div className="pointer-events-none absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_bottom,transparent_0%,white_50%,transparent_100%)] bg-[length:100%_5px]" />
 
-<div className="princess-flyby">
-  <img
-    src="/nightmarenight-assets/princessesflying.webp"
-    alt=""
-    className="princess-flyby-image"
-  />
-</div>
+      <div className="mx-auto max-w-7xl px-6 py-10">
 
-<div className="absolute inset-0 bg-[#1a1028]/10 pointer-events-none" />
+        <div className="mb-10 text-center">
+          <h1 className="text-5xl font-black uppercase tracking-[0.35em] text-yellow-300 drop-shadow-[0_0_25px_rgba(250,204,21,0.5)]">
+            Trading Post
+          </h1>
 
-      <div className="container max-w-6xl xl:max-w-[1600px] py-8 sm:py-8 pt-6 sm:pt-8 px-4 sm:px-6 xl:px-10 pb-28 sm:pb-8">
+          <div className="mx-auto mt-3 h-px w-56 bg-gradient-to-r from-transparent via-yellow-400 to-transparent" />
 
-{/* HERO HEADER */}
-<div className="mb-10">
-  <div
-    className="relative overflow-hidden rounded-[2.5rem] border border-purple-900/50 shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
-    style={{
-      backgroundImage:
-        "url('/nightmarenight-assets/collectionsbannernmn.webp')",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      minHeight: "260px",
-    }}
-  >
-    <div className="absolute inset-0 bg-black/45 pointer-events-none" />
-    {/* Decorative sparkles */}
-    <div className="absolute top-6 left-10 text-white/15 text-2xl">✦</div>
-    <div className="absolute top-8 right-10 text-yellow-200/20 text-xl">✦</div>
-
-{/* Card Artwork - fixed position in the CENTER column */}
-<div
-  className="hidden xl:block absolute z-20 pointer-events-none"
-  style={{
-    left: "52%",
-    top: "-50px",
-    transform: "translateX(-52%)",
-    width: "600px",
-  }}
->
-  <img
-    src={tradePostCards}
-    alt="Trading Post Cards"
-    className="w-full h-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.35)]"
-  />
-</div>
-
-    {/* Banner Content */}
-<div className="grid lg:grid-cols-3 items-center gap-6 px-5 py-6 sm:px-8 lg:px-14 lg:py-6">
-
-  {/* LEFT SIDE */}
-  <div className="text-center lg:text-left">
-    <h1
-      className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-[0.9]"
-      style={{
-        fontFamily: "Oxanium, sans-serif",
-        color: "#F8E7A3",
-        textShadow: "0 3px 12px rgba(0,0,0,0.18)",
-      }}
-    >
-      TRADING
-      <br />
-      POST
-    </h1>
-
-<p className="mt-3 text-white/95 text-xs sm:text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
-      All users who appear on the trading post must have their Discord
-      username set on their profile so others can find you off-app.
-    </p>
-  </div>
-
-  {/* CENTER COLUMN - reserved for artwork */}
-  <div className="hidden lg:block" />
-
-  {/* RIGHT SIDE */}
-  <div className="relative z-30 mt-0 lg:mt-0 lg:pt-8 lg:pl-20 xl:pl-28">
-    {/* Stats */}
-    <div className="grid grid-cols-3 gap-2 text-center">
-      <div>
-        <div className="text-sm sm:text-base xl:text-lg font-bold leading-tight text-[#F8E7A3]">
-          {missingCards.toLocaleString()}
+          <p className="mt-4 text-sm tracking-widest uppercase text-gray-500">
+            Select a collection
+          </p>
         </div>
-        <div className="mt-1 text-[8px] uppercase tracking-[0.16em] text-white/65 leading-tight">
-          Cards Missing
-        </div>
-      </div>
 
-      <div>
-        <div className="text-sm sm:text-base xl:text-lg font-bold leading-tight text-[#F8E7A3]">
-          {incompleteSets} / {totalSets}
-        </div>
-        <div className="mt-1 text-[8px] uppercase tracking-[0.16em] text-white/65 leading-tight">
-          Sets Incomplete
-        </div>
-      </div>
-
-      <div>
-        <div className="text-sm sm:text-base xl:text-lg font-bold leading-tight text-[#F8E7A3]">
-          {completionPercentage}%
-        </div>
-        <div className="mt-1 text-[8px] uppercase tracking-[0.16em] text-white/65 leading-tight">
-          From Completion
-        </div>
-      </div>
-    </div>
-
-    {/* CTA Button */}
-    <div className="mt-4 flex justify-center">
-      <button
-        onClick={() => navigate("/UserMenu")}
-        className="w-full max-w-[320px] px-5 py-2 rounded-full font-semibold tracking-[0.14em] text-[11px] uppercase transition hover:scale-[1.02]"
-        style={{
-          background:
-            "linear-gradient(90deg, #E5B93D 0%, #F8E7A3 50%, #D4AF37 100%)",
-          color: "#5B3695",
-          boxShadow: "0 8px 20px rgba(212, 175, 55, 0.25)",
-        }}
-      >
-        View My Collection →
-      </button>
-    </div>
-  </div>
-</div>
-  </div>
-</div>
-
-{/* FILTER BAR */}
-<div className="-mt-6 mb-10 relative z-10">
-  <div
-    className="rounded-[1.75rem] border border-purple-400/30 bg-black/20 backdrop-blur-md shadow-[0_10px_35px_rgba(91,33,182,0.08)] px-4 py-3"
-  >
-    <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
-
-{/* Search Box */}
-<div className="flex-1 relative">
-  <button
-    type="button"
-    onClick={() => navigate("/explore")}
-   className="
-  w-full h-12 rounded-full
-  border border-purple-400/30
-  bg-black/20
-  backdrop-blur-md
-      flex items-center px-4
-      text-left
-      hover:border-purple-300/40
-      hover:bg-black/30
-      transition
-    "
-  >
-    <span className="text-[#8B5FBF] text-lg mr-3">⌕</span>
-
-    <span className="text-sm text-white/70">
-      FIND USERS IN THE FORUM SEARCH.
-    </span>
-  </button>
-</div>
-
-      {/* Desktop Controls */}
-      <div className="hidden lg:flex items-center gap-3">
-
-
-
-{/* Create Trade Button */}
-<button
-  onClick={() => navigate("/inventory")}
-  className="h-12 px-6 rounded-full font-semibold text-sm uppercase tracking-[0.15em] text-white flex items-center gap-3 shadow-[0_8px_20px_rgba(124,75,181,0.18)]"
-  style={{
-    background:
-      "linear-gradient(135deg, #9B6AD8 0%, #7C4BB5 50%, #6D44A8 100%)",
-  }}
->
-  Create Trade
-  <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-base leading-none">
-    +
-  </span>
-</button>
-      </div>
-
-      {/* Mobile Create Trade Button */}
-<div className="lg:hidden">
-  <button
-    onClick={() => navigate("/inventory ")}
-    className="
-  w-full h-12 rounded-full
- border-purple-400/30
-  bg-black/20
-  backdrop-blur-md
-      flex items-center justify-center gap-3
-      shadow-[0_8px_20px_rgba(124,75,181,0.18)]
-      transition hover:scale-[1.02]
-      relative overflow-hidden
-
-      border border-[#D8B45A]
-
-      before:content-['']
-      before:absolute
-      before:inset-[3px]
-      before:rounded-full
-      before:border
-      before:border-[#F8E38C]
-      before:shadow-[inset_0_0_0_1px_rgba(255,245,180,0.35)]
-      before:pointer-events-none
-    "
-    style={{
-      background:
-        "linear-gradient(135deg, #9B6AD8 0%, #7C4BB5 50%, #6D44A8 100%)",
-    }}
-  >
-    Create Trade
-  </button>
-</div>
-    </div>
-  </div>
-</div>
-
-        {/* SET GRID */}
-        {(() => {
-  const ccg = sets.filter(s =>
-  s.released &&
-  ["1", "2", "3", "4", "5", "6", "7", "8", "11"].includes(s.id)
-);
-
-const tcg = sets.filter(s =>
-  s.released && (
-    s.id === "FW" ||
-    s.id === "12" ||
-    s.id === "friendshipsbegin"
-  )
-);
-
-  const promos = sets.filter(s =>
-  s.released && (
-    s.id === "9" ||
-    s.id === "tcgpromos"
-  )
-);
-
-const renderSet = (set: any) => {
-  const setImages: Record<string, string> = {
-    "4": "/thumbnails/s1-thumbnail.webp",
-    "1": "/thumbnails/moon-fe.webp",
-    "2": "/thumbnails/moon-se.webp",
-    "3": "/thumbnails/moon-te.webp",
-    "5": "/thumbnails/rainbow1thumbnail.webp",
-    "6": "/thumbnails/rainbow2thumbnail.webp",
-    "7": "/thumbnails/fme01TN.webp",
-    "8": "/thumbnails/fme02TN.webp",
-    "11": "/thumbnails/fme03TN.webp",
-"FW": "/thumbnails/fantasy-wonderland-thumbnail.webp",
-"12": "/thumbnails/discord.webp",
-"friendshipsbegin": "/thumbnails/friendship-begins-thumbnail.webp",
-"9": "/thumbnails/promos-thumbnail.webp",
-"tcgpromos": "/thumbnails/tcgpromosthumbnail.webp",
-  };
-  
-
-  const setImage = setImages[set.id];
-  
-const setDescriptions: Record<string, string> = {
-  "1": "MLPME01",
-  "2": "MLPME02 • INT03-HR",
-  "3": "MLPME03",
-  "4": "MLPSE01",
-  "5": "RBE01 • INT01-R • INT01-SR • INT01-SSR",
-  "6": "RBE02 • MLPME02-R • MLPME03-R • MLPME03-SR • MLPME03-SSR",
-  "7": "FME01 • INT01-R • INT02-R • INT02-UR",
-  "8": "FME02 • INT02-R • INT03-R • INT03-UR",
-  "11": "FME03 • MLPME02-R • MLPME03-R • MLPME03-SR • RBE02-UR",
-"FW": "BP01",
-"12": "BP02",
-"friendshipsbegin": "SD01",
-"9": "MLPE-PR",
-"tcgpromos": "PR",
-};
-
-const setDescription = setDescriptions[set.id] || "Add codes here";
-
-  return (
+<div className="flex flex-wrap justify-center gap-3 mb-8">
+  {[
+    { label: "Moon", ids: ["1", "2", "3"] },
+    { label: "Star", ids: ["4"] },
+    { label: "Rainbow", ids: ["5", "6"] },
+    { label: "Fun Moments", ids: ["7", "8", "11"] },
+    { label: "Promos", ids: ["9", "tcgpromos"] },
+    { label: "TCG", ids: ["friendshipsbegin", "FW", "12"] },
+  ].map((group) => (
     <button
-      key={set.id}
-      onClick={() => navigate(`/trading-post/${set.id}`)}
-      className="w-full text-left transition-all duration-300 group"
+      key={group.label}
+      onClick={() => setActiveGroup(group.label)}
+      className={`rounded-xl px-5 py-2 font-bold uppercase tracking-wide transition ${
+        activeGroup === group.label
+          ? "bg-gradient-to-b from-yellow-300 to-yellow-500 text-black shadow-[0_0_18px_rgba(250,204,21,0.45)]"
+          : "bg-gradient-to-b from-[#252525] to-[#151515] border border-[#3a3a3a] text-zinc-300 hover:border-yellow-400 hover:shadow-[0_0_18px_rgba(250,204,21,0.25)]"
+      }`}
     >
-
-<div
-  className="
-    sm:hidden
-    flex items-center gap-4
-    relative overflow-hidden
-    rounded-[1.75rem]
-border border-purple-400/30
-bg-transparent backdrop-blur-md
-px-5 py-4
-    shadow-[0_8px_25px_rgba(91,33,182,0.06)]
-    hover:shadow-[0_14px_35px_rgba(91,33,182,0.12)]
-    hover:border-[#DCC8F7]
-    transition-all duration-300
-  "
->
-  {/* Subtle magical glow */}
-<div
-  className="absolute inset-0 pointer-events-none"
-  style={{
-    background:
-      "radial-gradient(circle at top right, rgba(139,92,246,0.06), transparent 45%)",
-  }}
-/>
-
-  {/* Circular Set Thumbnail */}
-  <div
-    className="
-      relative z-10
-      w-14 h-14
-      rounded-full
-      overflow-hidden
-      border border-[#E9DDF8]
-      bg-gradient-to-br from-[#FBF8FF] to-[#F3EBFF]
-      shadow-inner
-      flex-shrink-0
-    "
-  >
-    {setImage ? (
-      <img
-        src={setImage}
-        alt={set.name}
-        className="w-full h-full object-cover"
-      />
-    ) : (
-      <div className="w-full h-full flex items-center justify-center text-[#8B5FBF] text-xl">
-        ✦
-      </div>
-    )}
-  </div>
-
-  {/* Text Content */}
-  <div className="relative z-10 flex-1 min-w-0">
-    <div className="font-semibold text-[17px] text-[#2D1B4E] leading-tight">
-      {set.name}
-    </div>
-
-    <div className="mt-1 text-xs text-gray-500 leading-relaxed">
-      {setDescription}
-    </div>
-
-    <div className="mt-2 text-sm font-medium text-[#7C4BB5]">
-      View trades →
-    </div>
-  </div>
-</div>
-
-      {/* DESKTOP REDESIGN WITH SET THUMBNAILS */}
-      <div
-        className="
-          hidden sm:flex
-          items-center gap-5
-          relative overflow-hidden
-          rounded-[1.75rem]
-border border-purple-400/30
-bg-transparent backdrop-blur-md
-px-6 py-5
-          shadow-[0_8px_25px_rgba(91,33,182,0.06)]
-          hover:shadow-[0_14px_35px_rgba(91,33,182,0.12)]
-          hover:border-[#DCC8F7]
-          hover:-translate-y-1
-        "
-      >
-        {/* Subtle magical glow */}
-        <div
-  className="
-    absolute inset-0 opacity-0 group-hover:opacity-100
-    transition-opacity duration-300 pointer-events-none
-  "
-  style={{
-    background:
-      "radial-gradient(circle at top right, rgba(139,92,246,0.08), transparent 45%)",
-  }}
-/>
-
-        {/* Circular Set Thumbnail */}
-        <div
-          className="
-            relative z-10
-            w-14 h-14
-            rounded-full
-            overflow-hidden
-            border border-[#E9DDF8]
-            bg-gradient-to-br from-[#FBF8FF] to-[#F3EBFF]
-            shadow-inner
-            flex-shrink-0
-          "
-        >
-          {setImage ? (
-            <img
-              src={setImage}
-              alt={set.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#8B5FBF] text-xl">
-              ✦
-            </div>
-          )}
-        </div>
-
-{/* Text Content */}
-<div className="relative z-10 flex-1 min-w-0">
-  {/* Set Name */}
-  <div className="font-semibold text-[17px] text-[#2D1B4E] leading-tight">
-    {set.name}
-  </div>
-
-  <div className="mt-1 text-xs text-gray-500 leading-relaxed">
-  {setDescription}
-</div>
-
-  {/* View Trades Link */}
-  <div
-    className="
-      mt-2
-      text-sm font-medium
-      text-[#7C4BB5]
-      group-hover:translate-x-1
-      transition-transform duration-300
-    "
-  >
-    View trades →
-  </div>
-</div>
-      </div>
+      {group.label}
     </button>
-  );
-};
-
-  return (
-    <div className="space-y-12">
-
-      {ccg.length > 0 && (
-<div className="my-3 flex items-center justify-center">
-  {/* Left decorative line */}
-  <div
-    className="flex-1 max-w-[220px] h-px"
-    style={{
-      background:
-        "linear-gradient(to right, transparent 0%, #D9C7F5 45%, #E9DDBF 100%)",
-    }}
-  />
-
-  {/* Center badge */}
-  <div className="mx-6 relative">
-    {/* Soft glow */}
-    <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/10 scale-150" />
-
-    {/* Label pill */}
-    <div
-      className="
-        relative
-        px-6 py-2
-        rounded-full
-        border border-purple-400/30
-        bg-black/20 backdrop-blur-md
-        shadow-[0_8px_25px_rgba(91,33,182,0.08)]
-        flex items-center gap-2
-      "
-    >
-      <span className="text-purple-300 text-xs">✦</span>
-
-      <span
-        className="
-          text-[11px]
-          sm:text-xs
-          font-semibold
-          uppercase
-          tracking-[0.22em]
-          text-[#7C4BB5]
-          whitespace-nowrap
-        "
-      >
-        Collectible Card Game
-      </span>
-
-      <span className="text-purple-300 text-xs">✦</span>
-    </div>
-  </div>
-
-  {/* Right decorative line */}
-  <div
-    className="flex-1 max-w-[220px] h-px"
-    style={{
-      background:
-        "linear-gradient(to left, transparent 0%, #D9C7F5 45%, #E9DDBF 100%)",
-    }}
-  />
-</div>
-)}
-
-      {/* CCG */}
-      {ccg.length > 0 && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ccg.map(renderSet)}
-          </div>
-        </>
-      )}
-
-      {tcg.length > 0 && (
-<div className="my-3 flex items-center justify-center">
-  {/* Left decorative line */}
-  <div
-    className="flex-1 max-w-[220px] h-px"
-    style={{
-      background:
-        "linear-gradient(to right, transparent 0%, #D9C7F5 45%, #E9DDBF 100%)",
-    }}
-  />
-
-  {/* Center badge */}
-  <div className="mx-6 relative">
-    {/* Soft glow */}
-    <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/10 scale-150" />
-
-    {/* Label pill */}
-    <div
-      className="
-        relative
-        px-6 py-2
-        rounded-full
-        border border-purple-400/30
-        bg-black/20 backdrop-blur-md
-        shadow-[0_8px_25px_rgba(91,33,182,0.08)]
-        flex items-center gap-2
-      "
-    >
-      <span className="text-purple-300 text-xs">✦</span>
-
-      <span
-        className="
-          text-[11px]
-          sm:text-xs
-          font-semibold
-          uppercase
-          tracking-[0.22em]
-          text-[#7C4BB5]
-          whitespace-nowrap
-        "
-      >
-        Trading Card Game
-      </span>
-
-      <span className="text-purple-300 text-xs">✦</span>
-    </div>
-  </div>
-
-  {/* Right decorative line */}
-  <div
-    className="flex-1 max-w-[220px] h-px"
-    style={{
-      background:
-        "linear-gradient(to left, transparent 0%, #D9C7F5 45%, #E9DDBF 100%)",
-    }}
-  />
-</div>
-)}
-
-      {/* TCG */}
-      {tcg.length > 0 && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tcg.map(renderSet)}
-          </div>
-        </>
-      )}
-
-{promos.length > 0 && (
-<div className="my-3 flex items-center justify-center">
-  {/* Left decorative line */}
-  <div
-    className="flex-1 max-w-[220px] h-px"
-    style={{
-      background:
-        "linear-gradient(to right, transparent 0%, #D9C7F5 45%, #E9DDBF 100%)",
-    }}
-  />
-
-  {/* Center badge */}
-  <div className="mx-6 relative">
-    {/* Soft glow */}
-    <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/10 scale-150" />
-
-    {/* Label pill */}
-    <div
-      className="
-        relative
-        px-6 py-2
-        rounded-full
-        border border-purple-400/30
-        bg-black/20 backdrop-blur-md
-        shadow-[0_8px_25px_rgba(91,33,182,0.08)]
-        flex items-center gap-2
-      "
-    >
-      <span className="text-purple-300 text-xs">✦</span>
-
-      <span
-        className="
-          text-[11px]
-          sm:text-xs
-          font-semibold
-          uppercase
-          tracking-[0.22em]
-          text-[#7C4BB5]
-          whitespace-nowrap
-        "
-      >
-        Promotional Cards
-      </span>
-
-      <span className="text-purple-300 text-xs">✦</span>
-    </div>
-  </div>
-
-  {/* Right decorative line */}
-  <div
-    className="flex-1 max-w-[220px] h-px"
-    style={{
-      background:
-        "linear-gradient(to left, transparent 0%, #D9C7F5 45%, #E9DDBF 100%)",
-    }}
-  />
-</div>
-)}
-
-      {/* PROMOS */}
-      {promos.length > 0 && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {promos.map(renderSet)}
-          </div>
-        </>
-      )}
-
-    </div>
-);
-})()}
-
-    {/* RARITIES */}
-    {selectedUser && selectedSet && !selectedRarity && (
-      <div>
-        <button
-          onClick={() => setSelectedSet(null)}
-          className="text-xs mb-3 text-muted-foreground"
-        >
-          ← Back to Sets
-        </button>
-
-        <div className="flex flex-wrap gap-2">
-          {Object.keys(userTrades[selectedSet] || {}).map((rarity) => (
-            <button
-              key={rarity}
-              onClick={() => setSelectedRarity(rarity)}
-              className="px-3 py-1 text-xs border rounded"
-            >
-             {rarityDisplayMap[rarity] || rarity}
-            </button>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* CARDS */}
-    {selectedUser && selectedSet && selectedRarity && (
-      <div>
-        <button
-          onClick={() => setSelectedRarity(null)}
-          className="text-xs mb-3 text-muted-foreground"
-        >
-          ← Back to Rarities
-        </button>
-
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-  {(userTrades[selectedSet]?.[selectedRarity] || []).map((card, i) => (
-    <img
-      key={i}
-      src={getCardImage(card)}
-      className="w-full rounded-md"
-    />
   ))}
 </div>
-      </div>
-    )}
 
-            </div>
+<div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  {setButtons
+    .filter((set) => {
+      switch (activeGroup) {
+        case "Moon":
+          return ["1", "2", "3"].includes(set.to.split("/").pop()!);
+        case "Star":
+          return ["4"].includes(set.to.split("/").pop()!);
+        case "Rainbow":
+          return ["5", "6"].includes(set.to.split("/").pop()!);
+        case "Fun Moments":
+          return ["7", "8", "11"].includes(set.to.split("/").pop()!);
+        case "Promos":
+          return ["9", "tcgpromos"].includes(set.to.split("/").pop()!);
+        case "TCG":
+          return ["friendshipsbegin", "FW", "12"].includes(
+            set.to.split("/").pop()!
+          );
+        default:
+          return true;
+      }
+    })
+    .map((set) => (
+      <Link
+        key={set.title}
+        to={set.to}
+        className="group relative overflow-hidden rounded-3xl border border-yellow-400/15 bg-gradient-to-b from-[#202020] via-[#171717] to-[#101010] backdrop-blur-xl shadow-[0_0_0_1px_rgba(255,255,255,0.03)] transition-all duration-300 hover:-translate-y-2 hover:border-yellow-400 hover:shadow-[0_0_35px_rgba(250,204,21,0.35)]"
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-yellow-300 to-transparent" />
 
-{selectedUser && (
-  <div className="fixed inset-0 z-50">
+        <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-yellow-400/15 blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-    {/* BACKDROP */}
-    <div
-      className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-      onClick={() => setSelectedUser(null)}
-    />
+<div className="absolute inset-0 rounded-3xl border border-transparent group-hover:border-yellow-400/30 transition-all duration-300" />
 
-    {/* MODAL WRAPPER */}
-    <div className="relative flex items-center justify-center min-h-screen p-4">
+        <img
+          src={set.image}
+          alt={set.title}
+          className="aspect-[16/9] w-full object-cover transition-all duration-500 group-hover:scale-110 group-hover:brightness-110 group-hover:contrast-110"
+        />
 
-      {/* MODAL CONTENT */}
-      <div className="w-full max-w-3xl max-h-[85vh] overflow-y-auto
-        bg-white/90 backdrop-blur-md
-        border border-gray-200
-        rounded-2xl shadow-2xl
-        p-6">
-
-        {/* HEADER */}
-        <div className="flex justify-between items-center mb-6 border-b pb-3">
-
-          <div className="flex items-center gap-3">
-            <img
-              src={avatarMap[selectedUser.avatar_url] || avatar001}
-              className="w-10 h-10 rounded-full object-cover border"
-            />
-
-            <h2 className="text-lg font-semibold">
-              {selectedUser.username}'s Trades
-            </h2>
-          </div>
-
-          <button
-            onClick={() => setSelectedUser(null)}
-            className="text-sm px-3 py-1 rounded-full border border-gray-300 hover:bg-gray-100 transition"
-          >
-            Close
-          </button>
+        <div className="relative p-5 bg-gradient-to-b from-transparent to-black/20">
+          <h2 className="text-lg font-bold uppercase tracking-wide text-white">
+            {set.title}
+          </h2>
         </div>
 
-        {/* LEVEL 1 — SETS */}
-        {!selectedSet && (
-          <div className="grid grid-cols-2 gap-3">
-            {Object.keys(userTrades).map((setId) => {
-              const setInfo = sets.find(s => s.id === setId);
-
-              return (
-                <div
-                  key={setId}
-                  onClick={() => setSelectedSet(setId)}
-                  className="border rounded-xl p-3 cursor-pointer bg-white shadow-sm hover:bg-gray-100 transition text-sm"
-                >
-                  {setInfo?.name || setId}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* LEVEL 2 — RARITIES */}
-        {selectedSet && !selectedRarity && (
-          <div>
-            <button
-              onClick={() => setSelectedSet(null)}
-              className="text-xs mb-3 text-muted-foreground"
-            >
-              ← Back to Sets
-            </button>
-
-            <div className="flex flex-wrap gap-2">
-              {Object.keys(userTrades[selectedSet] || {}).map((rarity) => (
-                <button
-                  key={rarity}
-                  onClick={() => setSelectedRarity(rarity)}
-                  className="px-3 py-1 text-xs border rounded-full hover:bg-gray-100 transition"
-                >
-                  {rarityDisplayMap[rarity] || rarity}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* LEVEL 3 — CARDS */}
-        {selectedSet && selectedRarity && (
-          <div>
-            <button
-              onClick={() => setSelectedRarity(null)}
-              className="text-xs mb-3 text-muted-foreground"
-            >
-              ← Back to Rarities
-            </button>
-
-<div className="grid grid-cols-3 sm:grid-cols-5 gap-2 [grid-auto-flow:dense]">
-  {(userTrades[selectedSet]?.[selectedRarity] || []).map((card, i) => {
-
-    const isDoubleCard =
-      selectedSet === "3" &&
-      card.rarity === "SZR" &&
-      card.number === 1;
-
-    return (
-      <div
-        key={i}
-        className={`relative ${
-          isDoubleCard
-            ? "col-span-2 aspect-[10/7]"
-            : "aspect-[5/7]"
-        }`}
-      >
-        <img
-  src={getCardImage(card)}
-  className="w-full h-full object-cover rounded-md"
-/>
-
-{card.actively_trading && (
-  <div className="absolute inset-0 rounded-md bg-purple-900/80 flex items-center justify-center">
-    <span className="text-white text-[9px] sm:text-xs md:text-sm font-bold text-center px-1 leading-tight">
-      ACTIVELY<br />TRADING
-    </span>
-  </div>
-)}
-      </div>
-    );
-  })}
+        <div className="border-t border-yellow-400/10 bg-gradient-to-r from-[#101010] via-[#161616] to-[#101010] px-6 py-3 text-right text-xs font-bold uppercase tracking-[0.3em] text-yellow-300">
+          Open →
+        </div>
+      </Link>
+    ))}
 </div>
-          </div>
-        )}
 
       </div>
-    </div>
-  </div>
-)}
 
     </div>
   );
-};
-
-export default TradingPost;
+}

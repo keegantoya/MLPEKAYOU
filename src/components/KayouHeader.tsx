@@ -1,7 +1,6 @@
 import {
   ShoppingBag, 
   Home,
-    Ghost,
   Trophy,
   Medal,
   Tag,
@@ -1845,7 +1844,7 @@ ${
 }
 `}
   >
-    <Ghost className="h-6 w-6" />
+    <Home className="h-6 w-6" />
   </button>
 
   {/* COLLECTIONS */}

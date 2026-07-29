@@ -387,16 +387,20 @@ const App = () => {
 
 <ScrollToTop />
 
-{window.location.pathname !== "/links" && <KayouHeader />}
+{window.location.pathname !== "/links" &&
+ !new URLSearchParams(window.location.search).has("embed") && (
+  <KayouHeader />
+)}
 
 <div
   className={
-    window.location.pathname === "/links"
+    window.location.pathname === "/links" ||
+    new URLSearchParams(window.location.search).has("embed")
       ? "min-h-screen"
       : `min-h-screen sm:pt-[64px] sm:pb-0 ${
-          window.matchMedia('(display-mode: standalone)').matches
-            ? 'pt-[88px]'
-            : 'pt-[52px]'
+          window.matchMedia("(display-mode: standalone)").matches
+            ? "pt-[88px]"
+            : "pt-[52px]"
         }`
   }
 >

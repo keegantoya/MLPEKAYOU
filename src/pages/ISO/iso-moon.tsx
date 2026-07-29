@@ -302,7 +302,7 @@ return !owned[`${set.id}-${key}`];
   {set.name}
 </h2>
 
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
+            <div className="grid auto-rows-max grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
               {missing.map((card) => {
   const isDoubleWide =
     set.id === "3" &&
@@ -324,23 +324,25 @@ const cardContent = (
       )}
     </div>
 <div
-  className={`relative overflow-hidden rounded-lg ${
-    isDoubleWide ? "aspect-[10/7]" : "aspect-[5/7]"
+  className={`relative w-full overflow-hidden rounded-lg ${
+    isDoubleWide
+      ? "aspect-[10/7] col-span-2"
+      : "aspect-[5/7]"
   } ${
     isWishlisted ? "ring-4 ring-pink-400 ring-offset-2" : ""
   }`}
 >
-  <img
-    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
-    className="absolute"
-    style={{
-      width: "100%",
-      height: "calc(100% + 12px)",
-      left: 0,
-      top: "-6px",
-      objectFit: "cover",
-    }}
-  />
+<img
+  src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
+  className="absolute"
+  style={{
+    width: "100%",
+    height: "calc(100% + 12px)",
+    left: 0,
+    top: "-6px",
+    objectFit: "cover",
+  }}
+/>
 </div>
   </div>
 );
@@ -353,25 +355,24 @@ return searchAllCards && !wishlistMode ? (
     {cardContent}
   </div>
 ) : (
-  <ISOChecking
-    key={`${card.rarity}-${card.number}`}
-    userId={userId}
-    setId={set.id}
-    cardKey={`${card.rarity}-${card.number}`}
-    wishlistMode={wishlistMode}
-    isWishlisted={isWishlisted}
-    toggleWishlist={toggleWishlist}
-    onComplete={() =>
-      setOwned((prev) => ({
-        ...prev,
-        [`${set.id}-${card.rarity}-${card.number}`]: true,
-      }))
-    }
-  >
-    <div className={isDoubleWide ? "col-span-2" : ""}>
-      {cardContent}
-    </div>
-  </ISOChecking>
+<ISOChecking
+  key={`${card.rarity}-${card.number}`}
+  className={isDoubleWide ? "col-span-2" : ""}
+  userId={userId}
+  setId={set.id}
+  cardKey={`${card.rarity}-${card.number}`}
+  wishlistMode={wishlistMode}
+  isWishlisted={isWishlisted}
+  toggleWishlist={toggleWishlist}
+  onComplete={() =>
+    setOwned((prev) => ({
+      ...prev,
+      [`${set.id}-${card.rarity}-${card.number}`]: true,
+    }))
+  }
+>
+  {cardContent}
+</ISOChecking>
 );
 })}
             </div>

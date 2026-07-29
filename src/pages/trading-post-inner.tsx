@@ -3,9 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
+import { getProfileAssets } from "@/pages/Everypony/profile-assets";
 
 
 type TradeCard = {
@@ -32,41 +30,6 @@ const rarityMap: Record<string, string[]> = {
   "friendshipsbegin": ["C", "U", "SR", "SPR", "ER", "GR", "CR", "PER", "PRR"],
   "FW": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
   "12": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
-};
-
-const VERIFIED_USERS = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
 };
 
 const getCardImage = (card: TradeCard) => {
@@ -143,6 +106,10 @@ export default function TradingPostInner() {
 const [selectedRarity, setSelectedRarity] = useState<string | null>(
   setId === "9" || setId === "tcgpromos" ? "PR" : null
 );
+const [page, setPage] = useState(0);
+const [openProfile, setOpenProfile] = useState<string | null>(null);
+
+const USERS_PER_PAGE = 10;
 
   const setNames: Record<string, string> = {
   "1": "Eternal Moon: First Edition",
@@ -209,9 +176,9 @@ if (setId === "friendshipsbegin" || setId === "SD") {
 
 const trades = allTrades;
 
-  const { data: profileData } = await supabase
-    .from("profiles")
-    .select("id, username");
+const { data: profileData } = await supabase
+  .from("profiles")
+  .select("id, username, avatar_url");
 
 const { data: tradingData } = await supabase
   .from("trading_profiles")
@@ -282,16 +249,60 @@ if (showLoginModal) {
     </div>
   );
 }
-  return (
+const getRarity = (key: string) => {
+  if (key.startsWith("RR")) return "PR";
+
+  if (setId === "friendshipsbegin") {
+    const match = key.match(/SD01([A-Z]+)\d+/);
+    return match ? match[1] : "";
+  }
+
+  if (setId === "FW") {
+    const match = key.match(/BP01([A-Z]+)\d+/);
+    return match ? match[1] : "";
+  }
+
+  if (setId === "12") {
+    if (key.startsWith("BP02-PER")) return "PER";
+
+    const match = key.match(/BP02-([A-Z]+)\d+/);
+    return match ? match[1] : "";
+  }
+
+  if (key.includes("-")) {
+    return key.split("-")[0].trim();
+  }
+
+  return "";
+};
+
+const visibleUsers = Object.entries(groupedTrades).filter(([userId, cards]) => {
+  if (!tradingProfiles[userId]) return false;
+
+  if (
+    !selectedRarity &&
+    setId !== "9" &&
+    setId !== "tcgpromos"
+  ) {
+    return false;
+  }
+
+  return cards.some((c) => getRarity(c.card_key) === selectedRarity);
+});
+
+const totalPages = Math.ceil(
+  visibleUsers.length / USERS_PER_PAGE
+);
+return (
 <div
-  className="min-h-screen bg-[#e3e3e3]"
+  className="min-h-screen bg-[#111111] text-white"
 >
 
       <div className="container py-8">
 
         <button
           onClick={() => navigate("/trading-post")}
-          className="flex items-center gap-2 text-sm font-semibold text-zinc-600 hover:text-zinc-900 transition-colors mb-6"
+          className="mb-6 flex items-center gap-2 text-sm font-semibold text-zinc-400 transition-colors hover:text-[#d4af37]"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Trading Post
@@ -299,16 +310,16 @@ if (showLoginModal) {
 
 <div className="mb-10">
 
-  <p className="text-xs uppercase tracking-[0.3em] font-semibold text-zinc-500">
+  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4af37]">
     Trading Post
   </p>
 
-  <h1 className="text-5xl font-black uppercase leading-none text-zinc-900 mt-2">
+  <h1 className="mt-2 font-oxanium text-5xl font-black uppercase leading-none text-white">
     {setNames[setId || ""] || `Set ${setId}`}
   </h1>
 
-  <p className="mt-3 text-zinc-500">
-    Browse collectors currently offering cards from this set.
+  <p className="mt-3 max-w-2xl text-zinc-400">
+    Click on any collector's username to see their ISO, Wishlist, and full trades lists.
   </p>
 
 </div>
@@ -323,11 +334,12 @@ if (showLoginModal) {
               {rarityMap[setId].map((rarity) => (
                 <button
                   key={rarity}
-                  onClick={() =>
-                    setSelectedRarity(
-                      selectedRarity === rarity ? null : rarity
-                    )
-                  }
+                  onClick={() => {
+  setSelectedRarity(
+    selectedRarity === rarity ? null : rarity
+  );
+  setPage(0);
+}}
                   className={`px-4 py-2 rounded-lg border font-bold text-sm transition-all ${
 selectedRarity === rarity
     ? "text-[#4a3200] border-[#d4af37] bg-gradient-to-br from-[#fff7c2] via-[#f6d365] to-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.45)]"
@@ -369,10 +381,11 @@ if (rarity === "SAR") return "◇AR";
   Loading Trading Post...
 </div>}
 
-        {!loading && (
-          <div className="space-y-6 max-w-5xl mx-auto">
+                {!loading && (
+          <>
+            <div className="space-y-6 max-w-5xl mx-auto">
 
-            {Object.entries(groupedTrades)
+            {visibleUsers
               .sort(([userIdA, cardsA], [userIdB, cardsB]) => {
 
                 const hasDiscordA = !!tradingProfiles[userIdA];
@@ -414,8 +427,55 @@ const countA = selectedRarity ? cardsA.filter(c => getRarity(c.card_key) === sel
 const countB = selectedRarity ? cardsB.filter(c => getRarity(c.card_key) === selectedRarity).length : 0;
 
                 return countA - countB;
-              })
-              .map(([userId, cards]) => {
+             })
+.filter(([userId, cards]) => {
+
+  if (!tradingProfiles[userId]) return false;
+
+  if (
+    !selectedRarity &&
+    setId !== "9" &&
+    setId !== "tcgpromos"
+  ) {
+    return false;
+  }
+
+  const filteredCards = cards.filter(c => {
+
+    if (c.card_key.startsWith("RR")) {
+      return selectedRarity === "PR";
+    }
+
+    if (setId === "friendshipsbegin") {
+      const match = c.card_key.match(/SD01([A-Z]+)\d+/);
+      return !!(match && match[1] === selectedRarity);
+    }
+
+    if (setId === "FW") {
+      const match = c.card_key.match(/BP01([A-Z]+)\d+/);
+      return !!(match && match[1] === selectedRarity);
+    }
+
+    if (setId === "12") {
+      if (c.card_key.startsWith("BP02-PER")) {
+        return selectedRarity === "PER";
+      }
+
+      const match = c.card_key.match(/BP02-([A-Z]+)\d+/);
+      return !!(match && match[1] === selectedRarity);
+    }
+
+    return c.card_key.split("-")[0].trim() === selectedRarity;
+  });
+
+  return filteredCards.length > 0;
+
+})
+.slice(
+  page * USERS_PER_PAGE,
+  page * USERS_PER_PAGE + USERS_PER_PAGE
+)
+.map(([userId, cards]) => {
 
                   if (!tradingProfiles[userId]) return null;
 
@@ -455,49 +515,109 @@ return c.card_key.split("-")[0].trim() === selectedRarity;
 });
                 if (filteredCards.length === 0) return null;
 
-                return (
-                  <div key={userId} className="border rounded-xl p-4 bg-card w-full shadow-sm">
+                if (openProfile === userId) {
+  return (
+    <div
+      key={userId}
+      className="w-full overflow-hidden rounded-3xl border border-[#d4af37]/20 bg-[#171717] shadow-[0_0_40px_rgba(0,0,0,.55)]"
+    >
+      <div className="flex items-center justify-between border-b border-[#2d2d2d] bg-[#111111] px-5 py-3">
+        <span className="font-semibold">
+          {profiles[userId]?.username}'s ISO, Wishlist, and Full Trades List
+        </span>
 
-                    {/* USER HEADER */}
-                    <div className="flex items-center flex-wrap gap-2 font-bold text-lg mb-2">
-  <span>
-    {profiles[userId]?.username || userId}
-  </span>
+        <button
+          onClick={() => setOpenProfile(null)}
+          className="rounded-xl border border-[#d4af37]/25 bg-[#222222] px-4 py-2 text-sm font-semibold text-white transition hover:border-[#d4af37] hover:bg-[#2b2b2b]"
+        >
+          Close
+        </button>
+      </div>
 
-{VERIFIED_USERS[userId] && (
-  <img
-    src={VERIFIED_USERS[userId].badge}
-    alt={VERIFIED_USERS[userId].label}
-    title={VERIFIED_USERS[userId].label}
-    className="w-4 h-4 object-contain flex-shrink-0"
-  />
-)}
+      <iframe
+        src={`/${encodeURIComponent(
+          profiles[userId]?.username ?? ""
+        )}?embed=1`}
+        className="h-[75vh] sm:h-[500px] w-full border-0"
+        loading="lazy"
+      />
+    </div>
+  );
+}
 
-  {tradingProfiles[userId] && (
-    <span className="text-green-500 text-xs">●</span>
-  )}
+return (
+  <div
+    key={userId}
+    className="w-full rounded-3xl border border-[#d4af37]/15 bg-[#1b1b1b] p-6 shadow-[0_0_35px_rgba(0,0,0,.45)] transition-all hover:border-[#d4af37]/35"
+  >
 
-<span className="text-xs uppercase tracking-wider text-zinc-400">
-  ({
-    filteredCards.filter(c => c.listing_type !== "purchase").length
-  } for trade • {
-    filteredCards.filter(c => c.listing_type === "purchase").length
-  } for sale)
-</span>
-</div>
+{/* USER HEADER */}
+{(() => {
+  const assets = getProfileAssets(profiles[userId]);
+
+  return (
+    <div className="mb-3 flex items-center gap-3">
+
+      <img
+        src={assets.avatar}
+        className="h-14 w-14 rounded-full border-2 border-[#d4af37] object-cover"
+      />
+
+      <div className="min-w-0 flex-1">
+
+        <div className="flex items-center gap-2">
+
+          <button
+            onClick={() =>
+              setOpenProfile(
+                openProfile === userId ? null : userId
+              )
+            }
+            className="font-oxanium text-xl font-bold text-[#d4af37] transition hover:text-[#f6d365]"
+          >
+            {profiles[userId]?.username || userId}
+          </button>
+
+          {assets.verification && (
+            <img
+              src={assets.verification.badge}
+              alt={assets.verification.label}
+              title={assets.verification.label}
+              className="h-5 w-5 object-contain"
+            />
+          )}
+
+          {tradingProfiles[userId] && (
+            <span className="text-xs text-green-500">●</span>
+          )}
+
+        </div>
+
+        <div className="text-xs uppercase tracking-wider text-zinc-400">
+          {filteredCards.filter(c => c.listing_type !== "purchase").length}
+          {" "}For Trade •{" "}
+          {filteredCards.filter(c => c.listing_type === "purchase").length}
+          {" "}For Sale
+        </div>
+
+      </div>
+
+    </div>
+  );
+})()}
 
                     {/* DISCORD */}
                     {tradingProfiles[userId] && (
                       <div className="text-sm text-zinc-400 mb-4">
                         Discord:{" "}
-                        <span className="text-zinc-700 font-semibold">
+                        <span className="font-semibold text-[#d4af37]">
                           {tradingProfiles[userId]}
                         </span>
                       </div>
                     )}
 
                     {/* CARDS */}
-<div className="grid gap-2 grid-cols-4 sm:grid-cols-6 [grid-auto-flow:dense]">
+<div className="grid grid-cols-3 gap-2 sm:grid-cols-6 [grid-auto-flow:dense]">
   {filteredCards
     .sort((a, b) => {
       if (setId === "friendshipsbegin") {
@@ -559,11 +679,37 @@ card.listing_type === "trade"
     })}
 </div>
 
+
                   </div>
                 );
               })}
 
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="rounded-xl border border-[#d4af37]/25 bg-[#222222] px-5 py-2 font-semibold text-white transition hover:border-[#d4af37] hover:bg-[#2b2b2b] disabled:opacity-40"
+              >
+                Previous
+              </button>
+
+              <span className="font-semibold">
+                {page + 1} / {totalPages}
+              </span>
+
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="rounded-xl border border-[#d4af37]/25 bg-[#222222] px-5 py-2 font-semibold text-white transition hover:border-[#d4af37] hover:bg-[#2b2b2b] disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          )}
+          </>
         )}
 
       </div>

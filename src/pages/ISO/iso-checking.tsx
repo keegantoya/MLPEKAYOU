@@ -315,41 +315,43 @@ onClick={(e) => {
       </div>
     </div>
 
-<button
-  onClick={async () => {
-    if (!isWishlisted && toggleWishlist) {
-      await toggleWishlist(setId, cardKey);
-    }
-    setOpen(false);
-  }}
-  className="mb-2 w-full rounded-xl border border-pink-500/40 bg-[#242424] px-4 py-3 text-left transition hover:border-pink-500 hover:bg-pink-900/20"
->
-  <div className="font-semibold text-pink-400">
-    I want this card
-  </div>
+    {isWishlisted ? (
+      <button
+        onClick={async () => {
+          if (toggleWishlist) {
+            await toggleWishlist(setId, cardKey);
+          }
+          setOpen(false);
+        }}
+        className="w-full rounded-xl border border-zinc-600 bg-[#242424] px-4 py-3 text-left transition hover:border-zinc-400 hover:bg-zinc-800/30"
+      >
+        <div className="font-semibold text-zinc-200">
+          I no longer want this card
+        </div>
 
-  <div className="mt-1 text-xs text-zinc-400">
-    Add this card to your wishlist.
-  </div>
-</button>
+        <div className="mt-1 text-xs text-zinc-400">
+          Remove this card from your wishlist.
+        </div>
+      </button>
+    ) : (
+      <button
+        onClick={async () => {
+          if (toggleWishlist) {
+            await toggleWishlist(setId, cardKey);
+          }
+          setOpen(false);
+        }}
+        className="w-full rounded-xl border border-pink-500/40 bg-[#242424] px-4 py-3 text-left transition hover:border-pink-500 hover:bg-pink-900/20"
+      >
+        <div className="font-semibold text-pink-400">
+          I want this card
+        </div>
 
-<button
-  onClick={async () => {
-    if (isWishlisted && toggleWishlist) {
-      await toggleWishlist(setId, cardKey);
-    }
-    setOpen(false);
-  }}
-  className="w-full rounded-xl border border-zinc-600 bg-[#242424] px-4 py-3 text-left transition hover:border-zinc-400 hover:bg-zinc-800/30"
->
-  <div className="font-semibold text-zinc-200">
-    I no longer want this card
-  </div>
-
-  <div className="mt-1 text-xs text-zinc-400">
-    Remove this card from your wishlist.
-  </div>
-</button>
+        <div className="mt-1 text-xs text-zinc-400">
+          Add this card to your wishlist.
+        </div>
+      </button>
+    )}
   </>
 ) : (
   <>

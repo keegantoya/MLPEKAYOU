@@ -178,12 +178,12 @@ const CollectionModal = () => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[82dvh] w-[96vw] sm:max-h-[80vh] sm:w-[85vw] max-w-[1400px] flex-col sm:flex-row rounded-3xl border border-yellow-500/20 bg-[#171717] overflow-hidden shadow-2xl"
+        className="flex h-[72dvh] w-[96vw] sm:max-h-[80vh] sm:w-[85vw] max-w-[1400px] flex-col sm:flex-row rounded-3xl border border-yellow-500/20 bg-[#171717] overflow-hidden shadow-2xl"
       >
         {/* Sidebar */}
         <div className="w-full sm:w-56 border-b sm:border-b-0 sm:border-r border-zinc-800 bg-[#111111] overflow-x-auto sm:overflow-y-auto kayou-scrollbar flex sm:block">
 
-          <div className="p-6 border-b border-zinc-800">
+          <div className="p-3 sm:p-6 border-b border-zinc-800">
             <h2 className="font-oxanium text-2xl font-bold text-white">
               {collectionMode === "iso"
                 ? "ISO"
@@ -197,7 +197,7 @@ const CollectionModal = () => {
             <button
               key={setId}
               onClick={() => setSelectedSet(setId)}
-              className={`shrink-0 sm:w-full text-left px-5 py-3 sm:px-6 sm:py-4 transition ${
+              className={`shrink-0 sm:w-full text-left px-3 py-2 sm:px-6 sm:py-4 transition ${
                 selectedSet === setId
                   ? "bg-yellow-500 text-black font-bold"
                   : "text-zinc-300 hover:bg-zinc-900"
@@ -211,15 +211,15 @@ const CollectionModal = () => {
         {/* Right */}
         <div className="flex-1 overflow-y-auto kayou-scrollbar">
 
-          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-zinc-800 bg-[#171717] px-4 py-4 sm:px-8 sm:py-6">
+          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-zinc-800 bg-[#171717] px-3 py-2 sm:px-8 sm:py-6">
 
-            <h1 className="font-oxanium text-xl sm:text-3xl font-bold">
+            <h1 className="font-oxanium text-lg sm:text-3xl font-bold">
   {getSetName(selectedSet)}
 </h1>
 
             <button
               onClick={() => setShowCollectionModal(false)}
-              className="text-5xl text-zinc-400 hover:text-white"
+              className="text-3xl sm:text-5xl text-zinc-400 hover:text-white"
             >
               ×
             </button>
@@ -228,7 +228,61 @@ const CollectionModal = () => {
 
           <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 p-4 sm:p-8">
 
-            {filteredCards.map((card: any) => (
+            {filteredCards
+  .sort((a: any, b: any) => {
+    const rarityOrder: Record<string, string[]> = {
+      "1": ["R","SR","SSR","HR","UR","LSR","SGR","SC"],
+      "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
+      "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
+      "4": ["SSR","SCR","UR","USR","AR","OR","BP","SAR"],
+      "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
+      "6": ["BASE","R","SR","ST","SSR","FR","TR","TGR","UR","USR","XR"],
+      "7": ["N","SN","R","SR","SSR","UR","CR"],
+      "8": ["N","SN","R","SR","SSR","UR","UGR","CR"],
+      "11": ["N","SN","R","SR","SSR","UR","UGR","CR","SCR"],
+      "9": ["PR"],
+      "tcgpromos": ["PR"],
+      "friendshipsbegin": ["C","U","SR","SPR","ER","GR","CR","PER","PRR"],
+      "FW": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
+      "12": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
+    };
+
+    const getRarity = (card: any) => {
+      if (card.set_id === "FW") {
+        return card.card_key.match(/BP01([A-Z]+)\d+/)?.[1] ?? "";
+      }
+
+      if (card.set_id === "12") {
+        return card.card_key.match(/BP02-([A-Z]+)\d+/)?.[1] ?? "";
+      }
+
+      if (
+        card.set_id === "friendshipsbegin" ||
+        card.set_id === "SD"
+      ) {
+        return card.card_key.match(/SD01([A-Z]+)\d+/)?.[1] ?? "";
+      }
+
+      return card.card_key.split("-")[0];
+    };
+
+    const getNumber = (card: any) => {
+      const match = card.card_key.match(/(\d+)$/);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+
+    const order =
+      rarityOrder[String(a.set_id)] ?? [];
+
+    const rarityDiff =
+      order.indexOf(getRarity(a)) -
+      order.indexOf(getRarity(b));
+
+    if (rarityDiff !== 0) return rarityDiff;
+
+    return getNumber(a) - getNumber(b);
+  })
+  .map((card: any) => (
               <div
   key={`${card.set_id}-${card.card_key}`}
   className={`relative overflow-hidden rounded-lg bg-zinc-900 ${

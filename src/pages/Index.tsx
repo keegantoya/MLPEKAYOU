@@ -2,9 +2,6 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 
 export default function Index() {
-  const [activeTab, setActiveTab] = useState<
-    "collections" | "community" | "tutorial"
-  >("collections");
 
 const heroCards = [
   {
@@ -79,27 +76,18 @@ const heroCards = [
 
 <div className="mt-10 flex gap-8">
 
-  <button
-    onClick={() => setActiveTab("collections")}
-    className={`text-lg font-bold pb-2 border-b-2 transition ${
-      activeTab === "collections"
-        ? "border-[#E7C84B] text-[#E7C84B]"
-        : "border-transparent text-gray-500 hover:text-white"
-    }`}
-  >
+<div className="mt-10 flex gap-8">
+  <span className="border-b-2 border-[#E7C84B] pb-2 text-lg font-bold text-[#E7C84B]">
     Collections
-  </button>
+  </span>
 
-  <button
-    onClick={() => setActiveTab("community")}
-    className={`text-lg font-bold pb-2 border-b-2 transition ${
-      activeTab === "community"
-        ? "border-[#E7C84B] text-[#E7C84B]"
-        : "border-transparent text-gray-500 hover:text-white"
-    }`}
+  <Link
+    to="/community"
+    className="border-b-2 border-transparent pb-2 text-lg font-bold text-gray-500 transition hover:text-white"
   >
     Community
-  </button>
+  </Link>
+</div>
 
 </div>
 
@@ -394,6 +382,12 @@ const heroCards = [
   <div className="divide-y divide-[#2d2d2d]">
 
 {[
+    {
+    date: "07/29/2026",
+    title: "Functional Changes",
+    description:
+      "In your profile, you can now share it so others can instantly view your ISO, Wishlist, and Trades from a link. You can now share others' profiles from explore, or in trading post. Simply click on the username of the person with a card you'd like to trade for and see their ISO. Trading post also recieved a major redesign.",
+  },
   {
     alert: true,
     title: "MLPEKAYOU Service Notice",

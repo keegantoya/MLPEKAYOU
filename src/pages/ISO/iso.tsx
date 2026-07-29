@@ -7,18 +7,23 @@ import ISOSTAR from "./iso-star";
 import ISOTCG from "./iso-tcg";
 import ISOCONTROLS from "./iso-controls";
 import ISOPROMOS from "./iso-promos";
+import Wishlist from "./wishlist";
 import { useWishlist } from "./wishlist-in-iso";
+import InProgress from "./in-progress";
 
 type Section =
+  | "wishlist"
+  | "progress"
   | "moon"
   | "fun"
   | "rainbow"
   | "star"
   | "tcg"
-  | "promos"
-  | "progress";
+  | "promos";
 
 const sections = [
+  { id: "wishlist", label: "Wishlist" },
+  { id: "progress", label: "In Progress" },
   { id: "moon", label: "Eternal Moon" },
   { id: "fun", label: "Fun Moments" },
   { id: "rainbow", label: "Rainbow" },
@@ -121,7 +126,9 @@ const isSearching =
 </div>
 
         <div className="flex overflow-x-auto">
-          {sections.map((item) => (
+          {sections
+  .filter((item) => wishlistMode || item.id !== "wishlist")
+  .map((item) => (
             <button
               key={item.id}
               onClick={() => {
@@ -156,7 +163,9 @@ setSelectedSection(item.id as Section);
           </div>
 
           <nav className="py-2">
-            {sections.map((item) => (
+            {sections
+  .filter((item) => wishlistMode || item.id !== "wishlist")
+  .map((item) => (
               <button
                 key={item.id}
                 onClick={() => {
@@ -214,6 +223,15 @@ setSelectedSection(item.id as Section);
 onToggleHideISO={toggleHideISO}
 />
     </div>
+
+    {selectedSection === "wishlist" && (
+  <Wishlist />
+)}
+
+{selectedSection === "progress" && (
+  <InProgress />
+)}
+
     {selectedSection === "moon" && (
 <ISOMOON
   cardCodeSearch={cardCodeSearch}
@@ -276,6 +294,11 @@ onToggleHideISO={toggleHideISO}
   </>
 ) : isSearching ? (
     <>
+
+{selectedSection === "progress" && (
+  <InProgress />
+)}
+
 <ISOMOON
   cardCodeSearch={cardCodeSearch}
   characterSearch={characterSearch}
@@ -325,8 +348,13 @@ onToggleHideISO={toggleHideISO}
 />
 
     </>
-  ) : (
+) : (
     <>
+
+      {selectedSection === "progress" && (
+        <InProgress />
+      )}
+
       {selectedSection === "moon" && (
 <ISOMOON
   cardCodeSearch={cardCodeSearch}
