@@ -342,7 +342,9 @@ const CollectionModal = () => {
 
 <button
   onClick={() => {
-    const url = `https://www.mlpekayou.com/${profile?.username}`;
+    const url = `https://www.mlpekayou.com/${encodeURIComponent(
+  profile?.username ?? ""
+)}`;
 
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url);

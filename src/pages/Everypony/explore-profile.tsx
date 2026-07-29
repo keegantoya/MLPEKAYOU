@@ -898,7 +898,9 @@ const filteredWishlistCards = sortByIsoOrder(
 
   <button
     onClick={() => {
-      const url = `https://www.mlpekayou.com/${user?.username}`;
+      const url = `https://www.mlpekayou.com/${encodeURIComponent(
+  user?.username ?? ""
+)}`;
 
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(url);
