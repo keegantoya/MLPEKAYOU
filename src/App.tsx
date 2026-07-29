@@ -66,7 +66,11 @@ import Support from "./pages/Main Pages/support-mlpekayou";
 import Inbox from "./pages/Friends/inbox";
 import FriendsProfiles from "./pages/Friends/friends-profiles";
 import Messages from "./pages/Friends/messages";
-
+import MobileProfile from "./pages/Personal/mobile-profile";
+import DesktopProfile from "./pages/Personal/desktop-profile";
+import { getProfileAssets } from "./pages/Everypony/profile-assets";
+import ChangeAvatar from "./pages/Personal/change-avatar";
+import PublicProfile from "@/pages/Everypony/PublicProfile";
 
 
 const queryClient = new QueryClient();
@@ -262,6 +266,14 @@ const AppRoutes = () => {
   }
 />
 <Route
+  path="/Personal/change-avatar"
+  element={
+    <RequireAuth>
+      <ChangeAvatar />
+    </RequireAuth>
+  }
+/>
+<Route
   path="/iso"
   element={
     <RequireAuth>
@@ -280,6 +292,7 @@ const AppRoutes = () => {
       <Route path="/inventory/:setId" element={<MyTradesSets />} />
       <Route path="/faq" element={<FAQ />} />
       <Route path="/kayou-news" element={<KayouNews />} />
+      <Route path="/:username" element={<PublicProfile />} />
 
 
 
@@ -287,6 +300,24 @@ const AppRoutes = () => {
 
                 <Route path="/support-mlpekayou" element={<Support />} />
                 <Route path="/binders" element={<Binders />} />
+
+<Route
+  path="/mobile-profile"
+  element={
+    <RequireAuth>
+      <MobileProfile />
+    </RequireAuth>
+  }
+/>
+
+<Route
+  path="/desktop-profile"
+  element={
+    <RequireAuth>
+      <DesktopProfile />
+    </RequireAuth>
+  }
+/>
 
 <Route
   path="/iso"

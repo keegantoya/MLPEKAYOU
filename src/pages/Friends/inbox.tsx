@@ -2,123 +2,7 @@ import { useEffect, useState } from "react";
 import { Users, Bell, Pencil, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import FriendsProfiles from "./friends-profiles";
-
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
-import TerriAvatar from "@/assets/avatars/terrypfp.webp";
-
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
-
-const avatarMap: Record<string, string> = {
-  avatar001,
-  avatar002,
-  avatar003,
-  avatar004,
-  avatar005,
-  avatar006,
-  avatar007,
-  avatar008,
-  avatar009,
-  avatar010,
-  avatar011,
-  avatar012,
-  avatar013,
-  avatar014,
-  avatar015,
-  avatar016,
-  avatar017,
-  avatar018,
-  avatar019,
-  avatar020,
-  avatar021,
-  avatar022,
-  avatar023,
-  avatar024,
-  avatar025,
-  avatar026,
-  avatar027,
-  heimantouavatar: heimantouAvatar,
-  keeganpfpnmn: KeeganAvatar2,
-  "keeganpfpnmn.webp": KeeganAvatar2,
-  KeeganAvatar,
-  keeganpfp: KeeganAvatar,
-  maipfp,
-  "maipfp.webp": maipfp,
-  TerriAvatar,
-  terrypfp: TerriAvatar,
-};
-
-const VERIFIED_USERS: Record<
-  string,
-  {
-    badge: string;
-    label: string;
-  }
-> = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-};
+import { getProfileAssets } from "../Everypony/profile-assets";
 
 
 interface FriendRequest {
@@ -574,14 +458,11 @@ return (
 
   <div className="flex items-center gap-4 min-w-0">
 
-    <img
-      src={
-        avatarMap[String(request.avatar_url || "").trim()] ||
-        avatar001
-      }
-      alt={request.username}
-      className="h-14 w-14 rounded-full border-2 border-yellow-400 object-cover flex-shrink-0"
-    />
+<img
+  src={getProfileAssets(request).avatar}
+  alt={request.username}
+  className="h-14 w-14 rounded-full border-2 border-yellow-400 object-cover flex-shrink-0"
+/>
 
     <p className="min-w-0">
       <span className="font-semibold text-yellow-400">
@@ -681,15 +562,11 @@ return (
                     <div className="flex items-center gap-4">
 
 <div className="relative">
-  <img
-    src={
-      avatarMap[
-        String(friend.profile?.avatar_url || "").trim()
-      ] || avatar001
-    }
-    alt={friend.nickname || friend.username}
-    className="h-14 w-14 rounded-full border-2 border-yellow-400 object-cover"
-  />
+<img
+  src={getProfileAssets(friend.profile).avatar}
+  alt={friend.nickname || friend.username}
+  className="h-14 w-14 rounded-full border-2 border-yellow-400 object-cover"
+/>
 
   {friend.unreadMessages! > 0 && (
     <div className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white">
@@ -728,9 +605,20 @@ return (
     </>
   ) : (
     <>
-      <div className="truncate text-lg sm:text-xl font-semibold">
-        {friend.nickname || friend.username}
-      </div>
+<div className="flex items-center gap-2">
+  <div className="truncate text-lg sm:text-xl font-semibold">
+    {friend.nickname || friend.username}
+  </div>
+
+  {getProfileAssets(friend.profile).verification && (
+    <img
+      src={getProfileAssets(friend.profile).verification!.badge}
+      alt={getProfileAssets(friend.profile).verification!.label}
+      title={getProfileAssets(friend.profile).verification!.label}
+      className="h-5 w-5"
+    />
+  )}
+</div>
 
       <button
         onClick={() => {

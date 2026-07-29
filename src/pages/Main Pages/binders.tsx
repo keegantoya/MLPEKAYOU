@@ -1,127 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getProfileAssets } from "../Everypony/profile-assets";
 
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
-import TerriAvatar from "@/assets/avatars/terrypfp.webp";
-
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
-
-const avatarMap: Record<string, string> = {
-  "avatar001.webp": avatar001,
-  "avatar002.webp": avatar002,
-  "avatar003.webp": avatar003,
-  "avatar004.webp": avatar004,
-  "avatar005.webp": avatar005,
-  "avatar006.webp": avatar006,
-  "avatar027.webp": avatar027,
-  "avatar007.webp": avatar007,
-  "avatar008.webp": avatar008,
-  "avatar009.webp": avatar009,
-  "avatar010.webp": avatar010,
-  "avatar011.webp": avatar011,
-  "avatar012.webp": avatar012,
-  "avatar013.webp": avatar013,
-  "avatar014.webp": avatar014,
-  "avatar015.webp": avatar015,
-  "avatar016.webp": avatar016,
-  "avatar017.webp": avatar017,
-  "avatar018.webp": avatar018,
-  "avatar019.webp": avatar019,
-  "avatar020.webp": avatar020,
-  "avatar021.webp": avatar021,
-  "avatar022.webp": avatar022,
-  "avatar023.webp": avatar023,
-  "avatar024.webp": avatar024,
-  "avatar025.webp": avatar025,
-  "avatar026.webp": avatar026,
-  "heimantouavatar": heimantouAvatar,
-  "heimantouavatar.webp": heimantouAvatar,
-  "keeganpfp.webp": KeeganAvatar,
-  "keeganpfpnmn.webp": KeeganAvatar2,
-  "maipfp.webp": maipfp,
-  "terrypfp.webp": TerriAvatar,
-};
-
-const getAvatar = (avatar?: string) => {
-  if (!avatar) return avatar001;
-
-  const file = avatar.split("/").pop() || "";
-
-  return (
-    avatarMap[file] ||
-    avatarMap[`${file}.webp`] ||
-    avatar001
-  );
-};
-
-const VERIFIED_USERS = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-"6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-};
 
 const sets = [
   {
@@ -192,7 +73,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 6 }
+    rarities: { PR: 12 }
   },
   {
   id: "FW",
@@ -351,8 +232,6 @@ const targetUserId = viewingUserId ?? user?.id;
 
 if (!targetUserId) return;
 
-console.log("USER ID:", user?.id);
-
 if (!user) return;
 
     if (!user) return;
@@ -377,9 +256,6 @@ const map: Record<string, any> = {};
 });
 
 setProgressMap(map);
-console.log(map);
-
-    console.log(map);
 
   };
 
@@ -903,11 +779,11 @@ return (
   Customization
 </button>
 <div className="md:hidden flex flex-col items-center w-20 flex-shrink-0">
-  <img
-    src={getAvatar(viewingProfile?.avatar_url)}
-    alt={viewingUsername}
-    className="h-12 w-12 rounded-full border-2 border-[#d4af37] object-cover"
-  />
+<img
+  src={getProfileAssets(viewingProfile).avatar}
+  alt={viewingUsername}
+  className="h-12 w-12 rounded-full border-2 border-[#d4af37] object-cover"
+/>
 
   <span
     className="mt-1 w-full truncate text-center text-xs font-semibold leading-tight text-[#e6c35a]"
@@ -999,11 +875,11 @@ setSearchResults(
       setUserSearch("");
     }}
   >
-    <img
-      src={getAvatar(u.avatar_url)}
-      alt={u.username}
-      className="h-10 w-10 rounded-full border border-[#666666] object-cover"
-    />
+<img
+  src={getProfileAssets(u).avatar}
+  alt={u.username}
+  className="h-10 w-10 rounded-full border border-[#666666] object-cover"
+/>
 
     <span className="font-medium text-white">
       {u.username}
@@ -1150,46 +1026,41 @@ setSearchResults(
 >
   <div className="rounded-3xl border border-[#4d4d4d] bg-[#232323] p-5 shadow-2xl">
 
-    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a9a9a]">
-      Viewing Binders
-    </div>
+  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a9a9a]">
+    Viewing Binders
+  </div>
 
-    <div className="mt-3 flex items-center gap-3">
-      {viewingProfile?.avatar_url ? (
+  <div className="mt-3 flex items-center gap-3">
+
+    <img
+      src={getProfileAssets(viewingProfile).avatar}
+      alt={viewingUsername}
+      className="h-11 w-11 rounded-full border-2 border-[#d4af37] object-cover"
+    />
+
+    <div className="min-w-0 flex-1 flex items-center gap-2">
+
+      <span
+        className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-xl text-[#e6c35a]"
+        title={viewingUsername}
+      >
+        {viewingUsername}
+      </span>
+
+      {getProfileAssets(viewingProfile).verification && (
         <img
-          src={getAvatar(viewingProfile?.avatar_url)}
-          alt={viewingUsername}
-          className="h-11 w-11 rounded-full border-2 border-[#d4af37] object-cover"
+          src={getProfileAssets(viewingProfile).verification!.badge}
+          alt={getProfileAssets(viewingProfile).verification!.label}
+          title={getProfileAssets(viewingProfile).verification!.label}
+          className="h-5 w-5 flex-shrink-0"
         />
-      ) : (
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#d4af37] text-[#1b1b1b]">
-          👤
-        </div>
       )}
 
-<div className="min-w-0 flex-1 flex items-center gap-2">
+    </div>
 
-  <span
-    className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-bold text-xl text-[#e6c35a]"
-    title={viewingUsername}
-  >
-    {viewingUsername}
-  </span>
-
-  {viewingUserId && VERIFIED_USERS[viewingUserId] && (
-    <img
-      src={VERIFIED_USERS[viewingUserId].badge}
-      title={VERIFIED_USERS[viewingUserId].label}
-      className="h-5 w-5 flex-shrink-0"
-    />
-  )}
+  </div>
 
 </div>
-</div>
-
-
-</div>
-
 <button
   onClick={() => {
     const layouts = ["3x3", "4x3", "4x4", "2x2"] as const;

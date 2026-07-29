@@ -1,122 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
-import TerriAvatar from "@/assets/avatars/terrypfp.webp";
+import { getProfileAssets } from "./Everypony/profile-assets";
 
 import twilightBroomstick from "/nightmarenight-assets/twilightsparkleonabroomstick.webp";
 import candy1 from "/nightmarenight-assets/nmncandy1.webp";
 import candy2 from "/nightmarenight-assets/nmncandy2.webp";
 import candy3 from "/nightmarenight-assets/nmncandy3.webp";
-
-import nightmareMoonEye from "/nightmarenight-assets/nightmaremooneye.webp";
-
 import elementOfMagic from "/website-assets/elementofmagic.webp";
 import elementOfGenerosity from "/website-assets/elementofgenerosity.webp";
 import elementOfHonesty from "/website-assets/elementofhonesty.webp";
-
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
-
-const avatarMap: Record<string, string> = {
-  "avatar001.webp": avatar001,
-  "avatar002.webp": avatar002,
-  "avatar003.webp": avatar003,
-  "avatar004.webp": avatar004,
-  "avatar005.webp": avatar005,
-  "avatar006.webp": avatar006,
-  "avatar007.webp": avatar007,
-  "avatar008.webp": avatar008,
-  "avatar009.webp": avatar009,
-  "avatar010.webp": avatar010,
-  "avatar011.webp": avatar011,
-  "avatar012.webp": avatar012,
-  "avatar013.webp": avatar013,
-  "avatar014.webp": avatar014,
-  "avatar015.webp": avatar015,
-  "avatar016.webp": avatar016,
-  "avatar017.webp": avatar017,
-  "avatar018.webp": avatar018,
-  "avatar019.webp": avatar019,
-  "avatar020.webp": avatar020,
-  "avatar021.webp": avatar021,
-  "avatar022.webp": avatar022,
-  "avatar023.webp": avatar023,
-  "avatar024.webp": avatar024,
-  "avatar025.webp": avatar025,
-  "avatar026.webp": avatar026,
-  "avatar027.webp": avatar027,
-  "keeganpfp.webp": KeeganAvatar,
-  "maipfp.webp": maipfp,
-  "keeganpfpnmn.webp": KeeganAvatar2,
-  "terrypfp.webp": TerriAvatar,
-};
-
-const VERIFIED_USERS = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-};
 
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState<any[]>([]);
@@ -268,7 +160,7 @@ const allUsersSorted = (profiles || [])
   .map((u: any) => ({
     id: u.id,
     username: u.username || "Anonymous",
-    avatar: u.avatar_url,
+    avatar_url: u.avatar_url,
     total: totals.get(u.id) || 0,
   }))
   .sort((a: any, b: any) => b.total - a.total);
@@ -322,18 +214,6 @@ setLeaders(
 
     load();
   }, [leaderboardMode]);
-
-const getAvatar = (avatar?: string) => {
-  if (!avatar) return avatar001;
-
-  let file = avatar.split("/").pop() || "";
-
-  return (
-    avatarMap[file] ||
-    avatarMap[`${file}.webp`] ||
-    avatar001
-  );
-};
 
   const groupMissingBySet = (missing: string[]) => {
   const grouped: Record<string, string[]> = {};
@@ -497,7 +377,10 @@ const getAvatar = (avatar?: string) => {
 
     {(window.innerWidth < 768 ? [0, 1, 2] : [1, 0, 2]).map((actualIndex) => {
       const user = leaders[actualIndex];
-      if (!user) return null;
+
+if (!user) return null;
+
+const { avatar, verification } = getProfileAssets(user);
 
       const isFirst = actualIndex === 0;
       const isSecond = actualIndex === 1;
@@ -547,7 +430,7 @@ background: `
 {/* Avatar */}
 <div className="relative mx-auto w-fit mb-4">
   <img
-    src={getAvatar(user.avatar)}
+    src={avatar}
     className={`
       mx-auto rounded-full border-4 object-cover
       ${isFirst ? "w-28 h-28 border-yellow-300" : "w-20 h-20 border-white"}
@@ -596,11 +479,11 @@ background: `
     {user.username}
   </div>
 
-  {VERIFIED_USERS[user.id] && (
-    <img
-      src={VERIFIED_USERS[user.id].badge}
-      alt={VERIFIED_USERS[user.id].label}
-      title={VERIFIED_USERS[user.id].label}
+{verification && (
+  <img
+    src={verification.badge}
+    alt={verification.label}
+    title={verification.label}
       className="w-7 h-7 object-contain shrink-0"
     />
   )}
@@ -657,6 +540,7 @@ background: `
   <div className="space-y-4 mt-32">
     {leaders.slice(3).map((user, index) => {
       const rank = index + 4;
+      const { avatar, verification } = getProfileAssets(user);
 
 
       return (
@@ -692,7 +576,7 @@ background: `
 {/* Avatar */}
 <div className="relative shrink-0">
   <img
-    src={getAvatar(user.avatar)}
+    src={avatar}
     className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-2 border-white shadow-sm"
   />
 
@@ -739,14 +623,14 @@ background: `
       {user.username}
     </div>
 
-    {VERIFIED_USERS[user.id] && (
-      <img
-        src={VERIFIED_USERS[user.id].badge}
-        alt={VERIFIED_USERS[user.id].label}
-        title={VERIFIED_USERS[user.id].label}
-        className="w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7 object-contain shrink-0"
-      />
-    )}
+{verification && (
+  <img
+    src={verification.badge}
+    alt={verification.label}
+    title={verification.label}
+    className="w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7 object-contain shrink-0"
+  />
+)}
   </div>
 </div>
 

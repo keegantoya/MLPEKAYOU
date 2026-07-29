@@ -23,44 +23,9 @@ import {
 } from "@/components/ui/sheet";
 import { useRef } from "react";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
+import { getProfileAssets } from "../pages/Everypony/profile-assets";
 
 const logo = "/website-assets/mlpekayouwiki3.webp";
-
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
-import TerriAvatar from "@/assets/avatars/terrypfp.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 const generateUsername = () => {
   const names = [
@@ -80,90 +45,6 @@ const generateUsername = () => {
   const number = Math.floor(Math.random() * 9999);
 
   return `${name} ${number}`;
-};
-
-const avatarMap: Record<string, string> = {
-  "avatar001.webp": avatar001,
-  "avatar002.webp": avatar002,
-  "avatar003.webp": avatar003,
-  "avatar004.webp": avatar004,
-  "avatar005.webp": avatar005,
-  "avatar006.webp": avatar006,
-  "avatar007.webp": avatar007,
-  "avatar008.webp": avatar008,
-  "avatar009.webp": avatar009,
-  "avatar010.webp": avatar010,
-  "avatar011.webp": avatar011,
-  "avatar012.webp": avatar012,
-  "avatar013.webp": avatar013,
-  "avatar014.webp": avatar014,
-  "avatar015.webp": avatar015,
-  "avatar016.webp": avatar016,
-  "avatar017.webp": avatar017,
-  "avatar018.webp": avatar018,
-  "avatar019.webp": avatar019,
-  "avatar020.webp": avatar020,
-  "avatar021.webp": avatar021,
-  "avatar022.webp": avatar022,
-  "avatar023.webp": avatar023,
-  "avatar024.webp": avatar024,
-  "avatar025.webp": avatar025,
-  "avatar026.webp": avatar026,
-  "avatar027.webp": avatar027,
-  "keeganpfp.webp": KeeganAvatar,
-  "keeganpfpnmn.webp": KeeganAvatar2,
-  "maipfp.webp": maipfp,
-  "terrypfp.webp": TerriAvatar,
-  "heimantouavatar.webp": heimantouAvatar,
-};
-
-const VERIFIED_USERS = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-};
-
-const getAvatar = (avatar?: string, username?: string) => {
-  // HEIMANTOU SPECIALTY
-  if (username === "HeiManTou") {
-    return heimantouAvatar;
-  }
-
-  if (!avatar) return avatar001;
-
-  let file = avatar.split("/").pop() || "";
-  if (!file.includes(".")) file = `${file}.webp`;
-
-  return avatarMap[file] || avatar001;
 };
 
 const KayouHeader = () => {
@@ -202,8 +83,8 @@ const [pendingMessages, setPendingMessages] = useState(0);
 
 const menuRef = useRef<HTMLDivElement>(null);
 
-const verification =
-  profile?.id ? VERIFIED_USERS[profile.id] : null;
+const { avatar: profileAvatar, verification } =
+  getProfileAssets(profile ?? {});
 
   const getProfile = async (userId: string) => {
   const { data } = await supabase
@@ -213,13 +94,13 @@ const verification =
     .single();
 
   if (data?.avatar_url) {
-  const avatar = getAvatar(data.avatar_url, data.username);
+const { avatar } = getProfileAssets(data);
 
-  setAvatarSrc((prev) => {
-    if (prev === avatar) return prev;
-    sessionStorage.setItem("avatar", avatar);
-    return avatar;
-  });
+setAvatarSrc((prev) => {
+  if (prev === avatar) return prev;
+  sessionStorage.setItem("avatar", avatar);
+  return avatar;
+});
 }
 
 setProfile(data);
@@ -259,13 +140,13 @@ useEffect(() => {
     const updates = customEvent.detail || {};
 
     if (updates.avatar_url) {
-      const avatar = getAvatar(
-        updates.avatar_url,
-        updates.username || profile?.username
-      );
+const { avatar } = getProfileAssets({
+  ...profile,
+  ...updates,
+});
 
-      setAvatarSrc(avatar);
-      sessionStorage.setItem("avatar", avatar);
+setAvatarSrc(avatar);
+sessionStorage.setItem("avatar", avatar);
     }
 
     setProfile((prev: any) => ({
@@ -347,12 +228,12 @@ useEffect(() => {
 useEffect(() => {
   if (!profile?.avatar_url) return;
 
-  const avatar = getAvatar(profile.avatar_url);
+const { avatar } = getProfileAssets(profile);
 
-  if (avatar !== avatarSrc) {
-    setAvatarSrc(avatar);
-    sessionStorage.setItem("avatar", avatar);
-  }
+if (avatar !== avatarSrc) {
+  setAvatarSrc(avatar);
+  sessionStorage.setItem("avatar", avatar);
+}
 }, [profile?.avatar_url]);
 
 useEffect(() => {
@@ -681,7 +562,7 @@ active:scale-95
     <SheetTrigger asChild>
       <button className="hidden sm:inline-flex items-center justify-center">
         <img
-          src={avatarSrc || avatar001}
+          src={avatarSrc || profileAvatar}
           alt="avatar"
          className={`h-10 w-10 rounded-full object-cover border-2 shadow-md transition-all duration-300 hover:scale-110 hover:shadow-xl hover:border-[#d4af37]/60 ${
   open
@@ -723,7 +604,7 @@ active:scale-95
   <div className="space-y-2">
     <button
       onClick={() => {
-        navigate("/UserMenu");
+        navigate("/desktop-profile");
         setOpen(false);
       }}
       className="w-full px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-left"
@@ -2046,7 +1927,7 @@ mobileNavCollapsed
       return;
     }
 
-    navigate("/profile-mobile");
+    navigate("/mobile-profile");
   }}
   className={`
 relative z-10

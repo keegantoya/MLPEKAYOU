@@ -80,7 +80,7 @@ body {
   @apply text-foreground;
   font-family: "Oxanium", sans-serif;
   overscroll-behavior: none;
-  background: linear-gradient(to right, #7c5aa6, #5a3e84);
+  background: #111111;
 }
 
   img {

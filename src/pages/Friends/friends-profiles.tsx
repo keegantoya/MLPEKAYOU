@@ -1,122 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Messages from "./messages";
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
-import TerriAvatar from "@/assets/avatars/terrypfp.webp";
+import { getProfileAssets } from "../Everypony/profile-assets";
+import { usePublicProfileCards } from "@/lib/public-profile-cards";
+import { getTradeCardImage } from "@/lib/card-images";
 
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
-const avatarMap: Record<string, string> = {
-  avatar001,
-  avatar002,
-  avatar003,
-  avatar004,
-  avatar005,
-  avatar006,
-  avatar007,
-  avatar008,
-  avatar009,
-  avatar010,
-  avatar011,
-  avatar012,
-  avatar013,
-  avatar014,
-  avatar015,
-  avatar016,
-  avatar017,
-  avatar018,
-  avatar019,
-  avatar020,
-  avatar021,
-  avatar022,
-  avatar023,
-  avatar024,
-  avatar025,
-  avatar026,
-  avatar027,
-  heimantouavatar: heimantouAvatar,
-  keeganpfpnmn: KeeganAvatar2,
-  "keeganpfpnmn.webp": KeeganAvatar2,
-  KeeganAvatar,
-  keeganpfp: KeeganAvatar,
-  maipfp,
-  "maipfp.webp": maipfp,
-  TerriAvatar,
-  terrypfp: TerriAvatar,
-};
-
-const VERIFIED_USERS: Record<
-  string,
-  {
-    badge: string;
-    label: string;
-  }
-> = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-};
 
 interface FriendsProfilesProps {
   user: any;
@@ -136,10 +25,11 @@ const FriendsProfiles = ({
   completed: 0,
 });
 
-const [userTradeCards, setuserTradeCards] = useState<any[]>([]);
-const [userPurchaseCards, setuserPurchaseCards] = useState<any[]>([]);
-const [userIsoCards, setuserIsoCards] = useState<any[]>([]);
-const [userWishlistCards, setuserWishlistCards] = useState<any[]>([]);
+const {
+  isoCards: userIsoCards,
+  wishlistCards: userWishlistCards,
+  tradeCards,
+} = usePublicProfileCards(user.id);
 
 const [userProfileSettings, setuserProfileSettings] =
   useState({
@@ -165,10 +55,7 @@ const [friendNickname, setFriendNickname] = useState("");
 const [showMessages, setShowMessages] = useState(false);
 const [unreadMessages, setUnreadMessages] = useState(0);
 
-  const avatar =
-    avatarMap[String(user?.avatar_url || "").trim()] || avatar001;
-
-  const badge = VERIFIED_USERS[user?.id];
+const { avatar, verification: badge } = getProfileAssets(user);
 
   useEffect(() => {
   if (!user?.id) return;
@@ -265,44 +152,6 @@ window.dispatchEvent(
       hide_wishlist: profileSettings?.hide_wishlist ?? false,
     });
     
-    
-      // Load active trades
-      const { data: tradeCards } = await supabase
-        .from("for_trade")
-          .select("set_id, card_key, listing_type")
-        .eq("user_id", user.id);
-    
-    setuserTradeCards(
-      (tradeCards || []).filter(
-        (card: any) =>
-          (card.listing_type || "trade") === "trade"
-      )
-    );
-    
-    setuserPurchaseCards(
-      (tradeCards || []).filter(
-        (card: any) =>
-          card.listing_type === "purchase"
-      )
-    );
-    
-      const { data: wishlistRows } = await supabase
-      .from("wishlists")
-      .select("card_key")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
-    
-    const wishlistCards = (wishlistRows || []).map((row: any) => {
-    
-      const [set_id, card_key] = String(row.card_key).split(":");
-    
-      return {
-        id: row.card_key,
-        set_id,
-        card_key,
-      };
-    });
-    
       if (!(profileSettings?.hide_iso ?? false)) {
       setuserTab("iso");
     } else if (!(profileSettings?.hide_wishlist ?? false)) {
@@ -310,474 +159,6 @@ window.dispatchEvent(
     } else {
       setuserTab("trades");
     }
-    
-    // Load collection progress
-    const { data: isoProgress } = await supabase
-      .from("collection_progress")
-      .select("set_id, progress")
-      .eq("user_id", user.id);
-    
-      const { data: isoStatusRows } = await supabase
-      .from("iso_status")
-      .select("card_key, status")
-      .eq("user_id", user.id);
-    
-    // Build a lookup of cards currently in progress
-    const inProgressCards = new Set(
-      (isoStatusRows || [])
-        .filter(
-          (row: any) =>
-            row.status === "trade_in_progress" ||
-            row.status === "purchase_in_progress"
-        )
-        .map((row: any) => String(row.card_key))
-    );
-    
-    // Build a lookup of cards the user already owns
-    const ownedCards: Record<string, boolean> = {};
-    
-    setuserWishlistCards(
-      [...wishlistCards].sort((a, b) => {
-        const setOrder = [
-          "1",
-          "2",
-          "5",
-          "7",
-          "8",
-          "3",
-          "11",
-          "9",
-          "FW",
-          "SD",
-          "friendshipsbegin",
-          "tcgpromos",
-        ];
-    
-        const setIndexA = setOrder.indexOf(String(a.set_id));
-        const setIndexB = setOrder.indexOf(String(b.set_id));
-    
-        if (setIndexA !== setIndexB) {
-          return (
-            (setIndexA === -1 ? 999 : setIndexA) -
-            (setIndexB === -1 ? 999 : setIndexB)
-          );
-        }
-    
-        const extractNumber = (card: any) => {
-          const match = String(card.card_key).match(/(\d+)(?!.*\d)/);
-          return match ? parseInt(match[1], 10) : 0;
-        };
-    
-        return extractNumber(a) - extractNumber(b);
-      })
-    );
-    
-    (isoProgress || []).forEach((set: any) => {
-      Object.entries(set.progress || {}).forEach(([key, value]) => {
-        if (value) {
-          ownedCards[`${set.set_id}-${key}`] = true;
-        }
-      });
-    });
-    
-    // Generate missing cards for supported CCG sets
-    const isoCards: any[] = [];
-    
-    const isoSets = [
-      { id: "1", rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } },
-      { id: "2", rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 } },
-      { id: "3", rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, SZR: 3 } },
-      { id: "4", rarities: { SSR: 20, SCR: 18, UR:18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 }},
-      { id: "5", rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 } },
-      { id: "6", rarities: { BASE: 18, R: 30, SR: 14, ST: 20, SSR: 15, FR: 18, TR: 12, TGR: 8, UR: 19, USR: 8, XR: 8 }},
-      { id: "7", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 } },
-      { id: "8", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
-      { id: "11", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 } },
-      { id: "9", rarities: { PR: 6 } },
-      { id: "SD", rarities: {} },
-    { id: "FW", rarities: {} },
-    { id: "12", rarities: {} },
-    { id: "tcgpromos", rarities: {} },
-    ];
-    
-    isoSets.forEach((set) => {
-if (set.id === "9") {
-  [
-    "PR-1",
-    "PR-2",
-    "PR-3",
-    "PR-4",
-    "PR-5",
-    "PR-7",
-    "PR-8",
-    "PR-9",
-    "PR-10",
-    "PR-11",
-    "PR-12",
-    "PR-13",
-  ].forEach((cardKey) => {
-    const fullKey = `${set.id}-${cardKey}`;
-
-    if (
-      !ownedCards[fullKey] &&
-      !inProgressCards.has(fullKey)
-    ) {
-      isoCards.push({
-        id: fullKey,
-        set_id: set.id,
-        card_key: cardKey,
-      });
-    }
-  });
-
-  return;
-}
-      if (hiddenIsoSets.includes(String(set.id))) {
-        return;
-      }
-    if (set.id === "FW") {
-      const progressRow = (isoProgress || []).find(
-        (row: any) => String(row.set_id) === "FW"
-      );
-    
-      const progress = progressRow?.progress || {};
-    
-      const FW_STRUCTURE = [
-        { prefix: "BP01C", count: 48 },
-        { prefix: "BP01U", count: 18 },
-        { prefix: "BP01ER", count: 6 },
-        { prefix: "BP01SR", count: 14 },
-        { prefix: "BP01SPR", count: 28 },
-        { prefix: "BP01GR", count: 12 },
-        { prefix: "BP01CR", count: 12 },
-        { prefix: "BP01RR", count: 6 },
-        { prefix: "BP01PER", count: 12 },
-        { prefix: "BP01PSPR", count: 11 },
-        { prefix: "BP01PGR", count: 6 },
-        { prefix: "BP01PCR", count: 12 },
-        { prefix: "BP01PRR", count: 6 },
-      ];
-    
-      FW_STRUCTURE.forEach(({ prefix, count }) => {
-        for (let i = 0; i < count; i++) {
-          let num = i + 1;
-    
-          if (prefix === "BP01ER") {
-            num = i + 7;
-          }
-    
-          if (prefix === "BP01PSPR") {
-            const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
-            num = PSPR_NUMBERS[i];
-            if (!num) continue;
-          }
-    
-          const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
-    
-          if (
-      progress[cardKey] !== true &&
-      !inProgressCards.has(cardKey)
-    ) {
-            isoCards.push({
-              id: `FW-${cardKey}`,
-              set_id: "FW",
-              card_key: cardKey,
-            });
-          }
-        }
-      });
-    
-      return;
-    }
-    
-    if (
-      set.id === "SD" &&
-      (
-        hiddenIsoSets.includes("SD_STARTERS") ||
-        hiddenIsoSets.includes("SD_BONUS")
-      )
-    ) {
-      return;
-    }
-    
-    if (set.id === "SD") {
-      const progressRow = (isoProgress || []).find(
-        (row: any) => String(row.set_id) === "SD"
-      );
-    
-      const progress = progressRow?.progress || {};
-    
-      const SD_STRUCTURE = [
-        { prefix: "SD01C", count: 9 },
-        { prefix: "SD01U", count: 7 },
-        { prefix: "SD01SR", count: 6 },
-        { prefix: "SD01SPR", count: 10 },
-        { prefix: "SD01GR", count: 6 },
-        { prefix: "SD01CR", count: 6 },
-        { prefix: "SD01ER", count: 6 },
-        { prefix: "SD01PER", count: 12 },
-        { prefix: "SD01PRR", count: 6 },
-      ];
-    
-      SD_STRUCTURE.forEach(({ prefix, count }) => {
-        for (let i = 0; i < count; i++) {
-          let num = i + 1;
-    
-          // SD01PER is numbered 07–18
-          if (prefix === "SD01PER") {
-            num = i + 7;
-            if (num > 18) continue;
-          }
-    
-          const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
-    
-          const isOwned =
-            progress[cardKey] === true ||
-            progress[`BONUS-${cardKey}`] === true ||
-            progress[`STARTER-${cardKey}`] === true;
-    
-          if (
-      !isOwned &&
-      !inProgressCards.has(cardKey)
-    ) {
-            isoCards.push({
-              id: `SD-${cardKey}`,
-              set_id: "SD",
-              card_key: cardKey,
-            });
-          }
-        }
-      });
-    
-      return;
-    }
-    
-if (set.id === "tcgpromos") {
-  for (let i = 1; i <= 18; i++) {
-    const cardKey = `RR${String(i).padStart(2, "0")}`;
-    const fullKey = `tcgpromos-${cardKey}`;
-
-    if (
-      !ownedCards[fullKey] &&
-      !inProgressCards.has(fullKey)
-    ) {
-      isoCards.push({
-        id: fullKey,
-        set_id: "tcgpromos",
-        card_key: cardKey,
-      });
-    }
-  }
-
-  return;
-}
-
-if (set.id === "12") {
-  const DISCORD_STRUCTURE = [
-{ prefix: "BP02-C", count: 48 },
-{ prefix: "BP02-U", count: 18 },
-{ prefix: "BP02-ER", count: 6 },
-{ prefix: "BP02-SR", count: 14 },
-{ prefix: "BP02-SPR", count: 28 },
-{ prefix: "BP02-GR", count: 12 },
-{ prefix: "BP02-CR", count: 12 },
-{ prefix: "BP02-RR", count: 6 },
-{ prefix: "BP02-PER", count: 12 },
-{ prefix: "BP02-PSPR", count: 11 },
-{ prefix: "BP02-PGR", count: 6 },
-{ prefix: "BP02-PCR", count: 12 },
-{ prefix: "BP02-PRR", count: 6 },
-  ];
-
-  DISCORD_STRUCTURE.forEach(({ prefix, count }) => {
-    for (let i = 1; i <= count; i++) {
-      let cardKey: string;
-
-      if (prefix === "BP02-PER") {
-        const number = ((i - 1) % 6) + 1;
-        const variant = i <= 6 ? "A2" : "B2";
-        cardKey = `BP02-PER${String(number).padStart(2, "0")}-${variant}`;
-      } else {
-        cardKey = `${prefix}${String(i).padStart(2, "0")}`;
-      }
-
-      const fullKey = `12-${cardKey}`;
-
-      if (
-        !ownedCards[fullKey] &&
-        !inProgressCards.has(fullKey)
-      ) {
-        isoCards.push({
-          id: fullKey,
-          set_id: "12",
-          card_key: cardKey,
-        });
-      }
-    }
-  });
-
-  return;
-}
-    
-      // Existing logic for CCG sets
-      Object.entries(set.rarities).forEach(([rarity, count]) => {
-        for (let i = 1; i <= (count as number); i++) {
-          const cardKey = `${rarity}-${i}`;
-          const fullKey = `${set.id}-${cardKey}`;
-          if (inProgressCards.has(fullKey)) {
-      continue;
-    }
-    
-          if (
-      !ownedCards[fullKey] &&
-      !inProgressCards.has(fullKey)
-    ) {
-      isoCards.push({
-        id: fullKey,
-        set_id: set.id,
-        card_key: cardKey,
-      });
-    }
-        }
-      });
-    });
-    
-    setuserIsoCards(
-      [...isoCards].sort((a, b) => {
-        const setOrder = [
-          "1",
-          "2",
-          "5",
-          "7",
-          "8",
-          "3",
-          "11",
-          "4",
-          "6",
-          "FW",
-          "SD",
-          "friendshipsbegin",
-          "12",
-          "tcgpromos",
-          "9",
-        ];
-    
-        const rarityOrders: Record<string, string[]> = {
-          "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
-          "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
-          "3": ["R", "SR", "SSR", "HR", "LSR", "UR", "SGR", "ZR", "SC", "SZR"],
-          "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
-          "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
-          "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
-          "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
-          "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
-          "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR" ],
-          "9": ["PR"],
-          "tcgpromos": ["PR"],
-          "12": [
-  "C",
-  "U",
-  "ER",
-  "SR",
-  "SPR",
-  "GR",
-  "CR",
-  "RR",
-  "※ER",
-  "※SPR",
-  "※GR",
-  "※CR",
-  "※RR",
-],
-          "FW": [
-            "C", "U", "ER", "SR", "SPR", "GR", "CR", "RR",
-            "※ER", "※SPR", "※GR", "※CR", "※RR",
-          ],
-    
-          "SD": [
-            "C", "U", "SR", "SPR", "GR", "CR", "ER",
-            "※ER", "※RR",
-          ],
-    
-          "friendshipsbegin": [
-            "C", "U", "SR", "SPR", "GR", "CR", "ER",
-            "※ER", "※RR",
-          ],
-        };
-    
-    const extractRarity = (card: any) => {
-      const setId = String(card.set_id);
-      const key = String(card.card_key);
-    
-      // Standard checklist sets
-if (
-  setId !== "FW" &&
-  setId !== "SD" &&
-  setId !== "friendshipsbegin" &&
-  setId !== "tcgpromos" &&
-  setId !== "12"
-) {
-  return key.split("-")[0];
-}
-    
-      // TCG Promos
-      if (setId === "tcgpromos") {
-        return "PR";
-      }
-    
-      // Explicit prefix checks (prevents PRR from being mistaken for RR)
-      if (key.includes("PSPR")) return "※SPR";
-      if (key.includes("PCR")) return "※CR";
-      if (key.includes("PGR")) return "※GR";
-      if (key.includes("PER")) return "※ER";
-      if (key.includes("PRR")) return "※RR";
-    
-      if (key.includes("SPR")) return "SPR";
-      if (key.includes("GR")) return "GR";
-      if (key.includes("CR")) return "CR";
-      if (key.includes("RR")) return "RR";
-      if (key.includes("SR")) return "SR";
-      if (key.includes("ER")) return "ER";
-      if (key.includes("U")) return "U";
-      if (key.includes("C")) return "C";
-    
-      return "OTHER";
-    };
-    
-        const extractNumber = (card: any) => {
-          const match = String(card.card_key).match(/(\d+)(?!.*\d)/);
-          return match ? parseInt(match[1], 10) : 0;
-        };
-    
-        const setIndexA = setOrder.indexOf(String(a.set_id));
-        const setIndexB = setOrder.indexOf(String(b.set_id));
-    
-        if (setIndexA !== setIndexB) {
-          return (
-            (setIndexA === -1 ? 999 : setIndexA) -
-            (setIndexB === -1 ? 999 : setIndexB)
-          );
-        }
-    
-        const currentOrder =
-          rarityOrders[String(a.set_id)] || [];
-    
-        const rarityA = extractRarity(a);
-        const rarityB = extractRarity(b);
-    
-        const rarityIndexA = currentOrder.indexOf(rarityA);
-        const rarityIndexB = currentOrder.indexOf(rarityB);
-    
-        if (rarityIndexA !== rarityIndexB) {
-          return (
-            (rarityIndexA === -1 ? 999 : rarityIndexA) -
-            (rarityIndexB === -1 ? 999 : rarityIndexB)
-          );
-        }
-    
-        return extractNumber(a) - extractNumber(b);
-      })
-    );
     
       // Load owned card count
 const { data: collection } = await supabase
@@ -801,11 +182,16 @@ let owned = 0;
     
       // Load collection progress for completed sets
     
-    let completed = 0;
-    
-    const progressMap = new Map(
-      (isoProgress || []).map((row: any) => [String(row.set_id), row])
-    );
+let completed = 0;
+
+const { data: isoProgress } = await supabase
+  .from("collection_progress")
+  .select("set_id, progress")
+  .eq("user_id", user.id);
+
+const progressMap = new Map(
+  (isoProgress || []).map((row: any) => [String(row.set_id), row])
+);
     
     // Main checklist sets only
     const sets = [
@@ -819,9 +205,11 @@ let owned = 0;
     ];
     
     sets.forEach((set) => {
-      const found = progressMap.get(set.id);
-    
-      if (!found?.progress) return;
+const found = progressMap.get(set.id) as
+  | { progress: Record<string, boolean> }
+  | undefined;
+
+if (!found?.progress) return;
     
       let ownedInSet = 0;
       let totalInSet = 0;
@@ -897,11 +285,11 @@ let owned = 0;
       }
     }
     
-    setuserStats({
-      trades: (tradeCards || []).length,
-      owned,
-      completed,
-    });
+setuserStats({
+  trades: tradeCards.length,
+  owned,
+  completed,
+});
     }
   
   
@@ -944,74 +332,6 @@ useEffect(() => {
     window.removeEventListener("keydown", handleKeyDown);
   };
 }, [quickViewCard]);
-
-function getTradeCardImage(card: any) {
-  if (!card) return "";
-
-// Friendships Begin
-if (
-  String(card.set_id) === "SD" ||
-  String(card.set_id) === "friendshipsbegin"
-) {
-  const key = String(card.card_key)
-    .replace(/^BONUS-/, "")
-    .replace(/^STARTER-/, "");
-
-  return `/friendships-begin/${key}.webp`;
-}
-
-// Discord
-
-if (String(card.set_id) === "12") {
-  return `/cards/discord/${card.card_key}.webp`;
-}
-
-// Fantasy Wonderland
-if (String(card.set_id) === "FW") {
-  const key = String(card.card_key);
-
-  return key.startsWith("BP01ER")
-    ? `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`
-    : key.startsWith("BP01PER")
-    ? `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`
-    : `/fantasy-wonderland/${key}.webp`;
-}
-
-  if (card.set_id === "9") {
-    const number = card.card_key.split("-")[1];
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
-  }
-  if (card.set_id === "tcgpromos") {
-    return `/tcgpromos/${card.card_key}.webp`;
-  }
-
-  const [rarityRaw, number] = card.card_key.split("-");
-  const rarity =
-    rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
-
-const config: Record<string, { folder: string; prefix: string }> = {
-  "1": { folder: "first-edition-moon", prefix: "M1" },
-  "2": { folder: "second-edition-moon", prefix: "M2" },
-  "3": { folder: "third-edition-moon", prefix: "M3" },
-  "4": { folder: "star-one", prefix: "S1" },
-  "5": { folder: "rainbow-one", prefix: "R1" },
-  "6": { folder: "rainbow-two", prefix: "R2" },
-  "7": { folder: "fun-moments-one", prefix: "FM1" },
-  "8": { folder: "fun-moments-two", prefix: "FM2" },
-  "11": { folder: "fun-moments-three", prefix: "FM3" },
-};
-  const c = config[String(card.set_id)];
-  if (!c) return "";
-
-  return `/cards/${c.folder}/${c.prefix}${rarity}${String(
-  number
-).padStart(3, "0")}${
-  String(card.set_id) === "6" &&
-  ["ST", "TR", "TGR"].includes(rarity)
-    ? ".webp"
-    : ".webp"
-}`;
-}
 
 async function sendFriendRequest() {
   if (!currentUserId) return;
@@ -1098,16 +418,13 @@ const filteredIsoCards =
         (card) => String(card.set_id) === selectedSet
       );
 
-const allTradeCards = [
-  ...userTradeCards.map((card) => ({
-    ...card,
-    type: "trade",
-  })),
-  ...userPurchaseCards.map((card) => ({
-    ...card,
-    type: "sale",
-  })),
-];
+const allTradeCards = tradeCards.map((card: any) => ({
+  ...card,
+  type:
+    card.listing_type === "purchase"
+      ? "sale"
+      : "trade",
+}));
 
 const TRADE_SET_TABS = [
   { id: "ALL", name: "All" },
@@ -1401,7 +718,7 @@ ${
         <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
           {filteredIsoCards.map((card) => (
 <div
-  key={card.id}
+  key={`${card.set_id}-${card.card_key}`}
   onClick={() => setQuickViewCard(card)}
   className={`self-start cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
     isMoon3DoubleWide(card) ? "col-span-2" : ""
@@ -1554,7 +871,7 @@ className={`
         <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
           {filteredWishlistCards.map((card) => (
             <div
-              key={card.id}
+              key={`${card.set_id}-${card.card_key}`}
               onClick={() => setQuickViewCard(card)}
               className={`cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
                 isMoon3DoubleWide(card) ? "col-span-2" : ""

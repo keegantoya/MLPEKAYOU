@@ -97,6 +97,7 @@ const sets = [
 ]
 
 interface ISOMOONProps {
+  userId?: string;
   cardCodeSearch: string;
   characterSearch: string;
   searchAllCards: boolean;
@@ -105,6 +106,7 @@ interface ISOMOONProps {
 }
 
 export default function ISOMOON({
+  userId: publicUserId,
   cardCodeSearch,
   characterSearch,
   searchAllCards,
@@ -122,24 +124,29 @@ export default function ISOMOON({
 
   useEffect(() => {
     const load = async () => {
-const {
-  data: { session },
-} = await supabase.auth.getSession();
+let activeUserId = publicUserId;
 
-if (!session?.user) {
-  setLoading(false);
-  return;
+if (!activeUserId) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    setLoading(false);
+    return;
+  }
+
+  activeUserId = session.user.id;
 }
 
-setUserId(session.user.id);
-
+setUserId(activeUserId);
       const allOwned: Record<string, boolean> = {};
 
 for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
         const { data: progress } = await supabase
           .from("collection_progress_raw")
           .select("progress")
-          .eq("user_id", session.user.id)
+          .eq("user_id", activeUserId)
           .eq("set_id", set.id)
           .single();
 

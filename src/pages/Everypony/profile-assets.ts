@@ -1,0 +1,150 @@
+import avatar001 from "@/assets/avatars/avatar001.webp";
+import avatar002 from "@/assets/avatars/avatar002.webp";
+import avatar003 from "@/assets/avatars/avatar003.webp";
+import avatar004 from "@/assets/avatars/avatar004.webp";
+import avatar005 from "@/assets/avatars/avatar005.webp";
+import avatar006 from "@/assets/avatars/avatar006.webp";
+import avatar007 from "@/assets/avatars/avatar007.webp";
+import avatar008 from "@/assets/avatars/avatar008.webp";
+import avatar009 from "@/assets/avatars/avatar009.webp";
+import avatar010 from "@/assets/avatars/avatar010.webp";
+import avatar011 from "@/assets/avatars/avatar011.webp";
+import avatar012 from "@/assets/avatars/avatar012.webp";
+import avatar013 from "@/assets/avatars/avatar013.webp";
+import avatar014 from "@/assets/avatars/avatar014.webp";
+import avatar015 from "@/assets/avatars/avatar015.webp";
+import avatar016 from "@/assets/avatars/avatar016.webp";
+import avatar017 from "@/assets/avatars/avatar017.webp";
+import avatar018 from "@/assets/avatars/avatar018.webp";
+import avatar019 from "@/assets/avatars/avatar019.webp";
+import avatar020 from "@/assets/avatars/avatar020.webp";
+import avatar021 from "@/assets/avatars/avatar021.webp";
+import avatar022 from "@/assets/avatars/avatar022.webp";
+import avatar023 from "@/assets/avatars/avatar023.webp";
+import avatar024 from "@/assets/avatars/avatar024.webp";
+import avatar025 from "@/assets/avatars/avatar025.webp";
+import avatar026 from "@/assets/avatars/avatar026.webp";
+import avatar027 from "@/assets/avatars/avatar027.webp";
+
+import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
+import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
+import maipfp from "@/assets/avatars/maipfp.webp";
+import TerriAvatar from "@/assets/avatars/terrypfp.webp";
+
+import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
+import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
+
+export const avatarMap: Record<string, string> = {
+  avatar001,
+  avatar002,
+  avatar003,
+  avatar004,
+  avatar005,
+  avatar006,
+  avatar007,
+  avatar008,
+  avatar009,
+  avatar010,
+  avatar011,
+  avatar012,
+  avatar013,
+  avatar014,
+  avatar015,
+  avatar016,
+  avatar017,
+  avatar018,
+  avatar019,
+  avatar020,
+  avatar021,
+  avatar022,
+  avatar023,
+  avatar024,
+  avatar025,
+  avatar026,
+  avatar027,
+
+  heimantouavatar: heimantouAvatar,
+  "heimantouavatar.webp": heimantouAvatar,
+
+  keeganpfp: KeeganAvatar,
+  "keeganpfp.webp": KeeganAvatar,
+
+  keeganpfpnmn: KeeganAvatar2,
+  "keeganpfpnmn.webp": KeeganAvatar2,
+
+  maipfp,
+  "maipfp.webp": maipfp,
+
+  terrypfp: TerriAvatar,
+  "terrypfp.webp": TerriAvatar,
+};
+
+export const DEFAULT_AVATAR = avatar001;
+
+export function getAvatar(
+  avatar: string | null | undefined
+): string {
+  return avatarMap[String(avatar ?? "").trim()] ?? DEFAULT_AVATAR;
+}
+
+export const VERIFIED_USERS: Record<
+  string,
+  {
+    badge: string;
+    label: string;
+  }
+> = {
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+  "6247b70d-3f55-493c-8eee-3badedf581db": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+
+  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+  "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
+    badge: blueVerifiedBadge,
+    label: "KAYOU STAFF",
+  },
+
+  "325585dd-c617-4dd2-8314-d608273cd5f6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+};
+
+export function getVerification(userId: string | null | undefined) {
+  if (!userId) return null;
+  return VERIFIED_USERS[userId] ?? null;
+}
+
+export function getProfileAssets(
+  user?: {
+    id?: string | null;
+    avatar_url?: string | null;
+  } | null
+) {
+  return {
+    avatar: getAvatar(user?.avatar_url),
+    verification: getVerification(user?.id),
+  };
+}

@@ -426,6 +426,7 @@ backgroundImage: `
 
     {[
       { label: "All", value: "all" },
+      { label: "Star", value: "star" },
       { label: "Moon", value: "eternal-moon" },
       { label: "Rainbow", value: "rainbow" },
       { label: "Fun", value: "fun-moments" },

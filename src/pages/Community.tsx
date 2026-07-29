@@ -1,38 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getProfileAssets } from "./Everypony/profile-assets";
 
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
-import TerriAvatar from "@/assets/avatars/terrypfp.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
 import celestiasCrown from "/website-assets/celestiascrown.webp";
 
 import berryShineGhost from "/nightmarenight-assets/berryshineghost.webp";
@@ -46,40 +16,6 @@ import elementOfHonesty from "/website-assets/elementofhonesty.webp";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
-
-const avatarMap: Record<string, string> = {
-  "avatar001.webp": avatar001,
-  "avatar002.webp": avatar002,
-  "avatar003.webp": avatar003,
-  "avatar004.webp": avatar004,
-  "avatar005.webp": avatar005,
-  "avatar006.webp": avatar006,
-  "avatar007.webp": avatar007,
-  "avatar008.webp": avatar008,
-  "avatar009.webp": avatar009,
-  "avatar010.webp": avatar010,
-  "avatar011.webp": avatar011,
-  "avatar012.webp": avatar012,
-  "avatar013.webp": avatar013,
-  "avatar014.webp": avatar014,
-  "avatar015.webp": avatar015,
-  "avatar016.webp": avatar016,
-  "avatar017.webp": avatar017,
-  "avatar018.webp": avatar018,
-  "avatar019.webp": avatar019,
-  "avatar020.webp": avatar020,
-  "avatar021.webp": avatar021,
-  "avatar022.webp": avatar022,
-  "avatar023.webp": avatar023,
-  "avatar024.webp": avatar024,
-  "avatar025.webp": avatar025,
-  "avatar026.webp": avatar026,
-  "avatar027.webp": avatar027,
-  "KeeganAvatar.webp": KeeganAvatar,
-  "keeganpfpnmn.webp": KeeganAvatar2,
-  "maipfp.webp": maipfp,
-  "terrypfp.webp": TerriAvatar,
-};
 
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", total: 186 },
@@ -128,84 +64,25 @@ const sets = [
 },
 ];
 
-const manualFirstFinishers: Record<string, { username: string; avatar_url?: string }> = {
-  "1": {
-    username: "Jacob",
-    avatar_url: "avatar010.webp"
-  },
-  "2": {
-    username: "Jacob",
-    avatar_url: "avatar010.webp"
-  },
-  "5": {
-    username: "Keegan",
-    avatar_url: "keeganpfpnmn.webp"
-  },
-  "6": {
-  username: "Mari",
-  avatar_url: "avatar021.webp"
-  },
-  "8": {
-  username: "Mari",
-  avatar_url: "avatar021.webp"
-  },
-  "7": {
-  username: "Jacob",
-  avatar_url: "avatar010.webp"
-},
-  "fantasywonderland": {
-  username: "derpypony",
-  avatar_url: "avatar015.webp"
-},
-  "friendshipsbegin": {
-  username: "Mari",
-  avatar_url: "avatar021.webp"
-  },
-    "3": {
-  username: "Mari",
-  avatar_url: "avatar021.webp"
-  },
-};
-
-const VERIFIED_USERS: Record<
+const manualFirstFinishers: Record<
   string,
   {
-    badge: string;
-    label: string;
+    id: string;
   }
 > = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-    "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
+  "1": { id: "94a1c998-d040-4dd2-b2fb-5f606287139d" }, // Jacob
+  "2": { id: "94a1c998-d040-4dd2-b2fb-5f606287139d" }, // Jacob
+  "3": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
+  "5": { id: "17e57e39-bc0c-44e7-b373-ac34c6690185" }, // Keegan
+  "6": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
+  "7": { id: "94a1c998-d040-4dd2-b2fb-5f606287139d" }, // Jacob
+  "8": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
+  "friendshipsbegin": {
+    id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+  }, // Mari
+  "fantasywonderland": {
+    id: "948dcf0c-0ec3-4123-8b8e-f23ad334fb30",
+  }, // derpypony
 };
 
 const Community = () => {
@@ -216,31 +93,44 @@ const [activeCategory, setActiveCategory] = useState<
   "star" | "ccg" | "rainbow" | "funmoments" | "tcg"
 >("ccg");
 
-  const [firstFinishers, setFirstFinishers] = useState<any>({});
-  const topCollector = {
-  id: "94a1c998-d040-4dd2-b2fb-5f606287139d",
-  username: "Mari",
-  avatar_url: "avatar021.webp",
-};
+const [firstFinishers, setFirstFinishers] = useState<any>({});
+const [topCollector, setTopCollector] = useState<any>(null);
   const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
   };
 
-const getAvatar = (avatar?: string) => {
-  if (!avatar) return avatar001;
 
-  let file = avatar.split("/").pop() || "";
-
-  return (
-    avatarMap[file] ||
-    avatarMap[`${file}.webp`] ||
-    avatar001
-  );
-};
 
 useEffect(() => {
-  setFirstFinishers(manualFirstFinishers);
+  async function loadProfiles() {
+    const ids = [
+      ...new Set([
+        ...Object.values(manualFirstFinishers).map((x) => x.id),
+        "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+      ]),
+    ];
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, username, avatar_url")
+      .in("id", ids);
+
+    const profileMap = Object.fromEntries(
+      (data ?? []).map((p) => [p.id, p])
+    );
+
+    const finishers: any = {};
+
+    for (const [setId, value] of Object.entries(manualFirstFinishers)) {
+      finishers[setId] = profileMap[value.id];
+    }
+
+    setFirstFinishers(finishers);
+    setTopCollector(profileMap["2692c7a3-bce3-45b7-8636-5e18bf39edc3"]);
+  }
+
+  loadProfiles();
 }, []);
 
   return (
@@ -304,7 +194,7 @@ style={{
         />
 
         <img
-          src={getAvatar(topCollector?.avatar_url)}
+          src={getProfileAssets(topCollector).avatar}
           alt="Top Collector Avatar"
           className="
             w-28
@@ -324,25 +214,20 @@ style={{
           {topCollector?.username || "Loading..."}
         </span>
 
-        {topCollector?.id &&
-          VERIFIED_USERS[topCollector.id] && (
-            <img
-              src={VERIFIED_USERS[topCollector.id].badge}
-              alt={VERIFIED_USERS[topCollector.id].label}
-              title={VERIFIED_USERS[topCollector.id].label}
-              className="w-5 h-5"
-            />
-          )}
+        {getProfileAssets(topCollector).verification && (
+  <img
+    src={getProfileAssets(topCollector).verification!.badge}
+    alt={getProfileAssets(topCollector).verification!.label}
+    title={getProfileAssets(topCollector).verification!.label}
+    className="w-5 h-5"
+  />
+)}
       </div>
 
       {/* Stats */}
      <div className="text-center mb-6">
   <div className="text-2xl font-black text-[#f4d47c]">
     Mari
-  </div>
-
-  <div className="mt-2 text-[11px] uppercase tracking-[0.25em] text-[#8f8f8f]">
-    Most Completed Sets
   </div>
 </div>
 
@@ -622,7 +507,7 @@ min-h-[180px]
     <>
       <div className="relative w-14 h-14">
         <img
-          src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
+          src={getProfileAssets(firstFinishers[String(set.id)]).avatar}
           className="w-14 h-14 rounded-full border-4 border-[#f4d47c]
 shadow-xl
 ring-2 ring-[#c79b32]"
@@ -745,7 +630,7 @@ min-h-[180px]
     <>
       <div className="relative w-14 h-14">
         <img
-          src={getAvatar(firstFinishers[String(set.id)].avatar_url)}
+          src={getProfileAssets(firstFinishers[String(set.id)]).avatar}
           className="w-14 h-14 rounded-full border-4 border-[#f4d47c]
 shadow-xl
 ring-2 ring-[#c79b32]"
@@ -817,7 +702,7 @@ className="
       />
 
       <img
-        src={getAvatar(topCollector?.avatar_url)}
+        src={getProfileAssets(topCollector).avatar}
         alt="Top Collector Avatar"
         className="
           w-28
@@ -837,25 +722,20 @@ className="
         {topCollector?.username || "Loading..."}
       </span>
 
-      {topCollector?.id &&
-        VERIFIED_USERS[topCollector.id] && (
-          <img
-            src={VERIFIED_USERS[topCollector.id].badge}
-            alt={VERIFIED_USERS[topCollector.id].label}
-            title={VERIFIED_USERS[topCollector.id].label}
-            className="w-5 h-5"
-          />
-        )}
+{getProfileAssets(topCollector).verification && (
+  <img
+    src={getProfileAssets(topCollector).verification!.badge}
+    alt={getProfileAssets(topCollector).verification!.label}
+    title={getProfileAssets(topCollector).verification!.label}
+    className="w-5 h-5"
+  />
+)}
     </div>
 
     {/* Stats */}
 <div className="text-center mb-6">
   <div className="text-2xl font-black text-[#f4d47c]">
     Mari
-  </div>
-
-  <div className="mt-2 text-[11px] uppercase tracking-[0.25em] text-[#8f8f8f]">
-    Most Completed Sets
   </div>
 </div>
 
