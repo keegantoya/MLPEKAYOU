@@ -267,7 +267,7 @@ if (
 
 const key = `${card.rarity}-${card.number}`;
 
-if (searchAllCards) {
+if (searchAllCards || wishlistMode) {
   return true;
 }
 
@@ -353,27 +353,25 @@ return searchAllCards && !wishlistMode ? (
     {cardContent}
   </div>
 ) : (
-  <div
+  <ISOChecking
     key={`${card.rarity}-${card.number}`}
-    className={isDoubleWide ? "col-span-2" : ""}
+    userId={userId}
+    setId={set.id}
+    cardKey={`${card.rarity}-${card.number}`}
+    wishlistMode={wishlistMode}
+    isWishlisted={isWishlisted}
+    toggleWishlist={toggleWishlist}
+    onComplete={() =>
+      setOwned((prev) => ({
+        ...prev,
+        [`${set.id}-${card.rarity}-${card.number}`]: true,
+      }))
+    }
   >
-    <ISOChecking
-      userId={userId}
-      setId={set.id}
-      cardKey={`${card.rarity}-${card.number}`}
-      wishlistMode={wishlistMode}
-      isWishlisted={isWishlisted}
-      toggleWishlist={toggleWishlist}
-      onComplete={() =>
-        setOwned((prev) => ({
-          ...prev,
-          [`${set.id}-${card.rarity}-${card.number}`]: true,
-        }))
-      }
-    >
+    <div className={isDoubleWide ? "col-span-2" : ""}>
       {cardContent}
-    </ISOChecking>
-  </div>
+    </div>
+  </ISOChecking>
 );
 })}
             </div>

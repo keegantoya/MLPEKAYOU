@@ -216,12 +216,11 @@ onToggleHideISO={toggleHideISO}
     </div>
     {selectedSection === "moon" && (
 <ISOMOON
-  userId={userId ?? undefined}
-  cardCodeSearch=""
-  characterSearch=""
-  wishlistMode={false}
-  searchAllCards={false}
-  hiddenSets={[]}
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
+  searchAllCards={searchAllCards}
+  hiddenSets={hiddenSets}
 />
     )}
 
@@ -278,12 +277,11 @@ onToggleHideISO={toggleHideISO}
 ) : isSearching ? (
     <>
 <ISOMOON
-  userId={userId ?? undefined}
-  cardCodeSearch=""
-  characterSearch=""
-  wishlistMode={false}
-  searchAllCards={false}
-  hiddenSets={[]}
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
+  searchAllCards={searchAllCards}
+  hiddenSets={hiddenSets}
 />
 
 <ISOFUN
@@ -331,12 +329,11 @@ onToggleHideISO={toggleHideISO}
     <>
       {selectedSection === "moon" && (
 <ISOMOON
-  userId={userId ?? undefined}
-  cardCodeSearch=""
-  characterSearch=""
-  wishlistMode={false}
-  searchAllCards={false}
-  hiddenSets={[]}
+  cardCodeSearch={cardCodeSearch}
+  characterSearch={characterSearch}
+  wishlistMode={wishlistMode}
+  searchAllCards={searchAllCards}
+  hiddenSets={hiddenSets}
 />
       )}
 
