@@ -38,28 +38,36 @@ const CatalogSidebar = ({
 
   return (
     <aside className="w-56 shrink-0 hidden md:block text-xs">
-      <nav
-  className="rounded-3xl border border-[#d4af37]/25 shadow-[0_25px_60px_rgba(90,62,132,0.28)] p-4 relative overflow-hidden"
-style={{
-  backgroundColor: "#22152f",
-  backgroundImage: `
-    radial-gradient(circle at 20% 15%, rgba(255,140,60,0.10) 0%, transparent 18%),
-    radial-gradient(circle at 80% 25%, rgba(255,255,255,0.05) 0%, transparent 14%),
-    radial-gradient(circle at 35% 70%, rgba(255,140,60,0.08) 0%, transparent 16%),
-    linear-gradient(
-      180deg,
-      #342048 0%,
-      #261733 45%,
-      #1a1028 100%
-    )
-  `,
-}}
+<nav
+  className="rounded-3xl border border-[#FFD400]/20 shadow-[0_20px_50px_rgba(0,0,0,0.55)] p-4 relative overflow-hidden"
+  style={{
+    background: `
+      radial-gradient(circle at top right, rgba(255,212,0,0.08), transparent 35%),
+      radial-gradient(circle at bottom left, rgba(255,212,0,0.04), transparent 40%),
+      linear-gradient(
+        180deg,
+        #1b1b1b 0%,
+        #171717 45%,
+        #101010 100%
+      )
+    `,
+  }}
 >
+  <div
+    className="absolute inset-0 pointer-events-none opacity-20"
+    style={{
+      backgroundImage: `
+        linear-gradient(rgba(255,212,0,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,212,0,0.05) 1px, transparent 1px)
+      `,
+      backgroundSize: "28px 28px",
+    }}
+  />
 
         {/* SECTION TITLE */}
-        <h3 className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-[#f5c86d]">
-          Browse Collections
-        </h3>
+        <h3 className="mb-4 text-[10px] font-bold uppercase tracking-[0.35em] text-[#FFD400]">
+  Browse Collections
+</h3>
 
         {/* CATEGORY LIST */}
         <div className="space-y-1 mb-6">
@@ -71,11 +79,11 @@ style={{
               <button
                 key={cat.slug}
                 onClick={() => onCategoryChange(cat.slug)}
-                className={`group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 ${
-                  isActive
-                    ? "bg-gradient-to-r from-[#f6e1a0] to-[#e5c56b] text-[#3b2a1a] shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
-                    : "text-white/85 hover:bg-white/[0.05] hover:text-white"
-                }`}
+                className={`group w-full flex items-center justify-between rounded-xl px-3 py-3 text-sm transition-all duration-200 ${
+  isActive
+    ? "bg-[#f5e6a8] text-[#111111] border border-[#FFD400] shadow-[0_0_20px_rgba(255,212,0,.35)]"
+    : "bg-[#181818] border border-[#FFD400]/10 text-white/80 hover:border-[#FFD400]/40 hover:bg-[#202020]"
+}`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   
@@ -91,29 +99,29 @@ style={{
         </div>
 
         {/* FILTERS TITLE */}
-        <h3 className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-[#f5c86d] border-t border-white/10 pt-4">
-          Filters
-        </h3>
+       <h3 className="mb-4 text-[10px] font-bold uppercase tracking-[0.35em] text-[#FFD400] border-t border-[#FFD400]/15 pt-4">
+  Filters
+</h3>
 
 {/* SORT BY */}
 <div className="mb-4">
-  <label className="block mb-2 text-xs font-medium text-white/65">
-    Sort By
-  </label>
+<label className="block mb-2 text-xs font-medium text-white/60">
+  Sort By
+</label>
 
   <div className="space-y-2">
     <button
       type="button"
       onClick={() => onSortChange("release")}
-      className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-        sortBy === "release"
-          ? "bg-gradient-to-r from-[#f6e1a0] to-[#e5c56b] text-[#3b2a1a] shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
-          : "bg-white/[0.04] border border-white/10 text-white/80 hover:bg-white/[0.06]"
-      }`}
+className={`w-full flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+  sortBy === "release"
+    ? "bg-[#f5e6a8] text-[#111111] border border-[#FFD400] shadow-[0_0_20px_rgba(255,212,0,.35)]"
+    : "bg-[#181818] border border-[#FFD400]/10 text-white/80 hover:border-[#FFD400]/40 hover:bg-[#202020]"
+}`}
     >
       <span>Release Order</span>
       {sortBy === "release" && (
-        <ChevronRight className="h-4 w-4 text-[#6b4b12]" />
+        <ChevronRight className="h-4 w-4 text-[#111111]" />
       )}
     </button>
 
@@ -128,7 +136,7 @@ style={{
     >
       <span>Set Order</span>
       {sortBy === "set" && (
-        <ChevronRight className="h-4 w-4 text-[#6b4b12]" />
+        <ChevronRight className="h-4 w-4 text-[#111111]" />
       )}
     </button>
   </div>
@@ -136,19 +144,19 @@ style={{
 
 {/* HIDE MASTERED TOGGLE */}
 <div className="flex items-center justify-between">
-  <span className="text-sm font-medium text-white/80">
-    Hide Mastered Sets
-  </span>
+<span className="text-sm font-medium text-white/85">
+  Hide Mastered Sets
+</span>
 
   <button
     type="button"
     onClick={onToggleHideMastered}
     aria-pressed={hideMastered}
-    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-all duration-200 focus:outline-none ${
-      hideMastered
-        ? "bg-[#7c5aa6] border-[#a98bd1]"
-        : "bg-white/10 border-white/15"
-    }`}
+className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-all duration-200 ${
+  hideMastered
+    ? "bg-[#FFD400] border-[#FFD400]"
+    : "bg-[#202020] border-[#FFD400]/20"
+}`}
   >
     <span
       className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-transform duration-200 ${

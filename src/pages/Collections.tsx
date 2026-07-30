@@ -159,17 +159,6 @@ const Collections = () => {
   const [sortBy, setSortBy] = useState<"release" | "set">("release");
   const navigate = useNavigate();
 
-const stars = useMemo(
-  () =>
-    Array.from({ length: 180 }, () => ({
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      size: 1 + Math.random() * 5,
-      opacity: 0.15 + Math.random() * 0.55,
-    })),
-  []
-);
-  
   useEffect(() => {
     if (location.state?.category) {
       setActiveCategory(location.state.category);
@@ -376,52 +365,40 @@ const filtered = (
     );
   });
   return (
- <div
+<div
   className="min-h-screen relative overflow-hidden font-['Oxanium']"
-style={{
-  backgroundColor: "#0d0816",
-backgroundImage: `
-
-  linear-gradient(
-    180deg,
-    #1a1028 0%,
-    #120b1d 45%,
-    #090611 100%
-  )
-`,
-}}
+  style={{
+    backgroundColor: "#0f0f0f",
+    backgroundImage: `
+      radial-gradient(circle at top, rgba(255,212,0,0.06) 0%, transparent 35%),
+      radial-gradient(circle at bottom right, rgba(255,212,0,0.03) 0%, transparent 30%),
+      linear-gradient(
+        180deg,
+        #1b1b1b 0%,
+        #151515 35%,
+        #101010 70%,
+        #0a0a0a 100%
+      )
+    `,
+  }}
 >
-  
-<div className="absolute top-16 right-16 w-64 h-64 pointer-events-none z-0">
-  <div className="moon-glow" />
 
-  <img
-    src="/nightmarenight-assets/mareinthemoon.webp"
-    alt=""
-    className="relative z-10 w-full h-auto opacity-60"
-  />
-</div>
+<div
+  className="absolute inset-0 pointer-events-none opacity-30"
+  style={{
+    backgroundImage: `
+      linear-gradient(rgba(255,212,0,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,212,0,0.05) 1px, transparent 1px)
+    `,
+    backgroundSize: "48px 48px",
+    maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.45), transparent)",
+    WebkitMaskImage:
+      "linear-gradient(to bottom, rgba(0,0,0,0.45), transparent)",
+  }}
+/>
 
-  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-  {stars.map((star, i) => (
-    <div
-      key={i}
-      className="absolute rounded-full bg-white"
-      style={{
-        left: `${star.left}%`,
-        top: `${star.top}%`,
-        width: `${star.size}px`,
-        height: `${star.size}px`,
-        opacity: star.opacity,
-      }}
-    />
-  ))}
-</div>
-
-  <div className="absolute inset-0 bg-[#1a1028]/10 pointer-events-none" />
-
-      {/* MOBILE CATEGORY BAR */}
-<div className="md:hidden px-4 pt-8 pb-2 overflow-x-auto scrollbar-hide">
+     {/* MOBILE CATEGORY BAR */}
+<div className="md:hidden px-4 pt-6 pb-3 overflow-x-auto scrollbar-hide">
   <div className="flex gap-2 min-w-max">
 
     {[
@@ -437,12 +414,11 @@ backgroundImage: `
       <button
         key={item.value}
         onClick={() => setActiveCategory(item.value)}
-        className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition border
-          ${
-            activeCategory === item.value
-              ? "bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border-[#d4af37]/70"
-              : "bg-white/70 text-[#5a3e84] border-[#d4af37]/30"
-          }`}
+        className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-[0.15em] whitespace-nowrap transition-all duration-200 border ${
+          activeCategory === item.value
+            ? "bg-[#FFD400] text-[#111111] border-[#FFD400] shadow-[0_0_16px_rgba(255,212,0,0.35)]"
+            : "bg-[#181818] text-white border-[#FFD400]/15 hover:border-[#FFD400]/40"
+        }`}
       >
         {item.label}
       </button>
@@ -496,12 +472,6 @@ const completedSets = countedSets.filter(
 >
 
   <div className="absolute inset-0 bg-black/35 pointer-events-none" />
-  
-        {/* Soft sparkles */}
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-4 left-4 text-white text-base">✦</div>
-          <div className="absolute top-6 right-5 text-[#f5e6a8] text-sm">✧</div>
-        </div>
 
 <div className="relative z-10">
   {/* Stats */}
@@ -600,44 +570,66 @@ const completedSets = countedSets.filter(
         : 0;
 
     return (
-    <div
-  className="w-full rounded-[2rem] overflow-hidden border border-[#d4af37]/30 shadow-[0_20px_60px_rgba(0,0,0,0.45)] px-8 pt-4 pb-20 relative"
+<div
+  className="w-full rounded-[2rem] overflow-hidden border border-[#FFD400]/20 shadow-[0_20px_60px_rgba(0,0,0,0.65)] px-8 pt-4 pb-20 relative"
   style={{
-    backgroundImage: "url('/nightmarenight-assets/collectionsbannernmn.webp')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
+    background: `
+      radial-gradient(circle at top right, rgba(255,212,0,0.08), transparent 35%),
+      radial-gradient(circle at bottom left, rgba(255,212,0,0.04), transparent 40%),
+      linear-gradient(
+        180deg,
+        #1b1b1b 0%,
+        #171717 45%,
+        #101010 100%
+      )
+    `,
   }}
 >
 
-  <div className="absolute inset-0 bg-black/35 pointer-events-none" />
-        
-        {/* Soft sparkles */}
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-6 left-8 text-white text-xl">✦</div>
-          <div className="absolute top-10 left-1/4 text-[#f5e6a8] text-lg">✧</div>
-          <div className="absolute bottom-8 left-1/3 text-white text-xl">✦</div>
-          <div className="absolute top-8 right-12 text-[#f5e6a8] text-lg">✦</div>
-        </div>
+  <div
+    className="absolute inset-0 pointer-events-none opacity-25"
+    style={{
+      backgroundImage: `
+        linear-gradient(rgba(255,212,0,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,212,0,0.05) 1px, transparent 1px)
+      `,
+      backgroundSize: "42px 42px",
+    }}
+  />
+  
 {/* Main content */}
-<div className="relative z-10 grid grid-cols-3 items-center translate-y-6">
+<div className="relative z-10 grid grid-cols-3 items-center translate-y-7">
 
   {/* LEFT: Stats */}
-  <div className="flex justify-start">
-    <div className="grid grid-cols-3 gap-8 text-center">
+  <div className="flex justify-center w-full">
+    <div className="inline-grid grid-cols-3 gap-4 mx-auto">
       {[
-        { value: `${completedSets}/${totalSets}`, label: "SETS FINISHED" },
+        { value: `${completedSets}/${totalSets}`, label: "SETS" },
         {
           value: totalCardsCollected.toLocaleString(),
-          label: "CARDS COLLECTED",
+          label: "CARDS",
         },
-        { value: `${completionRate}%`, label: "COMPLETE" },
+        {
+          value: `${completionRate}%`,
+          label: "COMPLETE",
+        },
       ].map((stat) => (
-        <div key={stat.label}>
-          <div className="text-xl md:text-2xl font-bold leading-none text-[#f5e6a8] whitespace-nowrap">
+       <div
+  key={stat.label}
+  className="relative min-w-[110px] rounded-xl border border-[#FFD400]/20 bg-[#181818]/80 backdrop-blur-sm px-4 py-4 flex flex-col items-center justify-center text-center"
+          style={{
+            boxShadow:
+              "inset 0 0 0 1px rgba(255,212,0,.03), 0 0 18px rgba(255,212,0,.05)",
+          }}
+        >
+          <div className="absolute top-2 left-2 w-3 h-3 border-l border-t border-[#FFD400]/70" />
+          <div className="absolute bottom-2 right-2 w-3 h-3 border-r border-b border-[#FFD400]/70" />
+
+          <div className="text-2xl font-black tracking-wide text-[#f5e6a8] leading-none text-center w-full">
             {stat.value}
           </div>
 
-          <div className="mt-1 text-[8px] uppercase tracking-[0.14em] font-semibold text-[#f5e6a8]/80">
+          <div className="mt-2 text-[9px] uppercase tracking-[0.28em] font-semibold text-[#f5e6a8]/65 text-center w-full">
             {stat.label}
           </div>
         </div>
@@ -660,20 +652,33 @@ const completedSets = countedSets.filter(
   </div>
 
   {/* RIGHT: Progress */}
-  <div className="flex justify-end">
-    <div className="w-full max-w-[420px]">
-      <div className="h-3 rounded-full bg-white/15 overflow-hidden shadow-inner">
+  <div className="flex items-center justify-center h-full">
+    <div className="w-full max-w-[360px] rounded-xl border border-[#FFD400]/20 bg-[#181818]/80 px-5 py-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] uppercase tracking-[0.35em] font-semibold text-[#FFD400]/70">
+          COLLECTION PROGRESS
+        </span>
+
+        <span className="text-sm font-bold text-[#FFD400]">
+          {completionRate}%
+        </span>
+      </div>
+
+      <div className="h-2 rounded-full overflow-hidden bg-[#0d0d0d] border border-[#FFD400]/10">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-[#f5e6a8] via-[#d4af37] to-[#b8962e]"
+          className="h-full rounded-full bg-gradient-to-r from-[#FFD400] via-[#f5e6a8] to-[#FFB800]"
           style={{
             width: `${completionRate}%`,
+            boxShadow: "0 0 12px rgba(255,212,0,.5)",
           }}
         />
       </div>
 
-      <div className="mt-2 text-center text-[11px] font-semibold tracking-wide text-[#f5e6a8]/90">
-        {totalCardsCollected.toLocaleString()} /{" "}
-        {totalCardsAvailable.toLocaleString()} Cards Collected
+      <div className="mt-4 text-center text-[11px] tracking-[0.15em] font-semibold text-white/75">
+        <span className="text-[#FFD400]">
+          {totalCardsCollected.toLocaleString()}
+        </span>{" "}
+        / {totalCardsAvailable.toLocaleString()} CARDS
       </div>
     </div>
   </div>
@@ -682,7 +687,6 @@ const completedSets = countedSets.filter(
     );
   })()}
 </div>
-
   {/* SIDEBAR + COLLECTIONS */}
   <div className="flex gap-8 pt-6">
 
@@ -767,20 +771,13 @@ const completedSets = countedSets.filter(
 )}
         </div>
 
-        {/* SET HIDDEN */}
+{/* SET HIDDEN */}
 {isHidden && !isUnreleased && !isWaiting && (
   <div className="absolute inset-0 flex items-center justify-center translate-y-5 pointer-events-none">
-    <div className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center border border-[#d4af37]/60">
-      Not collecting this set.
-    </div>
-  </div>
-)}
-
-        {/* WAITING ON KAYOU */}
-{(isUnreleased || isWaiting) && (
-  <div className="absolute inset-0 flex items-center justify-center translate-y-5 pointer-events-none">
-    <div className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] text-xs font-bold px-4 py-2 rounded-lg shadow-md tracking-widest text-center border border-[#d4af37]/60">
-      WAITING ON KAYOU
+    <div className="rounded-xl border border-[#FFD400]/30 bg-[#111111]/90 backdrop-blur-sm px-4 py-2 shadow-[0_0_18px_rgba(255,212,0,0.2)]">
+      <span className="font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.2em] text-[#FFD400]">
+        MARKED AS NOT COLLECTING IN YOUR ISO
+      </span>
     </div>
   </div>
 )}
@@ -795,7 +792,7 @@ const completedSets = countedSets.filter(
     color: "#3b2a1a"
   }}
 >
-  <span className="block text-center w-full">MASTERED</span>
+  <span className="block text-center w-full">FULLY MASTERED</span>
 </div>
   </div>
 )}

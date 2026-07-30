@@ -22,25 +22,7 @@ const CollectionCard = ({
 
   const navigate = useNavigate();
 
-  const candyIndex =
-  [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 3;
 
-const candyImages = [
-  "/nightmarenight-assets/nmncandy1.webp",
-  "/nightmarenight-assets/nmncandy2.webp",
-  "/nightmarenight-assets/nmncandy3.webp",
-];
-
-const progressBarStyles = [
-  // Candy Corn
-  "#f58a63",
-
-  // Pink Lollipop
-  "#e58ab7",
-
-  // Blue Lollipop
-  "#7cb8e8",
-];
 
 const getLink = () => {
   switch (id) {
@@ -137,34 +119,25 @@ const handleClick = async (
   alt={setName || title}
   className="w-full aspect-square object-cover rounded-xl"
 />
-        {showProgress && progress < 100 && (
-  <>
-    <div className="absolute bottom-5 right-2 text-[10px] font-semibold text-white bg-black/50 px-1.5 py-0.5 rounded">
-      {progress}%
+{showProgress && progress < 100 && (
+  <div className="absolute bottom-2 left-2 right-2 flex items-center gap-2">
+    <div className="flex-1 h-2">
+      <div className="h-full rounded-full bg-[#2a2a2a] border border-[#FFD400]/10 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${progress}%`,
+            background:
+              "linear-gradient(90deg,#FFD400 0%,#FFC400 50%,#FFB800 100%)",
+            boxShadow: "0 0 10px rgba(255,212,0,.45)",
+          }}
+        />
+      </div>
     </div>
-
-<div className="absolute bottom-2 left-2 right-2 h-1.5">
-<div className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#5a3e84]/30 rounded-full overflow-hidden">
-  <div
-    className="h-full rounded-full transition-all"
-    style={{
-      width: `${progress}%`,
-      background: progressBarStyles[candyIndex],
-    }}
-  />
+<div className="w-10 flex items-center justify-center rounded-md border border-[#FFD400]/20 bg-[#111111]/85 backdrop-blur-sm text-[10px] font-bold text-[#FFD400] shadow-[0_0_10px_rgba(255,212,0,0.15)]">
+  {progress}%
 </div>
-
-  <img
-  src={candyImages[candyIndex]}
-  alt=""
-  className="absolute bottom-0 w-5 h-5 pointer-events-none drop-shadow-md"
-    style={{
-      left: `calc(${progress}% - 10px)`,
-      transform: "translateY(25%)",
-    }}
-  />
-</div>
-  </>
+  </div>
 )}
       </div>
 
