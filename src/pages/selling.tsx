@@ -1,4 +1,4 @@
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
 import { useState } from "react";
 
 export default function Selling() {
@@ -128,17 +128,15 @@ const [selectedFilter, setSelectedFilter] = useState("All Sets");
 
 
   const setHeaderImages: Record<string, string> = {
-  "Star Edition One": "/thumbnails/s1-thumbnail.webp",
-  "Moon Edition One": "/thumbnails/moon-fe.webp",
-  "Moon Edition Two": "/thumbnails/moon-se.webp",
-  "Moon Edition Three": "/thumbnails/moon-te.webp",
-  "Rainbow Edition One": "/thumbnails/rainbow1thumbnail.webp",
-  "Rainbow Edition Two": "/thumbnails/rainbow2thumbnail.webp",
-  "Fun Moments Edition One": "/thumbnails/fme01TN.webp",
-  "Fun Moments Edition Two": "/thumbnails/fme02TN.webp",
-  "Fun Moments Edition Three": "/thumbnails/fme03TN.webp",
-  "Fantasy Wonderland": "/thumbnails/fantasy-wonderland-thumbnail.webp",
-  "Friendships Begin": "/thumbnails/friendship-begins-thumbnail.webp",
+  "Star Edition One": "/thumbnails/staronesetimage.webp",
+  "Moon Edition One": "/thumbnails/moononesetimage.webp",
+  "Moon Edition Two": "/thumbnails/moontwosetimage.webp",
+  "Moon Edition Three": "/thumbnails/moonthreesetimage.webp",
+  "Rainbow Edition One": "/thumbnails/rainbowonesetimage.webp",
+  "Rainbow Edition Two": "/thumbnails/rainbowtwosetimage.webp",
+  "Fun Moments Edition One": "/thumbnails/funonesetimage.webp",
+  "Fun Moments Edition Two": "/thumbnails/funtwosetimage.webp",
+  "Fun Moments Edition Three": "/thumbnails/funthreesetimage.webp",
 };
 
 const filteredPricingCards =

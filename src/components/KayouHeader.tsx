@@ -77,9 +77,6 @@ const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
 const [showProgressMenu, setShowProgressMenu] = useState(false);
-const [pendingFriendRequests, setPendingFriendRequests] = useState(0);
-const [pendingMessages, setPendingMessages] = useState(0);
-
 const menuRef = useRef<HTMLDivElement>(null);
 
 const { avatar: profileAvatar, verification } =
@@ -103,29 +100,6 @@ setAvatarSrc((prev) => {
 }
 
 setProfile(data);
-};
-
-const loadPendingFriendRequests = async (userId: string) => {
-  const { count: friendCount } = await supabase
-    .from("friend_requests")
-    .select("*", {
-      count: "exact",
-      head: true,
-    })
-    .eq("receiver_id", userId)
-    .eq("status", "pending");
-
-  const { count: messageCount } = await supabase
-    .from("messages")
-    .select("*", {
-      count: "exact",
-      head: true,
-    })
-    .eq("receiver", userId)
-    .is("read_at", null);
-
-  setPendingFriendRequests(friendCount ?? 0);
-  setPendingMessages(messageCount ?? 0);
 };
 
 
@@ -191,29 +165,18 @@ useEffect(() => {
   setUser(currentUser);
 
   if (currentUser) {
-    getProfile(currentUser.id);
-    loadPendingFriendRequests(currentUser.id);
-  }
+    getProfile(currentUser.id);  }
 };
 
     getSession();
 
-    const {
+const {
   data: { subscription },
 } = supabase.auth.onAuthStateChange((_event, session) => {
-  const currentUser = session?.user ?? null;
-
-  setUser(currentUser);
-
-  if (currentUser && !profile) {
-  getProfile(currentUser.id);
-  loadPendingFriendRequests(currentUser.id);
-} else {
-  
-  }
+  setUser(session?.user ?? null);
 });
 
-    return () => subscription.unsubscribe();
+return () => subscription.unsubscribe();
   }, []);
   
 
@@ -285,55 +248,6 @@ useEffect(() => {
   setLoginError("");
   setShowForgot(false);
 };
-useEffect(() => {
-  let channel: any;
-
-  const setup = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.user) return;
-
-    const userId = session.user.id;
-
-    await loadPendingFriendRequests(userId);
-
-    channel = supabase
-      .channel(`header-badges-${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-        },
-        async () => {
-          await loadPendingFriendRequests(userId);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "friend_requests",
-        },
-        async () => {
-          await loadPendingFriendRequests(userId);
-        }
-      )
-      .subscribe();
-  };
-
-  setup();
-
-  return () => {
-    if (channel) {
-      supabase.removeChannel(channel);
-    }
-  };
-}, []);
 
 const handleForgotPassword = async () => {
   try {

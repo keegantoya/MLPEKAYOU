@@ -36,16 +36,16 @@ const cutieMarks = [
 ];
 
 const setImages: Record<string, string> = {
-  "1": "/thumbnails/moon-fe.webp",
-  "5": "/thumbnails/rainbow1thumbnail.webp",
-  "7": "/thumbnails/fme01TN.webp",
-  "2": "/thumbnails/moon-se.webp",
-  "8": "/thumbnails/fme02TN.webp",
-  "3": "/thumbnails/moon-te.webp",
-  "11": "/thumbnails/fme03TN.webp",
-  "4": "/thumbnails/s1-thumbnail.webp",
-  "6": "/thumbnails/rainbow2thumbnail.webp",
-  "9": "/thumbnails/promos-thumbnail.webp",
+  "1": "/thumbnails/moononesetimage.webp",
+  "5": "/thumbnails/rainbowonesetimage.webp",
+  "7": "/thumbnails/funonesetimage.webp",
+  "2": "/thumbnails/moontwosetimage.webp",
+  "8": "/thumbnails/funtwosetimage.webp",
+  "3": "/thumbnails/moonthreesetimage.webp",
+  "11": "/thumbnails/funthreesetimage.webp",
+  "4": "/thumbnails/staronesetimage.webp",
+  "6": "/thumbnails/rainbowtwosetimage.webp",
+  "9": "/thumbnails/promossetimage.webp",
 };
 
 const setBadgeImages: Record<string, string> = {
@@ -64,7 +64,7 @@ const sets = [
   {
   id: "9",
   name: "Promotional Cards",
-  total: 6,
+  total: 12,
   rarities: { PR: 12 }
   },
   {

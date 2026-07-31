@@ -12,10 +12,12 @@ const PromotionalCards = () => {
 const [viewMode, setViewMode] = useState(false);
 const [selectedRarity, setSelectedRarity] = useState("PR");
 const [hoverEffects, setHoverEffects] = useState(true);
+const [hiddenSets, setHiddenSets] = useState<string[]>([]);
 
   const [zoomedCard, setZoomedCard] = useState<string | null>(null);
   const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
   const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+  
 
 const set = {
   folder: "promo-cards",
@@ -26,6 +28,9 @@ const set = {
 const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
 
 const tcgCards = Array.from({ length: 18 }, (_, i) => i + 1);
+
+const ccgHidden = hiddenSets.includes("9");
+const tcgHidden = hiddenSets.includes("tcgpromos");
 
 const getCardBack = () => "/card-backs/M1R-SR-SGR-SCBACK.webp";
 
@@ -64,6 +69,23 @@ const loadProgress = async () => {
     setLoaded(true);
     return;
   }
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("iso_hidden_sets")
+  .eq("id", user.id)
+  .maybeSingle();
+
+const hidden = (profile?.iso_hidden_sets || []).map((id: string) => {
+  switch (id) {
+    case "TCG_PROMOS":
+      return "tcgpromos";
+
+    default:
+      return id;
+  }
+});
+
+setHiddenSets(hidden);
 
   const [{ data: ccg }, { data: tcg }] = await Promise.all([
     supabase
@@ -164,16 +186,12 @@ const saveProgress = async () => {
              {/* Set Header */}
 <div className="p-6 border-b border-zinc-700">
 
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
-                  Eternal Friendship
-                </p>
-
-                <button
-  onClick={() => navigate("/collections")}
-  className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
->
-  ← Back to Collections
-</button>
+  <button
+    onClick={() => navigate("/collections")}
+    className="mt-1 mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
+  >
+    ← Back to Collections
+  </button>
 
                 <h1 className="mt-2 text-5xl font-black uppercase leading-none">
                   Promos
@@ -311,135 +329,163 @@ className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
 >
 
             {/* Section */}
-<section id="ccg-promos">
+<section id="ccg-promos" className="relative">
 
-  <div className="flex items-end justify-between mb-5">
+  {ccgHidden && (
+    <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+      <div className="rounded-xl bg-black/70 px-6 py-4">
+        <p className="font-['Oxanium'] text-lg font-bold uppercase tracking-[0.15em] text-[#FFD400] text-center">
+  You chose to hide this set in your ISO THAT MEANS YOU ARE NOT INTERESTED IN COLLECTING IT.
+</p>
+      </div>
+    </div>
+  )}
 
-    <div>
+  <div className={ccgHidden ? "pointer-events-none blur-sm select-none" : ""}>
 
-      <h2 className="text-5xl font-black leading-none">
-        CCG Promotional Cards
-      </h2>
+    <div className="flex items-end justify-between mb-5">
 
-      <p className="uppercase tracking-widest text-gray-400 mt-2">
-        {ccgCards.length} Cards
-      </p>
+      <div>
+
+        <h2 className="text-5xl font-black leading-none">
+          CCG Promotional Cards
+        </h2>
+
+        <p className="uppercase tracking-widest text-gray-400 mt-2">
+          {ccgCards.length} Cards
+        </p>
+
+      </div>
 
     </div>
 
-  </div>
+    <div className="h-px bg-yellow-400 mb-8" />
 
-  <div className="h-px bg-yellow-400 mb-8" />
+    <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
 
-<div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
+      {ccgCards.map((number) => {
 
-    {ccgCards.map((number) => {
+        const key = `PR-${number}`;
+        const owned = flipped[key];
 
-      const key = `PR-${number}`;
-      const owned = flipped[key];
-
-      return (
-
-        <div
-  key={key}
-  className="group aspect-[5/7] cursor-pointer perspective relative"
-  onClick={() => toggleFlip(key)}
->
+        return (
 
           <div
-className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
-    ${
-      hoverEffects
-        ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
-        : ""
-    }
-    ${owned && !viewMode ? "rotate-y-180" : ""}`}
->
+            key={key}
+            className="group aspect-[5/7] cursor-pointer perspective relative"
+            onClick={() => toggleFlip(key)}
+          >
 
-            <img
-              src={`/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`}
-              className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-            />
+            <div
+              className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
+              ${
+                hoverEffects
+                  ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
+                  : ""
+              }
+              ${owned && !viewMode ? "rotate-y-180" : ""}`}
+            >
 
-            <img
-              src={getCardBack()}
-              className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-            />
+              <img
+                src={`/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`}
+                className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+              />
+
+              <img
+                src={getCardBack()}
+                className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+              />
+
+            </div>
 
           </div>
 
-        </div>
+        );
 
-      );
+      })}
 
-    })}
+    </div>
 
   </div>
 
 </section>
 
-<section id="tcg-promos">
+<section id="tcg-promos" className="relative">
 
-  <div className="flex items-end justify-between mb-5">
+  {tcgHidden && (
+    <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+      <div className="rounded-xl bg-black/70 px-6 py-4">
+        <p className="font-['Oxanium'] text-lg font-bold uppercase tracking-[0.15em] text-[#FFD400] text-center">
+  You chose to hide this set in your ISO THAT MEANS YOU ARE NOT INTERESTED IN COLLECTING IT.
+</p>
+      </div>
+    </div>
+  )}
 
-    <div>
+  <div className={tcgHidden ? "pointer-events-none blur-sm select-none" : ""}>
 
-      <h2 className="text-5xl font-black leading-none">
-        TCG Promotional Cards
-      </h2>
+    <div className="flex items-end justify-between mb-5">
 
-      <p className="uppercase tracking-widest text-gray-400 mt-2">
-        {tcgCards.length} Cards
-      </p>
+      <div>
+
+        <h2 className="text-5xl font-black leading-none">
+          TCG Promotional Cards
+        </h2>
+
+        <p className="uppercase tracking-widest text-gray-400 mt-2">
+          {tcgCards.length} Cards
+        </p>
+
+      </div>
 
     </div>
 
-  </div>
+    <div className="h-px bg-yellow-400 mb-8" />
 
-  <div className="h-px bg-yellow-400 mb-8" />
+    <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
 
-<div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
+      {tcgCards.map((number) => {
 
-    {tcgCards.map((number) => {
+        const key = `RR${String(number).padStart(2, "0")}`;
+        const owned = flipped[key];
 
-      const key = `RR${String(number).padStart(2, "0")}`;
-      const owned = flipped[key];
-
-      return (
-
-        <div
-  key={key}
-  className="group aspect-[5/7] cursor-pointer perspective relative"
-  onClick={() => toggleFlip(key)}
->
+        return (
 
           <div
-className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
-    ${
-      hoverEffects
-        ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
-        : ""
-    }
-    ${owned && !viewMode ? "rotate-y-180" : ""}`}
->
+            key={key}
+            className="group aspect-[5/7] cursor-pointer perspective relative"
+            onClick={() => toggleFlip(key)}
+          >
 
-            <img
-              src={`/tcgpromos/${key}.webp`}
-              className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-            />
+            <div
+              className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
+              ${
+                hoverEffects
+                  ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
+                  : ""
+              }
+              ${owned && !viewMode ? "rotate-y-180" : ""}`}
+            >
 
-            <img
-              src="/card-backs/tcgdefaultback.webp"
-              className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-            />
+              <img
+                src={`/tcgpromos/${key}.webp`}
+                className="absolute w-full h-full object-cover rounded-lg backface-hidden"
+              />
+
+              <img
+                src="/card-backs/tcgdefaultback.webp"
+                className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+              />
+
+            </div>
 
           </div>
 
-        </div>
+        );
 
-      );
+      })}
 
-    })}
+    </div>
 
   </div>
 

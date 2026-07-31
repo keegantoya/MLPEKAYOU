@@ -1,4 +1,4 @@
-import keeganPfp from "@/assets/avatars/keeganpfp.webp";
+import keeganPfp from "@/assets/avatars/keeganpfp2.webp";
 
 export default function LinksPage() {
   const links = [

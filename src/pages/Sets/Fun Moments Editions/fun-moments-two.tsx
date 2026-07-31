@@ -199,13 +199,9 @@ useEffect(() => {
 {/* Set Header */}
 <div className="p-6 border-b border-zinc-700">
 
-  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
-    Fun Moments
-  </p>
-
   <button
     onClick={() => navigate("/collections")}
-    className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
+    className="mt-1 mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
   >
     ← Back to Collections
   </button>

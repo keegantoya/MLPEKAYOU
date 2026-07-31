@@ -21,7 +21,7 @@ const collections: Collection[] = [
     id: "1",
     title: "Eternal Moon",
     setName: "One",
-    imageUrl: "/thumbnails/moon-fe.webp",
+    imageUrl: "/thumbnails/moononesetimage.webp",
     totalCards: 186,
     category: "eternal-moon",
      released: true,
@@ -30,7 +30,7 @@ const collections: Collection[] = [
     id: "5",
     title: "Rainbow",
     setName: "One",
-    imageUrl: "/thumbnails/rainbow1thumbnail.webp",
+    imageUrl: "/thumbnails/rainbowonesetimage.webp",
     totalCards: 146,
     category: "rainbow",
     released: true,
@@ -39,7 +39,7 @@ const collections: Collection[] = [
     id: "7",
     title: "Fun Moments",
     setName: "One",
-    imageUrl: "/thumbnails/fme01TN.webp",
+    imageUrl: "/thumbnails/funonesetimage.webp",
     totalCards: 127,
     category: "fun-moments",
     released: true,
@@ -48,7 +48,7 @@ const collections: Collection[] = [
     id: "2",
     title: "Eternal Moon",
     setName: "Two",
-    imageUrl: "/thumbnails/moon-se.webp",
+    imageUrl: "/thumbnails/moontwosetimage.webp",
     totalCards: 189,
     category: "eternal-moon",
     released: true,
@@ -57,7 +57,7 @@ const collections: Collection[] = [
     id: "8",
     title: "Fun Moments",
     setName: "Two",
-    imageUrl: "/thumbnails/fme02TN.webp",
+    imageUrl: "/thumbnails/funtwosetimage.webp",
     totalCards: 136,
     category: "fun-moments",
     released: true,
@@ -66,7 +66,7 @@ const collections: Collection[] = [
     id: "tcg",
     title: "Fantasy",
     setName: "Wonderland",
-    imageUrl: "/thumbnails/fantasy-wonderland-thumbnail.webp",
+    imageUrl: "/thumbnails/fantasysetimage.webp",
     totalCards: 191,
     category: "tcg",
     released: true,
@@ -75,7 +75,7 @@ const collections: Collection[] = [
     id: "friendshipsbegin",
     title: "Friendships",
     setName: "Begin",
-    imageUrl: "/thumbnails/friendship-begins-thumbnail.webp",
+    imageUrl: "/thumbnails/friendshipsbeginsetimage.webp",
     totalCards: 194,
     category: "tcg",
     released: true,
@@ -84,7 +84,7 @@ const collections: Collection[] = [
     id: "3",
     title: "Eternal Moon",
     setName: "Three",
-    imageUrl: "/thumbnails/moon-te.webp",
+    imageUrl: "/thumbnails/moonthreesetimage.webp",
     totalCards: 290,
     category: "eternal-moon",
     released: true,
@@ -93,7 +93,7 @@ const collections: Collection[] = [
     id: "11",
     title: "Fun Moments",
     setName: "Three",
-    imageUrl: "/thumbnails/fme03TN.webp",
+    imageUrl: "/thumbnails/funthreesetimage.webp",
     totalCards: 148,
     category: "fun-moments",
     released: true,
@@ -102,7 +102,7 @@ const collections: Collection[] = [
     id: "4",
     title: "Star",
     setName: "One",
-    imageUrl: "/thumbnails/s1-thumbnail.webp",
+    imageUrl: "/thumbnails/staronesetimage.webp",
     totalCards: 105,
     category: "star",
     released: true,
@@ -111,7 +111,7 @@ const collections: Collection[] = [
     id: "6",
     title: "Rainbow",
     setName: "Two",
-    imageUrl: "/thumbnails/rainbow2thumbnail.webp",
+    imageUrl: "/thumbnails/rainbowtwosetimage.webp",
     totalCards: 170,
     category: "rainbow",
     released: true,
@@ -120,7 +120,7 @@ const collections: Collection[] = [
     id: "12",
     title: "Discord",
     setName: "TCG",
-    imageUrl: "/thumbnails/discord.webp",
+    imageUrl: "/thumbnails/discordsetimage.webp",
     totalCards: 191,
     category: "tcg",
     released: true,
@@ -129,7 +129,7 @@ const collections: Collection[] = [
     id: "9",
     title: "Promotional",
     setName: "Cards",
-    imageUrl: "/thumbnails/promos-thumbnail.webp",
+    imageUrl: "/thumbnails/promossetimage.webp",
     totalCards: 30,
     category: "promos",
     released: true,
@@ -138,7 +138,7 @@ const collections: Collection[] = [
     id: "OTHERMERCH",
     title: "Kayou US",
     setName: "Leaping Ponies",
-    imageUrl: "/thumbnails/other-merch-tn.webp",
+    imageUrl: "/thumbnails/plushiessetimage.webp",
     totalCards: 6,
     category: "merch",
      released: true,
@@ -233,13 +233,13 @@ Object.entries(mergedBySet).forEach(([setId, progress]) => {
       progressMap["OTHERMERCH"] = count;
       break;
 
-    case "9":
-      progressMap["9"] = count;
-      break;
+case "9":
+  progressMap["9"] = count;
+  break;
 
-    case "tcgpromos":
-      progressMap["9"] = (progressMap["9"] || 0) + count;
-      break;
+case "tcgpromos":
+  progressMap["tcgpromos"] = count;
+  break;
 
     default:
       progressMap[setId] = count;
@@ -301,18 +301,43 @@ const mappedHiddenSets: string[] = [
 setHiddenSets([...new Set(mappedHiddenSets)]);
 const updated = collections.map((set) => {
   let collected = progressMap[set.id] || 0;
+  let totalCards = set.totalCards;
+
+  if (set.id === "9") {
+    const ccgHidden = mappedHiddenSets.includes("9");
+    const tcgHidden = mappedHiddenSets.includes("tcgpromos");
+
+    const ccgCollected = progressMap["9"] || 0;
+    const tcgCollected = progressMap["tcgpromos"] || 0;
+
+    collected = 0;
+    totalCards = 0;
+
+    if (!ccgHidden) {
+      collected += ccgCollected;
+      totalCards += 12;
+    }
+
+    if (!tcgHidden) {
+      collected += tcgCollected;
+      totalCards += 18;
+    }
+  }
 
   const percent =
-    set.totalCards > 0
-      ? Math.round((collected / set.totalCards) * 100)
+    totalCards > 0
+      ? Math.round((collected / totalCards) * 100)
       : 0;
 
   return {
     ...set,
     collectedCards: collected,
+    totalCards,
     progress: percent,
   };
 });
+
+setSets(updated);
 
 setSets(updated);
     };
@@ -447,15 +472,15 @@ const completedSets = countedSets.filter(
   (set) => set.progress === 100
 ).length;
 
-    const totalCardsCollected = releasedSets.reduce(
-      (sum, set) => sum + (set.collectedCards || 0),
-      0
-    );
+const totalCardsCollected = releasedSets.reduce(
+  (sum, set) => sum + (set.collectedCards || 0),
+  0
+);
 
-    const totalCardsAvailable = releasedSets.reduce(
-      (sum, set) => sum + set.totalCards,
-      0
-    );
+const totalCardsAvailable = releasedSets.reduce(
+  (sum, set) => sum + (set.totalCards || 0),
+  0
+);
 
     const completionRate =
       totalCardsAvailable > 0
@@ -554,15 +579,15 @@ const completedSets = countedSets.filter(
   (set) => set.progress === 100
 ).length;
 
-    const totalCardsCollected = releasedSets.reduce(
-      (sum, set) => sum + (set.collectedCards || 0),
-      0
-    );
+const totalCardsCollected = releasedSets.reduce(
+  (sum, set) => sum + (set.collectedCards || 0),
+  0
+);
 
-    const totalCardsAvailable = releasedSets.reduce(
-      (sum, set) => sum + set.totalCards,
-      0
-    );
+const totalCardsAvailable = releasedSets.reduce(
+  (sum, set) => sum + (set.totalCards || 0),
+  0
+);
 
     const completionRate =
       totalCardsAvailable > 0
@@ -742,7 +767,7 @@ const completedSets = countedSets.filter(
   }`}
 >
   <CollectionCard {...col} />
-          {(col.id === "3" || col.id === "11" || col.id === "6" || col.id === "4") && (
+          {(col.id === "" || col.id === "" || col.id === "" || col.id === "") && (
   <div
     className="
       absolute

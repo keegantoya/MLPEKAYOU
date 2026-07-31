@@ -1,3 +1,4 @@
+
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -212,19 +213,40 @@ const {
 } = await supabase.auth.getUser();
 
 if (!viewingUserId && user) {
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, username, avatar_url, iso_hidden_sets")
-    .eq("id", user.id)
-    .single();
+const { data: profile } = await supabase
+  .from("profiles")
+  .select(`
+    id,
+    username,
+    avatar_url,
+    iso_hidden_sets,
+    iso_hidden_sets_tcg
+  `)
+  .eq("id", user.id)
+  .single();
 
 if (profile) {
   setViewingProfile(profile);
   setViewingUsername(profile.username);
 
-  setHiddenCCGSets(
-    profile.iso_hidden_sets || []
-  );
+const mappedHidden = [
+  ...(profile.iso_hidden_sets || []),
+  ...(profile.iso_hidden_sets_tcg || []),
+].flatMap((id: string) => {
+  switch (id) {
+    case "SD":
+      return ["friendshipsbegin"];
+
+    case "12":
+      return ["discord"];
+
+    default:
+      return [id];
+  }
+});
+
+setHiddenCCGSets(mappedHidden);
+  
 }
 }
 

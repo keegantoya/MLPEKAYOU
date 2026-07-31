@@ -37,8 +37,7 @@ import avatar026 from "@/assets/avatars/avatar026.webp";
 import avatar027 from "@/assets/avatars/avatar027.webp";
 
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp.webp";
-import KeeganAvatar2 from "@/assets/avatars/keeganpfpnmn.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
 import TerriAvatar from "@/assets/avatars/terrypfp.webp";
 
@@ -81,8 +80,7 @@ const avatarMap: Record<string, string> = {
   "avatar026.webp": avatar026,
   "heimantouavatar": heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,
-  "keeganpfp.webp": KeeganAvatar,
-  "keeganpfpnmn.webp": KeeganAvatar2,
+  "keeganpfp2.webp": KeeganAvatar,
   "maipfp.webp": maipfp,
   "terrypfp.webp": TerriAvatar,
 };
