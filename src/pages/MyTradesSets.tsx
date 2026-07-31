@@ -438,7 +438,7 @@ for (let i = 1; i <= count; i++) {
 
 } else if (set.id === "9") {
 
-  cards = [1, 2, 3, 4, 5, 7].map((num) => ({
+  cards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13].map((num) => ({
     rarity: "PR",
     number: num,
     key: `PR-${num}`
