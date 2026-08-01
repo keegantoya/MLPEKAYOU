@@ -32,7 +32,13 @@ const tcgCards = Array.from({ length: 18 }, (_, i) => i + 1);
 const ccgHidden = hiddenSets.includes("9");
 const tcgHidden = hiddenSets.includes("tcgpromos");
 
-const getCardBack = () => "/card-backs/M1R-SR-SGR-SCBACK.webp";
+const getCardBack = (number?: number) => {
+  if (number && number >= 8) {
+    return "/card-backs/promos/sdccboombacks.webp";
+  }
+
+  return "/card-backs/M1R-SR-SGR-SCBACK.webp";
+};
 
 const toggleFlip = (key: string) => {
   if (viewMode) {
@@ -43,7 +49,7 @@ if (key.startsWith("PR-")) {
     `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`
   );
 
-  setZoomedCardBack(getCardBack());
+  setZoomedCardBack(getCardBack(number));
 } else {
   setZoomedCard(`/tcgpromos/${key}.webp`);
   setZoomedCardBack("/card-backs/tcgdefaultback.webp");
@@ -392,9 +398,9 @@ className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
               />
 
               <img
-                src={getCardBack()}
-                className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-              />
+  src={getCardBack(number)}
+  className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
+/>
 
             </div>
 
