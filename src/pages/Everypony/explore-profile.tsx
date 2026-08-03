@@ -997,59 +997,51 @@ const filteredWishlistCards = sortByIsoOrder(
 
   <div className="relative grid grid-cols-3">
 
-    <div className="border-r border-[#232323] p-8">
+    <div className="border-r border-[#232323] p-3 sm:p-5 lg:p-8">
 
-      <div className="text-[11px] uppercase tracking-[0.3em] text-[#666]">
-        Owned
-      </div>
+  <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#666]">
+    Owned
+  </div>
 
-      <div className="mt-3 text-5xl font-black text-white">
-        {userStats.owned}
-      </div>
+  <div className="mt-2 sm:mt-3 text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none">
+    {userStats.owned}
+  </div>
 
-      <div className="mt-4 h-[3px] w-full bg-[#1A1A1A]">
+  <div className="mt-3 sm:mt-4 h-[3px] w-full bg-[#1A1A1A]">
+    <div className="h-full w-full bg-[#E7C84B]" />
+  </div>
 
-        <div className="h-full w-full bg-[#E7C84B]" />
+</div>
+<div className="border-r border-[#232323] p-3 sm:p-5 lg:p-8">
 
-      </div>
+  <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#666]">
+    Completed
+  </div>
 
-    </div>
+  <div className="mt-2 sm:mt-3 text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none">
+    {userStats.completed}
+  </div>
 
-    <div className="border-r border-[#232323] p-8">
+  <div className="mt-3 sm:mt-4 h-[3px] w-full bg-[#1A1A1A]">
+    <div className="h-full w-3/4 bg-[#E7C84B]" />
+  </div>
 
-      <div className="text-[11px] uppercase tracking-[0.3em] text-[#666]">
-        Completed
-      </div>
+</div>
+<div className="p-3 sm:p-5 lg:p-8">
 
-      <div className="mt-3 text-5xl font-black text-white">
-        {userStats.completed}
-      </div>
+  <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#666]">
+    Listings
+  </div>
 
-      <div className="mt-4 h-[3px] w-full bg-[#1A1A1A]">
+  <div className="mt-2 sm:mt-3 text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none">
+    {userStats.trades}
+  </div>
 
-        <div className="h-full w-3/4 bg-[#E7C84B]" />
+  <div className="mt-3 sm:mt-4 h-[3px] w-full bg-[#1A1A1A]">
+    <div className="h-full w-1/2 bg-[#E7C84B]" />
+  </div>
 
-      </div>
-
-    </div>
-
-    <div className="p-8">
-
-      <div className="text-[11px] uppercase tracking-[0.3em] text-[#666]">
-        Listings
-      </div>
-
-      <div className="mt-3 text-5xl font-black text-white">
-        {userStats.trades}
-      </div>
-
-      <div className="mt-4 h-[3px] w-full bg-[#1A1A1A]">
-
-        <div className="h-full w-1/2 bg-[#E7C84B]" />
-
-      </div>
-
-    </div>
+</div>
 
   </div>
 

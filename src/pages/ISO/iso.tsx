@@ -196,7 +196,7 @@ setSelectedSection(item.id as Section);
 </aside>
 {/* Content */}
 <main
-  className={`flex-1 h-screen overflow-y-scroll bg-[#171717] kayou-scrollbar px-8 pb-8 md:px-8 md:pb-12 ${
+  className={`flex-1 bg-[#171717] px-4 pb-6 md:h-screen md:overflow-y-scroll md:px-8 md:pb-12 kayou-scrollbar ${
     cardCodeSearch || characterSearch.trim()
       ? "pt-6 md:pt-0"
       : "pt-0"

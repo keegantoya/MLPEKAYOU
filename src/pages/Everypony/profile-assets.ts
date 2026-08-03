@@ -67,8 +67,9 @@ export const avatarMap: Record<string, string> = {
   heimantouavatar: heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,
 
-  keeganpfp: KeeganAvatar,
-  "keeganpfp2.webp": KeeganAvatar,
+keeganpfp: KeeganAvatar,
+keeganpfp2: KeeganAvatar,
+"keeganpfp2.webp": KeeganAvatar,
 
   maipfp,
   "maipfp.webp": maipfp,

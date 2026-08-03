@@ -159,18 +159,9 @@ return (
 .map((item) => (
 <button
   key={item.id}
-  onClick={() => {
-    setSelectedSet(item.id);
-
-    requestAnimationFrame(() => {
-      document
-        .getElementById(`set-${item.id}`)
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-    });
-  }}
+onClick={() => {
+  setSelectedSet(item.id);
+}}
 className={`min-w-[100px] rounded-lg border px-5 py-3 text-sm font-semibold transition ${
   selectedSet === item.id
     ? "border-yellow-500 bg-yellow-500 text-black"
