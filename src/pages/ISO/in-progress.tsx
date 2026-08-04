@@ -45,14 +45,37 @@ export default function InProgress() {
         ) {
           return;
         }
+if (
+  row.card_key.startsWith("FW-") ||
+  row.card_key.startsWith("SD-")
+) {
+  const dash = row.card_key.indexOf("-");
+
+  parsed.push({
+    set_id: row.card_key.substring(0, dash),
+    card_key: row.card_key.substring(dash + 1),
+  });
+
+  return;
+}
+
+if (
+  row.card_key.startsWith("BP01") ||
+  row.card_key.startsWith("SD01")
+) {
+  parsed.push({
+    set_id: row.card_key.startsWith("BP01") ? "FW" : "SD",
+    card_key: row.card_key,
+  });
+
+  return;
+}
+
 const parts = row.card_key.split("-");
 
-const set_id = parts.shift()!;
-const card_key = parts.join("-");
-
 parsed.push({
-  set_id,
-  card_key,
+  set_id: parts.shift()!,
+  card_key: parts.join("-"),
 });
       });
 

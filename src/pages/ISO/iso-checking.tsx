@@ -36,9 +36,14 @@ toggleWishlist,
   const [status, setStatus] = useState<Status | null>(null);
   const [openAbove, setOpenAbove] = useState(false);
 
+  const isoCardKey =
+    setId === "FW" || setId === "SD"
+      ? cardKey
+      : `${setId}-${cardKey}`;
+
   const [menuPosition, setMenuPosition] = useState<
-  "left" | "center" | "right"
->("center");
+    "left" | "center" | "right"
+  >("center");
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -63,12 +68,12 @@ toggleWishlist,
     async function loadStatus() {
       if (!userId) return;
 
-      const { data } = await supabase
-        .from("iso_status")
-        .select("status")
-        .eq("user_id", userId)
-        .eq("card_key", `${setId}-${cardKey}`)
-        .maybeSingle();
+const { data } = await supabase
+  .from("iso_status")
+  .select("status")
+  .eq("user_id", userId)
+  .eq("card_key", isoCardKey)
+  .maybeSingle();
 
       if (
         data?.status === "purchase_in_progress" ||
@@ -92,12 +97,11 @@ toggleWishlist,
     setLoading(true);
 
 if (status === newStatus) {
-  const { error } = await supabase
-    .from("iso_status")
-    .delete()
-    .eq("user_id", userId)
-    .eq("card_key", `${setId}-${cardKey}`);
-
+const { error } = await supabase
+  .from("iso_status")
+  .delete()
+  .eq("user_id", userId)
+  .eq("card_key", isoCardKey);
   setLoading(false);
 
   if (error) {
@@ -112,18 +116,18 @@ if (status === newStatus) {
 }
 
 
-    const { error } = await supabase
-      .from("iso_status")
-      .upsert(
-        {
-          user_id: userId,
-          card_key: `${setId}-${cardKey}`,
-          status: newStatus,
-        },
-        {
-          onConflict: "user_id,card_key",
-        }
-      );
+const { error } = await supabase
+  .from("iso_status")
+  .upsert(
+    {
+      user_id: userId,
+      card_key: isoCardKey,
+      status: newStatus,
+    },
+    {
+      onConflict: "user_id,card_key",
+    }
+  );
 
     setLoading(false);
 
@@ -144,11 +148,11 @@ if (status === newStatus) {
     setLoading(true);
 
     // Remove trade/purchase status
-    await supabase
-      .from("iso_status")
-      .delete()
-      .eq("user_id", userId)
-      .eq("card_key", `${setId}-${cardKey}`);
+await supabase
+  .from("iso_status")
+  .delete()
+  .eq("user_id", userId)
+  .eq("card_key", isoCardKey);
 
 
     // Load existing collection progress
@@ -164,7 +168,13 @@ if (status === newStatus) {
       data?.progress || {};
 
 
-    progress[cardKey] = true;
+    let progressKey = cardKey;
+
+if (setId === "SD") {
+  progressKey = `BONUS-${cardKey}`;
+}
+
+progress[progressKey] = true;
 
 
     const { error } = await supabase
@@ -202,11 +212,11 @@ onComplete?.();
 
     setLoading(true);
 
-    const { error } = await supabase
-      .from("iso_status")
-      .delete()
-      .eq("user_id", userId)
-      .eq("card_key", `${setId}-${cardKey}`);
+const { error } = await supabase
+  .from("iso_status")
+  .delete()
+  .eq("user_id", userId)
+  .eq("card_key", isoCardKey);
 
     setLoading(false);
 
