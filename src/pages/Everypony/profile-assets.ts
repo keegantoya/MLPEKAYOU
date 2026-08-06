@@ -127,6 +127,26 @@ export const VERIFIED_USERS: Record<
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
+    "d6cef3f9-a749-4912-b612-efca4b9d1727": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+      "5afa26a7-fda8-4edb-ba43-56241bdd3284": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+    "598fab0b-bf8e-428e-af2f-485292ab2647": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+    "4a40460e-6c5a-4273-a478-959d61f419bc": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+    "d7fd86e9-f742-434f-b9e2-a2f59b2fc0d6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
 };
 
 export function getVerification(userId: string | null | undefined) {

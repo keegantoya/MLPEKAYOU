@@ -1,16 +1,12 @@
-import { Link } from "react-router-dom";
 import { useState } from "react";
 
 export default function Index() {
+  const [activeTab, setActiveTab] = useState<"updates" | "community">("updates");
 
 const heroCards = [
   {
     image: "/cards/third-edition-moon/M3ZR006.webp",
     link: "/moon-three",
-  },
-  {
-    image: "/cards/fun-moments-three/FM3SCR004.webp",
-    link: "/fun-moments-three",
   },
   {
     image: "/cards/rainbow-two/R2USR007.webp",
@@ -19,14 +15,6 @@ const heroCards = [
   {
     image: "/cards/star-one/S1SAR008.webp",
     link: "/star-one",
-  },
-  {
-    image: "/cards/first-edition-moon/M1LSR011.webp",
-    link: "/moon-one",
-  },
-  {
-    image: "/cards/rainbow-one/R1XR004.webp",
-    link: "/rainbow-one",
   },
 ];
 
@@ -37,7 +25,7 @@ const heroCards = [
 
 {/* HERO */}
 
-<section className="relative pt-16 pb-24">
+<section className="relative pt-16 pb-20">
 
   <div className="relative max-w-7xl mx-auto px-8">
 
@@ -72,34 +60,39 @@ const heroCards = [
   Start in the Right Place
 </p>
 
-        <div className="mt-10 flex gap-8">
+<div className="mt-20 flex gap-8">
 
-<div className="mt-10 flex gap-8">
+  <button
+    onClick={() => setActiveTab("updates")}
+    className={`border-b-2 pb-2 text-lg font-bold transition ${
+      activeTab === "updates"
+        ? "border-[#E7C84B] text-[#E7C84B]"
+        : "border-transparent text-gray-500 hover:text-white"
+    }`}
+  >
+    Updates
+  </button>
 
-<div className="mt-10 flex gap-8">
-  <span className="border-b-2 border-[#E7C84B] pb-2 text-lg font-bold text-[#E7C84B]">
-    Collections
-  </span>
-
-  <Link
-    to="/community"
-    className="border-b-2 border-transparent pb-2 text-lg font-bold text-gray-500 transition hover:text-white"
+  <button
+    onClick={() => setActiveTab("community")}
+    className={`border-b-2 pb-2 text-lg font-bold transition ${
+      activeTab === "community"
+        ? "border-[#E7C84B] text-[#E7C84B]"
+        : "border-transparent text-gray-500 hover:text-white"
+    }`}
   >
     Community
-  </Link>
-</div>
+  </button>
 
 </div>
-
-        </div>
 
       </div>
 
       {/* RIGHT */}
 
-      <div className="relative h-[620px]">
+      <div className="relative h-[540px]">
 
-        <div className="absolute right-20 top-4 z-30 w-[340px] rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_35px_70px_rgba(0,0,0,.45)]">
+        <div className="absolute right-24 top-8 z-30 w-[300px] rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_35px_70px_rgba(0,0,0,.45)]">
           <img
             src="/cards/star-one/S1SAR008.webp"
             draggable={false}
@@ -154,10 +147,6 @@ const heroCards = [
           Somewhere.
         </h1>
 
-        <div className="mt-8 flex justify-center gap-8">
-<div className="mt-10 flex gap-8">
-</div>
-        </div>
 
       </div>
 
@@ -188,181 +177,154 @@ const heroCards = [
         </div>
 
       </div>
+<div className="mt-8 flex justify-center gap-8">
 
+  <button
+    onClick={() => setActiveTab("updates")}
+    className={`border-b-2 pb-2 text-base font-bold transition ${
+      activeTab === "updates"
+        ? "border-[#E7C84B] text-[#E7C84B]"
+        : "border-transparent text-gray-500 hover:text-white"
+    }`}
+  >
+    Updates
+  </button>
+
+  <button
+    onClick={() => setActiveTab("community")}
+    className={`border-b-2 pb-2 text-base font-bold transition ${
+      activeTab === "community"
+        ? "border-[#E7C84B] text-[#E7C84B]"
+        : "border-transparent text-gray-500 hover:text-white"
+    }`}
+  >
+    Community
+  </button>
+
+</div>
     </div>
 
   </div>
 
 </section>
 
-        {/* PONYREC */}
+{activeTab === "community" && (
 
-<section className="rounded-2xl border border-[#3a3a3a] bg-[#1d1d1d] px-8 py-5">
+<div className="space-y-6">
 
-  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+  {/* PonyRec */}
 
-    <div>
+  <section className="rounded-2xl border border-[#3a3a3a] bg-[#1d1d1d] px-8 py-6">
 
-      <div className="text-xs uppercase tracking-[.25em] text-[#E7C84B] font-semibold">
-        Community Resource
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+      <div>
+
+        <div className="text-xs font-semibold uppercase tracking-[.25em] text-[#E7C84B]">
+          Community Resource
+        </div>
+
+        <h2 className="mt-1 text-2xl font-black">
+          Looking for more TCG resources?
+        </h2>
+
+        <p className="mt-3 text-gray-400 leading-7">
+          Check out{" "}
+          <a
+            href="https://ponyrec.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-[#E7C84B] hover:underline"
+          >
+            PonyRec
+          </a>{" "}
+          by Tangent for deck-building tools, competitive resources, tournament
+          information, and more.
+        </p>
+
+        <p className="mt-3 text-sm text-gray-500">
+          PonyRec is affiliated with Kayou U.S. in the same way MLPEKAYOU is.
+        </p>
+
       </div>
 
-      <h2 className="mt-1 text-xl font-black">
-        Looking for more TCG resources?
-      </h2>
+      <a
+        href="https://ponyrec.net/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 rounded-xl border border-[#E7C84B] px-6 py-3 font-semibold text-[#E7C84B] transition hover:bg-[#E7C84B] hover:text-black"
+      >
+        Visit PonyRec →
+      </a>
 
-      <p className="mt-2 text-gray-400">
-        Check out{" "}
+    </div>
+
+  </section>
+
+  {/* Doodle Binder */}
+
+  <section className="rounded-2xl border border-[#3a3a3a] bg-[#1d1d1d] px-8 py-6">
+
+    <div className="flex flex-col lg:flex-row gap-8 items-center">
+
+      <div className="flex-1">
+
+        <div className="text-xs font-semibold uppercase tracking-[.25em] text-[#E7C84B]">
+          Community Partner
+        </div>
+
+        <h2 className="mt-1 text-2xl font-black">
+          Doodle Binder
+        </h2>
+
+        <p className="mt-3 text-gray-400 leading-7">
+          Looking for a unique way to store your Kayou collection? Eternal (Doodle Binder)
+          offers custom-designed binders made specifically for My Little Pony
+          Kayou collectors and other IPs at request.
+        </p>
+
+        <p className="mt-3 text-sm text-gray-500">
+          Designed by Eternal and available through Doodle Binder.
+        </p>
+
         <a
-          href="https://ponyrec.net/"
+          href="https://www.doodlebinder.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-[#E7C84B] hover:underline"
+          className="mt-6 inline-flex rounded-xl border border-[#E7C84B] px-6 py-3 font-semibold text-[#E7C84B] transition hover:bg-[#E7C84B] hover:text-black"
         >
-          PonyRec
-        </a>{" "}
-        by Tangent for deck-building tools, competitive resources, and more.
-      </p>
+          Shop Custom Binders →
+        </a>
 
-      <p className="mt-2 text-xs text-gray-500">
-        PonyRec is affiliated with Kayou U.S. in the same way MLPEKAYOU is.
-      </p>
-
-    </div>
-
-    <a
-      href="https://ponyrec.net/"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="shrink-0 rounded-xl border border-[#E7C84B] px-5 py-3 font-semibold text-[#E7C84B] transition hover:bg-[#E7C84B] hover:text-black"
-    >
-      Visit PonyRec →
-    </a>
-
-  </div>
-
-</section>
-
-        {/* FEATURED PRODUCTS */}
-
-        <section className="rounded-3xl bg-[#202020] border border-[#2f2f2f]">
-
-          <div className="flex justify-between items-center px-6 py-5 border-b border-[#2d2d2d]">
-
-            <h2 className="text-2xl font-black uppercase">
-              Featured New Products
-            </h2>
-
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 p-5">
-
-{[
-  {
-    title: "Discord TCG (BP02)",
-    status: "Coming Soon",
-    date: "August 7, 2026",
-    note: "",
-    image: "/set-pictures/discordsetposter.webp",
-  },
-  {
-    title: "Moon Edition Four",
-    status: "Coming Soon",
-    date: "September 2026",
-    note: "Date subject to change • Poster shown is the Chinese placeholder",
-    image: "/set-pictures/moonfourpostercn.webp",
-  },
-  {
-    title: "Moon Edition Twelve (CN)",
-    status: "2027 (NA)",
-    date: "August 2026 CN, UNKNOWN 2027 NA",
-    note: "",
-    image: "/set-pictures/moontwelvecnposter.webp",
-  },
-  {
-    title: "Nightmare Night TCG (BP03)",
-    status: "Coming Soon",
-    date: "October 2026",
-    note: "Date subject to change • Poster shown is the Chinese placeholder",
-    image: "/nightmarenight-assets/nightmarenightposter.webp",
-  },
-].map((product) => (
-
-  <div
-    key={product.title}
-    className="group overflow-hidden rounded-2xl border border-[#353535] bg-[#262626] transition-all duration-300 hover:-translate-y-1 hover:border-[#E7C84B]"
-  >
-
-    <div className="overflow-hidden">
-      <img
-        src={product.image}
-        alt={product.title}
-        className="aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-105"
-        draggable={false}
-      />
-    </div>
-
-    <div className="p-4">
-
-      <div className="inline-block rounded-full bg-[#E7C84B] px-2 py-1 text-xs font-bold uppercase text-black">
-        {product.status}
       </div>
 
-      <h3 className="mt-3 text-lg font-bold leading-tight">
-        {product.title}
-      </h3>
+      <div className="grid w-full max-w-md grid-cols-2 gap-5 lg:w-[420px]">
 
-      <p className="mt-1 text-sm text-gray-300">
-        {product.date}
-      </p>
+        <img
+          src="/website-assets/binder1custom.webp"
+          alt="Custom Kayou Binder"
+          className="w-full rounded-xl border border-[#3a3a3a] shadow-lg transition duration-300 hover:-translate-y-1 hover:scale-[1.02]"
+        />
 
-      {product.note && (
-        <p className="mt-3 text-xs leading-5 text-gray-500">
-          {product.note}
-        </p>
-      )}
+        <img
+          src="/website-assets/binder3custom.webp"
+          alt="Custom Kayou Binder"
+          className="w-full rounded-xl border border-[#3a3a3a] shadow-lg transition duration-300 hover:-translate-y-1 hover:scale-[1.02]"
+        />
+
+      </div>
 
     </div>
 
-  </div>
+  </section>
 
-))}
+</div>
 
-          </div>
-
-        </section>
-
-        {/* QUICK NAV */}
-
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
-          {[
-            ["Collections", "/collections"],
-            ["CCG Progress", "/my-progress"],
-            ["ISO and Wishlist", "/iso"],
-            ["Trading", "/trading-post"],
-          ].map(([title, link]) => (
-
-            <Link
-              key={title}
-              to={link}
-              className="rounded-2xl bg-[#202020] border border-[#2f2f2f] p-6 hover:border-[#E7C84B] transition"
-            >
-              <div className="text-[#E7C84B] text-xs uppercase tracking-[.2em]">
-                Explore
-              </div>
-
-              <div className="mt-2 text-2xl font-black">
-                {title}
-              </div>
-
-            </Link>
-
-          ))}
-
-        </section>
+)}
 
         {/* UPDATES */}
+
+{activeTab === "updates" && (
 
 <section className="rounded-3xl border border-[#2f2f2f] bg-[#202020]">
 
@@ -456,6 +418,8 @@ const heroCards = [
   </div>
 
 </section>
+
+)}
 
       </div>
 
