@@ -77,6 +77,7 @@ const manualFirstFinishers: Record<
   "6": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
   "7": { id: "94a1c998-d040-4dd2-b2fb-5f606287139d" }, // Jacob
   "8": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
+  "11": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
   "friendshipsbegin": {
     id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
   }, // Mari

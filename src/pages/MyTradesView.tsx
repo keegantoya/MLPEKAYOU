@@ -108,7 +108,7 @@ if (card.set_id === "FW") {
 
 if (card.set_id === "12") {
   return `/cards/discord/${card.card_key}.webp`;
-}
+} 
 
   if (card.set_id === "9") {
     const number = card.card_key.split("-")[1];
