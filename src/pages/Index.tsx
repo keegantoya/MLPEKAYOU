@@ -1,427 +1,648 @@
-import { useState } from "react";
+import React, { useState } from "react";
+
+type HomeTab = "updates" | "tutorial" | "resources" | "partnership";
 
 export default function Index() {
-  const [activeTab, setActiveTab] = useState<"updates" | "community">("updates");
-
-const heroCards = [
-  {
-    image: "/cards/third-edition-moon/M3ZR006.webp",
-    link: "/moon-three",
-  },
-  {
-    image: "/cards/rainbow-two/R2USR007.webp",
-    link: "/rainbow-two",
-  },
-  {
-    image: "/cards/star-one/S1SAR008.webp",
-    link: "/star-one",
-  },
-];
+  const [activeTab, setActiveTab] = useState<HomeTab>("updates");
 
   return (
-   <main className="min-h-screen overflow-x-hidden bg-[#171717] text-white">
+    <main className="min-h-screen bg-[#111111] text-white">
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
+      {/* Top Banner */}
+      <section className="relative overflow-hidden border-b border-yellow-400/15 bg-[#171717]">
 
-{/* HERO */}
+        {/* Background glow */}
+        <div className="absolute inset-0">
+          <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-yellow-400/10 blur-3xl" />
 
-<section className="relative pt-16 pb-20">
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(250,204,21,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(250,204,21,0.06) 1px, transparent 1px)
+              `,
+              backgroundSize: "40px 40px",
+            }}
+          />
+        </div>
 
-  <div className="relative max-w-7xl mx-auto px-8">
+        <div className="relative mx-auto max-w-7xl px-8 py-10">
 
-    {/* DESKTOP */}
-    <div className="hidden lg:grid lg:grid-cols-[1.1fr_.9fr] items-center gap-8">
+          <div className="text-center">
+            <p className="mb-2 font-oxanium text-xs uppercase tracking-[0.6rem] text-yellow-400">
+              Welcome To
+            </p>
 
-      {/* LEFT */}
+            <h1 className="font-oxanium text-5xl font-black uppercase tracking-[0.3rem] text-white">
+              MLPEKAYOU
+            </h1>
 
-      <div>
+            <div className="mx-auto mt-4 h-1 w-28 rounded-full bg-yellow-400 shadow-[0_0_20px_#facc15]" />
 
-        <div className="flex items-center gap-4">
+<a
+  href="https://discord.gg/mlpekayou"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="group mx-auto mt-6 flex w-fit transition-transform duration-300 hover:scale-105"
+>
+  <img
+    src="/website-assets/discordlogo.webp"
+    alt="Join the MLPEKAYOU Discord"
+    className="h-14 w-auto drop-shadow-[0_0_20px_rgba(250,204,21,0.25)] transition-all duration-300 group-hover:drop-shadow-[0_0_35px_rgba(250,204,21,0.55)]"
+  />
+</a>
+          </div>
 
-          <div className="h-px w-16 bg-[#E7C84B]" />
+          {/* Tabs */}
+          <div className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {[
+              { id: "updates", label: "UPDATES" },
+              { id: "tutorial", label: "TUTORIAL" },
+              { id: "resources", label: "RESOURCES" },
+              { id: "partnership", label: "PARTNERSHIP" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as HomeTab)}
+                className={`rounded-xl border px-6 py-4 font-oxanium text-sm font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? "border-yellow-400 bg-yellow-400 text-black"
+                    : "border-[#333] bg-[#1a1a1a] text-white hover:border-yellow-400 hover:text-yellow-400"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-          <span className="text-xs tracking-[.5em] uppercase text-[#E7C84B]">
-            MLPEKAYOU
+        </div>
+
+      </section>
+
+      {/* Tab Content */}
+      <section className="mx-auto max-w-7xl px-8 py-8">
+        <div className="rounded-2xl border border-[#333] bg-[#1a1a1a] p-8">
+          {activeTab === "updates" && (
+  <div className="space-y-6">
+
+    <div className="group relative overflow-hidden border border-[#3a3a3a] bg-[#151515]">
+
+      {/* Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.04)_1px,transparent_1px)] bg-[size:32px_32px]" />
+
+      {/* Moving Scan Line */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-25deg] bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent animate-[scan_5s_linear_infinite]" />
+      </div>
+
+      {/* Accent Line */}
+      <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
+
+      {/* Corner Accents */}
+      <div className="absolute left-0 top-0 h-6 w-6 border-l-2 border-t-2 border-yellow-400" />
+      <div className="absolute right-0 top-0 h-6 w-6 border-r-2 border-t-2 border-yellow-400" />
+      <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
+      <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
+
+      <div className="relative p-8">
+
+        <div className="mb-6 flex items-center justify-between">
+
+          <div className="flex items-center gap-3">
+
+            <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
+
+            <span className="font-oxanium text-xs font-bold uppercase tracking-[0.4em] text-yellow-400">
+              WEBSITE UPDATE
+            </span>
+
+          </div>
+
+          <span className="border border-[#404040] bg-[#1b1b1b] px-4 py-2 font-oxanium text-xs uppercase tracking-[0.2em] text-gray-400">
+            08 / 07 / 2026
           </span>
 
         </div>
 
-        <h1 className="mt-10 text-[6rem] leading-[0.88] font-black uppercase">
-          Every
-          <br />
-          Collection
-          <br />
-          Starts
-          <br />
-          Somewhere.
-        </h1>
+        <h2 className="font-oxanium text-3xl font-black uppercase tracking-[0.12em] text-white">
+          Share Your Collection
+        </h2>
 
-        <p className="mt-5 text-sm font-medium uppercase tracking-[0.35em] text-gray-400">
-  Start in the Right Place
-</p>
+        <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
 
-<div className="mt-20 flex gap-8">
-
-  <button
-    onClick={() => setActiveTab("updates")}
-    className={`border-b-2 pb-2 text-lg font-bold transition ${
-      activeTab === "updates"
-        ? "border-[#E7C84B] text-[#E7C84B]"
-        : "border-transparent text-gray-500 hover:text-white"
-    }`}
-  >
-    Updates
-  </button>
-
-  <button
-    onClick={() => setActiveTab("community")}
-    className={`border-b-2 pb-2 text-lg font-bold transition ${
-      activeTab === "community"
-        ? "border-[#E7C84B] text-[#E7C84B]"
-        : "border-transparent text-gray-500 hover:text-white"
-    }`}
-  >
-    Community
-  </button>
-
-</div>
-
-      </div>
-
-      {/* RIGHT */}
-
-      <div className="relative h-[540px]">
-
-        <div className="absolute right-24 top-8 z-30 w-[300px] rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_35px_70px_rgba(0,0,0,.45)]">
-          <img
-            src="/cards/star-one/S1SAR008.webp"
-            draggable={false}
-            className="block w-full scale-[1.049]"
-          />
-        </div>
-
-        <div className="absolute right-0 top-[300px] w-[220px] rotate-[10deg] overflow-hidden rounded-[10px] shadow-[0_20px_40px_rgba(0,0,0,.35)]">
-          <img
-            src="/cards/rainbow-two/R2USR007.webp"
-            draggable={false}
-            className="block w-full scale-[1.049]"
-          />
-        </div>
-
-        <div className="absolute right-60 top-[240px] w-[220px] -rotate-[12deg] overflow-hidden rounded-[10px] opacity-70 shadow-[0_20px_40px_rgba(0,0,0,.35)]">
-          <img
-            src="/cards/third-edition-moon/M3ZR006.webp"
-            draggable={false}
-            className="block w-full scale-[1.04]"
-          />
-        </div>
-
-      </div>
-
-    </div>
-
-    {/* MOBILE */}
-    <div className="lg:hidden">
-
-      <div className="text-center">
-
-        <div className="flex items-center justify-center gap-3">
-
-          <div className="h-px w-10 bg-[#E7C84B]" />
-
-          <span className="text-[10px] tracking-[.45em] uppercase text-[#E7C84B]">
-            MLPEKAYOU
+        <p className="mt-6 max-w-4xl text-[15px] leading-8 text-gray-300">
+          Click
+          <span className="mx-2 border border-yellow-400 bg-yellow-400/10 px-2 py-1 font-semibold text-yellow-400">
+            Share
           </span>
-
-          <div className="h-px w-10 bg-[#E7C84B]" />
-
-        </div>
-
-        <h1 className="mt-6 text-[2.5rem] sm:text-[3rem] leading-[0.9] font-black uppercase break-words">
-          Every
-          <br />
-          Collection
-          <br />
-          Starts
-          <br />
-          Somewhere.
-        </h1>
-
+          in your profile to instantly create a public page that anyone can
+          view. Share your
+          <span className="font-semibold text-white"> ISO</span>,
+          <span className="font-semibold text-white"> Wishlist</span>, and
+          <span className="font-semibold text-white"> Trades</span> with
+          collectors outside of MLPEKayou.
+        </p>
 
       </div>
 
-      <div className="relative mx-auto mt-2 h-[280px] w-[260px] sm:h-[320px] sm:w-[300px]">
+<div className="group relative overflow-hidden border border-[#3a3a3a] bg-[#151515]">
 
-        <div className="absolute left-1/2 top-0 z-30 w-[150px] sm:w-[175px] -translate-x-1/2 rotate-[2deg] overflow-hidden rounded-[12px] shadow-[0_30px_60px_rgba(0,0,0,.45)]">
-          <img
-            src="/cards/star-one/S1SAR008.webp"
-            draggable={false}
-            className="block w-full scale-[1.049]"
-          />
-        </div>
+  {/* Background */}
+  <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.04)_1px,transparent_1px)] bg-[size:32px_32px]" />
 
-        <div className="absolute left-2 bottom-4 w-[120px] -rotate-[14deg] overflow-hidden rounded-[10px] shadow-[0_20px_40px_rgba(0,0,0,.35)]">
-          <img
-            src="/cards/third-edition-moon/M3ZR006.webp"
-            draggable={false}
-            className="block w-full scale-[1.04]"
-          />
-        </div>
+  {/* Moving Scan Line */}
+  <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-25deg] bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent animate-[scan_5s_linear_infinite]" />
+  </div>
 
-        <div className="absolute right-2 bottom-4 w-[120px] rotate-[14deg] overflow-hidden rounded-[10px] shadow-[0_20px_40px_rgba(0,0,0,.35)]">
-          <img
-            src="/cards/rainbow-two/R2USR007.webp"
-            draggable={false}
-            className="block w-full scale-[1.049]"
-          />
-        </div>
+  {/* Accent Line */}
+  <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
+
+  {/* Corner Accents */}
+  <div className="absolute left-0 top-0 h-6 w-6 border-l-2 border-t-2 border-yellow-400" />
+  <div className="absolute right-0 top-0 h-6 w-6 border-r-2 border-t-2 border-yellow-400" />
+  <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
+  <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
+
+  <div className="relative p-8">
+
+    <div className="mb-6 flex items-center justify-between">
+
+      <div className="flex items-center gap-3">
+
+        <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
+
+        <span className="font-oxanium text-xs font-bold uppercase tracking-[0.4em] text-yellow-400">
+          LEADERBOARD
+        </span>
 
       </div>
-<div className="mt-8 flex justify-center gap-8">
 
-  <button
-    onClick={() => setActiveTab("updates")}
-    className={`border-b-2 pb-2 text-base font-bold transition ${
-      activeTab === "updates"
-        ? "border-[#E7C84B] text-[#E7C84B]"
-        : "border-transparent text-gray-500 hover:text-white"
-    }`}
-  >
-    Updates
-  </button>
+      <span className="border border-[#404040] bg-[#1b1b1b] px-4 py-2 font-oxanium text-xs uppercase tracking-[0.2em] text-gray-400">
+        07 / 29 / 2026
+      </span>
 
-  <button
-    onClick={() => setActiveTab("community")}
-    className={`border-b-2 pb-2 text-base font-bold transition ${
-      activeTab === "community"
-        ? "border-[#E7C84B] text-[#E7C84B]"
-        : "border-transparent text-gray-500 hover:text-white"
-    }`}
-  >
-    Community
-  </button>
-
-</div>
     </div>
+
+    <h2 className="font-oxanium text-3xl font-black uppercase tracking-[0.12em] text-white">
+      Leaderboard Under Construction
+    </h2>
+
+    <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
+
+    <p className="mt-6 max-w-4xl text-[15px] leading-8 text-gray-300">
+      The leaderboard is currently being rebuilt to improve overall website
+      performance and reduce server workload. This update will help prevent
+      crashes during periods of heavy traffic while introducing separate
+      <span className="font-semibold text-white"> CCG</span> and
+      <span className="font-semibold text-white"> TCG</span> leaderboards,
+      giving collectors who focus on only one game an equal opportunity to
+      compete for a top spots. (Totally... not because Keegan hates TCG...)
+    </p>
 
   </div>
 
-</section>
+</div>
 
-{activeTab === "community" && (
+    </div>
 
-<div className="space-y-6">
+  </div>
+  
+)}
 
-  {/* PonyRec */}
+{activeTab === "tutorial" && (
+  <div className="space-y-5">
 
-  <section className="rounded-2xl border border-[#3a3a3a] bg-[#1d1d1d] px-8 py-6">
+    {[
+      {
+        title: "Collections",
+        href: "/collections",
+        body: "Flip cards over to show their backs. That means you officially own that card.",
+      },
+      {
+        title: "ISO & Wishlist",
+        href: "/iso",
+        body: "Your ISO builds automatically from cards you do not own. Hide sets you don't want to collect, make your ISO private, search every card by character or card code, and create a public wishlist. Collectors who only chase specific characters or individual cards typically disable their ISO and only use a wishlist.",
+      },
+      {
+        title: "Inventory",
+        href: "/inventory",
+        body: "Mark cards as For Trade or For Sale and edit the quantity you own. Inventory is automatically set to 1 for owned cards. After making changes, scroll back to the top of the page and press Save before leaving.",
+      },
+      {
+        title: "Binders",
+        href: "/binders",
+        body: "View every card organized into digital binders so you can browse your collection even when you're away from home. Missing cards leave empty spaces, making it easy to organize physical binders. You can also view other collectors' binders.",
+      },
+    ].map((item) => (
+      <div
+        key={item.title}
+        className="group relative overflow-hidden border border-[#303030] bg-[#141414] transition-all duration-300 hover:border-yellow-400 hover:shadow-[0_0_30px_rgba(250,204,21,0.12)]"
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.03)_1px,transparent_1px)] bg-[size:28px_28px]" />
 
-    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div className="absolute left-0 top-0 h-full w-[3px] bg-yellow-400" />
 
-      <div>
+        <div className="absolute left-0 top-0 h-5 w-5 border-l-2 border-t-2 border-yellow-400" />
+        <div className="absolute right-0 top-0 h-5 w-5 border-r-2 border-t-2 border-yellow-400" />
+        <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
+        <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
 
-        <div className="text-xs font-semibold uppercase tracking-[.25em] text-[#E7C84B]">
-          Community Resource
+        <div className="relative p-7">
+
+          <div className="flex items-center justify-between">
+            <a
+              href={item.href}
+              className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 transition hover:text-white"
+            >
+              {item.title}
+            </a>
+
+            <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_10px_#facc15]" />
+          </div>
+
+          <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
+
+          <p className="mt-5 leading-8 text-gray-300">
+            {item.body}
+          </p>
+
+        </div>
+      </div>
+    ))}
+
+    <div className="group relative overflow-hidden border border-[#303030] bg-[#141414] transition-all duration-300 hover:border-yellow-400 hover:shadow-[0_0_30px_rgba(250,204,21,0.12)]">
+
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.03)_1px,transparent_1px)] bg-[size:28px_28px]" />
+
+      <div className="absolute left-0 top-0 h-full w-[3px] bg-yellow-400" />
+
+      <div className="absolute left-0 top-0 h-5 w-5 border-l-2 border-t-2 border-yellow-400" />
+      <div className="absolute right-0 top-0 h-5 w-5 border-r-2 border-t-2 border-yellow-400" />
+      <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
+      <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
+
+      <div className="relative p-7">
+
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href="/my-progress"
+            className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 hover:text-white"
+          >
+            Progress CCG
+          </a>
+
+          <span className="text-gray-600">/</span>
+
+          <a
+            href="/progress-tcg"
+            className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 hover:text-white"
+          >
+            Progress TCG
+          </a>
         </div>
 
-        <h2 className="mt-1 text-2xl font-black">
-          Looking for more TCG resources?
-        </h2>
+        <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-        <p className="mt-3 text-gray-400 leading-7">
-          Check out{" "}
-          <a
-            href="https://ponyrec.net/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-[#E7C84B] hover:underline"
-          >
-            PonyRec
-          </a>{" "}
-          by Tangent for deck-building tools, competitive resources, tournament
-          information, and more.
-        </p>
-
-        <p className="mt-3 text-sm text-gray-500">
-          PonyRec is affiliated with Kayou U.S. in the same way MLPEKAYOU is.
+        <p className="mt-5 leading-8 text-gray-300">
+          See which sets you've mastered and track your overall completion
+          separately for CCG and TCG collections.
         </p>
 
       </div>
+    </div>
 
+    {[
+      {
+        title: "Inbox",
+        href: "/inbox",
+        body: "Accept friend requests, view your friends' ISO, Wishlist, and Trades, and privately message other collectors. Friend requests are sent from Explore.",
+      },
+      {
+        title: "Explore",
+        href: "/explore",
+        body: "Search for any collector on MLPEKayou, send friend requests, view their profile, collection statistics, binders, and more.",
+      },
+      {
+        title: "First Finishers",
+        href: "/community",
+        body: "Leaderboards for individual sets. The collector displayed on each set completed it first and verified completion with Keegan using photos and video.",
+      },
+      {
+        title: "Leaderboard",
+        href: "/leaderboard",
+        body: "See who owns the most cards on MLPEKayou. Rankings are separated into CCG and TCG leaderboards.",
+      },
+      {
+        title: "Selling",
+        href: "/selling",
+        body: "Suggested community guidelines for buying and selling cards. This is not an official price guide, but recommendations created by experienced Kayou collectors to help keep the hobby affordable and accessible instead of becoming Pokémon 2.0.",
+      },
+      {
+        title: "Shop",
+        href: "/shop",
+        body: "Purchase select products through Keegan at StonesTradingCo. Redeem your Discord roles and experience live card rips in the MLPEKayou Discord server (discord.gg/mlpekayou).",
+      },
+    ].map((item) => (
+      <div
+        key={item.title}
+        className="group relative overflow-hidden border border-[#303030] bg-[#141414] transition-all duration-300 hover:border-yellow-400 hover:shadow-[0_0_30px_rgba(250,204,21,0.12)]"
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.03)_1px,transparent_1px)] bg-[size:28px_28px]" />
+
+        <div className="absolute left-0 top-0 h-full w-[3px] bg-yellow-400" />
+
+        <div className="absolute left-0 top-0 h-5 w-5 border-l-2 border-t-2 border-yellow-400" />
+        <div className="absolute right-0 top-0 h-5 w-5 border-r-2 border-t-2 border-yellow-400" />
+        <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
+        <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
+
+        <div className="relative p-7">
+
+          <div className="flex items-center justify-between">
+            <a
+              href={item.href}
+              className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 transition hover:text-white"
+            >
+              {item.title}
+            </a>
+
+            <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_10px_#facc15]" />
+          </div>
+
+          <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
+
+          <p className="mt-5 leading-8 text-gray-300">
+            {item.body}
+          </p>
+
+        </div>
+      </div>
+    ))}
+
+  </div>
+)}
+{activeTab === "resources" && (
+  <div className="space-y-6">
+
+    {[
+      {
+        title: "PonyRec",
+        href: "https://www.ponyrec.net/",
+        image: "/website-assets/ponyreclogo.webp",
+        imageClass:
+          "bg-[#0f0f0f] object-contain p-8",
+        description: (
+          <>
+            <span className="font-semibold text-white">PonyRec</span> was
+            created by <span className="text-yellow-400">Tangent</span>. A
+            fan-run Kayou resource dedicated to deck building, TCG mechanics,
+            competitive play, and everything related to the My Little Pony
+            Trading Card Game.
+          </>
+        ),
+      },
+      {
+        title: "Doodle Binder",
+        href: "https://www.doodlebinder.com/",
+        image: "/website-assets/binder1custom.webp",
+        imageClass:
+          "object-cover object-center scale-110",
+        description: (
+          <>
+            <span className="font-semibold text-white">Doodle Binder</span> was
+            created by <span className="text-yellow-400">Eternal</span>. Each
+            binder is individually customized using acrylic paints, mixed
+            materials, and hand-finished artwork built specifically for Kayou
+            collectors.
+          </>
+        ),
+      },
+    ].map((resource) => (
       <a
-        href="https://ponyrec.net/"
+        key={resource.title}
+        href={resource.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 rounded-xl border border-[#E7C84B] px-6 py-3 font-semibold text-[#E7C84B] transition hover:bg-[#E7C84B] hover:text-black"
+        className="group relative block overflow-hidden border border-[#343434] bg-[#121212] transition-all duration-300 hover:border-yellow-400 hover:shadow-[0_0_40px_rgba(250,204,21,0.18)]"
       >
-        Visit PonyRec →
-      </a>
+        {/* Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.025)_1px,transparent_1px)] bg-[size:30px_30px]" />
 
-    </div>
+        {/* Glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,#facc1515,transparent_65%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-  </section>
-
-  {/* Doodle Binder */}
-
-  <section className="rounded-2xl border border-[#3a3a3a] bg-[#1d1d1d] px-8 py-6">
-
-    <div className="flex flex-col lg:flex-row gap-8 items-center">
-
-      <div className="flex-1">
-
-        <div className="text-xs font-semibold uppercase tracking-[.25em] text-[#E7C84B]">
-          Community Partner
+        {/* Scan */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -left-1/2 h-full w-1/4 skew-x-[-25deg] bg-gradient-to-r from-transparent via-yellow-400/15 to-transparent animate-[scan_7s_linear_infinite]" />
         </div>
 
-        <h2 className="mt-1 text-2xl font-black">
-          Doodle Binder
+        {/* Accent */}
+        <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
+
+        {/* Corners */}
+        <div className="absolute left-0 top-0 h-5 w-5 border-l-2 border-t-2 border-yellow-400" />
+        <div className="absolute right-0 top-0 h-5 w-5 border-r-2 border-t-2 border-yellow-400" />
+        <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
+        <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
+
+        <div className="relative grid md:grid-cols-[320px_1fr]">
+
+          {/* Image */}
+          <div className="relative flex h-72 items-center justify-center overflow-hidden border-b border-[#303030] bg-[#0d0d0d] md:border-b-0 md:border-r">
+            <img
+              src={resource.image}
+              alt={resource.title}
+              className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${resource.imageClass}`}
+            />
+          </div>
+
+          {/* Content */}
+          <div className="flex flex-col justify-center p-8">
+
+            <div className="flex items-center justify-between">
+
+              <div>
+                <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-yellow-400">
+                  COMMUNITY RESOURCE
+                </p>
+
+                <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white transition group-hover:text-yellow-400">
+                  {resource.title}
+                </h2>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center border border-yellow-400/40 bg-yellow-400/10 transition group-hover:bg-yellow-400 group-hover:text-black">
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 17L17 7M17 7H9M17 7v8"
+                  />
+                </svg>
+              </div>
+
+            </div>
+
+            <div className="mt-5 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
+
+            <p className="mt-6 max-w-3xl leading-8 text-gray-300">
+              {resource.description}
+            </p>
+
+          </div>
+
+        </div>
+
+      </a>
+    ))}
+
+  </div>
+)}
+          {activeTab === "partnership" && (
+  <div className="space-y-6">
+
+    {/* About MLPEKAYOU */}
+    <div className="relative overflow-hidden border border-[#343434] bg-[#121212]">
+
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.025)_1px,transparent_1px)] bg-[size:30px_30px]" />
+      <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
+
+      <div className="relative p-8">
+
+        <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-yellow-400">
+          ABOUT MLPEKAYOU
+        </p>
+
+        <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white">
+          Fan Project
         </h2>
 
-        <p className="mt-3 text-gray-400 leading-7">
-          Looking for a unique way to store your Kayou collection? Eternal (Doodle Binder)
-          offers custom-designed binders made specifically for My Little Pony
-          Kayou collectors and other IPs at request.
+        <div className="mt-5 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
+
+        <p className="mt-6 leading-8 text-gray-300">
+          <span className="font-semibold text-white">MLPEKAYOU</span> is owned
+          and operated by <span className="text-yellow-400">Sam Keegan</span>.
+          Keegan is a U.S. Army Veteran (Prior Service Infantry - 11C) and <span className="font-semibold text-white">is not employed by Kayou. </span>
+          Kayou retains ownership of all My Little Pony artwork, characters, and
+          related intellectual property used throughout this website. Images are
+          provided by Kayou for use on MLPEKAYOU.
         </p>
-
-        <p className="mt-3 text-sm text-gray-500">
-          Designed by Eternal and available through Doodle Binder.
-        </p>
-
-        <a
-          href="https://www.doodlebinder.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-6 inline-flex rounded-xl border border-[#E7C84B] px-6 py-3 font-semibold text-[#E7C84B] transition hover:bg-[#E7C84B] hover:text-black"
-        >
-          Shop Custom Binders →
-        </a>
-
-      </div>
-
-      <div className="grid w-full max-w-md grid-cols-2 gap-5 lg:w-[420px]">
-
-        <img
-          src="/website-assets/binder1custom.webp"
-          alt="Custom Kayou Binder"
-          className="w-full rounded-xl border border-[#3a3a3a] shadow-lg transition duration-300 hover:-translate-y-1 hover:scale-[1.02]"
-        />
-
-        <img
-          src="/website-assets/binder3custom.webp"
-          alt="Custom Kayou Binder"
-          className="w-full rounded-xl border border-[#3a3a3a] shadow-lg transition duration-300 hover:-translate-y-1 hover:scale-[1.02]"
-        />
 
       </div>
 
     </div>
 
-  </section>
+    {/* Disclaimer */}
+    <div className="relative overflow-hidden border border-red-500/40 bg-gradient-to-r from-red-950/50 to-[#121212]">
 
-</div>
+      <div className="absolute left-0 top-0 h-full w-[4px] bg-red-500" />
 
-)}
+      <div className="relative p-8">
 
-        {/* UPDATES */}
+        <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-red-400">
+          IMPORTANT DISCLAIMER
+        </p>
 
-{activeTab === "updates" && (
+        <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white">
+          MLPEKAYOU Is Not Kayou US
+        </h2>
 
-<section className="rounded-3xl border border-[#2f2f2f] bg-[#202020]">
+        <div className="mt-5 h-[2px] bg-gradient-to-r from-red-500 via-red-500/25 to-transparent" />
 
-  <div className="flex items-center justify-between border-b border-[#2d2d2d] px-6 py-5">
+        <p className="mt-6 text-lg font-semibold uppercase leading-9 text-white">
+          MLPEKAYOU IS A FAN WEBSITE. IT IS NOT OWNED, OPERATED, OR MANAGED BY
+          KAYOU US.
+        </p>
 
-    <div>
-      <h2 className="text-2xl font-black uppercase">
-        Recent Updates
-      </h2>
-      <p className="mt-1 text-sm text-gray-500">
-        Stay up to date with the latest additions and improvements to MLPEKAYOU.
-      </p>
+        <p className="mt-6 leading-8 text-gray-300">
+          MLPEKAYOU generates <span className="font-bold text-yellow-400">$0.00</span>
+          {" "}in revenue and will never display advertisements, subscriptions,
+          premium memberships, or paywalls. The goal of this project has always
+          been to provide a completely free resource for the My Little Pony
+          Kayou community.
+        </p>
+
+      </div>
+
     </div>
 
-  </div>
+    {/* StonesTradingCo */}
+    <a
+      href="https://stonestradingco.com/collections/my-little-pony"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group relative block overflow-hidden border border-[#343434] bg-[#121212] transition-all duration-300 hover:border-yellow-400 hover:shadow-[0_0_40px_rgba(250,204,21,0.18)]"
+    >
 
-  <div className="divide-y divide-[#2d2d2d]">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.025)_1px,transparent_1px)] bg-[size:30px_30px]" />
 
-{[
-    {
-    date: "07/29/2026",
-    title: "Functional Changes",
-    description:
-      "In your profile, you can now share it so others can instantly view your ISO, Wishlist, and Trades from a link. You can now share others' profiles from explore, or in trading post. Simply click on the username of the person with a card you'd like to trade for and see their ISO. Trading post also recieved a major redesign.",
-  },
-  {
-    alert: true,
-    title: "MLPEKAYOU Service Notice",
-    description:
-      "The service in which all account data is living is currently experiencing outages. On occasion, you will experience degraded performance or simply be unable to use the website. Please allow ten to twenty minutes for the database to reset. There is nothing I can do about this, it is out of my hands until they figure themselves out.",
-  },
-  {
-    date: "07/24/2026",
-    title: "Functional Changes",
-    description:
-      "The homepage has been redesigned for less confusion among newer members. The Wishlist page has been removed and condensed into the ISO page for easier access.",
-  },
-].map((update, index) => (
+      <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
 
-  <div
-    key={index}
-    className="flex gap-6 px-6 py-6 hover:bg-[#242424] transition-colors"
-  >
+      <div className="relative p-8">
 
-    {/* Left Column */}
+        <div className="flex items-center justify-between">
 
-    <div className="w-40 shrink-0 flex items-center justify-center">
+          <div>
 
-      {update.alert ? (
+            <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-yellow-400">
+              OFFICIAL PARTNER
+            </p>
 
-        <div className="flex flex-col items-center text-center">
+            <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white group-hover:text-yellow-400">
+              StonesTradingCo
+            </h2>
 
-          <div className="text-5xl leading-none">
-            ⚠️
           </div>
 
-          <div className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-red-400">
-            Notice
-          </div>
+          <svg
+            className="h-8 w-8 text-yellow-400 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 17L17 7M17 7H9M17 7v8"
+            />
+          </svg>
 
         </div>
 
-      ) : (
+        <div className="mt-5 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-        <div className="rounded-full bg-[#E7C84B] px-4 py-2 text-sm font-bold text-black">
-          {update.date}
-        </div>
+        <p className="mt-6 leading-8 text-gray-300">
+          Purchasing My Little Pony products through
+          <span className="font-semibold text-white"> StonesTradingCo</span>
+          {" "}comes directly through Keegan. The MLPEKAYOU Discord regularly
+          hosts <span className="text-yellow-400">Live Rip Nights</span>, where
+          products are opened live for collectors.
+        </p>
 
-      )}
-
-    </div>
-
-    {/* Right Column */}
-
-    <div className="flex-1">
-
-      <h3 className={update.alert ? "text-xl font-black text-red-400" : "text-xl font-bold"}>
-        {update.title}
-      </h3>
-
-      <p className="mt-2 text-gray-400 leading-7">
-        {update.description}
-      </p>
-
-    </div>
-
-  </div>
-
-))}
-
-  </div>
-
-</section>
-
-)}
+        <p className="mt-6 leading-8 text-gray-300">
+          StonesTradingCo pays Keegan a commission on these purchases, which is
+          used to fund server costs, development, and maintenance of
+          <span className="font-semibold text-white"> MLPEKAYOU</span> while
+          keeping every feature completely free for the community.
+        </p>
 
       </div>
+
+    </a>
+
+  </div>
+)}
+        </div>
+      </section>
 
     </main>
   );
