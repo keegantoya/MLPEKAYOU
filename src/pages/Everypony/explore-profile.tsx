@@ -46,6 +46,7 @@ const [userProfileSettings, setuserProfileSettings] =
   useState({
     hide_iso: false,
     hide_wishlist: false,
+    hidden_iso_sets: [] as string[],
   });
 
 const [userTab, setuserTab] =
@@ -130,11 +131,11 @@ if (session?.user && session.user.id !== user.id) {
         : legacyHidden),
     ];
     
-    setuserProfileSettings({
-      hide_iso: profileSettings?.hide_iso ?? false,
-      hide_wishlist: profileSettings?.hide_wishlist ?? false,
-    });
-    
+setuserProfileSettings({
+  hide_iso: profileSettings?.hide_iso ?? false,
+  hide_wishlist: profileSettings?.hide_wishlist ?? false,
+  hidden_iso_sets: hiddenIsoSets,
+});
   
       const { data: wishlistRows } = await supabase
       .from("wishlists")
@@ -664,15 +665,58 @@ function getSetName(setId: string) {
   return names[String(setId)] || `Set ${setId}`;
 }
 
+const visibleIsoCards = userIsoCards.filter((card) => {
+  const setId = String(card.set_id);
+  const hidden = userProfileSettings.hidden_iso_sets;
+
+  if (hidden.includes(setId)) {
+    return false;
+  }
+
+  if (
+    setId === "FW" &&
+    hidden.includes("FW")
+  ) {
+    return false;
+  }
+
+  if (
+    setId === "12" &&
+    hidden.includes("12")
+  ) {
+    return false;
+  }
+
+  if (
+    setId === "tcgpromos" &&
+    hidden.includes("TCG_PROMOS")
+  ) {
+    return false;
+  }
+
+  if (
+    setId === "SD" &&
+    (
+      hidden.includes("SD") ||
+      hidden.includes("SD_STARTERS") ||
+      hidden.includes("SD_BONUS")
+    )
+  ) {
+    return false;
+  }
+
+  return true;
+});
+
 const ISO_SET_TABS = Array.from(
-  new Set(userIsoCards.map((card) => String(card.set_id)))
+  new Set(visibleIsoCards.map((card) => String(card.set_id)))
 ).map((setId) => ({
   id: setId,
   name: getSetName(setId),
 }));
 
 const filteredIsoCards =
-  userIsoCards.filter(
+  visibleIsoCards.filter(
     (card) => String(card.set_id) === selectedSet
   );
 

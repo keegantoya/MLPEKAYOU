@@ -25,6 +25,8 @@ const [stats, setStats] = useState({
   wishlist: 0,
 });
 
+const [hiddenIsoSets, setHiddenIsoSets] = useState<string[]>([]);
+
 useEffect(() => {
   const loadProfile = async () => {
     if (!username) return;
@@ -42,6 +44,19 @@ useEffect(() => {
     if (!profileData) return;
 
     setProfile(profileData);
+
+    const legacyHidden = profileData.iso_hidden_sets || [];
+
+const hidden = [
+  ...(profileData.iso_hidden_sets?.length
+    ? profileData.iso_hidden_sets
+    : legacyHidden),
+  ...(profileData.iso_hidden_sets?.length
+    ? profileData.iso_hidden_sets
+    : legacyHidden),
+];
+
+setHiddenIsoSets(hidden);
 
     const { data: tradingProfile } = await supabase
       .from("trading_profiles")
@@ -147,6 +162,38 @@ const getSetName = (setId: string) => {
   return names[String(setId)] ?? String(setId);
 };
 
+const visibleIsoCards = useMemo(
+  () =>
+    isoCards.filter((card: any) => {
+      const setId = String(card.set_id);
+
+      if (hiddenIsoSets.includes(setId)) {
+        return false;
+      }
+
+      if (
+        setId === "SD" &&
+        (
+          hiddenIsoSets.includes("SD") ||
+          hiddenIsoSets.includes("SD_STARTERS") ||
+          hiddenIsoSets.includes("SD_BONUS")
+        )
+      ) {
+        return false;
+      }
+
+      if (
+        setId === "tcgpromos" &&
+        hiddenIsoSets.includes("TCG_PROMOS")
+      ) {
+        return false;
+      }
+
+      return true;
+    }),
+  [isoCards, hiddenIsoSets]
+);
+
 const modalCards = useMemo(() => {
   switch (collectionMode) {
     case "wishlist":
@@ -154,9 +201,9 @@ const modalCards = useMemo(() => {
     case "trade":
       return tradeCards;
     default:
-      return isoCards;
+      return visibleIsoCards;
   }
-}, [collectionMode, isoCards, wishlistCards, tradeCards]);
+}, [collectionMode, visibleIsoCards, wishlistCards, tradeCards]);
 
 const modalTabs = useMemo(() => {
   return Array.from(
@@ -480,7 +527,7 @@ const CollectionModal = () => {
               <button
 onClick={() => {
   setCollectionMode("iso");
-  setSelectedSet(String(isoCards[0]?.set_id ?? ""));
+  setSelectedSet(String(visibleIsoCards[0]?.set_id ?? ""));
   setShowCollectionModal(true);
 }}
   className="text-sm text-yellow-400 hover:text-yellow-300"
@@ -488,13 +535,13 @@ onClick={() => {
   View All →
 </button>
             </div>
-{isoCards.length === 0 ? (
+{visibleIsoCards.length === 0 ? (
   <div className="flex min-h-[120px] sm:min-h-[320px] items-center justify-center rounded-xl border border-dashed border-zinc-700 px-6 py-10 text-center text-sm sm:text-lg font-medium text-zinc-500">
     There's nothing to see here!
   </div>
 ) : (
   <div className="grid grid-cols-4 gap-3 max-w-[700px] mx-auto">
-    {isoCards.slice(0, 8).map((card: any) => (
+    {visibleIsoCards.slice(0, 8).map((card: any) => (
       <div
         key={`${card.set_id}-${card.card_key}`}
         className={`relative overflow-hidden rounded-xl bg-zinc-900 ${

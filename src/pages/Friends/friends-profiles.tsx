@@ -35,6 +35,7 @@ const [userProfileSettings, setuserProfileSettings] =
   useState({
     hide_iso: false,
     hide_wishlist: false,
+    hidden_iso_sets: [] as string[],
   });
 
 const [userTab, setuserTab] =
@@ -147,10 +148,11 @@ window.dispatchEvent(
         : legacyHidden),
     ];
     
-    setuserProfileSettings({
-      hide_iso: profileSettings?.hide_iso ?? false,
-      hide_wishlist: profileSettings?.hide_wishlist ?? false,
-    });
+setuserProfileSettings({
+  hide_iso: profileSettings?.hide_iso ?? false,
+  hide_wishlist: profileSettings?.hide_wishlist ?? false,
+  hidden_iso_sets: hiddenIsoSets,
+});
     
       if (!(profileSettings?.hide_iso ?? false)) {
       setuserTab("iso");
@@ -399,10 +401,39 @@ function getSetName(setId: string) {
   return names[String(setId)] || `Set ${setId}`;
 }
 
+const visibleIsoCards = userIsoCards.filter((card) => {
+  const setId = String(card.set_id);
+  const hidden = userProfileSettings.hidden_iso_sets;
+
+  if (hidden.includes(setId)) {
+    return false;
+  }
+
+  if (
+    setId === "SD" &&
+    (
+      hidden.includes("SD") ||
+      hidden.includes("SD_STARTERS") ||
+      hidden.includes("SD_BONUS")
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    setId === "tcgpromos" &&
+    hidden.includes("TCG_PROMOS")
+  ) {
+    return false;
+  }
+
+  return true;
+});
+
 const ISO_SET_TABS = [
   { id: "ALL", name: "All" },
   ...Array.from(
-    new Set(userIsoCards.map((card) => String(card.set_id)))
+    new Set(visibleIsoCards.map((card) => String(card.set_id)))
   ).map((setId) => ({
     id: setId,
     name: getSetName(setId),
@@ -413,8 +444,8 @@ const filteredIsoCards =
   selectedSet === ""
     ? []
     : selectedSet === "ALL"
-    ? userIsoCards
-    : userIsoCards.filter(
+    ? visibleIsoCards
+    : visibleIsoCards.filter(
         (card) => String(card.set_id) === selectedSet
       );
 
@@ -710,7 +741,7 @@ ${
   <p className="text-slate-500">
     Select a set to view.
   </p>
-) : userIsoCards.length === 0 ? (
+) : visibleIsoCards.length === 0 ? (
         <p className="text-slate-500">
           This collector isn't looking for any cards.
         </p>
