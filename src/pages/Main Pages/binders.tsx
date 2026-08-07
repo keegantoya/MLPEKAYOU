@@ -60,7 +60,7 @@ const sets = [
     name: "Eternal Moon: Third Edition",
     folder: "third-edition-moon",
     prefix: "M3",
-    rarities: { R: 60, SR: 40, SSR: 40, HR: 60, UR: 18, LSR: 32, SGR: 16, ZR: 14, SC: 7, "SZR": 3 }
+    rarities: { R: 60, SR: 40, SSR: 40, HR: 60, LSR: 32, UR: 18, SGR: 16, ZR: 14, SC: 7, "SZR": 3 }
   },
   {
     id: "4",
