@@ -2041,7 +2041,7 @@ style={{
 
           <p className="mt-2 text-sm leading-6 text-[#8B9295]">
             {authMode === "login"
-              ? "Forgot your password? Guess it wrong and you will recieve an option to reset it."
+              ? "Enter your top secret SuperFan credentials below."
               : "Create your account and begin building your collection."}
           </p>
 
