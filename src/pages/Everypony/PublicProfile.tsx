@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
+import NotFound from "../NotFound";
 import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import { getTradeCardImage } from "@/lib/card-images";
 export default function PublicProfile() {
   const { username } = useParams();
 
   const [profile, setProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+const [profileNotFound, setProfileNotFound] = useState(false);
   const [discord, setDiscord] = useState("");
 const [copied, setCopied] = useState(false);
 
@@ -28,12 +31,26 @@ const [stats, setStats] = useState({
 const [hiddenIsoSets, setHiddenIsoSets] = useState<string[]>([]);
 
 useEffect(() => {
-  const loadProfile = async () => {
-    if (!username) return;
+  let cancelled = false;
 
-    const { data: profiles } = await supabase
+  const loadProfile = async () => {
+    setProfileLoading(true);
+    setProfileNotFound(false);
+    setProfile(null);
+
+    if (!username) {
+      if (!cancelled) {
+        setProfileLoading(false);
+        setProfileNotFound(true);
+      }
+      return;
+    }
+
+    const { data: profiles, error } = await supabase
       .from("profiles")
       .select("*");
+
+    if (cancelled) return;
 
     const profileData = (profiles || []).find(
       (p: any) =>
@@ -41,22 +58,26 @@ useEffect(() => {
         String(username).toLowerCase()
     );
 
-    if (!profileData) return;
+    if (error || !profileData) {
+      setProfileLoading(false);
+      setProfileNotFound(true);
+      return;
+    }
 
     setProfile(profileData);
 
     const legacyHidden = profileData.iso_hidden_sets || [];
 
-const hidden = [
-  ...(profileData.iso_hidden_sets?.length
-    ? profileData.iso_hidden_sets
-    : legacyHidden),
-  ...(profileData.iso_hidden_sets?.length
-    ? profileData.iso_hidden_sets
-    : legacyHidden),
-];
+    const hidden = [
+      ...(profileData.iso_hidden_sets?.length
+        ? profileData.iso_hidden_sets
+        : legacyHidden),
+      ...(profileData.iso_hidden_sets?.length
+        ? profileData.iso_hidden_sets
+        : legacyHidden),
+    ];
 
-setHiddenIsoSets(hidden);
+    setHiddenIsoSets(hidden);
 
     const { data: tradingProfile } = await supabase
       .from("trading_profiles")
@@ -64,10 +85,17 @@ setHiddenIsoSets(hidden);
       .eq("user_id", profileData.id)
       .maybeSingle();
 
+    if (cancelled) return;
+
     setDiscord(tradingProfile?.discord_username || "");
+    setProfileLoading(false);
   };
 
   loadProfile();
+
+  return () => {
+    cancelled = true;
+  };
 }, [username]);
 
 useEffect(() => {
@@ -220,18 +248,18 @@ const CollectionModal = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-8"
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-[#020303]/90 p-2 backdrop-blur-md sm:p-8"
       onClick={() => setShowCollectionModal(false)}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[72dvh] w-[96vw] sm:max-h-[80vh] sm:w-[85vw] max-w-[1400px] flex-col sm:flex-row rounded-3xl border border-yellow-500/20 bg-[#171717] overflow-hidden shadow-2xl"
+        className="relative flex h-[76dvh] w-[96vw] max-w-[1400px] flex-col overflow-hidden border border-[#FFD54A]/25 bg-[#0b0d0d] shadow-[0_30px_100px_rgba(0,0,0,.65)] sm:max-h-[86vh] sm:w-[88vw] sm:flex-row"
       >
         {/* Sidebar */}
-        <div className="w-full sm:w-56 border-b sm:border-b-0 sm:border-r border-zinc-800 bg-[#111111] overflow-x-auto sm:overflow-y-auto kayou-scrollbar flex sm:block">
+        <div className="w-full shrink-0 overflow-x-auto border-b border-white/[0.08] bg-[#090b0b] kayou-scrollbar sm:w-60 sm:overflow-y-auto sm:border-b-0 sm:border-r">
 
-          <div className="p-3 sm:p-6 border-b border-zinc-800">
-            <h2 className="font-oxanium text-2xl font-bold text-white">
+          <div className="border-b border-white/[0.07] p-4 sm:p-6">
+            <h2 className="font-['Oxanium'] text-lg font-black uppercase tracking-[0.08em] text-white">
               {collectionMode === "iso"
                 ? "ISO"
                 : collectionMode === "wishlist"
@@ -244,10 +272,10 @@ const CollectionModal = () => {
             <button
               key={setId}
               onClick={() => setSelectedSet(setId)}
-              className={`shrink-0 sm:w-full text-left px-3 py-2 sm:px-6 sm:py-4 transition ${
+              className={`shrink-0 border-b border-white/[0.04] px-4 py-3 text-left font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition sm:w-full sm:px-6 sm:py-4 ${
                 selectedSet === setId
-                  ? "bg-yellow-500 text-black font-bold"
-                  : "text-zinc-300 hover:bg-zinc-900"
+                  ? "bg-[#FFD54A] text-black font-black shadow-[inset_3px_0_0_#111]"
+                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
               }`}
             >
 {getSetName(setId)}
@@ -256,24 +284,24 @@ const CollectionModal = () => {
         </div>
 
         {/* Right */}
-        <div className="flex-1 overflow-y-auto kayou-scrollbar">
+        <div className="min-w-0 flex-1 overflow-y-auto kayou-scrollbar bg-[#0b0d0d]">
 
-          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-zinc-800 bg-[#171717] px-3 py-2 sm:px-8 sm:py-6">
+          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-white/[0.08] bg-[#0b0d0d]/95 px-4 py-3 backdrop-blur-xl sm:px-8 sm:py-5">
 
-            <h1 className="font-oxanium text-lg sm:text-3xl font-bold">
+            <h1 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
   {getSetName(selectedSet)}
 </h1>
 
             <button
               onClick={() => setShowCollectionModal(false)}
-              className="text-3xl sm:text-5xl text-zinc-400 hover:text-white"
+              className="border border-white/[0.08] px-3 py-1 font-mono text-lg text-zinc-500 transition hover:border-[#FFD54A]/40 hover:text-[#FFD54A] sm:text-2xl"
             >
               ×
             </button>
 
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 p-4 sm:p-8">
+          <div className="grid grid-cols-3 gap-2 p-4 sm:grid-cols-4 sm:gap-4 sm:p-8 xl:grid-cols-6">
 
             {filteredCards
   .sort((a: any, b: any) => {
@@ -332,7 +360,7 @@ const CollectionModal = () => {
   .map((card: any) => (
               <div
   key={`${card.set_id}-${card.card_key}`}
-  className={`relative overflow-hidden rounded-lg bg-zinc-900 ${
+  className={`group relative overflow-hidden rounded-md border border-white/[0.07] bg-[#111313] shadow-[0_8px_22px_rgba(0,0,0,.3)] ${
     String(card.set_id) === "3" &&
     String(card.card_key) === "SZR-1"
       ? "col-span-2 aspect-[10/7]"
@@ -359,79 +387,122 @@ const CollectionModal = () => {
   );
 };
 
+if (profileLoading) {
+  return null;
+}
+
+if (profileNotFound) {
+  return <NotFound />;
+}
+
   return (
-    <div className="min-h-screen bg-[#111111] pb-40 sm:pb-0 text-white">
-      <div className="mx-auto max-w-7xl px-6 py-8">
+    <div className="relative min-h-screen overflow-hidden bg-[#040606] pb-40 text-white sm:pb-0">
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.42]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,212,74,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,212,74,.035) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+        }}
+      />
+      <div className="pointer-events-none fixed inset-0 opacity-[0.07] bg-[repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,.08)_4px)]" />
+      <div className="pointer-events-none fixed left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-[#FFD54A] to-transparent opacity-70" />
+      <div className="pointer-events-none fixed bottom-0 left-0 h-32 w-full bg-[radial-gradient(ellipse_at_center,rgba(255,212,74,.08),transparent_70%)]" />
+    <div className="relative mx-auto max-w-[1500px] px-4 py-5 sm:px-6 sm:py-8">
 {/* Banner */}
-<div className="relative overflow-hidden rounded-[32px] border border-[#d4af37]/20 bg-[#1a1a1a] shadow-[0_0_40px_rgba(0,0,0,.55)]">
+<div className="relative overflow-hidden border border-[#FFD54A]/25 bg-[#080b0b] shadow-[0_30px_100px_rgba(0,0,0,.70)]">
+  <div className="pointer-events-none absolute left-0 top-0 h-16 w-16 border-l-2 border-t-2 border-[#FFD54A]/80" />
+  <div className="pointer-events-none absolute right-0 top-0 h-16 w-16 border-r-2 border-t-2 border-[#FFD54A]/50" />
+  <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-28 border-b-2 border-l-2 border-[#FFD54A]/50" />
+  <div className="pointer-events-none absolute bottom-0 right-0 h-10 w-28 border-b-2 border-r-2 border-[#FFD54A]/50" />
+  <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px bg-white/[0.025]" />
+
+  <div className="relative z-10 flex items-center justify-between border-b border-white/[0.07] bg-[#060808]/80 px-4 py-2 sm:px-6">
+    <div className="flex items-center gap-3">
+      <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]" />
+      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-emerald-400/80">PUBLIC PROFILE LINK</span>
+      <span className="hidden font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-700 sm:inline">/</span>
+      <span className="hidden font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-600 sm:inline">NODE ACTIVE</span>
+    </div>
+    <span className="font-mono text-[6px] uppercase tracking-[0.28em] text-[#FFD54A]/50">PROFILE_OS // 001</span>
+  </div>
 
   {/* Background */}
-  <div className="absolute inset-0 bg-[linear-gradient(135deg,#1b1b1b_0%,#222222_45%,#1a1a1a_100%)]" />
+  <div className="absolute inset-0 bg-[linear-gradient(135deg,#060909_0%,#111515_45%,#060808_100%)]" />
 
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,.16),transparent_45%)]" />
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,212,74,.13),transparent_38%)]" />
 
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(212,175,55,.08),transparent_55%)]" />
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(255,212,74,.06),transparent_50%)]" />
 
   {/* Decorative Line */}
-  <div className="absolute top-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+  <div className="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-[#FFD54A]/80 to-transparent" />
 
-<div className="relative px-5 py-6 sm:px-8 sm:py-8 xl:px-10 xl:py-10">
+<div className="relative px-5 py-7 sm:px-8 sm:py-9 xl:px-10 xl:py-10">
 
-    <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-10">
+    <div className="flex flex-col gap-8 xl:flex-row xl:items-center xl:justify-between">
 
       {/* Left */}
       <div className="flex flex-col items-center text-center xl:flex-row xl:items-center xl:text-left gap-6 xl:gap-8">
 
-        <div className="relative">
-
-          <div className="absolute inset-0 rounded-full bg-[#d4af37]/20 blur-2xl" />
-
+        <div className="relative shrink-0">
+          <div className="absolute -inset-4 border border-[#FFD54A]/20 bg-[#FFD54A]/[0.025] shadow-[0_0_45px_rgba(255,212,74,.12)]" />
+          <div className="absolute -inset-2 border border-dashed border-[#FFD54A]/15" />
+          <div className="absolute -left-5 top-1/2 h-px w-4 bg-[#FFD54A]/70" />
+          <div className="absolute -right-5 top-1/2 h-px w-4 bg-[#FFD54A]/70" />
+          <div className="absolute left-1/2 -top-5 h-4 w-px bg-[#FFD54A]/60" />
+          <div className="absolute bottom-[-20px] left-1/2 h-4 w-px bg-[#FFD54A]/60" />
+          <div className="absolute -right-3 -top-3 border border-[#FFD54A]/30 bg-[#0a0d0d] px-2 py-1">
+          </div>
           <img
             src={avatar}
             alt={profile?.username}
-            className="relative h-28 w-28 sm:h-32 sm:w-32 xl:h-40 xl:w-40 rounded-full border-[4px] xl:border-[5px] border-[#d4af37] object-cover shadow-[0_0_35px_rgba(212,175,55,.35)]"
+            className="relative h-28 w-28 rounded-md border-2 border-[#FFD54A]/70 bg-[#0b0d0d] object-cover shadow-[0_0_35px_rgba(255,212,74,.20)] sm:h-32 sm:w-32 xl:h-40 xl:w-40"
           />
-
         </div>
 
         <div>
 
-          <div className="flex items-center justify-center xl:justify-start gap-2">
+          <div className="mb-3 flex items-center justify-center gap-2 xl:justify-start">
+          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-zinc-600">IDENTITY CHANNEL</span>
+          <span className="h-px w-10 bg-[#FFD54A]/30" />
+          <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-emerald-400/60">SECURE</span>
+        </div>
+        <div className="flex items-center justify-center gap-3 xl:justify-start">
 
-            <h1 className="font-oxanium text-3xl sm:text-4xl xl:text-5xl font-bold tracking-wide text-white break-all">
+            <h1 className="font-['Oxanium'] text-3xl font-black uppercase tracking-[0.03em] text-white break-all sm:text-4xl xl:text-5xl">
               {profile?.username || "Loading..."}
             </h1>
 
             {/* Verified badge placeholder */}
-            <div className="h-7 w-7 rounded-full bg-[#d4af37] text-black flex items-center justify-center font-bold">
+            <div className="flex h-6 w-6 items-center justify-center border border-[#FFD54A]/50 bg-[#FFD54A] font-mono text-xs font-black text-black">
               ✓
             </div>
 
           </div>
 
-          <p className="mt-2 text-xl font-medium text-[#d4af37]">
+          <p className="mt-3 font-mono text-[9px] font-bold uppercase tracking-[0.24em] text-[#FFD54A]">
             @{discord || "No Discord Username"}
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-2">
 
-            <span className="rounded-full border border-[#2d2d2d] bg-[#202020] px-4 py-2 text-sm text-zinc-300">
+            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400">
               Verified Collector
             </span>
 
-            <span className="rounded-full border border-[#2d2d2d] bg-[#202020] px-4 py-2 text-sm text-zinc-300">
+            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400">
               Kayou U.S. Superfan
             </span>
 
-            <span className="rounded-full border border-[#2d2d2d] bg-[#202020] px-4 py-2 text-sm text-zinc-300">
+            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400">
               MLPEKAYOU Member
             </span>
 
           </div>
 
-          <p className="mt-5 max-w-2xl text-[15px] leading-7 text-zinc-400">
-            This is my public profile! I can be reached via discord by the yellow username above.
-            If my DMs are off, please contact me via the MLPEKAYOU Discord server instead.
+          <p className="mt-5 max-w-2xl border-l border-[#FFD54A]/25 pl-4 font-mono text-[9px] uppercase leading-6 tracking-[0.08em] text-zinc-500 sm:text-[10px]">
+            I can be contacted here on-app by sending me a friend request in Explore. If not, then find me in the
+            MLPEKAYOU Discord server by my @username above.
           </p>
 
         </div>
@@ -468,7 +539,7 @@ const CollectionModal = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   }}
-  className="rounded-2xl border border-[#d4af37]/25 bg-[#222222] px-8 py-3 font-semibold text-white transition hover:border-[#d4af37] hover:bg-[#282828]"
+  className="group relative overflow-hidden border border-[#FFD54A]/50 bg-[#080b0b] px-7 py-3 font-mono text-[8px] font-black uppercase tracking-[0.22em] text-[#FFD54A] transition hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
 >
   {copied ? "Copied!" : "Share Profile"}
 </button>
@@ -481,7 +552,7 @@ const CollectionModal = () => {
 </div>
         {/* Quick Stats */}
 
-        <div className="mt-8 grid grid-cols-2 lg:grid-cols-6 gap-5">
+        <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
 
 {[
   ["Cards", stats.owned.toLocaleString()],
@@ -490,13 +561,17 @@ const CollectionModal = () => {
 ].map(([title, value]) => (
             <div
               key={title}
-              className="rounded-2xl border border-yellow-500/15 bg-[#1b1b1b] p-5"
+              className="group relative overflow-hidden border border-white/[0.08] bg-[#0b0e0e] p-4 shadow-[0_14px_34px_rgba(0,0,0,.40)] transition hover:border-[#FFD54A]/30 sm:p-5"
             >
-              <div className="text-3xl font-bold text-yellow-400">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="font-mono text-[5px] font-bold uppercase tracking-[0.24em] text-zinc-600">TELEMETRY</span>
+                <span className="h-1 w-5 bg-[#FFD54A]/30 transition group-hover:bg-[#FFD54A]" />
+              </div>
+              <div className="font-['Oxanium'] text-2xl font-black text-[#FFD54A] sm:text-3xl">
                 {value}
               </div>
 
-              <div className="mt-2 text-sm uppercase tracking-widest text-gray-500">
+              <div className="mt-2 font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-zinc-400">
                 {title}
               </div>
             </div>
@@ -506,23 +581,27 @@ const CollectionModal = () => {
 
         {/* Main Grid */}
 
-<div className="mt-8 grid gap-8 xl:grid-cols-3">
+<div className="mt-5 grid gap-4 xl:grid-cols-3">
 
           {/* ISO */}
 
 <div
-  className={`rounded-3xl border border-yellow-500/15 bg-[#1b1b1b] p-6 ${
+  className={`relative overflow-hidden border border-white/[0.08] bg-[#101212] p-4 shadow-[0_18px_45px_rgba(0,0,0,.3)] sm:p-5 ${
     wishlistCards.length === 0 && tradeCards.length === 0
       ? "max-w-[700px] mx-auto w-full"
       : "w-full"
   }`}
 >
 
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between border-b border-white/[0.07] pb-3">
 
-              <h2 className="font-oxanium text-2xl font-bold">
-                ISO
-              </h2>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[5px] font-bold uppercase tracking-[0.28em] text-[#FFD54A]/60">MODULE 02</span>
+                <span className="h-px w-6 bg-[#FFD54A]/25" />
+                <h2 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-lg">
+                  ISO
+                </h2>
+              </div>
 
               <button
 onClick={() => {
@@ -530,13 +609,13 @@ onClick={() => {
   setSelectedSet(String(visibleIsoCards[0]?.set_id ?? ""));
   setShowCollectionModal(true);
 }}
-  className="text-sm text-yellow-400 hover:text-yellow-300"
+  className="font-mono text-[7px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] hover:text-white"
 >
   View All →
 </button>
             </div>
 {visibleIsoCards.length === 0 ? (
-  <div className="flex min-h-[120px] sm:min-h-[320px] items-center justify-center rounded-xl border border-dashed border-zinc-700 px-6 py-10 text-center text-sm sm:text-lg font-medium text-zinc-500">
+  <div className="flex min-h-[180px] items-center justify-center border border-dashed border-white/[0.10] bg-[#0b0d0d] px-6 py-10 text-center font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 sm:min-h-[260px]">
     There's nothing to see here!
   </div>
 ) : (
@@ -544,7 +623,7 @@ onClick={() => {
     {visibleIsoCards.slice(0, 8).map((card: any) => (
       <div
         key={`${card.set_id}-${card.card_key}`}
-        className={`relative overflow-hidden rounded-xl bg-zinc-900 ${
+        className={`group relative overflow-hidden rounded-md border border-white/[0.07] bg-[#0b0d0d] shadow-[0_10px_25px_rgba(0,0,0,.32)] ${
           String(card.set_id) === "3" &&
           String(card.card_key) === "SZR-1"
             ? "col-span-2 aspect-[10/7]"
@@ -569,10 +648,10 @@ onClick={() => {
 
           {/* Wishlist */}
 
-<div className="rounded-3xl border border-yellow-500/15 bg-[#1b1b1b] p-6">
+<div className="relative overflow-hidden border border-white/[0.08] bg-[#0b0e0e] p-4 shadow-[0_18px_50px_rgba(0,0,0,.42)] sm:p-5">
 
-    <div className="mb-6 flex items-center justify-between">
-      <h2 className="font-oxanium text-2xl font-bold">
+    <div className="mb-4 flex items-center justify-between border-b border-white/[0.07] pb-3">
+      <h2 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-lg">
         Wishlist
       </h2>
 
@@ -584,7 +663,7 @@ onClick={() => {
   setSelectedSet(String(wishlistCards[0]?.set_id ?? ""));
   setShowCollectionModal(true);
 }}
-className={`text-sm ${
+className={`font-mono text-[7px] font-bold uppercase tracking-[0.18em] ${
   wishlistCards.length === 0
     ? "cursor-not-allowed text-zinc-600"
     : "text-yellow-400 hover:text-yellow-300"
@@ -595,7 +674,7 @@ className={`text-sm ${
     </div>
 
 {wishlistCards.length === 0 ? (
-  <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed border-zinc-700 text-zinc-500 text-lg font-medium">
+  <div className="flex h-[260px] items-center justify-center border border-dashed border-white/[0.10] bg-[#0b0d0d] font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600">
     There's nothing to see here!
   </div>
 ) : (
@@ -603,7 +682,7 @@ className={`text-sm ${
     {wishlistCards.slice(0, 8).map((card: any) => (
 <div
   key={`${card.set_id}-${card.card_key}`}
-  className={`relative overflow-hidden rounded-xl bg-zinc-900 ${
+  className={`group relative overflow-hidden rounded-md border border-white/[0.07] bg-[#0b0d0d] shadow-[0_10px_25px_rgba(0,0,0,.32)] ${
     String(card.set_id) === "3" &&
     String(card.card_key) === "SZR-1"
       ? "col-span-2 aspect-[10/7]"
@@ -628,10 +707,10 @@ className={`text-sm ${
 
           {/* Trades */}
 
-<div className="rounded-3xl border border-yellow-500/15 bg-[#1b1b1b] p-6">
+<div className="relative overflow-hidden border border-white/[0.08] bg-[#101212] p-4 shadow-[0_18px_45px_rgba(0,0,0,.3)] sm:p-5">
 
-    <div className="mb-6 flex items-center justify-between">
-      <h2 className="font-oxanium text-2xl font-bold">
+    <div className="mb-4 flex items-center justify-between border-b border-white/[0.07] pb-3">
+      <h2 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-lg">
         For Trade
       </h2>
 
@@ -654,7 +733,7 @@ className={`text-sm ${
     </div>
 
 {tradeCards.length === 0 ? (
-  <div className="flex h-[320px] items-center justify-center rounded-xl border border-dashed border-zinc-700 text-zinc-500 text-lg font-medium">
+  <div className="flex h-[260px] items-center justify-center border border-dashed border-white/[0.10] bg-[#0b0d0d] font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600">
     There's nothing to see here!
   </div>
 ) : (
@@ -685,6 +764,11 @@ className={`text-sm ${
   </div>
 
         </div>
+        <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-3">
+          <span className="font-mono text-[5px] uppercase tracking-[0.28em] text-zinc-700">MLPEKAYOU // PUBLIC COLLECTION NETWORK</span>
+          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-emerald-400/40">LINK STABLE</span>
+        </div>
+
         <CollectionModal />
 
       </div>

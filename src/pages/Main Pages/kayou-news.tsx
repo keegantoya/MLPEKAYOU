@@ -1,23 +1,15 @@
 import React, { useState } from "react";
 
-
 type Product = {
   date: string;
   title: string;
   notes: string;
 };
 
-type Activation = {
-  date: string;
-  location: string;
-  activity: string;
-  notes: string;
-};
-
-type Tab = "products" | "sdcc";
+type Tab = "products" | "events";
 
 export default function KayouNews() {
-  const [activeTab, setActiveTab] = useState<Tab>("sdcc");
+  const [activeTab, setActiveTab] = useState<Tab>("products");
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
   const upcomingProducts: Product[] = [
@@ -36,802 +28,260 @@ export default function KayouNews() {
       title: "Fun Moments: Volume Four",
       notes: "No allowed notes at this time.",
     },
-        {
+    {
       date: "October 2026",
       title: "My Little Pony TCG: Nightmare Night",
       notes: "No allowed notes at this time.",
     },
-        {
+    {
       date: "October 2026",
       title: "My Little Pony TCG: Nightmare Night Binder Set",
       notes: "No allowed notes at this time.",
     },
   ];
 
-  const sdccActivations: Activation[] = [
-    {
-      date: "DAILY",
-      location: "PETCO PARK, LEXUS PREMIER LOT",
-      activity: "No SDCC activations announced.",
-      notes: "—",
-    },
-  ];
-
-  const sectionStyle: React.CSSProperties = {
-    background: "#202020",
-    border: "1px solid rgba(255,210,60,.15)",
-    borderRadius: 20,
-    overflow: "hidden",
-    boxShadow: "0 12px 32px rgba(0,0,0,.4)",
-  };
-
-  const headingStyle: React.CSSProperties = {
-    padding: "20px 28px",
-    fontSize: 30,
-    fontWeight: 800,
-    color: "#FFD23C",
-    borderBottom: "1px solid rgba(255,210,60,.15)",
-    background: "#262626",
-  };
-
-  const tableStyle: React.CSSProperties = {
-    width: "100%",
-    borderCollapse: "collapse",
-  };
-
-  const thStyle: React.CSSProperties = {
-    padding: "16px 24px",
-    textAlign: "left",
-    background: "#2A2A2A",
-    color: "#FFD23C",
-    fontWeight: 700,
-  };
-
-  const tdStyle: React.CSSProperties = {
-    padding: "18px 24px",
-    borderBottom: "1px solid rgba(255,255,255,.05)",
-    color: "#F5F5F5",
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "products":
-        return (
-<section style={sectionStyle}>
-  <div style={headingStyle}>Upcoming Products & Release Dates</div>
-
-  {window.innerWidth <= 768 ? (
-    <div style={{ padding: 20 }}>
-      {upcomingProducts.map((product, index) => (
-        <div
-          key={index}
-          style={{
-            background: "#262626",
-            border: "1px solid rgba(255,210,60,.15)",
-            borderRadius: 14,
-            padding: 18,
-            marginBottom: 16,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 13,
-              color: "#FFD23C",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              marginBottom: 6,
-            }}
-          >
-            Release Date
-          </div>
-
-          <div
-            style={{
-              color: "#FFF",
-              fontSize: 18,
-              fontWeight: 700,
-              marginBottom: 18,
-            }}
-          >
-            {product.date}
-          </div>
-
-          <div
-            style={{
-              fontSize: 13,
-              color: "#FFD23C",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              marginBottom: 6,
-            }}
-          >
-            Product
-          </div>
-
-          <div
-            style={{
-              color: "#FFF",
-              fontSize: 18,
-              marginBottom: 18,
-            }}
-          >
-            {product.title}
-          </div>
-
-          <div
-            style={{
-              fontSize: 13,
-              color: "#FFD23C",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              marginBottom: 6,
-            }}
-          >
-            Notes
-          </div>
-
-          <div
-            style={{
-              color: "#E0E0E0",
-              fontSize: 16,
-            }}
-          >
-            {product.notes || "—"}
-          </div>
+  const renderProducts = () => (
+    <section className="overflow-hidden border border-white/[0.08] bg-[#111313] shadow-[0_24px_70px_rgba(0,0,0,.35)]">
+      <div className="border-b border-white/[0.06] bg-[#0c0e0e] px-5 py-4 sm:px-7">
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_9px_rgba(255,212,0,.8)]" />
+          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/55">
+            RELEASE INTELLIGENCE
+          </span>
         </div>
-      ))}
-    </div>
-  ) : (
-    <table style={tableStyle}>
-      <thead>
-        <tr>
-          <th style={thStyle}>Release Date</th>
-          <th style={thStyle}>Product</th>
-          <th style={thStyle}>Notes</th>
-        </tr>
-      </thead>
 
-      <tbody>
-        {upcomingProducts.map((product, index) => (
-          <tr key={index}>
-            <td style={tdStyle}>{product.date}</td>
-            <td style={tdStyle}>{product.title}</td>
-            <td style={tdStyle}>{product.notes}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )}
-</section>
-        );
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="font-['Oxanium'] text-xl font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
+            Upcoming Products
+          </h2>
 
-case "sdcc":
-  return (
-    <section style={sectionStyle}>
-      <div
-  style={{
-    ...headingStyle,
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-  }}
->
-  <div
-    style={{
-      fontSize: 15,
-      color: "#FFFFFF",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 2,
-    }}
-  >
-    SDCC 2026 • Event 1
-  </div>
-
-  <div
-    style={{
-      fontSize: 34,
-      fontWeight: 900,
-      color: "#FFD23C",
-    }}
-  >
-    Fan Destination @ Petco Park
-  </div>
-</div>
-
-      <div
-        style={{
-          padding: 30,
-        }}
-      >
-<div
-  style={{
-    marginBottom: 28,
-  }}
->
-  <div
-    style={{
-      fontSize: 30,
-      fontWeight: 800,
-      color: "#FFD23C",
-    }}
-  >
-    Fan Destination
-  </div>
-
-  <div
-    style={{
-      marginTop: 8,
-      fontSize: 20,
-      color: "#F5F5F5",
-    }}
-  >
-    Interactive Zone @ Petco Park
-  </div>
-
-  <div
-    style={{
-      color: "#BDBDBD",
-      marginTop: 4,
-      fontSize: 17,
-    }}
-  >
-    Lexus Premier Lot
-  </div>
-</div>
-
-{window.innerWidth <= 768 && (
-  <div
-    style={{
-      marginBottom: 14,
-      textAlign: "center",
-      color: "#FFD23C",
-      fontSize: 12,
-      fontWeight: 800,
-      letterSpacing: 1,
-      textTransform: "uppercase",
-    }}
-  >
-    ← SCROLL RIGHT TO SEE MORE INFO →
-  </div>
-)}
-
-<div
-  style={{
-    overflowX: window.innerWidth <= 768 ? "auto" : "visible",
-    WebkitOverflowScrolling: "touch",
-    marginLeft: window.innerWidth <= 768 ? -30 : 0,
-    marginRight: window.innerWidth <= 768 ? -30 : 0,
-  }}
->
-  <table
-    style={{
-      ...tableStyle,
-      minWidth: window.innerWidth <= 768 ? 850 : "100%",
-    }}
-  >
-          <thead>
-            <tr>
-              <th style={{ ...thStyle, width: 220 }}>Schedule</th>
-              <th style={thStyle}>Activity</th>
-              <th style={thStyle}>Details</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td style={tdStyle}>Daily • 10:00–11:30 AM</td>
-              <td style={tdStyle}>MLP TCG Demo Play</td>
-              <td style={tdStyle}>
-                Learn to play the My Little Pony TCG and receive a limited-edition
-                My Little Pony promotional card. <strong>Limited capacity.</strong>
-              </td>
-            </tr>
-
-            <tr>
-              <td style={tdStyle}>Daily • 10:00 AM</td>
-              <td style={tdStyle}>Fandom Celebration Giveaway</td>
-              <td style={tdStyle}>
-                Randomized giveaway featuring cards from multiple Kayou
-                properties.
-              </td>
-            </tr>
-
-            <tr>
-              <td style={tdStyle}>Friday • July 24 • 4:00 PM</td>
-              <td style={tdStyle}>
-                BOOM! Studios Exclusive Giveaway
-              </td>
-              <td style={tdStyle}>
-                First <strong>200 fans</strong> receive one of six randomized
-                SDCC-exclusive My Little Pony × BOOM! Studios cards. Collect all
-                six to complete the panoramic artwork illustrated by Andy Price.
-              </td>
-            </tr>
-
-            <tr>
-              <td style={tdStyle}>Sunday • July 26 • 12:00–2:00 PM</td>
-              <td style={tdStyle}>Andrea Libman Card Signing</td>
-              <td style={tdStyle}>
-                First <strong>100 fans</strong> receive a Moon 3 UR Fluttershy or
-                Pinkie Pie card.
-              </td>
-            </tr>
-          </tbody>
-          </table>
-</div>
-
-        <div
-          style={{
-            marginTop: 28,
-            padding: 22,
-            borderRadius: 14,
-            background: "#2A2A2A",
-            borderLeft: "4px solid #FFD23C",
-          }}
-        >
-          <div
-            style={{
-              color: "#FFD23C",
-              fontWeight: 800,
-              fontSize: 18,
-              marginBottom: 14,
-            }}
-          >
-            Important Information
-          </div>
-
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: 22,
-              color: "#E8E8E8",
-              lineHeight: 1.9,
-            }}
-          >
-            <li>Bracelets will be available beginning at 11:00 AM at the Check-in Counter.</li>
-            <li>Only Kayou My Little Pony trading cards will be signed.</li>
-            <li>No other merchandise or items may be signed.</li>
-            <li>One autographed card per guest.</li>
-            <li>Choice of Fluttershy or Pinkie Pie is not guaranteed.</li>
-          </ul>
+          <span className="hidden font-mono text-[6px] uppercase tracking-[0.18em] text-white/20 sm:block">
+            {upcomingProducts.length.toString().padStart(2, "0")} ENTRIES
+          </span>
         </div>
       </div>
-<section style={sectionStyle}>
-  <div
-  style={{
-    ...headingStyle,
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-  }}
->
-  <div
-    style={{
-      fontSize: 15,
-      color: "#FFFFFF",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 2,
-    }}
-  >
-    SDCC 2026 • Event 2
-  </div>
 
-  <div
-    style={{
-      fontSize: 34,
-      fontWeight: 900,
-      color: "#FFD23C",
-    }}
-  >
-    Community Hub @ Tito Rick's Garage
-  </div>
-</div>
+      <div className="p-4 sm:p-6">
+        <div className="grid gap-3 lg:grid-cols-2">
+          {upcomingProducts.map((product, index) => (
+            <article
+              key={index}
+              className="group relative overflow-hidden border border-white/[0.07] bg-[#0b0d0d] p-4 transition-all duration-200 hover:border-[#FFD400]/30 hover:bg-[#101313]"
+            >
+              <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-[#FFD400]/70 via-[#FFD400]/10 to-transparent" />
 
-  <div
-    style={{
-      padding: 30,
-    }}
-  >
-<div
-  style={{
-    marginBottom: 28,
-  }}
->
-  <div
-    style={{
-      fontSize: 30,
-      fontWeight: 800,
-      color: "#FFD23C",
-    }}
-  >
-    Community Hub
-  </div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-[#FFD400]/65">
+                  RELEASE WINDOW
+                </span>
 
-  <div
-    style={{
-      marginTop: 8,
-      fontSize: 20,
-      color: "#F5F5F5",
-    }}
-  >
-    Tito Rick's Garage
-  </div>
+                <span className="border border-[#FFD400]/15 bg-[#FFD400]/[0.04] px-2 py-1 font-mono text-[6px] font-bold uppercase tracking-[0.12em] text-[#FFD400]/65">
+                  {product.date}
+                </span>
+              </div>
 
-  <div
-    style={{
-      color: "#BDBDBD",
-      marginTop: 4,
-      fontSize: 17,
-    }}
-  >
-    2918 Imperial Ave.
-  </div>
+              <h3 className="font-['Oxanium'] text-base font-bold uppercase leading-tight tracking-[0.03em] text-white transition-colors group-hover:text-[#f5d37a] sm:text-lg">
+                {product.title}
+              </h3>
 
-  <div
-    style={{
-      color: "#BDBDBD",
-      marginTop: 8,
-      fontSize: 17,
-    }}
-  >
-    Thursday–Saturday: 11:00 AM – 8:00 PM<br />
-    Sunday: 11:00 AM – 6:00 PM
-  </div>
-</div>
+              <div className="mt-4 border-t border-white/[0.05] pt-3">
+                <span className="font-mono text-[5px] font-bold uppercase tracking-[0.18em] text-white/20">
+                  INTEL
+                </span>
 
-{window.innerWidth <= 768 && (
-  <div
-    style={{
-      marginBottom: 14,
-      textAlign: "center",
-      color: "#FFD23C",
-      fontSize: 12,
-      fontWeight: 800,
-      letterSpacing: 1,
-      textTransform: "uppercase",
-    }}
-  >
-    ← SCROLL RIGHT TO SEE MORE INFO →
-  </div>
-)}
-
-<div
-  style={{
-    overflowX: window.innerWidth <= 768 ? "auto" : "visible",
-    WebkitOverflowScrolling: "touch",
-    marginLeft: window.innerWidth <= 768 ? -30 : 0,
-    marginRight: window.innerWidth <= 768 ? -30 : 0,
-  }}
->
-  <table
-    style={{
-      ...tableStyle,
-      minWidth: window.innerWidth <= 768 ? 850 : "100%",
-    }}
-  >
-      <thead>
-        <tr>
-          <th style={{ ...thStyle, width: 220 }}>Schedule</th>
-          <th style={thStyle}>Activity</th>
-          <th style={thStyle}>Details</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr>
-          <td style={tdStyle}>Thursday–Sunday</td>
-          <td style={tdStyle}>My Little Pony TCG Demo Play</td>
-          <td style={tdStyle}>
-            Learn to play the My Little Pony Trading Card Game. Demo decks
-            will be available, along with staff to teach the game and answer
-            questions.
-          </td>
-        </tr>
-
-        <tr>
-          <td style={tdStyle}>Friday • July 24 • 7:00–9:00 PM</td>
-          <td style={tdStyle}>
-            My Little Pony Fan Meetup & TCG Game Night
-          </td>
-          <td style={tdStyle}>
-            Learn to play the TCG, meet fellow fans, trade cards, win prizes,
-            take photos, and receive a My Little Pony TCG promotional card.
-            <strong> Limited to the first 200 fans.</strong>
-          </td>
-        </tr>
-      </tbody>
-      </table>
-</div>
-
-    <div
-      style={{
-        marginTop: 28,
-        padding: 22,
-        borderRadius: 14,
-        background: "#2A2A2A",
-        borderLeft: "4px solid #FFD23C",
-      }}
-    >
-      <div
-        style={{
-          color: "#FFD23C",
-          fontWeight: 800,
-          fontSize: 18,
-          marginBottom: 14,
-        }}
-      >
-        Important Information
+                <p className="mt-1 font-mono text-[8px] leading-relaxed text-white/45">
+                  {product.notes || "—"}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
-
-      <ul
-        style={{
-          margin: 0,
-          paddingLeft: 22,
-          color: "#E8E8E8",
-          lineHeight: 1.9,
-        }}
-      >
-        <li>
-          Shop official My Little Pony products at the <strong>Petco Park Fan Destination</strong> or the <strong>Kayou Booth (#4934)</strong>.
-        </li>
-        <li>
-          - My Little Pony TCG Starter Decks and Booster Packs (Series 1 &amp; 2) will be available.
-        </li>
-        <li>
-          - My Little Pony collectible cards from <strong>Moon 3</strong>, <strong>Star</strong>, and <strong>Fun Moments</strong> will also be available.
-        </li>
-      </ul>
-    </div>
-
-  </div>
-</section>
     </section>
   );
-    }
-  };
 
-return (
-  <div
-    onMouseMove={(e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
+  const renderEvents = () => (
+    <section className="relative overflow-hidden border border-white/[0.08] bg-[#111313] shadow-[0_24px_70px_rgba(0,0,0,.35)]">
+      <div className="border-b border-white/[0.06] bg-[#0c0e0e] px-5 py-4 sm:px-7">
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-1.5 w-1.5 animate-pulse bg-[#FFD400] shadow-[0_0_9px_rgba(255,212,0,.8)]" />
+          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/55">
+            EVENT INTELLIGENCE
+          </span>
+        </div>
 
-      setMouse({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    }}
-    style={{
-      position: "relative",
-      overflow: "hidden",
-      background: "#1C1C1C",
-      minHeight: "100vh",
-      paddingBottom: 80,
-    }}
-  >
-
-    <div
-      style={{
-        position: "absolute",
-        left: mouse.x - 250,
-        top: mouse.y - 250,
-        width: 500,
-        height: 500,
-        borderRadius: "50%",
-        pointerEvents: "none",
-        background:
-          "radial-gradient(circle, rgba(255,210,60,.08) 0%, rgba(255,210,60,.03) 40%, rgba(255,210,60,0) 75%)",
-        filter: "blur(40px)",
-        transition: "left .08s linear, top .08s linear",
-        zIndex: 0,
-      }}
-    />
-
-    <div
-      style={{
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
-
-{/* HERO */}
-
-<div
-  style={{
-    position: "relative",
-    width: "100%",
-    height: "clamp(420px, 72vh, 850px)",
-    minHeight: 420,
-    overflow: "hidden",
-    background: "#111",
-    borderBottom: "2px solid rgba(255,210,60,.18)",
-    marginTop: window.innerWidth <= 768 ? -60 : 0,
-  }}
->
-  <img
-    src="/kayou's-assets/SDCCLAUNCHHERO.webp"
-    alt="Kayou SDCC"
-    style={{
-      width: "100%",
-      height: "100%",
-      objectFit: window.innerWidth <= 768 ? "contain" : "cover",
-backgroundColor: "#111",
-      objectPosition: "center 28%",
-      display: "block",
-      userSelect: "none",
-      pointerEvents: "none",
-    }}
-  />
-
-  {/* Fade */}
-
-  <div
-    style={{
-      position: "absolute",
-      inset: 0,
-      background: `
-        linear-gradient(
-          to top,
-          rgba(28,28,28,1) 0%,
-          rgba(28,28,28,1) 18%,
-          rgba(28,28,28,.92) 34%,
-          rgba(28,28,28,.65) 50%,
-          rgba(28,28,28,.25) 70%,
-          rgba(28,28,28,0) 100%
-        )
-      `,
-    }}
-  />
-
-  {/* SDCC Text */}
-
-  <div
-    style={{
-      position: "absolute",
-      left: "50%",
-      top: "64%",
-      transform: "translate(-50%, -50%)",
-      width: "92%",
-      textAlign: "center",
-      zIndex: 2,
-      pointerEvents: "none",
-    }}
-  >
-    <div
-      style={{
-        color: "#FFD23C",
-        fontSize: "clamp(15px, 2vw, 28px)",
-        fontWeight: 900,
-        letterSpacing: "clamp(1px, .35vw, 2px)",
-        textTransform: "uppercase",
-        textShadow: "0 4px 20px rgba(0,0,0,.75)",
-      }}
-    >
-      SAN DIEGO COMIC CON
-    </div>
-
-    <div
-      style={{
-        marginTop: 10,
-        color: "#FFD23C",
-        fontSize: "clamp(12px, 1.3vw, 18px)",
-        fontWeight: 700,
-        letterSpacing: "clamp(2px, .45vw, 3px)",
-        textTransform: "uppercase",
-        textShadow: "0 4px 20px rgba(0,0,0,.75)",
-      }}
-    >
-      JULY 23–26
-    </div>
-  </div>
-
-  {/* Bottom Content */}
-
-  <div
-    style={{
-      position: "absolute",
-      left: 0,
-      right: 0,
-      bottom: 0,
-      padding: "clamp(20px,4vw,48px)",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-end",
-      gap: 24,
-      flexWrap: "wrap",
-    }}
-  >
-    <div
-      style={{
-        flex: "1 1 500px",
-        minWidth: 0,
-      }}
-    >
-      <h1
-        style={{
-          margin: 0,
-          color: "#FFD23C",
-          fontSize: "clamp(36px,6vw,64px)",
-          fontWeight: 900,
-          lineHeight: 1,
-        }}
-      >
-        Kayou News
-      </h1>
-
-      <p
-        style={{
-          marginTop: 14,
-          marginBottom: 0,
-          color: "#E8E8E8",
-          fontSize: "clamp(15px,2vw,21px)",
-          maxWidth: 700,
-          lineHeight: 1.5,
-        }}
-      >
-        Official announcements, release dates, convention appearances and
-        product launches.
-      </p>
-    </div>
-
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 12,
-        justifyContent: "flex-end",
-        flex: "0 1 auto",
-      }}
-    >
-      {[
-        { id: "sdcc", label: "SDCC" },
-        { id: "products", label: "Products" },
-      ].map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id as Tab)}
-          style={{
-            padding: "14px 26px",
-            minWidth: 130,
-            borderRadius: 14,
-            border:
-              activeTab === tab.id
-                ? "2px solid #FFD23C"
-                : "2px solid rgba(255,255,255,.18)",
-            background:
-              activeTab === tab.id
-                ? "#FFD23C"
-                : "rgba(0,0,0,.55)",
-            color: activeTab === tab.id ? "#111" : "#FFF",
-            fontWeight: 700,
-            fontSize: "clamp(15px,1.3vw,17px)",
-            cursor: "pointer",
-            backdropFilter: "blur(10px)",
-            transition: ".2s",
-          }}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  </div>
-</div>
-
-      {/* CONTENT */}
-
-      <div
-        style={{
-          maxWidth: 1450,
-          margin: "48px auto 80px",
-          padding: "0 24px",
-        }}
-      >
-        {renderContent()}
+        <h2 className="font-['Oxanium'] text-xl font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
+          New Events
+        </h2>
       </div>
 
-    </div>
+      <div className="px-5 py-12 text-center sm:px-10 sm:py-16">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center border border-[#FFD400]/20 bg-[#FFD400]/[0.03] shadow-[0_0_30px_rgba(255,212,0,.05)]">
+          <span className="font-['Oxanium'] text-2xl font-black text-[#FFD400]/70">
+            +
+          </span>
+        </div>
 
-  </div>
-);
+        <div className="mx-auto mt-6 max-w-xl">
+          <div className="mb-2 font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/50">
+            AWAITING KAYOU INTEL
+          </div>
+
+          <p className="font-['Oxanium'] text-lg font-bold uppercase tracking-[0.03em] text-white sm:text-xl">
+            New events will be announced when they are passed down by Kayou.
+          </p>
+
+          <p className="mt-3 font-mono text-[7px] uppercase leading-relaxed tracking-[0.14em] text-white/20">
+            No current event schedule has been provided.
+          </p>
+        </div>
+      </div>
+
+      <div className="border-t border-white/[0.05] bg-[#0c0e0e] px-5 py-2.5">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-white/15">
+            EVENT FEED
+          </span>
+          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD400]/35">
+            STANDBY
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+
+  return (
+    <div
+      className="min-h-screen overflow-hidden bg-[#090a0a] text-white"
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setMouse({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }}
+    >
+      {/* TECH GRID */}
+      <div
+        className="pointer-events-none fixed inset-0 opacity-25"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,212,0,.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,212,0,.025) 1px, transparent 1px)
+          `,
+          backgroundSize: "42px 42px",
+        }}
+      />
+
+      {/* AMBIENT CURSOR GLOW */}
+      <div
+        className="pointer-events-none absolute h-[460px] w-[460px] rounded-full bg-[#FFD400]/[0.035] blur-[100px]"
+        style={{
+          left: mouse.x - 230,
+          top: mouse.y - 230,
+        }}
+      />
+
+      {/* HERO */}
+      <section className="relative border-b border-white/[0.07] bg-[#0c0e0e]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,212,0,.07),transparent_42%)]" />
+
+        <div className="relative mx-auto max-w-7xl px-5 pb-10 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
+          <div className="mb-10 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 bg-[#FFD400] shadow-[0_0_12px_rgba(255,212,0,.9)]" />
+              <span className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/60">
+                KAYOU INTELLIGENCE NETWORK
+              </span>
+            </div>
+
+            <span className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/15">
+              MODULE 07 // LIVE FEED
+            </span>
+          </div>
+
+          <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
+            <div>
+              <div className="mb-3 flex items-center gap-3">
+                <span className="h-px w-10 bg-[#FFD400]/40" />
+                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-[#FFD400]/45">
+                  OFFICIAL RELEASE INTELLIGENCE
+                </span>
+              </div>
+
+              <h1 className="font-['Oxanium'] text-4xl font-black uppercase leading-none tracking-[0.04em] text-[#f5d37a] sm:text-6xl">
+                Kayou News
+              </h1>
+
+              <p className="mt-5 max-w-2xl font-mono text-[8px] uppercase leading-relaxed tracking-[0.14em] text-white/30 sm:text-[9px]">
+                Official announcements, release dates, product launches, and
+                future event intelligence.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 border border-white/[0.07] bg-[#101212]">
+              <div className="border-r border-white/[0.06] px-5 py-4">
+                <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-white/20">
+                  PRODUCTS
+                </div>
+                <div className="mt-1 font-['Oxanium'] text-2xl font-black text-[#FFD400]">
+                  {upcomingProducts.length}
+                </div>
+              </div>
+
+              <div className="px-5 py-4">
+                <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-white/20">
+                  EVENTS
+                </div>
+                <div className="mt-1 font-['Oxanium'] text-2xl font-black text-white/35">
+                  —
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* NAV MODULES */}
+          <div className="mt-9 flex flex-wrap gap-2">
+            {[
+              { id: "products", label: "Upcoming Products" },
+              { id: "events", label: "New Events" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as Tab)}
+                className={`group relative border px-4 py-2.5 font-mono text-[7px] font-bold uppercase tracking-[0.16em] transition-all ${
+                  activeTab === tab.id
+                    ? "border-[#FFD400]/60 bg-[#FFD400] text-[#0b0b0b]"
+                    : "border-white/[0.08] bg-[#111313] text-white/35 hover:border-[#FFD400]/35 hover:text-[#FFD400]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CONTENT */}
+      <main className="relative mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
+        {activeTab === "products" ? renderProducts() : renderEvents()}
+      </main>
+
+      {/* FOOTER STATUS */}
+      <footer className="border-t border-white/[0.06] bg-[#0c0e0e]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-8">
+          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-white/15">
+            MLPEKAYOU // KAYOU NEWS
+          </span>
+
+          <div className="flex items-center gap-2">
+            <span className="h-1 w-1 bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,.8)]" />
+            <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-emerald-400/40">
+              FEED ONLINE
+            </span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }

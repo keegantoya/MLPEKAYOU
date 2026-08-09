@@ -500,529 +500,624 @@ const filteredWishlistCards =
   user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
 
   return (
-    <div className="w-full">
-<div className="relative overflow-hidden rounded-3xl border border-yellow-500/30 bg-[#1b1b1b] shadow-2xl mb-8">
+    <div className="w-full text-white">
+      <style>{`
+        @keyframes arcPulse {
+          0%, 100% { opacity: .45; transform: scale(.98); }
+          50% { opacity: 1; transform: scale(1.02); }
+        }
+        @keyframes scanLine {
+          0% { transform: translateY(-100%); opacity: 0; }
+          15% { opacity: .5; }
+          85% { opacity: .5; }
+          100% { transform: translateY(420%); opacity: 0; }
+        }
+        @keyframes reactorPulse {
+          0%, 100% { box-shadow: 0 0 12px rgba(250,204,21,.2), inset 0 0 10px rgba(250,204,21,.08); }
+          50% { box-shadow: 0 0 28px rgba(250,204,21,.42), inset 0 0 18px rgba(250,204,21,.16); }
+        }
+      `}</style>
 
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,.12),transparent_55%)]" />
-
-  <div className="relative p-8">
-
-    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-
-      <div className="flex items-center gap-6">
-
-        <div className="relative shrink-0">
-
-          <img
-            src={avatar}
-            alt={user?.username}
-            className="w-36 h-36 rounded-full border-4 border-yellow-400 object-cover shadow-[0_0_30px_rgba(212,175,55,.35)]"
-          />
-
-          {isJacob &&
-            [
-              { left: "24%", delay: "0s" },
-              { left: "50%", delay: ".45s" },
-              { left: "76%", delay: ".9s" },
-            ].map((line, i) => (
-              <div
-                key={i}
-                className="absolute pointer-events-none"
-                style={{
-                  left: line.left,
-                  top: "-16px",
-                  animation: "stinkFloat 2s ease-in-out infinite",
-                  animationDelay: line.delay,
-                }}
-              >
-                <svg width="18" height="42" viewBox="0 0 18 42" fill="none">
-                  <path
-                    d="M9 42C9 32 2 30 2 22C2 16 14 14 14 7C14 4 12 2 10 0"
-                    stroke="#4ade80"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-            ))}
-
+      <div className="relative overflow-hidden border border-yellow-400/30 bg-[#111315] shadow-[0_0_50px_rgba(0,0,0,.45)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(250,204,21,.12),transparent_28%),linear-gradient(135deg,rgba(250,204,21,.035),transparent_35%)]" />
+        <div className="pointer-events-none absolute left-0 right-0 top-0 h-px bg-yellow-400/70" />
+        <div className="pointer-events-none absolute left-0 right-0 top-0 h-24 overflow-hidden opacity-30">
+          <div className="h-px bg-yellow-300" style={{ animation: "scanLine 5s linear infinite" }} />
         </div>
 
-        <div>
-
-
-          <div className="flex items-center gap-3">
-
-            <h1 className="text-2xl font-bold text-white">
-  {friendNickname || user?.username}
-</h1>
-
-            {badge && (
-              <img
-                src={badge.badge}
-                alt={badge.label}
-                title={badge.label}
-                className="h-8 w-8"
-              />
-            )}
-
+        <div className="relative p-5 sm:p-7 lg:p-8">
+          <div className="mb-7 flex items-center justify-between gap-4 border-b border-yellow-400/15 pb-4">
+            <div>
+              <div className="font-mono text-[9px] font-bold uppercase tracking-[0.35em] text-yellow-400">
+                MLPEKAYOU // PROFILE SYSTEM
+              </div>
+              <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-500">
+                COLLECTOR DOSSIER // EXTERNAL PROFILE
+              </div>
+            </div>
+            <div className="hidden items-center gap-2 sm:flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,.8)]" />
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-green-400">
+                PROFILE LINK ACTIVE
+              </span>
+            </div>
           </div>
 
-          <p className="mt-3 text-lg text-slate-400">
-            {tradingProfile?.discord_username || "No Discord Username"}
-          </p>
+          <div className="grid gap-7 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="flex min-w-0 items-center gap-5 sm:gap-7">
+              <div className="relative shrink-0">
+                <div
+                  className="absolute -inset-3 rounded-full border border-yellow-400/25"
+                  style={{ animation: "arcPulse 2.8s ease-in-out infinite" }}
+                />
+                <div className="absolute -inset-5 rounded-full border border-dashed border-yellow-400/10" />
+                <div className="absolute -right-1 top-1/2 h-px w-7 bg-yellow-400/50" />
+                <div className="absolute -left-1 bottom-3 h-px w-5 bg-yellow-400/50" />
 
-{currentUserId !== user.id && (
-  <div className="mt-6 flex items-center gap-3">
+                <img
+                  src={avatar}
+                  alt={user?.username}
+                  className="relative h-24 w-24 rounded-full border-2 border-yellow-400 object-cover bg-[#191b1d] shadow-[0_0_28px_rgba(250,204,21,.22)] sm:h-32 sm:w-32"
+                />
 
-    <button
-      onClick={!isFriend ? sendFriendRequest : undefined}
-      disabled={isFriend || sendingRequest || requestPending}
-      className={`rounded-xl px-6 py-3 font-semibold transition ${
-        isFriend
-          ? "bg-yellow-400 text-black cursor-default"
-          : requestPending
-          ? "bg-slate-600 text-white"
-          : "bg-yellow-400 text-black hover:bg-yellow-300"
-      }`}
-    >
-      {isFriend
-        ? "Friends"
-        : requestPending
-        ? "Friend Request Pending"
-        : sendingRequest
-        ? "Sending..."
-        : "Add Friend"}
-    </button>
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap border border-yellow-400/35 bg-[#111315] px-2 py-1 font-mono text-[7px] font-bold tracking-[0.2em] text-yellow-400">
+                  ID VERIFIED
+                </div>
 
-{isFriend && (
-  <div className="relative">
-    <button
-      onClick={() => setShowMessages(true)}
-      title="Messages"
-      className="flex h-12 w-12 items-center justify-center rounded-full bg-[#5b5b5b] text-white shadow-lg transition hover:scale-105 hover:bg-[#707070]"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="26"
-        height="26"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-      >
-        <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
-      </svg>
-    </button>
+                {isJacob &&
+                  [
+                    { left: "24%", delay: "0s" },
+                    { left: "50%", delay: ".45s" },
+                    { left: "76%", delay: ".9s" },
+                  ].map((line, i) => (
+                    <div
+                      key={i}
+                      className="absolute pointer-events-none"
+                      style={{
+                        left: line.left,
+                        top: "-16px",
+                        animation: "stinkFloat 2s ease-in-out infinite",
+                        animationDelay: line.delay,
+                      }}
+                    >
+                      <svg width="18" height="42" viewBox="0 0 18 42" fill="none">
+                        <path
+                          d="M9 42C9 32 2 30 2 22C2 16 14 14 14 7C14 4 12 2 10 0"
+                          stroke="#4ade80"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </div>
+                  ))}
+              </div>
 
-    {unreadMessages > 0 && (
-      <div
-        className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white"
-      >
-        {unreadMessages > 99 ? "99+" : unreadMessages}
+              <div className="min-w-0">
+                <div className="mb-2 font-mono text-[8px] uppercase tracking-[0.3em] text-zinc-500">
+                  FRIEND
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="truncate text-2xl font-black tracking-tight text-white sm:text-4xl">
+                    {friendNickname || user?.username}
+                  </h1>
+                  {badge && (
+                    <img
+                      src={badge.badge}
+                      alt={badge.label}
+                      title={badge.label}
+                      className="h-7 w-7 sm:h-8 sm:w-8"
+                    />
+                  )}
+                </div>
+
+                <div className="mt-2 flex items-center gap-2 font-mono text-xs text-zinc-400 sm:text-sm">
+                  <span className="text-yellow-400">@</span>
+                  <span className="truncate">
+                    {tradingProfile?.discord_username || "NO DISCORD IDENTIFIER"}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className="border border-zinc-700 bg-zinc-900/80 px-2 py-1 font-mono text-[8px] uppercase tracking-wider text-zinc-400">
+                    PROFILE ACCESS
+                  </span>
+                  <span className="border border-green-400/20 bg-green-400/5 px-2 py-1 font-mono text-[8px] uppercase tracking-wider text-green-400">
+                    MOST RECENT DATA
+                  </span>
+                </div>
+
+                {currentUserId !== user.id && (
+                  <div className="mt-5 flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={!isFriend ? sendFriendRequest : undefined}
+                      disabled={isFriend || sendingRequest || requestPending}
+                      className={`border px-4 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] transition ${
+                        isFriend
+                          ? "border-yellow-400/50 bg-yellow-400 text-black"
+                          : requestPending
+                          ? "cursor-default border-zinc-700 bg-zinc-800 text-zinc-400"
+                          : "border-yellow-400/60 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400 hover:text-black"
+                      }`}
+                    >
+                      {isFriend
+                        ? "FRIEND LINK ESTABLISHED"
+                        : requestPending
+                        ? "REQUEST PENDING"
+                        : sendingRequest
+                        ? "TRANSMITTING..."
+                        : "ESTABLISH FRIEND LINK"}
+                    </button>
+
+                    {isFriend && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowMessages(true)}
+                          title="Messages"
+                          className="flex h-11 w-11 items-center justify-center border border-yellow-400/35 bg-yellow-400/5 text-yellow-300 transition hover:bg-yellow-400 hover:text-black"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="21"
+                            height="21"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                          </svg>
+                        </button>
+                        {unreadMessages > 0 && (
+                          <div className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center border border-red-300 bg-red-500 px-1 font-mono text-[9px] font-bold text-white shadow-[0_0_10px_rgba(239,68,68,.5)]">
+                            {unreadMessages > 99 ? "99+" : unreadMessages}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {[
+                { value: userStats.owned, label: "CARDS" },
+                { value: userStats.completed, label: "MASTERSETS" },
+                { value: userStats.trades, label: "LISTINGS" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="relative min-w-[82px] border border-yellow-400/20 bg-[#181a1c] px-3 py-4 text-center sm:min-w-[105px] sm:px-5"
+                >
+                  <div className="absolute left-0 top-0 h-px w-8 bg-yellow-400" />
+                  <div className="absolute right-0 bottom-0 h-px w-8 bg-yellow-400/40" />
+                  <div className="font-mono text-xl font-black text-yellow-400 sm:text-3xl">
+                    {stat.value}
+                  </div>
+                  <div className="mt-1 font-mono text-[7px] font-bold tracking-[0.18em] text-zinc-500 sm:text-[8px]">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-    )}
-  </div>
-)}
 
-  </div>
-)}
-
+      <div className="relative mt-5 overflow-hidden border border-yellow-400/20 bg-[#0f1113] shadow-[0_0_35px_rgba(0,0,0,.25)]">
+        <div className="flex items-center justify-between border-b border-yellow-400/15 bg-[#151719] px-4 py-3 sm:px-6">
+          <div>
+            <div className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-yellow-400">
+              COLLECTION PROGRESS
+            </div>
+          </div>
+          <div className="hidden font-mono text-[8px] uppercase tracking-[0.15em] text-zinc-600 sm:block">
+            SYS / 03
+          </div>
         </div>
 
-      </div>
+        <div className="p-4 sm:p-6">
+          <div className="mb-6 grid grid-cols-3 gap-1 border border-yellow-400/15 bg-black/20 p-1">
+            {[
+              { id: "iso" as const, label: "ISO", code: "01" },
+              { id: "trade" as const, label: "TRADES & SALES", code: "02" },
+              { id: "wishlist" as const, label: "WISHLIST", code: "03" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setSelectedSection(tab.id);
+                  if (tab.id === "trade") setSelectedSet("ALL");
+                }}
+                className={`relative px-2 py-3 text-center font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition sm:px-4 sm:text-[9px] ${
+                  selectedSection === tab.id
+                    ? "bg-yellow-400 text-black shadow-[0_0_18px_rgba(250,204,21,.2)]"
+                    : "text-zinc-500 hover:bg-yellow-400/5 hover:text-yellow-300"
+                }`}
+              >
+                <span className="mr-1.5 opacity-50">{tab.code}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 w-full lg:w-auto">
+          {selectedSection === "iso" ? (
+            userProfileSettings.hide_iso ? (
+              <div className="border border-red-400/20 bg-red-400/5 p-5">
+                <div className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-red-400">
+                  ACCESS RESTRICTED
+                </div>
+                <p className="mt-2 text-sm text-zinc-500">
+                  This collector has hidden their ISO.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                    ISO DATABASE
+                  </div>
+                  <div className="h-px flex-1 bg-yellow-400/10" />
+                  <div className="font-mono text-[7px] uppercase text-zinc-600">
+                    {visibleIsoCards.length} RECORDS
+                  </div>
+                </div>
 
-        <div className="rounded-2xl border border-yellow-500/30 bg-[#232323] px-8 py-6 flex sm:block items-center justify-between text-center sm:text-center">
-  <div className="text-lg sm:text-4xl font-bold text-yellow-400">
-    {userStats.owned}
-  </div>
+                <div className="mb-6 flex flex-wrap gap-1.5">
+                  {ISO_SET_TABS.map((set) => (
+                    <button
+                      key={set.id}
+                      onClick={() => setSelectedSet(set.id)}
+                      className={`border px-2.5 py-1.5 font-mono text-[8px] font-bold uppercase tracking-wider transition sm:px-3 ${
+                        selectedSet === set.id
+                          ? "border-yellow-400 bg-yellow-400 text-black"
+                          : "border-zinc-800 bg-[#17191b] text-zinc-500 hover:border-yellow-400/40 hover:text-yellow-300"
+                      }`}
+                    >
+                      {set.name}
+                    </button>
+                  ))}
+                </div>
 
-  <div className="mt-0 sm:mt-2 text-sm text-slate-400">
-    Cards
-  </div>
-</div>
+                {selectedSet === "" ? (
+                  <div className="border border-dashed border-yellow-400/15 py-14 text-center">
+                    <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-600">
+                      SELECT A DATASET
+                    </div>
+                  </div>
+                ) : visibleIsoCards.length === 0 ? (
+                  <p className="py-10 text-center font-mono text-xs text-zinc-600">
+                    NO ACTIVE ISO TARGETS
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 md:grid-cols-5 md:gap-3 lg:grid-cols-7">
+                    {filteredIsoCards.map((card) => (
+                      <div
+                        key={`${card.set_id}-${card.card_key}`}
+                        onClick={() => setQuickViewCard(card)}
+                        className={`group relative self-start cursor-pointer overflow-hidden rounded-md border border-zinc-800 bg-[#090a0b] transition hover:border-yellow-400/60 hover:shadow-[0_0_18px_rgba(250,204,21,.12)] ${
+                          isMoon3DoubleWide(card) ? "col-span-2" : ""
+                        } ${
+                          !isMoon3DoubleWide(card) &&
+                          String(card.set_id) === "tcgpromos" &&
+                          ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+                            ? "aspect-[63/88]"
+                            : ""
+                        }`}
+                      >
+                        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-yellow-400/0 transition group-hover:bg-yellow-400/80" />
+                        <img
+                          src={getTradeCardImage(card)}
+                          alt={card.card_key}
+                          className={`block w-full rounded-md ${
+                            ["12", "tcgpromos"].includes(String(card.set_id))
+                              ? "scale-100"
+                              : "scale-[1.06]"
+                          } ${
+                            isMoon3DoubleWide(card)
+                              ? "h-auto object-contain"
+                              : String(card.set_id) === "tcgpromos" &&
+                                ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+                              ? "h-full object-cover object-center"
+                              : "h-auto object-contain"
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )
+          ) : selectedSection === "trade" ? (
+            <>
+              <div className="mb-5 flex items-center gap-3">
+                <div className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                  MARKET INVENTORY
+                </div>
+                <div className="h-px flex-1 bg-yellow-400/10" />
+                <div className="font-mono text-[7px] uppercase text-zinc-600">
+                  {allTradeCards.length} LISTINGS
+                </div>
+              </div>
 
-<div className="rounded-2xl border border-yellow-500/30 bg-[#232323] px-8 py-6 flex sm:block items-center justify-between text-center sm:text-center">
-  <div className="text-lg sm:text-4xl font-bold text-yellow-400">
-    {userStats.completed}
-  </div>
+              <div className="mb-6 flex flex-wrap gap-1.5">
+                {TRADE_SET_TABS.map((set) => (
+                  <button
+                    key={set.id}
+                    onClick={() => setSelectedSet(set.id)}
+                    className={`border px-2.5 py-1.5 font-mono text-[8px] font-bold uppercase tracking-wider transition sm:px-3 ${
+                      selectedSet === set.id
+                        ? "border-yellow-400 bg-yellow-400 text-black"
+                        : "border-zinc-800 bg-[#17191b] text-zinc-500 hover:border-yellow-400/40 hover:text-yellow-300"
+                    }`}
+                  >
+                    {set.name}
+                  </button>
+                ))}
+              </div>
 
-  <div className="mt-0 sm:mt-2 text-xs sm:text-sm text-slate-400">
-    Mastersets
-  </div>
-</div>
+              {selectedSet === "" ? (
+                <div className="border border-dashed border-yellow-400/15 py-14 text-center">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-600">
+                    SELECT A DATASET
+                  </div>
+                </div>
+              ) : filteredTradeCards.length === 0 ? (
+                <p className="py-10 text-center font-mono text-xs text-zinc-600">
+                  NO ACTIVE TRADE OR SALE LISTINGS
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 md:grid-cols-5 md:gap-3 lg:grid-cols-7">
+                  {filteredTradeCards.map((card) => {
+                    const setId = String(card.set_id);
+                    
 
-<div className="rounded-2xl border border-yellow-500/30 bg-[#232323] px-8 py-6 flex sm:block items-center justify-between text-center sm:text-center">
-  <div className="text-lg sm:text-4xl font-bold text-yellow-400">
-    {userStats.trades}
-  </div>
+                    return (
+                    <div
+                      key={`${card.set_id}-${card.card_key}`}
+                      onClick={() => setQuickViewCard(card)}
+                      className={`group relative self-start cursor-pointer overflow-hidden rounded-md border border-zinc-800 bg-[#090a0b] transition hover:-translate-y-0.5 hover:border-yellow-400/60 hover:shadow-[0_0_20px_rgba(250,204,21,.12)] ${
+                        isMoon3DoubleWide(card) ? "col-span-2" : ""
+                      } ${
+                        !isMoon3DoubleWide(card) &&
+                        setId === "tcgpromos" &&
+                        ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+                          ? "aspect-[63/88]"
+                          : ""
+                      }`}
+                    >
+                      <div
+                        className={`absolute left-1.5 top-1.5 z-10 border px-2 py-1 font-mono text-[7px] font-black tracking-[0.12em] text-black shadow-lg ${
+                          card.type === "trade"
+                            ? "border-cyan-300 bg-cyan-300"
+                            : "border-yellow-400 bg-yellow-400"
+                        }`}
+                      >
+                        {card.type === "trade" ? "TRADE" : "SALE"}
+                      </div>
 
-  <div className="mt-0 sm:mt-2 text-xs sm:text-sm text-slate-400">
-    Listings
-  </div>
-</div>
+                      <div className="overflow-hidden rounded-md">
+                        <img
+                          src={getTradeCardImage(card)}
+                          alt={card.card_key}
+                          className={`block w-full rounded-md ${
+                            setId === "12"
+                              ? "scale-100"
+                              : "scale-[1.10]"
+                          } ${
+                            isMoon3DoubleWide(card)
+                              ? "h-auto object-contain"
+                              : setId === "tcgpromos" &&
+                                ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
+                              ? "h-full object-cover object-center"
+                              : "h-auto object-contain"
+                          }`}
+                        />
+                      </div>
 
-      </div>
+                      <div className="border-t border-yellow-400/10 bg-[#121416] px-2 py-2">
+                        <div className="truncate font-mono text-[7px] font-bold uppercase tracking-wider text-zinc-500">
+                          {getSetName(String(card.set_id))}
+                        </div>
+                      </div>
+                    </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            userProfileSettings.hide_wishlist ? (
+              <div className="border border-red-400/20 bg-red-400/5 p-5">
+                <div className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-red-400">
+                  ACCESS RESTRICTED
+                </div>
+                <p className="mt-2 text-sm text-zinc-500">
+                  This collector has hidden their wishlist.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                    WISHLIST TARGETS
+                  </div>
+                  <div className="h-px flex-1 bg-yellow-400/10" />
+                  <div className="font-mono text-[7px] uppercase text-zinc-600">
+                    {userWishlistCards.length} TARGETS
+                  </div>
+                </div>
 
-    </div>
+                <div className="mb-6 flex flex-wrap gap-1.5">
+                  {WISHLIST_SET_TABS.map((set) => (
+                    <button
+                      key={set.id}
+                      onClick={() => setSelectedSet(set.id)}
+                      className={`border px-2.5 py-1.5 font-mono text-[8px] font-bold uppercase tracking-wider transition sm:px-3 ${
+                        selectedSet === set.id
+                          ? "border-yellow-400 bg-yellow-400 text-black"
+                          : "border-zinc-800 bg-[#17191b] text-zinc-500 hover:border-yellow-400/40 hover:text-yellow-300"
+                      }`}
+                    >
+                      {set.name}
+                    </button>
+                  ))}
+                </div>
 
-  </div>
-
-</div>
-
-
-<div className="rounded-2xl border border-yellow-500/30 bg-[#323232] p-8 shadow-sm">
-
-<div className="flex flex-wrap gap-3 mb-6">
-<button
-  onClick={() => setSelectedSection("iso")}
-  className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
-${
-  selectedSection === "iso"
-    ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
-    : "bg-slate-200 text-slate-700 hover:bg-slate-300 hover:scale-105"
-}`}
->
-    ISO
-  </button>
-
-  <button
-    onClick={() => {
-  setSelectedSection("trade");
-  setSelectedSet("ALL");
-}}
-className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
-${
-  selectedSection === "trade"
-    ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
-    : "bg-slate-200 text-slate-700 hover:bg-slate-300 hover:scale-105"
-}`}
-  >
-    Trades & Sales
-  </button>
-
-  <button
-    onClick={() => setSelectedSection("wishlist")}
-className={`group relative overflow-hidden rounded-xl px-3 sm:px-5 py-2 text-sm sm:text-base font-semibold text-slate-900 transition-all duration-300 hover:scale-105 active:scale-100
-${
-  selectedSection === "wishlist"
-    ? "bg-[linear-gradient(180deg,#fff9cf_0%,#ffe875_15%,#ffd43b_35%,#ffc107_50%,#ffd84d_65%,#fff3a7_85%,#d89b00_100%)] shadow-[0_0_15px_rgba(255,193,7,.45)] hover:shadow-[0_0_25px_rgba(255,215,0,.8)] before:absolute before:top-0 before:-left-1/2 before:h-full before:w-1/3 before:rotate-12 before:bg-[linear-gradient(to_right,transparent,rgba(255,255,255,.85),transparent)] before:opacity-0 hover:before:left-[140%] hover:before:opacity-100 before:transition-all before:duration-700"
-    : "bg-slate-200 text-slate-700 hover:bg-slate-300 hover:scale-105"
-}`}
-  >
-    Wishlist
-  </button>
-</div>
-
-{selectedSection === "iso" ? (
-  userProfileSettings.hide_iso ? (
-    <p className="text-slate-500">
-      This collector has hidden their ISO.
-    </p>
-  ) : (
-    <>
-      <div className="flex flex-wrap gap-2 mb-6">
-        {ISO_SET_TABS.map((set) => (
-          <button
-            key={set.id}
-            onClick={() => setSelectedSet(set.id)}
-           className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
-              selectedSet === set.id
-                ? "bg-yellow-400 text-slate-900"
-                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-            }`}
-          >
-            {set.name}
-          </button>
-        ))}
-      </div>
-
-      {selectedSet === "" ? (
-  <p className="text-slate-500">
-    Select a set to view.
-  </p>
-) : visibleIsoCards.length === 0 ? (
-        <p className="text-slate-500">
-          This collector isn't looking for any cards.
-        </p>
-      ) : (
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
-          {filteredIsoCards.map((card) => (
-<div
-  key={`${card.set_id}-${card.card_key}`}
-  onClick={() => setQuickViewCard(card)}
-  className={`self-start cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
-    isMoon3DoubleWide(card) ? "col-span-2" : ""
-  } ${
-    !isMoon3DoubleWide(card) &&
-    String(card.set_id) === "tcgpromos" &&
-    ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-      ? "aspect-[63/88]"
-      : ""
-  }`}
->
-  <img
-    src={getTradeCardImage(card)}
-    alt={card.card_key}
-    className={`block w-full ${
-      isMoon3DoubleWide(card)
-        ? "h-auto object-contain"
-        : String(card.set_id) === "tcgpromos" &&
-          ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-        ? "h-full object-cover object-center"
-        : "h-full object-contain"
-    }`}
-  />
-</div>
-          ))}
+                {selectedSet === "" ? (
+                  <div className="border border-dashed border-yellow-400/15 py-14 text-center">
+                    <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-600">
+                      SELECT A DATASET
+                    </div>
+                  </div>
+                ) : filteredWishlistCards.length === 0 ? (
+                  <p className="py-10 text-center font-mono text-xs text-zinc-600">
+                    NO WISHLIST TARGETS DETECTED
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 md:grid-cols-5 md:gap-3 lg:grid-cols-7">
+                    {filteredWishlistCards.map((card) => (
+                      <div
+                        key={`${card.set_id}-${card.card_key}`}
+                        onClick={() => setQuickViewCard(card)}
+                        className={`group cursor-pointer overflow-hidden rounded-md border border-zinc-800 bg-[#090a0b] transition hover:border-yellow-400/60 hover:shadow-[0_0_18px_rgba(250,204,21,.12)] ${
+                          isMoon3DoubleWide(card) ? "col-span-2" : ""
+                        }`}
+                      >
+                        <img
+                          src={getTradeCardImage(card)}
+                          alt={card.card_key}
+                          className={`block h-full w-full rounded-md ${
+                            ["12", "tcgpromos"].includes(String(card.set_id))
+                              ? "scale-100"
+                              : "scale-[1.06]"
+                          } object-contain`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )
+          )}
         </div>
-      )}
-    </>
-  )
-) : selectedSection === "trade" ? (
-  <>
-    <div className="flex flex-wrap gap-2 mb-6">
-      {TRADE_SET_TABS.map((set) => (
-        <button
-          key={set.id}
-          onClick={() => setSelectedSet(set.id)}
-          className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
-            selectedSet === set.id
-              ? "bg-yellow-400 text-slate-900"
-              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-          }`}
+      </div>
+
+      {quickViewCard && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050607]/95 p-4 backdrop-blur-md"
+          onClick={() => setQuickViewCard(null)}
         >
-          {set.name}
-        </button>
-      ))}
-    </div>
+          <div className="pointer-events-none absolute inset-5 border border-yellow-400/10 sm:inset-10" />
+          <div className="pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 font-mono text-[8px] uppercase tracking-[0.3em] text-yellow-400/60">
+            CARD ANALYSIS // VISUAL INSPECTION
+          </div>
 
-    {selectedSet === "" ? (
-  <p className="text-slate-500">
-    Select a set to view.
-  </p>
-) : filteredTradeCards.length === 0 ? (
-      <p className="text-slate-500">
-        This collector has no cards listed for trade or sale.
-      </p>
-    ) : (
-      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
-        {filteredTradeCards.map((card) => (
-<div
-  key={`${card.set_id}-${card.card_key}`}
-  onClick={() => setQuickViewCard(card)}
-className={`
-  relative
-  overflow-hidden
-  rounded-lg sm:rounded-2xl
-  border border-slate-200
-  bg-white
-  shadow-sm
-  transition
-  hover:-translate-y-1
-  hover:shadow-xl
-  ${isMoon3DoubleWide(card) ? "col-span-2" : ""}
-`}
->
-  <div
-    className={`absolute left-2 top-2 z-10 rounded-full px-3 py-1 text-[10px] font-bold tracking-wide text-white shadow-lg ${
-      card.type === "trade"
-        ? "bg-blue-600"
-        : "bg-emerald-600"
-    }`}
-  >
-    {card.type === "trade" ? "TRADE" : "SALE"}
-  </div>
-
-  <div
-    className={`bg-gradient-to-b from-slate-100 to-white ${
-      !isMoon3DoubleWide(card) &&
-      String(card.set_id) === "tcgpromos" &&
-      ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-        ? "aspect-[63/88]"
-        : ""
-    }`}
-  >
-    <img
-      src={getTradeCardImage(card)}
-      alt={card.card_key}
-      className={`block w-full ${
-        isMoon3DoubleWide(card)
-          ? "h-auto object-contain"
-          : String(card.set_id) === "tcgpromos" &&
-            ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-          ? "h-full object-cover object-center"
-          : "h-full object-contain"
-      }`}
-    />
-  </div>
-
-<div className="border-t bg-slate-50 px-3 py-2 text-center">
-<div className="text-[8px] sm:text-xs font-semibold text-slate-700 truncate">
-    {getSetName(String(card.set_id))}
-  </div>
-</div>
-</div>
-        ))}
-      </div>
-    )}
-  </>
-) : (
-  userProfileSettings.hide_wishlist ? (
-    <p className="text-slate-500">
-      This collector has hidden their wishlist.
-    </p>
-  ) : (
-    <>
-      <div className="flex flex-wrap gap-2 mb-6">
-        {WISHLIST_SET_TABS.map((set) => (
           <button
-            key={set.id}
-            onClick={() => setSelectedSet(set.id)}
-            className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
-              selectedSet === set.id
-                ? "bg-yellow-400 text-slate-900"
-                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-            }`}
+            onClick={() => setQuickViewCard(null)}
+            className="absolute right-5 top-5 z-10 border border-yellow-400/30 bg-[#111315] px-3 py-2 font-mono text-xl text-yellow-400 transition hover:bg-yellow-400 hover:text-black"
           >
-            {set.name}
+            ×
           </button>
-        ))}
-      </div>
 
-      {selectedSet === "" ? (
-  <p className="text-slate-500">
-    Select a set to view.
-  </p>
-) : filteredWishlistCards.length === 0 ? (
-        <p className="text-slate-500">
-          This collector has no wishlist cards.
-        </p>
-      ) : (
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
-          {filteredWishlistCards.map((card) => (
-            <div
-              key={`${card.set_id}-${card.card_key}`}
-              onClick={() => setQuickViewCard(card)}
-              className={`cursor-pointer overflow-hidden rounded-lg sm:rounded-xl border border-slate-200 bg-white transition hover:scale-[1.02] ${
-                isMoon3DoubleWide(card) ? "col-span-2" : ""
-              }`}
-            >
+          <div className="relative max-h-[68vh] max-w-[46vw] border border-yellow-400/20 bg-[#0b0d0e] p-1.5 shadow-[0_0_50px_rgba(250,204,21,.12)]">
+            <div className="max-h-[61vh] max-w-[42vw] overflow-hidden rounded-md">
               <img
-                src={getTradeCardImage(card)}
-                alt={card.card_key}
-                className="block w-full h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+                src={getTradeCardImage(quickViewCard)}
+                alt={quickViewCard.card_key}
+                className={`block max-h-[61vh] max-w-[42vw] rounded-md scale-[1.06] object-contain ${
+                  isMoon3DoubleWide(quickViewCard)
+                    ? "w-[38vw] max-w-[560px]"
+                    : ""
+                }`}
               />
             </div>
-          ))}
+            <div className="border-t border-yellow-400/10 px-2 py-1.5 text-center font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-500">
+              {getSetName(String(quickViewCard.set_id))}
+            </div>
+          </div>
         </div>
       )}
-    </>
-  )
-)}
 
-</div>
-
-{quickViewCard && (
-  <div
-    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-6"
-    onClick={() => setQuickViewCard(null)}
-  >
-    <button
-      onClick={() => setQuickViewCard(null)}
-      className="absolute right-6 top-6 text-5xl font-bold text-white hover:text-yellow-400"
-    >
-      ×
-    </button>
-
-    <img
-      onClick={(e) => e.stopPropagation()}
-      src={getTradeCardImage(quickViewCard)}
-      alt={quickViewCard.card_key}
-className={`max-h-[75vh] max-w-[70vw] rounded-2xl object-contain drop-shadow-2xl ${
-  isMoon3DoubleWide(quickViewCard)
-    ? "w-[75vw] max-w-[900px]"
-    : ""
-}`}
-    />
-  </div>
-)}
-
-{showMessages && (
-  <div
-    className="fixed inset-0 z-[10000] flex items-start justify-center bg-black/70 backdrop-blur-sm pt-28"
-    onClick={async () => {
-  setShowMessages(false);
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user) return;
-
-  const { data: unread } = await supabase
-    .from("messages")
-    .select("id")
-    .eq("sender", user.id)
-    .eq("receiver", session.user.id)
-    .is("read_at", null);
-
-  const count = unread?.length ?? 0;
-
-setUnreadMessages(count);
-
-window.dispatchEvent(
-  new CustomEvent("header-message-update")
-);
-}}
-  >
-    <div
-      onClick={(e) => e.stopPropagation()}
-      className="relative h-[520px] w-[420px] max-h-[80vh] max-w-[95vw] overflow-hidden rounded-[28px] border border-[#3a3a3c] bg-[#1c1c1e] shadow-2xl"
-    >
-      <div className="flex h-14 items-center justify-between border-b border-[#3a3a3c] bg-[#2c2c2e] px-5">
-        <div className="font-semibold text-white">
-          {friendNickname || user.username}
-        </div>
-
-        <button
+      {showMessages && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-start justify-center bg-[#050607]/85 p-4 pt-32 backdrop-blur-md sm:pt-24"
           onClick={async () => {
-  setShowMessages(false);
+            setShowMessages(false);
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+            const {
+              data: { session },
+            } = await supabase.auth.getSession();
 
-  if (!session?.user) return;
+            if (!session?.user) return;
 
-  const { data: unread } = await supabase
-    .from("messages")
-    .select("id")
-    .eq("sender", user.id)
-    .eq("receiver", session.user.id)
-    .is("read_at", null);
+            const { data: unread } = await supabase
+              .from("messages")
+              .select("id")
+              .eq("sender", user.id)
+              .eq("receiver", session.user.id)
+              .is("read_at", null);
 
-  const count = unread?.length ?? 0;
+            const count = unread?.length ?? 0;
 
-setUnreadMessages(count);
+            setUnreadMessages(count);
 
-window.dispatchEvent(
-  new CustomEvent("header-message-update")
-);
-}}
-          className="text-2xl text-gray-400 hover:text-white"
+            window.dispatchEvent(
+              new CustomEvent("header-message-update")
+            );
+          }}
         >
-          ×
-        </button>
-      </div>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative h-[500px] w-[380px] max-h-[78vh] max-w-[92vw] overflow-hidden border border-yellow-400/25 bg-[#0e1012] shadow-[0_0_50px_rgba(0,0,0,.65)]"
+          >
+            <div className="flex h-14 items-center justify-between border-b border-yellow-400/15 bg-[#151719] px-4">
+              <div>
+                <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-yellow-400">
+                  SECURE COMMUNICATION
+                </div>
+                <div className="mt-1 font-semibold text-white">
+                  {friendNickname || user.username}
+                </div>
+              </div>
 
-      <div className="h-[calc(100%-56px)] overflow-hidden">
-        <Messages otherUserId={user.id} />
-      </div>
-    </div>
-  </div>
-)}
+              <button
+                onClick={async () => {
+                  setShowMessages(false);
 
+                  const {
+                    data: { session },
+                  } = await supabase.auth.getSession();
+
+                  if (!session?.user) return;
+
+                  const { data: unread } = await supabase
+                    .from("messages")
+                    .select("id")
+                    .eq("sender", user.id)
+                    .eq("receiver", session.user.id)
+                    .is("read_at", null);
+
+                  const count = unread?.length ?? 0;
+
+                  setUnreadMessages(count);
+
+                  window.dispatchEvent(
+                    new CustomEvent("header-message-update")
+                  );
+                }}
+                className="border border-zinc-700 px-3 py-1 font-mono text-xl text-zinc-500 transition hover:border-yellow-400 hover:text-yellow-400"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="h-[calc(100%-56px)] overflow-hidden">
+              <Messages otherUserId={user.id} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

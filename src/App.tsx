@@ -7,7 +7,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { supabase } from "@/lib/supabase";
 import ScrollToTop from "@/components/ScrollToTop";
 import KayouHeader from "@/components/KayouHeader";
-import TiltCard from "@/components/TiltCards";
 
 import Index from "./pages/Index";
 import KayouNews from "./pages/Main Pages/kayou-news";
@@ -28,18 +27,9 @@ import MyTradesView from "@/pages/MyTradesView";
 import RequireAuth from "./components/RequireAuth";
 import FAQ from "@/pages/FAQ";
 import MyProgressTCG from "./pages/MyProgressTCG";
-import UserMenu from "@/pages/UserMenu";
 import LinksPage from "./pages/linkspage";
 /// PERSONAL PAGES
 import ISO from "./pages/ISO/iso";
-import ISOMOON from "./pages/ISO/iso-moon";
-import ISOFUN from "./pages/ISO/iso-fun";
-import ISORAINBOW from "./pages/ISO/iso-rainbow";
-import ISOSTAR from "./pages/ISO/iso-star";
-import ISOTCG from "./pages/ISO/iso-tcg";
-import ISPROMOS from "./pages/ISO/iso-promos";
-import ISOCONTROLS from "./pages/ISO/iso-controls";
-import ISOCHECKING from "./pages/ISO/iso-checking";
 
 /// CCG SETS
 import MoonOne from "./pages/Sets/Moon Editions/moon-one";
@@ -64,8 +54,6 @@ import Explore from "./pages/Everypony/explore";
 import Binders from "./pages/Main Pages/binders";
 import Support from "./pages/Main Pages/support-mlpekayou";
 import Inbox from "./pages/Friends/inbox";
-import FriendsProfiles from "./pages/Friends/friends-profiles";
-import Messages from "./pages/Friends/messages";
 import MobileProfile from "./pages/Personal/mobile-profile";
 import DesktopProfile from "./pages/Personal/desktop-profile";
 import { getProfileAssets } from "./pages/Everypony/profile-assets";
@@ -291,15 +279,20 @@ const AppRoutes = () => {
       <Route path="/trading-post/:setId" element={<TradingPostInner />} />
       <Route path="/inventory/:setId" element={<MyTradesSets />} />
       <Route path="/faq" element={<FAQ />} />
-      <Route path="/kayou-news" element={<KayouNews />} />
-      <Route path="/:username" element={<PublicProfile />} />
+<Route path="/kayou-news" element={<KayouNews />} />
+
+<Route path="/support-mlpekayou" element={<Support />} />
+<Route path="/binders" element={<Binders />} />
 
 
 
+<Route path="/links" element={<LinksPage />} />
 
 
-                <Route path="/support-mlpekayou" element={<Support />} />
-                <Route path="/binders" element={<Binders />} />
+<Route path="/:username" element={<PublicProfile />} />
+
+
+<Route path="*" element={<NotFound />} />
 
 <Route
   path="/mobile-profile"
@@ -329,28 +322,10 @@ const AppRoutes = () => {
 />
 
       <Route
-  path="/UserMenu"
-  element={
-    <RequireAuth>
-      <UserMenu />
-    </RequireAuth>
-  }
-/>
-
-      <Route
   path="/Inbox"
   element={
     <RequireAuth>
       <Inbox />
-    </RequireAuth>
-  }
-/>
-
-<Route
-  path="/profile-mobile"
-  element={
-    <RequireAuth>
-      <UserMenu />
     </RequireAuth>
   }
 />
@@ -371,7 +346,6 @@ const AppRoutes = () => {
   }
 />
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
-      <Route path="/links" element={<LinksPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

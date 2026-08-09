@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 export default function MyTrades() {
   const navigate = useNavigate();
 
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState("moon");
   const [sortBy, setSortBy] = useState("set");
 
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
@@ -189,160 +189,71 @@ setTradeSets(activeTrades);
 },
   ];
 
-return (
-  <>
+  const normalizeSetId = (id: string) => {
+    const normalized = String(id).trim();
+    return normalized === "FB" ? "SD" : normalized;
+  };
 
-<div
-  className="min-h-screen"
-  style={{
-    backgroundColor: "#090909",
-    backgroundImage: `
-      radial-gradient(circle at top, rgba(212,175,55,.06) 0%, transparent 42%),
-      radial-gradient(circle at 15% 30%, rgba(255,255,255,.025) 0%, transparent 26%),
-      radial-gradient(circle at 85% 18%, rgba(255,255,255,.02) 0%, transparent 22%),
-      linear-gradient(
-        180deg,
-        #090909 0%,
-        #111111 38%,
-        #151515 68%,
-        #0b0b0b 100%
-      )
-    `,
-  }}
->
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-28 sm:pb-6">
+  const normalizedOwnedSets = new Set(ownedSets.map(normalizeSetId));
+  const normalizedHiddenSets = new Set(hiddenSets.map(normalizeSetId));
+  const normalizedTradeSets = new Set(tradeSets.map(normalizeSetId));
 
-        {/* PAGE HEADER */}
-        <div className="text-center mb-6">
-<h1
-  className="text-4xl sm:text-5xl lg:text-6xl font-black leading-none"
-  style={{
-    fontFamily: "Oxanium",
-    background:
-      "linear-gradient(180deg,#fff7c2 0%,#f8e38c 22%,#e7bf45 58%,#c88a0a 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    textShadow: "0 4px 18px rgba(0,0,0,.35)",
-  }}
->
-  My Inventory
-</h1>
-        </div>
+  const filteredCollections = collections.filter((col) => {
+    if (normalizedHiddenSets.has(normalizeSetId(col.id))) return false;
+    if (!normalizedOwnedSets.has(normalizeSetId(col.id))) return false;
 
-        {/* INVENTORY PANEL */}
-<div
-  className="
-    rounded-[2rem]
-    border border-[#2d2d2d]
-    bg-[#181818]
-    shadow-[0_18px_50px_rgba(0,0,0,.55)]
-    p-4 sm:p-6
-  "
->
+    if (activeFilter === "moon") {
+      return col.id === "1" || col.id === "2" || col.id === "3";
+    }
 
-{/* FILTER TABS */}
-<div
-  className="
-    flex flex-col lg:flex-row lg:items-center lg:justify-between
-    gap-4
-    mb-5
-    pb-5
-    border-b border-[#2d2d2d]
-  "
->
-  <div className="flex flex-wrap items-center gap-2">
-    {[
-      { id: "all", label: "All Cards" },
-      { id: "moon", label: "Moon Edition" },
-      { id: "star", label: "Star Edition" },
-      { id: "fun", label: "Fun Moments Edition" },
-      { id: "rainbow", label: "Rainbow Edition" },
-      { id: "promos", label: "Promotional" },
-      { id: "tcg", label: "TCG Sets" },
-    ].map((tab) => (
-      <button
-        key={tab.id}
-        onClick={() => setActiveFilter(tab.id)}
-        className={`
-          px-5 py-2.5
-          rounded-full
-          text-sm font-semibold
-          border
-          transition-all duration-200
-          ${
-            activeFilter === tab.id
-              ? "border-[#d4af37] text-[#1b1b1b] shadow-lg"
-              : "border-[#3a3a3a] bg-[#232323] text-[#f5e6a8] hover:bg-[#2d2d2d] hover:border-[#d4af37]"
-          }
-        `}
-        style={
-          activeFilter === tab.id
-            ? {
-                background:
-                  "linear-gradient(180deg,#f8e38c 0%,#e7bf45 55%,#c88a0a 100%)",
-              }
-            : {}
-        }
-      >
-        {tab.label}
-      </button>
-    ))}
-  </div>
-</div>
-          {/* COLLECTIONS */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 justify-items-center">
-            {collections
-  .filter((col) => {
-// Hide any sets the user has chosen to hide
-if (hiddenSets.includes(col.id)) return false;
+    if (activeFilter === "star") {
+      return col.id === "4";
+    }
 
-// Only show sets that have cards in them
-if (!ownedSets.includes(String(col.id).trim())) return false;
-// Apply filter tabs
-if (activeFilter === "moon") {
-  return col.id === "1" || col.id === "2" || col.id === "3";
-}
+    if (activeFilter === "fun") {
+      return col.id === "7" || col.id === "8" || col.id === "11";
+    }
 
-// Star Edition
-if (activeFilter === "star") {
-  return col.id === "4";
-}
+    if (activeFilter === "rainbow") {
+      return col.id === "5" || col.id === "6";
+    }
 
-// Fun Moments Edition
-if (activeFilter === "fun") {
-  return col.id === "7" || col.id === "8" || col.id === "11";
-}
+    if (activeFilter === "promos") {
+      return col.id === "9" || col.id === "tcgpromos";
+    }
 
-// Rainbow Edition
-if (activeFilter === "rainbow") {
-  return col.id === "5" || col.id === "6";
-}
+    if (activeFilter === "tcg") {
+      return col.id === "SD" || col.id === "FW" || col.id === "12";
+    }
 
-// Promotional
-// Promotional
-if (activeFilter === "promos") {
-  return (
-    col.id === "9" ||              // Promotional Cards
-    col.id === "tcgpromos"         // TCG Promos
-  );
-}
+    return activeFilter === "moon";
+  });
 
-// TCG Sets
-if (activeFilter === "tcg") {
-  return (
-    col.id === "SD" ||
-    col.id === "FW" ||
-     col.id === "12"
-  );
-}
+  const knownOwnedSetCount = collections.filter((col) =>
+    normalizedOwnedSets.has(normalizeSetId(col.id))
+  ).length;
 
-// All Cards
-return true;
-  })
-  .map((col) => (
-                <div
-                  key={col.id}
-onClick={() => {
+  const categoryCounts = {
+    moon: collections.filter((col) => ["1", "2", "3"].includes(col.id) && normalizedOwnedSets.has(normalizeSetId(col.id)) && !normalizedHiddenSets.has(normalizeSetId(col.id))).length,
+    star: collections.filter((col) => col.id === "4" && normalizedOwnedSets.has(normalizeSetId(col.id)) && !normalizedHiddenSets.has(normalizeSetId(col.id))).length,
+    fun: collections.filter((col) => ["7", "8", "11"].includes(col.id) && normalizedOwnedSets.has(normalizeSetId(col.id)) && !normalizedHiddenSets.has(normalizeSetId(col.id))).length,
+    rainbow: collections.filter((col) => ["5", "6"].includes(col.id) && normalizedOwnedSets.has(normalizeSetId(col.id)) && !normalizedHiddenSets.has(normalizeSetId(col.id))).length,
+    tcg: collections.filter((col) => ["SD", "FW", "12"].includes(col.id) && normalizedOwnedSets.has(normalizeSetId(col.id)) && !normalizedHiddenSets.has(normalizeSetId(col.id))).length,
+    promos: collections.filter((col) => ["9", "tcgpromos"].includes(col.id) && normalizedOwnedSets.has(normalizeSetId(col.id)) && !normalizedHiddenSets.has(normalizeSetId(col.id))).length,
+  };
+
+  const categoryItems = [
+    { id: "star", title: "STAR", subtitle: "STAR EDITION", count: categoryCounts.star, icon: "S" },
+    { id: "moon", title: "MOON", subtitle: "ETERNAL MOON", count: categoryCounts.moon, icon: "M" },
+    { id: "rainbow", title: "RAINBOW", subtitle: "ETERNAL RAINBOW", count: categoryCounts.rainbow, icon: "R" },
+    { id: "fun", title: "FUN MOMENTS", subtitle: "FUN MOMENTS", count: categoryCounts.fun, icon: "FM" },
+    { id: "tcg", title: "TCG", subtitle: "TRADING CARD GAME", count: categoryCounts.tcg, icon: "TCG" },
+    { id: "promos", title: "PROMOS", subtitle: "PROMOTIONAL", count: categoryCounts.promos, icon: "PR" },
+  ];
+
+  const activeCategoryLabel =
+    categoryItems.find((item) => item.id === activeFilter)?.title || "MOON";
+
   const slugMap: Record<string, string> = {
     "1": "moon-one",
     "2": "moon-two",
@@ -360,107 +271,330 @@ onClick={() => {
     "tcgpromos": "tcg-promos",
   };
 
-  navigate(`/inventory/${slugMap[col.id]}`);
-}}
-                  className="cursor-pointer w-full max-w-[150px] transition hover:scale-[1.02]"
-                >
-                  <CollectionCard {...col} showProgress={false} />
-                </div>
-              ))}
+  return (
+    <div
+      className="min-h-screen bg-[#0b0c0c] text-[#e8e8e2]"
+      style={{
+        fontFamily: "Oxanium, sans-serif",
+        backgroundImage: `
+          radial-gradient(circle at 48% 0%, rgba(236,191,59,.10), transparent 28%),
+          linear-gradient(rgba(255,255,255,.014) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,.014) 1px, transparent 1px)
+        `,
+        backgroundSize: "auto, 42px 42px, 42px 42px",
+      }}
+    >
+      <div className="mx-auto max-w-[1600px] px-3 pt-3 pb-24 sm:px-5 sm:py-5 lg:px-7">
+
+        {/* PAGE TITLE STRIP */}
+        <div className="relative mb-4 overflow-hidden border border-[#34362f] bg-[#111313] shadow-[0_18px_55px_rgba(0,0,0,.55)]">
+          <div className="absolute left-0 top-0 h-full w-1 bg-[#e4bd43]" />
+          <div className="absolute right-0 top-0 h-px w-1/3 bg-gradient-to-l from-[#e4bd43] to-transparent" />
+          <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-7">
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <span className="h-1.5 w-1.5 bg-[#e8c14a] shadow-[0_0_9px_#e8c14a]" />
+                <span className="text-[8px] font-bold uppercase tracking-[.3em] text-[#656861]">
+                  COLLECTION DATABASE // PERSONAL ACCESS
+                </span>
+              </div>
+              <h1
+                className="text-4xl font-black uppercase leading-none tracking-[-.04em] sm:text-6xl"
+                style={{
+                  background: "linear-gradient(180deg,#fffde8 0%,#f6dd78 35%,#d9a92d 72%,#986006 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                MY INVENTORY
+              </h1>
+            </div>
+
+            <div className="grid grid-cols-3 border border-[#2d302c] bg-[#0c0e0e]">
+              <div className="border-r border-[#2d302c] px-3 py-2.5 sm:px-5">
+                <div className="text-[7px] uppercase tracking-[.2em] text-[#555852]">SETS</div>
+                <div className="mt-1 text-lg font-black text-[#e4bd43]">{collections.length}</div>
+              </div>
+              <div className="border-r border-[#2d302c] px-3 py-2.5 sm:px-5">
+                <div className="text-[7px] uppercase tracking-[.2em] text-[#555852]">VISIBLE</div>
+                <div className="mt-1 text-lg font-black text-[#e8e8e1]">{filteredCollections.length}</div>
+              </div>
+              <div className="px-3 py-2.5 sm:px-5">
+                <div className="text-[7px] uppercase tracking-[.2em] text-[#555852]">TRADES</div>
+                <div className="mt-1 text-lg font-black text-[#e8e8e1]">{tradeSets.length}</div>
+              </div>
+            </div>
           </div>
         </div>
 
-{/* MY TRADES */}
-<div className="mt-10">
-  <div className="flex items-center justify-center gap-5 mb-6">
-    <div className="flex-1 max-w-[220px] h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+        {/* THREE-PANEL WORKSPACE */}
+        <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_300px]">
 
-    <h2
-      className="text-3xl sm:text-4xl font-black text-[#f5e6a8]"
-      style={{
-        fontFamily: "Oxanium",
-        textShadow: "0 3px 14px rgba(0,0,0,.35)",
-      }}
-    >
-      My Trades
-    </h2>
-
-    <div className="flex-1 max-w-[220px] h-px bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
-  </div>
-
-<div
-  className="
-    rounded-[2rem]
-    border border-[#2d2d2d]
-    bg-[#181818]
-    shadow-[0_18px_50px_rgba(0,0,0,.55)]
-    p-4 sm:p-6
-  "
->
-            {tradeSets.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                  {collections
-                    .filter((col) =>
-                      tradeSets.includes(String(col.id).trim())
-)
-.map((col) => (
-<button
-  key={col.id}
-  onClick={() => navigate(`/my-trades/view/${col.id}`)}
-  className="
-    flex items-center gap-4
-    w-full
-    rounded-2xl
-    border border-[#333333]
-    bg-[#202020]
-    px-5 py-4
-    text-left
-    transition-all duration-200
-    hover:border-[#d4af37]
-    hover:bg-[#282828]
-    hover:-translate-y-1
-    hover:shadow-[0_12px_28px_rgba(0,0,0,.45)]
-  "
->
-  <img
-    src={col.imageUrl}
-    alt={col.title}
-    className="
-      w-11 h-11
-      rounded-full
-      object-cover
-      border-2 border-[#d4af37]
-      flex-shrink-0
-    "
-  />
-
-<div className="flex-1 min-w-0">
-  <div className="text-sm font-bold leading-tight text-[#f5e6a8]">
-    {col.setName
-      ? ["friendshipsbegin", "FW", "9"].includes(col.id)
-        ? `${col.title} ${col.setName}`
-        : `${col.title} (${col.setName})`
-      : col.title}
-  </div>
-
-  <div className="mt-1 text-xs font-medium text-[#d4af37]">
-    View trades →
-  </div>
-</div>
-</button>
-))}
+          {/* LEFT CATEGORY NAV */}
+          <aside className="border border-[#34362f] bg-[#111313] shadow-[0_18px_55px_rgba(0,0,0,.5)]">
+            <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[8px] font-bold uppercase tracking-[.28em] text-[#5e615a]">
+                    CATEGORIES OF SETS
+                  </div>
+                  <div className="mt-2 text-[7px] uppercase leading-relaxed tracking-[.13em] text-[#4f524d]">
+                    Select a category to filter your collection.
+                  </div>
                 </div>
-              </>
-            ) : (
-              <p className="text-center text-[#c2c889] text-sm py-4">
-                You haven’t marked any cards for trade yet.
+                <span className="text-[7px] text-[#555850]">{collections.length.toString().padStart(2, "0")}</span>
+              </div>
+            </div>
+
+            <div className="p-3">
+              {categoryItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveFilter(item.id)}
+                  className={`group mb-2 flex w-full items-center gap-3 border px-3 py-3 text-left transition-all ${
+                    activeFilter === item.id
+                      ? "border-[#dfba42] bg-[#1a1913] shadow-[inset_3px_0_0_#e2bc43]"
+                      : "border-[#292c28] bg-[#151717] hover:border-[#5c5029] hover:bg-[#191b1a]"
+                  }`}
+                >
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center border text-base ${
+                      activeFilter === item.id
+                        ? "border-[#6c5925] bg-[#242014] text-[#efc84b]"
+                        : "border-[#30332e] bg-[#1c1e1d] text-[#73766e]"
+                    }`}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-[10px] font-black uppercase tracking-[.14em] ${
+                      activeFilter === item.id ? "text-[#efc84b]" : "text-[#d2d3cc]"
+                    }`}>
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block truncate text-[7px] uppercase tracking-[.14em] text-[#50534d]">
+                      {item.subtitle}
+                    </span>
+                  </span>
+                  <span className={`text-[8px] font-bold ${activeFilter === item.id ? "text-[#efc84b]" : "text-[#555850]"}`}>
+                    {item.count.toString().padStart(2, "0")}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="border-t border-[#292c28] px-4 py-4">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="h-px w-5 bg-[#9b7d2d]" />
+                <span className="text-[7px] font-bold uppercase tracking-[.25em] text-[#8c722b]">
+                  INVENTORY ACCESS
+                </span>
+              </div>
+              <p className="text-[7px] leading-relaxed tracking-[.12em] text-[#555852]">
+                Hidden sets remain excluded from the workspace. Only sets with collected cards are displayed.
               </p>
-            )}
-          </div>
+            </div>
+          </aside>
+
+          {/* CENTER INVENTORY */}
+          <main className="min-w-0 border border-[#34362f] bg-[#101212] shadow-[0_18px_55px_rgba(0,0,0,.5)]">
+            <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4 sm:px-5">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <div className="text-[7px] font-bold uppercase tracking-[.3em] text-[#555852]">ACTIVE CHANNEL</div>
+                  <h2 className="mt-1 text-2xl font-black uppercase tracking-[.05em] text-[#e8e8e1] sm:text-3xl">
+                    {activeCategoryLabel}
+                  </h2>
+                </div>
+                <div className="text-right">
+                  <div className="text-[7px] uppercase tracking-[.22em] text-[#555852]">VISIBLE SETS</div>
+                  <div className="mt-1 text-2xl font-black text-[#e4bd43]">
+                    {filteredCollections.length.toString().padStart(2, "0")}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 sm:p-5">
+              {filteredCollections.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {filteredCollections.map((col, index) => (
+                    <button
+                      key={col.id}
+                      onClick={() => navigate(`/inventory/${slugMap[col.id]}`)}
+                      className="group relative overflow-hidden border border-[#30322e] bg-[#171919] text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[#b89534] hover:bg-[#1b1d1d] hover:shadow-[0_18px_35px_rgba(0,0,0,.5)]"
+                    >
+                      <div className="absolute left-0 top-0 h-px w-1/3 bg-[#dcb541] opacity-60" />
+                      <div className="absolute bottom-0 right-0 h-px w-1/4 bg-[#dcb541] opacity-30" />
+                      <div className="grid min-h-[205px] grid-cols-[1fr_112px] gap-3 p-4">
+                        <div className="flex min-w-0 flex-col justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[7px] font-bold uppercase tracking-[.25em] text-[#5a5d57]">
+                                VOL. {String(index + 1).padStart(2, "0")}
+                              </span>
+                              <span className="h-px flex-1 bg-[#292c28]" />
+                            </div>
+
+                            <h3 className="mt-5 text-xl font-black uppercase leading-tight tracking-[.02em] text-[#ecece5]">
+                              {col.title}
+                            </h3>
+                            <div className="mt-1 text-sm font-bold uppercase tracking-[.1em] text-[#b49438]">
+                              {col.setName}
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="mb-2 flex items-center gap-2">
+                              <span className="h-px w-7 bg-[#a9862f]" />
+                              <span className="text-[7px] font-bold uppercase tracking-[.2em] text-[#8e732a]">
+                                COLLECTION NODE
+                              </span>
+                            </div>
+                            <div className="flex items-end justify-between gap-3">
+                              <div>
+                                <div className="text-[7px] uppercase tracking-[.18em] text-[#50534d]">CARD CAPACITY</div>
+                                <div className="mt-1 text-lg font-black text-[#d7d8d1]">{col.totalCards}</div>
+                              </div>
+                              <span className="text-[8px] font-bold uppercase tracking-[.18em] text-[#b39337] transition-transform group-hover:translate-x-1">
+                                OPEN →
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="relative flex items-center justify-center">
+                          <div className="absolute inset-2 border border-[#4a4024] bg-[#0c0e0e]" />
+                          <div className="absolute right-0 top-2 border border-[#5b4a20] bg-[#e1b936] px-1.5 py-1 text-[7px] font-black text-[#151515]">
+                            {String(index + 1).padStart(2, "0")}
+                          </div>
+                          <img
+                            src={col.imageUrl}
+                            alt={col.title}
+                            className="relative h-[104px] w-[82px] rounded-sm border border-[#66562a] object-cover shadow-[0_12px_24px_rgba(0,0,0,.6)]"
+                          />
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-[330px] items-center justify-center border border-dashed border-[#30322e] bg-[#0d0f0f]">
+                  <div className="text-center">
+                    <div className="mx-auto mb-4 h-2 w-2 bg-[#555850]" />
+                    <div className="text-[9px] font-bold uppercase tracking-[.22em] text-[#666961]">No active collection nodes</div>
+                    <div className="mt-2 text-[7px] uppercase tracking-[.14em] text-[#484b46]">Select another category.</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </main>
+
+          {/* RIGHT STATUS / TRADES */}
+          <aside className="space-y-4">
+            <div className="border border-[#34362f] bg-[#111313] shadow-[0_18px_55px_rgba(0,0,0,.5)]">
+              <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-[8px] font-bold uppercase tracking-[.28em] text-[#5e615a]">INVENTORY STATUS</div>
+                  <span className="flex items-center gap-1.5 text-[7px] uppercase tracking-[.18em] text-[#b19236]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#e3bd43] shadow-[0_0_8px_#e3bd43]" />
+                    VERIFIED
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-px bg-[#2a2c28]">
+                <div className="bg-[#111313] p-4">
+                  <div className="text-[7px] uppercase tracking-[.2em] text-[#535650]">OWNED SETS</div>
+                  <div className="mt-2 text-3xl font-black text-[#e5bd43]">{knownOwnedSetCount.toString().padStart(2, "0")}</div>
+                </div>
+                <div className="bg-[#111313] p-4">
+                  <div className="text-[7px] uppercase tracking-[.2em] text-[#535650]">TRADE SETS</div>
+                  <div className="mt-2 text-3xl font-black text-[#e6e6df]">{tradeSets.length.toString().padStart(2, "0")}</div>
+                </div>
+              </div>
+
+              <div className="p-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="h-px w-6 bg-[#a27f27]" />
+                  <span className="text-[7px] font-bold uppercase tracking-[.25em] text-[#8b7029]">ACTIVE FILTER</span>
+                </div>
+                <div className="text-sm font-black uppercase tracking-[.08em] text-[#dfe0d9]">{activeCategoryLabel}</div>
+                <p className="mt-2 text-[7px] uppercase leading-relaxed tracking-[.12em] text-[#555852]">
+                  Inventory view is limited to visible sets containing collected cards.
+                </p>
+              </div>
+            </div>
+
+            <div className="border border-[#34362f] bg-[#111313] shadow-[0_18px_55px_rgba(0,0,0,.5)]">
+              <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4">
+                <div className="text-[8px] font-bold uppercase tracking-[.28em] text-[#5e615a]">TRADE NETWORK</div>
+                <div className="mt-1 text-lg font-black uppercase tracking-[.05em] text-[#e4e5de]">My Trades</div>
+              </div>
+
+              <div className="p-3">
+                {tradeSets.length > 0 ? (
+                  <div className="space-y-2">
+                    {collections
+                      .filter((col) => normalizedTradeSets.has(normalizeSetId(col.id)))
+                      .map((col) => (
+                        <button
+                          key={col.id}
+                          onClick={() => navigate(`/my-trades/view/${col.id}`)}
+                          className="group flex w-full items-center gap-3 border border-[#2b2e29] bg-[#171919] p-2.5 text-left transition-all hover:border-[#b49335] hover:bg-[#1c1e1d]"
+                        >
+                          <img
+                            src={col.imageUrl}
+                            alt={col.title}
+                            className="h-10 w-10 shrink-0 rounded-md border border-[#504423] object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-[9px] font-bold uppercase tracking-[.08em] text-[#dfe0d9]">
+                              {col.setName
+                                ? ["friendshipsbegin", "FW", "9"].includes(col.id)
+                                  ? `${col.title} ${col.setName}`
+                                  : `${col.title} (${col.setName})`
+                                : col.title}
+                            </div>
+                            <div className="mt-1 text-[7px] uppercase tracking-[.16em] text-[#a1842e]">
+                              OPEN TRADES →
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="border border-dashed border-[#2d302c] px-3 py-7 text-center">
+                    <div className="mx-auto mb-3 h-1.5 w-1.5 bg-[#555850]" />
+                    <div className="text-[8px] font-bold uppercase tracking-[.2em] text-[#666961]">
+                      Trades/Sales channel idle
+                    </div>
+                    <div className="mt-1 text-[7px] uppercase tracking-[.12em] text-[#474a45]">
+                      No active trade/sale sets
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border border-[#34362f] bg-[#0e1010] p-4">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 bg-[#e0b940] shadow-[0_0_8px_#e0b940]" />
+                <span className="text-[7px] font-bold uppercase tracking-[.25em] text-[#8d732b]">SYSTEM ONLINE</span>
+              </div>
+              <div className="mt-3 text-[7px] uppercase leading-relaxed tracking-[.13em] text-[#4f524d]">
+                MLPEKAYOU // PERSONAL COLLECTION DATABASE
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <span className="h-px w-16 bg-gradient-to-r from-transparent to-[#393b34]" />
+          <span className="text-[7px] font-bold uppercase tracking-[.35em] text-[#41443e]">MLPEKAYOU // INVENTORY</span>
+          <span className="h-px w-16 bg-gradient-to-l from-transparent to-[#393b34]" />
         </div>
       </div>
     </div>
-  </>
-);
+  );
 }

@@ -214,465 +214,598 @@ useEffect(() => {
 }, [flipped, loaded, lastSavedProgress]);
 
   return (
-    <div className="min-h-screen bg-[#e3e3e3]">
-      <div className="mx-auto max-w-[1800px] px-6 py-8">
-
-        <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-8">
-
-          {/* LEFT SIDEBAR */}
-          <aside
-  className="sidebar-scroll xl:sticky xl:top-[84px] self-start max-h-[calc(100vh-100px)] overflow-y-auto pr-2"
->
-
-            <div className="bg-zinc-800 border border-zinc-600 rounded-xl shadow-lg overflow-hidden text-zinc-100">
-
-             {/* Set Header */}
-<div className="p-6 border-b border-zinc-700">
-
-  <button
-    onClick={() => navigate("/collections")}
-    className="mt-1 mb-4 flex items-center gap-2 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
-  >
-    ← Back to Collections
-  </button>
-
-                <h1 className="mt-2 text-4xl font-black uppercase leading-none">
-                  Friendships Begin
-                </h1>
-
-                <p className="mt-2 text-lg text-zinc-400">
-  Character Decks + Bonus Packs
-</p>
-
-<p className="mt-4 text-xs leading-relaxed text-gray-400">
-  Click on a card to flip it over. This means you own that card.
-  Your ISO list will automatically update to reflect the cards you
-  still need.
-</p>
-
-              </div>
-
-              {/* Rarities */}
-              <div className="p-6">
-
-                <div className="flex justify-between mb-4 text-zinc-400 text-sm font-semibold uppercase">
-                  <span>9 Rarity Tiers</span>
-                  <span>194 Cards</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-
-  {Object.keys(set.rarities).map((rarity) => (
-    <button
-      key={rarity}
-      onClick={() => {
-  if (window.innerWidth < 768) {
-    setSelectedRarity(rarity);
-
-    requestAnimationFrame(() => {
-      document
-        .getElementById(`rarity-${rarity}`)
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-    });
-  } else {
-    document
-      .getElementById(`rarity-${rarity}`)
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-  }
-}}
-      className={`rounded-lg border p-2 text-sm font-bold transition-all
-
-      ${
-  isRarityComplete(rarity)
-    ? "text-[#4a3200] border-[#d4af37] bg-gradient-to-br from-[#fff7c2] via-[#f6d365] to-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.45)]"
-    : "bg-white hover:bg-gray-100 border-gray-300 text-gray-700"
-    }`}
-    >
-      {rarity === "PER"
-  ? "※ER"
-  : rarity === "PSPR"
-  ? "※SPR"
-  : rarity === "PGR"
-  ? "※GR"
-  : rarity === "PCR"
-  ? "※CR"
-  : rarity === "PRR"
-  ? "※RR"
-  : rarity}
-    </button>
-  ))}
-
-</div>
-
-              </div>
-
-              {/* View Mode */}
-<div className="border-t border-zinc-700 p-6">
-  <button
-    onClick={() => setViewMode(!viewMode)}
-className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
-  viewMode
-    ? "bg-yellow-500 text-white hover:bg-yellow-600"
-    : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
-}`}
-  >
-    {viewMode ? "View Mode: ON" : "View Mode: OFF"}
-  </button>
-
-  <p className="mt-2 text-xs text-zinc-400">
-    {viewMode
-      ? "Click a card to view the front and back without marking it as owned."
-      : "Click cards to mark them as owned."}
-  </p>
-</div>
-
-<div className="hidden md:block border-t border-zinc-700 p-6">
-  <button
-    onClick={() => setHoverEffects(!hoverEffects)}
-    className={`w-full rounded-lg py-3 text-sm font-bold transition-colors ${
-      hoverEffects
-        ? "bg-yellow-500 text-white hover:bg-yellow-600"
-        : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
-    }`}
-  >
-    {hoverEffects ? "Hover Effects: ON" : "Hover Effects: OFF"}
-  </button>
-
-  <p className="mt-2 text-xs text-zinc-400">
-    Enable or disable the hover animation on collection cards.
-  </p>
-</div>
-
-              {/* Product Info */}
-              <div className="border-t border-zinc-700 p-6">
-
-                <h2 className="text-lg font-bold uppercase mb-5">
-                  Product Information
-                </h2>
-
-                <div className="space-y-5">
-
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-zinc-400">
-                      Product Name
-                    </p>
-
-                    <p className="font-semibold">
-                      Friendships Begin
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-zinc-400">
-                      Release Date
-                    </p>
-
-                    <p className="font-semibold">
-                      March 2026
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-zinc-400">
-                      Pull Rates
-                    </p>
-
-                    <p className="font-semibold">
-                      —
-                    </p>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </aside>
-
-          {/* RIGHT SIDE */}
-          <main
-  className="card-scroll space-y-20 overflow-y-auto pr-3
-             xl:h-[calc(100vh-100px)]"
-             
->
-    {/* CHARACTER DECKS */}
-
-<div className="mb-12">
-
-  <h2 className="text-center text-2xl font-black uppercase tracking-wide mb-6">
-    Character Starter Decks
-  </h2>
-
-  <div className="flex flex-wrap justify-center gap-5">
-
-    {starterDeckGroups.map((deck, i) => (
-
-      <button
-        key={deck.code}
-        onClick={() => setActiveDeck(activeDeck === i ? null : i)}
-        className={`transition-all duration-200 rounded-2xl p-2
-
-          ${
-            activeDeck === i
-              ? "bg-yellow-100 ring-2 ring-yellow-400 scale-105"
-              : "hover:scale-105"
-          }
-        `}
-      >
-
-        <img
-          src={starterDeckImages[i]}
-          className="w-24 h-24 object-contain"
-        />
-
-        <p className="mt-2 text-xs font-semibold">
-          {deck.name}
-        </p>
-        
-
-      </button>
-
-    ))}
-    
-
-  </div>
-  
-
-</div>
-
-{/* OPEN DECK (UNDER THE ROW) */}
-{activeDeck !== null && (
-  <div className="mb-10 rounded-3xl border border-[#d4af37]/40 bg-gradient-to-br from-white/80 to-[#f6f0ff]/70 backdrop-blur-sm shadow-lg p-4 sm:p-6">
-
-    {/* TITLE */}
-    <div className="text-center mb-5">
-
-      <h2 className="text-lg sm:text-xl font-bold text-[#5a3e84]">
-        {starterDeckGroups[activeDeck].name} Starter Deck
-      </h2>
-
-    </div>
-
-    {/* COMPLETE BUTTON */}
-    <div className="flex justify-center mb-6">
-      <button
-        onClick={() => {
-          const updated = { ...flipped };
-          const deck = starterDeckGroups[activeDeck];
-
-          const cards = getDeckCards(deck.code);
-
-          const isComplete = cards.every(
-            (key) => flipped[`STARTER-${key}`]
-          );
-
-          const shouldComplete = !isComplete;
-
-          cards.forEach((key) => {
-            updated[`STARTER-${key}`] = shouldComplete;
-          });
-
-          setFlipped(updated);
+    <div className="relative min-h-screen overflow-hidden bg-[#050707] pb-28 text-white sm:pb-0">
+      <div
+        className="pointer-events-none fixed inset-0 opacity-[0.34]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,212,74,.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,212,74,.032) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
         }}
-        className="text-xs sm:text-sm px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#f5e6a8] border border-[#d4af37]/50 shadow-md hover:brightness-110 transition"
-      >
-        MARK FULL DECK COMPLETE
-      </button>
-    </div>
+      />
+      <div className="pointer-events-none fixed inset-0 opacity-[0.055] bg-[repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,.08)_4px)]" />
+      <div className="pointer-events-none fixed left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-[#FFD54A] to-transparent" />
 
-    {/* CARD GRID */}
-    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-      {getDeckCards(starterDeckGroups[activeDeck].code).map((key) => {
-        const stateKey = `STARTER-${key}`;
+      <div className="relative mx-auto max-w-[1800px] px-3 py-3 sm:px-6 sm:py-6">
+        <header className="mb-4 border border-white/[0.08] bg-[#080b0b] shadow-[0_18px_55px_rgba(0,0,0,.5)]">
+          <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#050707] px-3 py-2">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]" />
+              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-emerald-400/80">
+                COLLECTION NETWORK // ONLINE
+              </span>
+            </div>
+            <span className="font-mono text-[6px] uppercase tracking-[0.24em] text-zinc-700">
+              TCG / FRIENDSHIPS BEGIN / NODE SD
+            </span>
+          </div>
 
-        return (
-          <div
-            key={key}
-            className="group aspect-[5/7] cursor-pointer perspective relative"
-            onClick={() => toggleFlip(viewMode ? key : stateKey)}
-          >
-            <div
-className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
-  ${
-    hoverEffects
-      ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
-      : ""
-  }
-  ${flipped[stateKey] && !viewMode ? "rotate-y-180" : ""}`}
+          <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-5">
+            <button
+              onClick={() => navigate("/collections")}
+              className="group flex items-center gap-3 border border-[#FFD54A]/20 bg-[#0a0d0d] px-3 py-2 transition hover:border-[#FFD54A]/60 hover:bg-[#101414]"
             >
+              <span className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/20 bg-[#060909] text-[#FFD54A]">
+                ←
+              </span>
+              <span className="text-left">
+                <span className="block font-mono text-[5px] uppercase tracking-[0.26em] text-zinc-600">
+                  COLLECTIONS
+                </span>
+                <span className="mt-1 block font-['Oxanium'] text-[9px] font-black uppercase tracking-[0.12em] text-zinc-200">
+                  Back to Collections
+                </span>
+              </span>
+            </button>
 
-              {/* FRONT */}
-              <img
-                src={`/friendships-begin/${key}.webp`}
-                className="absolute w-full h-full object-cover rounded-xl backface-hidden shadow-md"
-              />
-
-              {/* BACK */}
-              <img
-                src={
-                  key.includes("C06") ||
-                  key.includes("C07") ||
-                  key.includes("C08") ||
-                  key.includes("C09")
-                    ? `/tcg-card-backs/${key}BACK.webp`
-                    : key.startsWith("SD01RR")
-                    ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.webp`
-                    : key.includes("ER") && !key.includes("PER")
-                    ? `/tcg-card-backs/SCENECARDBACK.webp`
-                    : "/card-backs/tcgdefaultback.webp"
-                }
-                className="absolute w-full h-full object-cover rounded-xl rotate-y-180 backface-hidden shadow-md"
-              />
-
+            <div className="hidden items-center gap-3 sm:flex">
+              <div className="text-right">
+                <div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">
+                  SYSTEM
+                </div>
+                <div className="mt-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em] text-emerald-400">
+                  SYNC ACTIVE
+                </div>
+              </div>
+              <span className="h-2 w-2 bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]" />
             </div>
           </div>
-        );
-      })}
-    </div>
+        </header>
 
-  </div>
-)}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[330px_minmax(0,1fr)]">
+          <aside className="xl:sticky xl:top-4 xl:self-start">
+            <div className="overflow-hidden border border-white/[0.09] bg-[#080b0b] shadow-[0_20px_55px_rgba(0,0,0,.5)]">
+              <div className="border-b border-white/[0.07] bg-[#050707] px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[5px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+                    CONTROL DECK
+                  </span>
+                  <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/60">
+                    SD / 194
+                  </span>
+                </div>
+              </div>
 
+              <div className="relative border-b border-white/[0.07] p-4 sm:p-5">
+                <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r border-t border-[#FFD54A]/30" />
+                <div className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-zinc-600">
+                  SERIES IDENTIFICATION
+                </div>
+                <h1 className="mt-3 font-['Oxanium'] text-3xl font-black uppercase leading-[0.92] tracking-tight text-white sm:text-4xl">
+                  Friendships
+                  <span className="block text-[#FFD54A]">Begin</span>
+                </h1>
+                <div className="mt-4 h-px bg-gradient-to-r from-[#FFD54A]/50 to-transparent" />
+                <p className="mt-4 font-mono text-[7px] uppercase leading-5 tracking-[0.08em] text-zinc-500">
+                  Character starter decks plus bonus pack assets. Click a card
+                  to mark it as owned. Your ISO list updates automatically.
+                </p>
+              </div>
 
-            {/* Section */}
-            {Object.entries(set.rarities)
-  .filter(([rarity]) =>
-    window.innerWidth >= 768 || rarity === selectedRarity
-  )
-  .map(([rarity, count], index) => (
-  <section
-  key={rarity}
-  id={`rarity-${rarity}`}
->
+              <div className="grid grid-cols-2 gap-px border-b border-white/[0.07] bg-white/[0.06]">
+                <div className="bg-[#070a0a] p-4">
+                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">ASSETS</div>
+                  <div className="mt-1 font-['Oxanium'] text-2xl font-black text-[#FFD54A]">194</div>
+                </div>
+                <div className="bg-[#070a0a] p-4">
+                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">TIERS</div>
+                  <div className="mt-1 font-['Oxanium'] text-2xl font-black text-white">09</div>
+                </div>
+                <div className="bg-[#070a0a] p-4">
+                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">COLLECTED</div>
+                  <div className="mt-1 font-['Oxanium'] text-2xl font-black text-emerald-400">
+                    {Object.values(flipped).filter(Boolean).length}
+                  </div>
+                </div>
+                <div className="bg-[#070a0a] p-4">
+                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">REMAINING</div>
+                  <div className="mt-1 font-['Oxanium'] text-2xl font-black text-zinc-300">
+                    {Math.max(0, 194 - Object.values(flipped).filter(Boolean).length)}
+                  </div>
+                </div>
+              </div>
 
-    <div className="flex items-end justify-between mb-5">
+              <div className="border-b border-white/[0.07] p-4 sm:p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                    RARITY SELECTOR
+                  </span>
+                  <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD54A]/50">
+                    09 NODES
+                  </span>
+                </div>
 
-      <div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {Object.keys(set.rarities).map((rarity) => (
+                    <button
+                      key={rarity}
+                      onClick={() => {
+                        if (window.innerWidth < 768) {
+                          setSelectedRarity(rarity);
+                          requestAnimationFrame(() => {
+                            document.getElementById(`rarity-${rarity}`)?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                          });
+                        } else {
+                          document.getElementById(`rarity-${rarity}`)?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
+                        }
+                      }}
+                      className={`border px-2 py-2 text-left font-mono text-[7px] font-bold uppercase tracking-[0.1em] transition ${
+                        isRarityComplete(rarity)
+                          ? "border-[#FFD54A]/60 bg-[#FFD54A]/10 text-[#FFD54A]"
+                          : selectedRarity === rarity
+                          ? "border-[#FFD54A]/35 bg-white/[0.05] text-white"
+                          : "border-white/[0.07] bg-[#060909] text-zinc-500 hover:border-white/[0.16] hover:text-zinc-200"
+                      }`}
+                    >
+                      <span className="mr-2 text-[#FFD54A]/60">
+                        {String(Object.keys(set.rarities).indexOf(rarity) + 1).padStart(2, "0")}
+                      </span>
+                      {rarity === "PER"
+                        ? "※ER"
+                        : rarity === "PSPR"
+                        ? "※SPR"
+                        : rarity === "PGR"
+                        ? "※GR"
+                        : rarity === "PCR"
+                        ? "※CR"
+                        : rarity === "PRR"
+                        ? "※RR"
+                        : rarity}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        <h2 className="text-5xl font-black leading-none">
-{rarity === "PER"
-  ? "※ER"
-  : rarity === "PSPR"
-  ? "※SPR"
-  : rarity === "PGR"
-  ? "※GR"
-  : rarity === "PCR"
-  ? "※CR"
-  : rarity === "PRR"
-  ? "※RR"
-  : rarity}
-  <span className="ml-3 text-3xl font-light text-zinc-400">
-    {rarityNames[rarity]}
-  </span>
-</h2>
+              <div className="border-b border-white/[0.07] p-4 sm:p-5">
+                <div className="mb-3 font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                  DISPLAY SYSTEMS
+                </div>
 
-<p className="uppercase tracking-widest text-gray-400 mt-2">
-  {count} Cards
-</p>
+                <button
+                  onClick={() => setViewMode(!viewMode)}
+                  className={`mb-2 w-full border px-3 py-3 text-left font-mono text-[7px] font-bold uppercase tracking-[0.12em] transition ${
+                    viewMode
+                      ? "border-[#FFD54A]/60 bg-[#FFD54A]/10 text-[#FFD54A]"
+                      : "border-white/[0.08] bg-[#070a0a] text-zinc-400 hover:border-white/[0.18]"
+                  }`}
+                >
+                  <span className="flex items-center justify-between">
+                    <span>VIEW MODE</span>
+                    <span>{viewMode ? "ONLINE" : "OFFLINE"}</span>
+                  </span>
+                </button>
 
-      </div>
+                <button
+                  onClick={() => setHoverEffects(!hoverEffects)}
+                  className={`hidden w-full border px-3 py-3 text-left font-mono text-[7px] font-bold uppercase tracking-[0.12em] transition md:block ${
+                    hoverEffects
+                      ? "border-emerald-400/35 bg-emerald-400/[0.05] text-emerald-400"
+                      : "border-white/[0.08] bg-[#070a0a] text-zinc-500 hover:border-white/[0.18]"
+                  }`}
+                >
+                  <span className="flex items-center justify-between">
+                    <span>HOVER EFFECTS</span>
+                    <span>{hoverEffects ? "ONLINE" : "OFFLINE"}</span>
+                  </span>
+                </button>
 
-      <div className="text-6xl font-black text-yellow-500">
-        {String(index + 1).padStart(2, "0")}
-      </div>
+                <p className="mt-3 font-mono text-[6px] uppercase leading-4 tracking-[0.06em] text-zinc-700">
+                  {viewMode
+                    ? "Click a card to inspect the front and back without changing ownership."
+                    : "Click cards to mark them as owned."}
+                </p>
+              </div>
 
-    </div>
+              <div className="p-4 sm:p-5">
+                <div className="mb-4 font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                  PRODUCT DATA
+                </div>
 
-    <div className="h-px bg-yellow-400 mb-8" />
+                <div className="space-y-3">
+                  <div className="border-l border-[#FFD54A]/25 pl-3">
+                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                      PRODUCT NAME
+                    </div>
+                    <div className="mt-1 text-xs font-bold uppercase text-zinc-200">
+                      Friendships Begin
+                    </div>
+                  </div>
 
-    <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
+                  <div className="border-l border-white/[0.08] pl-3">
+                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                      RELEASE DATE
+                    </div>
+                    <div className="mt-1 text-xs font-bold uppercase text-zinc-400">
+                      March 2026
+                    </div>
+                  </div>
 
-      {cards
-        .filter(card => card.rarity === rarity)
-        .map((card) => {
-const key = card.key;
-const stateKey = `BONUS-${key}`;
-const owned = flipped[stateKey];
+                  <div className="border-l border-white/[0.08] pl-3">
+                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                      PULL RATES
+                    </div>
+                    <button
+                      onClick={() => navigate("/faq")}
+                      className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[#FFD54A] transition hover:text-white"
+                    >
+                      SEE FAQ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
 
-  return (
-    <div
-  key={key}
-  className="group aspect-[5/7] cursor-pointer perspective relative"
-  onClick={() => toggleFlip(viewMode ? key : stateKey)}
->
-      <div
-className={`relative w-full h-full transform-style-preserve-3d transition-all duration-200
-  ${
-    hoverEffects
-      ? "md:hover:-translate-y-2 md:hover:scale-[1.04] md:hover:rotate-1 md:hover:shadow-2xl md:hover:z-20"
-      : ""
-  }
-  ${flipped[stateKey] && !viewMode ? "rotate-y-180" : ""}`}
-      >
-        {/* FRONT */}
-        <img
-          src={getCardFront(key)}
-          className="absolute w-full h-full object-cover rounded-lg backface-hidden"
-        />
+          <main className="min-w-0">
+            <div className="mb-4 flex items-center justify-between border border-white/[0.08] bg-[#080b0b] px-4 py-3">
+              <div>
+                <div className="font-mono text-[5px] font-bold uppercase tracking-[0.3em] text-zinc-700">
+                  ASSET MATRIX
+                </div>
+                <div className="mt-1 font-['Oxanium'] text-sm font-black uppercase tracking-[0.08em] text-white">
+                  Friendships Begin / Series One
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_9px_rgba(52,211,153,.8)]" />
+                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-emerald-400/70">
+                  LIVE
+                </span>
+              </div>
+            </div>
 
-        {/* BACK */}
-        <img
-          src={getCardBack(key)}
-          className="absolute w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-        />
-      </div>
-    </div>
-  );
-})}
+            {/* CHARACTER DECKS */}
+            <section className="mb-6 relative overflow-hidden border border-white/[0.08] bg-[#080b0b] p-3 shadow-[0_18px_45px_rgba(0,0,0,.42)] sm:p-4">
+              <div className="pointer-events-none absolute left-0 top-0 h-8 w-8 border-l border-t border-[#FFD54A]/45" />
+              <div className="pointer-events-none absolute right-0 top-0 h-8 w-8 border-r border-t border-[#FFD54A]/20" />
 
-    </div>
+              <div className="mb-4 flex items-end justify-between border-b border-white/[0.07] pb-3">
+                <div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-700">
+                      DECK ARRAY
+                    </span>
+                    <span className="h-px w-8 bg-[#FFD54A]/25" />
+                    <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD54A]/60">
+                      06 NODES
+                    </span>
+                  </div>
+                  <h2 className="font-['Oxanium'] text-2xl font-black uppercase leading-none text-white sm:text-3xl">
+                    Character
+                    <span className="ml-2 text-zinc-500">Starter Decks</span>
+                  </h2>
+                </div>
+                <div className="font-['Oxanium'] text-3xl font-black text-[#FFD54A]/25 sm:text-5xl">
+                  SD
+                </div>
+              </div>
 
-  </section>
-))}
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {starterDeckGroups.map((deck, i) => (
+                  <button
+                    key={deck.code}
+                    type="button"
+                    onClick={() => setActiveDeck(activeDeck === i ? null : i)}
+                    className={`group relative overflow-hidden rounded-md border bg-[#050707] p-2 text-center transition-all duration-200 ${
+                      activeDeck === i
+                        ? "border-[#FFD54A]/70 bg-[#FFD54A]/[0.06] shadow-[0_0_22px_rgba(255,212,74,.1)]"
+                        : "border-white/[0.08] hover:-translate-y-1 hover:border-[#FFD54A]/40"
+                    }`}
+                  >
+                    <div className="relative aspect-square overflow-hidden rounded-md bg-[#080b0b]">
+                      <img
+                        src={starterDeckImages[i]}
+                        className="h-full w-full object-contain rounded-md"
+                        alt={deck.name}
+                      />
+                      <div className="pointer-events-none absolute inset-0 border border-white/[0.05]" />
+                    </div>
+                    <div className="mt-2 font-['Oxanium'] text-[8px] font-black uppercase leading-tight text-zinc-200">
+                      {deck.name}
+                    </div>
+                    <div className="mt-1 font-mono text-[5px] uppercase tracking-[0.16em] text-[#FFD54A]/55">
+                      {deck.code}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
 
-            {/* Duplicate sections here */}
+            {activeDeck !== null && (
+              <section className="mb-6 relative overflow-hidden border border-[#FFD54A]/20 bg-[#080b0b] p-3 shadow-[0_18px_45px_rgba(0,0,0,.42)] sm:p-4">
+                <div className="mb-4 flex items-center justify-between border-b border-white/[0.07] pb-3">
+                  <div>
+                    <div className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-700">
+                      ACTIVE DECK NODE
+                    </div>
+                    <h2 className="mt-1 font-['Oxanium'] text-xl font-black uppercase text-[#FFD54A]">
+                      {starterDeckGroups[activeDeck].name}
+                    </h2>
+                  </div>
 
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...flipped };
+                      const deck = starterDeckGroups[activeDeck];
+                      const deckCards = getDeckCards(deck.code);
+                      const isComplete = deckCards.every(
+                        (key) => flipped[`STARTER-${key}`]
+                      );
+                      const shouldComplete = !isComplete;
+
+                      deckCards.forEach((key) => {
+                        updated[`STARTER-${key}`] = shouldComplete;
+                      });
+
+                      setFlipped(updated);
+                    }}
+                    className="border border-[#FFD54A]/30 bg-[#FFD54A]/[0.08] px-3 py-2 font-mono text-[6px] font-bold uppercase tracking-[0.14em] text-[#FFD54A] transition hover:border-[#FFD54A]/60 hover:bg-[#FFD54A]/[0.14]"
+                  >
+                    MARK FULL DECK COMPLETE
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                  {getDeckCards(starterDeckGroups[activeDeck].code).map((key) => {
+                    const stateKey = `STARTER-${key}`;
+
+                    return (
+                      <div
+                        key={key}
+                        className="group relative aspect-[5/7] cursor-pointer overflow-hidden rounded-md border border-white/[0.08] bg-[#050707] transition-all duration-200 hover:border-[#FFD54A]/40"
+                        onClick={() => toggleFlip(viewMode ? key : stateKey)}
+                      >
+                        <div
+                          className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-300 ${
+                            hoverEffects
+                              ? "md:group-hover:-translate-y-1 md:group-hover:rotate-1 md:group-hover:shadow-2xl"
+                              : ""
+                          } ${flipped[stateKey] && !viewMode ? "rotate-y-180" : ""}`}
+                        >
+                          <img
+                            src={`/friendships-begin/${key}.webp`}
+                            className="absolute inset-0 h-full w-full rounded-md object-cover backface-hidden"
+                            alt=""
+                          />
+                          <img
+                            src={
+                              key.includes("C06") ||
+                              key.includes("C07") ||
+                              key.includes("C08") ||
+                              key.includes("C09")
+                                ? `/tcg-card-backs/${key}BACK.webp`
+                                : key.startsWith("SD01RR")
+                                ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.webp`
+                                : key.includes("ER") && !key.includes("PER")
+                                ? `/tcg-card-backs/SCENECARDBACK.webp`
+                                : "/card-backs/tcgdefaultback.webp"
+                            }
+                            className="absolute inset-0 h-full w-full rounded-md object-cover rotate-y-180 backface-hidden"
+                            alt=""
+                          />
+                        </div>
+
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2 pb-2 pt-7">
+                          <span className="font-mono text-[5px] font-bold uppercase tracking-[0.12em] text-white/70">
+                            {key}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            <div className="space-y-6">
+              {Object.entries(set.rarities)
+                .filter(([rarity]) => window.innerWidth >= 768 || rarity === selectedRarity)
+                .map(([rarity, count], index) => (
+                  <section
+                    key={rarity}
+                    id={`rarity-${rarity}`}
+                    className="relative overflow-hidden border border-white/[0.08] bg-[#080b0b] p-3 shadow-[0_18px_45px_rgba(0,0,0,.42)] sm:p-4"
+                  >
+                    <div className="pointer-events-none absolute left-0 top-0 h-8 w-8 border-l border-t border-[#FFD54A]/45" />
+                    <div className="pointer-events-none absolute right-0 top-0 h-8 w-8 border-r border-t border-[#FFD54A]/20" />
+
+                    <div className="mb-4 flex items-end justify-between border-b border-white/[0.07] pb-3">
+                      <div>
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-700">
+                            NODE {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="h-px w-8 bg-[#FFD54A]/25" />
+                          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD54A]/60">
+                            ACTIVE
+                          </span>
+                        </div>
+
+                        <h2 className="font-['Oxanium'] text-2xl font-black uppercase leading-none text-white sm:text-3xl">
+                          {rarity === "PER"
+                            ? "※ER"
+                            : rarity === "PSPR"
+                            ? "※SPR"
+                            : rarity === "PGR"
+                            ? "※GR"
+                            : rarity === "PCR"
+                            ? "※CR"
+                            : rarity === "PRR"
+                            ? "※RR"
+                            : rarity}
+                          <span className="ml-2 text-sm font-normal tracking-normal text-zinc-500 sm:text-base">
+                            {rarityNames[rarity]}
+                          </span>
+                        </h2>
+
+                        <p className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-700">
+                          {count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}
+                        </p>
+                      </div>
+
+                      <div className="font-['Oxanium'] text-3xl font-black text-[#FFD54A]/25 sm:text-5xl">
+                        {String(index + 1).padStart(2, "0")}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                      {cards
+                        .filter((card) => card.rarity === rarity)
+                        .map((card) => {
+                          const key = card.key;
+                          const stateKey = `BONUS-${key}`;
+                          const owned = flipped[stateKey];
+
+                          return (
+                            <div
+                              key={key}
+                              className="group relative aspect-[5/7] cursor-pointer overflow-hidden rounded-md border border-white/[0.08] bg-[#050707] shadow-[0_10px_25px_rgba(0,0,0,.42)] transition-all duration-200 md:hover:z-20 md:hover:-translate-y-2 md:hover:border-[#FFD54A]/45 md:hover:shadow-[0_18px_38px_rgba(0,0,0,.58)]"
+                              onClick={() => toggleFlip(viewMode ? key : stateKey)}
+                            >
+                              <div
+                                className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-300 ${
+                                  hoverEffects
+                                    ? "md:group-hover:rotate-1"
+                                    : ""
+                                } ${flipped[stateKey] && !viewMode ? "rotate-y-180" : ""}`}
+                              >
+                                <img
+                                  src={getCardFront(key)}
+                                  className="absolute inset-0 h-full w-full rounded-md object-cover backface-hidden"
+                                  alt=""
+                                />
+                                <img
+                                  src={getCardBack(key)}
+                                  className="absolute inset-0 h-full w-full rounded-md object-cover rotate-y-180 backface-hidden"
+                                  alt=""
+                                />
+                              </div>
+
+                              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2 pb-2 pt-7">
+                                <div className="font-mono text-[5px] font-bold uppercase tracking-[0.12em] text-white/70">
+                                  {key}
+                                </div>
+                                {owned && !viewMode && (
+                                  <div className="mt-1 font-mono text-[5px] font-bold uppercase tracking-[0.14em] text-emerald-300">
+                                    OWNED
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-2">
+                      <span className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
+                        FRIENDSHIPS BEGIN / RARITY NODE
+                      </span>
+                      <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
+                        {count} CARD SLOTS
+                      </span>
+                    </div>
+                  </section>
+                ))}
+            </div>
           </main>
-
         </div>
-
       </div>
 
-{zoomedCard && (
-  <div
-    className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
-    onClick={() => setZoomedCard(null)}
-  >
-    <TiltCard>
-      <div
-        onClick={(e) => {
-          e.stopPropagation();
-          setZoomedCardFlipped(!zoomedCardFlipped);
-        }}
-      >
+      {zoomedCard && (
         <div
-          className={`relative transition-transform duration-500 transform-style-preserve-3d ${
-            zoomedCardFlipped ? "rotate-y-180" : ""
-          }`}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 p-3 backdrop-blur-md sm:p-6"
+          onClick={() => setZoomedCard(null)}
         >
-          <img
-            src={zoomedCard}
-            className="absolute inset-0 max-h-[88vh] max-w-[90vw] md:max-h-[65vh] md:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
-          />
+          <div
+            className="relative flex max-h-[84vh] w-[min(72vw,320px)] flex-col sm:w-[280px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative mb-2 flex h-10 shrink-0 items-center justify-between overflow-hidden border border-[#FFD54A]/25 bg-[#070a0a] px-3 shadow-[0_10px_30px_rgba(0,0,0,.5)]">
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 bg-[#FFD54A] shadow-[0_0_8px_rgba(255,212,74,.9)]" />
+                <div>
+                  <div className="font-mono text-[6px] font-black uppercase tracking-[0.25em] text-[#FFD54A]">
+                    CARD INSPECTION
+                  </div>
+                  <div className="font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
+                    FRONT / BACK SYSTEM
+                  </div>
+                </div>
+              </div>
 
-          <img
-            src={zoomedCardBack || ""}
-            className="max-h-[88vh] max-w-[90vw] md:max-h-[65vh] md:max-w-[50vw] rounded-2xl shadow-2xl backface-hidden"
-            style={{ transform: "rotateY(180deg)" }}
-          />
+              <button
+                onClick={() => setZoomedCard(null)}
+                className="border border-white/[0.08] bg-white/[0.03] px-2 py-1 font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-zinc-500 transition hover:border-[#FFD54A]/35 hover:text-[#FFD54A]"
+              >
+                CLOSE
+              </button>
+            </div>
+
+            <TiltCard>
+              <div
+                className="relative mx-auto w-full overflow-hidden rounded-md border border-[#FFD54A]/30 bg-[#050707] shadow-[0_22px_60px_rgba(0,0,0,.85)]"
+                onClick={() => setZoomedCardFlipped(!zoomedCardFlipped)}
+              >
+                <div className="relative aspect-[5/7] w-full max-h-[66vh] overflow-hidden rounded-md">
+                  <div
+                    className={`absolute inset-0 transform-style-preserve-3d transition-transform duration-500 ${
+                      zoomedCardFlipped ? "rotate-y-180" : ""
+                    }`}
+                  >
+                    <img
+                      src={zoomedCard}
+                      className="absolute inset-0 h-full w-full rounded-md object-cover backface-hidden"
+                      alt=""
+                    />
+                    <img
+                      src={zoomedCardBack || ""}
+                      className="absolute inset-0 h-full w-full rounded-md object-cover backface-hidden"
+                      style={{ transform: "rotateY(180deg)" }}
+                      alt=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </TiltCard>
+
+            <div className="mt-2 flex shrink-0 items-center justify-between border border-white/[0.06] bg-[#070a0a] px-3 py-2">
+              <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                {zoomedCardFlipped ? "REAR ASSET" : "FRONT ASSET"}
+              </span>
+              <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/50">
+                TAP CARD TO FLIP
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
-    </TiltCard>
-  </div>
-)}
-
+      )}
     </div>
   );
 };

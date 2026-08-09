@@ -63,9 +63,10 @@ const [currentUserId, setCurrentUserId] = useState("");
 const [sendingRequest, setSendingRequest] = useState(false);
 const [requestPending, setRequestPending] = useState(false);
 const [notAcceptingRequests, setNotAcceptingRequests] = useState(false);
-const navigate = useNavigate();
 const [alreadyFriends, setAlreadyFriends] = useState(false);
 const [copied, setCopied] = useState(false);
+const [discordUsername, setDiscordUsername] = useState("");
+const navigate = useNavigate();
 
 const { avatar, verification: badge } = getProfileAssets(user);
 
@@ -103,12 +104,14 @@ if (session?.user && session.user.id !== user.id) {
   setRequestPending(!!existingRequest);
 }
     
-      // Load trading profile (Discord username)
-      const { data: tradingProfile } = await supabase
-        .from("trading_profiles")
-        .select("discord_username")
-        .eq("user_id", user.id)
-        .single();
+// Load trading profile (Discord username)
+const { data: tradingProfileData } = await supabase
+  .from("trading_profiles")
+  .select("discord_username")
+  .eq("user_id", user.id)
+  .maybeSingle();
+
+setDiscordUsername(tradingProfileData?.discord_username || "");
 
       
     const { data: profileSettings } = await supabase
@@ -869,552 +872,1087 @@ const filteredWishlistCards = sortByIsoOrder(
       const isJacob =
   user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
 
-  return (
-    <div className="w-full">
-      <div className="flex items-start justify-between mb-8">
-        <div>
+return (
+  <div className="w-full font-['Oxanium'] text-white">
+
+    {/* ============================================================
+        STARK PROFILE HEADER
+    ============================================================ */}
+    <section className="relative overflow-hidden border border-[#383838] bg-[#1A1A1A]">
+
+      {/* Technical background */}
+      <div
+        className="absolute inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,212,59,.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,212,59,.5) 1px, transparent 1px)
+          `,
+          backgroundSize: "70px 70px",
+        }}
+      />
+
+      {/* Right-side collector image */}
+      <div
+        className="absolute right-0 top-0 hidden h-full w-[38%] opacity-[0.10] grayscale lg:block"
+        style={{
+          backgroundImage:
+            "url('/website-assets/exploreequestria.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+
+      {/* Dark technical overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A1A] via-[#1A1A1A]/95 to-[#1A1A1A]/75" />
+
+      {/* Yellow structural rail */}
+      <div className="absolute bottom-0 left-0 top-0 w-1 bg-[#FFD43B]" />
+
+      {/* Corner hardware */}
+      <div className="absolute right-0 top-0 h-20 w-20 border-l border-b border-[#353535]" />
+      <div className="absolute right-0 top-0 h-px w-12 bg-[#FFD43B]" />
+      <div className="absolute right-0 top-0 h-12 w-px bg-[#FFD43B]" />
+
+      <div className="relative p-5 sm:p-7 lg:p-9">
+
+        {/* Top navigation */}
+        <div className="mb-8 flex items-center justify-between">
+
           <button
             onClick={onClose}
-            className="mb-5 rounded-xl bg-yellow-400 px-5 py-2 font-semibold text-slate-900 hover:bg-yellow-300"
+            className="
+              group
+              flex
+              items-center
+              gap-3
+              border
+              border-[#383838]
+              bg-[#151515]
+              px-4
+              py-2.5
+              font-mono
+              text-[8px]
+              font-bold
+              uppercase
+              tracking-[0.25em]
+              text-[#777]
+              transition-all
+              hover:border-[#FFD43B]
+              hover:text-[#FFD43B]
+            "
           >
-            ← Back to Explore
+            <span className="text-base leading-none transition-transform group-hover:-translate-x-1">
+              ←
+            </span>
+            BACK TO EXPLORE
           </button>
 
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 bg-green-400 shadow-[0_0_10px_rgba(74,222,128,.4)]" />
 
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-xl font-semibold text-slate-400">
-              {user?.username}
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-green-400">
+              PROFILE ONLINE
             </span>
+          </div>
+        </div>
 
-            {badge && (
-              <img
-                src={badge.badge}
-                alt={badge.label}
-                title={badge.label}
-                className="w-6 h-6 object-contain"
-              />
-            )}
+        {/* Profile identity */}
+        <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+
+          <div>
+
+            <div className="mb-4 flex items-center gap-3">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.35em] text-[#666]">
+                COLLECTOR PROFILE
+              </span>
+
+              <div className="h-px w-10 bg-[#FFD43B]/60" />
+
+              <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#FFD43B]">
+                PUBLIC ACCESS
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4">
+
+              {/* Avatar */}
+              <div className="relative shrink-0">
+
+                <div className="absolute -inset-1 border border-[#FFD43B]/30" />
+
+                <div className="relative h-20 w-20 overflow-hidden border-2 border-[#FFD43B] bg-[#111] sm:h-24 sm:w-24">
+
+                  <img
+                    src={avatar}
+                    alt={user?.username}
+                    className="h-full w-full object-cover"
+                  />
+
+                </div>
+
+                <div className="absolute -bottom-1 -right-1 h-3 w-3 border-2 border-[#1A1A1A] bg-green-400" />
+              </div>
+
+              <div className="min-w-0">
+
+                <div className="flex flex-wrap items-center gap-2">
+
+                  <h1 className="break-all text-3xl font-black uppercase leading-none tracking-[-0.03em] text-white sm:text-4xl lg:text-5xl">
+                    {user?.username}
+                  </h1>
+
+                  {badge && (
+                    <img
+                      src={badge.badge}
+                      alt={badge.label}
+                      title={badge.label}
+                      className="h-6 w-6 object-contain"
+                    />
+                  )}
+
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#777]">
+                    DISCORD
+                    <span className="ml-2 text-[#FFD43B]">
+                      {discordUsername || "NOT LINKED"}
+                    </span>
+                  </span>
+
+                  <span className="hidden h-3 w-px bg-[#3A3A3A] sm:block" />
+
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#555]">
+                    ID VERIFIED
+                  </span>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Profile actions */}
+            <div className="mt-7 flex flex-wrap gap-2">
+
+              {currentUserId !== user.id && (
+                <button
+                  onClick={() => {
+                    if (alreadyFriends) {
+                      navigate("/inbox");
+                      return;
+                    }
+
+                    if (!requestPending && !notAcceptingRequests) {
+                      sendFriendRequest();
+                    }
+                  }}
+                  disabled={
+                    sendingRequest ||
+                    (requestPending && !alreadyFriends) ||
+                    notAcceptingRequests
+                  }
+                  className={`
+                    border
+                    px-4
+                    py-2.5
+                    font-mono
+                    text-[8px]
+                    font-bold
+                    uppercase
+                    tracking-[0.2em]
+                    transition-all
+                    ${
+                      alreadyFriends
+                        ? "border-[#FFD43B] bg-[#FFD43B] text-[#151515] hover:bg-[#FFE66D]"
+                        : notAcceptingRequests
+                        ? "cursor-not-allowed border-red-500/40 bg-red-500/10 text-red-400"
+                        : requestPending
+                        ? "cursor-not-allowed border-[#444] bg-[#242424] text-[#777]"
+                        : "border-[#FFD43B] bg-[#FFD43B] text-[#151515] hover:bg-[#FFE66D]"
+                    }
+                  `}
+                >
+                  {alreadyFriends
+                    ? "MANAGE FRIENDSHIP"
+                    : notAcceptingRequests
+                    ? "REQUESTS DISABLED"
+                    : requestPending
+                    ? "REQUEST PENDING"
+                    : sendingRequest
+                    ? "SENDING..."
+                    : "ADD FRIEND"}
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  const url = `https://www.mlpekayou.com/${encodeURIComponent(
+                    user?.username ?? ""
+                  )}`;
+
+                  if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(url);
+                  } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = url;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+
+                    try {
+                      document.execCommand("copy");
+                    } finally {
+                      document.body.removeChild(textArea);
+                    }
+                  }
+
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 3000);
+                }}
+                className="
+                  border
+                  border-[#3E3E3E]
+                  bg-[#151515]
+                  px-4
+                  py-2.5
+                  font-mono
+                  text-[8px]
+                  font-bold
+                  uppercase
+                  tracking-[0.2em]
+                  text-[#999]
+                  transition-all
+                  hover:border-[#FFD43B]
+                  hover:text-[#FFD43B]
+                "
+              >
+                {copied ? "LINK COPIED" : "SHARE PROFILE"}
+              </button>
+
+            </div>
           </div>
 
-          <p className="text-slate-500 mt-2 text-lg">
-            Discord: {tradingProfile?.discord_username || "No Discord username"}
-          </p>
+          {/* Profile system identifier */}
+          <div className="hidden text-right lg:block">
 
-<div className="mt-4 flex flex-wrap gap-3">
-  {currentUserId !== user.id && (
-    <button
-      onClick={() => {
-        if (alreadyFriends) {
-          navigate("/inbox");
-          return;
-        }
+            <div className="font-mono text-[8px] uppercase tracking-[0.3em] text-[#555]">
+              PROFILE MODULE
+            </div>
 
-        if (!requestPending && !notAcceptingRequests) {
-          sendFriendRequest();
-        }
-      }}
-      disabled={
-        sendingRequest ||
-        (requestPending && !alreadyFriends) ||
-        notAcceptingRequests
-      }
-      className={`rounded-xl px-5 py-2 font-semibold transition ${
-        alreadyFriends
-          ? "bg-blue-600 hover:bg-blue-700 text-white"
-          : notAcceptingRequests
-          ? "bg-red-600 text-white cursor-not-allowed"
-          : requestPending
-          ? "bg-slate-500 text-white cursor-not-allowed"
-          : "bg-yellow-400 text-slate-900 hover:bg-yellow-300"
-      }`}
-    >
-      {alreadyFriends
-        ? "Manage Friendship"
-        : notAcceptingRequests
-        ? "Not accepting friend requests"
-        : requestPending
-        ? "Friend Request Pending"
-        : sendingRequest
-        ? "Sending..."
-        : "Send Friend Request"}
-    </button>
-  )}
+            <div className="mt-1 font-mono text-xl font-bold tracking-[0.15em] text-[#FFD43B]">
+              04 / 02
+            </div>
 
-  <button
-    onClick={() => {
-      const url = `https://www.mlpekayou.com/${encodeURIComponent(
-  user?.username ?? ""
-)}`;
+            <div className="mt-2 font-mono text-[7px] uppercase tracking-[0.25em] text-[#444]">
+              PUBLIC COLLECTOR NODE
+            </div>
 
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(url);
-      } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = url;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
+          </div>
 
-        try {
-          document.execCommand("copy");
-        } finally {
-          document.body.removeChild(textArea);
-        }
-      }
+        </div>
+      </div>
+    </section>
 
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
-    }}
-    className="rounded-xl border border-[#E7C84B]/30 bg-[#171717] px-5 py-2 font-semibold text-white transition hover:border-[#E7C84B] hover:bg-[#202020]"
-  >
-    {copied ? "Copied!" : "Share Profile"}
-  </button>
-</div>
+    {/* ============================================================
+        STATISTICS
+    ============================================================ */}
+    <section className="mt-4 border border-[#363636] bg-[#1B1B1B]">
+
+      <div className="flex items-center justify-between border-b border-[#303030] bg-[#202020] px-4 py-3">
+
+        <div className="flex items-center gap-3">
+          <div className="h-2 w-2 bg-[#FFD43B]" />
+
+          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-white sm:text-[9px]">
+            COLLECTION TELEMETRY
+          </span>
         </div>
 
-<div className="relative">
-  <img
-    src={avatar}
-    alt={user?.username}
-    className="w-40 h-40 rounded-full border-4 border-white shadow-xl object-cover"
-  />
+        <span className="font-mono text-[7px] uppercase tracking-[0.25em] text-[#555]">
+          LIVE DATA
+        </span>
 
-  {isJacob && (
-    <>
-      {[
-        { left: "24%", delay: "0s" },
-        { left: "50%", delay: ".45s" },
-        { left: "76%", delay: ".9s" },
-      ].map((line, i) => (
-        <div
-          key={i}
-          className="absolute pointer-events-none"
-          style={{
-            left: line.left,
-            top: "-16px",
-            animation: "stinkFloat 2s ease-in-out infinite",
-            animationDelay: line.delay,
-          }}
-        >
-          <svg
-            width="18"
-            height="42"
-            viewBox="0 0 18 42"
-            fill="none"
-          >
-            <path
-              d="M9 42C9 32 2 30 2 22C2 16 14 14 14 7C14 4 12 2 10 0"
-              stroke="#4ade80"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-      ))}
-    </>
-  )}
-</div>
       </div>
 
-<div className="relative overflow-hidden border border-[#2B2B2B] bg-[#080808]">
+      <div className="grid grid-cols-3">
 
-  <div
-    className="absolute inset-0 opacity-[0.05]"
-    style={{
-      backgroundImage: `
-        linear-gradient(rgba(231,200,75,.2) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(231,200,75,.2) 1px, transparent 1px)
-      `,
-      backgroundSize: "26px 26px",
-    }}
-  />
+        {/* Owned */}
+        <div className="border-r border-[#303030] p-4 sm:p-6">
 
-  <div className="relative border-b border-[#232323] px-6 py-3">
+          <div className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666] sm:text-[8px]">
+            CARDS OWNED
+          </div>
 
-    <div className="text-[11px] uppercase tracking-[0.35em] text-[#E7C84B]">
-      Collector Statistics
-    </div>
+          <div className="mt-2 text-2xl font-black leading-none text-white sm:text-4xl">
+            {userStats.owned.toLocaleString()}
+          </div>
 
-  </div>
+          <div className="mt-4 h-1 bg-[#292929]">
+            <div className="h-full w-full bg-[#FFD43B]" />
+          </div>
 
-  <div className="relative grid grid-cols-3">
+          <div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-[#444] sm:text-[7px]">
+            COLLECTION INVENTORY
+          </div>
 
-    <div className="border-r border-[#232323] p-3 sm:p-5 lg:p-8">
+        </div>
 
-  <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#666]">
-    Owned
-  </div>
+        {/* Completed */}
+        <div className="border-r border-[#303030] p-4 sm:p-6">
 
-  <div className="mt-2 sm:mt-3 text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none">
-    {userStats.owned}
-  </div>
+          <div className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666] sm:text-[8px]">
+            SETS COMPLETED
+          </div>
 
-  <div className="mt-3 sm:mt-4 h-[3px] w-full bg-[#1A1A1A]">
-    <div className="h-full w-full bg-[#E7C84B]" />
-  </div>
+          <div className="mt-2 text-2xl font-black leading-none text-white sm:text-4xl">
+            {userStats.completed}
+          </div>
 
-</div>
-<div className="border-r border-[#232323] p-3 sm:p-5 lg:p-8">
+          <div className="mt-4 h-1 bg-[#292929]">
+            <div className="h-full w-3/4 bg-[#FFD43B]" />
+          </div>
 
-  <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#666]">
-    Completed
-  </div>
+          <div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-[#444] sm:text-[7px]">
+            COLLECTION MILESTONES
+          </div>
 
-  <div className="mt-2 sm:mt-3 text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none">
-    {userStats.completed}
-  </div>
+        </div>
 
-  <div className="mt-3 sm:mt-4 h-[3px] w-full bg-[#1A1A1A]">
-    <div className="h-full w-3/4 bg-[#E7C84B]" />
-  </div>
+        {/* Listings */}
+        <div className="p-4 sm:p-6">
 
-</div>
-<div className="p-3 sm:p-5 lg:p-8">
+          <div className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666] sm:text-[8px]">
+            ACTIVE LISTINGS
+          </div>
 
-  <div className="text-[9px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#666]">
-    Listings
-  </div>
+          <div className="mt-2 text-2xl font-black leading-none text-white sm:text-4xl">
+            {userStats.trades}
+          </div>
 
-  <div className="mt-2 sm:mt-3 text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-none">
-    {userStats.trades}
-  </div>
+          <div className="mt-4 h-1 bg-[#292929]">
+            <div className="h-full w-1/2 bg-[#FFD43B]" />
+          </div>
 
-  <div className="mt-3 sm:mt-4 h-[3px] w-full bg-[#1A1A1A]">
-    <div className="h-full w-1/2 bg-[#E7C84B]" />
-  </div>
+          <div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-[#444] sm:text-[7px]">
+            TRADE + SALE INVENTORY
+          </div>
 
-</div>
+        </div>
 
-  </div>
+      </div>
+    </section>
 
-</div>
+    {/* ============================================================
+        COLLECTION DATABASE
+    ============================================================ */}
+    <section className="mt-4 border border-[#363636] bg-[#181818]">
 
-<div className="border border-[#2A2A2A] bg-[radial-gradient(circle_at_top,#151515_0%,#0E0E0E_45%,#080808_100%)] p-8 shadow-[0_0_40px_rgba(0,0,0,.45)]">
+      {/* Database header */}
+      <div className="flex flex-col gap-3 border-b border-[#303030] bg-[#202020] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
 
-<div className="mb-8 border border-[#2A2A2A] bg-[#090909]">
+        <div>
+          <div className="flex items-center gap-3">
 
-  <div className="border-b border-[#1C1C1C] px-5 py-3">
+            <div className="h-2 w-2 bg-[#FFD43B]" />
 
-    <span className="text-[10px] uppercase tracking-[0.35em] text-[#777]">
-      DATABASE MODULE
-    </span>
+            <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-white">
+              COLLECTOR DATABASE
+            </span>
 
-  </div>
+          </div>
 
-  <div className="grid grid-cols-3">
+          <div className="mt-2 font-mono text-[7px] uppercase tracking-[0.25em] text-[#555]">
+            INVENTORY / TRADING / WISHLIST
+          </div>
+        </div>
 
-    <button
-onClick={() => {
-  setSelectedSection("iso");
-  setSelectedSet("");
-}}
-      className={`relative py-4 text-sm font-semibold uppercase tracking-[0.2em] transition-all duration-200 border-r border-[#1C1C1C]
-      ${
-        selectedSection === "iso"
-          ? "bg-[#111111] text-[#E7C84B]"
-          : "bg-[#090909] text-[#777] hover:bg-[#121212] hover:text-white"
-      }`}
-    >
-      {selectedSection === "iso" && (
-        <div className="absolute left-0 top-0 h-full w-1 bg-[#E7C84B]" />
-      )}
+        <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+          NODE ACTIVE
+        </div>
 
-      ISO
-    </button>
-
-    <button
-onClick={() => {
-  setSelectedSection("trade");
-  setSelectedSet("");
-}}
-      className={`relative py-4 text-sm font-semibold uppercase tracking-[0.2em] transition-all duration-200 border-r border-[#1C1C1C]
-      ${
-        selectedSection === "trade"
-          ? "bg-[#111111] text-[#E7C84B]"
-          : "bg-[#090909] text-[#777] hover:bg-[#121212] hover:text-white"
-      }`}
-    >
-      {selectedSection === "trade" && (
-        <div className="absolute left-0 top-0 h-full w-1 bg-[#E7C84B]" />
-      )}
-
-      TRADES
-    </button>
-
-    <button
-onClick={() => {
-  setSelectedSection("wishlist");
-  setSelectedSet("");
-}}
-      className={`relative py-4 text-sm font-semibold uppercase tracking-[0.2em] transition-all duration-200
-      ${
-        selectedSection === "wishlist"
-          ? "bg-[#111111] text-[#E7C84B]"
-          : "bg-[#090909] text-[#777] hover:bg-[#121212] hover:text-white"
-      }`}
-    >
-      {selectedSection === "wishlist" && (
-        <div className="absolute left-0 top-0 h-full w-1 bg-[#E7C84B]" />
-      )}
-
-      WISHLIST
-    </button>
-
-  </div>
-
-</div>
-
-{selectedSection === "iso" ? (
-  userProfileSettings.hide_iso ? (
-    <p className="text-slate-500">
-      This collector has hidden their ISO.
-    </p>
-  ) : (
-    <>
-      <div className="flex flex-wrap gap-2 mb-6">
-        {ISO_SET_TABS.map((set) => (
-          <button
-            key={set.id}
-            onClick={() => setSelectedSet(set.id)}
-           className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
-              selectedSet === set.id
-                ? "bg-yellow-400 text-slate-900"
-                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-            }`}
-          >
-            {set.name}
-          </button>
-        ))}
       </div>
 
-      {userIsoCards.length === 0 ? (
-        <p className="text-slate-500">
-          This collector isn't looking for any cards.
-        </p>
-      ) : (
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
-          {filteredIsoCards.map((card) => (
-<div
-  key={`${card.set_id}-${card.card_key}`}
-  onClick={() => setQuickViewCard(card)}
-  className={`self-start cursor-pointer overflow-hidden rounded-md border border-[#2A2A2A] bg-[#111111] transition duration-200 hover:scale-[1.04] ${
-    isMoon3DoubleWide(card) ? "col-span-2" : ""
-  } ${
-    !isMoon3DoubleWide(card) &&
-    String(card.set_id) === "tcgpromos" &&
-    ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-      ? "aspect-[63/88]"
-      : ""
-  }`}
->
-  <img
-    src={getTradeCardImage(card)}
-    alt={card.card_key}
-className={`block w-full transition-transform duration-200 ${
-String(card.set_id) === "12" ||
-String(card.set_id) === "FW" ||
-String(card.set_id) === "SD" ||
-String(card.set_id) === "tcgpromos"
-  ? ""
-  : "scale-[1.055]"
-} ${
-  isMoon3DoubleWide(card)
-    ? "h-auto object-contain"
-    : String(card.set_id) === "tcgpromos" &&
-      ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-    ? "h-full object-cover object-center"
-    : "h-full object-contain"
-}`}
-  />
-</div>
-          ))}
-        </div>
-      )}
-    </>
-  )
-) : selectedSection === "trade" ? (
-  <>
-    <div className="flex flex-wrap gap-2 mb-6">
-      {TRADE_SET_TABS.map((set) => (
+      {/* Main section tabs */}
+      <div className="grid grid-cols-3 border-b border-[#303030]">
+
         <button
-          key={set.id}
-          onClick={() => setSelectedSet(set.id)}
-          className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
-            selectedSet === set.id
-              ? "bg-yellow-400 text-slate-900"
-              : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-          }`}
+          onClick={() => {
+            setSelectedSection("iso");
+            setSelectedSet("");
+          }}
+          className={`
+            relative
+            border-r
+            border-[#303030]
+            px-2
+            py-4
+            font-mono
+            text-[8px]
+            font-bold
+            uppercase
+            tracking-[0.18em]
+            transition-all
+            sm:text-[9px]
+            ${
+              selectedSection === "iso"
+                ? "bg-[#252525] text-[#FFD43B]"
+                : "bg-[#1A1A1A] text-[#666] hover:bg-[#222] hover:text-white"
+            }
+          `}
         >
-          {set.name}
+          {selectedSection === "iso" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFD43B]" />
+          )}
+
+          ISO
         </button>
-      ))}
-    </div>
 
-    {filteredTradeCards.length === 0 ? (
-      <p className="text-slate-500">
-        This collector has no cards listed for trade or sale.
-      </p>
-    ) : (
-      <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
-        {filteredTradeCards.map((card) => (
-<div
-  key={`${card.set_id}-${card.card_key}`}
-  onClick={() => setQuickViewCard(card)}
-className={`
-  relative
-  overflow-hidden
-  rounded-lg sm:rounded-2xl
-  border border-slate-200
-  bg-white
-  shadow-sm
-  transition
-  hover:-translate-y-1
-  hover:shadow-xl
-  ${isMoon3DoubleWide(card) ? "col-span-2" : ""}
-`}
->
-  <div
-    className={`absolute left-2 top-2 z-10 rounded-full px-3 py-1 text-[10px] font-bold tracking-wide text-white shadow-lg ${
-      card.type === "trade"
-        ? "bg-blue-600"
-        : "bg-emerald-600"
-    }`}
-  >
-    {card.type === "trade" ? "TRADE" : "SALE"}
-  </div>
+        <button
+          onClick={() => {
+            setSelectedSection("trade");
+            setSelectedSet("");
+          }}
+          className={`
+            relative
+            border-r
+            border-[#303030]
+            px-2
+            py-4
+            font-mono
+            text-[8px]
+            font-bold
+            uppercase
+            tracking-[0.18em]
+            transition-all
+            sm:text-[9px]
+            ${
+              selectedSection === "trade"
+                ? "bg-[#252525] text-[#FFD43B]"
+                : "bg-[#1A1A1A] text-[#666] hover:bg-[#222] hover:text-white"
+            }
+          `}
+        >
+          {selectedSection === "trade" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFD43B]" />
+          )}
 
-  <div
-    className={`bg-gradient-to-b from-slate-100 to-white ${
-      !isMoon3DoubleWide(card) &&
-      String(card.set_id) === "tcgpromos" &&
-      ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-        ? "aspect-[63/88]"
-        : ""
-    }`}
-  >
-<img
-  src={getTradeCardImage(card)}
-  alt={card.card_key}
-  className={`block w-full transition-transform duration-200 ${
-    String(card.set_id) === "12" ||
-    String(card.set_id) === "FW" ||
-    String(card.set_id) === "SD" ||
-    String(card.set_id) === "tcgpromos"
-      ? ""
-      : "scale-[1.055]"
-  } ${
-    isMoon3DoubleWide(card)
-      ? "h-auto object-contain"
-      : String(card.set_id) === "tcgpromos" &&
-        ["RR09", "RR10", "RR11", "RR12"].includes(String(card.card_key))
-      ? "h-full object-cover object-center"
-      : "h-full object-contain"
-  }`}
-/>
-  </div>
+          TRADES
+        </button>
 
-<div className="border-t bg-slate-50 px-3 py-2 text-center">
-<div className="text-[8px] sm:text-xs font-semibold text-slate-700 truncate">
-    {getSetName(String(card.set_id))}
-  </div>
-</div>
-</div>
-        ))}
+        <button
+          onClick={() => {
+            setSelectedSection("wishlist");
+            setSelectedSet("");
+          }}
+          className={`
+            relative
+            px-2
+            py-4
+            font-mono
+            text-[8px]
+            font-bold
+            uppercase
+            tracking-[0.18em]
+            transition-all
+            sm:text-[9px]
+            ${
+              selectedSection === "wishlist"
+                ? "bg-[#252525] text-[#FFD43B]"
+                : "bg-[#1A1A1A] text-[#666] hover:bg-[#222] hover:text-white"
+            }
+          `}
+        >
+          {selectedSection === "wishlist" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFD43B]" />
+          )}
+
+          WISHLIST
+        </button>
+
+      </div>
+
+      {/* ==========================================================
+          ISO
+      ========================================================== */}
+      {selectedSection === "iso" ? (
+        userProfileSettings.hide_iso ? (
+
+          <div className="p-8 text-center sm:p-12">
+
+            <div className="mx-auto mb-4 h-8 w-8 border border-[#3A3A3A] bg-[#202020]" />
+
+            <div className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-[#777]">
+              ISO DATA RESTRICTED
+            </div>
+
+            <p className="mt-2 font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+              THIS COLLECTOR HAS HIDDEN THEIR ISO
+            </p>
+
+          </div>
+
+        ) : (
+          <>
+
+            {/* Set selector */}
+            <div className="border-b border-[#303030] bg-[#191919] p-3 sm:p-4">
+
+              <div className="mb-3 flex items-center justify-between">
+
+                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#555]">
+                  SELECT SET
+                </span>
+
+                <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+                  {ISO_SET_TABS.length} AVAILABLE
+                </span>
+
+              </div>
+
+              <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
+                {ISO_SET_TABS.map((set) => (
+                  <button
+                    key={set.id}
+                    onClick={() => setSelectedSet(set.id)}
+                    className={`
+                      shrink-0
+                      border
+                      px-3
+                      py-2
+                      font-mono
+                      text-[7px]
+                      font-bold
+                      uppercase
+                      tracking-[0.15em]
+                      transition-all
+                      sm:text-[8px]
+                      ${
+                        selectedSet === set.id
+                          ? "border-[#FFD43B] bg-[#FFD43B] text-[#151515]"
+                          : "border-[#383838] bg-[#202020] text-[#777] hover:border-[#666] hover:text-white"
+                      }
+                    `}
+                  >
+                    {set.name}
+                  </button>
+                ))}
+
+              </div>
+            </div>
+
+            {/* ISO cards */}
+            <div className="p-3 sm:p-5">
+
+              {userIsoCards.length === 0 ? (
+                <div className="py-12 text-center">
+
+                  <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#555]">
+                    NO ISO DATA
+                  </div>
+
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 sm:gap-3">
+
+                  {filteredIsoCards.map((card) => (
+                    <div
+                      key={`${card.set_id}-${card.card_key}`}
+                      onClick={() => setQuickViewCard(card)}
+                      className={`
+                        group
+                        relative
+                        cursor-pointer
+                        overflow-hidden
+                        rounded-md
+                        border
+                        border-[#303030]
+                        bg-[#111111]
+                        transition-all
+                        duration-200
+                        hover:-translate-y-1
+                        hover:border-[#FFD43B]
+                        hover:shadow-[0_8px_30px_rgba(0,0,0,.45)]
+                        ${
+                          isMoon3DoubleWide(card)
+                            ? "col-span-2"
+                            : ""
+                        }
+                      `}
+                    >
+
+                      <div className="absolute left-0 top-0 z-10 h-0 w-full bg-[#FFD43B] transition-all group-hover:h-0.5" />
+
+                      <img
+                        src={getTradeCardImage(card)}
+                        alt={card.card_key}
+                        className={`
+                          block
+                          w-full
+                          transition-transform
+                          duration-200
+                          ${
+                            String(card.set_id) === "12" ||
+                            String(card.set_id) === "FW" ||
+                            String(card.set_id) === "SD" ||
+                            String(card.set_id) === "tcgpromos"
+                              ? ""
+                              : "scale-[1.055]"
+                          }
+                          ${
+                            isMoon3DoubleWide(card)
+                              ? "h-auto object-contain"
+                              : String(card.set_id) === "tcgpromos" &&
+                                ["RR09", "RR10", "RR11", "RR12"].includes(
+                                  String(card.card_key)
+                                )
+                              ? "h-full object-cover object-center"
+                              : "h-full object-contain"
+                          }
+                        `}
+                      />
+
+                    </div>
+                  ))}
+
+                </div>
+              )}
+
+            </div>
+          </>
+        )
+
+      /* ==========================================================
+         TRADES
+      ========================================================== */
+      ) : selectedSection === "trade" ? (
+        <>
+
+          <div className="border-b border-[#303030] bg-[#191919] p-3 sm:p-4">
+
+            <div className="mb-3 flex items-center justify-between">
+
+              <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#555]">
+                LISTING SET
+              </span>
+
+              <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+                TRADE / SALE
+              </span>
+
+            </div>
+
+            <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
+              {TRADE_SET_TABS.map((set) => (
+                <button
+                  key={set.id}
+                  onClick={() => setSelectedSet(set.id)}
+                  className={`
+                    shrink-0
+                    border
+                    px-3
+                    py-2
+                    font-mono
+                    text-[7px]
+                    font-bold
+                    uppercase
+                    tracking-[0.15em]
+                    transition-all
+                    sm:text-[8px]
+                    ${
+                      selectedSet === set.id
+                        ? "border-[#FFD43B] bg-[#FFD43B] text-[#151515]"
+                        : "border-[#383838] bg-[#202020] text-[#777] hover:border-[#666] hover:text-white"
+                    }
+                  `}
+                >
+                  {set.name}
+                </button>
+              ))}
+
+            </div>
+          </div>
+
+          <div className="p-3 sm:p-5">
+
+            {filteredTradeCards.length === 0 ? (
+              <div className="py-12 text-center">
+
+                <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#555]">
+                  NO ACTIVE LISTINGS
+                </div>
+
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 sm:gap-3">
+
+                {filteredTradeCards.map((card) => (
+                  <div
+                    key={`${card.set_id}-${card.card_key}`}
+                    onClick={() => setQuickViewCard(card)}
+                    className={`
+                      group
+                      relative
+                      cursor-pointer
+                      overflow-hidden
+                      rounded-md
+                      border
+                      border-[#303030]
+                      bg-[#111111]
+                      transition-all
+                      duration-200
+                      hover:-translate-y-1
+                      hover:border-[#FFD43B]
+                      hover:shadow-[0_8px_30px_rgba(0,0,0,.5)]
+                      ${
+                        isMoon3DoubleWide(card)
+                          ? "col-span-2"
+                          : ""
+                      }
+                    `}
+                  >
+
+                    {/* Listing indicator */}
+                    <div
+                      className={`
+                        absolute
+                        left-2
+                        top-2
+                        z-10
+                        border
+                        px-2
+                        py-1
+                        font-mono
+                        text-[6px]
+                        font-bold
+                        uppercase
+                        tracking-[0.15em]
+                        ${
+                          card.type === "trade"
+                            ? "border-[#FFD43B]/60 bg-[#151515]/90 text-[#FFD43B]"
+                            : "border-green-400/50 bg-[#151515]/90 text-green-400"
+                        }
+                      `}
+                    >
+                      {card.type === "trade" ? "TRADE" : "SALE"}
+                    </div>
+
+                    <div
+                      className={`
+                        bg-[#111111]
+                        ${
+                          !isMoon3DoubleWide(card) &&
+                          String(card.set_id) === "tcgpromos" &&
+                          ["RR09", "RR10", "RR11", "RR12"].includes(
+                            String(card.card_key)
+                          )
+                            ? "aspect-[63/88]"
+                            : ""
+                        }
+                      `}
+                    >
+
+                      <img
+                        src={getTradeCardImage(card)}
+                        alt={card.card_key}
+                        className={`
+                          block
+                          w-full
+                          transition-transform
+                          duration-200
+                          group-hover:scale-[1.015]
+                          ${
+                            String(card.set_id) === "12" ||
+                            String(card.set_id) === "FW" ||
+                            String(card.set_id) === "SD" ||
+                            String(card.set_id) === "tcgpromos"
+                              ? ""
+                              : "scale-[1.055]"
+                          }
+                          ${
+                            isMoon3DoubleWide(card)
+                              ? "h-auto object-contain"
+                              : String(card.set_id) === "tcgpromos" &&
+                                ["RR09", "RR10", "RR11", "RR12"].includes(
+                                  String(card.card_key)
+                                )
+                              ? "h-full object-cover object-center"
+                              : "h-full object-contain"
+                          }
+                        `}
+                      />
+
+                    </div>
+
+                    <div className="border-t border-[#2D2D2D] bg-[#191919] px-2 py-2">
+
+                      <div className="truncate font-mono text-[6px] uppercase tracking-[0.12em] text-[#666] sm:text-[7px]">
+                        {getSetName(String(card.set_id))}
+                      </div>
+
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+            )}
+
+          </div>
+        </>
+
+      /* ==========================================================
+         WISHLIST
+      ========================================================== */
+      ) : (
+        userProfileSettings.hide_wishlist ? (
+
+          <div className="p-8 text-center sm:p-12">
+
+            <div className="mx-auto mb-4 h-8 w-8 border border-[#3A3A3A] bg-[#202020]" />
+
+            <div className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-[#777]">
+              WISHLIST DATA RESTRICTED
+            </div>
+
+            <p className="mt-2 font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+              THIS COLLECTOR HAS HIDDEN THEIR WISHLIST
+            </p>
+
+          </div>
+
+        ) : (
+          <>
+
+            <div className="border-b border-[#303030] bg-[#191919] p-3 sm:p-4">
+
+              <div className="mb-3 flex items-center justify-between">
+
+                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#555]">
+                  WISHLIST SET
+                </span>
+
+                <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+                  TARGET CARDS
+                </span>
+
+              </div>
+
+              <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
+                {WISHLIST_SET_TABS.map((set) => (
+                  <button
+                    key={set.id}
+                    onClick={() => setSelectedSet(set.id)}
+                    className={`
+                      shrink-0
+                      border
+                      px-3
+                      py-2
+                      font-mono
+                      text-[7px]
+                      font-bold
+                      uppercase
+                      tracking-[0.15em]
+                      transition-all
+                      sm:text-[8px]
+                      ${
+                        selectedSet === set.id
+                          ? "border-[#FFD43B] bg-[#FFD43B] text-[#151515]"
+                          : "border-[#383838] bg-[#202020] text-[#777] hover:border-[#666] hover:text-white"
+                      }
+                    `}
+                  >
+                    {set.name}
+                  </button>
+                ))}
+
+              </div>
+            </div>
+
+            <div className="p-3 sm:p-5">
+
+              {filteredWishlistCards.length === 0 ? (
+                <div className="py-12 text-center">
+
+                  <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#555]">
+                    WISHLIST EMPTY
+                  </div>
+
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 sm:gap-3">
+
+                  {filteredWishlistCards.map((card) => (
+                    <div
+                      key={`${card.set_id}-${card.card_key}`}
+                      onClick={() => setQuickViewCard(card)}
+                      className={`
+                        group
+                        relative
+                        cursor-pointer
+                        overflow-hidden
+                        rounded-md
+                        border
+                        border-[#303030]
+                        bg-[#111111]
+                        transition-all
+                        duration-200
+                        hover:-translate-y-1
+                        hover:border-[#FFD43B]
+                        hover:shadow-[0_8px_30px_rgba(0,0,0,.45)]
+                        ${
+                          isMoon3DoubleWide(card)
+                            ? "col-span-2"
+                            : ""
+                        }
+                      `}
+                    >
+
+                      <div className="absolute left-0 top-0 h-0 w-full bg-[#FFD43B] transition-all group-hover:h-0.5" />
+
+                      <img
+                        src={getTradeCardImage(card)}
+                        alt={card.card_key}
+                        className={`
+                          block
+                          h-full
+                          w-full
+                          object-contain
+                          transition-transform
+                          duration-200
+                          group-hover:scale-[1.015]
+                          ${
+                            String(card.set_id) === "12" ||
+                            String(card.set_id) === "FW" ||
+                            String(card.set_id) === "SD" ||
+                            String(card.set_id) === "tcgpromos"
+                              ? ""
+                              : "scale-[1.055]"
+                          }
+                        `}
+                      />
+
+                    </div>
+                  ))}
+
+                </div>
+              )}
+
+            </div>
+          </>
+        )
+      )}
+
+    </section>
+
+    {/* ============================================================
+        QUICK VIEW
+    ============================================================ */}
+    {quickViewCard && (
+      <div
+        className="
+          fixed
+          inset-0
+          z-[9999]
+          flex
+          items-center
+          justify-center
+          bg-[#090909]/95
+          p-4
+          backdrop-blur-md
+          sm:p-8
+        "
+        onClick={() => setQuickViewCard(null)}
+      >
+
+        {/* Technical frame */}
+        <div className="absolute left-4 top-4 h-12 w-12 border-l border-t border-[#FFD43B]/60 sm:left-8 sm:top-8" />
+        <div className="absolute bottom-4 right-4 h-12 w-12 border-b border-r border-[#FFD43B]/60 sm:bottom-8 sm:right-8" />
+
+        <button
+          onClick={() => setQuickViewCard(null)}
+          className="
+            absolute
+            right-5
+            top-5
+            z-20
+            flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            border
+            border-[#3A3A3A]
+            bg-[#191919]
+            font-mono
+            text-xl
+            text-[#777]
+            transition-all
+            hover:border-[#FFD43B]
+            hover:text-[#FFD43B]
+            sm:right-8
+            sm:top-8
+          "
+        >
+          ×
+        </button>
+
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`
+            relative
+            overflow-hidden
+            border
+            border-[#444]
+            bg-[#151515]
+            shadow-[0_30px_100px_rgba(0,0,0,.75)]
+            ${
+              isMoon3DoubleWide(quickViewCard)
+                ? "w-[min(92vw,900px)]"
+                : "w-[min(88vw,650px)]"
+            }
+          `}
+        >
+
+          {/* Top technical bar */}
+          <div className="flex items-center justify-between border-b border-[#303030] bg-[#1D1D1D] px-4 py-3">
+
+            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
+              CARD INSPECTION
+            </span>
+
+          </div>
+
+          <div className="bg-[#0D0D0D] p-3 sm:p-5">
+
+            <img
+              src={getTradeCardImage(quickViewCard)}
+              alt={quickViewCard.card_key}
+              className="mx-auto block max-h-[72vh] max-w-full object-contain lg:max-h-[58vh]"
+            />
+
+          </div>
+
+          {/* Bottom metadata */}
+          <div className="flex items-center justify-between border-t border-[#303030] bg-[#1D1D1D] px-4 py-3">
+
+            <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#555]">
+              {getSetName(String(quickViewCard.set_id))}
+            </span>
+
+          </div>
+
+        </div>
       </div>
     )}
-  </>
-) : (
-  userProfileSettings.hide_wishlist ? (
-    <p className="text-slate-500">
-      This collector has hidden their wishlist.
-    </p>
-  ) : (
-    <>
-      <div className="flex flex-wrap gap-2 mb-6">
-        {WISHLIST_SET_TABS.map((set) => (
-          <button
-            key={set.id}
-            onClick={() => setSelectedSet(set.id)}
-            className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold transition ${
-              selectedSet === set.id
-                ? "bg-yellow-400 text-slate-900"
-                : "bg-slate-200 text-slate-700 hover:bg-slate-300"
-            }`}
-          >
-            {set.name}
-          </button>
-        ))}
-      </div>
 
-      {filteredWishlistCards.length === 0 ? (
-        <p className="text-slate-500">
-          This collector has no wishlist cards.
-        </p>
-      ) : (
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-4">
-          {filteredWishlistCards.map((card) => (
-           <div
-  key={`${card.set_id}-${card.card_key}`}
-  onClick={() => setQuickViewCard(card)}
-  className={`cursor-pointer overflow-hidden rounded-md border border-[#2A2A2A] bg-[#111111] transition duration-200 hover:scale-[1.04] ${
-    isMoon3DoubleWide(card) ? "col-span-2" : ""
-  }`}
->
-  <img
-    src={getTradeCardImage(card)}
-    alt={card.card_key}
-    className={`block w-full h-full transition-transform duration-200 ${
-      String(card.set_id) === "12" ||
-      String(card.set_id) === "FW" ||
-      String(card.set_id) === "SD" ||
-      String(card.set_id) === "tcgpromos"
-        ? ""
-        : "scale-[1.055]"
-    } object-contain`}
-  />
-</div>
-          ))}
-        </div>
-      )}
-    </>
-  )
-)}
-
-</div>
-
-{quickViewCard && (
-  <div
-    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-6"
-    onClick={() => setQuickViewCard(null)}
-  >
-    <button
-      onClick={() => setQuickViewCard(null)}
-      className="absolute right-6 top-6 text-5xl font-bold text-white hover:text-yellow-400"
-    >
-      ×
-    </button>
-
-<div
-  onClick={(e) => e.stopPropagation()}
-  className={`overflow-hidden rounded-2xl ${
-    isMoon3DoubleWide(quickViewCard)
-      ? "max-w-[900px] w-[75vw]"
-      : "max-w-[70vw]"
-  }`}
->
-<img
-  src={getTradeCardImage(quickViewCard)}
-  alt={quickViewCard.card_key}
-  className="block max-w-full max-h-[75vh] w-auto h-auto object-contain"
-/>
-</div>
   </div>
-)}
-
-    </div>
-  );
+);
 };
 
 export default ExploreProfile;

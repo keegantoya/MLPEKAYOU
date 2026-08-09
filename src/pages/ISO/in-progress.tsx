@@ -90,26 +90,71 @@ parsed.push({
   if (loading) {
     return <div className="p-6 text-white">Loading...</div>;
   }
+return (
+  <div className="relative pt-[5px]">
 
-  return (
-    <div className="p-6">
-      <h1 className="mb-6 text-3xl font-bold text-white">
-        In Progress
-      </h1>
+    {/* SYSTEM HEADER */}
+    <div className="mb-6 border-b border-[#2b3034] pb-4">
+      <div className="flex items-center gap-2">
+        <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_8px_#facc15]" />
 
-      {cards.length === 0 ? (
-        <div className="text-zinc-400">
-          You have no cards in progress.
+        <span className="font-oxanium text-[8px] font-bold uppercase tracking-[0.45em] text-yellow-400">
+          SYSTEM MODULE 02
+        </span>
+      </div>
+
+      <div className="mt-2 flex items-end justify-between gap-4">
+        <div>
+          <h1 className="font-oxanium text-2xl font-black uppercase tracking-[0.12em] text-white">
+            IN PROGRESS
+          </h1>
+
+          <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-600">
+            ACTIVE ACQUISITION QUEUE
+          </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
-          {cards.map((card) => (
-            <ISOChecking
-              key={`${card.set_id}:${card.card_key}`}
-              userId={userId}
-              setId={card.set_id}
-              cardKey={card.card_key}
-            >
+
+        <div className="hidden border border-[#30363a] bg-[#101417] px-3 py-2 text-right sm:block">
+          <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-600">
+            ACTIVE
+          </div>
+
+          <div className="font-oxanium text-sm font-bold text-yellow-400">
+            {cards.length.toString().padStart(2, "0")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {cards.length === 0 ? (
+      <div className="border border-[#30363a] bg-[#101417] px-4 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center border border-yellow-400/30 bg-yellow-400/5">
+            <span className="font-mono text-sm text-yellow-400">
+              ✓
+            </span>
+          </div>
+
+          <div>
+            <div className="font-oxanium text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-300">
+              QUEUE CLEAR
+            </div>
+
+            <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.1em] text-zinc-600">
+              No active acquisition records detected
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
+        {cards.map((card) => (
+          <ISOChecking
+            key={`${card.set_id}:${card.card_key}`}
+            userId={userId}
+            setId={card.set_id}
+            cardKey={card.card_key}
+          >
 <div className="relative overflow-hidden rounded-lg aspect-[5/7]">
   <img
     src={getTradeCardImage({

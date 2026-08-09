@@ -58,7 +58,7 @@ const getDisplayCardCode = (
 const sets = [
   {
     id: "SD",
-    name: "Friendships Begin",
+    name: "FRIENDSHIPS BEGIN",
     folder: "friendships-begin",
     prefix: "SD",
     rarities: {
@@ -75,7 +75,7 @@ const sets = [
   },
   {
     id: "FW",
-    name: "Fantasy Wonderland",
+    name: "FANTASY WONDERLAND",
     folder: "fantasy-wonderland",
     prefix: "BP01",
     rarities: {
@@ -96,7 +96,7 @@ const sets = [
   },
   {
     id: "12",
-    name: "Discord",
+    name: "DISCORD",
     folder: "discord",
     prefix: "BP02",
     rarities: {
@@ -201,8 +201,8 @@ return (
 
     {/* MOBILE SET NAVIGATION */}
     {!(cardCodeSearch || characterSearch.trim()) && (
-  <div className="md:hidden sticky top-0 z-20 bg-[#171717] py-2">
-      <div className="flex flex-wrap justify-center gap-2">
+  <div className="md:hidden sticky top-0 z-20 py-2">
+      <div className="flex justify-center gap-2 overflow-x-auto">
 {[
   { id: "SD", label: "Friendships Begin" },
   { id: "FW", label: "Fantasy Wonderland" },
@@ -215,13 +215,21 @@ return (
 onClick={() => {
   setSelectedSet(item.id);
 }}
-className={`min-w-[100px] rounded-lg border px-5 py-3 text-sm font-semibold transition ${
+className={`group flex h-9 shrink-0 items-center gap-2 whitespace-nowrap border px-3 font-oxanium text-[9px] font-bold uppercase tracking-[0.1em] transition-all duration-200 ${
   selectedSet === item.id
-    ? "border-yellow-500 bg-yellow-500 text-black"
-    : "border-zinc-700 bg-[#202020] text-zinc-300 hover:border-yellow-500 hover:text-yellow-400"
+    ? "border-yellow-400 bg-[#15191c] text-yellow-400 shadow-[inset_2px_0_0_#facc15]"
+    : "border-[#30363a] bg-[#101417] text-zinc-500 hover:border-yellow-400/50 hover:bg-[#151a1d] hover:text-yellow-400"
 }`}
-          >
-            {item.label}
+         >
+  <span
+    className={`h-1 w-1 shrink-0 transition-all ${
+      selectedSet === item.id
+        ? "bg-yellow-400 shadow-[0_0_6px_#facc15]"
+        : "bg-zinc-700 group-hover:bg-yellow-400"
+    }`}
+  />
+
+  <span>{item.label}</span>
           </button>
         ))}
       </div>
@@ -533,33 +541,44 @@ return !owned[card.key];
   ) : null;
 }
 
-        return (
-<section
-  id={`set-${set.id}`}
-  key={set.id}
-  className={`
-    p-0
-    ${cardCodeSearch || characterSearch.trim() ? "mt-8" : ""}
-    md:mt-0
-    md:rounded-lg
-    md:border
-    md:border-zinc-700
-    md:bg-[#202020]
-    md:p-6
-  `}
->
+return (
+  <section
+    id={`set-${set.id}`}
+    key={set.id}
+    className={`
+      p-0
+      ${cardCodeSearch || characterSearch.trim() ? "mt-8" : ""}
+      md:mt-0
+      md:border
+      md:border-[#2b3135]
+      md:bg-[#0f1316]
+      md:p-5
+      md:relative
+      md:overflow-hidden
+    `}
+  >
+    <div className="hidden md:block absolute left-0 top-0 h-5 w-5 border-l border-t border-yellow-400/50" />
+    <div className="hidden md:block absolute right-0 top-0 h-5 w-5 border-r border-t border-yellow-400/50" />
+    <div className="hidden md:block absolute bottom-0 left-0 h-5 w-5 border-b border-l border-yellow-400/30" />
+    <div className="hidden md:block absolute bottom-0 right-0 h-5 w-5 border-b border-r border-yellow-400/30" />
 
-<h2
-  className={`mb-6 text-2xl font-semibold ${
-    cardCodeSearch || characterSearch.trim()
-      ? "block"
-      : "hidden md:block"
-  }`}
->
-  {set.name}
-</h2>
+    <div className="hidden md:flex mb-5 items-center gap-3 border-b border-[#252b2f] pb-3">
+      <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_8px_#facc15]" />
 
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
+      <h2
+        className="font-oxanium text-sm font-bold uppercase tracking-[0.18em]"
+      >
+        {set.name}
+      </h2>
+
+      <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+        {set.prefix} // ACTIVE
+      </span>
+
+      <div className="h-px flex-1 bg-gradient-to-r from-yellow-400/20 to-transparent" />
+    </div>
+
+    <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
               {missing.map((card) => {
 
 const fullKey =
@@ -575,99 +594,109 @@ const isWishlisted = wishlist.has(fullKey);
 
 const cardContent = (
   <>
-    <div className="mb-1 text-center text-[9px] md:text-xs font-bold tracking-tight md:tracking-wide text-zinc-300 whitespace-nowrap">
-      {set.id === "SD" ? (
-        (() => {
-          if (card.rarity === "PER") {
-            const num = parseInt(card.key.slice(-2), 10);
-            const displayNum = Math.ceil((num - 6) / 2) + 6;
-            return `※SD01-ER${String(displayNum).padStart(2, "0")}`;
-          }
+    <div className="mb-2 flex justify-center">
+      <div className="group relative flex items-center gap-2 border border-yellow-400/25 bg-[#0d1113] px-2.5 py-1 shadow-[0_0_12px_rgba(250,204,21,0.06)] transition-all duration-200 hover:border-yellow-400/60 hover:shadow-[0_0_16px_rgba(250,204,21,0.12)]">
 
-          if (card.rarity === "PRR") {
-            return `※SD01-RR${card.key.slice(-2)}`;
-          }
 
-          return card.key.replace(/^SD01/, "SD01-");
-        })()
-      ) : (
-        (() => {
-          if (card.rarity === "ER") {
-            return `${set.id === "12" ? "BP02" : "BP01"}-ER${card.key.slice(-2)}`;
-          }
+        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-yellow-300 md:text-[9px]">
+          {set.id === "SD" ? (
+            (() => {
+              if (card.rarity === "PER") {
+                const num = parseInt(card.key.slice(-2), 10);
+                const displayNum = Math.ceil((num - 6) / 2) + 6;
+                return `※SD01-ER${String(displayNum).padStart(2, "0")}`;
+              }
 
-          if (set.id === "12" && card.rarity === "PER") {
-            const match = card.key.match(/PER(\d{2})/);
+              if (card.rarity === "PRR") {
+                return `※SD01-RR${card.key.slice(-2)}`;
+              }
 
-            if (!match) return card.key;
+              return card.key.replace(/^SD01/, "SD01-");
+            })()
+          ) : (
+            (() => {
+              if (card.rarity === "ER") {
+                return `${set.id === "12" ? "BP02" : "BP01"}-ER${card.key.slice(-2)}`;
+              }
 
-            return `※BP02-ER${match[1]}`;
-          }
+              if (set.id === "12" && card.rarity === "PER") {
+                const match = card.key.match(/PER(\d{2})/);
 
-          if (set.id === "12" && card.rarity === "PSPR") {
-            const displayMap = [
-              "01",
-              "02",
-              "05",
-              "10",
-              "14",
-              "15",
-              "16",
-              "18",
-              "23",
-              "24",
-              "26",
-            ];
+                if (!match) return card.key;
 
-            const index = parseInt(card.key.slice(-2), 10) - 1;
+                return `※BP02-ER${match[1]}`;
+              }
 
-            return `※BP02-SPR${displayMap[index]}`;
-          }
+              if (set.id === "12" && card.rarity === "PSPR") {
+                const displayMap = [
+                  "01",
+                  "02",
+                  "05",
+                  "10",
+                  "14",
+                  "15",
+                  "16",
+                  "18",
+                  "23",
+                  "24",
+                  "26",
+                ];
 
-          if (card.rarity === "PER") {
-            const perMap = [
-              "01",
-              "02",
-              "02",
-              "02",
-              "03",
-              "03",
-              "04",
-              "04",
-              "05",
-              "05",
-              "06",
-              "06",
-            ];
+                const index = parseInt(card.key.slice(-2), 10) - 1;
 
-            const index = parseInt(card.key.slice(-2), 10) - 1;
+                return `※BP02-SPR${displayMap[index]}`;
+              }
 
-            return `※BP01-ER${perMap[index]}`;
-          }
+              if (card.rarity === "PER") {
+                const perMap = [
+                  "01",
+                  "02",
+                  "02",
+                  "02",
+                  "03",
+                  "03",
+                  "04",
+                  "04",
+                  "05",
+                  "05",
+                  "06",
+                  "06",
+                ];
 
-          if (card.rarity === "RR") {
-            return `${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
-          }
+                const index = parseInt(card.key.slice(-2), 10) - 1;
 
-          if (card.rarity === "PSPR") {
-            return `※BP01-SPR${card.key.slice(-2)}`;
-          }
+                return `※BP01-ER${perMap[index]}`;
+              }
 
-          if (card.rarity === "PGR") {
-            return `※${set.id === "12" ? "BP02" : "BP01"}-GR${card.key.slice(-2)}`;
-          }
+              if (card.rarity === "RR") {
+                return `${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
+              }
 
-          if (card.rarity === "PCR") {
-            return `※${set.id === "12" ? "BP02" : "BP01"}-CR${card.key.slice(-2)}`;
-          }
+              if (card.rarity === "PSPR") {
+                return `※BP01-SPR${card.key.slice(-2)}`;
+              }
 
-          if (card.rarity === "PRR") {
-            return `※${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
-          }
+              if (card.rarity === "PGR") {
+                return `※${set.id === "12" ? "BP02" : "BP01"}-GR${card.key.slice(-2)}`;
+              }
 
-          return card.key.replace(/^BP01/, "BP01-");
-        })()
-      )}
+              if (card.rarity === "PCR") {
+                return `※${set.id === "12" ? "BP02" : "BP01"}-CR${card.key.slice(-2)}`;
+              }
+
+              if (card.rarity === "PRR") {
+                return `※${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
+              }
+
+              return card.key.replace(/^BP01/, "BP01-");
+            })()
+          )}
+        </span>
+
+        <span className="absolute -left-px -top-px h-1.5 w-1.5 border-l border-t border-yellow-400" />
+        <span className="absolute -bottom-px -right-px h-1.5 w-1.5 border-b border-r border-yellow-400/70" />
+
+      </div>
     </div>
 
     <img

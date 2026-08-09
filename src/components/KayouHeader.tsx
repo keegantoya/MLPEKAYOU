@@ -20,6 +20,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
 import { useRef } from "react";
 
 import { getProfileAssets } from "../pages/Everypony/profile-assets";
@@ -72,7 +73,9 @@ const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [showResetSent, setShowResetSent] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showLoginRequired, setShowLoginRequired] = useState(false);
+  const [showBugReport, setShowBugReport] = useState(false);
   const [showTradesMenu, setShowTradesMenu] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
@@ -305,13 +308,24 @@ const handleForgotPassword = async () => {
   setConfirmPassword("");
 };
 
+const requestNavigation = (path: string) => {
+  const event = new CustomEvent("mlpekayou:before-navigation", {
+    detail: { destination: path },
+    cancelable: true,
+  });
+
+  if (window.dispatchEvent(event)) {
+    navigate(path);
+  }
+};
+
 const requireLogin = (path: string) => {
   if (!user) {
     setShowLoginRequired(true);
     return;
   }
 
-  navigate(path);
+  requestNavigation(path);
 };
 
   const handleLogout = async () => {
@@ -332,17 +346,29 @@ return (
   <>
 
 <header
-  className={`fixed left-0 right-0 z-[20000] text-[#E7C84B] shadow-md ${
-    !window.matchMedia('(display-mode: standalone)').matches
-      ? 'top-0'
-      : 'top-0'
+  className={`fixed left-0 right-0 z-[20000] text-[#E7C84B] ${
+    !window.matchMedia("(display-mode: standalone)").matches
+      ? "top-0"
+      : "top-0"
   }`}
-style={{
-  background: "#161616",
-  WebkitTransform: "translateZ(0)",
-  transform: "translateZ(0)",
-}}
+  style={{
+    background:
+      "linear-gradient(180deg, #0d1113 0%, #0b0e10 72%, #090b0d 100%)",
+    WebkitTransform: "translateZ(0)",
+    transform: "translateZ(0)",
+    boxShadow:
+      "0 10px 35px rgba(0,0,0,.45), inset 0 -1px 0 rgba(250,204,21,.10)",
+  }}
 >
+
+  {/* DESKTOP HUD FRAME */}
+<div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-px bg-gradient-to-r from-transparent via-yellow-400/35 to-transparent sm:block" />
+
+<div className="pointer-events-none absolute inset-x-0 top-0 hidden h-[2px] bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent sm:block" />
+
+<div className="pointer-events-none absolute left-0 top-0 hidden h-3 w-24 border-l border-t border-yellow-400/20 sm:block" />
+
+<div className="pointer-events-none absolute right-0 top-0 hidden h-3 w-24 border-r border-t border-yellow-400/20 sm:block" />
   
  <div
   className="w-full flex sm:h-16 items-center px-2 sm:px-4 relative justify-between"
@@ -366,31 +392,56 @@ style={{
 <div className="flex items-center gap-3 min-w-[70px]">
 
   {!user && (
-    <Button
+<Button
+  onClick={() => {
+    setAuthMode("signup");
+    setLoginError("");
+    setShowForgot(false);
+    setShowLogin(true);
+  }}
   className="
-hidden sm:flex
-h-10 px-5
-rounded-xl
-bg-[#202020]
-hover:bg-[#2a2a2a]
-text-[#E7C84B]
-border border-[#E7C84B]
-font-semibold
-shadow-md
-transition-all
-duration-200
-hover:-translate-y-0.5
-hover:shadow-lg
-"
-      onClick={() => {
-        setAuthMode("signup");
-        setLoginError("");
-        setShowForgot(false);
-        setShowLogin(true);
-      }}
-    >
-      Create Account
-    </Button>
+    group
+    relative
+    hidden
+    h-10
+    items-center
+    gap-2.5
+    overflow-hidden
+    rounded-xl
+    border
+    border-[#E7C84B]/70
+    bg-[#111517]
+    px-5
+    font-mono
+    text-[9px]
+    font-bold
+    uppercase
+    tracking-[0.18em]
+    text-[#E7C84B]
+    shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_6px_20px_rgba(0,0,0,.35)]
+    transition-all
+    duration-200
+    sm:flex
+    hover:border-[#FFE477]
+    hover:bg-[#171B1D]
+    hover:text-[#FFE477]
+    hover:shadow-[0_0_22px_rgba(231,200,75,.18)]
+    active:scale-[0.98]
+  "
+>
+  <span className="relative flex h-5 w-5 items-center justify-center rounded-md border border-[#E7C84B]/40 bg-[#E7C84B]/[0.06]">
+    <span className="h-1.5 w-1.5 rounded-full bg-[#E7C84B] shadow-[0_0_9px_rgba(231,200,75,.85)] transition-transform duration-200 group-hover:scale-125" />
+  </span>
+
+  <span className="relative z-10">
+    CREATE ACCOUNT
+  </span>
+
+  <span className="pointer-events-none absolute inset-y-0 -left-12 w-10 skew-x-[-20deg] bg-gradient-to-r from-transparent via-[#E7C84B]/20 to-transparent transition-all duration-500 group-hover:left-[110%]" />
+
+  <span className="absolute left-3 right-3 top-0 h-px bg-gradient-to-r from-transparent via-[#E7C84B]/70 to-transparent" />
+  <span className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-[#E7C84B]/30 to-transparent" />
+</Button>
   )}
 
 {/* MOBILE PROFILE / LOGIN */}
@@ -402,67 +453,64 @@ hover:shadow-lg
 >
   {!user ? (
 <Button
-className="
-flex
-items-center
-justify-center
-h-8
-px-4
-text-sm
-rounded-lg
-font-semibold
-text-[#1b1b1b]
-bg-gradient-to-b
-from-[#f6d76c]
-to-[#c99f30]
-border
-border-[#f3e19a]
-shadow-md
-transition-all
-duration-200
-active:scale-95
-"
   onClick={() => {
     setAuthMode("login");
     setLoginError("");
     setShowForgot(false);
     setShowLogin(true);
   }}
+  className="
+    group
+    relative
+    h-10
+    overflow-hidden
+    rounded-xl
+    border
+    border-[#E7C84B]/80
+    bg-[#E7C84B]
+    px-6
+    font-mono
+    text-[9px]
+    font-black
+    uppercase
+    tracking-[0.2em]
+    text-[#111517]
+    shadow-[0_0_16px_rgba(231,200,75,.16),inset_0_1px_0_rgba(255,255,255,.45)]
+    transition-all
+    duration-200
+    hover:-translate-y-0.5
+    hover:bg-[#FFE477]
+    hover:shadow-[0_0_24px_rgba(231,200,75,.30)]
+    active:scale-[0.98]
+  "
 >
-  Login
+  <span className="relative z-10 flex items-center gap-2">
+    <span className="h-1.5 w-1.5 rounded-full bg-[#111517] shadow-[0_0_7px_rgba(17,21,23,.7)]" />
+    LOGIN
+  </span>
+
+  <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 skew-x-[-20deg] bg-white/30 transition-all duration-500 group-hover:left-[115%]" />
+
+  <span className="absolute left-3 right-3 top-0 h-px bg-white/50" />
 </Button>
   ) : (
     <>
       <button
-        onClick={() => navigate("/leaderboard")}
-        className="
-          flex items-center justify-center
-          w-8 h-8 rounded-full
-          border border-[#E7C84B]
-          bg-[#202020]
-          text-[#E7C84B]
-          shadow-md
-          transition-all
-          hover:bg-[#2a2a2a]
-        "
+        onClick={() => requestNavigation("/leaderboard")}
+        className="group relative flex h-8 w-8 items-center justify-center border border-[#343A3D] bg-[#111517] text-[#E7C84B] shadow-[0_0_12px_rgba(231,200,75,.10)] transition-all duration-200 hover:border-[#E7C84B]/80 hover:bg-[#171B1D] hover:shadow-[0_0_16px_rgba(231,200,75,.18)]"
       >
-        <Trophy className="h-4 w-4" />
+        <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-[#E7C84B]/70" />
+        <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#E7C84B]/35" />
+        <Trophy className="relative z-10 h-4 w-4" />
       </button>
 
       <button
-        onClick={() => navigate("/community")}
-        className="
-          flex items-center justify-center
-          w-8 h-8 rounded-full
-          border border-[#E7C84B]
-          bg-[#202020]
-          text-[#E7C84B]
-          shadow-md
-          transition-all
-          hover:bg-[#2a2a2a]
-        "
+        onClick={() => requestNavigation("/community")}
+        className="group relative flex h-8 w-8 items-center justify-center border border-[#343A3D] bg-[#111517] text-[#E7C84B] shadow-[0_0_12px_rgba(231,200,75,.10)] transition-all duration-200 hover:border-[#E7C84B]/80 hover:bg-[#171B1D] hover:shadow-[0_0_16px_rgba(231,200,75,.18)]"
       >
-        <Medal className="h-4 w-4" />
+        <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-[#E7C84B]/70" />
+        <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#E7C84B]/35" />
+        <Medal className="relative z-10 h-4 w-4" />
       </button>
     </>
   )}
@@ -470,19 +518,32 @@ active:scale-95
 
 {/* DESKTOP DISCORD BUTTON */}
 
- {user && (
+{user && (
   <Sheet open={open} onOpenChange={setOpen}>
     <SheetTrigger asChild>
-      <button className="hidden sm:inline-flex items-center justify-center">
-        <img
-          src={avatarSrc || profileAvatar}
-          alt="avatar"
-         className={`h-10 w-10 rounded-full object-cover border-2 shadow-md transition-all duration-300 hover:scale-110 hover:shadow-xl hover:border-[#d4af37]/60 ${
-  open
-    ? "scale-110 shadow-xl border-[#d4af37]/60"
-    : "border-[#E7C84B]/30"
-}`}
-        />
+      <button
+        className={`relative hidden sm:flex h-12 w-12 items-center justify-center border bg-[#0b0f11] transition-all duration-200 ${
+          open
+            ? "border-[#E7C84B] shadow-[0_0_18px_rgba(231,200,75,0.30)]"
+            : "border-[#30363a] hover:border-[#E7C84B] hover:shadow-[0_0_18px_rgba(231,200,75,0.20)]"
+        }`}
+      >
+        <span className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-[#E7C84B]" />
+        <span className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-[#E7C84B]/60" />
+        <span className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-[#E7C84B]/60" />
+        <span className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-[#E7C84B]" />
+
+<img
+  src={avatarSrc || profileAvatar}
+  alt="avatar"
+  className={`relative z-10 h-9 w-9 object-cover border transition-all duration-200 ${
+    open
+      ? "border-[#E7C84B] shadow-[0_0_12px_rgba(231,200,75,0.35)]"
+      : "border-[#454545] group-hover:border-[#E7C84B]"
+  }`}
+/>
+
+        <span className="absolute bottom-1 right-1 z-20 h-2 w-2 bg-[#a3e635] shadow-[0_0_7px_rgba(163,230,53,0.8)]" />
       </button>
     </SheetTrigger>
 
@@ -515,214 +576,230 @@ active:scale-95
 
   {/* ACCOUNT */}
   <div className="space-y-2">
-    <button
-      onClick={() => {
-        navigate("/desktop-profile");
-        setOpen(false);
-      }}
-      className="w-full px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-left"
-    >
+<button
+  onClick={() => {
+    requestNavigation("/desktop-profile");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+
+  <span className="mr-3 flex h-6 w-6 items-center justify-center border border-[#E7C84B]/30 bg-[#151a1d] text-[9px] font-bold text-[#E7C84B]">
+    ID
+  </span>
+
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
       Edit Profile
-    </button>
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      IDENTIFICATION
+    </span>
+  </span>
 
-    <button
-      onClick={() => {
-        navigate("/kayou-news");
-        setOpen(false);
-      }}
-      className="w-full px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-left"
-    >
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+    CFG
+  </span>
+</button>
+
+<button
+  onClick={() => {
+    requestNavigation("/kayou-news");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+
+  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
+
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
       Kayou US Events
-    </button>
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      OFFICIAL FEED
+    </span>
+  </span>
 
-    <button
-      onClick={() => {
-        navigate("/inbox");
-        setOpen(false);
-      }}
-      className="w-full px-3 py-2 rounded-xl text-sm bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-left"
-    >
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+    SYS
+  </span>
+</button>
+
+<button
+  onClick={() => {
+    requestNavigation("/inbox");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+
+  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
+
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
       Inbox & Friends
-    </button>
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      INTERNAL COMMS
+    </span>
+  </span>
+
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+    COM
+  </span>
+</button>
   </div>
 
   {/* PROGRESS */}
-  <div>
-    <div className="text-[11px] uppercase tracking-[0.2em] text-[#8e7a2d] mb-2 px-1">
-      Progress
-    </div>
 
-    <div className="grid grid-cols-2 gap-2">
-      <button
-        onClick={() => {
-          navigate("/my-progress");
-          setOpen(false);
-        }}
-        className="
-w-full
-px-3
-py-2
-rounded-xl
-text-sm
-text-left
-bg-[#202020]
-border
-border-[#E7C84B]
-
-!transition-all
-!duration-200
-
-hover:!bg-[#353535]
-hover:!border-[#FFD54A]
-hover:!text-white
-hover:!scale-[1.02]
-hover:!shadow-xl
-
-active:scale-[0.99]
-"
-      >
-        CCG
-      </button>
-
-      <button
-        onClick={() => {
-          navigate("/progress-tcg");
-          setOpen(false);
-        }}
-        className="
-w-full
-px-3
-py-2
-rounded-xl
-text-sm
-text-left
-bg-[#202020]
-border
-border-[#E7C84B]
-
-!transition-all
-!duration-200
-
-hover:!bg-[#353535]
-hover:!border-[#FFD54A]
-hover:!text-white
-hover:!scale-[1.02]
-hover:!shadow-xl
-
-active:scale-[0.99]
-"
-      >
-        TCG
-      </button>
-    </div>
+<div className="space-y-2">
+  <div className="text-xs font-semibold uppercase tracking-widest text-[#E7C84B]/80 px-1">
+    Progress
   </div>
 
-  {/* COLLECTION */}
-  <div>
-    <div className="text-[11px] uppercase tracking-[0.2em] text-[#8e7a2d] mb-2 px-1">
-      Collection
-    </div>
+  <div className="grid grid-cols-2 gap-2">
+<button
+  onClick={() => {
+    requestNavigation("/my-progress");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
 
-    <div className="grid grid-cols-2 gap-2">
-      <button
-        onClick={() => {
-          navigate("/inventory");
-          setOpen(false);
-        }}
-        className="
-w-full
-px-3
-py-2
-rounded-xl
-text-sm
-text-left
-bg-[#202020]
-border
-border-[#E7C84B]
+  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
 
-!transition-all
-!duration-200
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+      CCG
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      CCG STATS
+    </span>
+  </span>
+</button>
 
-hover:!bg-[#353535]
-hover:!border-[#FFD54A]
-hover:!text-white
-hover:!scale-[1.02]
-hover:!shadow-xl
+<button
+  onClick={() => {
+    requestNavigation("/progress-tcg");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
 
-active:scale-[0.99]
-"
-      >
-        Inventory
-      </button>
+  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
 
-      <button
-        onClick={() => {
-          navigate("/binders");
-          setOpen(false);
-        }}
-        className="
-w-full
-px-3
-py-2
-rounded-xl
-text-sm
-text-left
-bg-[#202020]
-border
-border-[#E7C84B]
-
-!transition-all
-!duration-200
-
-hover:!bg-[#353535]
-hover:!border-[#FFD54A]
-hover:!text-white
-hover:!scale-[1.02]
-hover:!shadow-xl
-
-active:scale-[0.99]
-"
-      >
-        Binders
-      </button>
-    </div>
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+      TCG
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      TCG STATS
+    </span>
+  </span>
+</button>
   </div>
-
-  {/* TRADING */}
-  <div>
-   <div className="grid grid-cols-1 gap-2">
-  <button
-    onClick={() => {
-      navigate("/iso");
-      setOpen(false);
-    }}
-    className="
-w-full
-px-3
-py-2
-rounded-xl
-text-sm
-text-left
-bg-[#202020]
-border
-border-[#E7C84B]
-
-!transition-all
-!duration-200
-
-hover:!bg-[#353535]
-hover:!border-[#FFD54A]
-hover:!text-white
-hover:!scale-[1.02]
-hover:!shadow-xl
-
-active:scale-[0.99]
-"
-  >
-    ISO and Wishlist
-  </button>
 </div>
+
+{/* COLLECTION */}
+
+<div className="space-y-2">
+  <div className="text-xs font-semibold uppercase tracking-widest text-[#E7C84B]/80 px-1">
+    Collection
   </div>
+
+  <div className="grid grid-cols-2 gap-2">
+<button
+  onClick={() => {
+    requestNavigation("/inventory");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+      Inventory
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      CARD DATABASE
+    </span>
+  </span>
+
+</button>
+
+<button
+  onClick={() => {
+    requestNavigation("/binders");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+      Binders
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      DIGITAL MOCK
+    </span>
+  </span>
+</button>
+  </div>
+</div>
+
+{/* TRADING */}
+
+<div className="space-y-2">
+  <div className="text-xs font-semibold uppercase tracking-widest text-[#E7C84B]/80 px-1">
+    Trading
+  </div>
+
+<button
+  onClick={() => {
+    requestNavigation("/iso");
+    setOpen(false);
+  }}
+  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-3 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+>
+  <span className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-[#E7C84B]" />
+  <span className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-[#E7C84B]/40" />
+  <span className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-[#E7C84B]/40" />
+  <span className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-[#E7C84B]/50" />
+
+  <span className="mr-3 flex h-7 w-7 shrink-0 items-center justify-center border border-[#E7C84B]/30 bg-[#151a1d] font-mono text-[8px] font-bold text-[#E7C84B]">
+    ISO
+  </span>
+
+  <span className="flex flex-1 flex-col">
+    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+      ISO / Wishlist
+    </span>
+
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+      WANT & TRADE TARGETS
+    </span>
+  </span>
+
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+    ISO
+  </span>
+</button>
+</div>
 <div className="mx-4 my-4 border-t border-zinc-700" />
 
 {/* Logout */}
@@ -731,36 +808,62 @@ active:scale-[0.99]
     handleLogout();
     setOpen(false);
   }}
-  className="w-[calc(100%-2rem)] ml-4 text-left px-4 py-2.5 rounded-2xl bg-[#202020] hover:bg-[#2a2a2a] border border-[#E7C84B] text-[#E7C84B] transition-all"
+  className="group relative ml-4 flex w-[calc(100%-2rem)] items-center justify-between overflow-hidden border border-[#4a3030] bg-[#120e0e] px-4 py-2.5 text-left text-[#dca0a0] transition-all duration-200 hover:border-red-400/70 hover:bg-[#1a1010] hover:text-red-300 hover:shadow-[0_0_18px_rgba(248,113,113,0.12)]"
 >
-  Logout
+  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-red-400/70" />
+  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-red-400/40" />
+
+  <span className="flex flex-col">
+    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+      Logout
+    </span>
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-red-400/40 group-hover:text-red-300/70">
+      TERMINATE SESSION
+    </span>
+  </span>
+
+  <span className="font-mono text-[9px] font-bold tracking-[0.15em] text-red-400/50 group-hover:text-red-300">
+    EXIT
+  </span>
 </button>
 </div>
 
 {/* Social Links */}
 <div className="pt-2">
   <div className="flex items-center justify-center gap-3 py-2">
-    <button
-      onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
-      className="opacity-90 hover:opacity-100 transition-opacity"
-    >
-      <img
-        src="/website-assets/discordlogo.webp"
-        alt="Discord"
-        className="h-8 w-auto"
-      />
-    </button>
+<button
+  onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
+  className="group relative flex h-10 w-10 items-center justify-center border border-[#30363a] bg-[#0d1113] transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_16px_rgba(231,200,75,0.15)]"
+>
+  <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-[#E7C84B]/70" />
+  <span className="absolute right-0 top-0 h-2 w-2 border-r border-t border-[#E7C84B]/40" />
+  <span className="absolute bottom-0 left-0 h-2 w-2 border-b border-l border-[#E7C84B]/40" />
+  <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#E7C84B]/70" />
 
-    <button
-      onClick={() => window.open("https://www.tiktok.com/@keanaex", "_blank")}
-      className="opacity-90 hover:opacity-100 transition-opacity"
-    >
-      <img
-        src="/website-assets/tiktoklogo.webp"
-        alt="TikTok"
-        className="h-10 w-auto"
-      />
-    </button>
+  <img
+    src="/website-assets/discordlogo.webp"
+    alt="Discord"
+    className="h-6 w-auto opacity-60 transition-all duration-200 group-hover:opacity-100"
+  />
+
+  <span className="absolute -bottom-1 left-1/2 h-px w-3 -translate-x-1/2 bg-[#E7C84B]/60" />
+</button>
+
+<button
+  onClick={() => window.open("https://www.tiktok.com/@keanaex", "_blank")}
+  className="group relative flex h-10 w-10 items-center justify-center border border-[#30363a] bg-[#0d1113] transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_16px_rgba(231,200,75,0.15)]"
+>
+  <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-[#E7C84B]/70" />
+  <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#E7C84B]/40" />
+
+  <img
+    src="/website-assets/tiktoklogo.webp"
+    alt="TikTok"
+    className="h-6 w-auto opacity-60 grayscale transition-all duration-200 group-hover:opacity-100 group-hover:grayscale-0"
+  />
+
+  <span className="absolute -bottom-1 left-1/2 h-px w-3 -translate-x-1/2 bg-[#E7C84B]/60" />
+</button>
   </div>
 </div>
       </div>
@@ -774,325 +877,391 @@ active:scale-[0.99]
   src={logo}
   alt="MLP Kayou Wiki"
   className="sm:hidden absolute left-1/2 -translate-x-1/2 h-8 w-auto cursor-pointer drop-shadow-md"
-  onClick={() => navigate("/")}
+  onClick={() => requestNavigation("/")}
 />
 
-{/* CENTER LOGO + DESKTOP ICON NAV */}
+{/* CENTER LOGO + DESKTOP HUD NAV */}
 <div
-  className="absolute hidden sm:flex items-center gap-4 -translate-x-1/2"
-  style={{
-    left: user ? "calc(50% - 40px)" : "50%",
-  }}
+  className="absolute left-1/2 hidden sm:flex -translate-x-1/2 items-center"
 >
-  {/* LEFT OF LOGO */}
-<div className="relative group">
-  <button
-    onClick={() => navigate("/support-mlpekayou")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
+  <div className="relative flex items-center">
 
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
+    {/* LEFT NAV SYSTEM */}
+    <div className="flex items-center gap-1.5">
 
-${isActive("/support-mlpekayou") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <ShoppingBag  className="h-5 w-5" />
-  </button>
+      {/* SHOP */}
+      <div className="relative group">
+        <button
+          onClick={() => requestNavigation("/support-mlpekayou")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/support-mlpekayou")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
 
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 whitespace-nowrap">
-    Shop
+          <ShoppingBag className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            SHOP
+          </span>
+        </button>
+      </div>
+
+      {/* EXPLORE */}
+      <div className="relative group">
+        <button
+          onClick={() => requireLogin("/explore")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/explore")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
+
+          <Users className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            EXPLORE
+          </span>
+        </button>
+      </div>
+
+      {/* COLLECTIONS */}
+      <div className="relative group">
+        <button
+          onClick={() => requestNavigation("/collections")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/collections")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
+
+          <Sparkles className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            COLLECTIONS
+          </span>
+        </button>
+      </div>
+
+      {/* LEADERBOARD */}
+      <div className="relative group">
+        <button
+          onClick={() => requestNavigation("/leaderboard")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/leaderboard")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
+
+          <Medal className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            LEADERBOARD
+          </span>
+        </button>
+      </div>
+
+    </div>
+
+    {/* CENTRAL LOGO CORE */}
+    <div className="relative mx-4 flex items-center">
+
+      {/* Left data rail */}
+      <div className="mr-3 flex items-center gap-1">
+        <span className="h-px w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
+        <span className="h-1 w-1 bg-yellow-400 shadow-[0_0_7px_#facc15]" />
+      </div>
+
+      <button
+        onClick={() => requestNavigation("/")}
+        className="group relative flex h-[58px] w-[150px] items-center justify-center border border-[#30363a] bg-[#0d1113] transition-all duration-300 hover:border-yellow-400/60 hover:bg-[#111619]"
+      >
+        {/* HUD corners */}
+        <span className="absolute left-0 top-0 h-3 w-3 border-l border-t border-yellow-400/70" />
+        <span className="absolute right-0 top-0 h-3 w-3 border-r border-t border-yellow-400/40" />
+        <span className="absolute bottom-0 left-0 h-3 w-3 border-b border-l border-yellow-400/40" />
+        <span className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-yellow-400/70" />
+
+        {/* Scan line */}
+        <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-yellow-400/70 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        {/* Background grid */}
+        <span className="absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(250,204,21,1)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,1)_1px,transparent_1px)] [background-size:12px_12px]" />
+
+        <img
+          src={logo}
+          alt="MLP Kayou Wiki"
+          className="relative z-10 h-[42px] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+
+        {/* Status */}
+        <span className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 bg-[#0d1113] px-2 font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+          SYSTEM ONLINE
+        </span>
+      </button>
+
+      {/* Right data rail */}
+      <div className="ml-3 flex items-center gap-1">
+        <span className="h-1 w-1 bg-yellow-400 shadow-[0_0_7px_#facc15]" />
+        <span className="h-px w-8 bg-gradient-to-l from-transparent to-yellow-400/50" />
+      </div>
+
+    </div>
+
+    {/* RIGHT NAV SYSTEM */}
+    <div className="flex items-center gap-1.5">
+
+      {/* FIRST FINISHERS */}
+      <div className="relative group">
+        <button
+          onClick={() => requestNavigation("/community")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/community")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
+
+          <Trophy className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            FIRST FINISHERS
+          </span>
+        </button>
+      </div>
+
+      {/* TRADING POST */}
+      <div className="relative group">
+        <button
+          onClick={() => requireLogin("/trading-post")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/trading-post")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
+
+          <ArrowLeftRight className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            TRADING POST
+          </span>
+        </button>
+      </div>
+
+      {/* SELLING */}
+      <div className="relative group">
+        <button
+          onClick={() => requestNavigation("/selling")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/selling")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
+
+          <Tag className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            SELLING
+          </span>
+        </button>
+      </div>
+
+      {/* FAQ */}
+      <div className="relative group">
+        <button
+          onClick={() => requestNavigation("/faq")}
+          className={`
+            relative flex h-10 w-10 items-center justify-center
+            border transition-all duration-200
+            ${
+              isActive("/faq")
+                ? "border-yellow-400 bg-yellow-400/10 text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.18)]"
+                : "border-[#30363a] bg-[#0f1315] text-zinc-500 hover:border-yellow-400/70 hover:bg-[#151a1d] hover:text-yellow-300"
+            }
+          `}
+        >
+          <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400/50" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400/30" />
+
+          <Search className="h-[17px] w-[17px]" />
+
+          <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap border border-[#30363a] bg-[#090b0d] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-yellow-400 opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+            FAQ
+          </span>
+        </button>
+      </div>
+
+    </div>
+
   </div>
-</div>
-
-  <div className="relative group">
-  <button
-    onClick={() => requireLogin("/explore")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
-
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
-
-${isActive("/explore") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <Users className="h-5 w-5" />
-  </button>
-
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-    Explore
-  </div>
-</div>
-
-<div className="relative group">
-  <button
-    onClick={() => navigate("/collections")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
-
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
-
-${isActive("/collections") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <Sparkles className="h-5 w-5" />
-  </button>
-
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-    Checklists
-  </div>
-</div>
-
-<div className="relative group">
-  <button
-    onClick={() => navigate("/leaderboard")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
-
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
-
-${isActive("/leaderboard") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <Medal className="h-5 w-5" />
-  </button>
-
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-    Leaderboard
-  </div>
-</div>
-
-  {/* LOGO */}
-  <img
-  src={logo}
-  alt="MLP Kayou Wiki"
-  className="h-[46px] cursor-pointer"
-  onClick={() => navigate("/")}
-/>
-
-  {/* RIGHT OF LOGO */}
-<div className="relative group">
-  <button
-    onClick={() => navigate("/community")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
-
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
-
-${isActive("/community") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <Trophy className="h-5 w-5" />
-  </button>
-
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-    First Finishers
-  </div>
-</div>
-
-<div className="relative group">
-  <button
-    onClick={() => requireLogin("/trading-post")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
-
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
-
-${isActive("/trading-post") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <ArrowLeftRight className="h-5 w-5" />
-  </button>
-
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-    Trading Post
-  </div>
-</div>
-
-<div className="relative group">
-  <button
-    onClick={() => navigate("/selling")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
-
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
-
-${isActive("/selling") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <Tag className="h-5 w-5" />
-  </button>
-
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-    Selling
-  </div>
-</div>
-
-<div className="relative group">
-  <button
-    onClick={() => navigate("/faq")}
-className={`
-flex-shrink-0
-w-10 h-10
-min-w-10 min-h-10
-rounded-full
-border
-flex
-items-center
-justify-center
-text-[#E7C84B]
-transition-all
-duration-200
-
-bg-[#202020]
-hover:bg-[#2a2a2a]
-hover:-translate-y-1
-hover:scale-110
-hover:shadow-xl
-
-${isActive("/faq") ? "border-[#E7C84B] shadow-md scale-105" : "border-[#E7C84B]"}
-`}
-  >
-    <Search className="h-5 w-5" />
-  </button>
-
-  <div className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#252525] px-2 py-1 text-xs text-[#E7C84B] shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
-    FAQ
-  </div>
-</div>
 </div>
 
 {/* RIGHT SIDE */}
-<div className="hidden sm:flex items-center gap-3 min-w-[40px]">
+<div className="hidden sm:flex items-center gap-2 min-w-[40px]">
+
+  {user && (
+<Button
+  onClick={() => setShowBugReport(true)}
+  className="
+    group
+    relative
+    hidden
+    h-10
+    items-center
+    gap-2.5
+    overflow-hidden
+    rounded-xl
+    border
+    border-red-500/60
+    bg-[#181818]
+    px-4
+    font-mono
+    text-[9px]
+    font-bold
+    uppercase
+    tracking-[0.18em]
+    text-red-400
+    shadow-[inset_0_1px_0_rgba(255,255,255,.04),0_6px_20px_rgba(0,0,0,.35)]
+    transition-all
+    duration-200
+    sm:flex
+    hover:border-red-400
+    hover:bg-[#211616]
+    hover:text-red-300
+    hover:shadow-[0_0_22px_rgba(239,68,68,.18)]
+    active:scale-[0.98]
+  "
+>
+  {/* Stark status light */}
+  <span className="relative flex h-5 w-5 items-center justify-center rounded-md border border-red-500/50 bg-red-500/[0.08]">
+
+    <span className="absolute h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_10px_rgba(248,113,113,.9)] transition-all duration-200 group-hover:scale-125" />
+
+  </span>
+
+  <span className="relative z-10">
+    REPORT A BUG
+  </span>
+
+  {/* Technical sweep */}
+  <span
+    className="
+      pointer-events-none
+      absolute
+      inset-y-0
+      -left-12
+      w-10
+      skew-x-[-20deg]
+      bg-gradient-to-r
+      from-transparent
+      via-red-400/20
+      to-transparent
+      transition-all
+      duration-500
+      group-hover:left-[110%]
+    "
+  />
+
+  {/* Top status rail */}
+  <span className="absolute left-3 right-3 top-0 h-px bg-gradient-to-r from-transparent via-red-400/70 to-transparent" />
+
+  {/* Bottom status rail */}
+  <span className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
+</Button>
+  )}
+
   {!user && (
 <Button
-className="
-flex
-items-center
-justify-center
-h-11
-px-8
-rounded-xl
-font-bold
-text-[#1b1b1b]
-bg-gradient-to-b
-from-[#f6d76c]
-to-[#c99f30]
-border
-border-[#f3e19a]
-shadow-lg
-transition-all
-duration-200
-hover:brightness-110
-hover:scale-[1.02]
-"
   onClick={() => {
     setAuthMode("login");
     setLoginError("");
     setShowForgot(false);
     setShowLogin(true);
   }}
+  className="
+    group
+    relative
+    h-10
+    overflow-hidden
+    rounded-xl
+    border
+    border-[#E7C84B]/80
+    bg-[#E7C84B]
+    px-6
+    font-mono
+    text-[9px]
+    font-black
+    uppercase
+    tracking-[0.2em]
+    text-[#111517]
+    shadow-[0_0_16px_rgba(231,200,75,.16),inset_0_1px_0_rgba(255,255,255,.45)]
+    transition-all
+    duration-200
+    hover:-translate-y-0.5
+    hover:bg-[#FFE477]
+    hover:shadow-[0_0_24px_rgba(231,200,75,.30)]
+    active:scale-[0.98]
+  "
 >
-  Login
+  <span className="relative z-10 flex items-center gap-2">
+    <span className="h-1.5 w-1.5 rounded-full bg-[#111517] shadow-[0_0_7px_rgba(17,21,23,.7)]" />
+    LOGIN
+  </span>
+
+  <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 skew-x-[-20deg] bg-white/30 transition-all duration-500 group-hover:left-[115%]" />
+
+  <span className="absolute left-3 right-3 top-0 h-px bg-white/50" />
 </Button>
   )}
+
 </div>
 
   </div>
@@ -1102,140 +1271,28 @@ hover:scale-[1.02]
 {/* MOBILE FAQ + SELLING BUTTONS */}
 <div className="sm:hidden absolute right-3 bottom-2 flex items-center gap-2">
   <button
-    onClick={() => navigate("/selling")}
-    className="
-flex items-center justify-center
-w-8 h-8
-rounded-full
-border border-[#E7C84B]
-bg-[#202020]
-text-[#E7C84B]
-shadow-md
-transition-all
-hover:bg-[#2a2a2a]
-"
+    type="button"
+    onClick={() => requestNavigation("/selling")}
+    aria-label="Selling"
+    className="group relative flex h-8 w-8 items-center justify-center border border-[#343A3D] bg-[#111517] text-[#E7C84B] shadow-[0_0_12px_rgba(231,200,75,.10)] transition-all duration-200 hover:border-[#E7C84B]/80 hover:bg-[#171B1D] hover:shadow-[0_0_16px_rgba(231,200,75,.18)]"
   >
-    $
+    <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-[#E7C84B]/70" />
+    <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#E7C84B]/35" />
+    <Tag className="relative z-10 h-4 w-4" />
   </button>
 
   <button
-    onClick={() => navigate("/faq")}
-    className="
-flex items-center justify-center
-w-8 h-8
-rounded-full
-border border-[#E7C84B]
-bg-[#202020]
-text-[#E7C84B]
-shadow-md
-transition-all
-hover:bg-[#2a2a2a]
-"
+    type="button"
+    onClick={() => requestNavigation("/faq")}
+    aria-label="FAQ"
+    className="group relative flex h-8 w-8 items-center justify-center border border-[#343A3D] bg-[#111517] text-[#E7C84B] shadow-[0_0_12px_rgba(231,200,75,.10)] transition-all duration-200 hover:border-[#E7C84B]/80 hover:bg-[#171B1D] hover:shadow-[0_0_16px_rgba(231,200,75,.18)]"
   >
-    ?
+    <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-[#E7C84B]/70" />
+    <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#E7C84B]/35" />
+    <Search className="relative z-10 h-4 w-4" />
   </button>
 </div>
 </header>
-
-<style>
-{`
-.spider-down {
-  top: 52px;
-  transform: translateX(-50%);
-  animation: spiderDrop 2.5s ease-out forwards;
-}
-
-.spider-up {
-  top: 52px;
-  transform: translateX(-50%);
-  animation: spiderRise 1.2s ease-in forwards;
-}
-
-@media (min-width: 640px) {
-  .spider-down,
-  .spider-up {
-    top: 64px;
-  }
-}
-
-.spider-web {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  top: -140px;
-  height: 180px;
-
-  width: 2px;
-
-  background: rgba(255,255,255,0.95);
-
-  z-index: -1;
-  pointer-events: none;
-}
-
-.spider-sway {
-  animation: spiderSway 3s ease-in-out infinite;
-  transform-origin: center 12px;
-}
-
-@keyframes spiderDrop {
-  from {
-    transform: translateX(-50%) translateY(-120px);
-  }
-
-  to {
-    transform: translateX(-50%) translateY(35px);
-  }
-}
-
-@keyframes spiderRise {
-  from {
-    transform: translateX(-50%) translateY(35px);
-  }
-
-  to {
-    transform: translateX(-50%) translateY(-120px);
-  }
-}
-
-@media (max-width: 639px) {
-  @keyframes spiderDrop {
-    from {
-      transform: translateX(-50%) translateY(-120px);
-    }
-
-    to {
-  transform: translateX(-50%) translateY(40px);
-}
-  }
-
-  @keyframes spiderRise {
-    from {
-  transform: translateX(-50%) translateY(40px);
-}
-
-    to {
-      transform: translateX(-50%) translateY(-120px);
-    }
-  }
-}
-
-@keyframes spiderSway {
-  0% {
-    transform: rotate(-6deg);
-  }
-
-  50% {
-    transform: rotate(6deg);
-  }
-
-  100% {
-    transform: rotate(-6deg);
-  }
-}
-`}
-</style>
 
 {/* SIGNUP SUCCESS POPUP */}
 {showSignupSuccess && (
@@ -1284,6 +1341,275 @@ hover:bg-[#2a2a2a]
         >
           Got it!
         </Button>
+      </div>
+
+    </div>
+  </div>
+)}
+
+{/* FORGOT PASSWORD POPUP */}
+{showForgotPassword && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[30000]
+      flex
+      items-center
+      justify-center
+      bg-[#050708]/80
+      px-4
+      py-6
+      backdrop-blur-md
+    "
+    onClick={() => setShowForgotPassword(false)}
+  >
+    <div
+      className="
+        relative
+        w-full
+        max-w-md
+        overflow-hidden
+        rounded-2xl
+        border
+        border-[#3B4144]
+        bg-[#111517]
+        shadow-[0_30px_100px_rgba(0,0,0,.75),0_0_45px_rgba(231,200,75,.08)]
+      "
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* HEADER */}
+      <div className="relative border-b border-[#30363A] bg-[#0D1113] px-6 py-5">
+
+        <span className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-[#E7C84B]" />
+        <span className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-[#E7C84B]/50" />
+        <span className="absolute bottom-0 left-0 h-4 w-4 border-b-2 border-l-2 border-[#E7C84B]/40" />
+        <span className="absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-[#E7C84B]" />
+
+        <div className="flex items-center justify-between">
+
+          <div className="flex items-center gap-3">
+
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/[0.06]">
+              <span className="h-2 w-2 rounded-full bg-[#E7C84B] shadow-[0_0_12px_rgba(231,200,75,.9)]" />
+            </div>
+
+            <div>
+              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-[#E7C84B]/60">
+                MLPEKAYOU AUTH SYSTEM
+              </div>
+
+              <div className="mt-1 text-sm font-black uppercase tracking-[0.16em] text-white">
+                PASSWORD RESET
+              </div>
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowForgotPassword(false)}
+            className="
+              flex
+              h-8
+              w-8
+              items-center
+              justify-center
+              rounded-lg
+              border
+              border-[#30363A]
+              bg-[#15191B]
+              font-mono
+              text-lg
+              text-[#666]
+              transition-all
+              hover:border-[#E7C84B]
+              hover:text-[#E7C84B]
+            "
+          >
+            ×
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* CONTENT */}
+      <div className="p-6 sm:p-7">
+
+        <div className="mb-6">
+
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#E7C84B]/60">
+            ACCOUNT RECOVERY
+          </div>
+
+          <div className="mt-2 text-xl font-black uppercase tracking-[0.08em] text-white">
+            Enter email
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-[#8B9295]">
+            Enter the email address associated with your MLPEKAYOU account.
+          </p>
+
+        </div>
+
+        {/* EMAIL */}
+        <div>
+
+          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+            EMAIL ADDRESS
+          </label>
+
+          <input
+            type="email"
+            placeholder="collector@example.com"
+            value={loginEmail}
+            autoComplete="email"
+            autoFocus
+            className="
+              w-full
+              rounded-xl
+              border
+              border-[#343A3D]
+              bg-[#0D1113]
+              px-4
+              py-3.5
+              font-mono
+              text-sm
+              text-white
+              outline-none
+              placeholder:text-[#454B4E]
+              transition-all
+              focus:border-[#E7C84B]
+              focus:bg-[#101518]
+              focus:shadow-[0_0_0_3px_rgba(231,200,75,.07)]
+            "
+            onChange={(e) => {
+              setLoginEmail(e.target.value);
+              setEmailError("");
+            }}
+          />
+
+          {emailError && (
+            <div className="mt-2 border-l-2 border-red-500 bg-red-500/[0.06] px-3 py-2 font-mono text-[8px] uppercase tracking-[0.12em] text-red-400">
+              {emailError}
+            </div>
+          )}
+
+        </div>
+
+        {/* GMAIL WARNING */}
+        <div className="mt-5 rounded-xl border border-[#E7C84B]/25 bg-[#E7C84B]/[0.05] p-4">
+
+          <div className="flex items-start gap-3">
+
+            <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10">
+              <span className="font-mono text-[10px] font-black text-[#E7C84B]">
+                !
+              </span>
+            </div>
+
+            <p className="font-mono text-[8px] font-semibold uppercase leading-5 tracking-[0.1em] text-[#B8BDC0]">
+              GMAIL MAY SEND THE MLPEKAYOU EMAIL TO YOUR SPAM. YOU MAY HAVE TO VERIFY THE EMAIL IS SAFE, THEN REFRESH TO ACCESS THE LINK.
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* ACTIONS */}
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+          <Button
+            type="button"
+            onClick={() => {
+              setShowForgotPassword(false);
+              setAuthMode("login");
+              setShowLogin(true);
+              setEmailError("");
+            }}
+            className="
+              h-10
+              rounded-xl
+              border
+              border-[#30363A]
+              bg-[#15191B]
+              px-5
+              font-mono
+              text-[8px]
+              font-bold
+              uppercase
+              tracking-[0.16em]
+              text-[#777]
+              hover:border-[#555]
+              hover:bg-[#1A1F21]
+              hover:text-white
+            "
+          >
+            BACK TO LOGIN
+          </Button>
+
+          <Button
+            type="button"
+            onClick={() => {
+              if (!loginEmail.trim()) {
+                setEmailError("ENTER YOUR EMAIL ADDRESS");
+                return;
+              }
+
+              handleForgotPassword();
+            }}
+            className="
+              group
+              relative
+              h-10
+              overflow-hidden
+              rounded-xl
+              border
+              border-[#E7C84B]
+              bg-[#E7C84B]
+              px-6
+              font-mono
+              text-[8px]
+              font-black
+              uppercase
+              tracking-[0.2em]
+              text-[#111517]
+              shadow-[0_0_18px_rgba(231,200,75,.14)]
+              transition-all
+              hover:bg-[#FFE477]
+              hover:shadow-[0_0_25px_rgba(231,200,75,.25)]
+              active:scale-[0.98]
+            "
+          >
+            <span className="relative z-10">
+              SEND RESET EMAIL
+            </span>
+
+            <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 skew-x-[-20deg] bg-white/30 transition-all duration-500 group-hover:left-[115%]" />
+          </Button>
+
+        </div>
+
+      </div>
+
+      {/* FOOTER */}
+      <div className="border-t border-[#252A2D] bg-[#0D1113] px-6 py-3">
+
+        <div className="flex items-center justify-between">
+
+          <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-[#444]">
+            RECOVERY NODE 01
+          </span>
+
+          <span className="flex items-center gap-2 font-mono text-[6px] uppercase tracking-[0.25em] text-green-400/60">
+            <span className="h-1 w-1 rounded-full bg-green-400" />
+            READY
+          </span>
+
+        </div>
+
       </div>
 
     </div>
@@ -1344,421 +1670,887 @@ hover:bg-[#2a2a2a]
   </div>
 )}
 
-{showLoginRequired && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+{/* REPORT A BUG POPUP */}
+{showBugReport && (
+  <div
+    className="fixed inset-0 z-[30000] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+    onClick={() => setShowBugReport(false)}
+  >
+    <div
+      className="
+        relative
+        w-full
+        max-w-xl
+        overflow-hidden
+        rounded-2xl
+        border
+        border-red-500/40
+        bg-[#151515]
+        shadow-[0_0_45px_rgba(220,38,38,0.20)]
+      "
+      onClick={(e) => e.stopPropagation()}
+    >
 
-    <div className="relative w-[92%] max-w-lg bg-white rounded-2xl shadow-2xl p-6">
+      {/* Red header */}
+      <div className="border-b border-red-500/20 bg-[#1B1111] px-6 py-5">
 
-      <div className="text-center">
-        <div className="text-xl font-semibold mb-3 text-[#E7C84B]">
-          Login Required
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-red-500/50 bg-red-500/10">
+            <span className="text-xl font-black text-red-400">
+              !
+            </span>
+          </div>
+
+          <div>
+            <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-red-400/60">
+              SYSTEM SUPPORT
+            </div>
+
+            <div className="mt-1 text-lg font-bold uppercase tracking-[0.12em] text-white">
+              Report a Bug
+            </div>
+          </div>
+
         </div>
 
-        <div className="text-gray-600 mb-6">
-          You cannot access this page without being signed in to an account.
+      </div>
+
+      {/* Message */}
+      <div className="px-6 py-6">
+
+        <p className="text-sm leading-7 text-zinc-300">
+          Currently, bugs can only be reported in the MLPEKAYOU Discord
+          server. Please join the server and find the{" "}
+          <span className="font-semibold text-red-300">
+            "Important"
+          </span>{" "}
+          category, then the last channel will be{" "}
+          <span className="font-semibold text-red-300">
+            "Bugs."
+          </span>{" "}
+          All requirements of reporting a bug are present in that channel.
+        </p>
+
+        {/* Buttons */}
+        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+          <Button
+            onClick={() => setShowBugReport(false)}
+            className="
+              h-10
+              rounded-xl
+              border
+              border-[#3A3A3A]
+              bg-[#202020]
+              px-5
+              font-semibold
+              text-zinc-300
+              hover:border-zinc-500
+              hover:bg-[#292929]
+              hover:text-white
+            "
+          >
+            CLOSE
+          </Button>
+
+          <Button
+            onClick={() =>
+              window.open(
+                "https://discord.gg/mlpekayou",
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
+            className="
+              h-10
+              rounded-xl
+              border
+              border-red-400/70
+              bg-gradient-to-b
+              from-[#dc2626]
+              to-[#991b1b]
+              px-6
+              font-bold
+              text-white
+              shadow-[0_0_16px_rgba(220,38,38,0.18)]
+              transition-all
+              hover:from-[#ef4444]
+              hover:to-[#b91c1c]
+              hover:shadow-[0_0_22px_rgba(220,38,38,0.30)]
+            "
+          >
+            JOIN DISCORD
+          </Button>
+
         </div>
 
-        <Button
-          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#E7C84B]"
-          onClick={() => setShowLoginRequired(false)}
-        >
-          Okay
-        </Button>
       </div>
 
     </div>
   </div>
 )}
 
-      {/* LOGIN POPUP */}
-      {showLogin && (
-       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-
-<div
-className="relative w-[92%] max-w-lg rounded-[28px] border flex flex-col p-8 pt-12 pb-8"
-  style={{
-    background: `
-      linear-gradient(
-        180deg,
-        #444444 0%,
-        #2f2f2f 55%,
-        #1a1a1a 100%
-      )
-    `,
-    borderColor: "#8b8b8b",
-    boxShadow: `
-      0 24px 80px rgba(0,0,0,.75),
-      inset 0 1px 0 rgba(255,255,255,.08),
-      0 0 0 1px rgba(255,255,255,.04)
-    `,
-  }}
->
-
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-  <img
-    src={logo}
-    className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
-  />
-</div>
-
-<form
-  onSubmit={(e) => {
-    e.preventDefault();
-
-    authMode === "login"
-      ? handleLoginSubmit()
-      : handleSignupSubmit();
-  }}
->
-
-          <div className="text-center mb-7 text-white">
-  <div
-  className="text-3xl font-bold mb-2 tracking-wide"
-  style={{
-    color: "#ffffff",
-    textShadow: "0 2px 12px rgba(0,0,0,.45)",
-  }}
->
-    {authMode === "login"
-      ? "Sign In"
-      : "Create Your Account"}
-  </div>
-
- <div className="text-sm text-[#c7c7c7] mb-6">
-    {authMode === "login"
-      ? "Enter your email and password."
-      : "Enter your email and create a password."}
-  </div>
-</div>
-
-<input
-  type="email"
-  placeholder="Email"
-  value={loginEmail}
-  autoComplete="email"
-  className="
-w-full
-rounded-xl
-border
-border-[#6c6c6c]
-bg-[#242424]
-text-white
-placeholder:text-[#8d8d8d]
-px-4
-py-3
-mb-3
-transition-all
-duration-200
-focus:border-[#d8b64d]
-focus:ring-2
-focus:ring-[#d8b64d]/25
-outline-none
-"
-  onChange={(e) => {
-  setLoginEmail(e.target.value);
-  setEmailError("");
-  setLoginError("");
-  setShowForgot(false);
-}}
-/>
-
-{emailError && (
-  <div className="text-sm text-red-500 mb-2">
-    {emailError}
-  </div>
-)}
-
-<input
-  type="password"
-  placeholder="Password"
-  value={loginPassword}
-  autoComplete="current-password"
-  className="
-w-full
-rounded-xl
-border
-border-[#6c6c6c]
-bg-[#242424]
-text-white
-placeholder:text-[#8d8d8d]
-px-4
-py-3
-mb-3
-transition-all
-duration-200
-focus:border-[#d8b64d]
-focus:ring-2
-focus:ring-[#d8b64d]/25
-outline-none
-"
-  onChange={(e) => {
-  setLoginPassword(e.target.value);
-  setLoginError("");
-  setShowForgot(false);
-}}
-/>
-
-{authMode === "signup" && (
-  <>
-    <input
-      type="password"
-      placeholder="Confirm Password"
-      value={confirmPassword}
-      autoComplete="new-password"
-      className="
-w-full
-rounded-xl
-border
-border-[#6c6c6c]
-bg-[#242424]
-text-white
-placeholder:text-[#8d8d8d]
-px-4
-py-3
-mb-3
-transition-all
-duration-200
-focus:border-[#d8b64d]
-focus:ring-2
-focus:ring-[#d8b64d]/25
-outline-none
-"
-      onChange={(e) => setConfirmPassword(e.target.value)}
+{showLoginRequired && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#050707]/95 px-4 backdrop-blur-md">
+    {/* TECH GRID */}
+    <div
+      className="pointer-events-none absolute inset-0 opacity-[0.3]"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(255,212,74,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,212,74,.035) 1px, transparent 1px)",
+        backgroundSize: "44px 44px",
+      }}
     />
 
-    <div className="text-xs text-gray-500 italic text-center mb-2">
-      You will be required to confirm your signup via a link sent to your email.
+    {/* SCANLINES */}
+    <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,.025)_4px)]" />
+
+    {/* AMBIENT GOLD */}
+    <div className="pointer-events-none absolute left-1/2 top-1/2 h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FFD54A]/[0.025] blur-3xl" />
+
+    {/* PANEL */}
+    <div className="relative w-[92%] max-w-lg overflow-hidden border border-white/[0.10] bg-[#080b0b] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
+
+      {/* TOP SYSTEM BAR */}
+      <div className="flex items-center justify-between border-b border-white/[0.07] bg-[#050707] px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 bg-red-400 shadow-[0_0_10px_rgba(248,113,113,.9)]" />
+
+          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-red-400/80">
+            ACCESS DENIED
+          </span>
+        </div>
+
+        <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-zinc-700">
+          AUTH NODE
+        </span>
+      </div>
+
+      {/* CONTENT */}
+      <div className="relative p-6 sm:p-8">
+
+        {/* CORNER BRACKETS */}
+        <div className="pointer-events-none absolute left-0 top-0 h-10 w-10 border-l border-t border-[#FFD54A]/50" />
+        <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r border-t border-[#FFD54A]/25" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-10 border-b border-l border-[#FFD54A]/20" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-10 w-10 border-b border-r border-[#FFD54A]/50" />
+
+        {/* ACCESS CORE */}
+        <div className="mx-auto flex h-16 w-16 items-center justify-center border border-[#FFD54A]/30 bg-[#FFD54A]/[0.06] shadow-[0_0_30px_rgba(255,212,74,.08)]">
+          <div className="relative flex h-8 w-8 items-center justify-center border border-[#FFD54A]/70">
+            <span className="absolute h-2 w-2 bg-[#FFD54A] shadow-[0_0_12px_#FFD54A]" />
+            <span className="absolute inset-1 border border-[#FFD54A]/20" />
+          </div>
+        </div>
+
+        {/* TITLE */}
+        <div className="mt-6 text-center">
+          <div className="font-mono text-[6px] font-bold uppercase tracking-[0.35em] text-zinc-600">
+            COLLECTION SYSTEM
+          </div>
+
+          <h2 className="mt-2 font-['Oxanium'] text-2xl font-black uppercase tracking-[0.08em] text-white sm:text-3xl">
+            Login Required
+          </h2>
+
+          <div className="mx-auto mt-3 h-px w-20 bg-gradient-to-r from-transparent via-[#FFD54A]/70 to-transparent" />
+        </div>
+
+        {/* MESSAGE */}
+        <div className="mt-6 border border-white/[0.07] bg-[#050707] px-5 py-4 text-center">
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-300">
+            Authorization Required
+          </div>
+
+          <p className="mt-2 font-mono text-[7px] uppercase leading-5 tracking-[0.07em] text-zinc-600">
+            You cannot access this page without being signed in to an account.
+          </p>
+        </div>
+
+        {/* ACTION */}
+        <Button
+          onClick={() => setShowLoginRequired(false)}
+          className="group relative mt-5 h-auto w-full overflow-hidden rounded-none border border-[#FFD54A]/60 bg-[#FFD54A] px-4 py-3 font-['Oxanium'] text-[10px] font-black uppercase tracking-[0.2em] text-[#090b0d] shadow-none transition-all duration-200 hover:bg-[#FFE27A] hover:text-[#090b0d] hover:shadow-[0_0_30px_rgba(255,212,74,.18)]"
+        >
+          <span className="absolute left-0 top-0 h-px w-10 bg-white/80" />
+          <span className="absolute bottom-0 right-0 h-px w-10 bg-black/30" />
+
+          <span className="flex items-center justify-center gap-3">
+            <span>ACKNOWLEDGE</span>
+            <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">
+              →
+            </span>
+          </span>
+        </Button>
+
+        {/* SYSTEM LABEL */}
+        <div className="mt-5 flex items-center justify-center gap-3">
+          <span className="h-px w-8 bg-white/[0.06]" />
+
+          <span className="font-mono text-[5px] uppercase tracking-[0.3em] text-zinc-700">
+            SECURE SESSION GATE
+          </span>
+
+          <span className="h-px w-8 bg-white/[0.06]" />
+        </div>
+      </div>
+
+      {/* BOTTOM STATUS */}
+      <div className="flex items-center justify-between border-t border-white/[0.06] bg-[#050707] px-4 py-2">
+        <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+          STATUS: UNAUTHORIZED
+        </span>
+
+        <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/40">
+          MLPEKAYOU // SYSTEM
+        </span>
+      </div>
     </div>
-  </>
-)}
-
-{loginError && (
-  <div className="text-sm text-red-500 mb-2">
-    {loginError}
   </div>
 )}
 
-{showForgot && (
-  <button
-    onClick={handleForgotPassword}
-    className="text-sm text-[#d8b64d] hover:text-[#f2d36d] mb-5 transition-colors"
+{/* LOGIN / CREATE ACCOUNT POPUP */}
+{showLogin && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[30000]
+      flex
+      items-center
+      justify-center
+      bg-[#050708]/80
+      px-4
+      py-6
+      backdrop-blur-md
+    "
+    onClick={() => setShowLogin(false)}
   >
-    Forgot your password? Request a reset here. 
-  </button>
-)}
 
-<div className="flex flex-col sm:flex-row items-center gap-3 sm:justify-between">
-
-  {/* MOBILE CREATE ACCOUNT */}
-  <div className="sm:hidden w-full flex justify-center">
-    {authMode === "login" && (
-<Button
-  className="h-9 px-4 rounded-xl bg-[#2b2b2b] border border-[#666] text-white hover:bg-[#353535] transition-all"
-        onClick={() => {
-          setAuthMode("signup");
-          setLoginError("");
-        }}
-      >
-        Create Account
-      </Button>
-    )}
-
-    {authMode === "signup" && (
-<Button
-  variant="ghost"
-  className="text-[#d8b64d] hover:text-[#f2d36d] hover:bg-transparent"
-        onClick={() => {
-          setAuthMode("login");
-          setLoginError("");
-        }}
-      >
-        Back to Login
-      </Button>
-    )}
-  </div>
-
-  <div className="flex flex-1 justify-end gap-2 sm:ml-auto">
-
-<Button
-  variant="ghost"
-  className="text-white hover:bg-[#2d2d2d]"
-  onClick={() => setShowLogin(false)}
->
-      Cancel
-    </Button>
-
-    <Button
-    type="submit"
-className="
-flex
-items-center
-justify-center
-h-11
-px-8
-rounded-xl
-font-bold
-text-[#1b1b1b]
-bg-gradient-to-b
-from-[#f6d76c]
-to-[#c99f30]
-border
-border-[#f3e19a]
-shadow-lg
-transition-all
-duration-200
-hover:brightness-110
-hover:scale-[1.02]
-"
+    <div
+      className="
+        relative
+        w-full
+        max-w-md
+        overflow-hidden
+        rounded-2xl
+        border
+        border-[#3B4144]
+        bg-[#111517]
+        shadow-[0_30px_100px_rgba(0,0,0,.75),0_0_45px_rgba(231,200,75,.08)]
+      "
+      onClick={(e) => e.stopPropagation()}
     >
-      Continue
-    </Button>
 
-  </div>
+      {/* ========================================================
+          TOP HUD
+      ======================================================== */}
+      <div className="relative border-b border-[#30363A] bg-[#0D1113] px-6 py-5">
 
-</div>
-</form>
+        {/* HUD corners */}
+        <span className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-[#E7C84B]" />
+        <span className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-[#E7C84B]/50" />
+        <span className="absolute bottom-0 left-0 h-4 w-4 border-b-2 border-l-2 border-[#E7C84B]/40" />
+        <span className="absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-[#E7C84B]" />
+
+        <div className="flex items-center justify-between">
+
+          <div className="flex items-center gap-3">
+
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/[0.06]">
+              <span className="h-2 w-2 rounded-full bg-[#E7C84B] shadow-[0_0_12px_rgba(231,200,75,.9)]" />
+            </div>
+
+            <div>
+              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-[#E7C84B]/60">
+                MLPEKAYOU AUTH SYSTEM
+              </div>
+
+              <div className="mt-1 text-sm font-black uppercase tracking-[0.16em] text-white">
+                {authMode === "login"
+                  ? "SIGN IN"
+                  : "CREATE ACCOUNT"}
+              </div>
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowLogin(false)}
+            className="
+              flex
+              h-8
+              w-8
+              items-center
+              justify-center
+              rounded-lg
+              border
+              border-[#30363A]
+              bg-[#15191B]
+              font-mono
+              text-lg
+              text-[#666]
+              transition-all
+              hover:border-[#E7C84B]
+              hover:text-[#E7C84B]
+            "
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div className="mt-4 flex items-center gap-2">
+
+          <span className="h-px flex-1 bg-[#30363A]" />
+
+          <span className="font-mono text-[6px] uppercase tracking-[0.28em] text-[#555]">
+            SECURE CONNECTION
+          </span>
+
+          <span className="h-1 w-1 rounded-full bg-green-400 shadow-[0_0_7px_rgba(74,222,128,.8)]" />
+
+        </div>
+
+      </div>
+
+      {/* ========================================================
+          FORM
+      ======================================================== */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+
+          authMode === "login"
+            ? handleLoginSubmit()
+            : handleSignupSubmit();
+        }}
+        className="p-6 sm:p-7"
+      >
+
+        {/* Intro */}
+        <div className="mb-6">
+
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#555]">
+            {authMode === "login"
+              ? "ACCESS YOUR ACCOUNT"
+              : "JOIN MLPEKAYOU TODAY!"}
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-[#8B9295]">
+            {authMode === "login"
+              ? "Forgot your password? Guess it wrong and you will recieve an option to reset it."
+              : "Create your account and begin building your collection."}
+          </p>
+
+        </div>
+
+        {/* Email */}
+        <div className="mb-4">
+
+          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+            EMAIL ADDRESS
+          </label>
+
+          <div className="relative">
+
+            <input
+              type="email"
+              placeholder="collector@example.com"
+              value={loginEmail}
+              autoComplete="email"
+              className="
+                w-full
+                rounded-xl
+                border
+                border-[#343A3D]
+                bg-[#0D1113]
+                px-4
+                py-3.5
+                font-mono
+                text-sm
+                text-white
+                outline-none
+                placeholder:text-[#454B4E]
+                transition-all
+                focus:border-[#E7C84B]
+                focus:bg-[#101518]
+                focus:shadow-[0_0_0_3px_rgba(231,200,75,.07)]
+              "
+              onChange={(e) => {
+                setLoginEmail(e.target.value);
+                setEmailError("");
+                setLoginError("");
+                setShowForgot(false);
+              }}
+            />
+
+            <span className="pointer-events-none absolute right-3 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#3F4649]" />
+
+          </div>
+
+          {emailError && (
+            <div className="mt-2 border-l-2 border-red-500 bg-red-500/[0.06] px-3 py-2 font-mono text-[8px] uppercase tracking-[0.12em] text-red-400">
+              {emailError}
+            </div>
+          )}
+
+        </div>
+
+        {/* Password */}
+        <div className="mb-4">
+
+          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+            PASSWORD
+          </label>
+
+          <div className="relative">
+
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={loginPassword}
+              autoComplete={
+                authMode === "login"
+                  ? "current-password"
+                  : "new-password"
+              }
+              className="
+                w-full
+                rounded-xl
+                border
+                border-[#343A3D]
+                bg-[#0D1113]
+                px-4
+                py-3.5
+                font-mono
+                text-sm
+                text-white
+                outline-none
+                placeholder:text-[#454B4E]
+                transition-all
+                focus:border-[#E7C84B]
+                focus:bg-[#101518]
+                focus:shadow-[0_0_0_3px_rgba(231,200,75,.07)]
+              "
+              onChange={(e) => {
+                setLoginPassword(e.target.value);
+                setLoginError("");
+                setShowForgot(false);
+              }}
+            />
+
+            <span className="pointer-events-none absolute right-3 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#3F4649]" />
+
           </div>
 
         </div>
+
+        {/* Confirm password */}
+        {authMode === "signup" && (
+          <div className="mb-4">
+
+            <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+              CONFIRM PASSWORD
+            </label>
+
+            <input
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              autoComplete="new-password"
+              className="
+                w-full
+                rounded-xl
+                border
+                border-[#343A3D]
+                bg-[#0D1113]
+                px-4
+                py-3.5
+                font-mono
+                text-sm
+                text-white
+                outline-none
+                placeholder:text-[#454B4E]
+                transition-all
+                focus:border-[#E7C84B]
+                focus:bg-[#101518]
+                focus:shadow-[0_0_0_3px_rgba(231,200,75,.07)]
+              "
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+
+<div className="mt-3 rounded-lg border border-[#E7C84B]/20 bg-[#E7C84B]/[0.05] px-3 py-3">
+  <div className="flex items-start gap-2.5">
+
+    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-[#E7C84B]/40 bg-[#E7C84B]/10">
+      <span className="font-mono text-[9px] font-black text-[#E7C84B]">
+        !
+      </span>
+    </div>
+
+    <p className="font-mono text-[9px] font-semibold uppercase leading-5 tracking-[0.12em] text-[#B8BDC0]">
+      EMAIL VERIFICATION IS REQUIRED. GMAIL MAY SORT THIS INTO SPAM, AND MAY REQUIRE YOU TO MARK IT AS "SAFE" AND THEN REFRESH THE E-MAIL TO ACCESS THE LINK.
+    </p>
+
+  </div>
+</div>
+
+          </div>
+        )}
+
+        {/* Error */}
+        {loginError && (
+          <div className="mb-4 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/[0.06] p-3">
+
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-red-500/40 bg-red-500/10 font-black text-red-400">
+              !
+            </div>
+
+            <div>
+              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-red-400">
+                AUTHENTICATION ERROR
+              </div>
+
+              <div className="mt-1 text-xs leading-5 text-red-300/80">
+                {loginError}
+              </div>
+            </div>
+
+          </div>
+        )}
+{/* FORGOT PASSWORD */}
+{authMode === "login" && (
+  <div className="mb-5 flex justify-end">
+    <button
+      type="button"
+      onClick={() => {
+        setShowLogin(false);
+        setShowForgotPassword(true);
+        setLoginError("");
+        setEmailError("");
+      }}
+      className="
+        group
+        relative
+        font-mono
+        text-[8px]
+        font-bold
+        uppercase
+        tracking-[0.18em]
+        text-[#777]
+        transition-all
+        duration-200
+        hover:text-[#E7C84B]
+      "
+    >
+      <span className="group-hover:drop-shadow-[0_0_7px_rgba(231,200,75,.35)]">
+        FORGOT PASSWORD?
+      </span>
+
+      <span className="absolute -bottom-1 left-0 h-px w-0 bg-[#E7C84B] transition-all duration-200 group-hover:w-full" />
+    </button>
+  </div>
+)}
+
+        {/* Actions */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+          {/* Mode switch */}
+          <Button
+            type="button"
+            variant="ghost"
+            className="
+              h-10
+              rounded-xl
+              border
+              border-[#30363A]
+              bg-[#15191B]
+              px-4
+              font-mono
+              text-[8px]
+              font-bold
+              uppercase
+              tracking-[0.16em]
+              text-[#777]
+              hover:border-[#E7C84B]/60
+              hover:bg-[#1A1F21]
+              hover:text-[#E7C84B]
+            "
+            onClick={() => {
+              setAuthMode(
+                authMode === "login"
+                  ? "signup"
+                  : "login"
+              );
+              setLoginError("");
+              setShowForgot(false);
+            }}
+          >
+            {authMode === "login"
+              ? "CREATE ACCOUNT"
+              : "BACK TO LOGIN"}
+          </Button>
+
+          <div className="flex gap-2">
+
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowLogin(false)}
+              className="
+                h-10
+                rounded-xl
+                border
+                border-[#30363A]
+                bg-transparent
+                px-4
+                font-mono
+                text-[8px]
+                font-bold
+                uppercase
+                tracking-[0.16em]
+                text-[#666]
+                hover:border-[#555]
+                hover:bg-[#15191B]
+                hover:text-white
+              "
+            >
+              CANCEL
+            </Button>
+
+            <Button
+              type="submit"
+              className="
+                group
+                relative
+                h-10
+                overflow-hidden
+                rounded-xl
+                border
+                border-[#E7C84B]
+                bg-[#E7C84B]
+                px-6
+                font-mono
+                text-[8px]
+                font-black
+                uppercase
+                tracking-[0.2em]
+                text-[#111517]
+                shadow-[0_0_18px_rgba(231,200,75,.14)]
+                transition-all
+                hover:bg-[#FFE477]
+                hover:shadow-[0_0_25px_rgba(231,200,75,.25)]
+                active:scale-[0.98]
+              "
+            >
+              <span className="relative z-10">
+                {authMode === "login"
+                  ? "AUTHENTICATE"
+                  : "INITIALIZE"}
+              </span>
+
+              <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 skew-x-[-20deg] bg-white/30 transition-all duration-500 group-hover:left-[115%]" />
+            </Button>
+
+          </div>
+
+        </div>
+
+      </form>
+
+      {/* Bottom status rail */}
+      <div className="border-t border-[#252A2D] bg-[#0D1113] px-6 py-3">
+
+        <div className="flex items-center justify-between">
+
+          <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-[#444]">
+            AUTH NODE 01
+          </span>
+
+          <span className="flex items-center gap-2 font-mono text-[6px] uppercase tracking-[0.25em] text-green-400/60">
+            <span className="h-1 w-1 rounded-full bg-green-400" />
+            ONLINE
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
 )}
 
 {/* MOBILE BOTTOM NAV */}
 <div
-className={`
-sm:hidden
-fixed
-bottom-6
-z-[99999]
-rounded-full
-overflow-hidden
-transition-all
-duration-500
-ease-[cubic-bezier(0.22,1,0.36,1)]
-grid
-place-items-center
-${
-  mobileNavCollapsed
-    ? "grid-cols-1"
-    : "grid-cols-5"
-}
-`}
-style={{
-width: mobileNavCollapsed
-  ? "68px"
-  : "calc(100% - 48px)",
-
-maxWidth: mobileNavCollapsed
-  ? "68px"
-  : "360px",
-
-height: "68px",
-
-left: mobileNavCollapsed
-  ? "15%"
-  : "50%",
-
-background: "rgba(255,255,255,0.03)",
-
-backdropFilter: "blur(3px) saturate(90%) brightness(1.02)",
-WebkitBackdropFilter: "blur(3px) saturate(90%) brightness(1.02)",
-
-boxShadow: `
-  inset 0 1px 0 rgba(255,255,255,0.35),
-  inset 0 -1px 0 rgba(255,255,255,0.12),
-  0 4px 16px rgba(0,0,0,0.08)
-`,
-
-transform: "translateX(-50%)",
-WebkitTransform: "translateX(-50%)",
-
-  willChange: "transform",
-
-  backfaceVisibility: "hidden",
-  WebkitBackfaceVisibility: "hidden",
-
-  contain: "paint",
-}}
->
-
-<div
-className={`
-absolute
-top-1/2
-h-[60px]
-w-[60px]
-pointer-events-none
-${mobileNavCollapsed ? "opacity-0" : "opacity-100"}
-`}
+  className={`
+    sm:hidden
+    fixed
+    bottom-6
+    z-[99999]
+    overflow-hidden
+    transition-all
+    duration-500
+    ease-[cubic-bezier(0.22,1,0.36,1)]
+    grid
+    place-items-center
+    ${
+      mobileNavCollapsed
+        ? "grid-cols-1"
+        : "grid-cols-5"
+    }
+  `}
   style={{
-background: "rgba(255,255,255,0.06)",
+    width: mobileNavCollapsed
+      ? "68px"
+      : "calc(100% - 48px)",
 
-boxShadow: `
-  inset 0 1px 0 rgba(255,255,255,0.08),
-  0 1px 3px rgba(0,0,0,0.02)
-`,
+    maxWidth: mobileNavCollapsed
+      ? "68px"
+      : "360px",
 
-left:
-  location.pathname === "/"
-    ? "9.5%"
-    : location.pathname.startsWith("/collections")
-    ? "30%"
-    : location.pathname.startsWith("/trading-post")
-    ? "50%"
-    : location.pathname.startsWith("/explore")
-    ? "70%"
-    : "90%",
+    height: "68px",
 
-transform: "translate(-50%, -50%)",
-borderRadius:
-  location.pathname === "/"
-    ? "30px 14px 14px 30px"
-    : location.pathname.startsWith("/collections")
-    ? "18px"
-    : location.pathname.startsWith("/trading-post")
-    ? "18px"
-    : location.pathname.startsWith("/explore")
-    ? "18px"
-    : "14px 30px 30px 14px",
-    transition:
-      "left 350ms cubic-bezier(0.22, 1.4, 0.36, 1), transform 350ms cubic-bezier(0.22, 1.4, 0.36, 1)",
+    left: mobileNavCollapsed
+      ? "15%"
+      : "50%",
 
-    willChange: "left, transform",
+    background: "rgba(13, 17, 19, 0.97)",
+
+    backdropFilter: "blur(8px) saturate(120%)",
+    WebkitBackdropFilter: "blur(8px) saturate(120%)",
+
+    border: "1px solid rgba(231, 200, 75, 0.28)",
+
+    boxShadow: `
+      0 8px 24px rgba(0,0,0,0.48),
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      inset 0 -1px 0 rgba(0,0,0,0.55),
+      0 0 18px rgba(231,200,75,0.07)
+    `,
+
+    transform: "translateX(-50%)",
+    WebkitTransform: "translateX(-50%)",
+
+    willChange: "transform",
+
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden",
+
+    contain: "paint",
   }}
-/>
+>
+  {/* STARK HUD EDGE */}
+  <span className="pointer-events-none absolute left-0 top-0 z-20 h-px w-16 bg-gradient-to-r from-[#E7C84B] via-[#E7C84B]/70 to-transparent" />
 
-    {/* HOMEPAGE */}
-  <button
-onClick={() => {
-  if (mobileNavCollapsed) {
-    setMobileNavCollapsed(false);
-    return;
-  }
+  <span className="pointer-events-none absolute right-0 bottom-0 z-20 h-px w-16 bg-gradient-to-l from-[#E7C84B]/70 via-[#E7C84B]/40 to-transparent" />
 
-  setShowMobileProgressMenu(false);
-  setShowMobileIsoMenu(false);
-  setShowMobileLeaderboardMenu(false);
-  setShowMobileHomeMenu(false);
+  <span className="pointer-events-none absolute left-0 top-0 z-20 h-3 w-3 border-l border-t border-[#E7C84B]/70" />
 
-  navigate("/");
+  <span className="pointer-events-none absolute right-0 top-0 z-20 h-3 w-3 border-r border-t border-[#E7C84B]/30" />
+
+  <span className="pointer-events-none absolute bottom-0 left-0 z-20 h-3 w-3 border-b border-l border-[#E7C84B]/30" />
+
+  <span className="pointer-events-none absolute bottom-0 right-0 z-20 h-3 w-3 border-b border-r border-[#E7C84B]/70" />
+
+  {/* ACTIVE PAGE INDICATOR */}
+  <div
+    className={`
+      absolute
+      top-1/2
+      h-[60px]
+      w-[60px]
+      pointer-events-none
+      ${mobileNavCollapsed ? "opacity-0" : "opacity-100"}
+    `}
+style={{
+  width: "58px",
+  height: "54px",
+
+  background: "rgba(231, 200, 75, 0.055)",
+
+  border: "1px solid rgba(231, 200, 75, 0.32)",
+
+  boxShadow: `
+    inset 0 1px 0 rgba(255,255,255,0.045),
+    inset 0 -1px 0 rgba(0,0,0,0.35),
+    0 0 14px rgba(231,200,75,0.07)
+  `,
+
+  left:
+    location.pathname === "/"
+      ? "9.5%"
+      : location.pathname.startsWith("/collections")
+      ? "30%"
+      : location.pathname.startsWith("/trading-post")
+      ? "50%"
+      : location.pathname.startsWith("/explore")
+      ? "70%"
+      : "90%",
+
+  transform: "translate(-50%, -50%)",
+
+  borderRadius:
+    location.pathname === "/"
+      ? "30px 12px 12px 30px"
+      : location.pathname.startsWith("/collections")
+      ? "12px"
+      : location.pathname.startsWith("/trading-post")
+      ? "12px"
+      : location.pathname.startsWith("/explore")
+      ? "12px"
+      : "12px 30px 30px 12px",
+
+  transition:
+    "left 350ms cubic-bezier(0.22, 1.4, 0.36, 1), transform 350ms cubic-bezier(0.22, 1.4, 0.36, 1)",
+
+  willChange: "left, transform",
 }}
-className={`
-relative
-z-50
-flex
-items-center
-justify-center
-text-[#e3dc5e] 
-transition-all
-duration-300
-h-full
-${
-  mobileNavCollapsed
-    ? "w-[68px]"
-    : "px-3"
-}
-`}
+  />
+
+  {/* HOMEPAGE */}
+  <button
+    onClick={() => {
+      if (mobileNavCollapsed) {
+        setMobileNavCollapsed(false);
+        return;
+      }
+
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
+
+      requestNavigation("/");
+    }}
+    className={`
+      relative
+      z-50
+      flex
+      h-full
+      items-center
+      justify-center
+      text-[#E7C84B]
+      transition-all
+      duration-300
+      ${
+        mobileNavCollapsed
+          ? "w-[68px]"
+          : "px-3"
+      }
+    `}
   >
-    <Home className="h-6 w-6" />
+    <span className="flex flex-col items-center justify-center gap-0.5">
+      <Home className="h-5 w-5 drop-shadow-[0_0_6px_rgba(231,200,75,0.35)]" />
+
+      {!mobileNavCollapsed && (
+        <span className="font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-[#E7C84B]/80">
+          HOME
+        </span>
+      )}
+    </span>
   </button>
 
   {/* COLLECTIONS */}
@@ -1768,19 +2560,33 @@ ${
       setShowMobileIsoMenu(false);
       setShowMobileLeaderboardMenu(false);
       setShowMobileHomeMenu(false);
-      navigate("/collections");
+      requestNavigation("/collections");
     }}
     className={`
-relative z-10 flex items-center justify-center h-full px-3 text-[#e3dc5e] 
-transition-all duration-300
-${
-  mobileNavCollapsed
-    ? "hidden"
-    : "opacity-100 scale-100"
-}
-`}
+      relative
+      z-10
+      flex
+      h-full
+      items-center
+      justify-center
+      px-3
+      text-[#E7C84B]
+      transition-all
+      duration-300
+      ${
+        mobileNavCollapsed
+          ? "hidden"
+          : "opacity-100 scale-100"
+      }
+    `}
   >
-    <Sparkles className="h-6 w-6" />
+    <span className="flex flex-col items-center justify-center gap-0.5">
+      <Sparkles className="h-5 w-5 drop-shadow-[0_0_6px_rgba(231,200,75,0.35)]" />
+
+      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-[#E7C84B]/80">
+        COLLECTIONS
+      </span>
+    </span>
   </button>
 
   {/* TRADES */}
@@ -1790,18 +2596,33 @@ ${
       setShowMobileIsoMenu(false);
       setShowMobileLeaderboardMenu(false);
       setShowMobileHomeMenu(false);
-      navigate("/trading-post");
+      requestNavigation("/trading-post");
     }}
     className={`
-relative z-10 flex items-center justify-center h-full px-3 text-[#e3dc5e] 
-${
-mobileNavCollapsed
-  ? "hidden"
-  : "opacity-100 scale-100"
-}
-`}
+      relative
+      z-10
+      flex
+      h-full
+      items-center
+      justify-center
+      px-3
+      text-[#E7C84B]
+      transition-all
+      duration-300
+      ${
+        mobileNavCollapsed
+          ? "hidden"
+          : "opacity-100 scale-100"
+      }
+    `}
   >
-    <ArrowLeftRight className="h-6 w-6" />
+    <span className="flex flex-col items-center justify-center gap-0.5">
+      <ArrowLeftRight className="h-5 w-5 drop-shadow-[0_0_6px_rgba(231,200,75,0.35)]" />
+
+      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-[#E7C84B]/80">
+        TRADES
+      </span>
+    </span>
   </button>
 
   {/* FORUM */}
@@ -1811,52 +2632,77 @@ mobileNavCollapsed
       setShowMobileIsoMenu(false);
       setShowMobileLeaderboardMenu(false);
       setShowMobileHomeMenu(false);
-      navigate("/explore");
+      requestNavigation("/explore");
     }}
     className={`
-relative z-10 flex items-center justify-center h-full px-3 text-[#e3dc5e] 
-transition-all duration-300
-${
-mobileNavCollapsed
-  ? "hidden"
-  : "opacity-100 scale-100"
-}
-`}
+      relative
+      z-10
+      flex
+      h-full
+      items-center
+      justify-center
+      px-3
+      text-[#E7C84B]
+      transition-all
+      duration-300
+      ${
+        mobileNavCollapsed
+          ? "hidden"
+          : "opacity-100 scale-100"
+      }
+    `}
   >
-    <Users className="h-6 w-6" />
+    <span className="flex flex-col items-center justify-center gap-0.5">
+      <Users className="h-5 w-5 drop-shadow-[0_0_6px_rgba(231,200,75,0.35)]" />
+
+      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-[#E7C84B]/80">
+        EXPLORE
+      </span>
+    </span>
   </button>
 
-{/* PROFILE */}
-<button
-  onClick={() => {
-    setShowMobileProgressMenu(false);
-    setShowMobileIsoMenu(false);
-    setShowMobileLeaderboardMenu(false);
-    setShowMobileHomeMenu(false);
+  {/* PROFILE */}
+  <button
+    onClick={() => {
+      setShowMobileProgressMenu(false);
+      setShowMobileIsoMenu(false);
+      setShowMobileLeaderboardMenu(false);
+      setShowMobileHomeMenu(false);
 
-    if (!user) {
-      setAuthMode("login");
-      setShowLogin(true);
-      return;
-    }
+      if (!user) {
+        setAuthMode("login");
+        setShowLogin(true);
+        return;
+      }
 
-    navigate("/mobile-profile");
-  }}
-  className={`
-relative z-10
-flex items-center justify-center
-h-full px-3
-text-[#e3dc5e]  
-transition-all duration-300
-${
-mobileNavCollapsed
-  ? "hidden"
-  : "opacity-100 scale-100"
-}
-`}
->
-  <User className="h-6 w-6" />
-</button>
+      requestNavigation("/mobile-profile");
+    }}
+    className={`
+      relative
+      z-10
+      flex
+      h-full
+      items-center
+      justify-center
+      px-3
+      text-[#E7C84B]
+      transition-all
+      duration-300
+      ${
+        mobileNavCollapsed
+          ? "hidden"
+          : "opacity-100 scale-100"
+      }
+    `}
+  >
+    <span className="flex flex-col items-center justify-center gap-0.5">
+      <User className="h-5 w-5 drop-shadow-[0_0_6px_rgba(231,200,75,0.35)]" />
+
+      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-[#E7C84B]/80">
+        PROFILE
+      </span>
+    </span>
+  </button>
 </div>
 </>
 );

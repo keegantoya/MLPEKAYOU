@@ -64,107 +64,192 @@ const CatalogSidebar = ({
     }}
   />
 
-        {/* SECTION TITLE */}
-        <h3 className="mb-4 text-[10px] font-bold uppercase tracking-[0.35em] text-[#FFD400]">
-  Browse Collections
-</h3>
+{/* SECTION TITLE */}
+<div className="mb-4 flex items-center gap-2 border-b border-[#252b2f] pb-3">
+  <span className="h-1.5 w-1.5 bg-[#E7C84B] shadow-[0_0_7px_#E7C84B]" />
 
-        {/* CATEGORY LIST */}
-        <div className="space-y-1 mb-6">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat.slug;
-            const Icon = cat
+  <h3 className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[#E7C84B]">
+    Browse Collections
+  </h3>
 
-            return (
-              <button
-                key={cat.slug}
-                onClick={() => onCategoryChange(cat.slug)}
-                className={`group w-full flex items-center justify-between rounded-xl px-3 py-3 text-sm transition-all duration-200 ${
-  isActive
-    ? "bg-[#f5e6a8] text-[#111111] border border-[#FFD400] shadow-[0_0_20px_rgba(255,212,0,.35)]"
-    : "bg-[#181818] border border-[#FFD400]/10 text-white/80 hover:border-[#FFD400]/40 hover:bg-[#202020]"
-}`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  
-                  <span className="truncate text-left font-medium text-[12px] leading-tight">
-  {cat.name}
-</span>
-                </div>
+  <span className="ml-auto font-mono text-[7px] uppercase tracking-[0.15em] text-zinc-700">
+    NAV
+  </span>
+</div>
 
-                <div className="shrink-0" />
-              </button>
-            );
-          })}
-        </div>
+{/* CATEGORY LIST */}
+<div className="mb-6 space-y-1">
 
-        {/* FILTERS TITLE */}
-       <h3 className="mb-4 text-[10px] font-bold uppercase tracking-[0.35em] text-[#FFD400] border-t border-[#FFD400]/15 pt-4">
-  Filters
-</h3>
+  {categories.map((cat, index) => {
+    const isActive = activeCategory === cat.slug;
+
+    return (
+      <button
+        key={cat.slug}
+        onClick={() => onCategoryChange(cat.slug)}
+        className={`group relative flex w-full items-center overflow-hidden border px-3 py-2.5 text-left transition-all duration-200 ${
+          isActive
+            ? "border-[#E7C84B] bg-[#E7C84B] text-[#090b0c] shadow-[0_0_18px_rgba(231,200,75,.18)]"
+            : "border-[#30363a] bg-[#101518] text-zinc-400 hover:border-[#E7C84B]/70 hover:bg-[#13191c] hover:text-white"
+        }`}
+      >
+
+        {/* Active indicator */}
+        <span
+          className={`mr-3 h-1.5 w-1.5 shrink-0 ${
+            isActive
+              ? "bg-[#090b0c]"
+              : "bg-[#E7C84B]/30 group-hover:bg-[#E7C84B]"
+          }`}
+        />
+
+        <span className="min-w-0 flex-1 truncate font-mono text-[9px] font-bold uppercase tracking-[0.16em]">
+          {cat.name}
+        </span>
+
+        <span
+          className={`ml-3 font-mono text-[7px] tracking-[0.12em] ${
+            isActive
+              ? "text-[#090b0c]/50"
+              : "text-zinc-700 group-hover:text-[#E7C84B]/60"
+          }`}
+        >
+          {String(index + 1).padStart(2, "0")}
+        </span>
+
+        {/* HUD corner */}
+        {isActive && (
+          <>
+            <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l-2 border-t-2 border-[#090b0c]/50" />
+            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b-2 border-r-2 border-[#090b0c]/30" />
+          </>
+        )}
+
+      </button>
+    );
+  })}
+
+</div>
+
 
 {/* SORT BY */}
 <div className="mb-4">
-<label className="block mb-2 text-xs font-medium text-white/60">
-  Sort By
-</label>
+  <div className="mb-2 flex items-center gap-2">
+    <span className="h-1.5 w-1.5 bg-[#E7C84B] shadow-[0_0_7px_#E7C84B]" />
+
+    <label className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[#E7C84B]">
+      Sort By
+    </label>
+
+    <span className="ml-auto font-mono text-[7px] uppercase tracking-[0.15em] text-zinc-700">
+      ORDER
+    </span>
+  </div>
 
   <div className="space-y-2">
-    <button
-      type="button"
-      onClick={() => onSortChange("release")}
-className={`w-full flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-  sortBy === "release"
-    ? "bg-[#f5e6a8] text-[#111111] border border-[#FFD400] shadow-[0_0_20px_rgba(255,212,0,.35)]"
-    : "bg-[#181818] border border-[#FFD400]/10 text-white/80 hover:border-[#FFD400]/40 hover:bg-[#202020]"
-}`}
-    >
-      <span>Release Order</span>
-      {sortBy === "release" && (
-        <ChevronRight className="h-4 w-4 text-[#111111]" />
-      )}
-    </button>
 
-    <button
-      type="button"
-      onClick={() => onSortChange("set")}
-      className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-        sortBy === "set"
-          ? "bg-gradient-to-r from-[#f6e1a0] to-[#e5c56b] text-[#3b2a1a] shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
-          : "bg-white/[0.04] border border-white/10 text-white/80 hover:bg-white/[0.06]"
-      }`}
-    >
-      <span>Set Order</span>
-      {sortBy === "set" && (
-        <ChevronRight className="h-4 w-4 text-[#111111]" />
-      )}
-    </button>
+
+{/* SORT BY */}
+
+<div className="space-y-1">
+  <button
+    type="button"
+    onClick={() => onSortChange("release")}
+    className={`group relative flex w-full items-center justify-between overflow-hidden border px-4 py-3 text-left transition-all duration-200 ${
+      sortBy === "release"
+        ? "border-[#E7C84B] bg-[#E7C84B] text-[#090b0c] shadow-[0_0_18px_rgba(231,200,75,.16)]"
+        : "border-[#30363a] bg-[#101518] text-zinc-400 hover:border-[#E7C84B]/70 hover:bg-[#13191c] hover:text-white"
+    }`}
+  >
+    <span className="flex items-center gap-2">
+      <span
+        className={`h-1.5 w-1.5 ${
+          sortBy === "release"
+            ? "bg-[#090b0c]"
+            : "bg-[#E7C84B]/30 group-hover:bg-[#E7C84B]"
+        }`}
+      />
+
+      <span className="font-mono text-[9px] font-bold uppercase tracking-[0.18em]">
+        Release Order
+      </span>
+    </span>
+
+    {sortBy === "release" && (
+      <ChevronRight className="h-4 w-4" />
+    )}
+  </button>
+
+  <button
+    type="button"
+    onClick={() => onSortChange("set")}
+    className={`group relative flex w-full items-center justify-between overflow-hidden border px-4 py-3 text-left transition-all duration-200 ${
+      sortBy === "set"
+        ? "border-[#E7C84B] bg-[#E7C84B] text-[#090b0c] shadow-[0_0_18px_rgba(231,200,75,.16)]"
+        : "border-[#30363a] bg-[#101518] text-zinc-400 hover:border-[#E7C84B]/70 hover:bg-[#13191c] hover:text-white"
+    }`}
+  >
+    <span className="flex items-center gap-2">
+      <span
+        className={`h-1.5 w-1.5 ${
+          sortBy === "set"
+            ? "bg-[#090b0c]"
+            : "bg-[#E7C84B]/30 group-hover:bg-[#E7C84B]"
+        }`}
+      />
+
+      <span className="font-mono text-[9px] font-bold uppercase tracking-[0.18em]">
+        Set Order
+      </span>
+    </span>
+
+    {sortBy === "set" && (
+      <ChevronRight className="h-4 w-4" />
+    )}
+  </button>
+</div>
   </div>
 </div>
 
 {/* HIDE MASTERED TOGGLE */}
-<div className="flex items-center justify-between">
-<span className="text-sm font-medium text-white/85">
-  Hide Mastered Sets
-</span>
 
-  <button
-    type="button"
-    onClick={onToggleHideMastered}
-    aria-pressed={hideMastered}
-className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-all duration-200 ${
-  hideMastered
-    ? "bg-[#FFD400] border-[#FFD400]"
-    : "bg-[#202020] border-[#FFD400]/20"
-}`}
+<button
+  type="button"
+  onClick={onToggleHideMastered}
+  aria-pressed={hideMastered}
+  className={`group relative flex h-11 w-full items-center justify-between overflow-hidden border px-4 transition-all duration-200 ${
+    hideMastered
+      ? "border-[#E7C84B] bg-[#E7C84B]/10"
+      : "border-[#30363a] bg-[#101518] hover:border-[#E7C84B]/60 hover:bg-[#13191c]"
+  }`}
+>
+  <span
+    className={`font-mono text-[9px] font-bold uppercase tracking-[0.18em] ${
+      hideMastered
+        ? "text-[#E7C84B]"
+        : "text-zinc-500 group-hover:text-white"
+    }`}
+  >
+    Hide Mastered
+  </span>
+
+  <span
+    className={`relative flex h-5 w-9 shrink-0 items-center border transition-all duration-200 ${
+      hideMastered
+        ? "border-[#E7C84B] bg-[#E7C84B]"
+        : "border-[#454c50] bg-[#171c1f]"
+    }`}
   >
     <span
-      className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-transform duration-200 ${
-        hideMastered ? "translate-x-5" : "translate-x-0"
+      className={`absolute left-0.5 h-3.5 w-3.5 transition-transform duration-200 ${
+        hideMastered
+          ? "translate-x-[16px] bg-[#090b0c]"
+          : "translate-x-0 bg-zinc-500"
       }`}
     />
-  </button>
-</div>
+  </span>
+</button>
+
       </nav>
     </aside>
   );

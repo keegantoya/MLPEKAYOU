@@ -1,115 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeft } from "lucide-react";
-
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
-import maipfp from "@/assets/avatars/maipfp.webp";
-import TerriAvatar from "@/assets/avatars/terrypfp.webp";
-import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
-
-import spider from "/website-assets/spider.webp";
-
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
-
-const avatarMap: Record<string, string> = {
-  "avatar001.webp": avatar001,
-  "avatar002.webp": avatar002,
-  "avatar003.webp": avatar003,
-  "avatar004.webp": avatar004,
-  "avatar005.webp": avatar005,
-  "avatar006.webp": avatar006,
-  "avatar007.webp": avatar007,
-  "avatar008.webp": avatar008,
-  "avatar009.webp": avatar009,
-  "avatar010.webp": avatar010,
-  "avatar011.webp": avatar011,
-  "avatar012.webp": avatar012,
-  "avatar013.webp": avatar013,
-  "avatar014.webp": avatar014,
-  "avatar015.webp": avatar015,
-  "avatar016.webp": avatar016,
-  "avatar017.webp": avatar017,
-  "avatar018.webp": avatar018,
-  "avatar019.webp": avatar019,
-  "avatar020.webp": avatar020,
-  "avatar021.webp": avatar021,
-  "avatar022.webp": avatar022,
-  "avatar023.webp": avatar023,
-  "avatar024.webp": avatar024,
-  "avatar025.webp": avatar025,
-  "avatar026.webp": avatar026,
-  "avatar027.webp": avatar027,
-  "heimantouavatar": heimantouAvatar,
-  "heimantouavatar.webp": heimantouAvatar,
-  "keeganpfp2.webp": KeeganAvatar,
-  "maipfp.webp": maipfp,
-  "terrypfp.webp": TerriAvatar,
-};
-
-const VERIFIED_USERS = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "408a516c-ee80-4ff8-a869-493e1fd5d961": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "6247b70d-3f55-493c-8eee-3badedf581db": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-    "325585dd-c617-4dd2-8314-d608273cd5f6": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-  "22f7a392-b5b5-4aec-a3b3-6546071593fd": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-};
+import { ArrowLeft, Trophy, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { getProfileAssets } from "./Everypony/profile-assets";
 
 const sets: Record<string, { name: string; total: number }> = {
   "1": { name: "Eternal Moon First Edition", total: 186 },
@@ -121,9 +14,9 @@ const sets: Record<string, { name: string; total: number }> = {
   "7": { name: "Fun Moments First Edition", total: 127 },
   "8": { name: "Fun Moments Second Edition", total: 136 },
   "11": { name: "Fun Moments Third Edition", total: 148 },
-  "friendshipsbegin": { name: "Friendships Begin", total: 194 },
-  "fantasywonderland": { name: "Fantasy Wonderland", total: 191 },
-  "discord": { name: "Discord", total: 191 },
+  friendshipsbegin: { name: "Friendships Begin", total: 194 },
+  fantasywonderland: { name: "Fantasy Wonderland", total: 191 },
+  discord: { name: "Discord", total: 191 },
 };
 
 const isoSets = [
@@ -132,148 +25,205 @@ const isoSets = [
     name: "Eternal Moon: First Edition",
     folder: "first-edition-moon",
     prefix: "M1",
-    rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 }
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 54,
+      HR: 36,
+      UR: 16,
+      LSR: 15,
+      SGR: 8,
+      SC: 7,
+    },
   },
   {
     id: "2",
     name: "Eternal Moon: Second Edition",
     folder: "second-edition-moon",
     prefix: "M2",
-    rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, "SHINING ZR": 1 }
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 54,
+      HR: 30,
+      UR: 16,
+      LSR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      "SHINING ZR": 1,
+    },
   },
   {
-  id: "4",
-  name: "Star: First Edition",
-  folder: "star-one",
-  prefix: "S1",
-  rarities: {
-    SSR: 20,
-    SCR: 18,
-    UR: 18,
-    USR: 15,
-    AR: 9,
-    OR: 7,
-    BP: 9,
-    SAR: 9
-  }
-},
+    id: "4",
+    name: "Star: First Edition",
+    folder: "star-one",
+    prefix: "S1",
+    rarities: {
+      SSR: 20,
+      SCR: 18,
+      UR: 18,
+      USR: 15,
+      AR: 9,
+      OR: 7,
+      BP: 9,
+      SAR: 9,
+    },
+  },
   {
     id: "5",
     name: "Rainbow: First Edition",
     folder: "rainbow-one",
     prefix: "R1",
-    rarities: { R: 30, SR: 15, FR: 18, TR: 12, TGR: 8, MTR: 18, SSR: 15, UR: 15, USR: 8, XR: 7 }
+    rarities: {
+      R: 30,
+      SR: 15,
+      FR: 18,
+      TR: 12,
+      TGR: 8,
+      MTR: 18,
+      SSR: 15,
+      UR: 15,
+      USR: 8,
+      XR: 7,
+    },
   },
   {
-  id: "6",
-  name: "Rainbow: Second Edition",
-  folder: "rainbow-two",
-  prefix: "R2",
-  rarities: {
-    BASE: 18,
-    R: 30,
-    SR: 14,
-    FR: 18,
-    TR: 12,
-    TGR: 8,
-    ST: 20,
-    SSR: 15,
-    UR: 19,
-    USR: 8,
-    XR: 8
-  }
-},
+    id: "6",
+    name: "Rainbow: Second Edition",
+    folder: "rainbow-two",
+    prefix: "R2",
+    rarities: {
+      BASE: 18,
+      R: 30,
+      SR: 14,
+      FR: 18,
+      TR: 12,
+      TGR: 8,
+      ST: 20,
+      SSR: 15,
+      UR: 19,
+      USR: 8,
+      XR: 8,
+    },
+  },
   {
     id: "7",
     name: "Fun Moments: First Edition",
     folder: "fun-moments-one",
     prefix: "FM1",
-    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 }
+    rarities: {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      CR: 12,
+    },
   },
   {
     id: "8",
     name: "Fun Moments: Second Edition",
     folder: "fun-moments-two",
     prefix: "FM2",
-    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR:9, CR: 12 }
+    rarities: {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      UGR: 9,
+      CR: 12,
+    },
   },
   {
-  id: "3",
-  name: "Eternal Moon: Third Edition",
-  folder: "third-edition-moon",
-  prefix: "M3",
-  rarities: {
-    R: 60,
-    SR: 40,
-    SSR: 40,
-    HR: 60,
-    LSR: 32,
-    UR: 18,
-    SGR: 16,
-    ZR: 14,
-    SC: 7,
-    SZR: 3
-  }
-},
- {
+    id: "3",
+    name: "Eternal Moon: Third Edition",
+    folder: "third-edition-moon",
+    prefix: "M3",
+    rarities: {
+      R: 60,
+      SR: 40,
+      SSR: 40,
+      HR: 60,
+      LSR: 32,
+      UR: 18,
+      SGR: 16,
+      ZR: 14,
+      SC: 7,
+      SZR: 3,
+    },
+  },
+  {
     id: "11",
     name: "Fun Moments: Second Edition",
     folder: "fun-moments-two",
     prefix: "FM2",
-    rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR:9, CR: 12, SCR: 12 }
+    rarities: {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      UGR: 9,
+      CR: 12,
+      SCR: 12,
+    },
   },
   {
     id: "friendshipsbegin",
     name: "Friendships Begin",
     folder: "friendshipsbegin",
     prefix: "SD01",
-    rarities: {}
+    rarities: {},
   },
   {
-  id: "fantasywonderland",
-  name: "Fantasy Wonderland",
-  folder: "fantasywonderland",
-  prefix: "BP01",
-  rarities: {
-    C: 48,
-    U: 18,
-    ER: 6,
-    SR: 14,
-    SPR: 28,
-    GR: 12,
-    CR: 12,
-    RR: 6,
-    PER: 12,
-    PSPR: 11,
-    PGR: 6,
-    PCR: 12,
-    PRR: 6
-  }
-},
-{
-  id: "discord",
-  name: "Discord",
-  folder: "discord",
-  prefix: "BP02",
-  rarities: {
-    C: 48,
-    U: 18,
-    ER: 6,
-    SR: 14,
-    SPR: 28,
-    GR: 12,
-    CR: 12,
-    RR: 6,
-    PER: 12,
-    PSPR: 11,
-    PGR: 6,
-    PCR: 12,
-    PRR: 6
-  }
-}
+    id: "fantasywonderland",
+    name: "Fantasy Wonderland",
+    folder: "fantasywonderland",
+    prefix: "BP01",
+    rarities: {
+      C: 48,
+      U: 18,
+      ER: 6,
+      SR: 14,
+      SPR: 28,
+      GR: 12,
+      CR: 12,
+      RR: 6,
+      PER: 12,
+      PSPR: 11,
+      PGR: 6,
+      PCR: 12,
+      PRR: 6,
+    },
+  },
+  {
+    id: "discord",
+    name: "Discord",
+    folder: "discord",
+    prefix: "BP02",
+    rarities: {
+      C: 48,
+      U: 18,
+      ER: 6,
+      SR: 14,
+      SPR: 28,
+      GR: 12,
+      CR: 12,
+      RR: 6,
+      PER: 12,
+      PSPR: 11,
+      PGR: 6,
+      PCR: 12,
+      PRR: 6,
+    },
+  },
 ];
 
-const medals = ["🥇", "🥇", "🥇"];
 const forcedStillCollecting = [""];
 
 const manualPlacements: Record<string, string[]> = {
@@ -295,486 +245,831 @@ const CommunitySet = () => {
     if (!id || !set) return;
 
     const load = async () => {
-
       const { data: progress } = await supabase
-  .from("collection_progress_raw")
-  .select("user_id, progress, updated_at")
-.eq(
-  "set_id",
-  id === "friendshipsbegin"
-    ? "SD"
-    : id === "fantasywonderland"
-    ? "FW"
-    : id === "discord"
-    ? "12"
-    : id
-);
+        .from("collection_progress_raw")
+        .select("user_id, progress, updated_at")
+        .eq(
+          "set_id",
+          id === "friendshipsbegin"
+            ? "SD"
+            : id === "fantasywonderland"
+              ? "FW"
+              : id === "discord"
+                ? "12"
+                : id
+        );
 
       const { data: profiles } = await supabase
-  .from("profiles")
-  .select("id, username, avatar_url");
+        .from("profiles")
+        .select("id, username, avatar_url");
 
-const { data: tradingProfiles } = await supabase
-  .from("trading_profiles")
-  .select("user_id, discord_username");
+      const { data: tradingProfiles } = await supabase
+        .from("trading_profiles")
+        .select("user_id, discord_username");
 
-const eligibleUserIds = new Set(
-  (tradingProfiles || [])
-    .filter(
-      (p: any) =>
-        p.discord_username &&
-        p.discord_username.trim() !== ""
-    )
-    .map((p: any) => p.user_id)
-);
+      const eligibleUserIds = new Set(
+        (tradingProfiles || [])
+          .filter(
+            (p: any) =>
+              p.discord_username &&
+              p.discord_username.trim() !== ""
+          )
+          .map((p: any) => p.user_id)
+      );
 
       if (!progress || !profiles) return;
 
       const profileMap: Record<string, any> = {};
+
       profiles.forEach((p: any) => {
         profileMap[p.id] = p;
       });
 
-     const active: any[] = [];
-const finished: any[] = [];
+      const active: any[] = [];
+      const finished: any[] = [];
 
-progress.forEach((row: any) => {
+      progress.forEach((row: any) => {
+        if (!eligibleUserIds.has(row.user_id)) {
+          return;
+        }
 
-  if (!eligibleUserIds.has(row.user_id)) {
-    return;
-  }
+        let owned = 0;
 
- let owned = 0;
+        if (id === "friendshipsbegin") {
+          const BONUS_STRUCTURE = [
+            { prefix: "SD01C", count: 9 },
+            { prefix: "SD01U", count: 7 },
+            { prefix: "SD01SR", count: 6 },
+            { prefix: "SD01SPR", count: 10 },
+            { prefix: "SD01GR", count: 6 },
+            { prefix: "SD01CR", count: 6 },
+            { prefix: "SD01ER", count: 6 },
+            { prefix: "SD01PER", count: 12 },
+            { prefix: "SD01PRR", count: 6 },
+          ];
 
-if (id === "friendshipsbegin") {
+          const getDeckCards = (deckCode: string) => {
+            const cards: string[] = [];
 
-  const BONUS_STRUCTURE = [
-    { prefix: "SD01C", count: 9 },
-    { prefix: "SD01U", count: 7 },
-    { prefix: "SD01SR", count: 6 },
-    { prefix: "SD01SPR", count: 10 },
-    { prefix: "SD01GR", count: 6 },
-    { prefix: "SD01CR", count: 6 },
-    { prefix: "SD01ER", count: 6 },
-    { prefix: "SD01PER", count: 12 },
-    { prefix: "SD01PRR", count: 6 },
-  ];
+            const deckLetter = deckCode.slice(-1);
+            const deckIndex =
+              deckLetter.charCodeAt(0) - 64;
 
- const getDeckCards = (deckCode: string) => {
-  const cards: string[] = [];
+            const add = (
+              rarity: string,
+              count: number
+            ) => {
+              for (let i = 1; i <= count; i++) {
+                cards.push(
+                  `${deckCode}${rarity}${String(i).padStart(
+                    2,
+                    "0"
+                  )}`
+                );
+              }
+            };
 
-  const deckLetter = deckCode.slice(-1);
-  const deckIndex = deckLetter.charCodeAt(0) - 64;
+            add("C", 9);
+            add("U", 4);
+            add("SR", 2);
 
-  const add = (rarity: string, count: number) => {
-    for (let i = 1; i <= count; i++) {
-      cards.push(`${deckCode}${rarity}${String(i).padStart(2, "0")}`);
-    }
-  };
+            cards.push(
+              `SD01ER${String(deckIndex).padStart(2, "0")}`
+            );
 
-  add("C", 9);
-  add("U", 4);
-  add("SR", 2);
+            add("SPR", 4);
 
-  cards.push(`SD01ER${String(deckIndex).padStart(2, "0")}`);
+            cards.push(
+              `SD01RR${String(deckIndex).padStart(2, "0")}`
+            );
 
-  add("SPR", 4);
+            return cards;
+          };
 
-  cards.push(`SD01RR${String(deckIndex).padStart(2, "0")}`);
+          const starterDecks = [
+            "SD01A",
+            "SD01B",
+            "SD01C",
+            "SD01D",
+            "SD01E",
+            "SD01F",
+          ];
 
-  return cards;
+          starterDecks.forEach((deck) => {
+            const cards = getDeckCards(deck);
+
+            cards.forEach((cardKey) => {
+              const stateKey = `STARTER-${cardKey}`;
+
+              if (row.progress?.[stateKey]) {
+                owned++;
+              }
+            });
+          });
+
+          BONUS_STRUCTURE.forEach(
+            ({ prefix, count }) => {
+              for (let i = 1; i <= count; i++) {
+                let actualIndex = i;
+
+                if (prefix === "SD01PER") {
+                  actualIndex = i + 6;
+                }
+
+                const key = `${prefix}${String(
+                  actualIndex
+                ).padStart(2, "0")}`;
+
+                const stateKey = `BONUS-${key}`;
+
+                if (row.progress?.[stateKey]) {
+                  owned++;
+                }
+              }
+            }
+          );
+        } else if (id === "discord") {
+          owned = Object.values(
+            row.progress || {}
+          ).filter(
+            (v: any) =>
+              v === true || v?.owned === true
+          ).length;
+        } else {
+          const isoSet = isoSets.find(
+            (s) => s.id === id
+          );
+
+          if (!isoSet) return;
+
+          owned = Object.values(
+            row.progress || {}
+          ).filter(
+            (v: any) =>
+              v === true || v?.owned === true
+          ).length;
+        }
+
+const user = {
+  id: row.user_id,
+  username:
+    profileMap[row.user_id]?.username ||
+    "Anonymous",
+  avatar_url:
+    profileMap[row.user_id]?.avatar_url,
+  owned,
+  updated: row.updated_at,
 };
 
-const starterDecks = ["SD01A","SD01B","SD01C","SD01D","SD01E","SD01F"];
+        if (
+          user.username ===
+            "HeiManTou (Chinese Collector)" ||
+          user.username === "HeiManTou"
+        ) {
+          return;
+        }
 
-starterDecks.forEach((deck) => {
-  const cards = getDeckCards(deck);
+        const actualTotal = set.total;
 
-  cards.forEach((cardKey) => {
-    const stateKey = `STARTER-${cardKey}`;
+        if (
+          id === "7" &&
+          user.username ===
+            "HeiManTou (Chinese Collector)"
+        ) {
+          active.push(user);
+        } else if (owned === actualTotal) {
+          finished.push(user);
+        } else {
+          active.push(user);
+        }
+      });
 
-    if (row.progress?.[stateKey]) {
-      owned++;
-    }
-  });
-});
+      active.sort((a, b) => {
+        if (
+          forcedStillCollecting.includes(a.username)
+        )
+          return -1;
 
-  // BONUS PACKS (68 cards)
-BONUS_STRUCTURE.forEach(({ prefix, count }) => {
-  for (let i = 1; i <= count; i++) {
+        if (
+          forcedStillCollecting.includes(b.username)
+        )
+          return 1;
 
-    let actualIndex = i;
+        return b.owned - a.owned;
+      });
 
-    if (prefix === "SD01PER") {
-      actualIndex = i + 6;
-    }
+      if (manualPlacements[id || ""]) {
+        const manualOrder =
+          manualPlacements[id || ""];
 
-    const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
-    const stateKey = `BONUS-${key}`;
+        finished.sort((a, b) => {
+          const aIndex = manualOrder.indexOf(
+            a.username
+          );
+          const bIndex = manualOrder.indexOf(
+            b.username
+          );
 
-    if (row.progress?.[stateKey]) {
-      owned++;
-    }
-  }
-});
+          if (
+            aIndex !== -1 &&
+            bIndex !== -1
+          ) {
+            return aIndex - bIndex;
+          }
 
-} else if (id === "discord") {
+          if (aIndex !== -1) return -1;
+          if (bIndex !== -1) return 1;
 
-  owned = Object.values(row.progress || {}).filter(
-    (v: any) => v === true || v?.owned === true
-  ).length;
+          return (
+            new Date(a.updated).getTime() -
+            new Date(b.updated).getTime()
+          );
+        });
+      } else {
+        finished.sort(
+          (a, b) =>
+            new Date(a.completed_at).getTime() -
+            new Date(b.completed_at).getTime()
+        );
+      }
 
-} else {
-
-  const isoSet = isoSets.find(s => s.id === id);
-  if (!isoSet) return;
-
-  owned = Object.values(row.progress || {}).filter(
-    (v: any) => v === true || v?.owned === true
-  ).length;
-
-}
-
-  const user = {
-    id: row.user_id,
-    username: profileMap[row.user_id]?.username || "Anonymous",
-    avatar: profileMap[row.user_id]?.avatar_url,
-    owned,
-    updated: row.updated_at
-  };
-
-  if (
-  user.username === "HeiManTou (Chinese Collector)" ||
-  user.username === "HeiManTou"
-) {
-  return;
-}
-
-  const actualTotal = set.total;
-
- if (
-  id === "7" && 
-  user.username === "HeiManTou (Chinese Collector)"
-) {
-  active.push(user);
-} else if (owned === actualTotal) {
-  finished.push(user);
-} else {
-  active.push(user);
-}
-
-});
-
-active.sort((a, b) => {
-  if (forcedStillCollecting.includes(a.username)) return -1;
-  if (forcedStillCollecting.includes(b.username)) return 1;
-  return b.owned - a.owned;
-});
-
-if (manualPlacements[id || "HeiManTou (Chinese Collector)"]) {
-
-  const manualOrder = manualPlacements[id || ""];
-
-  finished.sort((a, b) => {
-
-    const aIndex = manualOrder.indexOf(a.username);
-    const bIndex = manualOrder.indexOf(b.username);
-
-    if (aIndex !== -1 && bIndex !== -1) {
-      return aIndex - bIndex;
-    }
-
-    if (aIndex !== -1) return -1;
-    if (bIndex !== -1) return 1;
-
-    return new Date(a.updated).getTime() - new Date(b.updated).getTime();
-  });
-
-} else {
-
-finished.sort(
-  (a, b) =>
-    new Date(a.completed_at).getTime() -
-    new Date(b.completed_at).getTime()
-);
-
-}
-
-setCollectors(active.slice(0, 10));
-setCompleted(finished.slice(0, 10));
-
+      setCollectors(active.slice(0, 10));
+      setCompleted(finished.slice(0, 10));
     };
 
     load();
   }, [id, set]);
 
-const getAvatar = (avatar?: string, username?: string) => {
-  if (username === "HeiManTou (Chinese Collector)") {
-    return heimantouAvatar;
-  }
-
-  if (!avatar) return avatar001;
-
-  let file = avatar.split("/").pop() || "";
-
-  return (
-    avatarMap[file] ||
-    avatarMap[`${file}.webp`] ||
-    avatar001
-  );
-};
-
-  const getRarityCode = (rarity: string) => {
-    if (rarity === "SHINING ZR") return "SZR";
-    return rarity;
-  };
-
   if (!set) return null;
 
-return (
-<div
-  className="min-h-screen font-['Oxanium']"
-  style={{
-    background: `
-      radial-gradient(circle at 15% 10%, rgba(255,215,0,0.05), transparent 30%),
-      radial-gradient(circle at 85% 80%, rgba(255,215,0,0.04), transparent 35%),
-      linear-gradient(
-        180deg,
-        #1b1b1b 0%,
-        #141414 40%,
-        #0d0d0d 100%
-      )
-    `,
-  }}
->
-      <div className="container max-w-6xl px-4 sm:px-6 py-6 sm:py-8 pb-24 md:pb-8">
-  {/* Back Button */}
-  {/* Back Button */}
-<button
-  onClick={() => navigate("/community")}
-  className="
-    inline-flex items-center gap-2
-    text-sm font-semibold
-    text-[#d7b04c]
-    hover:text-[#f4d47c]
-    transition-colors
-    mb-6
-  "
->
-  <ArrowLeft className="h-4 w-4" />
-  Back to Community
-</button>
+  const completionPercentage = (owned: number) =>
+    Math.min(
+      100,
+      Math.round((owned / set.total) * 100)
+    );
 
-<div className="mb-10">
-  <h1 className="text-4xl font-black tracking-wide text-[#f5e4b5]">
-    {set.name}
-  </h1>
+  const getRankColor = (index: number) => {
+    if (index === 0) return "#FFD400";
+    if (index === 1) return "#B9B9B9";
+    if (index === 2) return "#A9784A";
+    return "#555555";
+  };
 
-  <p className="mt-3 max-w-3xl text-[#b9b9b9] leading-relaxed">
-    View the collectors closest to completing this set along with everyone who has
-    already completed it in completion order.
-  </p>
-</div>
+  const getRankLabel = (index: number) => {
+    if (index === 0) return "FIRST";
+    if (index === 1) return "SECOND";
+    if (index === 2) return "THIRD";
+    return `RANK ${index + 1}`;
+  };
 
-  {/* Layout */}
-<div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-  {/* Completed Sets - FIRST */}
-  <div
-    className="
-  xl:col-span-1
-rounded-3xl
-bg-gradient-to-b
-from-[#2d2d2d]
-via-[#1b1b1b]
-to-[#111111]
-border
-border-[#c79b32]
-shadow-[0_18px_40px_rgba(0,0,0,.45)]
-      p-5 sm:p-6
-    "
-  >
-    <h2 className="text-xl font-black tracking-wide text-[#f4d47c] mb-5">
-      Completed
-    </h2>
+  return (
+    <div
+      className="
+        min-h-screen
+        overflow-hidden
+        bg-[#111111]
+        font-['Oxanium']
+        text-white
+      "
+    >
+      {/* Technical background */}
+      <div
+        className="
+          pointer-events-none
+          fixed inset-0
+          opacity-[0.025]
+        "
+        style={{
+          backgroundImage:
+            "linear-gradient(#FFD400 1px, transparent 1px), linear-gradient(90deg, #FFD400 1px, transparent 1px)",
+          backgroundSize: "42px 42px",
+        }}
+      />
 
-    <div className="space-y-3">
-      {(showAllFinishers ? completed : completed.slice(0, 3)).map(
-        (user, index) => (
-<div
-  key={index}
-  className="
-    flex items-center gap-3
-    rounded-2xl
-    bg-[#181818]
-    border border-[#3d3d3d]
-    hover:border-[#c79b32]
-    transition-colors
-    px-3 py-3 sm:px-4
-    shadow-sm
-  "
->
-            <span className="text-2xl shrink-0">
-              {medals[index] || "🏅"}
-            </span>
+      {/* Ambient gold light */}
+      <div className="pointer-events-none fixed left-[10%] top-0 h-[420px] w-[420px] rounded-full bg-[#FFD400]/[0.035] blur-[120px]" />
 
-            <img
-              src={getAvatar(user.avatar, user.username)}
-              className="
-                w-10 h-10 sm:w-11 sm:h-11
-                rounded-full
-                border-[3px] border-[#d7b04c]
-                shadow
-                shrink-0
-              "
-            />
-
-           <div className="flex items-center gap-2 min-w-0">
-  <span
-    className="
-      font-semibold
-      text-sm sm:text-base
-      text-orange-200
-      truncate
-    "
-  >
-    {user.username}
-  </span>
-
-{VERIFIED_USERS[user.id] && (
-  <img
-    src={VERIFIED_USERS[user.id].badge}
-    alt={VERIFIED_USERS[user.id].label}
-    title={VERIFIED_USERS[user.id].label}
-    className="w-4 h-4 object-contain flex-shrink-0"
-  />
-)}
-</div>
-          </div>
-        )
-      )}
-
-      {completed.length > 3 && (
-        <button
-          onClick={() => setShowAllFinishers(!showAllFinishers)}
-          className="
-            w-full mt-2 py-3
-            rounded-2xl
-            bg-purple-950/70 hover:bg-purple-900
-text-orange-200
-            transition-colors
-          "
-        >
-          {showAllFinishers
-            ? "Show Less"
-            : `View All ${completed.length} Finishers`}
-        </button>
-      )}
-
-      {completed.length === 0 && (
-  <div className="flex flex-col items-center py-6">
-    <div className="mt-3 text-sm text-[#f4d47c] italic text-center">
-      Nopony has completed this set yet...
-    </div>
-  </div>
-)}
-    </div>
-  </div>
-
-  {/* Still Collecting */}
-  <div
-    className="
-  xl:col-span-2
-rounded-3xl
-bg-gradient-to-b
-from-[#2d2d2d]
-via-[#1b1b1b]
-to-[#111111]
-border
-border-[#c79b32]
-shadow-[0_18px_40px_rgba(0,0,0,.45)]
-      p-5 sm:p-6
-    "
-  >
-    <h2 className="text-xl font-black tracking-wide text-[#f4d47c] mb-5">
-      Still Collecting
-    </h2>
-
-    <div className="space-y-3">
-      {collectors.map((user, index) => (
-        <div
-          key={index}
-          className="
-flex items-center
-rounded-2xl
-bg-[#181818]
-border border-[#3d3d3d]
-hover:border-[#c79b32]
-transition-colors
-            px-3 py-3 sm:px-4
-            shadow-sm
-          "
-        >
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <span
-              className="
-                shrink-0
-                w-8 text-sm font-bold
-                text-orange-300
-              "
-            >
-              #{index + 1}
-            </span>
-
-            <img
-              src={getAvatar(user.avatar, user.username)}
-              className="
-                w-10 h-10 sm:w-11 sm:h-11
-                rounded-full
-                border-[3px] border-[#d7b04c]
-                shadow
-                shrink-0
-              "
-            />
-
-            <div className="flex items-center gap-2 min-w-0">
-  <span
-    className="
-      font-semibold
-      text-sm sm:text-base
-      text-orange-200
-      truncate
-    "
-  >
-    {user.username}
-  </span>
-
-{VERIFIED_USERS[user.id] && (
-  <img
-    src={VERIFIED_USERS[user.id].badge}
-    alt={VERIFIED_USERS[user.id].label}
-    title={VERIFIED_USERS[user.id].label}
-    className="w-4 h-4 object-contain flex-shrink-0"
-  />
-)}
-</div>
-          </div>
-
-          <div
+      <div className="relative mx-auto max-w-7xl px-4 py-5 pb-16 sm:px-6 lg:px-8">
+        {/* TOP NAV */}
+        <div className="mb-7 flex items-center justify-between">
+          <button
+            onClick={() => navigate("/community")}
             className="
-              shrink-0
-              text-sm sm:text-base
+              group
+              flex items-center gap-2
+              border border-[#303030]
+              bg-[#171717]
+              px-3 py-2
+              font-mono
+              text-[8px]
               font-bold
-              text-orange-300
+              uppercase
+              tracking-[0.16em]
+              text-white/45
+              transition-all
+              hover:border-[#FFD400]/45
+              hover:bg-[#1c1c1c]
+              hover:text-[#FFD400]
             "
           >
-            {user.owned} / {set.total}
+            <ArrowLeft
+              size={13}
+              className="transition-transform group-hover:-translate-x-0.5"
+            />
+
+            COMMUNITY
+          </button>
+
+          <div className="hidden items-center gap-3 sm:flex">
+            <span className="font-mono text-[7px] uppercase tracking-[0.22em] text-white/20">
+              COMMUNITY DATABASE
+            </span>
+
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
+
+            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/65">
+              ONLINE
+            </span>
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-</div>
-</div>
+
+        {/* SET HERO */}
+        <section className="relative mb-7 overflow-hidden border border-[#303030] bg-[#171717]">
+          {/* Top gold rail */}
+          <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-[#FFD400] to-transparent" />
+
+          {/* Corner brackets */}
+          <div className="absolute left-0 top-0 h-7 w-7 border-l border-t border-[#FFD400]/50" />
+          <div className="absolute right-0 top-0 h-7 w-7 border-r border-t border-[#FFD400]/25" />
+          <div className="absolute bottom-0 left-0 h-5 w-5 border-b border-l border-[#FFD400]/20" />
+          <div className="absolute bottom-0 right-0 h-5 w-5 border-b border-r border-[#FFD400]/35" />
+
+          <div className="relative grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px]">
+            {/* Main title */}
+            <div className="px-5 py-6 sm:px-7 sm:py-8">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
+
+                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/70">
+                  COLLECTION INTELLIGENCE
+                </span>
+
+                <span className="h-px w-12 bg-[#FFD400]/30" />
+              </div>
+
+              <h1
+                className="
+                  max-w-4xl
+                  font-['Oxanium']
+                  text-3xl
+                  font-black
+                  uppercase
+                  leading-[0.95]
+                  tracking-[0.025em]
+                  text-white
+                  sm:text-4xl
+                  lg:text-5xl
+                "
+              >
+                {set.name}
+              </h1>
+
+              <p className="mt-4 max-w-2xl font-mono text-[8px] uppercase leading-[1.8] tracking-[0.1em] text-white/30 sm:text-[9px]">
+                Track collectors approaching completion
+                and review verified finishers in
+                completion order.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* MAIN GRID */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.45fr)]">
+          {/* COMPLETED */}
+          <section className="relative overflow-hidden border border-[#303030] bg-[#151515]">
+            <div className="absolute left-0 top-0 h-6 w-6 border-l border-t border-[#FFD400]/55" />
+
+            <div className="border-b border-[#2c2c2c] px-5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Trophy
+                      size={14}
+                      className="text-[#FFD400]"
+                    />
+
+                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/70">
+                      COMPLETION RECORD
+                    </span>
+                  </div>
+
+                  <h2 className="mt-1 font-['Oxanium'] text-lg font-black uppercase tracking-[0.04em] text-white">
+                    Finishers
+                  </h2>
+                </div>
+
+                <div className="text-right">
+                  <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                    VERIFIED
+                  </div>
+
+                  <div className="mt-1 font-['Oxanium'] text-sm font-bold text-[#FFD400]">
+                    {completed.length
+                      .toString()
+                      .padStart(2, "0")}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3">
+              {completed.length > 0 ? (
+                <div className="space-y-1.5">
+                  {(showAllFinishers
+                    ? completed
+                    : completed.slice(0, 3)
+                  ).map((user, index) => {
+                    const assets =
+                      getProfileAssets(user);
+
+                    return (
+                      <div
+                        key={user.id || index}
+                        className="
+                          group
+                          relative
+                          flex
+                          items-center
+                          gap-3
+                          overflow-hidden
+                          border
+                          border-[#292929]
+                          bg-[#191919]
+                          px-3
+                          py-3
+                          transition-all
+                          duration-200
+                          hover:border-[#FFD400]/40
+                          hover:bg-[#1d1d1d]
+                        "
+                      >
+                        {/* Rank color rail */}
+                        <div
+                          className="absolute bottom-0 left-0 top-0 w-0.5"
+                          style={{
+                            backgroundColor:
+                              getRankColor(index),
+                          }}
+                        />
+
+                        {/* Rank */}
+                        <div
+                          className="flex h-8 w-9 shrink-0 flex-col items-center justify-center border border-[#303030] bg-[#121212]"
+                          style={{
+                            borderColor:
+                              index < 3
+                                ? `${getRankColor(index)}55`
+                                : undefined,
+                          }}
+                        >
+                          <span
+                            className="font-['Oxanium'] text-[11px] font-black"
+                            style={{
+                              color:
+                                getRankColor(index),
+                            }}
+                          >
+                            #{index + 1}
+                          </span>
+                        </div>
+
+                        {/* Avatar */}
+                        <img
+                          src={assets.avatar}
+                          alt={user.username}
+                          className="
+                            h-10
+                            w-10
+                            shrink-0
+                            border
+                            border-[#444]
+                            object-cover
+                            transition-colors
+                            group-hover:border-[#FFD400]/60
+                          "
+                        />
+
+                        {/* User */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.02em] text-white/85">
+                              {user.username}
+                            </span>
+
+                            {assets.verification && (
+                              <img
+                                src={
+                                  assets.verification
+                                    .badge
+                                }
+                                alt={
+                                  assets.verification
+                                    .label
+                                }
+                                title={
+                                  assets.verification
+                                    .label
+                                }
+                                className="h-3.5 w-3.5 shrink-0 object-contain"
+                              />
+                            )}
+                          </div>
+
+                          <div className="mt-0.5 font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                            {getRankLabel(index)} FINISHER
+                          </div>
+                        </div>
+
+                        {/* Completion */}
+                        <div className="hidden shrink-0 text-right sm:block">
+                          <div className="font-mono text-[6px] uppercase tracking-[0.15em] text-white/20">
+                            STATUS
+                          </div>
+
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]" />
+
+                            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.1em] text-[#FFD400]/75">
+                              COMPLETE
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="border border-dashed border-[#333] bg-[#121212] px-5 py-10 text-center">
+                  <Trophy
+                    size={22}
+                    className="mx-auto text-[#FFD400]/25"
+                  />
+
+                  <div className="mt-3 font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.14em] text-white/35">
+                    NO FINISHERS YET
+                  </div>
+
+                  <div className="mt-1 font-mono text-[7px] uppercase tracking-[0.16em] text-white/15">
+                    THE #1 SLOT REMAINS OPEN
+                  </div>
+                </div>
+              )}
+
+              {completed.length > 3 && (
+                <button
+                  onClick={() =>
+                    setShowAllFinishers(
+                      !showAllFinishers
+                    )
+                  }
+                  className="
+                    mt-2
+                    flex
+                    w-full
+                    items-center
+                    justify-center
+                    gap-2
+                    border
+                    border-[#303030]
+                    bg-[#121212]
+                    py-2.5
+                    font-mono
+                    text-[7px]
+                    font-bold
+                    uppercase
+                    tracking-[0.2em]
+                    text-white/35
+                    transition-all
+                    hover:border-[#FFD400]/45
+                    hover:text-[#FFD400]
+                  "
+                >
+                  {showAllFinishers ? (
+                    <>
+                      COLLAPSE
+                      <ChevronUp size={12} />
+                    </>
+                  ) : (
+                    <>
+                      VIEW ALL {completed.length} FINISHERS
+                      <ChevronDown size={12} />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </section>
+
+          {/* STILL COLLECTING */}
+          <section className="relative overflow-hidden border border-[#303030] bg-[#151515]">
+            <div className="absolute right-0 top-0 h-6 w-6 border-r border-t border-[#FFD400]/40" />
+
+            <div className="border-b border-[#2c2c2c] px-5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Users
+                      size={14}
+                      className="text-[#FFD400]"
+                    />
+
+                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/70">
+                      ACTIVE COLLECTORS
+                    </span>
+                  </div>
+
+                  <h2 className="mt-1 font-['Oxanium'] text-lg font-black uppercase tracking-[0.04em] text-white">
+                    Still Collecting
+                  </h2>
+                </div>
+
+                <div className="text-right">
+                  <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                    TRACKED
+                  </div>
+
+                  <div className="mt-1 font-['Oxanium'] text-sm font-bold text-[#FFD400]">
+                    {collectors.length
+                      .toString()
+                      .padStart(2, "0")}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3">
+              {collectors.length > 0 ? (
+                <div className="space-y-1.5">
+                  {collectors.map((user, index) => {
+                    const assets =
+                      getProfileAssets(user);
+
+                    const percentage =
+                      completionPercentage(
+                        user.owned
+                      );
+
+                    return (
+                      <div
+                        key={user.id || index}
+                        className="
+                          group
+                          relative
+                          overflow-hidden
+                          border
+                          border-[#292929]
+                          bg-[#191919]
+                          px-3
+                          py-3
+                          transition-all
+                          duration-200
+                          hover:border-[#FFD400]/40
+                          hover:bg-[#1d1d1d]
+                        "
+                      >
+                        {/* Rank rail */}
+                        <div className="absolute bottom-0 left-0 top-0 w-0.5 bg-[#FFD400]/10 transition-colors group-hover:bg-[#FFD400]/55" />
+
+                        <div className="flex items-center gap-3">
+                          {/* Rank */}
+                          <span className="w-5 shrink-0 font-['Oxanium'] text-[9px] font-bold tracking-[0.04em] text-white/20">
+                            #{index + 1}
+                          </span>
+
+                          {/* Avatar */}
+                          <img
+                            src={assets.avatar}
+                            alt={user.username}
+                            className="
+                              h-10
+                              w-10
+                              shrink-0
+                              border
+                              border-[#444]
+                              object-cover
+                              transition-colors
+                              group-hover:border-[#FFD400]/60
+                            "
+                          />
+
+                          {/* Identity */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              <span className="truncate font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.02em] text-white/85">
+                                {user.username}
+                              </span>
+
+                              {assets.verification && (
+                                <img
+                                  src={
+                                    assets.verification
+                                      .badge
+                                  }
+                                  alt={
+                                    assets.verification
+                                      .label
+                                  }
+                                  title={
+                                    assets.verification
+                                      .label
+                                  }
+                                  className="h-3.5 w-3.5 shrink-0 object-contain"
+                                />
+                              )}
+                            </div>
+
+                            <div className="mt-1 flex items-center gap-2">
+                              <div className="h-1 flex-1 overflow-hidden bg-[#292929]">
+                                <div
+                                  className="
+                                    h-full
+                                    bg-gradient-to-r
+                                    from-[#9d7b16]
+                                    via-[#FFD400]
+                                    to-[#f5dc67]
+                                    shadow-[0_0_7px_rgba(255,212,0,.2)]
+                                    transition-all
+                                    duration-500
+                                  "
+                                  style={{
+                                    width: `${percentage}%`,
+                                  }}
+                                />
+                              </div>
+
+                              <span className="font-mono text-[6px] font-bold tracking-[0.08em] text-white/20">
+                                {percentage}%
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Count */}
+                          <div className="shrink-0 text-right">
+                            <div className="font-['Oxanium'] text-[11px] font-bold tracking-[0.04em] text-[#FFD400]/80">
+                              {user.owned}
+                              <span className="text-white/20">
+                                /{set.total}
+                              </span>
+                            </div>
+
+                            <div className="mt-0.5 font-mono text-[5px] uppercase tracking-[0.14em] text-white/15">
+                              CARDS
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="border border-dashed border-[#333] bg-[#121212] px-5 py-10 text-center">
+                  <Users
+                    size={22}
+                    className="mx-auto text-[#FFD400]/25"
+                  />
+
+                  <div className="mt-3 font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.14em] text-white/35">
+                    NO ACTIVE COLLECTORS
+                  </div>
+
+                  <div className="mt-1 font-mono text-[7px] uppercase tracking-[0.16em] text-white/15">
+                    COLLECTION DATA NOT AVAILABLE
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* FOOTER READOUT */}
+        <div className="mt-5 flex flex-col gap-2 border-t border-[#292929] pt-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]/60" />
+
+            <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-white/20">
+              COLLECTION DATABASE // LIVE READOUT
+            </span>
+          </div>
+
+          <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/15">
+            {completed.length} COMPLETED
+            {" // "}
+            {collectors.length} ACTIVE
+            {" // "}
+            {set.total} TOTAL CARDS
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

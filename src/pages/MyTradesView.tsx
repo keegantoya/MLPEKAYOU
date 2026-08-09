@@ -188,91 +188,39 @@ const toggleActive = async () => {
 };
 
   return (
-<div
-  className="min-h-screen pb-[100px] sm:pb-0"
-  style={{
-    background: `
-      radial-gradient(circle at top, rgba(255,255,255,.035), transparent 45%),
-      linear-gradient(180deg,#090909 0%,#111111 45%,#0a0a0a 100%)
-    `,
-  }}
->
+<div className="relative min-h-screen overflow-hidden bg-[#040606] pb-[120px] text-white sm:pb-0">
+  <div className="pointer-events-none fixed inset-0 opacity-[0.38]" style={{backgroundImage:"linear-gradient(rgba(255,212,74,.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,212,74,.032) 1px, transparent 1px)",backgroundSize:"44px 44px"}} />
+  <div className="pointer-events-none fixed inset-0 opacity-[0.06] bg-[repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,.08)_4px)]" />
+  <div className="pointer-events-none fixed left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-[#FFD54A] to-transparent opacity-80" />
 
-<div className="max-w-7xl mx-auto px-5 py-8">
+<div className="relative mx-auto max-w-[1550px] px-3 py-4 sm:px-6 sm:py-6">
 
-  <div className="mb-10">
-    <button
-      onClick={() => navigate("/inventory")}
-      className="
-        group
-        inline-flex
-        items-center
-        gap-3
-        rounded-2xl
-        border
-        border-[#2f2f2f]
-        bg-[#181818]
-        px-5
-        py-3
-        text-white
-        transition-all
-        duration-200
-        hover:border-[#d4af37]
-        hover:bg-[#202020]
-        hover:-translate-y-0.5
-      "
-    >
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#393939] bg-[#232323]">
-        <ArrowLeft className="h-5 w-5" />
-      </div>
+  <header className="mb-4 border border-white/[0.08] bg-[#080b0b] shadow-[0_18px_55px_rgba(0,0,0,.45)]">
+    <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#050707] px-3 py-2"><div className="flex items-center gap-2"><span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_9px_rgba(52,211,153,.8)]" /><span className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-emerald-400/80">TRADE NETWORK // ONLINE</span></div><span className="font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-700">MLPEKAYOU / NODE TR-07</span></div>
+    <div className="flex items-center justify-between gap-3 p-3 sm:p-4"><button onClick={() => navigate("/inventory")} className="group flex items-center gap-3 border border-[#FFD54A]/20 bg-[#0b0f0f] px-3 py-2 text-left transition hover:border-[#FFD54A]/60 hover:bg-[#101515]"><span className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/20 bg-[#070a0a] text-[#FFD54A] transition group-hover:border-[#FFD54A]/60"><ArrowLeft size={16} /></span><span><span className="block font-mono text-[5px] font-bold uppercase tracking-[0.28em] text-zinc-600">INVENTORY</span><span className="mt-1 block font-['Oxanium'] text-[9px] font-black uppercase tracking-[0.15em] text-zinc-200">Back to My Trades</span></span></button><div className="hidden items-center gap-3 sm:flex"><div className="text-right"><div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">CONTROL STATUS</div><div className="mt-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em] text-emerald-400">SECURE LINK</div></div><span className="flex h-8 w-8 items-center justify-center border border-emerald-400/20 bg-emerald-400/[0.04]"><span className="h-2 w-2 bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.9)]" /></span></div></div>
+  </header>
 
-      <div>
-        <div className="text-[10px] uppercase tracking-[0.28em] text-[#808080]">
-          Inventory
-        </div>
-        <div className="font-semibold">
-          Back to My Trades
-        </div>
-      </div>
-    </button>
-  </div>
-
-  <div className="relative overflow-hidden rounded-[34px] border border-[#2b2b2b] bg-gradient-to-b from-[#1d1d1d] via-[#171717] to-[#101010] shadow-[0_22px_60px_rgba(0,0,0,.65)] mb-10">
-
-    <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,.06),transparent_55%)] pointer-events-none" />
-
-    <div className="relative z-10 px-10 py-10 text-center">
-
-      <div className="text-[11px] uppercase tracking-[0.4em] text-[#7f7f7f] mb-3">
-        Trade Inventory
-      </div>
-
-      <h1 className="text-5xl font-black text-[#f5f5f5] tracking-tight">
-        Your Active Duplicates
-      </h1>
-
-      <div className="mx-auto mt-6 mb-7 h-[3px] w-28 rounded-full bg-gradient-to-r from-[#8a6b19] via-[#d4af37] to-[#8a6b19]" />
-
-      <p className="mx-auto max-w-3xl text-[15px] leading-7 text-[#b9b9b9]">
-        Manage your active trades and purchase offers. Click a card to mark it as completed or indicate that it is actively being traded.
-      </p>
-
+  <section className="relative mb-4 overflow-hidden border border-[#FFD54A]/25 bg-[#080b0b] shadow-[0_30px_100px_rgba(0,0,0,.62)]">
+    <div className="pointer-events-none absolute left-0 top-0 h-16 w-16 border-l-2 border-t-2 border-[#FFD54A]/80" /><div className="pointer-events-none absolute right-0 top-0 h-16 w-16 border-r-2 border-t-2 border-[#FFD54A]/45" /><div className="pointer-events-none absolute bottom-0 left-0 h-10 w-28 border-b-2 border-l-2 border-[#FFD54A]/40" /><div className="pointer-events-none absolute bottom-0 right-0 h-10 w-28 border-b-2 border-r-2 border-[#FFD54A]/35" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(255,212,74,.11),transparent_32%)]" />
+    <div className="relative grid lg:grid-cols-[1fr_360px]">
+      <div className="border-b border-white/[0.07] p-5 sm:p-8 lg:border-b-0 lg:border-r lg:p-10"><div className="flex items-center gap-3"><span className="font-mono text-[6px] font-bold uppercase tracking-[0.34em] text-zinc-600">SYSTEM MODULE / TR-07</span><span className="h-px w-10 bg-[#FFD54A]/30" /><span className="font-mono text-[6px] font-bold uppercase tracking-[0.24em] text-[#FFD54A]">DUPLICATE CONTROL</span></div><h1 className="mt-5 max-w-3xl font-['Oxanium'] text-4xl font-black uppercase leading-[0.9] tracking-[0.015em] text-white sm:text-6xl lg:text-7xl">Active<span className="block text-[#FFD54A]">Trade Assets</span></h1><p className="mt-6 max-w-2xl border-l border-[#FFD54A]/25 pl-4 font-mono text-[8px] uppercase leading-6 tracking-[0.08em] text-zinc-500 sm:text-[9px]">Manage duplicate cards, purchase offers, and active trading states from a single asset-control interface.</p><div className="mt-7 flex flex-wrap gap-2"><div className="border border-[#FFD54A]/20 bg-[#0a0d0d] px-3 py-2"><span className="font-mono text-[5px] uppercase tracking-[0.24em] text-zinc-600">SET NODE</span><span className="ml-2 font-mono text-[7px] font-bold text-[#FFD54A]">{setId || "UNKNOWN"}</span></div><div className="border border-emerald-400/15 bg-emerald-400/[0.025] px-3 py-2"><span className="font-mono text-[5px] uppercase tracking-[0.24em] text-zinc-600">LINK</span><span className="ml-2 font-mono text-[7px] font-bold text-emerald-400">ACTIVE</span></div></div></div>
+      <div className="grid grid-cols-2 gap-px bg-white/[0.06] lg:grid-cols-1"><div className="bg-[#070a0a] p-4 sm:p-5"><div className="font-mono text-[5px] uppercase tracking-[0.28em] text-zinc-700">TOTAL ASSETS</div><div className="mt-2 font-['Oxanium'] text-3xl font-black text-[#FFD54A]">{cards.length}</div></div><div className="bg-[#070a0a] p-4 sm:p-5"><div className="font-mono text-[5px] uppercase tracking-[0.28em] text-zinc-700">ACTIVE TRADES</div><div className="mt-2 font-['Oxanium'] text-3xl font-black text-emerald-400">{Object.keys(activeMap).filter((key) => activeMap[key]).length}</div></div><div className="bg-[#070a0a] p-4 sm:p-5"><div className="font-mono text-[5px] uppercase tracking-[0.28em] text-zinc-700">TRADE LISTINGS</div><div className="mt-2 font-['Oxanium'] text-3xl font-black text-white">{cards.filter((c) => c.listing_type === "trade").length}</div></div><div className="bg-[#070a0a] p-4 sm:p-5"><div className="font-mono text-[5px] uppercase tracking-[0.28em] text-zinc-700">PURCHASE OFFERS</div><div className="mt-2 font-['Oxanium'] text-3xl font-black text-sky-400">{cards.filter((c) => c.listing_type === "purchase").length}</div></div></div>
     </div>
-
-  </div>
-
-        {loading && <div className="text-center">Loading...</div>}
+  </section>
+  <div className="mb-4 grid grid-cols-2 gap-px border border-white/[0.07] bg-white/[0.07] sm:grid-cols-4"><div className="bg-[#080b0b] px-3 py-2.5"><div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">MODE</div><div className="mt-1 font-mono text-[7px] font-bold text-[#FFD54A]">TRADE CONTROL</div></div><div className="bg-[#080b0b] px-3 py-2.5"><div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">SELECTION</div><div className="mt-1 font-mono text-[7px] font-bold text-zinc-300">CARD ASSET</div></div><div className="bg-[#080b0b] px-3 py-2.5"><div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">ACTION</div><div className="mt-1 font-mono text-[7px] font-bold text-zinc-300">CLICK TO CONTROL</div></div><div className="bg-[#080b0b] px-3 py-2.5"><div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">NETWORK</div><div className="mt-1 font-mono text-[7px] font-bold text-emerald-400">CONNECTED</div></div></div>
+        {loading && <div className="border border-dashed border-[#FFD54A]/15 bg-[#050707] px-6 py-14 text-center"><div className="mx-auto mb-4 h-px w-24 bg-[#FFD54A]/50" /><div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]">Synchronizing inventory</div><div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-700">Establishing secure data link</div></div>}
 
         {!loading && cards.length === 0 && (
-          <div className="text-center text-muted-foreground">
-            You have no cards marked for trade in this set.
+          <div className="border border-dashed border-[#FFD54A]/15 bg-[#050707] px-6 py-14 text-center">
+            <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-500">No trade assets detected</div>
+            <div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-700">This inventory node contains no listed cards</div>
           </div>
         )}
 
-       <div className="space-y-8">
+       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
 
-  {Object.entries(
+  {(Object.entries(
     cards.reduce((acc: Record<string, TradeCard[]>, card) => {
 
 let rarity = card.card_key.split("-")[0];
@@ -310,7 +258,7 @@ else if (
   return acc;
 
 }, {})
-  )
+  ) as [string, TradeCard[]][])
     .sort(([a], [b]) => {
 
 const rarityOrders: Record<string, string[]> = {
@@ -383,14 +331,14 @@ const currentOrder =
 })
     .map(([rarity, rarityCards]) => (
 
-      <div key={rarity}>
+      <div key={rarity} className="relative overflow-hidden border border-white/[0.08] bg-[#080b0b] p-3 shadow-[0_14px_35px_rgba(0,0,0,.35)]">
 
         {/* RARITY HEADER */}
-        <div className="relative flex items-center justify-center gap-3 mb-4">
+        <div className="relative mb-3 flex items-center justify-between border-b border-white/[0.06] pb-2">
 
-          <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
+          <div className="hidden h-px flex-1 bg-[#FFD54A]/20 max-w-[90px] sm:block" />
 
-          <span className="text-[10px] sm:text-xs tracking-[0.25em] font-semibold text-[#8b6a2b] uppercase">
+          <span className="border border-[#FFD54A]/15 bg-[#0b0e0e] px-2 py-1 font-mono text-[7px] font-black uppercase tracking-[0.18em] text-[#FFD54A]">
   {rarity === "SHINING ZR" || rarity === "SZR"
     ? "◇ZR"
     : rarity === "SN"
@@ -402,12 +350,12 @@ const currentOrder =
     : rarity}
 </span>
 
-          <div className="h-px bg-[#d4af37]/40 flex-1 max-w-[120px]" />
+          <div className="hidden h-px flex-1 bg-[#FFD54A]/20 max-w-[90px] sm:block" />
 
         </div>
 
         {/* CARD GRID */}
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-2.5">
 
           {rarityCards
             .sort((a, b) => {
@@ -423,6 +371,8 @@ const currentOrder =
                 card.set_id === "3" &&
                 rarity === "SZR" &&
                 Number(number) === 1;
+
+              const shouldZoom = !["12", "FW", "SD", "FB", "friendshipsbegin"].includes(String(card.set_id));
 
               return (
                 <div
@@ -447,7 +397,7 @@ const currentOrder =
 
                     setSelectedCard(card);
                   }}
-                  className={`group relative cursor-pointer rounded-xl overflow-hidden border border-white/10 bg-black/20 transition-all duration-200 hover:scale-[1.03] hover:-translate-y-1 hover:shadow-2xl ${
+                  className={`group relative cursor-pointer rounded-md overflow-hidden border border-white/[0.08] bg-[#050707] transition-all duration-200 hover:-translate-y-1 hover:border-[#FFD54A]/40 hover:shadow-[0_14px_30px_rgba(0,0,0,.55)] ${
                     isDoubleCard ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"
                   }`}
                 >
@@ -464,13 +414,13 @@ card.card_key === "N-10" ? (
 ) : (
   <img
     src={getCardImage(card)}
-    className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
+    className={`h-full w-full object-cover object-center transition-transform duration-300 ${shouldZoom ? "scale-[1.10] group-hover:scale-[1.14]" : "scale-100 group-hover:scale-[1.03]"}`}
   />
 )}
 
                   {activeMap[card.id] && (
-                    <div className="absolute inset-0 rounded-md overflow-hidden bg-gradient-to-br from-purple-700/90 to-fuchsia-900/90 backdrop-blur-sm flex items-center justify-center">
-                      <span className="text-white text-[10px] sm:text-xs md:text-sm font-black tracking-wider text-center px-2 leading-tight drop-shadow-lg">
+                    <div className="absolute inset-0 rounded-md overflow-hidden bg-[#07100d]/90 backdrop-blur-sm flex items-center justify-center">
+                      <span className="border border-emerald-400/35 bg-[#07100d]/85 px-2 py-2 text-center font-mono text-[7px] font-black uppercase tracking-[0.14em] text-emerald-300">
                         ACTIVELY
                         <br />
                         TRADING
@@ -511,11 +461,11 @@ card.card_key === "N-10" ? (
   >
     <div
       ref={popupRef}
-      className="rounded-2xl overflow-hidden border border-[#2f2f2f] bg-[#181818] shadow-[0_20px_50px_rgba(0,0,0,.65)] w-60"
+      className="w-60 overflow-hidden border border-[#FFD54A]/30 bg-[#070a0a] shadow-[0_26px_70px_rgba(0,0,0,.78)]"
     >
 
-      <div className="px-4 py-3 border-b border-[#2c2c2c] bg-[#202020]">
-        <p className="text-[10px] uppercase tracking-[0.28em] text-[#808080]">
+      <div className="border-b border-white/[0.07] bg-[#050707] px-4 py-3">
+        <p className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-[#FFD54A]/70">
           Card Options
         </p>
       </div>

@@ -1,1057 +1,1522 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Link } from "react-router-dom";
-import tutorialCardBack from "/card-backs/third-moon-edition-backs/m3scback.webp";
-import tutorialCard1 from "/cards/third-edition-moon/M3SC004.webp";
-import tutorialCard2 from "/cards/third-edition-moon/M3SC002.webp";
 
-/// FAQ BIBLE IMPORTS ///
+import starOneBox from "/set-pictures/staronebox.webp";
 
-/// STAR EDITION
-import eternalStarFaq1 from "/faq-mlp-bibles/eternalstarfaq1.webp";
-import eternalStarFaq2 from "/faq-mlp-bibles/eternalstarfaq2.webp";
-import eternalStarFaq3 from "/faq-mlp-bibles/eternalstarfaq3.webp";
-import eternalStarPackConfigs from "/faq-mlp-bibles/packconfigs-star.webp";
+import moonOneBox from "/set-pictures/moononebox.webp";
+import moonTwoBox from "/set-pictures/moontwobox.webp";
+import moonThreeBox from "/set-pictures/moonthreebox.webp";
+import moonThreeBigBox from "/set-pictures/moonthreebigbox.webp";
+import moonThreeCollectorsBox from "/set-pictures/moonthreecollectorsbox.webp";
+import BlankBox from "/set-pictures/blankbigbox.webp";
 
-/// MOON EDITIONS
-import eternalMoonFaq1 from "/faq-mlp-bibles/eternalmoonfaq1.webp";
-import eternalMoonFaq2 from "/faq-mlp-bibles/eternalmoonfaq2.webp";
-import eternalMoonPackConfigs from "/faq-mlp-bibles/packconfigs-moon1.webp";
-import eternalMoon2Faq1 from "/faq-mlp-bibles/eternalmoon2faq1.webp";
-import eternalMoon2Faq2 from "/faq-mlp-bibles/eternalmoon2faq2.webp";
-import eternalMoon2Faq3 from "/faq-mlp-bibles/eternalmoon2faq3.webp";
-import eternalMoon2PackConfigs from "/faq-mlp-bibles/packconfigs-moon2A.webp";
-import eternalMoon2CPackConfigs from "/faq-mlp-bibles/packconfigs-moon2C.webp";
-import eternalMoon21NAFaq1 from "/faq-mlp-bibles/eternalmoon21NAfaq1.webp";
-import eternalMoon21NAFaq2 from "/faq-mlp-bibles/eternalmoon21NAfaq2.webp";
-import eternalMoon21NAPackConfigs from "/faq-mlp-bibles/packconfigs-moon21NA.webp";
-import eternalMoon21AFaq1 from "/faq-mlp-bibles/eternalmoon21Afaq1.webp";
-import eternalMoon21APackConfigs from "/faq-mlp-bibles/packconfigs-moon21A.webp";
-import eternalMoon3Faq1 from "/faq-mlp-bibles/eternalmoon3faq1.webp";
-import eternalMoon3Faq2 from "/faq-mlp-bibles/eternalmoon3faq2.webp";
-import eternalMoon3Faq3 from "/faq-mlp-bibles/eternalmoon3faq3.webp";
-import eternalMoon3PackConfigs from "/faq-mlp-bibles/packconfigs-moon3.webp";
-import eternalMoon3PackConfigsA from "/faq-mlp-bibles/packconfigs-moon3A.webp";
+import rainbowOneBox from "/set-pictures/rainbowonebox.webp";
+import rainbowTwoBox from "/set-pictures/rainbowtwobox.webp";
 
-/// RAINBOW EDITIONS
-import eternalRainbow1Faq1 from "/faq-mlp-bibles/eternalrainbow1faq1.webp";
-import eternalRainbow1Faq2 from "/faq-mlp-bibles/eternalrainbow1faq2.webp";
-import eternalRainbow1PackConfigs from "/faq-mlp-bibles/packconfigs-rainbow1.webp";
-import eternalRainbow2Faq1 from "/faq-mlp-bibles/eternalrainbow2faq1.webp";
-import eternalRainbow2Faq2 from "/faq-mlp-bibles/eternalrainbow2faq2.webp";
-import eternalRainbow2PackConfigs from "/faq-mlp-bibles/packconfigs-rainbow2.webp";
+import funMomentsOneBox from "/set-pictures/funmomentsonebox.webp";
+import funMomentsTwoBox from "/set-pictures/funmomentstwobox.webp";
+import funMomentsThreeBox from "/set-pictures/funmomentsthreeboxstone.webp";
 
-/// FUN MOMENTS EDITION
-import eternalFunMoments1Faq1 from "/faq-mlp-bibles/eternalfunmoments1faq1.webp";
-import eternalFunMoments1Faq2 from "/faq-mlp-bibles/eternalfunmoments1faq2.webp";
-import eternalFunMoments1PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments1.webp";
-import eternalFunMoments2Faq1 from "/faq-mlp-bibles/eternalfunmoments2faq1.webp";
-import eternalFunMoments2Faq2 from "/faq-mlp-bibles/eternalfunmoments2faq2.webp";
-import eternalFunMoments2PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments2A.webp";
-import eternalFunMoments2PackConfigsB from "/faq-mlp-bibles/packconfigs-funmoments2B.webp";
-import eternalFunMoments3Faq1 from "/faq-mlp-bibles/eternalfunmoments3faq1.webp";
-import eternalFunMoments3Faq2 from "/faq-mlp-bibles/eternalfunmoments3faq2.webp";
-import eternalFunMoments3Faq3 from "/faq-mlp-bibles/eternalfunmoments3faq3.webp";
-import eternalFunMoments3PackConfigs from "/faq-mlp-bibles/packconfigs-funmoments3.webp";
+import discordBox from "/set-pictures/discordselling.webp";
+import fantasyWonderlandBox from "/set-pictures/fantasywonderlandbox.webp";
+import friendshipsBeginBox from "/set-pictures/twilightbox.webp";
 
-/// FANTASY WONDERLAND 
-import fantasyWonderlandFaq1 from "/faq-mlp-bibles/fantasywonderlandfaq1.webp";
-import fantasyWonderlandFaq2 from "/faq-mlp-bibles/fantasywonderlandfaq2.webp";
-import fantasyWonderlandFaq3 from "/faq-mlp-bibles/fantasywonderlandfaq3.webp";
-import fantasyWonderlandPackConfigs from "/faq-mlp-bibles/packconfigs-fantasywonderland.webp";
 
-/// FRIENDSHIPS BEGIN
-import friendshipsBeginFaq1 from "/faq-mlp-bibles/friendshipsbeginfaq1.webp";
-import friendshipsBeginFaq2 from "/faq-mlp-bibles/friendshipsbeginfaq2.webp";
-import friendshipsBeginFaq3 from "/faq-mlp-bibles/friendshipsbeginfaq3.webp";
-import friendshipsBeginPackConfigs from "/faq-mlp-bibles/packconfigs-friendshipsbegin.webp";
+/*
+|--------------------------------------------------------------------------
+| TYPES
+|--------------------------------------------------------------------------
+*/
 
-// OTHERS CATEGORY
-import crossingPlushies from "/faq-mlp-bibles/crossingplushies.webp";
-import crossingPlushies2 from "/faq-mlp-bibles/crossingplushies2.webp";
-
-const FAQ = () => {
-const [active, setActive] = useState(2);
-const [menuOpen, setMenuOpen] =
-  useState<string | null>("MLPEKayou Tutorial");
-const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-const navigate = useNavigate();
-
-const [openQuestions, setOpenQuestions] = useState<Record<string, boolean>>({
-  "What is MLPEKAYOU?": true,
-});
-
-const [tutorialFlipped, setTutorialFlipped] = useState({
-  card1: false,
-  card2: false,
-});
-
-const FAQItem = ({ question, children }) => {
-  const isOpen = !!openQuestions[question];
-
-  const toggleQuestion = () => {
-    setOpenQuestions((prev) => ({
-      ...prev,
-      [question]: !prev[question],
-    }));
-  };
-
-  return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-[#5a5a5a] bg-[#3a3a3a] shadow-lg">
-      <button
-        onClick={toggleQuestion}
-        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#474747]"
-      >
-        <h2 className="text-xl font-semibold text-white">
-          {question}
-        </h2>
-
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#555555] text-white">
-          {isOpen ? (
-            <ChevronUp className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
-          )}
-        </div>
-      </button>
-
-      {isOpen && (
-        <div className="border-t border-zinc-700 px-5 py-5 text-sm leading-7 text-zinc-300">
-          {children}
-        </div>
-      )}
-    </div>
-  );
+type Product = {
+  id: string;
+  title: string;
+  image: string;
+  tableCount: number;
+  tableAssets?: {
+    image?: string;
+    label: string;
+  }[];
 };
 
-const TutorialCard = ({ image, flipped, onClick }) => {
-  return (
-    <div
-      className="aspect-[5/7] cursor-pointer perspective relative w-36 sm:w-44"
-      onClick={onClick}
-    >
-      <div
-        className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d ${
-          flipped ? "rotate-y-180" : ""
-        }`}
-      >
-        <img
-          src={image}
-          draggable={false}
-          className="absolute inset-0 w-full h-full object-cover rounded-lg backface-hidden"
-        />
-
-        <img
-          src={tutorialCardBack}
-          draggable={false}
-          className="absolute inset-0 w-full h-full object-cover rounded-lg rotate-y-180 backface-hidden"
-        />
-      </div>
-    </div>
-  );
+type Category = {
+  id: string;
+  title: string;
+  code: string;
+  children?: Category[];
+  product?: Product;
 };
-  const sections = [
-{
-  title: "MLPEKayou Tutorial",
-  content: (
-    <div className="space-y-4">
-      {[
-        "How do I track my collection?",
-      ].map((topic) => (
-        <button
-          key={topic}
-          onClick={() => {
-            const targetIndex = sections.findIndex(
-              (section) => section.title === topic
-            );
-            if (targetIndex !== -1) setActive(targetIndex);
-          }}
-          className="w-full text-left px-5 py-4 rounded-2xl font-semibold
-                     bg-[#4a4a4a] text-zinc-100 hover:bg-[#5a5a5a]
-                     border border-[#5a5a5a] transition"
-        >
-          {topic}
-        </button>
-      ))}
-    </div>
-  ),
-},
 
-{
-  title: "North American Products",
-  content: (
-    <div className="space-y-4">
-      {[
-        "Eternal Star",
-        "Eternal Moon",
-        "Eternal Rainbow",
-        "Fun Moments",
-        "Trading Card Game",
-        "Others"
-      ].map((topic) => (
-        <button
-          key={topic}
-          onClick={() => {
-            const targetIndex = sections.findIndex(
-              (section) => section.title === topic
-            );
-            if (targetIndex !== -1) setActive(targetIndex);
-          }}
-          className="w-full text-left px-5 py-4 rounded-2xl font-semibold
-                     bg-[#4a4a4a] text-zinc-100 hover:bg-[#5a5a5a]
-                     border border-[#5a5a5a] transition"
-        >
-          {topic}
-        </button>
-      ))}
-    </div>
-  ),
-},
-{
-  title: "How do I track my collection?",
-  content: (
-    <div className="space-y-8">
-      <div className="rounded-3xl border border-[#5a5a5a] bg-[#4e4e4e] shadow-xl p-6 sm:p-8">
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I track the cards I own?
-        </h2>
-
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed mb-8">
-  Open the set you are tracking in{" "}
-  <Link
-    to="/collections"
-    className="font-semibold text-[#d4af37] hover:text-[#f4d47c] hover:underline transition-colors"
-  >
-    Collections
-  </Link>{" "}
-  and flip over the cards you already own.
-</p>
-
-{/* Tutorial Cards */}
-<div className="text-center mb-6">
-  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#d4af37] mb-4">
-    Tap on these cards to flip them over!
-  </p>
-
-          <div className="flex justify-center gap-6 flex-wrap">
-            <TutorialCard
-              image={tutorialCard1}
-              flipped={tutorialFlipped.card1}
-              onClick={() =>
-                setTutorialFlipped((prev) => ({
-                  ...prev,
-                  card1: !prev.card1,
-                }))
-              }
-            />
-
-            <TutorialCard
-              image={tutorialCard2}
-              flipped={tutorialFlipped.card2}
-              onClick={() =>
-                setTutorialFlipped((prev) => ({
-                  ...prev,
-                  card2: !prev.card2,
-                }))
-              }
-            />
-          </div>
-        </div>
-
-        {/* Completion Message */}
-        {tutorialFlipped.card1 && tutorialFlipped.card2 && (
-          <div className="animate-in fade-in duration-700 mt-8">
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-5 text-center">
-              <p className="text-lg font-bold text-emerald-800 mb-2">
-                Congratulations! You just tracked your progress.
-              </p>
-              <p className="text-sm text-emerald-700">
-                (This is only a tutorial, this doesn't count. Don't worry.)
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-    
-  ),
-},
-{
-  title: "How do I use my ISO?",
-  content: (
-    <div className="space-y-8">
-      <div className="rounded-3xl border border-[#5a5a5a] bg-[#4a4a4a] shadow-lg p-6 sm:p-8">
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I use my ISO?
-        </h2>
-
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          Your ISO is curated based on the idea of mastersetting every collection. On a fresh account with zero cards owned,
-          every card in every set will already populate in your ISO.
-        </p>
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I hide sets I don't want to collect?
-        </h2>
-
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          In your ISO bar, you'll see a button called "Hide Sets." If you check off a set, it will disappear from
-          your personal ISO and your public ISO, as well as disappear from your collections page. If you still want to see
-          that set, you can. Go to collections and toggle the set's category in the sidebar - for example, to bring up a hidden
-          Moon 2 set, you'd click "Eternal Moon."
-        </p>
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          Removing the set from your view will also remove it from the progress bar at the top of collections, meaning it will no 
-          longer be counted toward the overall progress on your account.
-        </p>
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I keep track of cards that I have on the way?
-        </h2>
-
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          In your ISO, you can tap on a card to bring up a small menu. On that menu, you can mark a card as "Trade in Progress," or
-          "Purchase in Progress." A checkmark will appear beside that card's code. This will leave the card marked as uncollected until you
-          have it in your hands, and will remove the card from your public ISO.
-        </p>
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          What if I only want some specific cards?
-        </h2>
-
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          If you are a free-floater who only collects cards they find appealing, you can go to "My Wishlist" for
-          instructions on how to curate your account to that.
-        </p>
-         <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I know if people can see my ISO?
-        </h2>
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          Go to the forum and look yourself up.
-        </p>
-      </div>
-    </div>
-  ),
-},
-{
-  title: "How do I use my wishlist?",
-  content: (
-    <div className="space-y-8">
-      <div className="rounded-3xl border border-[#5a5a5a] bg-[#4a4a4a] shadow-lg p-6 sm:p-8">
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I use my wishlist?
-        </h2>
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          Your wishlist is for special curations. If you'd like to remove your entire ISO from public view, but keep it
-          in your personal view, you can click "DO NOT SHOW ISO" in your wishlist. You may also use your wishlist personally,
-          but hide it from public view by clicking "DO NOT SHOW WISHLIST."
-        </p>
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I set my wishlist?
-        </h2>
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          Click on any card in your wishlist to add it to your wishlist, which updates both personally and publicly. Simply click
-          a card a second time to remove it from your wishlist.
-        </p>
-        <h2 className="text-3xl font-bold text-[#f5f5f5] mb-3">
-          How do I know if people can see my wishlist?
-        </h2>
-        <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
-          Go to the forum and look yourself up. Adding one card to your wishlist will activate it for public view, unless you select that
-          you do not want it to be publicly viewable.
-        </p>
-      </div>
-    </div>
-  ),
-},
-{
-  title: "Eternal Star",
-  content: (
-    <div className="space-y-6">
-
-      <div className="text-center">
-  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-    STAR ONE
-  </span>
-</div>
-
-      <img
-        src={eternalStarFaq1}
-        alt="Eternal Star FAQ Page 1"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalStarFaq2}
-        alt="Eternal Star FAQ Page 2"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalStarFaq3}
-        alt="Eternal Star FAQ Page 3"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalStarPackConfigs}
-        alt="Eternal Star Pack Configurations"
-        className="w-full h-auto"
-      />
-    </div>
-  ),
-},
-
-{
-  title: "Eternal Moon",
-  content: (
-    <div className="space-y-6">
-      <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-          MOON ONE
-        </span>
-      </div>
-
-      <img
-        src={eternalMoonFaq1}
-        alt="Eternal Moon FAQ Page 1"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalMoonFaq2}
-        alt="Eternal Moon FAQ Page 2"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalMoonPackConfigs}
-        alt="Eternal Moon Pack Configurations"
-        className="w-full h-auto"
-      />
-
-      <div className="text-center pt-4">
-        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-          MOON TWO
-        </span>
-      </div>
-
-      <img
-        src={eternalMoon2Faq1}
-        alt="Eternal Moon Volume 2 FAQ Page 1"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalMoon2Faq2}
-        alt="Eternal Moon Volume 2 FAQ Page 2"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalMoon2Faq3}
-        alt="Eternal Moon Volume 2 FAQ Page 3"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalMoon2PackConfigs}
-        alt="Eternal Moon Volume 2 Pack Configurations"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalMoon2CPackConfigs}
-        alt="Eternal Moon Volume 2C Pack Configurations"
-        className="w-full h-auto"
-      />
-
-      <img
-  src={eternalMoon21NAFaq1}
-  alt="Eternal Moon 2.1 North American Variant FAQ Page 1"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon21NAFaq2}
-  alt="Eternal Moon 2.1 North American Variant FAQ Page 2"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon21NAPackConfigs}
-  alt="Eternal Moon 2.1 North American Variant Pack Configurations"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon21AFaq1}
-  alt="Eternal Moon 2.1A Variant FAQ Page 1"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon21APackConfigs}
-  alt="Eternal Moon 2.1A Variant Pack Configurations"
-  className="w-full h-auto"
-/>
-
-<div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-    MOON THREE
-  </span>
-</div>
-
-<img
-  src={eternalMoon3Faq1}
-  alt="Eternal Moon Volume 3 FAQ Page 1"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon3Faq2}
-  alt="Eternal Moon Volume 3 FAQ Page 2"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon3Faq3}
-  alt="Eternal Moon Volume 3 FAQ Page 3"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon3PackConfigs}
-  alt="Eternal Moon Volume 3 Pack Configurations"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalMoon3PackConfigsA}
-  alt="Eternal Moon Volume 3 Pack Configurations"
-  className="w-full h-auto"
-/>
-    </div>
-  ),
-},
-
-{
-  title: "Eternal Rainbow",
-  content: (
-    <div className="space-y-6">
-      <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-          RAINBOW ONE
-        </span>
-      </div>
-
-      <img
-        src={eternalRainbow1Faq1}
-        alt="Eternal Rainbow Volume 1 FAQ Page 1"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalRainbow1Faq2}
-        alt="Eternal Rainbow Volume 1 FAQ Page 2"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalRainbow1PackConfigs}
-        alt="Eternal Rainbow Volume 1 Pack Configurations"
-        className="w-full h-auto"
-      />
-
-      <div className="text-center pt-4">
-        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-          RAINBOW TWO
-        </span>
-
-        <img
-  src={eternalRainbow2Faq1}
-  alt="Eternal Rainbow Volume 2 FAQ Page 1"
-  className="w-full h-auto mt-10"
-/>
-
-<img
-  src={eternalRainbow2Faq2}
-  alt="Eternal Rainbow Volume 2 FAQ Page 2"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalRainbow2PackConfigs}
-  alt="Eternal Rainbow Volume 2 Pack Configurations"
-  className="w-full h-auto"
-/>
-      </div>
-    </div>
-  ),
-},
-
-{
-  title: "Fun Moments",
-  content: (
-    <div className="space-y-6">
-      <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-          FUN MOMENTS ONE
-        </span>
-      </div>
-
-      <img
-        src={eternalFunMoments1Faq1}
-        alt="Fun Moments Volume 1 FAQ Page 1"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalFunMoments1Faq2}
-        alt="Fun Moments Volume 1 FAQ Page 2"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={eternalFunMoments1PackConfigs}
-        alt="Fun Moments Volume 1 Pack Configurations"
-        className="w-full h-auto"
-      />
-
-      <div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-    FUN MOMENTS TWO
-  </span>
-</div>
-
-<div className="pt-2">
-  <img
-    src={eternalFunMoments2Faq1}
-    alt="Fun Moments Volume 2 FAQ Page 1"
-    className="w-full h-auto"
-  />
-</div>
-
-<img
-  src={eternalFunMoments2Faq2}
-  alt="Fun Moments Volume 2 FAQ Page 2"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalFunMoments2PackConfigs}
-  alt="Fun Moments Volume 2A Pack Configurations"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalFunMoments2PackConfigsB}
-  alt="Fun Moments Volume 2B Pack Configurations"
-  className="w-full h-auto"
-/>
-
-<div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-    FUN MOMENTS THREE
-  </span>
-</div>
-
-<div className="pt-2">
-  <img
-    src={eternalFunMoments3Faq1}
-    alt="Fun Moments Volume 3 FAQ Page 1"
-    className="w-full h-auto"
-  />
-</div>
-
-<img
-  src={eternalFunMoments3Faq2}
-  alt="Fun Moments Volume 3 FAQ Page 2"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalFunMoments3Faq3}
-  alt="Fun Moments Volume 3 FAQ Page 3"
-  className="w-full h-auto"
-/>
-
-<img
-  src={eternalFunMoments3PackConfigs}
-  alt="Fun Moments Volume 3 Pack Configurations"
-  className="w-full h-auto"
-/>
-
-    </div>
-  ),
-},
-
-{
-  title: "Trading Card Game",
-  content: (
-    <div className="space-y-6">
-
-      <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-          FANTASY WONDERLAND
-        </span>
-      </div>
-
-      <img
-        src={fantasyWonderlandFaq1}
-        alt="Fantasy Wonderland FAQ Page 1"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={fantasyWonderlandFaq2}
-        alt="Fantasy Wonderland FAQ Page 2"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={fantasyWonderlandFaq3}
-        alt="Fantasy Wonderland FAQ Page 3"
-        className="w-full h-auto"
-      />
-
-      <img
-        src={fantasyWonderlandPackConfigs}
-        alt="Fantasy Wonderland Pack Configurations"
-        className="w-full h-auto"
-      />
-
-<div className="text-center pt-4">
-  <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-    FRIENDSHIPS BEGIN
-  </span>
-</div>
-
-<img
-  src={friendshipsBeginFaq1}
-  alt="Friendships Begin FAQ Page 1"
-  className="w-full h-auto"
-/>
-
-<img
-  src={friendshipsBeginFaq2}
-  alt="Friendships Begin FAQ Page 2"
-  className="w-full h-auto"
-/>
-
-<img
-  src={friendshipsBeginFaq3}
-  alt="Friendships Begin FAQ Page 3"
-  className="w-full h-auto"
-/>
-
-<img
-  src={friendshipsBeginPackConfigs}
-  alt="Friendships Begin Pack Configurations"
-  className="w-full h-auto"
-/>
-
-    </div>
-  ),
-},
-
-{
-  title: "Others",
-  content: (
-    <div className="space-y-6">
-
-      <div className="text-center">
-        <span className="inline-block px-6 py-2 rounded-full bg-[#555555] text-white border border-zinc-600 text-sm font-bold tracking-[0.3em]">
-          PLUSH MERCH
-        </span>
-      </div>
-
-      <img
-        src={crossingPlushies}
-        alt="CrossingTCG Plush Merch"
-        className="w-full h-auto rounded-lg"
-      />
-
-      <img
-        src={crossingPlushies2}
-        alt="CrossingTCG Plush Merch 2"
-        className="w-full h-auto rounded-lg"
-      />
-
-      <p className="text-sm text-white leading-7">
-        These plushies showed up on CrossingTCG's website alongside the release
-        of Kayou's trading cards. They are over a foot tall (16.5in) and over
-        a foot long (17.3in). They retail for $29.99 each. Purchase through{" "}
-        <a
-          href="https://www.tiktok.com/t/ZP9YXypBLC65Q-hhq5j/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-violet-600 font-semibold hover:underline"
-        >
-          this link
-        </a>{" "}
-        for free shipping through their TikTok Shop, otherwise the shipping fee
-        on their website is $8.99 unless you are purchasing over $100 of product.
-      </p>
-
-    </div>
-  ),
-},
-];
-
-  return (
-    <div
-      className="min-h-screen"
-style={{
-  background: "#2e2e2e",
-}}
-    >
-
-<div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-
-  {/* HERO HEADER */}
-<section className="relative mb-8 overflow-hidden rounded-[32px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl">
-
-  <div className="px-8 py-10 text-center">
-
-<h1
-  className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-yellow-400"
-  style={{ fontFamily: "Oxanium, sans-serif" }}
->
-  MLPEKAYOU FAQ
-</h1>
-
-    <div className="mx-auto mt-5 mb-5 h-px w-56 bg-yellow-500/40" />
-
-    <p className="mx-auto max-w-3xl text-base sm:text-lg leading-relaxed text-zinc-300">
-      If the answer to your question does not lie in this FAQ, feel free to leave it
-      in the questions section of the MLPEKAYOU Discord server. A staff member or the
-      server owner will get back to you as soon as possible.
-    </p>
-
-  </div>
-
-</section>
-
-{/* MOBILE CATEGORY SELECTOR */}
-<div className="md:hidden mb-6">
-  {(() => {
-    const groups = [
-{
-  title: "MLPEKayou Tutorial",
-  children: [
-  "How do I track my collection?",
-  "How do I use my ISO?",
-  "How do I use my wishlist?",
-],
-},
+type OddsRow = {
+  configuration: string;
+  ratio: string;
+};
+
+type CaseResearchEntry = {
+  title: string;
+  observation: string;
+  details?: string;
+};
+
+
+
+/*
+|--------------------------------------------------------------------------
+| PRODUCT HIERARCHY
+|--------------------------------------------------------------------------
+*/
+
+const categories: Category[] = [
+  {
+    id: "eternal-star",
+    title: "STAR",
+    code: "MLPSE",
+    children: [
       {
-        title: "North American Products",
-        children: [
-          "Eternal Star",
-          "Eternal Moon",
-          "Eternal Rainbow",
-          "Fun Moments",
-          "Trading Card Game",
-          "Others",
-        ],
+        id: "star-one",
+        title: "STAR ONE",
+        code: "ES-01",
+        product: {
+          id: "star-one",
+          title: "STAR ONE",
+          image: starOneBox,
+          tableCount: 1,
+        },
       },
-    ];
+    ],
+  },
 
-    const selectedGroup =
-      groups.find((group) => group.title === menuOpen) ?? groups[0];
+  {
+    id: "eternal-moon",
+    title: "MOON",
+    code: "MLPME",
+    children: [
+      {
+        id: "moon-one",
+        title: "MOON ONE",
+        code: "01",
+        product: {
+          id: "moon-one",
+          title: "MOON ONE",
+          image: moonOneBox,
+          tableCount: 1,
+        },
+      },
 
-    return (
-      <>
-        {/* Current Parent Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="w-full px-5 py-4 rounded-2xl bg-[#444444] border border-[#5a5a5a] text-yellow-400 font-bold flex items-center justify-between"
-        >
-          <span>{selectedGroup.title}</span>
-          <span className="text-xl">{mobileMenuOpen ? "▲" : "▾"}</span>
-        </button>
-{mobileMenuOpen && (
-  <div className="mt-3 p-2 rounded-2xl bg-[#3a3a3a] border border-[#5a5a5a] shadow-xl">
-    {/* Parent Categories */}
-    <div className="space-y-2">
-      {groups.map((group) => (
-        <button
-          key={group.title}
-          onClick={() => setMenuOpen(group.title)}
-          className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition ${
-            menuOpen === group.title
-              ? "bg-gradient-to-r from-[#d4af37] via-[#c79b32] to-[#b8860b] text-[#1b1b1b] shadow-md"
-              : "bg-[#444444] text-[#f4d47c] hover:bg-[#505050]"
-          }`}
-        >
-          {group.title}
-        </button>
-      ))}
-    </div>
-
-    {/* Children of Selected Parent */}
-    <div className="mt-3 pt-3 border-t border-[#5a5a5a] space-y-2">
-      {selectedGroup.children.map((child) => {
-        const index = sections.findIndex(
-          (section) => section.title === child
-        );
-
-        if (index === -1) return null;
-
-        return (
-          <button
-            key={child}
-            onClick={() => {
-              setActive(index);
-
-              const parentGroup = groups.find((group) =>
-                group.children.includes(child)
-              );
-
-              if (parentGroup) {
-                setMenuOpen(parentGroup.title);
-              }
-
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition ${
-              active === index
-                ? "bg-[#d4af37] text-[#1b1b1b] shadow-md"
-                : "bg-[#4a4a4a] text-[#f4d47c] hover:bg-[#5a5a5a]"
-            }`}
-          >
-            {child}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-)}
-      </>
-    );
-  })()}
-</div>
-
-  {/* DESKTOP LAYOUT */}
-  <div className="hidden md:grid md:grid-cols-[280px_1fr] gap-8 items-start">
-
-{/* LEFT SIDEBAR */}
-<aside className="sticky top-24">
-  <div className="rounded-[28px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl overflow-hidden">
-    <div className="px-6 py-5 bg-[#444444] border-b border-zinc-700">
-      <h2 className="text-white text-xl font-bold tracking-wide">
-        Help Topics
-      </h2>
-    </div>
-
-    <div className="p-4 space-y-3">
-      {[
-{
-  title: "MLPEKayou Tutorial",
-  children: [
-  "How do I track my collection?",
-  "How do I use my ISO?",
-  "How do I use my wishlist?",
-],
-},
-        {
-          title: "North American Products",
-          children: [
-            "Eternal Star",
-            "Eternal Moon",
-            "Eternal Rainbow",
-            "Fun Moments",
-            "Trading Card Game",
-            "Others",
+      {
+        id: "moon-two",
+        title: "MOON TWO",
+        code: "02",
+        product: {
+          id: "moon-two",
+          title: "MOON TWO",
+          image: moonTwoBox,
+          tableCount: 4,
+          tableAssets: [
+            {
+              image: moonTwoBox,
+              label: "STANDARD BOX",
+            },
+            {
+              image: BlankBox,
+              label: "RETAIL SHELVES BOX",
+            },
+            {
+              image: "/set-pictures/moontwoboxtwo.webp",
+              label: "NYCC VARIANT",
+            },
+            {
+              image: "/set-pictures/moontwocollectorsbox.webp",
+              label: "COLLECTOR'S BOX",
+            },
           ],
         },
-      ].map((group) => {
-        const isOpen = menuOpen === group.title;
+      },
 
-        return (
-          <div key={group.title}>
-            {/* Parent Button */}
-            <button
-              onClick={() =>
-                setMenuOpen(isOpen ? null : group.title)
-              }
-className="w-full flex items-center justify-between px-4 py-3 rounded-2xl
-           font-bold text-left
-           bg-[#444444]
-           border border-[#5a5a5a]
-           text-yellow-400
-           shadow-lg"
-            >
-              <span>{group.title}</span>
-              <span className="text-lg">
-                {isOpen ? "▲" : "▼"}
-              </span>
-            </button>
+      {
+        id: "moon-three",
+        title: "MOON THREE",
+        code: "03",
+        product: {
+          id: "moon-three",
+          title: "MOON THREE",
+          image: moonThreeBox,
+          tableCount: 3,
+          tableAssets: [
+            {
+              image: moonThreeBox,
+              label: "STANDARD BOX",
+            },
+            {
+              image: moonThreeBigBox,
+              label: "RETAIL BOX",
+            },
+            {
+              image: moonThreeCollectorsBox,
+              label: "Collector's Box",
+            },
+          ],
+        },
+      },
+    ],
+  },
 
-            {/* Child Pages */}
-            {isOpen && (
-              <div className="mt-2 ml-3 space-y-2">
-                {group.children.map((child) => {
-                  const index = sections.findIndex(
-                    (section) => section.title === child
-                  );
+  {
+    id: "eternal-rainbow",
+    title: "RAINBOW",
+    code: "RBE",
+    children: [
+      {
+        id: "rainbow-one",
+        title: "RAINBOW ONE",
+        code: "01",
+        product: {
+          id: "rainbow-one",
+          title: "RAINBOW ONE",
+          image: rainbowOneBox,
+          tableCount: 1,
+        },
+      },
 
-                  if (index === -1) return null;
+      {
+        id: "rainbow-two",
+        title: "RAINBOW TWO",
+        code: "02",
+        product: {
+          id: "rainbow-two",
+          title: "RAINBOW TWO",
+          image: rainbowTwoBox,
+          tableCount: 1,
+        },
+      },
+    ],
+  },
 
-                  return (
-                    <button
-                      key={child}
-                      onClick={() => setActive(index)}
-                      className={`w-full text-left px-4 py-2 rounded-xl
-                                 text-sm font-semibold transition ${
-                        active === index
-                          ? "bg-yellow-500 text-black border border-yellow-400 shadow-md"
-                          : "bg-[#4a4a4a] text-zinc-100 hover:bg-[#5a5a5a]"
-                      }`}
-                    >
-                      {child}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  </div>
-</aside>
+  {
+    id: "fun-moments",
+    title: "FUN MOMENTS",
+    code: "FME",
+    children: [
+      {
+        id: "fun-moments-one",
+        title: "FUN MOMENTS ONE",
+        code: "01",
+        product: {
+          id: "fun-moments-one",
+          title: "FUN MOMENTS ONE",
+          image: funMomentsOneBox,
+          tableCount: 1,
+        },
+      },
 
-    {/* MAIN CONTENT */}
-    <main className="rounded-[32px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl overflow-hidden">
-      <div className="px-8 py-6 border-b border-zinc-700 bg-[#444444]">
-        <h1 className="text-3xl font-bold text-white">
-          {sections[active].title}
-        </h1>
-      </div>
+{
+  id: "fun-moments-two",
+  title: "FUN MOMENTS TWO",
+  code: "02",
+  product: {
+    id: "fun-moments-two",
+    title: "FUN MOMENTS TWO",
+    image: funMomentsTwoBox,
+    tableCount: 2,
+    tableAssets: [
+      {
+        image: funMomentsTwoBox,
+        label: "WALMART BOX",
+      },
+      {
+        image: funMomentsTwoBox,
+        label: "ROSS DRESS FOR LESS VARIANT",
+      },
+    ],
+  },
+},
+      {
+        id: "fun-moments-three",
+        title: "FUN MOMENTS THREE",
+        code: "03",
+        product: {
+          id: "fun-moments-three",
+          title: "FUN MOMENTS THREE",
+          image: funMomentsThreeBox,
+          tableCount: 1,
+        },
+      },
+    ],
+  },
 
-      <div className="p-8">
-        {sections[active].content}
-      </div>
-    </main>
-  </div>
+  {
+    id: "trading-card-game",
+    title: "TCG",
+    code: "BP/SD",
+    children: [
+      {
+        id: "fantasy-wonderland",
+        title: "FANTASY WONDERLAND",
+        code: "01",
+        product: {
+          id: "fantasy-wonderland",
+          title: "FANTASY WONDERLAND",
+          image: fantasyWonderlandBox,
+          tableCount: 1,
+        },
+      },
 
-  {/* MOBILE CONTENT */}
-  <div className="md:hidden rounded-[28px] border border-[#5a5a5a] bg-[#3a3a3a] shadow-2xl overflow-hidden">
-    <div className="px-6 py-5 border-b border-zinc-700 bg-[#444444]">
-      <h1 className="text-2xl font-bold text-white">
-        {sections[active].title}
-      </h1>
-    </div>
+      {
+        id: "friendships-begin",
+        title: "FRIENDSHIPS BEGIN",
+        code: "01",
+        product: {
+          id: "friendships-begin",
+          title: "FRIENDSHIPS BEGIN",
+          image: friendshipsBeginBox,
+          tableCount: 1,
+        },
+      },
+            {
+        id: "discord",
+        title: "DISCORD",
+        code: "02",
+        product: {
+          id: "discord",
+          title: "DISCORD",
+          image: discordBox,
+          tableCount: 1,
+        },
+      },
+    ],
+  },
+];
 
-    <div className="p-6">
-      {sections[active].content}
-    </div>
-  </div>
 
-</div>
-      </div>
+/*
+|--------------------------------------------------------------------------
+| PACK CONFIGURATIONS
+|--------------------------------------------------------------------------
+*/
 
+const packConfigurations: Record<string, OddsRow[][]> = {
+  "star-one": [
+    [
+      { configuration: "1SCR + 2SSR + / UR", ratio: "10:16" },
+      { configuration: "1SSR + 1SCR / UR + 1USR / AR", ratio: "5:16" },
+      { configuration: "1OR / BP / ◇AR + 2SSR / SCR", ratio: "1:16" },
+    ],
+  ],
+
+  "moon-one": [
+    [
+      { configuration: "3R + 1SR + 1HR + 1SSR + 2HR / SSR / UR / LSR", ratio: "20:24" },
+      { configuration: "3R + 1SR + 1HR + 1SSR + 2LSR / SGR . SC", ratio: "4:24" },
+    ],
+  ],
+
+  "moon-two": [
+    [
+      { configuration: "3R + 1SR + 1HR + 1SSR + 1HR / UR / LSR / SGR", ratio: "8:12" },
+      { configuration: "3R + 1SR+ 2HR + 1SSR + 1LSR / ZR / SC / ◇ZR", ratio: "4:12" },
+    ],
+    [
+      { configuration: "3R + 1SR + 1HR + 1SSR + 1UR", ratio: "7:24" },
+      { configuration: "3R + 1SR + 1HR + 1LSR / HR + 1SSR + 1UR / SGR / ZR / SC / ◇ZR", ratio: "17:24" },
+    ],
+    [
+      { configuration: "3R + 1SR + 1HR + 1SSR + 2HR / UR / LSR / SGR", ratio: "8:12" },
+      { configuration: "3R + 1SR + 2HR + 1SSR + 1LSR / ZR /SC / ◇ZR", ratio: "4:12" },
+    ],
+    [
+      { configuration: "3R + 1SR + 1HR + 1SSR + 1UR + 1LSR", ratio: "3:5" },
+      { configuration: "3R + 1SR + 2HR + 1SSR + 1UR / SGR / ZR / SC / ◇ZR", ratio: "2:5" },
+    ],
+  ],
+
+  "moon-three": [
+    [
+      { configuration: "3R + 2SR + 1SSR + 1HR + 1LSR", ratio: "6:12" },
+      { configuration: "3R + 2SR + 1SSR + 1HR + 1 UR / SGR / ZR / SC / ◇ZR", ratio: "6:12" },
+    ],
+    [
+      { configuration: "3R + 2SR + 1SSR + 1HR + 1LSR", ratio: "12:24" },
+      { configuration: "3R + 2SR + 1SSR + 1HR + 1UR / SGR / ZR / SC / ◇ZR", ratio: "12:24" },
+    ],
+    [
+      { configuration: "3R + 1SR + 1HR + 1SSR + 1UR + 1LSR", ratio: "3:5" },
+      { configuration: "3R + 1SR + 2HR + 1SSR + 1UR / SGR / ZR / SC / ◇ZR", ratio: "2:5" },
+    ],
+  ],
+
+  "rainbow-one": [
+    [
+      { configuration: "1R + 1SR + 1FR + 1TGR / TR + 1MTR / SSR", ratio: "13:20" },
+      { configuration: "1R + 1FR + 1MTR + 1TGR / TR + 1FR / SSR / UR / USR / XR", ratio: "7:20" },
+    ],
+  ],
+
+  "rainbow-two": [
+    [
+      { configuration: "1BASE + 1ST + 1TG / TGR + 1R + 1SSR / UR / USR / XR", ratio: "11:20" },
+      { configuration: "1BASE + 1ST + 1TR / TGR + 1SR + 1FR", ratio: "9:20" },
+    ],
+  ],
+
+  "fun-moments-one": [
+    [
+      { configuration: "2N + 1◇N + 1R + 1SR + 1SSR + 1UR + 1SR / SSR / UR", ratio: "11:20" },
+      { configuration: "2N + 1◇N + 1R + 1SR + 1SSR + 1UR + 1CR", ratio: "9:20" },
+    ],
+  ],
+
+  "fun-moments-two": [
+    [
+      { configuration: "2N/◇N + 2R + 1SR + 1SSR + 2SSR / UR / CR / UGR", ratio: "18:20" },
+      { configuration: "2N/◇N + 2R + 1SR + 2SSR + 1UGR", ratio: "2:20" },
+    ],
+    [
+      { configuration: "2N/◇N + 1R + 1SR + 1SSR + 1SSR / UR", ratio: "25:30" },
+      { configuration: "2N/◇N + 1R + 1SR + 1SSR + 1UGR / CR", ratio: "5:30" },
+    ],
+  ],
+
+  "fun-moments-three": [
+    [
+      { configuration: "2N/◇N + 2R + 1SR + 1SSR + 1R / 1SSR / UR", ratio: "17:20" },
+      { configuration: "2N/◇N + 2R + 1SR + 1SSR + 1UGR / CR / ◇CR", ratio: "3:20" },
+    ],
+  ],
+
+  "discord": [
+    [
+      { configuration: "2C + 2U / SPR + 1ER", ratio: "6:20" },
+      { configuration: "2C + 1U / SPR + 1U / SPR / SR / RR / GR / CR / ※GR / ※SPR / ※CR / ※RR + 1ER / ※ER", ratio: "14:20" },
+    ],
+  ],
+
+  "fantasy-wonderland": [
+    [
+      { configuration: "2C + 2U / SPR + 1ER", ratio: "6:20" },
+      { configuration: "2C + 1U / SPR + 1SR / RR / GR / CR / ※SPR / ※CR / ※RR + 1ER / ※ER", ratio: "14:20" },
+    ],
+  ],
+
+  "friendships-begin": [
+    [
+      { configuration: "2C + 1U / SPR + 1ER / ※ER + 1SR", ratio: "2:3" },
+      { configuration: "2C + 1U / SPR + 1ER / ※ER + 1SR / GR / CR / ※RR", ratio: "1:3" },
+    ],
+  ],
+};
+
+/*
+|--------------------------------------------------------------------------
+| CASE RESEARCH
+|--------------------------------------------------------------------------
+| Manually maintained observations gathered from opening cases.
+| Add, remove, or edit entries here. Nothing is stored in Supabase.
+*/
+const caseResearch: Record<string, CaseResearchEntry[]> = {
+  "moon-three": [
+    {
+      title: "Average Case",
+      observation: "An average case contains approximately 2 SC.",
+    },
+    {
+      title: "God Case",
+      observation:
+        "A god case contains both kinds of ZR, SC, and one ◇ZR.",
+    },
+    {
+      title: "ZR Case Distribution",
+      observation:
+        "A case containing ZR will only contain one kind of ZR. It will either be Childhood Memories or Crystal Forest.",
+      details:
+        "The only time both kinds of ZR are mixed within the same case is in a god case.",
+    },
+  ],
+
+  "discord": [
+    {
+      title: "※RR Distribution",
+      observation: "Only one ※RR is found per case.",
+    },
+    {
+      title: "※SPR Distribution",
+      observation: "Typically, only every few boxes contain an ※SPR.",
+    },
+    {
+      title: "Double ※SPR Box",
+      observation: "A box containing two ※SPR has been pulled.",
+    },
+  ],
+
+  "star-one": [
+    {
+      title: "◇AR Distribution",
+      observation: "It is possible for a case to contain no ◇AR.",
+    },
+    {
+      title: "Box Hit",
+      observation:
+        "Every box will have exactly one box hit: one BP, OR, or ◇AR.",
+    },
+    {
+      title: "AR Distribution",
+      observation: "Every box contains two AR.",
+    },
+  ],
+
+  "fun-moments-one": [
+    {
+      title: "Hidden CR Distribution",
+      observation: "Each case contains 1–4 hidden CR.",
+    },
+    {
+      title: "Duplicate Hidden CR",
+      observation: "It is possible to have two of the same hidden CR in a case.",
+    },
+    {
+      title: "Box CR Guarantee",
+      observation: "Every box is guaranteed to contain one CR.",
+    },
+  ],
+
+  "fun-moments-three": [
+    {
+      title: "Hit Distribution",
+      observation:
+        "Each box will have three of the same hit: 3 UGR, 3 CR, or 3 ◇CR.",
+      details:
+        "The hits will never be mixed. It will always be three of the same.",
+    },
+    {
+      title: "Hit Rarity",
+      observation:
+        "UGR boxes are the most common. ◇CR boxes are the hardest to come by.",
+    },
+    {
+      title: "◇CR Box Distribution",
+      observation:
+        "Most ◇CR boxes will have 2 pillars and 1 element.",
+    },
+  ],
+
+  "rainbow-two": [
+    {
+      title: "Box Configurations",
+      observation:
+        "There are three box configurations: Level I — 1 USR; Level II — 2 USR; Level III — 1 USR and 1 XR.",
+    },
+    {
+      title: "Hidden XR Distribution",
+      observation: "Not every case contains the hidden XR.",
+    },
+    {
+      title: "USR Minimum",
+      observation: "There are no boxes with fewer than 1 USR.",
+    },
+  ],
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| CATEGORY NAVIGATION ITEM
+|--------------------------------------------------------------------------
+*/
+
+const CategoryButton = ({
+  category,
+  selected,
+  onSelect,
+}: {
+  category: Category;
+  selected: boolean;
+  onSelect: () => void;
+}) => {
+  const hasChildren = !!category.children?.length;
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`group relative flex w-full items-center gap-3 overflow-hidden border px-4 py-3 text-left transition-all duration-200 ${
+        selected
+          ? "border-yellow-400/70 bg-yellow-400/[0.08]"
+          : "border-zinc-800/80 bg-[#111214] hover:border-yellow-400/40 hover:bg-[#181a1d]"
+      }`}
+    >
+      {/* LEFT STATUS BAR */}
+
+      <span
+        className={`absolute left-0 top-0 h-full w-[2px] transition ${
+          selected
+            ? "bg-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.9)]"
+            : "bg-transparent group-hover:bg-yellow-400/50"
+        }`}
+      />
+
+      {/* NODE */}
+
+      <span
+        className={`relative flex h-7 w-7 shrink-0 items-center justify-center border ${
+          selected
+            ? "border-yellow-400/70 text-yellow-400"
+            : "border-zinc-700 text-zinc-500 group-hover:border-yellow-400/50 group-hover:text-yellow-400"
+        }`}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      </span>
+
+      {/* TEXT */}
+
+      <span className="min-w-0 flex-1">
+        <span
+          className={`block truncate text-[11px] font-bold tracking-[0.13em] ${
+            selected
+              ? "text-yellow-300"
+              : "text-zinc-200 group-hover:text-white"
+          }`}
+        >
+          {category.title}
+        </span>
+
+        <span className="mt-0.5 block font-mono text-[8px] tracking-[0.2em] text-zinc-600">
+          {category.code}
+        </span>
+      </span>
+
+      {/* ARROW */}
+
+      {hasChildren && (
+        <span
+          className={`font-mono text-xs ${
+            selected
+              ? "text-yellow-400"
+              : "text-zinc-600 group-hover:text-yellow-400"
+          }`}
+        >
+          ›
+        </span>
+      )}
+    </button>
   );
 };
+
+
+/*
+|--------------------------------------------------------------------------
+| PACK CONFIGURATION TABLE
+|--------------------------------------------------------------------------
+*/
+
+const ConfigurationTable = ({
+  rows,
+  tableNumber,
+  totalTables,
+}: {
+  rows: OddsRow[];
+  tableNumber: number;
+  totalTables: number;
+}) => {
+  return (
+    <div className="relative overflow-hidden border border-yellow-400/25 bg-[#0c0d0f]">
+
+      {/* CORNER MARKERS */}
+
+      <span className="absolute left-0 top-0 h-3 w-3 border-l border-t border-yellow-400" />
+      <span className="absolute right-0 top-0 h-3 w-3 border-r border-t border-yellow-400" />
+      <span className="absolute bottom-0 left-0 h-3 w-3 border-b border-l border-yellow-400" />
+      <span className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-yellow-400" />
+
+      {/* TABLE ID */}
+
+      {totalTables > 1 && (
+        <div className="flex items-center justify-between border-b border-zinc-800 bg-[#111214] px-4 py-2.5">
+
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-zinc-500">
+            CONFIGURATION MATRIX
+          </span>
+
+          <span className="font-mono text-[9px] font-bold tracking-[0.2em] text-yellow-500">
+            TABLE {String(tableNumber).padStart(2, "0")}
+          </span>
+
+        </div>
+      )}
+
+      {/* COLUMN HEADERS */}
+
+      <div className="grid grid-cols-2 border-b border-yellow-400/20">
+
+        <div className="px-4 py-3 sm:px-5">
+          <div className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400">
+            PACK CONFIGURATIONS
+          </div>
+        </div>
+
+        <div className="border-l border-yellow-400/20 px-4 py-3 sm:px-5">
+          <div className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400">
+            PRODUCTION RATIO
+          </div>
+        </div>
+
+      </div>
+
+
+      {/* INPUT ROWS */}
+
+      {rows.map((row, index) => (
+        <div
+          key={index}
+          className="grid grid-cols-2 border-b border-zinc-800/80"
+        >
+
+          <div className="p-2 sm:p-3">
+
+          <div
+            aria-label={`Pack configuration ${index + 1}`}
+            className="w-full min-h-[48px] whitespace-normal break-words border border-zinc-800 bg-[#08090a] px-3 py-3 font-mono text-xs leading-5 text-white"
+          >
+        {row.configuration}
+      </div>
+
+          </div>
+
+
+          <div className="border-l border-zinc-800/80 p-2 sm:p-3">
+
+            <input
+              type="text"
+              value={row.ratio}
+              readOnly
+              aria-label={`Production ratio ${index + 1}`}
+              className="w-full border border-zinc-800 bg-[#08090a] px-3 py-3 font-mono text-xs text-white outline-none"
+            />
+
+          </div>
+
+        </div>
+      ))}
+
+
+    </div>
+  );
+};
+
+const CaseResearchSection = ({
+  productId,
+}: {
+  productId: string;
+}) => {
+  const entries = caseResearch[productId] ?? [];
+
+  if (entries.length === 0) {
+    return (
+      <section className="mt-8">
+        <div className="mb-3 flex items-center gap-3">
+          <span className="h-4 w-[2px] bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+
+          <div>
+            <div className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-zinc-300">
+              CASE RESEARCH
+            </div>
+
+            <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+              FIELD OBSERVATIONS / OPENING DATA
+            </div>
+          </div>
+        </div>
+
+        <div className="border border-dashed border-zinc-800 bg-[#0b0c0e] px-4 py-5">
+          <div className="font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-700">
+            NO RESEARCH ENTRIES LOGGED
+          </div>
+
+          <div className="mt-2 font-mono text-[8px] leading-5 text-zinc-600">
+            Add case-opening observations to the hardcoded caseResearch section.
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-8">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="h-4 w-[2px] bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+
+          <div>
+            <div className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-zinc-300">
+              CASE RESEARCH
+            </div>
+
+            <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+              FIELD OBSERVATIONS / OPENING DATA
+            </div>
+          </div>
+        </div>
+
+        <div className="font-mono text-[7px] font-bold uppercase tracking-[0.18em] text-yellow-500">
+          {String(entries.length).padStart(2, "0")} ENTRIES
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {entries.map((entry, index) => (
+          <article
+            key={`${entry.title}-${index}`}
+            className="relative overflow-hidden border border-zinc-800 bg-[#0b0c0e]"
+          >
+            <div className="absolute left-0 top-0 h-4 w-4 border-l border-t border-yellow-400/40" />
+            <div className="absolute right-0 top-0 h-4 w-4 border-r border-t border-yellow-400/40" />
+            <div className="absolute bottom-0 left-0 h-4 w-4 border-b border-l border-yellow-400/40" />
+            <div className="absolute bottom-0 right-0 h-4 w-4 border-b border-r border-yellow-400/40" />
+
+            <div className="border-b border-zinc-800 bg-[#0f1012] px-4 py-3">
+              <div className="mb-1 font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-yellow-500">
+                OBSERVATION {String(index + 1).padStart(2, "0")}
+              </div>
+
+              <div
+                className="text-sm font-black uppercase tracking-[0.04em] text-white"
+                style={{ fontFamily: "Oxanium, sans-serif" }}
+              >
+                {entry.title}
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              <div className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+                OBSERVATION
+              </div>
+
+              <p className="mt-2 whitespace-pre-wrap font-mono text-[10px] leading-6 text-zinc-300">
+                {entry.observation}
+              </p>
+
+              {entry.details && (
+                <div className="mt-4 border-l-2 border-yellow-400/30 pl-3">
+                  <div className="font-mono text-[7px] font-bold uppercase tracking-[0.18em] text-yellow-500">
+                    RESEARCH NOTES
+                  </div>
+
+                  <p className="mt-1 whitespace-pre-wrap font-mono text-[9px] leading-5 text-zinc-500">
+                    {entry.details}
+                  </p>
+                </div>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| MAIN PAGE
+|--------------------------------------------------------------------------
+*/
+
+const FAQ = () => {
+  const [path, setPath] = useState<Category[]>([]);
+  const [selectedProduct, setSelectedProduct] =
+    useState<Product | null>(null);
+
+  const currentCategory =
+    path.length > 0
+      ? path[path.length - 1]
+      : null;
+
+
+  /*
+   |--------------------------------------------------------------------------
+   | NAVIGATION
+   |--------------------------------------------------------------------------
+   */
+
+  const selectCategory = (category: Category) => {
+    if (category.product) {
+      setSelectedProduct(category.product);
+      return;
+    }
+
+    setSelectedProduct(null);
+
+    setPath((current) => [
+      ...current,
+      category,
+    ]);
+  };
+
+
+  const goHome = () => {
+    setPath([]);
+    setSelectedProduct(null);
+  };
+
+
+  const goBack = () => {
+    setSelectedProduct(null);
+
+    setPath((current) =>
+      current.length > 0
+        ? current.slice(0, -1)
+        : current,
+    );
+  };
+
+
+  const goToBreadcrumb = (index: number) => {
+    setSelectedProduct(null);
+
+    setPath((current) =>
+      current.slice(0, index + 1),
+    );
+  };
+
+
+  /*
+   |--------------------------------------------------------------------------
+   | PACK CONFIGURATION LOOKUP
+   |--------------------------------------------------------------------------
+   | These values are hardcoded in packConfigurations above.
+   | The website only displays them; users cannot edit them.
+   */
+
+  const getRows = (
+    productId: string,
+    tableNumber: number,
+  ) => {
+    return (
+      packConfigurations[productId]?.[tableNumber - 1] ?? []
+    );
+  };
+
+  const getTableAsset = (
+    product: Product,
+    tableNumber: number,
+  ) => {
+    return product.tableAssets?.[tableNumber - 1] ?? {
+      image: product.image,
+      label: `${product.title} BOX`,
+    };
+  };
+
+
+  /*
+   |--------------------------------------------------------------------------
+   | RENDER
+   |--------------------------------------------------------------------------
+   */
+
+  return (
+   <main className="min-h-screen bg-[#08090a] pb-24 text-white sm:pb-0">
+
+      {/* ================================================================
+          BACKGROUND HUD GRID
+      ================================================================ */}
+
+      <div className="pointer-events-none fixed inset-0 opacity-[0.035]">
+        <div
+          className="h-full w-full"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(250,204,21,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(250,204,21,0.7) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+      </div>
+
+
+      {/* ================================================================
+          TOP SYSTEM BAR
+      ================================================================ */}
+
+      <header className="relative z-10 mt-0 border-b border-zinc-800 bg-[#0c0d0f]/95 backdrop-blur">
+
+        <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between px-4 sm:px-6">
+
+          <div className="flex items-center gap-4">
+
+            <div className="relative flex h-8 w-8 items-center justify-center border border-yellow-400/70">
+
+              <span className="absolute left-0 top-0 h-2 w-2 border-l border-t border-yellow-400" />
+              <span className="absolute right-0 top-0 h-2 w-2 border-r border-t border-yellow-400" />
+              <span className="absolute bottom-0 left-0 h-2 w-2 border-b border-l border-yellow-400" />
+              <span className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-yellow-400" />
+
+              <span className="h-2 w-2 rounded-full bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.9)]" />
+
+            </div>
+
+            <div>
+
+              <div
+                className="text-sm font-black tracking-[0.16em] text-white"
+                style={{
+                  fontFamily: "Oxanium, sans-serif",
+                }}
+              >
+                MLPEKAYOU
+              </div>
+
+              <div className="font-mono text-[7px] uppercase tracking-[0.28em] text-zinc-600">
+                PACK CONFIGURATION SYSTEM
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div className="hidden items-center gap-5 sm:flex">
+
+            <div className="text-right">
+              <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-600">
+                SYSTEM
+              </div>
+
+              <div className="font-mono text-[9px] font-bold tracking-[0.16em] text-yellow-400">
+                ONLINE
+              </div>
+            </div>
+
+            <div className="h-6 w-px bg-zinc-800" />
+
+            <div className="text-right">
+              <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-600">
+                MODULE
+              </div>
+
+              <div className="font-mono text-[9px] font-bold tracking-[0.16em] text-zinc-300">
+                PC-01
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </header>
+
+
+      {/* ================================================================
+          MAIN
+      ================================================================ */}
+
+      <div className="relative z-10 mx-auto flex max-w-[1500px]">
+
+        {/* ================================================================
+            LEFT NAVIGATION
+        ================================================================ */}
+
+        <aside className="hidden w-[270px] shrink-0 border-r border-zinc-800 bg-[#0b0c0e] lg:block">
+
+          <div className="sticky top-0 p-5">
+
+            <div className="mb-5">
+
+              <div className="mb-1 font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-yellow-500">
+                NAVIGATION MATRIX
+              </div>
+
+              <div className="font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+                NORTH AMERICAN PRODUCTS
+              </div>
+
+            </div>
+
+
+            <div className="space-y-1.5">
+
+              {categories.map(
+                (category) => (
+                  <CategoryButton
+                    key={category.id}
+                    category={category}
+                    selected={
+                      path[0]?.id ===
+                      category.id
+                    }
+                    onSelect={() =>
+                      selectCategory(
+                        category,
+                      )
+                    }
+                  />
+                ),
+              )}
+
+            </div>
+
+
+            {/* STATUS PANEL */}
+
+            <div className="mt-8 border border-zinc-800 bg-[#0f1012] p-4">
+
+              <div className="mb-3 flex items-center justify-between">
+
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-600">
+                  DATABASE
+                </span>
+
+                <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 shadow-[0_0_7px_rgba(250,204,21,0.8)]" />
+
+              </div>
+
+              <div className="font-mono text-[8px] leading-5 text-zinc-600">
+                PACK ODDS
+                <br />
+                CONFIGURATION DATA GATHERED BY COLLECTORS
+              </div>
+
+            </div>
+
+          </div>
+
+        </aside>
+
+
+        {/* ================================================================
+            CONTENT
+        ================================================================ */}
+
+        <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
+
+          {/* ==============================================================
+              BREADCRUMB / SYSTEM PATH
+          ============================================================== */}
+
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+
+            <button
+              type="button"
+              onClick={goHome}
+              className={`font-mono text-[8px] uppercase tracking-[0.16em] transition ${
+                path.length === 0 &&
+                !selectedProduct
+                  ? "text-yellow-400"
+                  : "text-zinc-600 hover:text-yellow-400"
+              }`}
+            >
+              ROOT
+            </button>
+
+            {path.map(
+              (category, index) => (
+                <div
+                  key={category.id}
+                  className="flex items-center gap-2"
+                >
+
+                  <span className="font-mono text-[9px] text-zinc-700">
+                    /
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      goToBreadcrumb(
+                        index,
+                      )
+                    }
+                    className={`font-mono text-[8px] uppercase tracking-[0.16em] transition ${
+                      index ===
+                      path.length - 1
+                        ? "text-yellow-400"
+                        : "text-zinc-600 hover:text-yellow-400"
+                    }`}
+                  >
+                    {category.code}
+                  </button>
+
+                </div>
+              ),
+            )}
+
+            {selectedProduct && (
+              <>
+                <span className="font-mono text-[9px] text-zinc-700">
+                  /
+                </span>
+
+                <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-yellow-400">
+                  {selectedProduct.id}
+                </span>
+              </>
+            )}
+
+          </div>
+
+
+          {/* ==============================================================
+              ROOT
+          ============================================================== */}
+
+          {!currentCategory &&
+            !selectedProduct && (
+              <section>
+
+                <div className="relative mt-10 overflow-hidden border border-zinc-800 bg-[#0d0e10] sm:mt-0">
+
+                  <div className="absolute left-0 top-0 h-8 w-8 border-l border-t border-yellow-400/70" />
+                  <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-yellow-400/70" />
+                  <div className="absolute bottom-0 left-0 h-8 w-8 border-b border-l border-yellow-400/70" />
+                  <div className="absolute bottom-0 right-0 h-8 w-8 border-b border-r border-yellow-400/70" />
+
+                  <div className="p-6 sm:p-8">
+
+                    <div className="mb-3 font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-yellow-400">
+                      SYSTEM MODULE / PC-01
+                    </div>
+
+                    <h1
+                      className="text-3xl font-black uppercase tracking-[0.05em] text-white sm:text-5xl"
+                      style={{
+                        fontFamily:
+                          "Oxanium, sans-serif",
+                      }}
+                    >
+                      Pack
+                      <span className="text-yellow-400">
+                        {" "}
+                        Configurations
+                      </span>
+                    </h1>
+
+                    <p className="mt-4 max-w-xl font-mono text-[10px] leading-6 text-zinc-600">
+                      SELECT A PRODUCT FAMILY
+                      TO ACCESS BOX CONFIGURATION
+                      DATA AND PRODUCTION RATIO
+                      ENTRY.
+                    </p>
+
+                  </div>
+
+                  <div className="border-t border-zinc-800 bg-[#0a0b0c] px-6 py-3 sm:px-8">
+
+                    <div className="flex items-center gap-2">
+
+                      <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.8)]" />
+
+                      <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-600">
+                        AWAITING PRODUCT SELECTION
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+                {/* ROOT CATEGORY GRID */}
+
+                <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+
+                  {categories.map(
+                    (category) => (
+                      <CategoryButton
+                        key={category.id}
+                        category={category}
+                        selected={false}
+                        onSelect={() =>
+                          selectCategory(
+                            category,
+                          )
+                        }
+                      />
+                    ),
+                  )}
+
+                </div>
+
+              </section>
+            )}
+
+
+          {/* ==============================================================
+              CATEGORY
+          ============================================================== */}
+
+          {currentCategory &&
+            !selectedProduct && (
+              <section>
+
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="mb-5 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 transition hover:text-yellow-400"
+                >
+                  ← RETURN
+                </button>
+
+
+                <div className="mb-5 flex items-end justify-between border-b border-zinc-800 pb-4">
+
+                  <div>
+
+                    <div className="mb-2 font-mono text-[8px] uppercase tracking-[0.25em] text-yellow-500">
+                      PRODUCT FAMILY
+                    </div>
+
+                    <h2
+                      className="text-2xl font-black uppercase tracking-[0.05em] text-white sm:text-3xl"
+                      style={{
+                        fontFamily:
+                          "Oxanium, sans-serif",
+                      }}
+                    >
+                      {currentCategory.title}
+                    </h2>
+
+                  </div>
+
+                  <div className="hidden text-right sm:block">
+
+                    <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+                      FAMILY CODE
+                    </div>
+
+                    <div className="font-mono text-[10px] font-bold text-yellow-500">
+                      {currentCategory.code}
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+                <div className="grid gap-2 sm:grid-cols-2">
+
+                  {currentCategory.children?.map(
+                    (child) => (
+                      <CategoryButton
+                        key={child.id}
+                        category={child}
+                        selected={false}
+                        onSelect={() =>
+                          selectCategory(
+                            child,
+                          )
+                        }
+                      />
+                    ),
+                  )}
+
+                </div>
+
+              </section>
+            )}
+
+
+          {/* ==============================================================
+              PRODUCT
+          ============================================================== */}
+
+          {selectedProduct && (
+            <section>
+
+              {/* PRODUCT HEADER */}
+
+              <div className="mb-7 flex items-end justify-between border-b border-zinc-800 pb-5">
+
+                <div>
+
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="mb-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 transition hover:text-yellow-400"
+                  >
+                    ← RETURN TO CATEGORY
+                  </button>
+
+                  <div className="mb-2 flex items-center gap-3">
+
+                    <span className="h-2 w-2 bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
+
+                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-yellow-500">
+                      PRODUCT PROFILE
+                    </span>
+
+                  </div>
+
+                  <h2
+                    className="text-3xl font-black uppercase tracking-[0.05em] text-white sm:text-4xl"
+                    style={{
+                      fontFamily:
+                        "Oxanium, sans-serif",
+                    }}
+                  >
+                    {selectedProduct.title}
+                  </h2>
+
+                </div>
+
+
+                <div className="hidden text-right sm:block">
+
+                  <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+                    CONFIG MATRICES
+                  </div>
+
+                  <div className="font-mono text-xl font-bold text-yellow-400">
+                    {String(
+                      selectedProduct.tableCount,
+                    ).padStart(2, "0")}
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              {/* ==========================================================
+                  CONFIGURATION MATRICES
+              ========================================================== */}
+
+              <div>
+
+                <div className="mb-3 flex items-center justify-between">
+
+                  <div className="flex items-center gap-3">
+
+                    <span className="h-4 w-[2px] bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+
+                    <div>
+
+                      <div className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-zinc-300">
+                        PRODUCTION DATA
+                      </div>
+
+                      <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+                        MANUAL CONFIGURATION INPUT
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div className="hidden font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700 sm:block">
+                    RATIO
+                  </div>
+
+                </div>
+
+
+                <div className="space-y-4">
+
+                  {Array.from({
+                    length:
+                      selectedProduct.tableCount,
+                  }).map(
+                    (_, index) => {
+
+                      const tableNumber =
+                        index + 1;
+
+                      const tableAsset = getTableAsset(
+                        selectedProduct,
+                        tableNumber,
+                      );
+
+                      return (
+                        <div
+                          key={tableNumber}
+                          className="space-y-3"
+                        >
+                          <div className="relative overflow-hidden border border-zinc-800 bg-[#0b0c0e] p-4 sm:p-5">
+                            <div className="absolute left-0 top-0 h-5 w-5 border-l border-t border-yellow-400/50" />
+                            <div className="absolute right-0 top-0 h-5 w-5 border-r border-t border-yellow-400/50" />
+                            <div className="absolute bottom-0 left-0 h-5 w-5 border-b border-l border-yellow-400/50" />
+                            <div className="absolute bottom-0 right-0 h-5 w-5 border-b border-r border-yellow-400/50" />
+
+                            <div className="flex items-center gap-4">
+                              {tableAsset.image ? (
+                                <div className="flex h-28 w-28 shrink-0 items-center justify-center bg-[#08090a] p-2">
+                                  <img
+                                    src={tableAsset.image}
+                                    alt={tableAsset.label}
+                                    className="h-full w-full object-contain"
+                                    draggable={false}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex h-28 w-28 shrink-0 items-center justify-center border border-dashed border-zinc-700 bg-[#08090a] px-2 text-center">
+                                  <span className="font-mono text-[7px] uppercase leading-4 tracking-[0.12em] text-zinc-600">
+                                    NO IMAGE
+                                  </span>
+                                </div>
+                              )}
+
+                              <div className="min-w-0">
+                                <div className="mb-1 font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-yellow-500">
+                                  ASSET {String(tableNumber).padStart(2, "0")}
+                                </div>
+                                <div className="font-mono text-[10px] font-bold uppercase leading-5 tracking-[0.1em] text-zinc-200">
+                                  {tableAsset.label}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <ConfigurationTable
+                            tableNumber={
+                              tableNumber
+                            }
+                            totalTables={
+                              selectedProduct.tableCount
+                            }
+                            rows={getRows(
+                              selectedProduct.id,
+                              tableNumber,
+                            )}
+                          />
+                        </div>
+                      );
+                    },
+                  )}
+
+                </div>
+
+              </div>
+
+              <CaseResearchSection
+                productId={selectedProduct.id}
+              />
+
+
+              {/* FOOTER STATUS */}
+
+              <div className="mt-6 flex items-center justify-between border-t border-zinc-900 pt-4">
+
+                <div className="flex items-center gap-2">
+
+                  <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_7px_rgba(250,204,21,0.8)]" />
+
+                  <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+                    INPUT MODULE READY
+                  </span>
+
+                </div>
+
+                <span className="font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-800">
+                  PC-01
+                </span>
+
+              </div>
+
+            </section>
+          )}
+
+        </section>
+
+      </div>
+
+    </main>
+  );
+};
+
 
 export default FAQ;

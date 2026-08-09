@@ -1,12 +1,131 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type HomeTab = "updates" | "tutorial" | "resources" | "partnership";
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<HomeTab>("updates");
+  const [showUpdateNotice, setShowUpdateNotice] = useState(false);
+
+  useEffect(() => {
+    const hasSeenUpdateNotice = localStorage.getItem(
+      "mlpekayou-ui-overhaul-notice"
+    );
+
+    if (!hasSeenUpdateNotice) {
+      setShowUpdateNotice(true);
+    }
+  }, []);
+
+  const dismissUpdateNotice = () => {
+    localStorage.setItem("mlpekayou-ui-overhaul-notice", "true");
+    setShowUpdateNotice(false);
+  };
 
   return (
-    <main className="min-h-screen bg-[#111111] text-white">
+    <>
+      {showUpdateNotice && (
+        <div className="fixed inset-x-0 top-[110px] bottom-4 z-[9999] flex items-center justify-center px-4">
+          <div className="relative w-full max-w-md overflow-hidden border border-[#E7C84B]/50 bg-[#111111] shadow-[0_0_45px_rgba(231,200,75,0.14)]">
+
+            <div
+              className="pointer-events-none absolute inset-0 opacity-30"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(231,200,75,0.035) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(231,200,75,0.035) 1px, transparent 1px)
+                `,
+                backgroundSize: "24px 24px",
+              }}
+            />
+
+            <div className="pointer-events-none absolute left-0 top-0 h-full w-[2px] bg-[#E7C84B]" />
+
+            <span className="pointer-events-none absolute left-0 top-0 h-5 w-5 border-l border-t border-[#E7C84B]" />
+            <span className="pointer-events-none absolute right-0 top-0 h-5 w-5 border-r border-t border-[#E7C84B]/60" />
+            <span className="pointer-events-none absolute bottom-0 left-0 h-5 w-5 border-b border-l border-[#E7C84B]/60" />
+            <span className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 border-b border-r border-[#E7C84B]" />
+
+            <div className="relative p-4 sm:p-5">
+
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 shrink-0 bg-[#E7C84B] shadow-[0_0_8px_#E7C84B]" />
+
+                <span className="font-oxanium text-[7px] font-bold uppercase tracking-[0.28em] text-[#E7C84B]">
+                  SYSTEM UPDATE
+                </span>
+
+                <div className="h-px flex-1 bg-[#E7C84B]/20" />
+
+                <span className="font-mono text-[6px] uppercase tracking-[0.14em] text-zinc-600">
+                  NOTICE 01
+                </span>
+              </div>
+
+              <h2 className="mt-3 font-oxanium text-lg font-black tracking-[0.05em] text-white sm:text-xl">
+                UPDATE NOTIFICATION
+              </h2>
+
+              <div className="mt-2 h-px w-full bg-gradient-to-r from-[#E7C84B] via-[#E7C84B]/30 to-transparent" />
+
+              <div className="mt-3 space-y-2 text-[10px] leading-[1.45] text-zinc-300 sm:text-[11px]">
+
+                <p>
+                  <span className="font-semibold text-white">MLPEKAYOU</span>{" "}
+                  has received a complete UI overhaul in addition to improving
+                  efficiency across pages.
+                </p>
+
+                <p>
+                  <span className="font-semibold text-[#E7C84B]">
+                    No pages have been merged or moved.
+                  </span>{" "}
+                  The only changes made were on the backend, or changing the
+                  website&apos;s UI. Everything is still exactly where it was
+                  before; it just looks different.
+                </p>
+
+                <p>
+                  I have been working on this update since the day Kayou US
+                  updated their website.
+                </p>
+
+                <div className="border-l-2 border-[#E7C84B] bg-[#E7C84B]/5 px-3 py-2">
+                  If anything about the website ever confuses you, please reach
+                  out to anybody in the MLPEKAYOU Discord Server. Over{" "}
+                  <span className="font-bold text-white">1,000 users</span>{" "}
+                  reside in the server and can help explain anything you
+                  don&apos;t understand!
+                </div>
+
+                <a
+                  href="https://discord.gg/mlpekayou"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-[#E7C84B] transition-colors hover:text-white"
+                >
+                  <span className="h-1 w-1 bg-[#E7C84B] shadow-[0_0_6px_#E7C84B]" />
+                  discord.gg/mlpekayou
+                  <span className="text-white/30">↗</span>
+                </a>
+              </div>
+
+              <button
+                onClick={dismissUpdateNotice}
+                className="mt-3 w-full border border-[#E7C84B] bg-[#E7C84B] px-4 py-2.5 font-oxanium text-[8px] font-black uppercase tracking-[0.2em] text-[#111111] transition-all duration-200 hover:bg-[#fff1a8]"
+              >
+                Acknowledge Update
+              </button>
+
+              <div className="mt-1.5 text-center font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
+                MLPEKAYOU // SYSTEM UPDATE
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="min-h-screen bg-[#111111] text-white">
 
       {/* Top Banner */}
       <section className="relative overflow-hidden border-b border-yellow-400/15 bg-[#171717]">
@@ -34,9 +153,15 @@ export default function Index() {
               Welcome To
             </p>
 
-            <h1 className="font-oxanium text-5xl font-black uppercase tracking-[0.3rem] text-white">
-              MLPEKAYOU
-            </h1>
+<h1 className="font-oxanium text-5xl font-black uppercase tracking-[0.3rem] text-white">
+  MLPEKAYOU
+</h1>
+
+<p className="mt-2 font-oxanium text-[10px] font-bold uppercase tracking-[0.18em]">
+  <span className="text-yellow-400">MY LITTLE PONY</span>{" "}
+  <span className="text-white text-[14px]">ENGLISH</span>{" "}
+  <span className="text-yellow-400">KAYOU</span>
+</p>
 
             <div className="mx-auto mt-4 h-1 w-28 rounded-full bg-yellow-400 shadow-[0_0_20px_#facc15]" />
 
@@ -54,27 +179,42 @@ export default function Index() {
 </a>
           </div>
 
-          {/* Tabs */}
-          <div className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {[
-              { id: "updates", label: "UPDATES" },
-              { id: "tutorial", label: "TUTORIAL" },
-              { id: "resources", label: "RESOURCES" },
-              { id: "partnership", label: "PARTNERSHIP" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as HomeTab)}
-                className={`rounded-xl border px-6 py-4 font-oxanium text-sm font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? "border-yellow-400 bg-yellow-400 text-black"
-                    : "border-[#333] bg-[#1a1a1a] text-white hover:border-yellow-400 hover:text-yellow-400"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+{/* Tabs */}
+<div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:gap-3 lg:mt-10 lg:grid-cols-4">
+  {[
+    { id: "updates", label: "UPDATES" },
+    { id: "tutorial", label: "TUTORIAL" },
+    { id: "resources", label: "RESOURCES" },
+    { id: "partnership", label: "PARTNERSHIP" },
+  ].map((tab) => (
+    <button
+      key={tab.id}
+      onClick={() => setActiveTab(tab.id as HomeTab)}
+      className={`group relative overflow-hidden rounded-xl border px-6 py-4 font-oxanium text-sm font-bold uppercase tracking-[0.25em] transition-all duration-300 ${
+        activeTab === tab.id
+          ? "border-yellow-400 bg-[#201d0c] text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.35)]"
+          : "border-[#343434] bg-[#181818] text-white hover:-translate-y-1 hover:border-yellow-400 hover:text-yellow-300 hover:shadow-[0_0_20px_rgba(250,204,21,0.18)]"
+      }`}
+    >
+      {/* Animated background glow */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      {/* Scanning line */}
+      <div className="absolute -left-full top-0 h-full w-1/2 skew-x-[-20deg] bg-gradient-to-r from-transparent via-yellow-300/30 to-transparent transition-all duration-700 group-hover:left-[150%]" />
+
+      {/* Tech border glow */}
+      <div className="absolute inset-0 rounded-xl ring-1 ring-yellow-400/0 transition-all duration-300 group-hover:ring-yellow-400/40" />
+
+      {/* Corner accents */}
+      <span className="absolute left-2 top-2 h-2 w-2 border-l border-t border-yellow-400/40 transition-all duration-300 group-hover:border-yellow-300" />
+      <span className="absolute right-2 top-2 h-2 w-2 border-r border-t border-yellow-400/40 transition-all duration-300 group-hover:border-yellow-300" />
+      <span className="absolute bottom-2 left-2 h-2 w-2 border-b border-l border-yellow-400/40 transition-all duration-300 group-hover:border-yellow-300" />
+      <span className="absolute bottom-2 right-2 h-2 w-2 border-b border-r border-yellow-400/40 transition-all duration-300 group-hover:border-yellow-300" />
+
+      <span className="relative z-10">{tab.label}</span>
+    </button>
+  ))}
+</div>
 
         </div>
 
@@ -105,33 +245,34 @@ export default function Index() {
       <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
       <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
 
-      <div className="relative p-8">
+      <div className="relative p-4 sm:p-5 md:p-8">
 
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between sm:mb-5 md:mb-6">
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
 
             <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
 
             <span className="font-oxanium text-xs font-bold uppercase tracking-[0.4em] text-yellow-400">
-              WEBSITE UPDATE
+              UPDATE
             </span>
 
           </div>
 
-          <span className="border border-[#404040] bg-[#1b1b1b] px-4 py-2 font-oxanium text-xs uppercase tracking-[0.2em] text-gray-400">
+          <span className="border border-[#404040] bg-[#1b1b1b] px-2 py-1.5 md:px-4 md:py-2 font-oxanium text-[10px] md:text-xs uppercase tracking-[0.08em] md:tracking-[0.2em] text-gray-400">
+
             08 / 07 / 2026
           </span>
 
         </div>
 
-        <h2 className="font-oxanium text-3xl font-black uppercase tracking-[0.12em] text-white">
+        <h2 className="font-oxanium text-xl font-black uppercase tracking-[0.06em] text-white sm:text-2xl sm:tracking-[0.08em] md:text-3xl md:tracking-[0.12em]">
           Share Your Collection
         </h2>
 
         <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
 
-        <p className="mt-6 max-w-4xl text-[15px] leading-8 text-gray-300">
+        <p className="mt-4 max-w-4xl text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
           Click
           <span className="mx-2 border border-yellow-400 bg-yellow-400/10 px-2 py-1 font-semibold text-yellow-400">
             Share
@@ -165,11 +306,11 @@ export default function Index() {
   <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
   <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
 
-  <div className="relative p-8">
+  <div className="relative p-4 sm:p-5 md:p-8">
 
-    <div className="mb-6 flex items-center justify-between">
+    <div className="mb-6 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
 
         <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
 
@@ -179,19 +320,19 @@ export default function Index() {
 
       </div>
 
-      <span className="border border-[#404040] bg-[#1b1b1b] px-4 py-2 font-oxanium text-xs uppercase tracking-[0.2em] text-gray-400">
-        07 / 29 / 2026
-      </span>
+<span className="border border-[#404040] bg-[#1b1b1b] px-2 py-1.5 sm:px-4 sm:py-2 font-oxanium text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-[0.2em] text-gray-400">
+  07 / 29 / 2026
+</span>
 
     </div>
 
-    <h2 className="font-oxanium text-3xl font-black uppercase tracking-[0.12em] text-white">
+    <h2 className="font-oxanium text-xl font-black uppercase tracking-[0.06em] text-white sm:text-2xl sm:tracking-[0.08em] md:text-3xl md:tracking-[0.12em]">
       Leaderboard Under Construction
     </h2>
 
     <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
 
-    <p className="mt-6 max-w-4xl text-[15px] leading-8 text-gray-300">
+    <p className="mt-4 max-w-4xl text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
       The leaderboard is currently being rebuilt to improve overall website
       performance and reduce server workload. This update will help prevent
       crashes during periods of heavy traffic while introducing separate
@@ -249,12 +390,12 @@ export default function Index() {
         <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
         <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
 
-        <div className="relative p-7">
+        <div className="relative p-4 sm:p-5 md:p-7">
 
           <div className="flex items-center justify-between">
             <a
               href={item.href}
-              className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 transition hover:text-white"
+              className="font-oxanium text-lg font-black uppercase tracking-[0.08em] text-yellow-400 transition hover:text-white sm:text-xl sm:tracking-[0.1em] md:text-2xl md:tracking-[0.15em]"
             >
               {item.title}
             </a>
@@ -264,7 +405,7 @@ export default function Index() {
 
           <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-          <p className="mt-5 leading-8 text-gray-300">
+          <p className="mt-4 text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:leading-8">
             {item.body}
           </p>
 
@@ -283,7 +424,7 @@ export default function Index() {
       <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
       <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
 
-      <div className="relative p-7">
+      <div className="relative p-4 sm:p-5 md:p-7">
 
         <div className="flex flex-wrap items-center gap-3">
           <a
@@ -305,7 +446,7 @@ export default function Index() {
 
         <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-        <p className="mt-5 leading-8 text-gray-300">
+        <p className="mt-4 text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:leading-8">
           See which sets you've mastered and track your overall completion
           separately for CCG and TCG collections.
         </p>
@@ -358,12 +499,12 @@ export default function Index() {
         <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
         <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
 
-        <div className="relative p-7">
+        <div className="relative p-4 sm:p-5 md:p-7">
 
           <div className="flex items-center justify-between">
             <a
               href={item.href}
-              className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 transition hover:text-white"
+              className="font-oxanium text-lg font-black uppercase tracking-[0.08em] text-yellow-400 transition hover:text-white sm:text-xl sm:tracking-[0.1em] md:text-2xl md:tracking-[0.15em]"
             >
               {item.title}
             </a>
@@ -373,7 +514,7 @@ export default function Index() {
 
           <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-          <p className="mt-5 leading-8 text-gray-300">
+          <p className="mt-4 text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:leading-8">
             {item.body}
           </p>
 
@@ -414,8 +555,7 @@ export default function Index() {
             <span className="font-semibold text-white">Doodle Binder</span> was
             created by <span className="text-yellow-400">Eternal</span>. Each
             binder is individually customized using acrylic paints, mixed
-            materials, and hand-finished artwork built specifically for Kayou
-            collectors.
+            materials, and hand-finished artwork.
           </>
         ),
       },
@@ -450,7 +590,7 @@ export default function Index() {
         <div className="relative grid md:grid-cols-[320px_1fr]">
 
           {/* Image */}
-          <div className="relative flex h-72 items-center justify-center overflow-hidden border-b border-[#303030] bg-[#0d0d0d] md:border-b-0 md:border-r">
+          <div className="relative flex h-40 items-center justify-center overflow-hidden border-b border-[#303030] bg-[#0d0d0d] sm:h-52 md:h-72 md:border-b-0 md:border-r">
             <img
               src={resource.image}
               alt={resource.title}
@@ -459,7 +599,7 @@ export default function Index() {
           </div>
 
           {/* Content */}
-          <div className="flex flex-col justify-center p-8">
+          <div className="flex flex-col justify-center p-4 sm:p-5 md:p-8">
 
             <div className="flex items-center justify-between">
 
@@ -468,7 +608,7 @@ export default function Index() {
                   COMMUNITY RESOURCE
                 </p>
 
-                <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white transition group-hover:text-yellow-400">
+                <h2 className="mt-1 font-oxanium text-2xl font-black uppercase tracking-[0.08em] text-white transition group-hover:text-yellow-400 sm:text-3xl sm:tracking-[0.1em] md:mt-2 md:text-4xl md:tracking-[0.15em]">
                   {resource.title}
                 </h2>
               </div>
@@ -515,19 +655,18 @@ export default function Index() {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.025)_1px,transparent_1px)] bg-[size:30px_30px]" />
       <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
 
-      <div className="relative p-8">
+      <div className="relative p-4 sm:p-5 md:p-8">
 
         <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-yellow-400">
           ABOUT MLPEKAYOU
         </p>
 
-        <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white">
-          Fan Project
+        <h2 className="mt-2 font-oxanium text-2xl font-black uppercase tracking-[0.08em] sm:text-3xl sm:tracking-[0.1em] md:text-4xl md:tracking-[0.15em] text-white">
         </h2>
 
         <div className="mt-5 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-        <p className="mt-6 leading-8 text-gray-300">
+        <p className="mt-4 text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:leading-8">
           <span className="font-semibold text-white">MLPEKAYOU</span> is owned
           and operated by <span className="text-yellow-400">Sam Keegan</span>.
           Keegan is a U.S. Army Veteran (Prior Service Infantry - 11C) and <span className="font-semibold text-white">is not employed by Kayou. </span>
@@ -545,19 +684,19 @@ export default function Index() {
 
       <div className="absolute left-0 top-0 h-full w-[4px] bg-red-500" />
 
-      <div className="relative p-8">
+      <div className="relative p-4 sm:p-5 md:p-8">
 
         <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-red-400">
           IMPORTANT DISCLAIMER
         </p>
 
-        <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white">
+        <h2 className="mt-2 font-oxanium text-2xl font-black uppercase tracking-[0.08em] sm:text-3xl sm:tracking-[0.1em] md:text-4xl md:tracking-[0.15em] text-white">
           MLPEKAYOU Is Not Kayou US
         </h2>
 
         <div className="mt-5 h-[2px] bg-gradient-to-r from-red-500 via-red-500/25 to-transparent" />
 
-        <p className="mt-6 text-lg font-semibold uppercase leading-9 text-white">
+        <p className="mt-4 text-sm font-semibold uppercase leading-6 text-white sm:mt-5 sm:text-base sm:leading-7 md:mt-6 md:text-lg md:leading-9">
           MLPEKAYOU IS A FAN WEBSITE. IT IS NOT OWNED, OPERATED, OR MANAGED BY
           KAYOU US.
         </p>
@@ -586,7 +725,7 @@ export default function Index() {
 
       <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
 
-      <div className="relative p-8">
+      <div className="relative p-4 sm:p-5 md:p-8">
 
         <div className="flex items-center justify-between">
 
@@ -596,8 +735,8 @@ export default function Index() {
               OFFICIAL PARTNER
             </p>
 
-            <h2 className="mt-2 font-oxanium text-4xl font-black uppercase tracking-[0.15em] text-white group-hover:text-yellow-400">
-              StonesTradingCo
+            <h2 className="mt-2 font-oxanium text-2xl font-black uppercase tracking-[0.08em] sm:text-3xl sm:tracking-[0.1em] md:text-4xl md:tracking-[0.15em] text-white group-hover:text-yellow-400">
+              Stones Trading Co
             </h2>
 
           </div>
@@ -620,7 +759,7 @@ export default function Index() {
 
         <div className="mt-5 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-        <p className="mt-6 leading-8 text-gray-300">
+        <p className="mt-4 text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:leading-8">
           Purchasing My Little Pony products through
           <span className="font-semibold text-white"> StonesTradingCo</span>
           {" "}comes directly through Keegan. The MLPEKAYOU Discord regularly
@@ -628,7 +767,7 @@ export default function Index() {
           products are opened live for collectors.
         </p>
 
-        <p className="mt-6 leading-8 text-gray-300">
+        <p className="mt-4 text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:leading-8">
           StonesTradingCo pays Keegan a commission on these purchases, which is
           used to fund server costs, development, and maintenance of
           <span className="font-semibold text-white"> MLPEKAYOU</span> while
@@ -645,5 +784,6 @@ export default function Index() {
       </section>
 
     </main>
+    </>
   );
 }

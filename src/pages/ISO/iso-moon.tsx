@@ -44,7 +44,7 @@ const getDisplayCardCode = (
 const sets = [
   {
     id: "1",
-    name: "Eternal Moon: First Edition",
+    name: "MOON // FIRST EDITION",
     folder: "first-edition-moon",
     prefix: "M1",
     rarities: {
@@ -60,7 +60,7 @@ const sets = [
   },
   {
     id: "2",
-    name: "Eternal Moon: Second Edition",
+    name: "MOON // SECOND EDITION",
     folder: "second-edition-moon",
     prefix: "M2",
     rarities: {
@@ -78,7 +78,7 @@ const sets = [
   },
   {
     id: "3",
-    name: "Eternal Moon: Third Edition",
+    name: "MOON // THIRD EDITION",
     folder: "third-edition-moon",
     prefix: "M3",
     rarities: {
@@ -173,8 +173,8 @@ return (
 
     {/* MOBILE SET NAVIGATION */}
     {!(cardCodeSearch || characterSearch.trim()) && (
-  <div className="md:hidden sticky top-0 z-20 bg-[#171717] py-2">
-      <div className="flex justify-center gap-2">
+  <div className="md:hidden sticky top-0 z-20 py-2">
+      <div className="flex justify-center gap-2 overflow-x-auto">
         {[
           { id: "1", label: "Moon 1" },
           { id: "2", label: "Moon 2" },
@@ -190,17 +190,27 @@ return (
 .map((item) => (
 <button
   key={item.id}
-onClick={() => {
-  setSelectedSet(item.id);
-}}
-className={`min-w-[100px] rounded-lg border px-5 py-3 text-sm font-semibold transition ${
+  onClick={() => {
+    setSelectedSet(item.id);
+  }}
+className={`group flex h-9 shrink-0 items-center gap-2 whitespace-nowrap border px-3 font-oxanium text-[9px] font-bold uppercase tracking-[0.1em] transition-all duration-200 ${
   selectedSet === item.id
-    ? "border-yellow-500 bg-yellow-500 text-black"
-    : "border-zinc-700 bg-[#202020] text-zinc-300 hover:border-yellow-500 hover:text-yellow-400"
+    ? "border-yellow-400 bg-[#15191c] text-yellow-400 shadow-[inset_2px_0_0_#facc15]"
+    : "border-[#30363a] bg-[#101417] text-zinc-500 hover:border-yellow-400/50 hover:text-yellow-400"
 }`}
-          >
-            {item.label}
-          </button>
+>
+  <span
+    className={`h-1 w-1 shrink-0 transition-all ${
+      selectedSet === item.id
+        ? "bg-yellow-400 shadow-[0_0_6px_#facc15]"
+        : "bg-zinc-700 group-hover:bg-yellow-400"
+    }`}
+  />
+
+  <span>
+    {item.label}
+  </span>
+</button>
         ))}
       </div>
     </div>
@@ -267,34 +277,45 @@ return !owned[`${set.id}-${key}`];
 
         if (missing.length === 0) return null;
 
-        return (
-<section
-  id={`set-${set.id}`}
-  key={set.id}
-  className={`
-    p-0
-    ${cardCodeSearch || characterSearch.trim() ? "mt-8" : ""}
-    md:mt-0
-    md:rounded-lg
-    md:border
-    md:border-zinc-700
-    md:bg-[#202020]
-    md:p-6
-  `}
->
+return (
+  <section
+    id={`set-${set.id}`}
+    key={set.id}
+    className={`
+      p-0
+      ${cardCodeSearch || characterSearch.trim() ? "mt-8" : ""}
+      md:mt-0
+      md:border
+      md:border-[#2b3135]
+      md:bg-[#0f1316]
+      md:p-5
+      md:relative
+      md:overflow-hidden
+    `}
+  >
+    <div className="hidden md:block absolute left-0 top-0 h-5 w-5 border-l border-t border-yellow-400/50" />
+    <div className="hidden md:block absolute right-0 top-0 h-5 w-5 border-r border-t border-yellow-400/50" />
+    <div className="hidden md:block absolute bottom-0 left-0 h-5 w-5 border-b border-l border-yellow-400/30" />
+    <div className="hidden md:block absolute bottom-0 right-0 h-5 w-5 border-b border-r border-yellow-400/30" />
 
-<h2
-  className={`mb-6 text-2xl font-semibold ${
-    cardCodeSearch || characterSearch.trim()
-      ? "block"
-      : "hidden md:block"
-  }`}
->
-  {set.name}
-</h2>
+    <div className="hidden md:flex mb-5 items-center gap-3 border-b border-[#252b2f] pb-3">
+      <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_8px_#facc15]" />
 
-            <div className="grid auto-rows-max grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
-              {missing.map((card) => {
+      <h2
+        className="font-oxanium text-sm font-bold uppercase tracking-[0.18em]"
+      >
+        {set.name}
+      </h2>
+
+      <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+        {set.prefix} // ACTIVE
+      </span>
+
+      <div className="h-px flex-1 bg-gradient-to-r from-yellow-400/20 to-transparent" />
+    </div>
+
+    <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
+      {missing.map((card) => {
   const isDoubleWide =
     set.id === "3" &&
     card.rarity === "SZR" &&
@@ -307,12 +328,20 @@ const isWishlisted =
 
 const cardContent = (
   <div className={searchAllCards ? "" : "cursor-pointer"}>
-    <div className="mb-1 text-center text-[9px] md:text-xs font-bold tracking-tight md:tracking-wide text-zinc-300 whitespace-nowrap">
-      {getDisplayCardCode(
-        set.id,
-        card.rarity,
-        card.number
-      )}
+    <div className="mb-2 flex items-center justify-center">
+      <div className="group relative flex items-center gap-2 border border-yellow-400/25 bg-[#0d1113] px-2.5 py-1 shadow-[0_0_12px_rgba(250,204,21,0.06)] transition-all duration-200 hover:border-yellow-400/60 hover:shadow-[0_0_16px_rgba(250,204,21,0.12)]">
+
+<span className="whitespace-nowrap font-mono text-[7px] font-bold uppercase tracking-[0.02em] text-yellow-300 md:text-[9px] md:tracking-[0.12em]">
+  {getDisplayCardCode(
+    set.id,
+    card.rarity,
+    card.number
+  )}
+</span>
+
+        <span className="absolute -left-px -top-px h-1.5 w-1.5 border-l border-t border-yellow-400" />
+        <span className="absolute -bottom-px -right-px h-1.5 w-1.5 border-b border-r border-yellow-400/70" />
+      </div>
     </div>
 <div
   className={`relative w-full overflow-hidden rounded-lg ${
@@ -366,7 +395,7 @@ return searchAllCards && !wishlistMode ? (
 </ISOChecking>
 );
 })}
-            </div>
+        </div>
           </section>
         );
       })}

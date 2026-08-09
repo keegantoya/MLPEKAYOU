@@ -2,20 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "./Everypony/profile-assets";
-
-import celestiasCrown from "/website-assets/celestiascrown.webp";
-
-import berryShineGhost from "/nightmarenight-assets/berryshineghost.webp";
-
 import elementOfMagic from "/website-assets/elementofmagic.webp";
 import elementOfLoyalty from "/website-assets/elementofloyalty.webp";
 import elementOfKindness from "/website-assets/elementofkindness.webp";
 import elementOfGenerosity from "/website-assets/elementofgenerosity.webp";
 import elementOfHonesty from "/website-assets/elementofhonesty.webp";
-
-import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
-import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
 const sets = [
   { id: "1", name: "Eternal Moon First Edition", total: 186 },
@@ -27,41 +18,44 @@ const sets = [
   { id: "11", name: "Fun Moments Third Edition", total: 148 },
   { id: "4", name: "Star First Edition", total: 105 },
   { id: "6", name: "Eternal Rainbow Second Edition", total: 170 },
-{ 
-  id: "friendshipsbegin",
-  dbId: "SD",
-  name: "Friendships Begin",
-  total: 194
-},
-{
-  id: "fantasywonderland",
-  dbId: "FW",
-  name: "Fantasy Wonderland",
-  total: 191,
-  folder: "fantasywonderland",
-  prefix: "BP01",
-  rarities: {
-    C: 48,
-    U: 18,
-    ER: 6,
-    SR: 14,
-    SPR: 28,
-    GR: 12,
-    CR: 12,
-    RR: 6,
-    PER: 12,
-    PSPR: 11,
-    PGR: 6,
-    PCR: 12,
-    PRR: 6,
-  }
-},
-{
-  id: "discord",
-  dbId: "12",
-  name: "Discord",
-  total: 191,
-},
+
+  {
+    id: "friendshipsbegin",
+    dbId: "SD",
+    name: "Friendships Begin",
+    total: 194,
+  },
+
+  {
+    id: "fantasywonderland",
+    dbId: "FW",
+    name: "Fantasy Wonderland",
+    total: 191,
+    folder: "fantasywonderland",
+    prefix: "BP01",
+    rarities: {
+      C: 48,
+      U: 18,
+      ER: 6,
+      SR: 14,
+      SPR: 28,
+      GR: 12,
+      CR: 12,
+      RR: 6,
+      PER: 12,
+      PSPR: 11,
+      PGR: 6,
+      PCR: 12,
+      PRR: 6,
+    },
+  },
+
+  {
+    id: "discord",
+    dbId: "12",
+    name: "Discord",
+    total: 191,
+  },
 ];
 
 const manualFirstFinishers: Record<
@@ -70,690 +64,699 @@ const manualFirstFinishers: Record<
     id: string;
   }
 > = {
-  "1": { id: "94a1c998-d040-4dd2-b2fb-5f606287139d" }, // Jacob
-  "2": { id: "94a1c998-d040-4dd2-b2fb-5f606287139d" }, // Jacob
-  "3": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
-  "5": { id: "17e57e39-bc0c-44e7-b373-ac34c6690185" }, // Keegan
-  "6": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
-  "7": { id: "94a1c998-d040-4dd2-b2fb-5f606287139d" }, // Jacob
-  "8": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
-  "11": { id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3" }, // Mari
-  "friendshipsbegin": {
+  "1": {
+    id: "94a1c998-d040-4dd2-b2fb-5f606287139d",
+  },
+
+  "2": {
+    id: "94a1c998-d040-4dd2-b2fb-5f606287139d",
+  },
+
+  "3": {
     id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
-  }, // Mari
-  "fantasywonderland": {
+  },
+
+  "5": {
+    id: "17e57e39-bc0c-44e7-b373-ac34c6690185",
+  },
+
+  "6": {
+    id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+  },
+
+  "7": {
+    id: "94a1c998-d040-4dd2-b2fb-5f606287139d",
+  },
+
+  "8": {
+    id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+  },
+
+  "11": {
+    id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+  },
+
+  friendshipsbegin: {
+    id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+  },
+
+  fantasywonderland: {
     id: "948dcf0c-0ec3-4123-8b8e-f23ad334fb30",
-  }, // derpypony
+  },
 };
 
-const Community = () => {
+type Category =
+  | "star"
+  | "ccg"
+  | "rainbow"
+  | "funmoments"
+  | "tcg";
 
+const Community = () => {
   const navigate = useNavigate();
 
-const [activeCategory, setActiveCategory] = useState<
-  "star" | "ccg" | "rainbow" | "funmoments" | "tcg"
->("ccg");
+  const [activeCategory, setActiveCategory] =
+    useState<Category>("ccg");
 
-const [firstFinishers, setFirstFinishers] = useState<any>({});
-const [topCollector, setTopCollector] = useState<any>(null);
-  const getRarityCode = (rarity: string) => {
-    if (rarity === "SHINING ZR") return "SZR";
-    return rarity;
-  };
+  const [firstFinishers, setFirstFinishers] =
+    useState<any>({});
 
+  const [topCollector, setTopCollector] =
+    useState<any>(null);
 
+  useEffect(() => {
+    async function loadProfiles() {
+      const ids = [
+        ...new Set([
+          ...Object.values(manualFirstFinishers).map(
+            (x) => x.id
+          ),
+          "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+        ]),
+      ];
 
-useEffect(() => {
-  async function loadProfiles() {
-    const ids = [
-      ...new Set([
-        ...Object.values(manualFirstFinishers).map((x) => x.id),
-        "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
-      ]),
-    ];
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, avatar_url")
+        .in("id", ids);
 
-    const { data } = await supabase
-      .from("profiles")
-      .select("id, username, avatar_url")
-      .in("id", ids);
+      const profileMap = Object.fromEntries(
+        (data ?? []).map((p) => [p.id, p])
+      );
 
-    const profileMap = Object.fromEntries(
-      (data ?? []).map((p) => [p.id, p])
-    );
+      const finishers: any = {};
 
-    const finishers: any = {};
+      for (const [setId, value] of Object.entries(
+        manualFirstFinishers
+      )) {
+        finishers[setId] = profileMap[value.id];
+      }
 
-    for (const [setId, value] of Object.entries(manualFirstFinishers)) {
-      finishers[setId] = profileMap[value.id];
+      setFirstFinishers(finishers);
+
+      setTopCollector(
+        profileMap[
+          "2692c7a3-bce3-45b7-8636-5e18bf39edc3"
+        ]
+      );
     }
 
-    setFirstFinishers(finishers);
-    setTopCollector(profileMap["2692c7a3-bce3-45b7-8636-5e18bf39edc3"]);
-  }
+    loadProfiles();
+  }, []);
 
-  loadProfiles();
-}, []);
+  const categoryConfig: Record<
+    Category,
+    {
+      label: string;
+      description: string;
+      icon: string;
+    }
+  > = {
+    star: {
+      label: "STAR",
+      description: "Star Edition",
+      icon: elementOfMagic,
+    },
 
-  return (
- <div
-  className="min-h-screen relative overflow-hidden font-['Oxanium']"
-style={{
-  background: `
-    radial-gradient(circle at 15% 10%, rgba(255,215,0,0.05), transparent 30%),
-    radial-gradient(circle at 85% 80%, rgba(255,215,0,0.04), transparent 35%),
-    linear-gradient(
-      180deg,
-      #1b1b1b 0%,
-      #141414 40%,
-      #0d0d0d 100%
-    )
-  `
-}}
->
+    ccg: {
+      label: "MOON",
+      description: "Eternal Moon",
+      icon: elementOfKindness,
+    },
 
-      <div className="container py-10 max-w-[1600px]">
-  <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_260px] gap-8 items-start">
+    rainbow: {
+      label: "RAINBOW",
+      description: "Eternal Rainbow",
+      icon: elementOfLoyalty,
+    },
 
- {/* MOBILE TOP COLLECTOR */}
-<div className="xl:hidden mb-8 mt-4">
-  <div
-    className="
-      relative
-      overflow-hidden
-      rounded-[30px]
-      border
-      border-[#b98a2b]
-      bg-gradient-to-b
-      from-[#2f2f2f]
-      via-[#1a1a1a]
-      to-[#101010]
-      shadow-[0_18px_45px_rgba(0,0,0,.45)]
-    "
-  >
-    {/* Metallic shine */}
-    <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+    funmoments: {
+      label: "FUN MOMENTS",
+      description: "Fun Moments",
+      icon: elementOfGenerosity,
+    },
 
-    {/* Header */}
-    <div className="border-b border-[#b98a2b]/40 px-6 py-5 text-center">
-      <div className="text-[11px] font-bold uppercase tracking-[0.35em] text-[#caa24b]">
-        Champion
-      </div>
+    tcg: {
+      label: "TCG",
+      description: "Trading Card Game",
+      icon: elementOfHonesty,
+    },
+  };
 
-      <h2 className="mt-1 text-2xl font-black tracking-wide text-[#f5e4b5]">
-        TOP MASTERSETTER
-      </h2>
-    </div>
+  const activeConfig = categoryConfig[activeCategory];
 
-    <div className="px-6 py-7">
+  const visibleSets =
+    activeCategory === "tcg"
+      ? sets.filter((set) =>
+          [
+            "fantasywonderland",
+            "discord",
+            "friendshipsbegin",
+          ].includes(set.id)
+        )
+      : sets.filter((set) => {
+          if (activeCategory === "star") {
+            return ["4"].includes(set.id);
+          }
 
-      {/* Avatar */}
-      <div className="relative flex justify-center mb-6">
-        <img
-          src={celestiasCrown}
-          alt="Champion Crown"
-          className="absolute -top-8 w-20 z-20 pointer-events-none"
-        />
+          if (activeCategory === "ccg") {
+            return ["1", "2", "3"].includes(set.id);
+          }
 
-        <img
-          src={getProfileAssets(topCollector).avatar}
-          alt="Top Collector Avatar"
-          className="
-            w-28
-            h-28
-            rounded-full
-            object-cover
-            border-[5px]
-            border-[#d7b04c]
-            shadow-[0_0_30px_rgba(255,215,0,.18)]
-          "
-        />
-      </div>
+          if (activeCategory === "rainbow") {
+            return ["5", "6"].includes(set.id);
+          }
 
-      {/* Username */}
-      <div className="flex justify-center items-center gap-2 mb-6">
-        <span className="text-lg font-bold text-[#f6ead0]">
-          {topCollector?.username || "Loading..."}
-        </span>
+          if (activeCategory === "funmoments") {
+            return ["7", "8", "11"].includes(set.id);
+          }
 
-        {getProfileAssets(topCollector).verification && (
-  <img
-    src={getProfileAssets(topCollector).verification!.badge}
-    alt={getProfileAssets(topCollector).verification!.label}
-    title={getProfileAssets(topCollector).verification!.label}
-    className="w-5 h-5"
-  />
-)}
-      </div>
+          return false;
+        });
 
-      {/* Stats */}
-     <div className="text-center mb-6">
-  <div className="text-2xl font-black text-[#f4d47c]">
-    Mari
-  </div>
-</div>
+  const CategoryButton = ({
+    category,
+  }: {
+    category: Category;
+  }) => {
+    const config = categoryConfig[category];
+    const active = activeCategory === category;
 
-      {/* Footer */}
-      <div className="border-t border-[#b98a2b]/30 pt-4 text-center">
-        <div className="text-xs uppercase tracking-[0.3em] text-[#caa24b]">
-          Most Completed Sets
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-   {/* LEFT SIDEBAR */}
-<aside className="xl:sticky xl:top-6">
-  <div
-    className="
-      rounded-3xl
-      bg-gradient-to-b from-[#2a2a2a] via-[#1a1a1a] to-[#111111]
-      border border-[#c79b32]
-      shadow-[0_15px_35px_rgba(255,193,7,0.12)]
-      p-6
-    "
-  >
-    <h2 className="text-xl font-bold text-[#f6d98b] tracking-wide mb-2">
-      Categories
-    </h2>
-
-    <p className="text-[10px] sm:text-[11px] text-[#b8a878] leading-relaxed mb-6">
-      To appear on these leaderboards, you must verify your Discord username in
-      your profile and be reachable. These leaderboards are only for North
-      American English collectors. You must verify with Keegan to be the
-      first finisher.
-    </p>
-
-    <div className="space-y-3">
-
-      {/* Star */}
+    return (
       <button
-        onClick={() => setActiveCategory("star" as any)}
+        onClick={() => setActiveCategory(category)}
         className={`
-          w-full flex items-center justify-between
-          rounded-2xl px-4 py-3
-          border transition-all duration-200
+          group relative flex w-full items-center justify-between
+          overflow-hidden border
+          px-3.5 py-3
+          text-left
+          transition-all duration-200
           ${
-            activeCategory === ("star" as any)
-              ? "bg-gradient-to-r from-[#f4d47c] to-[#d7a62e] border-[#f8e19d] text-black shadow-[0_0_18px_rgba(255,215,0,0.35)]"
-              : "bg-[#242424] border-[#4d4d4d] text-[#f2efe6] hover:border-[#c79b32] hover:bg-[#303030]"
+            active
+              ? "border-[#FFD43B]/80 bg-[#252525] text-[#FFD43B] shadow-[inset_3px_0_0_#FFD43B,0_0_20px_rgba(255,212,59,0.08)]"
+              : "border-[#303030] bg-[#171717] text-[#777] hover:border-[#555] hover:bg-[#1d1d1d] hover:text-white"
           }
         `}
       >
-        <span className="flex items-center gap-3">
-          <img
-            src={elementOfMagic}
-            alt="Star"
-            className="w-5 h-5 object-contain"
-          />
-          <span className="font-semibold">Star</span>
+        <span className="flex min-w-0 items-center gap-3">
+          <span
+            className={`
+              flex h-8 w-8 shrink-0 items-center justify-center
+              border
+              ${
+                active
+                  ? "border-[#FFD43B]/50 bg-[#FFD43B]/10"
+                  : "border-[#333] bg-[#202020]"
+              }
+            `}
+          >
+            <img
+              src={config.icon}
+              alt=""
+              className={`
+                h-5 w-5 object-contain
+                transition-all duration-200
+                ${
+                  active
+                    ? "brightness-110"
+                    : "opacity-55 grayscale-[20%]"
+                }
+              `}
+            />
+          </span>
+
+          <span className="min-w-0">
+            <span
+              className={`
+                block font-['Oxanium'] text-[11px] font-bold
+                uppercase tracking-[0.12em]
+                ${
+                  active
+                    ? "text-[#FFD43B]"
+                    : "text-white/75"
+                }
+              `}
+            >
+              {config.label}
+            </span>
+
+            <span className="mt-0.5 block font-mono text-[7px] uppercase tracking-[0.16em] text-white/20">
+              {config.description}
+            </span>
+          </span>
         </span>
 
-        <span className="text-lg">›</span>
-      </button>
-
-      {/* Moon */}
-      <button
-        onClick={() => setActiveCategory("ccg")}
-        className={`
-          w-full flex items-center justify-between
-          rounded-2xl px-4 py-3
-          border transition-all duration-200
-          ${
-            activeCategory === "ccg"
-              ? "bg-gradient-to-r from-[#f4d47c] to-[#d7a62e] border-[#f8e19d] text-black shadow-[0_0_18px_rgba(255,215,0,0.35)]"
-              : "bg-[#242424] border-[#4d4d4d] text-[#f2efe6] hover:border-[#c79b32] hover:bg-[#303030]"
-          }
-        `}
-      >
-        <span className="flex items-center gap-3">
-          <img
-            src={elementOfKindness}
-            alt="Moon"
-            className="w-5 h-5 object-contain"
-          />
-          <span className="font-semibold">Moon</span>
+        <span
+          className={`
+            font-mono text-sm transition-all duration-200
+            ${
+              active
+                ? "translate-x-0 text-[#FFD43B]"
+                : "-translate-x-1 text-[#444] group-hover:text-[#888]"
+            }
+          `}
+        >
+          →
         </span>
-
-        <span className="text-lg">›</span>
       </button>
+    );
+  };
 
-      {/* Rainbow */}
+  const LeaderboardCard = ({
+    set,
+  }: {
+    set: (typeof sets)[number];
+  }) => {
+    const winner = firstFinishers[String(set.id)];
+    const setCode =
+      "dbId" in set && set.dbId
+        ? set.dbId
+        : String(set.id).padStart(2, "0");
+
+    return (
       <button
-        onClick={() => setActiveCategory("rainbow" as any)}
-        className={`
-          w-full flex items-center justify-between
-          rounded-2xl px-4 py-3
-          border transition-all duration-200
-          ${
-            activeCategory === ("rainbow" as any)
-              ? "bg-gradient-to-r from-[#f4d47c] to-[#d7a62e] border-[#f8e19d] text-black shadow-[0_0_18px_rgba(255,215,0,0.35)]"
-              : "bg-[#242424] border-[#4d4d4d] text-[#f2efe6] hover:border-[#c79b32] hover:bg-[#303030]"
-          }
-        `}
-      >
-        <span className="flex items-center gap-3">
-          <img
-            src={elementOfLoyalty}
-            alt="Rainbow"
-            className="w-5 h-5 object-contain"
-          />
-          <span className="font-semibold">Rainbow</span>
-        </span>
-
-        <span className="text-lg">›</span>
-      </button>
-
-      {/* Fun Moments */}
-      <button
-        onClick={() => setActiveCategory("funmoments" as any)}
-        className={`
-          w-full flex items-center justify-between
-          rounded-2xl px-4 py-3
-          border transition-all duration-200
-          ${
-            activeCategory === ("funmoments" as any)
-              ? "bg-gradient-to-r from-[#f4d47c] to-[#d7a62e] border-[#f8e19d] text-black shadow-[0_0_18px_rgba(255,215,0,0.35)]"
-              : "bg-[#242424] border-[#4d4d4d] text-[#f2efe6] hover:border-[#c79b32] hover:bg-[#303030]"
-          }
-        `}
-      >
-        <span className="flex items-center gap-3">
-          <img
-            src={elementOfGenerosity}
-            alt="Fun Moments"
-            className="w-5 h-5 object-contain"
-          />
-          <span className="font-semibold">Fun Moments</span>
-        </span>
-
-        <span className="text-lg">›</span>
-      </button>
-
-      {/* TCG */}
-      <button
-        onClick={() => setActiveCategory("tcg")}
-        className={`
-          w-full flex items-center justify-between
-          rounded-2xl px-4 py-3
-          border transition-all duration-200
-          ${
-            activeCategory === "tcg"
-              ? "bg-gradient-to-r from-[#f4d47c] to-[#d7a62e] border-[#f8e19d] text-black shadow-[0_0_18px_rgba(255,215,0,0.35)]"
-              : "bg-[#242424] border-[#4d4d4d] text-[#f2efe6] hover:border-[#c79b32] hover:bg-[#303030]"
-          }
-        `}
-      >
-        <span className="flex items-center gap-3">
-          <img
-            src={elementOfHonesty}
-            alt="TCG"
-            className="w-5 h-5 object-contain"
-          />
-          <span className="font-semibold">TCG</span>
-        </span>
-
-        <span className="text-lg">›</span>
-      </button>
-
-    </div>
-  </div>
-</aside>
-
-{/* MAIN CONTENT */}
-<main className="-mt-6 pb-20 xl:pb-0">
-
-  {["star", "ccg", "rainbow", "funmoments"].includes(activeCategory) && (
-    <>
-
-<div className="flex items-center gap-4 my-6">
-  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#c79b32]/60 to-transparent" />
-
-  <div
-    className="
-      px-6 py-2
-      rounded-full
-      bg-gradient-to-r
-      from-[#2b2b2b]
-      to-[#181818]
-      border border-[#c79b32]
-      shadow-[0_0_18px_rgba(255,215,0,0.15)]
-      text-sm font-black uppercase tracking-[0.25em]
-      text-[#f4d47c]
-    "
-  >
-    CCG
-  </div>
-
-  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#c79b32]/60 to-transparent" />
-</div>
-
-<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 mb-10">
-  {sets
-    .filter((set) => {
-  if (activeCategory === "star") {
-  return ["4"].includes(set.id);
-}
-
-  if (activeCategory === "ccg") {
-    // Moon
-    return ["1", "2", "3"].includes(set.id);
-  }
-
-  if (activeCategory === "rainbow") {
-  return ["5", "6"].includes(set.id);
-}
-
-  if (activeCategory === "funmoments") {
-    // Fun Moments First + Second Edition
-    return ["7", "8", "11"].includes(set.id);
-  }
-
-  return false;
-})
-    .map((set) => (
-
-<button
-  key={set.id}
-  onClick={() => navigate(`/community/${set.id}`)}
-className="
-group
-relative
-overflow-hidden
-rounded-3xl
-px-6
-py-5
-text-left
-
-bg-gradient-to-br
-from-[#2d2d2d]
-via-[#1c1c1c]
-to-[#111111]
-
-border
-border-[#c79b32]
-
-shadow-[0_15px_35px_rgba(255,193,7,0.08)]
-
-hover:border-[#f4d47c]
-hover:shadow-[0_20px_45px_rgba(255,215,0,0.20)]
-hover:-translate-y-1
-
-transition-all
-duration-300
-
-min-h-[180px]
-"
->
-
-  {/* Set Title */}
-  <h2 className="relative text-xl font-bold text-[#f6ead0] pr-28 leading-tight mb-2 min-h-[3rem]">
-  {set.name}
-</h2>
-
-  {/* Subtitle */}
-  <div className="relative text-[11px] font-bold uppercase tracking-wide text-[#d4b15c] mb-3">
-    Set Leaderboards
-  </div>
-
-  {/* View Link */}
-  <div className="relative text-sm font-bold text-[#fff2c6] group-hover:text-[#f6ead0] transition-colors">
-    View Leaderboard →
-  </div>
-
-{/* Winner / Ghost */}
-<div className="absolute top-4 right-4 flex flex-col items-center">
-  {firstFinishers[String(set.id)] ? (
-    <>
-      <div className="relative w-14 h-14">
-        <img
-          src={getProfileAssets(firstFinishers[String(set.id)]).avatar}
-          className="w-14 h-14 rounded-full border-4 border-[#f4d47c]
-shadow-xl
-ring-2 ring-[#c79b32]"
-        />
-
-        <div className="absolute -top-2 -right-2 bg-gradient-to-r
-from-[#f4d47c]
-to-[#d7a62e]
-text-[#111] text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
-          #1
-        </div>
-      </div>
-
-      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight text-[#f6ead0]">
-        {firstFinishers[String(set.id)]?.username}
-      </div>
-    </>
-  ) : (
-    <img
-  src={berryShineGhost}
-  alt="No Winner Yet"
-  className="w-20 h-20 object-contain opacity-90 animate-[ghostWalk_2.5s_ease-in-out_infinite]"
-/>
-  )}
-</div>
-</button>
-  ))}
-</div>
-    </>
-  )}
-
-    {activeCategory === "tcg" && (
-    <>
-<div className="flex items-center gap-4 my-6">
-  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#c79b32]/60 to-transparent" />
-
-  <div
-    className="
-      px-6 py-2
-      rounded-full
-      bg-gradient-to-r
-      from-[#2b2b2b]
-      to-[#181818]
-      border border-[#c79b32]
-      shadow-[0_0_18px_rgba(255,215,0,0.15)]
-      text-sm font-black uppercase tracking-[0.25em]
-      text-[#f4d47c]
-    "
-  >
-    TCG
-  </div>
-
-  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#c79b32]/60 to-transparent" />
-</div>
-
-<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 mb-10">
-  {sets
-    .filter((set) =>
-  [
-    "fantasywonderland",
-    "discord",
-    "friendshipsbegin"
-  ].includes(set.id)
-)
-    .map((set) => (
-
-      <button
-  key={set.id}
-  onClick={() => navigate(`/community/${set.id}`)}
-className="
-group
-relative
-overflow-hidden
-rounded-3xl
-px-6
-py-5
-text-left
-
-bg-gradient-to-br
-from-[#2d2d2d]
-via-[#1c1c1c]
-to-[#111111]
-
-border
-border-[#c79b32]
-
-shadow-[0_15px_35px_rgba(255,193,7,0.08)]
-
-hover:border-[#f4d47c]
-hover:shadow-[0_20px_45px_rgba(255,215,0,0.20)]
-hover:-translate-y-1
-
-transition-all
-duration-300
-
-min-h-[180px]
-"
->
-  {/* Soft highlight overlay */}
-<div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-[#c79b32]/5 pointer-events-none" />
-
-  {/* Set Title */}
- <h2 className="relative text-xl font-bold text-[#f6ead0] pr-28 leading-tight mb-2 min-h-[3rem]">
-  {set.name}
-</h2>
-
-  {/* Subtitle */}
-  <div className="relative text-[11px] font-bold uppercase tracking-wide text-[#d4b15c] mb-3">
-    Top Collector
-  </div>
-
-  {/* View Link */}
-  <div className="relative text-sm font-semibold text-[#f4d47c] group-hover:text-[#f6ead0] transition-colors">
-    View Leaderboard →
-  </div>
-
-{/* Winner / Ghost */}
-<div className="absolute top-4 right-4 flex flex-col items-center">
-  {firstFinishers[String(set.id)] ? (
-    <>
-      <div className="relative w-14 h-14">
-        <img
-          src={getProfileAssets(firstFinishers[String(set.id)]).avatar}
-          className="w-14 h-14 rounded-full border-4 border-[#f4d47c]
-shadow-xl
-ring-2 ring-[#c79b32]"
-        />
-
-        <div className="absolute -top-2 -right-2 bg-gradient-to-r
-from-[#f4d47c]
-to-[#d7a62e]
-text-[#111] text-[10px] font-bold px-1.5 py-0.5 rounded shadow">
-          #1
-        </div>
-      </div>
-
-      <div className="font-semibold text-xs mt-1 text-center max-w-[70px] leading-tight text-[#f6ead0]">
-        {firstFinishers[String(set.id)]?.username}
-      </div>
-    </>
-  ) : (
-    <img
-  src={berryShineGhost}
-  alt="No Winner Yet"
-  className="w-20 h-20 object-contain opacity-90 animate-[ghostWalk_2.5s_ease-in-out_infinite]"
-/>
-  )}
-</div>
-</button>
-  ))}
-</div>
-    </>
-  )}
-
-    </main>
-
-<div
-className="
-  hidden xl:block
-  relative
-  -ml-4
-  w-[290px]
-    overflow-hidden
-    rounded-[30px]
-    border border-[#b98a2b]
-    bg-gradient-to-b from-[#2f2f2f] via-[#1a1a1a] to-[#101010]
-    shadow-[0_18px_45px_rgba(0,0,0,.45)]
-  "
->
-  {/* Metallic shine */}
-  <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-
-  {/* Header */}
-  <div className="border-b border-[#b98a2b]/40 px-6 py-5 text-center">
-    <div className="text-[11px] font-bold uppercase tracking-[0.35em] text-[#caa24b]">
-      Champion
-    </div>
-
-    <h2 className="mt-1 text-1xl font-black tracking-wide text-[#f5e4b5]">
-      TOP MASTERSETTER
-    </h2>
-  </div>
-
-  <div className="px-6 py-7">
-
-    {/* Avatar */}
-    <div className="relative flex justify-center mb-6">
-      <img
-        src={celestiasCrown}
-        alt="Champion Crown"
-        className="absolute -top-8 w-20 z-20 pointer-events-none"
-      />
-
-      <img
-        src={getProfileAssets(topCollector).avatar}
-        alt="Top Collector Avatar"
+        key={set.id}
+        onClick={() =>
+          navigate(`/community/${set.id}`)
+        }
         className="
-          w-28
-          h-28
-          rounded-full
-          object-cover
-          border-[5px]
-          border-[#d7b04c]
-          shadow-[0_0_30px_rgba(255,215,0,.18)]
+          group relative min-h-[178px]
+          overflow-hidden
+          border border-[#303030]
+          bg-gradient-to-br
+          from-[#242424]
+          via-[#191919]
+          to-[#111111]
+          px-5 py-5
+          text-left
+          transition-all duration-300
+          hover:-translate-y-0.5
+          hover:border-[#FFD43B]/60
+          hover:shadow-[0_14px_40px_rgba(0,0,0,.45)]
         "
-      />
-    </div>
+      >
+        {/* Technical corner brackets */}
+        <div className="pointer-events-none absolute left-0 top-0 h-5 w-5 border-l border-t border-[#FFD43B]/45 transition-all duration-300 group-hover:h-7 group-hover:w-7 group-hover:border-[#FFD43B]/80" />
 
-    {/* Username */}
-    <div className="flex justify-center items-center gap-2 mb-6">
-      <span className="text-lg font-bold text-[#f6ead0]">
-        {topCollector?.username || "Loading..."}
+        <div className="pointer-events-none absolute right-0 top-0 h-5 w-5 border-r border-t border-[#FFD43B]/30 transition-all duration-300 group-hover:h-7 group-hover:w-7 group-hover:border-[#FFD43B]/60" />
+
+        <div className="pointer-events-none absolute bottom-0 left-0 h-4 w-4 border-b border-l border-[#FFD43B]/20" />
+
+        <div className="pointer-events-none absolute bottom-0 right-0 h-4 w-4 border-b border-r border-[#FFD43B]/20" />
+
+        {/* Top technical strip */}
+        <div className="absolute left-5 right-5 top-0 flex h-5 items-center justify-between">
+        </div>
+
+        {/* Soft gold light */}
+        <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[#FFD43B]/[0.035] blur-2xl transition-all duration-500 group-hover:bg-[#FFD43B]/[0.07]" />
+
+        {/* Set title */}
+        <div className="relative z-10 pr-24 pt-2">
+          <h2 className="font-['Oxanium'] text-[17px] font-bold uppercase leading-tight tracking-[0.025em] text-white transition-colors duration-300 group-hover:text-[#FFD43B]">
+            {set.name}
+          </h2>
+
+          <div className="mt-2 flex items-center gap-2">
+            <span className="h-px w-5 bg-[#FFD43B]/55" />
+
+            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-[#FFD43B]/70">
+              {activeCategory === "tcg"
+                ? "TOP COLLECTOR"
+                : "SET LEADERBOARD"}
+            </span>
+          </div>
+        </div>
+
+        {/* Winner */}
+        <div className="absolute right-4 top-8 flex w-[76px] flex-col items-center">
+          {winner ? (
+            <>
+              <div className="relative">
+                <div className="absolute -inset-1 border border-[#FFD43B]/20" />
+
+                <img
+                  src={getProfileAssets(winner).avatar}
+                  alt={winner.username}
+                  className="
+                    relative h-14 w-14
+                    object-cover
+                    border-2 border-[#FFD43B]/80
+                    shadow-[0_0_18px_rgba(255,212,59,.15)]
+                  "
+                />
+
+                <div className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center border border-[#111] bg-[#FFD43B] px-1 font-mono text-[7px] font-black text-[#111] shadow-[0_2px_8px_rgba(0,0,0,.5)]">
+                  #1
+                </div>
+              </div>
+
+              <span className="mt-2 max-w-[76px] truncate font-['Oxanium'] text-[8px] font-semibold uppercase tracking-[0.04em] text-white/75">
+                {winner.username}
+              </span>
+
+              <span className="mt-0.5 font-mono text-[6px] uppercase tracking-[0.18em] text-[#FFD43B]/45">
+                FIRST FINISHER
+              </span>
+            </>
+) : (
+  <>
+    {/* OPEN #1 SLOT */}
+    <div className="relative flex h-14 w-14 items-center justify-center border border-[#FFD43B]/30 bg-[#151515] shadow-[0_0_18px_rgba(255,212,59,0.05)]">
+      
+      {/* Technical corner marks */}
+      <div className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#FFD43B]/70" />
+      <div className="absolute right-0 top-0 h-2.5 w-2.5 border-r border-t border-[#FFD43B]/40" />
+      <div className="absolute bottom-0 left-0 h-2.5 w-2.5 border-b border-l border-[#FFD43B]/40" />
+      <div className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#FFD43B]/70" />
+
+      {/* Target / claim indicator */}
+      <div className="absolute inset-2 border border-[#FFD43B]/10" />
+
+      <span className="font-['Oxanium'] text-[13px] font-black tracking-[0.08em] text-[#FFD43B]/80">
+        #1
       </span>
 
-{getProfileAssets(topCollector).verification && (
-  <img
-    src={getProfileAssets(topCollector).verification!.badge}
-    alt={getProfileAssets(topCollector).verification!.label}
-    title={getProfileAssets(topCollector).verification!.label}
-    className="w-5 h-5"
-  />
-)}
+      {/* Tiny scan line */}
+      <div className="absolute left-2 right-2 top-1/2 h-px bg-[#FFD43B]/10" />
     </div>
 
-    {/* Stats */}
-<div className="text-center mb-6">
-  <div className="text-2xl font-black text-[#f4d47c]">
-    Mari
-  </div>
-</div>
+    <span className="mt-2 font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD43B]/60">
+      UNCLAIMED
+    </span>
 
-    {/* Footer */}
-    <div className="border-t border-[#b98a2b]/30 pt-4 text-center">
-      <div className="text-xs uppercase tracking-[0.3em] text-[#caa24b]">
-        Most Completed Sets
+    <span className="mt-0.5 font-mono text-[5px] uppercase tracking-[0.14em] text-white/20">
+      BE FIRST
+    </span>
+  </>
+)}
+        </div>
+
+        {/* Bottom readout */}
+        <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between border-t border-[#292929] pt-3">
+          <div>
+            <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/20">
+              CARD COUNT
+            </div>
+
+            <div className="mt-0.5 font-['Oxanium'] text-[10px] font-bold tracking-[0.08em] text-white/55">
+              {set.total}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+              OPEN
+            </span>
+
+            <span className="font-mono text-xs text-[#FFD43B]/60 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-[#FFD43B]">
+              →
+            </span>
+          </div>
+        </div>
+
+        {/* Hover edge */}
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-px w-0 -translate-x-1/2 bg-[#FFD43B] transition-all duration-300 group-hover:w-1/3" />
+      </button>
+    );
+  };
+
+  const ChampionPanel = ({
+    mobile = false,
+  }: {
+    mobile?: boolean;
+  }) => (
+    <div
+      className={`
+        relative overflow-hidden
+        border border-[#353535]
+        bg-gradient-to-b
+        from-[#202020]
+        via-[#161616]
+        to-[#0f0f0f]
+        shadow-[0_18px_45px_rgba(0,0,0,.4)]
+        ${mobile ? "w-full" : "w-[270px]"}
+      `}
+    >
+      {/* Gold top rail */}
+      <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-[#FFD43B] to-transparent" />
+
+      {/* Background technical lines */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#FFD43B 1px, transparent 1px), linear-gradient(90deg, #FFD43B 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
+
+      {/* Header */}
+      <div className="relative border-b border-[#2d2d2d] px-5 py-4">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
+            CHAMPION
+          </span>
+
+          <span className="flex items-center gap-1.5 font-mono text-[6px] uppercase tracking-[0.18em] text-white/25">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD43B] shadow-[0_0_7px_rgba(255,212,59,.7)]" />
+            VERIFIED - TOP SUPPORTER
+          </span>
+        </div>
+
+        <h2 className="mt-2 font-['Oxanium'] text-[18px] font-black uppercase tracking-[0.05em] text-white">
+          TOP MASTERSETTER
+        </h2>
+      </div>
+
+      {/* Champion */}
+      <div className="relative px-5 py-6">
+        <div className="flex items-center gap-4">
+          <div className="relative shrink-0">
+            <div className="relative h-20 w-20">
+              <div className="absolute -inset-1 border border-[#FFD43B]/20" />
+
+              <img
+                src={getProfileAssets(topCollector).avatar}
+                alt="Top Collector Avatar"
+                className="
+                  relative
+                  h-20 w-20
+                  object-cover
+                  border-2 border-[#FFD43B]
+                  shadow-[0_0_22px_rgba(255,212,59,.18)]
+                "
+              />
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            <div className="font-mono text-[6px] uppercase tracking-[0.22em] text-[#FFD43B]/55">
+              CURRENT CHAMPION
+            </div>
+
+            <div className="mt-1 flex min-w-0 items-center gap-1.5">
+              <span className="truncate font-['Oxanium'] text-[15px] font-bold uppercase tracking-[0.02em] text-white">
+                {topCollector?.username || "Loading..."}
+              </span>
+
+              {getProfileAssets(topCollector).verification && (
+                <img
+                  src={
+                    getProfileAssets(topCollector)
+                      .verification!.badge
+                  }
+                  alt={
+                    getProfileAssets(topCollector)
+                      .verification!.label
+                  }
+                  title={
+                    getProfileAssets(topCollector)
+                      .verification!.label
+                  }
+                  className="h-4 w-4 shrink-0"
+                />
+              )}
+            </div>
+
+            <div className="mt-2 font-mono text-[7px] uppercase tracking-[0.16em] text-white/25">
+              MASTERSETTER CHAMPION
+            </div>
+          </div>
+        </div>
+
+        {/* Champion status */}
+        <div className="mt-6 grid grid-cols-2 gap-2">
+        </div>
+
+        <div className="mt-4 border-t border-[#2d2d2d] pt-3">
+          <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-[#FFD43B]/45">
+            MARI IS A TOP SUPPORTED OF MLPEKAYOU AND A PILLAR TO THE COMMUNITY.
+          </span>
+        </div>
       </div>
     </div>
+  );
 
-  </div>
-</div>
+  return (
+    <div
+      className="relative min-h-screen overflow-hidden font-['Oxanium'] text-white"
+      style={{
+        background: `
+          radial-gradient(circle at 10% 0%, rgba(255,212,59,0.055), transparent 28%),
+          radial-gradient(circle at 90% 30%, rgba(255,212,59,0.025), transparent 30%),
+          linear-gradient(180deg, #181818 0%, #111111 45%, #0b0b0b 100%)
+        `,
+      }}
+    >
+      {/* Subtle technical background */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#FFD43B 1px, transparent 1px), linear-gradient(90deg, #FFD43B 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
-  </div>
-</div>
-</div>
-);
+      <div className="relative mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+
+        {/* MOBILE CHAMPION */}
+        <div className="mb-6 xl:hidden">
+          <ChampionPanel mobile />
+        </div>
+
+        {/* MAIN LAYOUT */}
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[250px_minmax(0,1fr)_270px]">
+          {/* CATEGORY CONTROL */}
+          <aside className="xl:sticky xl:top-5">
+            <div className="border border-[#303030] bg-[#151515]">
+              {/* Sidebar header */}
+              <div className="border-b border-[#2c2c2c] px-4 py-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
+                    CATEGORIES OF SETS
+                  </span>
+
+                  <span className="font-mono text-[6px] text-white/20">
+                    05
+                  </span>
+                </div>
+
+                <p className="mt-2 font-mono text-[7px] uppercase leading-relaxed tracking-[0.1em] text-white/25">
+                  Select a category to find leaderboards for those sets.
+                </p>
+              </div>
+
+              {/* Category buttons */}
+              <div className="space-y-1 p-2">
+                <CategoryButton category="star" />
+                <CategoryButton category="ccg" />
+                <CategoryButton category="rainbow" />
+                <CategoryButton category="funmoments" />
+                <CategoryButton category="tcg" />
+              </div>
+
+              {/* Eligibility */}
+              <div className="border-t border-[#2c2c2c] px-4 py-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="h-px w-4 bg-[#FFD43B]/45" />
+
+                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-[#FFD43B]/60">
+                    ACCESS REQUIREMENTS
+                  </span>
+                </div>
+
+                <p className="font-mono text-[7px] uppercase leading-[1.7] tracking-[0.08em] text-white/25">
+                  You must have a Discord username attached to your account to appear on any leaderboards, and you must
+                  be present in the MLPEKAYOU Discord server to claim any first finisher positions. You will be required
+                  to show proof that your entire collection is both completed and only English.
+                </p>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT */}
+          <main className="min-w-0">
+            {/* SECTION HEADER */}
+            <div className="mb-5">
+              <div className="flex items-center gap-3">
+                <span className="h-px flex-1 bg-gradient-to-r from-[#FFD43B]/40 to-transparent" />
+
+                <div className="flex items-center gap-2 border border-[#3a3a3a] bg-[#181818] px-3 py-2">
+                  <img
+                    src={activeConfig.icon}
+                    alt=""
+                    className="h-4 w-4 object-contain"
+                  />
+
+                  <span className="font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.18em] text-[#FFD43B]">
+                    {activeConfig.label}
+                  </span>
+                </div>
+
+                <span className="h-px flex-1 bg-gradient-to-l from-[#FFD43B]/40 to-transparent" />
+              </div>
+
+              <div className="mt-3 flex items-center justify-between">
+                <div>
+                  <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-white/20">
+                    ACTIVE CHANNEL
+                  </div>
+
+                  <div className="mt-1 font-['Oxanium'] text-sm font-bold uppercase tracking-[0.05em] text-white/75">
+                    {activeConfig.description}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/20">
+                    SETS
+                  </div>
+
+                  <div className="mt-1 font-['Oxanium'] text-sm font-bold text-[#FFD43B]">
+                    {visibleSets.length
+                      .toString()
+                      .padStart(2, "0")}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SET GRID */}
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
+              {visibleSets.map((set) => (
+                <LeaderboardCard
+                  key={set.id}
+                  set={set}
+                />
+              ))}
+            </div>
+
+            {/* BOTTOM SYSTEM READOUT */}
+            <div className="mt-6 flex items-center justify-between border-t border-[#292929] pt-3">
+              <div className="flex items-center gap-2">
+                <span className="h-1 w-1 bg-[#FFD43B]/60" />
+
+                <span className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/20">
+                  COMMUNITY DATABASE
+                </span>
+              </div>
+
+              <span className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/15">
+                MLPEKAYOU // {activeConfig.label}
+              </span>
+            </div>
+          </main>
+
+          {/* DESKTOP CHAMPION */}
+          <aside className="hidden xl:block xl:sticky xl:top-5">
+            <ChampionPanel />
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Community;
