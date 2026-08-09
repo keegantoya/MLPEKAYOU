@@ -24,7 +24,7 @@ export default function Index() {
   return (
     <>
       {showUpdateNotice && (
-        <div className="fixed inset-x-0 top-[110px] bottom-4 z-[9999] flex items-center justify-center px-4">
+        <div className="fixed inset-x-0 top-[88px] bottom-3 z-[9999] flex items-center justify-center px-3 sm:top-[110px] sm:bottom-4 sm:px-4">
           <div className="relative w-full max-w-md overflow-hidden border border-[#E7C84B]/50 bg-[#111111] shadow-[0_0_45px_rgba(231,200,75,0.14)]">
 
             <div
@@ -45,7 +45,7 @@ export default function Index() {
             <span className="pointer-events-none absolute bottom-0 left-0 h-5 w-5 border-b border-l border-[#E7C84B]/60" />
             <span className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 border-b border-r border-[#E7C84B]" />
 
-            <div className="relative p-4 sm:p-5">
+            <div className="relative p-3 sm:p-5">
 
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 shrink-0 bg-[#E7C84B] shadow-[0_0_8px_#E7C84B]" />
@@ -125,7 +125,7 @@ export default function Index() {
         </div>
       )}
 
-      <main className="min-h-screen bg-[#111111] text-white">
+      <main className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[#111111] text-white">
 
       {/* Top Banner */}
       <section className="relative overflow-hidden border-b border-yellow-400/15 bg-[#171717]">
@@ -146,20 +146,20 @@ export default function Index() {
           />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-8 py-10">
+        <div className="relative mx-auto w-full max-w-7xl px-3 py-7 sm:px-5 sm:py-8 md:px-8 md:py-10">
 
           <div className="text-center">
-            <p className="mb-2 font-oxanium text-xs uppercase tracking-[0.6rem] text-yellow-400">
+            <p className="mb-2 font-oxanium text-[9px] uppercase tracking-[0.28em] text-yellow-400 sm:text-xs sm:tracking-[0.45em] md:tracking-[0.6rem]">
               Welcome To
             </p>
 
-<h1 className="font-oxanium text-5xl font-black uppercase tracking-[0.3rem] text-white">
+<h1 className="font-oxanium text-[clamp(2rem,10vw,3rem)] font-black uppercase tracking-[clamp(0.08em,2vw,0.3rem)] text-white">
   MLPEKAYOU
 </h1>
 
-<p className="mt-2 font-oxanium text-[10px] font-bold uppercase tracking-[0.18em]">
+<p className="mt-2 font-oxanium text-[clamp(9px,2.5vw,10px)] font-bold uppercase tracking-[0.12em] sm:tracking-[0.18em]">
   <span className="text-yellow-400">MY LITTLE PONY</span>{" "}
-  <span className="text-white text-[14px]">ENGLISH</span>{" "}
+  <span className="text-white text-[clamp(10px,3vw,14px)]">ENGLISH</span>{" "}
   <span className="text-yellow-400">KAYOU</span>
 </p>
 
@@ -174,13 +174,13 @@ export default function Index() {
   <img
     src="/website-assets/discordlogo.webp"
     alt="Join the MLPEKAYOU Discord"
-    className="h-14 w-auto drop-shadow-[0_0_20px_rgba(250,204,21,0.25)] transition-all duration-300 group-hover:drop-shadow-[0_0_35px_rgba(250,204,21,0.55)]"
+    className="h-[clamp(42px,14vw,56px)] w-auto max-w-full drop-shadow-[0_0_20px_rgba(250,204,21,0.25)] transition-all duration-300 group-hover:drop-shadow-[0_0_35px_rgba(250,204,21,0.55)]"
   />
 </a>
           </div>
 
 {/* Tabs */}
-<div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:gap-3 lg:mt-10 lg:grid-cols-4">
+<div className="mt-5 grid grid-cols-2 gap-1.5 sm:mt-8 sm:gap-3 lg:mt-10 lg:grid-cols-4">
   {[
     { id: "updates", label: "UPDATES" },
     { id: "tutorial", label: "TUTORIAL" },
@@ -190,7 +190,7 @@ export default function Index() {
     <button
       key={tab.id}
       onClick={() => setActiveTab(tab.id as HomeTab)}
-      className={`group relative overflow-hidden rounded-xl border px-6 py-4 font-oxanium text-sm font-bold uppercase tracking-[0.25em] transition-all duration-300 ${
+      className={`group relative min-w-0 overflow-hidden rounded-xl border px-2 py-3 font-oxanium text-[9px] font-bold uppercase tracking-[0.08em] transition-all duration-300 sm:px-4 sm:py-4 sm:text-xs sm:tracking-[0.15em] md:px-6 md:text-sm md:tracking-[0.25em] ${
         activeTab === tab.id
           ? "border-yellow-400 bg-[#201d0c] text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.35)]"
           : "border-[#343434] bg-[#181818] text-white hover:-translate-y-1 hover:border-yellow-400 hover:text-yellow-300 hover:shadow-[0_0_20px_rgba(250,204,21,0.18)]"
@@ -221,8 +221,8 @@ export default function Index() {
       </section>
 
       {/* Tab Content */}
-      <section className="mx-auto max-w-7xl px-8 py-8">
-        <div className="rounded-2xl border border-[#333] bg-[#1a1a1a] p-8">
+      <section className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-5 sm:py-6 md:px-8 md:py-8">
+        <div className="rounded-xl border border-[#333] bg-[#1a1a1a] p-3 sm:rounded-2xl sm:p-5 md:p-8">
           {activeTab === "updates" && (
   <div className="space-y-6">
 
@@ -245,34 +245,34 @@ export default function Index() {
       <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
       <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
 
-      <div className="relative p-4 sm:p-5 md:p-8">
+      <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
 
-        <div className="mb-4 flex items-center justify-between sm:mb-5 md:mb-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-5 md:mb-6">
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
 
             <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
 
-            <span className="font-oxanium text-xs font-bold uppercase tracking-[0.4em] text-yellow-400">
+            <span className="font-oxanium text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400 sm:text-xs sm:tracking-[0.3em] md:tracking-[0.4em]">
               UPDATE
             </span>
 
           </div>
 
-          <span className="border border-[#404040] bg-[#1b1b1b] px-2 py-1.5 md:px-4 md:py-2 font-oxanium text-[10px] md:text-xs uppercase tracking-[0.08em] md:tracking-[0.2em] text-gray-400">
+          <span className="shrink-0 border border-[#404040] bg-[#1b1b1b] px-2 py-1.5 font-oxanium text-[9px] uppercase tracking-[0.05em] text-gray-400 sm:px-3 sm:text-[10px] sm:tracking-[0.08em] md:px-4 md:py-2 md:text-xs md:tracking-[0.2em]">
 
             08 / 07 / 2026
           </span>
 
         </div>
 
-        <h2 className="font-oxanium text-xl font-black uppercase tracking-[0.06em] text-white sm:text-2xl sm:tracking-[0.08em] md:text-3xl md:tracking-[0.12em]">
+        <h2 className="font-oxanium text-[clamp(1.15rem,5vw,1.875rem)] font-black uppercase tracking-[0.04em] text-white sm:tracking-[0.08em] md:tracking-[0.12em]">
           Share Your Collection
         </h2>
 
         <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
 
-        <p className="mt-4 max-w-4xl text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
+        <p className="mt-4 max-w-4xl break-words text-[12px] leading-5 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
           Click
           <span className="mx-2 border border-yellow-400 bg-yellow-400/10 px-2 py-1 font-semibold text-yellow-400">
             Share
@@ -306,15 +306,15 @@ export default function Index() {
   <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
   <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
 
-  <div className="relative p-4 sm:p-5 md:p-8">
+  <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
 
     <div className="mb-6 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
 
         <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
 
-        <span className="font-oxanium text-xs font-bold uppercase tracking-[0.4em] text-yellow-400">
+        <span className="font-oxanium text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400 sm:text-xs sm:tracking-[0.3em] md:tracking-[0.4em]">
           LEADERBOARD
         </span>
 
@@ -326,13 +326,13 @@ export default function Index() {
 
     </div>
 
-    <h2 className="font-oxanium text-xl font-black uppercase tracking-[0.06em] text-white sm:text-2xl sm:tracking-[0.08em] md:text-3xl md:tracking-[0.12em]">
+    <h2 className="font-oxanium text-[clamp(1.15rem,5vw,1.875rem)] font-black uppercase tracking-[0.04em] text-white sm:tracking-[0.08em] md:tracking-[0.12em]">
       Leaderboard Under Construction
     </h2>
 
     <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
 
-    <p className="mt-4 max-w-4xl text-[13px] leading-6 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
+    <p className="mt-4 max-w-4xl break-words text-[12px] leading-5 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
       The leaderboard is currently being rebuilt to improve overall website
       performance and reduce server workload. This update will help prevent
       crashes during periods of heavy traffic while introducing separate
@@ -390,12 +390,12 @@ export default function Index() {
         <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
         <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
 
-        <div className="relative p-4 sm:p-5 md:p-7">
+        <div className="relative min-w-0 p-3 sm:p-5 md:p-7">
 
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-3">
             <a
               href={item.href}
-              className="font-oxanium text-lg font-black uppercase tracking-[0.08em] text-yellow-400 transition hover:text-white sm:text-xl sm:tracking-[0.1em] md:text-2xl md:tracking-[0.15em]"
+              className="break-words font-oxanium text-[clamp(1.05rem,5vw,1.5rem)] font-black uppercase tracking-[0.05em] text-yellow-400 transition hover:text-white sm:text-xl sm:tracking-[0.1em] md:text-2xl md:tracking-[0.15em]"
             >
               {item.title}
             </a>
@@ -424,21 +424,21 @@ export default function Index() {
       <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
       <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
 
-      <div className="relative p-4 sm:p-5 md:p-7">
+      <div className="relative min-w-0 p-3 sm:p-5 md:p-7">
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
           <a
             href="/my-progress"
-            className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 hover:text-white"
+            className="break-words font-oxanium text-[clamp(1.15rem,6vw,1.5rem)] font-black uppercase tracking-[0.08em] text-yellow-400 hover:text-white sm:text-2xl sm:tracking-[0.15em]"
           >
             Progress CCG
           </a>
 
-          <span className="text-gray-600">/</span>
+          <span className="hidden text-gray-600 sm:inline">/</span>
 
           <a
             href="/progress-tcg"
-            className="font-oxanium text-2xl font-black uppercase tracking-[0.15em] text-yellow-400 hover:text-white"
+            className="break-words font-oxanium text-[clamp(1.15rem,6vw,1.5rem)] font-black uppercase tracking-[0.08em] text-yellow-400 hover:text-white sm:text-2xl sm:tracking-[0.15em]"
           >
             Progress TCG
           </a>
@@ -499,12 +499,12 @@ export default function Index() {
         <div className="absolute bottom-0 left-0 h-5 w-5 border-l-2 border-b-2 border-yellow-400" />
         <div className="absolute bottom-0 right-0 h-5 w-5 border-r-2 border-b-2 border-yellow-400" />
 
-        <div className="relative p-4 sm:p-5 md:p-7">
+        <div className="relative min-w-0 p-3 sm:p-5 md:p-7">
 
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-3">
             <a
               href={item.href}
-              className="font-oxanium text-lg font-black uppercase tracking-[0.08em] text-yellow-400 transition hover:text-white sm:text-xl sm:tracking-[0.1em] md:text-2xl md:tracking-[0.15em]"
+              className="break-words font-oxanium text-[clamp(1.05rem,5vw,1.5rem)] font-black uppercase tracking-[0.05em] text-yellow-400 transition hover:text-white sm:text-xl sm:tracking-[0.1em] md:text-2xl md:tracking-[0.15em]"
             >
               {item.title}
             </a>
@@ -590,7 +590,7 @@ export default function Index() {
         <div className="relative grid md:grid-cols-[320px_1fr]">
 
           {/* Image */}
-          <div className="relative flex h-40 items-center justify-center overflow-hidden border-b border-[#303030] bg-[#0d0d0d] sm:h-52 md:h-72 md:border-b-0 md:border-r">
+          <div className="relative flex h-36 items-center justify-center overflow-hidden border-b border-[#303030] bg-[#0d0d0d] sm:h-52 md:h-72 md:border-b-0 md:border-r">
             <img
               src={resource.image}
               alt={resource.title}
@@ -599,12 +599,12 @@ export default function Index() {
           </div>
 
           {/* Content */}
-          <div className="flex flex-col justify-center p-4 sm:p-5 md:p-8">
+          <div className="flex min-w-0 flex-col justify-center p-3 sm:p-5 md:p-8">
 
-            <div className="flex items-center justify-between">
+            <div className="flex min-w-0 items-center justify-between gap-3">
 
               <div>
-                <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-yellow-400">
+                <p className="font-oxanium text-[9px] uppercase tracking-[0.2em] text-yellow-400 sm:text-xs sm:tracking-[0.35em] md:tracking-[0.45em]">
                   COMMUNITY RESOURCE
                 </p>
 
@@ -613,9 +613,9 @@ export default function Index() {
                 </h2>
               </div>
 
-              <div className="flex h-12 w-12 items-center justify-center border border-yellow-400/40 bg-yellow-400/10 transition group-hover:bg-yellow-400 group-hover:text-black">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-yellow-400/40 bg-yellow-400/10 transition group-hover:bg-yellow-400 group-hover:text-black sm:h-12 sm:w-12">
                 <svg
-                  className="h-6 w-6"
+                  className="h-5 w-5 sm:h-6 sm:w-6"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={2}
@@ -633,7 +633,7 @@ export default function Index() {
 
             <div className="mt-5 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-400/25 to-transparent" />
 
-            <p className="mt-6 max-w-3xl leading-8 text-gray-300">
+            <p className="mt-5 max-w-3xl break-words text-[13px] leading-6 text-gray-300 sm:mt-6 sm:text-sm sm:leading-8">
               {resource.description}
             </p>
 
@@ -655,9 +655,9 @@ export default function Index() {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.025)_1px,transparent_1px)] bg-[size:30px_30px]" />
       <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
 
-      <div className="relative p-4 sm:p-5 md:p-8">
+      <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
 
-        <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-yellow-400">
+        <p className="font-oxanium text-[9px] uppercase tracking-[0.2em] text-yellow-400 sm:text-xs sm:tracking-[0.35em] md:tracking-[0.45em]">
           ABOUT MLPEKAYOU
         </p>
 
@@ -684,7 +684,7 @@ export default function Index() {
 
       <div className="absolute left-0 top-0 h-full w-[4px] bg-red-500" />
 
-      <div className="relative p-4 sm:p-5 md:p-8">
+      <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
 
         <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-red-400">
           IMPORTANT DISCLAIMER
@@ -696,12 +696,12 @@ export default function Index() {
 
         <div className="mt-5 h-[2px] bg-gradient-to-r from-red-500 via-red-500/25 to-transparent" />
 
-        <p className="mt-4 text-sm font-semibold uppercase leading-6 text-white sm:mt-5 sm:text-base sm:leading-7 md:mt-6 md:text-lg md:leading-9">
+        <p className="mt-4 break-words text-[11px] font-semibold uppercase leading-5 text-white sm:mt-5 sm:text-base sm:leading-7 md:mt-6 md:text-lg md:leading-9">
           MLPEKAYOU IS A FAN WEBSITE. IT IS NOT OWNED, OPERATED, OR MANAGED BY
           KAYOU US.
         </p>
 
-        <p className="mt-6 leading-8 text-gray-300">
+        <p className="mt-5 break-words text-[13px] leading-6 text-gray-300 sm:mt-6 sm:text-sm sm:leading-8">
           MLPEKAYOU generates <span className="font-bold text-yellow-400">$0.00</span>
           {" "}in revenue and will never display advertisements, subscriptions,
           premium memberships, or paywalls. The goal of this project has always
@@ -725,13 +725,13 @@ export default function Index() {
 
       <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
 
-      <div className="relative p-4 sm:p-5 md:p-8">
+      <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
 
-        <div className="flex items-center justify-between">
+        <div className="flex min-w-0 items-center justify-between gap-3">
 
           <div>
 
-            <p className="font-oxanium text-xs uppercase tracking-[0.45em] text-yellow-400">
+            <p className="font-oxanium text-[9px] uppercase tracking-[0.2em] text-yellow-400 sm:text-xs sm:tracking-[0.35em] md:tracking-[0.45em]">
               OFFICIAL PARTNER
             </p>
 
