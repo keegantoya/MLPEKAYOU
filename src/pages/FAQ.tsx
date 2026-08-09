@@ -730,7 +730,7 @@ const CaseResearchSection = ({
           </div>
 
           <div className="mt-2 font-mono text-[8px] leading-5 text-zinc-600">
-            Add case-opening observations to the hardcoded caseResearch section.
+            Report obsevations in the MLPEKAYOU Discord server to see them here.
           </div>
         </div>
       </section>
