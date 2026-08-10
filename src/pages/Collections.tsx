@@ -491,6 +491,27 @@ const Collections = () => {
    * ================================================================
    */
 
+  /*
+   * ================================================================
+   * FILTERED COLLECTIONS
+   * ================================================================
+   *
+   * Hidden-set behavior:
+   *
+   * ALL:
+   *   Hidden sets are removed from the main collection grid.
+   *
+   * CATEGORY:
+   *   Hidden sets remain visible inside their own category so the
+   *   collector can still see the set, but the card is dimmed and
+   *   marked "YOU ARE NOT COLLECTING THIS SET."
+   *
+   * This is intentionally different from hiding a set completely.
+   * Hiding a set means opting out of collecting it, not deleting the
+   * set from the category it belongs to.
+   * ================================================================
+   */
+
   const filtered = (
     activeCategory === "all"
       ? sets
@@ -499,9 +520,16 @@ const Collections = () => {
             (c) => !hideMastered || c.progress !== 100
           )
           .filter((c) => {
+            /*
+             * In ALL view, a fully hidden promo node should disappear.
+             * Individual promo pools are represented by the single
+             * visual Promos node, so it only disappears when BOTH
+             * underlying promo pools are hidden.
+             */
             if (c.id === "9") {
               return !promoNodeFullyHidden;
             }
+
             return !hiddenSets.includes(c.id);
           })
       : sets
@@ -509,10 +537,21 @@ const Collections = () => {
             (c) => c.category === activeCategory
           )
           .filter((c) => {
+            /*
+             * In a specific category, NEVER remove a hidden set.
+             * It must remain visible and display the "not collecting"
+             * state on its card.
+             *
+             * Promos are slightly special because the visual node
+             * combines CCG promos and TCG promos. If only one pool is
+             * hidden, the node remains visible and its totals reflect
+             * the visible pool. It disappears only when both are hidden.
+             */
             if (c.id === "9") {
               return !promoNodeFullyHidden;
             }
-            return !hiddenSets.includes(c.id);
+
+            return true;
           })
   )
     .filter((c) => c.released)
@@ -1078,13 +1117,67 @@ const Collections = () => {
                       {isHidden &&
                         !isUnreleased &&
                         !isWaiting && (
-                          <div className="pointer-events-none absolute left-2 top-2">
-                            <div className="flex items-center gap-1.5 rounded-md border border-[#FFD400]/25 bg-[#111111]/85 px-2 py-1 backdrop-blur-sm">
-                              <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]/70" />
+                          <div className="pointer-events-none absolute inset-0 z-40 flex items-start justify-start p-2 sm:p-3">
+                            <div className="relative w-full max-w-[240px] overflow-hidden border border-[#E7C84B]/45 bg-[#07090a]/92 px-3 py-2.5 shadow-[0_0_18px_rgba(231,200,75,0.08)] backdrop-blur-md">
+                              {/* FUTURISTIC SYSTEM GRID */}
+                              <div
+                                className="pointer-events-none absolute inset-0 opacity-30"
+                                style={{
+                                  backgroundImage: `
+                                    linear-gradient(
+                                      rgba(231,200,75,0.08) 1px,
+                                      transparent 1px
+                                    ),
+                                    linear-gradient(
+                                      90deg,
+                                      rgba(231,200,75,0.08) 1px,
+                                      transparent 1px
+                                    )
+                                  `,
+                                  backgroundSize: "12px 12px",
+                                  maskImage:
+                                    "linear-gradient(90deg, black, transparent 85%)",
+                                  WebkitMaskImage:
+                                    "linear-gradient(90deg, black, transparent 85%)",
+                                }}
+                              />
 
-                              <span className="font-['Oxanium'] text-[7px] font-semibold uppercase tracking-[0.12em] text-[#FFD400]/80">
-                                NOT COLLECTING
-                              </span>
+                              {/* ANGULAR HUD CORNERS */}
+                              <span className="absolute left-0 top-0 h-3 w-3 border-l border-t border-[#E7C84B]" />
+                              <span className="absolute right-0 top-0 h-2 w-2 border-r border-t border-[#E7C84B]/50" />
+                              <span className="absolute bottom-0 left-0 h-2 w-2 border-b border-l border-[#E7C84B]/40" />
+                              <span className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-[#E7C84B]" />
+
+                              <div className="relative z-10">
+                                <div className="mb-1.5 flex items-center gap-2 border-b border-[#E7C84B]/15 pb-1.5">
+                                  <span className="relative flex h-2 w-2 items-center justify-center">
+                                    <span className="absolute h-2 w-2 animate-pulse border border-[#E7C84B]/60" />
+                                    <span className="h-1 w-1 bg-[#E7C84B] shadow-[0_0_6px_#E7C84B]" />
+                                  </span>
+
+                                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-[#E7C84B]/70">
+                                    COLLECTION STATUS
+                                  </span>
+
+                                  <span className="ml-auto font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                                    // 00
+                                  </span>
+                                </div>
+
+                                <div className="font-['Oxanium'] text-[8px] font-bold uppercase leading-[1.35] tracking-[0.16em] text-[#E7C84B]">
+                                  YOU ARE NOT
+                                  <br />
+                                  COLLECTING THIS SET
+                                </div>
+
+                                <div className="mt-2 flex items-center gap-1.5">
+                                  <span className="h-px w-8 bg-[#E7C84B]/50" />
+                                  <span className="h-px flex-1 bg-[#E7C84B]/10" />
+                                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-900">
+                                    SET DISABLED IN ISO
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
