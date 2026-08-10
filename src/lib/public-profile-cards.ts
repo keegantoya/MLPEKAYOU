@@ -169,7 +169,7 @@ const progressMap: Record<string, any> = {};
 
 const { data: profile } = await supabase
   .from("profiles")
-  .select("hide_iso, iso_hidden_sets, iso_hidden_sets_ccg, iso_hidden_sets_tcg")
+  .select("hide_iso, iso_hidden_sets")
   .eq("id", userId)
   .maybeSingle();
 

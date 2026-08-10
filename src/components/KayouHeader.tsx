@@ -2583,7 +2583,7 @@ style={{
     </span>
   </button>
 
-  {/* FORUM */}
+  {/* EXPLORE */}
   <button
     onClick={() => {
       setShowMobileProgressMenu(false);
