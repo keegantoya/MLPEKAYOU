@@ -98,20 +98,6 @@ useEffect(() => {
   };
 }, [username]);
 
-useEffect(() => {
-  if (showCollectionModal) {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
-    document.documentElement.style.overflow = "";
-  }
-
-  return () => {
-    document.body.style.overflow = "";
-    document.documentElement.style.overflow = "";
-  };
-}, [showCollectionModal]);
 
 useEffect(() => {
   const loadStats = async () => {
@@ -246,141 +232,153 @@ const filteredCards = modalCards.filter(
 const CollectionModal = () => {
   if (!showCollectionModal) return null;
 
+  const modeLabel =
+    collectionMode === "iso"
+      ? "ISO"
+      : collectionMode === "wishlist"
+        ? "Wishlist"
+        : "For Trade";
+
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-[#020303]/90 p-2 backdrop-blur-md sm:p-8"
+      className="fixed inset-0 z-[9999] overflow-y-auto bg-[#020303]/95 backdrop-blur-md sm:flex sm:items-center sm:justify-center sm:overflow-hidden sm:p-8"
       onClick={() => setShowCollectionModal(false)}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex h-[76dvh] w-[96vw] max-w-[1400px] flex-col overflow-hidden border border-[#FFD54A]/25 bg-[#0b0d0d] shadow-[0_30px_100px_rgba(0,0,0,.65)] sm:max-h-[86vh] sm:w-[88vw] sm:flex-row"
+        className="relative flex min-h-full w-full flex-col overflow-visible border border-[#FFD54A]/25 bg-[#0b0d0d] shadow-[0_30px_100px_rgba(0,0,0,.65)] sm:h-[86vh] sm:max-h-[900px] sm:min-h-0 sm:w-[88vw] sm:max-w-[1400px] sm:flex-row sm:overflow-hidden"
       >
-        {/* Sidebar */}
-        <div className="w-full shrink-0 overflow-x-auto border-b border-white/[0.08] bg-[#090b0b] kayou-scrollbar sm:w-60 sm:overflow-y-auto sm:border-b-0 sm:border-r">
-
-          <div className="border-b border-white/[0.07] p-4 sm:p-6">
-            <h2 className="font-['Oxanium'] text-lg font-black uppercase tracking-[0.08em] text-white">
-              {collectionMode === "iso"
-                ? "ISO"
-                : collectionMode === "wishlist"
-                ? "Wishlist"
-                : "For Trade"}
+        {/* SET NAVIGATION */}
+        <div className="flex w-full shrink-0 flex-col border-b border-white/[0.08] bg-[#090b0b] sm:w-60 sm:border-b-0 sm:border-r">
+          <div className="flex shrink-0 items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:block sm:p-6">
+            <h2 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-lg">
+              {modeLabel}
             </h2>
+            <span className="font-mono text-[6px] uppercase tracking-[0.18em] text-zinc-700 sm:mt-2 sm:block">
+              {modalTabs.length.toString().padStart(2, "0")} SETS
+            </span>
           </div>
 
-          {modalTabs.map((setId) => (
-            <button
-              key={setId}
-              onClick={() => setSelectedSet(setId)}
-              className={`shrink-0 border-b border-white/[0.04] px-4 py-3 text-left font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition sm:w-full sm:px-6 sm:py-4 ${
-                selectedSet === setId
-                  ? "bg-[#FFD54A] text-black font-black shadow-[inset_3px_0_0_#111]"
-                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
-              }`}
-            >
-{getSetName(setId)}
-            </button>
-          ))}
+          {/* On mobile this is one horizontal, non-wrapping strip. */}
+          <div className="flex min-w-0 flex-nowrap overflow-x-auto overflow-y-hidden kayou-scrollbar sm:block sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto">
+            {modalTabs.map((setId) => (
+              <button
+                key={setId}
+                onClick={() => setSelectedSet(setId)}
+                className={`shrink-0 border-r border-white/[0.04] px-4 py-3 text-left font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition sm:w-full sm:border-r-0 sm:border-b sm:px-6 sm:py-4 ${
+                  selectedSet === setId
+                    ? "bg-[#FFD54A] font-black text-black shadow-[inset_3px_0_0_#111]"
+                    : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+                }`}
+              >
+                {getSetName(setId)}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Right */}
-        <div className="min-w-0 flex-1 overflow-y-auto kayou-scrollbar bg-[#0b0d0d]">
-
+        {/* CARD VIEW */}
+        <div className="min-w-0 flex-1 overflow-x-hidden bg-[#0b0d0d] sm:min-h-0 sm:overflow-y-auto sm:overscroll-contain sm:kayou-scrollbar">
           <div className="sticky top-0 z-20 flex items-center justify-between border-b border-white/[0.08] bg-[#0b0d0d]/95 px-4 py-3 backdrop-blur-xl sm:px-8 sm:py-5">
-
-            <h1 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
-  {getSetName(selectedSet)}
-</h1>
+            <div className="min-w-0">
+              <div className="mb-1 font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/45 sm:text-[6px]">
+                {modeLabel} // COLLECTION
+              </div>
+              <h1 className="truncate font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
+                {getSetName(selectedSet)}
+              </h1>
+            </div>
 
             <button
               onClick={() => setShowCollectionModal(false)}
-              className="border border-white/[0.08] px-3 py-1 font-mono text-lg text-zinc-500 transition hover:border-[#FFD54A]/40 hover:text-[#FFD54A] sm:text-2xl"
+              aria-label="Close collection viewer"
+              className="ml-3 shrink-0 border border-white/[0.08] px-3 py-1 font-mono text-lg leading-none text-zinc-500 transition hover:border-[#FFD54A]/40 hover:text-[#FFD54A] sm:px-3 sm:py-2 sm:text-2xl"
             >
               ×
             </button>
-
           </div>
 
-          <div className="grid grid-cols-3 gap-2 p-4 sm:grid-cols-4 sm:gap-4 sm:p-8 xl:grid-cols-6">
+          <div className="p-3 sm:p-8">
+            {filteredCards.length === 0 ? (
+              <div className="flex min-h-[220px] items-center justify-center border border-dashed border-white/[0.10] bg-[#090b0b] px-6 text-center font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 sm:min-h-[300px]">
+                There's nothing to see here!
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-4 xl:grid-cols-6">
+                {filteredCards
+                  .slice()
+                  .sort((a: any, b: any) => {
+                    const rarityOrder: Record<string, string[]> = {
+                      "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
+                      "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
+                      "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+                      "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
+                      "5": ["R", "FR", "SR", "SSR", "TR", "TGR", "MTR", "UR", "USR", "XR"],
+                      "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
+                      "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
+                      "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
+                      "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],
+                      "9": ["PR"],
+                      "tcgpromos": ["PR"],
+                      "friendshipsbegin": ["C", "U", "SR", "SPR", "ER", "GR", "CR", "PER", "PRR"],
+                      "FW": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "PER", "PSPR", "PGR", "PCR", "PRR"],
+                      "12": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "PER", "PSPR", "PGR", "PCR", "PRR"],
+                    };
 
-            {filteredCards
-  .sort((a: any, b: any) => {
-    const rarityOrder: Record<string, string[]> = {
-      "1": ["R","SR","SSR","HR","UR","LSR","SGR","SC"],
-      "2": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SHINING ZR"],
-      "3": ["R","SR","SSR","HR","UR","LSR","SGR","ZR","SC","SZR"],
-      "4": ["SSR","SCR","UR","USR","AR","OR","BP","SAR"],
-      "5": ["R","FR","SR","SSR","TR","TGR","MTR","UR","USR","XR"],
-      "6": ["BASE","R","SR","ST","SSR","FR","TR","TGR","UR","USR","XR"],
-      "7": ["N","SN","R","SR","SSR","UR","CR"],
-      "8": ["N","SN","R","SR","SSR","UR","UGR","CR"],
-      "11": ["N","SN","R","SR","SSR","UR","UGR","CR","SCR"],
-      "9": ["PR"],
-      "tcgpromos": ["PR"],
-      "friendshipsbegin": ["C","U","SR","SPR","ER","GR","CR","PER","PRR"],
-      "FW": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
-      "12": ["C","U","ER","SR","SPR","GR","CR","RR","PER","PSPR","PGR","PCR","PRR"],
-    };
+                    const getRarity = (card: any) => {
+                      if (card.set_id === "FW") {
+                        return card.card_key.match(/BP01([A-Z]+)\d+/)?.[1] ?? "";
+                      }
 
-    const getRarity = (card: any) => {
-      if (card.set_id === "FW") {
-        return card.card_key.match(/BP01([A-Z]+)\d+/)?.[1] ?? "";
-      }
+                      if (card.set_id === "12") {
+                        return card.card_key.match(/BP02-([A-Z]+)\d+/)?.[1] ?? "";
+                      }
 
-      if (card.set_id === "12") {
-        return card.card_key.match(/BP02-([A-Z]+)\d+/)?.[1] ?? "";
-      }
+                      if (card.set_id === "friendshipsbegin" || card.set_id === "SD") {
+                        return card.card_key.match(/SD01([A-Z]+)\d+/)?.[1] ?? "";
+                      }
 
-      if (
-        card.set_id === "friendshipsbegin" ||
-        card.set_id === "SD"
-      ) {
-        return card.card_key.match(/SD01([A-Z]+)\d+/)?.[1] ?? "";
-      }
+                      return card.card_key.split("-")[0];
+                    };
 
-      return card.card_key.split("-")[0];
-    };
+                    const getNumber = (card: any) => {
+                      const match = card.card_key.match(/(\d+)$/);
+                      return match ? parseInt(match[1], 10) : 0;
+                    };
 
-    const getNumber = (card: any) => {
-      const match = card.card_key.match(/(\d+)$/);
-      return match ? parseInt(match[1], 10) : 0;
-    };
+                    const order = rarityOrder[String(a.set_id)] ?? [];
+                    const rarityDiff =
+                      order.indexOf(getRarity(a)) - order.indexOf(getRarity(b));
 
-    const order =
-      rarityOrder[String(a.set_id)] ?? [];
-
-    const rarityDiff =
-      order.indexOf(getRarity(a)) -
-      order.indexOf(getRarity(b));
-
-    if (rarityDiff !== 0) return rarityDiff;
-
-    return getNumber(a) - getNumber(b);
-  })
-  .map((card: any) => (
-              <div
-  key={`${card.set_id}-${card.card_key}`}
-  className={`group relative overflow-hidden rounded-md border border-white/[0.07] bg-[#111313] shadow-[0_8px_22px_rgba(0,0,0,.3)] ${
-    String(card.set_id) === "3" &&
-    String(card.card_key) === "SZR-1"
-      ? "col-span-2 aspect-[10/7]"
-      : "aspect-[5/7]"
-  }`}
->
-<img
-  src={getTradeCardImage(card)}
-  alt={card.card_key}
-  className={`absolute w-full ${
-    ["FW", "SD", "friendshipsbegin", "12"].includes(String(card.set_id))
-      ? "h-full object-contain"
-      : "inset-x-0 -top-[7px] -bottom-[7px] h-auto min-h-[calc(100%+14px)] object-cover"
-  }`}
-/>
-</div>
-            ))}
-
+                    if (rarityDiff !== 0) return rarityDiff;
+                    return getNumber(a) - getNumber(b);
+                  })
+                  .map((card: any) => (
+                    <div
+                      key={`${card.set_id}-${card.card_key}`}
+                      className={`group relative overflow-hidden rounded-md border border-white/[0.07] bg-[#111313] shadow-[0_8px_22px_rgba(0,0,0,.3)] ${
+                        String(card.set_id) === "3" &&
+                        String(card.card_key) === "SZR-1"
+                          ? "col-span-2 aspect-[10/7]"
+                          : "aspect-[5/7]"
+                      }`}
+                    >
+                      <img
+                        src={getTradeCardImage(card)}
+                        alt={card.card_key}
+                        className={`absolute w-full ${
+                          ["FW", "SD", "friendshipsbegin", "12"].includes(
+                            String(card.set_id)
+                          )
+                            ? "inset-0 h-full object-contain"
+                            : "inset-x-0 -top-[7px] -bottom-[7px] h-auto min-h-[calc(100%+14px)] object-cover"
+                        }`}
+                      />
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
-
         </div>
       </div>
     </div>
@@ -396,7 +394,7 @@ if (profileNotFound) {
 }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#040606] pb-40 text-white sm:pb-0">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#040606] pb-40 text-white sm:pb-0">
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.42]"
         style={{

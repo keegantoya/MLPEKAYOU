@@ -198,8 +198,6 @@ if (profile?.hide_iso) {
 
 const hiddenSets = [
   ...(profile?.iso_hidden_sets ?? []),
-  ...(profile?.iso_hidden_sets_ccg ?? []),
-  ...(profile?.iso_hidden_sets_tcg ?? []),
 ];
 
 
