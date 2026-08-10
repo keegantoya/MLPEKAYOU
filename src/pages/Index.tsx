@@ -226,6 +226,89 @@ export default function Index() {
           {activeTab === "updates" && (
   <div className="space-y-6">
 
+
+    <div className="group relative overflow-hidden border border-[#3a3a3a] bg-[#151515]">
+
+      {/* Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.04)_1px,transparent_1px)] bg-[size:32px_32px]" />
+
+      {/* Moving Scan Line */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-25deg] bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent animate-[scan_5s_linear_infinite]" />
+      </div>
+
+      {/* Accent Line */}
+      <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
+
+      {/* Corner Accents */}
+      <div className="absolute left-0 top-0 h-6 w-6 border-l-2 border-t-2 border-yellow-400" />
+      <div className="absolute right-0 top-0 h-6 w-6 border-r-2 border-t-2 border-yellow-400" />
+      <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
+      <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
+
+      <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
+
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-5 md:mb-6">
+
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+
+            <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
+
+            <span className="font-oxanium text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400 sm:text-xs sm:tracking-[0.3em] md:tracking-[0.4em]">
+              ACCOUNT MAINTENANCE
+            </span>
+
+          </div>
+
+          <span className="shrink-0 border border-[#404040] bg-[#1b1b1b] px-2 py-1.5 font-oxanium text-[9px] uppercase tracking-[0.05em] text-gray-400 sm:px-3 sm:text-[10px] sm:tracking-[0.08em] md:px-4 md:py-2 md:text-xs md:tracking-[0.2em]">
+            08 / 10 / 2026
+          </span>
+
+        </div>
+
+        <h2 className="font-oxanium text-[clamp(1.15rem,5vw,1.875rem)] font-black uppercase tracking-[0.04em] text-white sm:tracking-[0.08em] md:tracking-[0.12em]">
+          Account Cleanup
+        </h2>
+
+        <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
+
+        <div className="mt-4 space-y-4 text-[12px] leading-5 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
+
+          <p>
+            As part of routine database maintenance, accounts that were{" "}
+            <span className="font-semibold text-white">
+              30 days or older with 0 collection progress
+            </span>{" "}
+            have been permanently deleted.
+          </p>
+
+          <p>
+            Accounts that{" "}
+            <span className="font-semibold text-white">
+              never confirmed their email address
+            </span>{" "}
+            were also permanently deleted.
+          </p>
+
+          <div className="border-l-2 border-yellow-400 bg-yellow-400/5 px-3 py-3 sm:px-4">
+            <p className="font-semibold text-yellow-400">
+              Having trouble with confirmation or password reset emails?
+            </p>
+
+            <p className="mt-1.5 text-gray-300">
+              You may need to mark the email as trusted and then refresh the
+              page before the link will work properly.{" "}
+              <span className="font-semibold text-white">
+                Gmail in particular really hates us.
+              </span>
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
     <div className="group relative overflow-hidden border border-[#3a3a3a] bg-[#151515]">
 
       {/* Background */}
@@ -286,65 +369,6 @@ export default function Index() {
         </p>
 
       </div>
-
-<div className="group relative overflow-hidden border border-[#3a3a3a] bg-[#151515]">
-
-  {/* Background */}
-  <div className="absolute inset-0 bg-[linear-gradient(rgba(250,204,21,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(250,204,21,0.04)_1px,transparent_1px)] bg-[size:32px_32px]" />
-
-  {/* Moving Scan Line */}
-  <div className="absolute inset-0 overflow-hidden">
-    <div className="absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-25deg] bg-gradient-to-r from-transparent via-yellow-400/20 to-transparent animate-[scan_5s_linear_infinite]" />
-  </div>
-
-  {/* Accent Line */}
-  <div className="absolute left-0 top-0 h-full w-[4px] bg-yellow-400" />
-
-  {/* Corner Accents */}
-  <div className="absolute left-0 top-0 h-6 w-6 border-l-2 border-t-2 border-yellow-400" />
-  <div className="absolute right-0 top-0 h-6 w-6 border-r-2 border-t-2 border-yellow-400" />
-  <div className="absolute bottom-0 left-0 h-6 w-6 border-b-2 border-l-2 border-yellow-400" />
-  <div className="absolute bottom-0 right-0 h-6 w-6 border-b-2 border-r-2 border-yellow-400" />
-
-  <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
-
-    <div className="mb-6 flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
-
-      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-
-        <div className="h-3 w-3 bg-yellow-400 shadow-[0_0_12px_#facc15]" />
-
-        <span className="font-oxanium text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400 sm:text-xs sm:tracking-[0.3em] md:tracking-[0.4em]">
-          LEADERBOARD
-        </span>
-
-      </div>
-
-<span className="border border-[#404040] bg-[#1b1b1b] px-2 py-1.5 sm:px-4 sm:py-2 font-oxanium text-[10px] sm:text-xs uppercase tracking-[0.08em] sm:tracking-[0.2em] text-gray-400">
-  07 / 29 / 2026
-</span>
-
-    </div>
-
-    <h2 className="font-oxanium text-[clamp(1.15rem,5vw,1.875rem)] font-black uppercase tracking-[0.04em] text-white sm:tracking-[0.08em] md:tracking-[0.12em]">
-      Leaderboard Under Construction
-    </h2>
-
-    <div className="mt-4 h-px w-full bg-gradient-to-r from-yellow-400 via-yellow-400/30 to-transparent" />
-
-    <p className="mt-4 max-w-4xl break-words text-[12px] leading-5 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
-      The leaderboard is currently being rebuilt to improve overall website
-      performance and reduce server workload. This update will help prevent
-      crashes during periods of heavy traffic while introducing separate
-      <span className="font-semibold text-white"> CCG</span> and
-      <span className="font-semibold text-white"> TCG</span> leaderboards,
-      giving collectors who focus on only one game an equal opportunity to
-      compete for a top spots. (Totally... not because Keegan hates TCG...)
-    </p>
-
-  </div>
-
-</div>
 
     </div>
 

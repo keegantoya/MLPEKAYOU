@@ -1673,88 +1673,54 @@ style={{
 {/* REPORT A BUG POPUP */}
 {showBugReport && (
   <div
-    className="fixed inset-0 z-[30000] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+    className="fixed inset-0 z-[30000] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm"
     onClick={() => setShowBugReport(false)}
   >
     <div
-      className="
-        relative
-        w-full
-        max-w-xl
-        overflow-hidden
-        rounded-2xl
-        border
-        border-red-500/40
-        bg-[#151515]
-        shadow-[0_0_45px_rgba(220,38,38,0.20)]
-      "
+      className="relative w-full max-w-md overflow-hidden rounded-md border border-red-500/40 bg-[#101212] shadow-[0_0_45px_rgba(220,38,38,.20)]"
       onClick={(e) => e.stopPropagation()}
     >
+      <div className="pointer-events-none absolute left-0 top-0 h-10 w-10 border-l-2 border-t-2 border-red-500/70" />
+      <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r-2 border-t-2 border-red-500/70" />
 
-      {/* Red header */}
-      <div className="border-b border-red-500/20 bg-[#1B1111] px-6 py-5">
-
+      <div className="border-b border-red-500/20 bg-[#1b1010] px-5 py-4">
         <div className="flex items-center gap-3">
-
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-red-500/50 bg-red-500/10">
-            <span className="text-xl font-black text-red-400">
-              !
-            </span>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-red-500/50 bg-red-500/10">
+            <span className="text-lg font-black text-red-400">!</span>
           </div>
 
           <div>
-            <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-red-400/60">
+            <div className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-red-400/60">
               SYSTEM SUPPORT
             </div>
-
-            <div className="mt-1 text-lg font-bold uppercase tracking-[0.12em] text-white">
+            <div className="mt-1 font-['Oxanium'] text-base font-bold uppercase tracking-[0.08em] text-white">
               Report a Bug
             </div>
           </div>
-
         </div>
-
       </div>
 
-      {/* Message */}
-      <div className="px-6 py-6">
-
-        <p className="text-sm leading-7 text-zinc-300">
+      <div className="px-5 py-5">
+        <p className="text-sm leading-6 text-zinc-300">
           Currently, bugs can only be reported in the MLPEKAYOU Discord
           server. Please join the server and find the{" "}
-          <span className="font-semibold text-red-300">
-            "Important"
-          </span>{" "}
+          <span className="font-semibold text-red-300">"Important"</span>{" "}
           category, then the last channel will be{" "}
-          <span className="font-semibold text-red-300">
-            "Bugs."
-          </span>{" "}
+          <span className="font-semibold text-red-300">"Bugs."</span>{" "}
           All requirements of reporting a bug are present in that channel.
         </p>
 
-        {/* Buttons */}
-        <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-
-          <Button
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <button
+            type="button"
             onClick={() => setShowBugReport(false)}
-            className="
-              h-10
-              rounded-xl
-              border
-              border-[#3A3A3A]
-              bg-[#202020]
-              px-5
-              font-semibold
-              text-zinc-300
-              hover:border-zinc-500
-              hover:bg-[#292929]
-              hover:text-white
-            "
+            className="border border-white/[0.09] bg-[#181a1a] px-4 py-3 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400 transition-all active:scale-[0.98]"
           >
-            CLOSE
-          </Button>
+            Close
+          </button>
 
-          <Button
+          <button
+            type="button"
             onClick={() =>
               window.open(
                 "https://discord.gg/mlpekayou",
@@ -1762,31 +1728,23 @@ style={{
                 "noopener,noreferrer"
               )
             }
-            className="
-              h-10
-              rounded-xl
-              border
-              border-red-400/70
-              bg-gradient-to-b
-              from-[#dc2626]
-              to-[#991b1b]
-              px-6
-              font-bold
-              text-white
-              shadow-[0_0_16px_rgba(220,38,38,0.18)]
-              transition-all
-              hover:from-[#ef4444]
-              hover:to-[#b91c1c]
-              hover:shadow-[0_0_22px_rgba(220,38,38,0.30)]
-            "
+            className="border border-red-400/70 bg-gradient-to-b from-[#dc2626] to-[#991b1b] px-4 py-3 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_0_16px_rgba(220,38,38,.18)] transition-all active:scale-[0.98]"
           >
-            JOIN DISCORD
-          </Button>
-
+            Join Discord
+          </button>
         </div>
-
       </div>
 
+      <div className="border-t border-red-500/10 bg-[#0c0e0e] px-5 py-2">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-red-400/30">
+            BUG REPORT PROTOCOL
+          </span>
+          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-red-400/40">
+            DISCORD REQUIRED
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 )}

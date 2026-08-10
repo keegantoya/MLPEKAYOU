@@ -8,6 +8,7 @@ interface CollectionCardProps {
   setName?: string;
   imageUrl: string;
   totalCards: number;
+  collectedCards?: number;
   progress?: number;
   showProgress?: boolean;
 }
@@ -18,6 +19,7 @@ const CollectionCard = ({
   setName,
   imageUrl,
   totalCards,
+  collectedCards = 0,
   progress = 0,
   showProgress = true,
 }: CollectionCardProps) => {
@@ -70,11 +72,6 @@ const CollectionCard = ({
   };
 
   const safeProgress = Math.min(100, Math.max(0, progress));
-
-  const collectedCards = Math.min(
-    totalCards,
-    Math.round((safeProgress / 100) * totalCards)
-  );
 
   if (showAccessWarning) {
     return (
