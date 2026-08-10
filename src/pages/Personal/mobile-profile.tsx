@@ -546,12 +546,23 @@ const displayName = profile?.username || "Twilight Sparkle";
             })
             .eq("id", session.user.id);
 
-          await supabase
-            .from("trading_profiles")
-            .update({
-              discord_username: discordDraft,
-            })
-            .eq("user_id", session.user.id);
+         const { error: tradingError } = await supabase
+  .from("trading_profiles")
+  .upsert(
+    {
+      user_id: session.user.id,
+      discord_username: discordDraft.trim(),
+    },
+    {
+      onConflict: "user_id",
+    }
+  );
+
+if (tradingError) {
+  console.error("Failed to save Discord username:", tradingError);
+  setSavingProfile(false);
+  return;
+}
 
           setProfile((prev: any) => ({
             ...prev,
