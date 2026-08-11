@@ -185,7 +185,7 @@ export default function LinksPage() {
         <footer className="absolute bottom-[3.2%] left-[3%] right-[3%] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="font-mono text-[30px] uppercase tracking-[0.3em] text-[#FFD400]/50">
-              MLPEKAYOU.COM
+              MLPEKAYOU.COMMUNITY
             </span>
             <span className="h-px w-14 bg-[#FFD400]/20" />
             <span className="hidden font-mono text-[25px] uppercase tracking-[0.25em] text-white/35 sm:inline">

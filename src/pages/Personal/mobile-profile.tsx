@@ -609,7 +609,7 @@ if (tradingError) {
   {/* SHARE PROFILE */}
   <button
     onClick={() => {
-      const url = `https://www.mlpekayou.com/${encodeURIComponent(
+      const url = `https://www.mlpekayou.community/${encodeURIComponent(
         profile?.username ?? ""
       )}`;
 

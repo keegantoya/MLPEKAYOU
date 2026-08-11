@@ -76,4 +76,4 @@ Allow: /
 User-agent: Discordbot
 Allow: /
 
-Sitemap: https://mlpekayou.com/sitemap.xml
+Sitemap: https://mlpekayou.community/sitemap.xml

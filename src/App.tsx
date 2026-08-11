@@ -31,6 +31,9 @@ import LinksPage from "./pages/linkspage";
 /// PERSONAL PAGES
 import ISO from "./pages/ISO/iso";
 
+/// THROWAWAYS
+import ThrowawayPage from "./pages/throwawaypage";
+
 /// CCG SETS
 import MoonOne from "./pages/Sets/Moon Editions/moon-one";
 import MoonTwo from "./pages/Sets/Moon Editions/moon-two";
@@ -287,6 +290,11 @@ const AppRoutes = () => {
 
 
 <Route path="/links" element={<LinksPage />} />
+
+<Route
+  path="/throwawaypage"
+  element={<ThrowawayPage />}
+/>
 
 
 <Route path="/:username" element={<PublicProfile />} />
