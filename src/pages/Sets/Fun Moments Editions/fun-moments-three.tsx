@@ -451,7 +451,7 @@ useEffect(() => {
                             {rarityNames[rarity]}
                           </span>
                         </h2>
-                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
+                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-100">
                           {count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}
                         </p>
                       </div>

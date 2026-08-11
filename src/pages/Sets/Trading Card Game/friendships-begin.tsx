@@ -96,19 +96,38 @@ const getRarityCode = (rarity: string) => {
 };
 
 const getDisplayCardCode = (key: string) => {
-  const prrMatch = key.match(/^SD01PRR(\d{2})$/);
-  if (prrMatch) {
-    return `※SD01-RR${prrMatch[1]}`;
+  const deckMatch = key.match(/^(SD01[A-F])(C|U|SR|SPR)(\d{2})$/);
+
+  if (deckMatch) {
+    const [, deck, rarity, number] = deckMatch;
+    return `${deck}-${rarity}${number}`;
   }
 
-  const perMatch = key.match(/^SD01PER(\d{2})$/);
-  if (perMatch) {
-    const sourceNumber = Number(perMatch[1]);
+  const specialMatch = key.match(/^SD01(ER|RR)(\d{2})$/);
+
+  if (specialMatch) {
+    const [, rarity, number] = specialMatch;
+    const deckLetter = String.fromCharCode(64 + Number(number));
+    return `${"SD01" + deckLetter}-${rarity}${number}`;
+  }
+
+  const match = key.match(/^SD01(C|U|SR|SPR|GR|CR|ER|RR|PER|PRR)(\d{2})$/);
+
+  if (!match) return key;
+
+  const [, rarity, number] = match;
+
+  if (rarity === "PRR") {
+    return `※SD01-RR${number}`;
+  }
+
+  if (rarity === "PER") {
+    const sourceNumber = Number(number);
     const displayNumber = Math.ceil(sourceNumber / 2);
     return `※SD01-ER${String(displayNumber).padStart(2, "0")}`;
   }
 
-  return key;
+  return `SD01-${rarity}${number}`;
 };
 
 const getCardBack = (key: string) => {
@@ -681,7 +700,7 @@ useEffect(() => {
                           </span>
                         </h2>
 
-                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
+                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-100">
                           {count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}
                         </p>
                       </div>

@@ -381,7 +381,7 @@ useEffect(() => {
                           {rarity === "SN" ? "◇N" : rarity}
                           <span className="ml-2 text-sm font-normal tracking-normal text-zinc-500 sm:text-base">{rarityNames[rarity]}</span>
                         </h2>
-                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">{count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}</p>
+                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-100">{count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}</p>
                       </div>
                       <div className="font-['Oxanium'] text-3xl font-black text-[#FFD54A]/25 sm:text-5xl">{String(index + 1).padStart(2, "0")}</div>
                     </div>

@@ -91,19 +91,34 @@ const getRarityCode = (rarity: string) => {
 };
 
 const getDisplayCardCode = (key: string) => {
-  const match = key.match(/^BP02-(PER|PGR|PSPR|PCR|PRR)(\d{2})(-A2|-B2)?$/);
+  const match = key.match(/^BP02-(C|U|ER|SR|SPR|GR|CR|RR|PER|PGR|PSPR|PCR|PRR)(\d{2})(-A2|-B2)?$/);
 
   if (!match) return key.replace("BP02-", "");
 
   const [, rarity, number, variant = ""] = match;
-  const displayRarity =
-    rarity === "PER" ? "ER" :
-    rarity === "PGR" ? "GR" :
-    rarity === "PSPR" ? "SPR" :
-    rarity === "PCR" ? "CR" :
-    "RR";
 
-  return `※BP02-${displayRarity}${number}${variant}`;
+  if (rarity === "PER") return `※BP02-ER${number}`;
+  if (rarity === "PGR") return `※BP02-GR${number}${variant}`;
+  if (rarity === "PSPR") {
+    const psprDisplayNumbers: Record<string, string> = {
+      "01": "01",
+      "02": "02",
+      "03": "05",
+      "04": "10",
+      "05": "14",
+      "06": "15",
+      "07": "16",
+      "08": "18",
+      "09": "23",
+      "10": "24",
+      "11": "26",
+    };
+    return `※BP02-SPR${psprDisplayNumbers[number] ?? number}`;
+  }
+  if (rarity === "PCR") return `※BP02-CR${number}${variant}`;
+  if (rarity === "PRR") return `※BP02-RR${number}${variant}`;
+
+  return `BP02-${rarity}${number}${variant}`;
 };
 
 const getCardBack = (key: string) => {
@@ -498,13 +513,23 @@ useEffect(() => {
                         </div>
 
                         <h2 className="font-['Oxanium'] text-2xl font-black uppercase leading-none text-white sm:text-3xl">
-                          {getRarityCode(rarity)}
+                          {rarity === "PER"
+                            ? "※ER"
+                            : rarity === "PGR"
+                            ? "※GR"
+                            : rarity === "PSPR"
+                            ? "※SPR"
+                            : rarity === "PCR"
+                            ? "※CR"
+                            : rarity === "PRR"
+                            ? "※RR"
+                            : getRarityCode(rarity)}
                           <span className="ml-2 text-sm font-normal tracking-normal text-zinc-500 sm:text-base">
                             {rarityNames[rarity]}
                           </span>
                         </h2>
 
-                        <p className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-700">
+                        <p className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-100">
                           {count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}
                         </p>
                       </div>

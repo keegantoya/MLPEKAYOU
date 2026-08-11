@@ -106,6 +106,16 @@ const getDisplayCardCode = (key: string) => {
   if (!match) return key.replace("BP01", "");
 
   const [, prefix, rarity, number] = match;
+
+  if (rarity === "PGR") return `※${prefix}-GR${number}`;
+  if (rarity === "PCR") return `※${prefix}-CR${number}`;
+  if (rarity === "PRR") return `※${prefix}-RR${number}`;
+  if (rarity === "PSPR") return `※${prefix}-SPR${number}`;
+  if (rarity === "PER") {
+    const displayNumber = String(Math.ceil(Number(number) / 2)).padStart(2, "0");
+    return `※${prefix}-ER${displayNumber}`;
+  }
+
   return `※${prefix}-${getDisplayRarityCode(rarity).replace("※", "")}${number}`;
 };
 
@@ -499,7 +509,7 @@ useEffect(() => {
                           </span>
                         </h2>
 
-                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
+                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-100">
                           {count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}
                         </p>
                       </div>

@@ -324,7 +324,7 @@ const LeapingPonies = () => {
                     <span className="ml-2 text-zinc-500">Assets</span>
                   </h2>
 
-                  <p className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-700">
+                  <p className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-100">
                     06 ASSETS / {completedCount === merchItems.length ? "COMPLETE" : "IN PROGRESS"}
                   </p>
                 </div>

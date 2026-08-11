@@ -367,7 +367,7 @@ useEffect(() => {
                         <div className="mb-2 flex items-center gap-2"><span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-400">NODE {String(index + 1).padStart(2, "0")}</span><span className="h-px w-8 bg-[#FFD54A]/25" /><span className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD54A]/85">ACTIVE</span></div>
                         <h2 className="font-['Oxanium'] text-2xl font-black uppercase leading-none text-white sm:text-3xl">
                           {rarity === "SAR" ? "◇AR" : rarity}
-                          <span className="ml-2 text-sm font-normal tracking-normal text-zinc-500 sm:text-base">{rarityNames[rarity]}</span>
+                          <span className="ml-2 text-sm font-normal tracking-normal text-zinc-100 sm:text-base">{rarityNames[rarity]}</span>
                         </h2>
                         <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">{count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}</p>
                       </div>
