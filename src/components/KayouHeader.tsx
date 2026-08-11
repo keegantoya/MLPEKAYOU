@@ -1294,54 +1294,197 @@ style={{
 </div>
 </header>
 
-{/* SIGNUP SUCCESS POPUP */}
+{/* SIGNUP SUCCESS POPUP — STARK INDUSTRIES STYLE */}
 {showSignupSuccess && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md px-4">
 
-    <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
+    <div
+      className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-[#D4AF37]/50 bg-[#111214] shadow-[0_0_80px_rgba(212,175,55,0.15),0_25px_80px_rgba(0,0,0,0.7)]"
+      style={{
+        fontFamily: "Oxanium, sans-serif",
+      }}
+    >
 
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-  <img
-    src={logo}
-    className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
-  />
-</div>
+      {/* TOP GOLD STATUS BAR */}
+      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#E7C84B] to-transparent" />
 
-      <div className="text-center mb-6 text-gray-700">
+      {/* SUBTLE TECH GRID */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)
+          `,
+          backgroundSize: "28px 28px",
+        }}
+      />
 
-        <div
-  className="text-3xl font-bold mb-2 tracking-wide"
-  style={{
-    color: "#ffffff",
-    textShadow: "0 2px 12px rgba(0,0,0,.45)",
-  }}
->
-          Account Created!
+      {/* HEADER */}
+      <div className="relative flex items-center justify-between border-b border-white/10 px-6 py-4">
+
+        <div className="flex items-center gap-3">
+
+          {/* MINI ARC REACTOR */}
+          <div className="relative flex h-10 w-10 items-center justify-center">
+
+            <div className="absolute inset-0 rounded-full border border-[#E7C84B]/30" />
+
+            <div className="absolute inset-[5px] rounded-full border border-[#E7C84B]/60" />
+
+            <div className="absolute inset-[10px] rounded-full bg-[#E7C84B] shadow-[0_0_18px_rgba(231,200,75,.8)]" />
+
+            <div className="absolute inset-[13px] rounded-full bg-white shadow-[0_0_10px_white]" />
+
+          </div>
+
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E7C84B]">
+              MLPEKAY SYSTEM
+            </div>
+
+            <div className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+              Account Initialization
+            </div>
+          </div>
+
         </div>
 
-        <div className="text-sm text-gray-500 mb-4">
-          We've assigned you a username:
-        </div>
+        {/* SYSTEM STATUS */}
+        <div className="flex items-center gap-2">
 
-        <div className="font-bold text-pink-500 text-lg mb-4">
-          {newUsername}
-        </div>
+          <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]" />
 
-        <div className="text-sm text-gray-500">
-          A confirmation email has been sent.  
-          Please check your email to activate your account.
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">
+            SYSTEM ONLINE
+          </span>
+
         </div>
 
       </div>
 
-      <div className="flex justify-center">
+
+      {/* MAIN CONTENT */}
+      <div className="relative px-7 py-8 sm:px-10">
+
+        <div className="flex flex-col items-center text-center">
+
+          {/* SUCCESS INDICATOR */}
+          <div className="relative mb-6 flex h-20 w-20 items-center justify-center">
+
+            <div className="absolute inset-0 rounded-full border border-[#E7C84B]/20" />
+
+            <div className="absolute inset-2 rounded-full border border-[#E7C84B]/40" />
+
+            <div className="absolute inset-4 rounded-full border border-[#E7C84B]/70 shadow-[0_0_25px_rgba(231,200,75,.25)]" />
+
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#E7C84B] shadow-[0_0_30px_rgba(231,200,75,.55)]">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-6 w-6 text-[#111214]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 12.5l4.5 4.5L19 7.5"
+                />
+              </svg>
+            </div>
+
+          </div>
+
+
+          {/* TITLE */}
+          <div className="mb-2 text-3xl font-black uppercase tracking-[0.12em] text-white sm:text-4xl">
+            Account Created
+          </div>
+
+          <div className="mb-7 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/35">
+            Identity successfully initialized
+          </div>
+
+
+          {/* USERNAME MODULE */}
+          <div className="w-full max-w-md rounded-lg border border-[#E7C84B]/20 bg-white/[0.025] p-5">
+
+            <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#E7C84B]/70">
+              Assigned Designation
+            </div>
+
+            <div className="text-2xl font-black tracking-wider text-[#E7C84B] drop-shadow-[0_0_12px_rgba(231,200,75,.2)]">
+              {newUsername}
+            </div>
+
+          </div>
+
+
+          {/* EMAIL MESSAGE */}
+          <div className="mt-6 max-w-lg text-sm leading-6 text-white/55">
+            A confirmation transmission has been sent to your email address.
+            <span className="block text-white/75">
+              Verify your account to complete activation.
+            </span>
+          </div>
+
+
+          {/* TECHNICAL DIVIDER */}
+          <div className="mt-7 flex w-full max-w-md items-center gap-3">
+
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+
+            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/20">
+              SECURE CHANNEL
+            </div>
+
+            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* FOOTER */}
+      <div className="relative flex items-center justify-between border-t border-white/10 bg-black/20 px-6 py-4">
+
+        <div className="hidden text-[9px] font-semibold uppercase tracking-[0.2em] text-white/20 sm:block">
+          MLPEKAY // AUTH SYSTEM
+        </div>
+
         <Button
-          className="bg-gradient-to-r from-[#7c5aa6] to-[#5a3e84] text-[#E7C84B] border border-[#d4af37]/40 hover:brightness-110  hover:bg-[#e8e8e0]"
+          className="
+            ml-auto
+            min-w-[130px]
+            border border-[#E7C84B]/60
+            bg-[#E7C84B]
+            text-[#111214]
+            font-black
+            uppercase
+            tracking-[0.15em]
+            shadow-[0_0_20px_rgba(231,200,75,.15)]
+            transition-all
+            duration-200
+            hover:bg-[#f3d65f]
+            hover:shadow-[0_0_28px_rgba(231,200,75,.3)]
+            hover:scale-[1.02]
+          "
           onClick={() => setShowSignupSuccess(false)}
         >
-          Got it!
+          Acknowledge
         </Button>
+
       </div>
+
+
+      {/* CORNER DETAILS */}
+      <div className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 border-b border-l border-[#E7C84B]/30" />
+      <div className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-b border-r border-[#E7C84B]/30" />
+      <div className="pointer-events-none absolute top-2 left-2 h-3 w-3 border-l border-t border-[#E7C84B]/30" />
+      <div className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-[#E7C84B]/30" />
 
     </div>
   </div>
