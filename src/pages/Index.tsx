@@ -226,6 +226,91 @@ export default function Index() {
           {activeTab === "updates" && (
   <div className="space-y-6">
 
+    {/* Critical Domain / Copyright Notice */}
+    <div className="group relative overflow-hidden border border-red-500/70 bg-gradient-to-br from-red-950/70 via-[#151515] to-[#151515] shadow-[0_0_35px_rgba(239,68,68,0.18)]">
+
+      {/* Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(239,68,68,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(239,68,68,0.045)_1px,transparent_1px)] bg-[size:32px_32px]" />
+
+      {/* Moving Scan Line */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -left-1/2 top-0 h-full w-1/3 skew-x-[-25deg] bg-gradient-to-r from-transparent via-red-400/20 to-transparent animate-[scan_4s_linear_infinite]" />
+      </div>
+
+      {/* Accent Line */}
+      <div className="absolute left-0 top-0 h-full w-[5px] bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.55)]" />
+
+      {/* Corner Accents */}
+      <div className="absolute left-0 top-0 h-7 w-7 border-l-2 border-t-2 border-red-500" />
+      <div className="absolute right-0 top-0 h-7 w-7 border-r-2 border-t-2 border-red-500" />
+      <div className="absolute bottom-0 left-0 h-7 w-7 border-b-2 border-l-2 border-red-500" />
+      <div className="absolute bottom-0 right-0 h-7 w-7 border-b-2 border-r-2 border-red-500" />
+
+      <div className="relative min-w-0 p-3 sm:p-5 md:p-8">
+
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-5 md:mb-6">
+
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <div className="flex h-4 w-4 shrink-0 items-center justify-center bg-red-500 text-[9px] font-black text-white shadow-[0_0_14px_rgba(239,68,68,0.55)]">
+              !
+            </div>
+
+            <span className="font-oxanium text-[9px] font-bold uppercase tracking-[0.2em] text-red-400 sm:text-xs sm:tracking-[0.3em] md:tracking-[0.4em]">
+              CRITICAL NOTICE
+            </span>
+          </div>
+
+          <span className="shrink-0 border border-red-500/40 bg-red-950/40 px-2 py-1.5 font-oxanium text-[9px] uppercase tracking-[0.05em] text-red-300 sm:px-3 sm:text-[10px] sm:tracking-[0.08em] md:px-4 md:py-2 md:text-xs md:tracking-[0.2em]">
+            08 / 11 / 2026
+          </span>
+
+        </div>
+
+        <h2 className="font-oxanium text-[clamp(1.15rem,5vw,1.875rem)] font-black uppercase tracking-[0.04em] text-white sm:tracking-[0.08em] md:tracking-[0.12em]">
+          Important Domain Update
+        </h2>
+
+        <div className="mt-4 h-px w-full bg-gradient-to-r from-red-500 via-red-500/40 to-transparent" />
+
+        <div className="mt-4 space-y-4 text-[12px] leading-5 text-gray-300 sm:mt-5 sm:text-sm sm:leading-7 md:mt-6 md:text-[15px] md:leading-8">
+
+          <p>
+            On <span className="font-semibold text-white">08/11/2026</span>,
+            <span className="font-semibold text-red-400"> MLPEKAYOU experienced a copyright strike</span>
+            {" "}that caused the website to be down for several hours. After calling and emailing everyone possible, it became clear that the best course of action would be to temporarily rebrand the website&apos;s domain.
+          </p>
+
+          <div className="border-l-2 border-red-500 bg-red-500/5 px-3 py-3 sm:px-4">
+            <p className="font-semibold text-red-400">
+              MLPEKAYOU is still MLPEKAYOU.
+            </p>
+
+            <p className="mt-1.5 text-gray-300">
+              I (Keegan) am partnered directly with Kayou US, so I know that Kayou did not initiate this strike. As for who did, that remains unclear.
+            </p>
+          </div>
+
+          <p>
+            Moving forward, the new domain for the time being will be{" "}
+            <span className="font-bold text-white">mlpekayou.community</span>.
+            {" "}The domain may or may not change back to{" "}
+            <span className="font-semibold text-white">mlpekayou.com</span>
+            {" "}if I am able to reobtain the rights to it. I would also like to iterate
+            here that no user information was impacted. This was simply a copyright
+            strike against the website's domain, and that is all. Everything is still
+            exactly as it was before, just with a  
+            <span className="font-bold text-white"> .community</span> domain instead of a 
+            <span className="font-bold text-white"> .com</span> domain.
+          </p>
+
+          <p className="font-semibold text-white">
+            I am sorry for the inconvenience this has caused, and thank you for your patience while I work to get everything back to normal.
+          </p>
+
+        </div>
+
+      </div>
+    </div>
 
     <div className="group relative overflow-hidden border border-[#3a3a3a] bg-[#151515]">
 
