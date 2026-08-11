@@ -202,12 +202,12 @@ const pricingCards = [
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
 
-              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.24em] text-white/25">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-white/65">
                 MLPEKAYOU // MARKET INTELLIGENCE
               </span>
             </div>
 
-            <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-[#FFD400]/45">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[#FFD400]/80">
               COMMUNITY DATA
             </span>
 
@@ -216,13 +216,13 @@ const pricingCards = [
           <div className="px-5 py-8 sm:px-8 sm:py-10">
 
             <div className="mb-3 flex items-center gap-3">
-              <span className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/60">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/85">
                 MODULE 07
               </span>
 
               <div className="h-px w-12 bg-[#FFD400]/25" />
 
-              <span className="font-mono text-[7px] uppercase tracking-[0.18em] text-white/20">
+              <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/60">
                 MARKET VALUE DATABASE
               </span>
             </div>
@@ -234,7 +234,7 @@ const pricingCards = [
                   Guide to Selling
                 </h1>
 
-                <p className="mt-3 max-w-xl font-mono text-[7px] uppercase leading-[1.8] tracking-[0.14em] text-white/25 sm:text-[8px]">
+                <p className="mt-3 max-w-xl font-mono text-[8px] uppercase leading-[1.8] tracking-[0.14em] text-white/65 sm:text-[8px]">
                   Community-maintained collector pricing intelligence.
                   Values are estimates based on rarity, availability,
                   pull rates, and collector demand.
@@ -255,7 +255,7 @@ const pricingCards = [
             <div className="flex items-center gap-2">
               <span className="h-1 w-1 bg-[#FFD400]" />
 
-              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.22em] text-white/25">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-white/65">
                 SYSTEM NOTES // PRICE METHODOLOGY
               </span>
             </div>
@@ -276,7 +276,7 @@ const pricingCards = [
               </div>
 
               <div>
-                <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-[#FFD400]/50">
+                <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#FFD400]/80">
                   COMMUNITY PRICING GUIDE
                 </div>
 
@@ -293,7 +293,7 @@ const pricingCards = [
                 <div className="mb-3 flex items-center gap-2">
                   <span className="h-1 w-1 bg-[#FFD400]" />
 
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/55">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/80">
                     EVALUATION
                   </span>
                 </div>
@@ -313,7 +313,7 @@ const pricingCards = [
                 <div className="mb-3 flex items-center gap-2">
                   <span className="h-1 w-1 bg-[#FFD400]" />
 
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/55">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/80">
                     What about TCG?
                   </span>
                 </div>
@@ -356,7 +356,7 @@ const pricingCards = [
               </h2>
             </div>
 
-            <span className="hidden font-mono text-[6px] uppercase tracking-[0.18em] text-white/15 sm:block">
+            <span className="hidden font-mono text-[8px] uppercase tracking-[0.18em] text-white/55 sm:block">
               HIGHER-TIER RARITIES
             </span>
 
@@ -376,7 +376,7 @@ const pricingCards = [
 
                 <div className="flex items-center gap-4">
 
-                  <span className="font-mono text-[7px] text-white/10">
+                  <span className="font-mono text-[8px] text-white/50">
                     {(index + 1).toString().padStart(2, "0")}
                   </span>
 
@@ -385,14 +385,14 @@ const pricingCards = [
                       {name}
                     </h3>
 
-                    <p className="mt-1 font-mono text-[7px] tracking-[0.1em] text-white/25">
+                    <p className="mt-1 font-mono text-[8px] tracking-[0.1em] text-white/65">
                       {rarities}
                     </p>
                   </div>
 
                 </div>
 
-                <span className="w-fit border border-[#FFD400]/20 bg-[#FFD400]/[0.05] px-3 py-1.5 font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/70">
+                <span className="w-fit border border-[#FFD400]/20 bg-[#FFD400]/[0.05] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/90">
                   HIGH VALUE
                 </span>
 
@@ -525,7 +525,7 @@ const pricingCards = [
 
                   <span className="h-px w-5 bg-[#FFD400]/25" />
 
-                  <span className="font-mono text-[6px] uppercase tracking-[0.14em] text-white/25">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-white/60">
                     VALUE DATA
                   </span>
 
@@ -551,11 +551,11 @@ const pricingCards = [
 
                 <div className="mb-3 flex items-center justify-between border-b border-white/[0.05] pb-2">
 
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-white/20">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/60">
                     RARITY
                   </span>
 
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/45">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/80">
                     EST. VALUE
                   </span>
 
@@ -609,11 +609,11 @@ const pricingCards = [
                 {card.note && (
                   <div className="mt-4 border-l border-[#FFD400]/35 bg-[#FFD400]/[0.025] px-3 py-2.5">
 
-                    <div className="mb-1 font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/55">
+                    <div className="mb-1 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/85">
                       ANALYST NOTE
                     </div>
 
-                    <p className="font-mono text-[6px] leading-[1.7] tracking-[0.04em] text-white/25">
+                    <p className="font-mono text-[8px] leading-[1.7] tracking-[0.04em] text-white/65">
                       {card.note}
                     </p>
 
@@ -626,11 +626,11 @@ const pricingCards = [
               {/* STATUS RAIL */}
               <div className="flex items-center justify-between border-t border-white/[0.05] bg-[#0d0d0d] px-4 py-2">
 
-                <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-white/15">
+                <span className="font-mono text-[7px] uppercase tracking-[0.18em] text-white/55">
                   FAIR ESTIMATES // {String(index + 1).padStart(2, "0")}
                 </span>
 
-                <span className="flex items-center gap-1.5 font-mono text-[5px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/40">
+                <span className="flex items-center gap-1.5 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/80">
                   <span className="h-1 w-1 bg-[#FFD400]/70" />
                   ACTIVE
                 </span>
@@ -655,7 +655,7 @@ const pricingCards = [
             <div className="flex items-center gap-2">
               <span className="h-1 w-1 bg-[#FFD400]" />
 
-              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.22em] text-white/20">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-white/60">
                 DATA NOTICE
               </span>
             </div>
@@ -668,7 +668,7 @@ const pricingCards = [
               Pricing Disclaimer
             </h3>
 
-            <p className="max-w-5xl font-mono text-[7px] leading-[1.9] tracking-[0.06em] text-white/25 sm:text-[8px]">
+            <p className="max-w-5xl font-mono text-[8px] leading-[1.9] tracking-[0.06em] text-white/65 sm:text-[8px]">
               Prices reflect changes as products age and become more difficult
               to obtain. Community demand also influences value, meaning rarities
               with lower pull rates are not always the most desirable. Trading

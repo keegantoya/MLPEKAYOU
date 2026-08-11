@@ -300,7 +300,7 @@ const Community = () => {
               {config.label}
             </span>
 
-            <span className="mt-0.5 block font-mono text-[7px] uppercase tracking-[0.16em] text-white/20">
+            <span className="mt-0.5 block font-mono text-[8px] uppercase tracking-[0.16em] text-white/55">
               {config.description}
             </span>
           </span>
@@ -380,7 +380,7 @@ const Community = () => {
           <div className="mt-2 flex items-center gap-2">
             <span className="h-px w-5 bg-[#FFD43B]/55" />
 
-            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-[#FFD43B]/70">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[#FFD43B]/90">
               {activeCategory === "tcg"
                 ? "TOP COLLECTOR"
                 : "SET LEADERBOARD"}
@@ -415,7 +415,7 @@ const Community = () => {
                 {winner.username}
               </span>
 
-              <span className="mt-0.5 font-mono text-[6px] uppercase tracking-[0.18em] text-[#FFD43B]/45">
+              <span className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD43B]/80">
                 FIRST FINISHER
               </span>
             </>
@@ -441,11 +441,11 @@ const Community = () => {
       <div className="absolute left-2 right-2 top-1/2 h-px bg-[#FFD43B]/10" />
     </div>
 
-    <span className="mt-2 font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD43B]/60">
+    <span className="mt-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#FFD43B]/85">
       UNCLAIMED
     </span>
 
-    <span className="mt-0.5 font-mono text-[5px] uppercase tracking-[0.14em] text-white/20">
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.14em] text-white/55">
       BE FIRST
     </span>
   </>
@@ -455,7 +455,7 @@ const Community = () => {
         {/* Bottom readout */}
         <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between border-t border-[#292929] pt-3">
           <div>
-            <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/20">
+            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/55">
               CARD COUNT
             </div>
 
@@ -514,11 +514,11 @@ const Community = () => {
       {/* Header */}
       <div className="relative border-b border-[#2d2d2d] px-5 py-4">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
+          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
             CHAMPION
           </span>
 
-          <span className="flex items-center gap-1.5 font-mono text-[6px] uppercase tracking-[0.18em] text-white/25">
+          <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/60">
             <span className="h-1.5 w-1.5 rounded-full bg-[#FFD43B] shadow-[0_0_7px_rgba(255,212,59,.7)]" />
             VERIFIED - TOP SUPPORTER
           </span>
@@ -551,7 +551,7 @@ const Community = () => {
           </div>
 
           <div className="min-w-0">
-            <div className="font-mono text-[6px] uppercase tracking-[0.22em] text-[#FFD43B]/55">
+            <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-[#FFD43B]/80">
               CURRENT CHAMPION
             </div>
 
@@ -579,7 +579,7 @@ const Community = () => {
               )}
             </div>
 
-            <div className="mt-2 font-mono text-[7px] uppercase tracking-[0.16em] text-white/25">
+            <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.16em] text-white/60">
               MASTERSETTER CHAMPION
             </div>
           </div>
@@ -590,7 +590,7 @@ const Community = () => {
         </div>
 
         <div className="mt-4 border-t border-[#2d2d2d] pt-3">
-          <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-[#FFD43B]/45">
+          <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-[#FFD43B]/80">
             MARI IS A TOP SUPPORTED OF MLPEKAYOU AND A PILLAR TO THE COMMUNITY.
           </span>
         </div>
@@ -634,16 +634,16 @@ const Community = () => {
               {/* Sidebar header */}
               <div className="border-b border-[#2c2c2c] px-4 py-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
                     CATEGORIES OF SETS
                   </span>
 
-                  <span className="font-mono text-[6px] text-white/20">
+                  <span className="font-mono text-[8px] text-white/55">
                     05
                   </span>
                 </div>
 
-                <p className="mt-2 font-mono text-[7px] uppercase leading-relaxed tracking-[0.1em] text-white/25">
+                <p className="mt-2 font-mono text-[8px] uppercase leading-relaxed tracking-[0.1em] text-white/60">
                   Select a category to find leaderboards for those sets.
                 </p>
               </div>
@@ -662,12 +662,12 @@ const Community = () => {
                 <div className="mb-2 flex items-center gap-2">
                   <span className="h-px w-4 bg-[#FFD43B]/45" />
 
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-[#FFD43B]/60">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[#FFD43B]/85">
                     ACCESS REQUIREMENTS
                   </span>
                 </div>
 
-                <p className="font-mono text-[7px] uppercase leading-[1.7] tracking-[0.08em] text-white/25">
+                <p className="font-mono text-[8px] uppercase leading-[1.7] tracking-[0.08em] text-white/60">
                   You must have a Discord username attached to your account to appear on any leaderboards, and you must
                   be present in the MLPEKAYOU Discord server to claim any first finisher positions. You will be required
                   to show proof that your entire collection is both completed and only English.
@@ -700,7 +700,7 @@ const Community = () => {
 
               <div className="mt-3 flex items-center justify-between">
                 <div>
-                  <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-white/20">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/55">
                     ACTIVE CHANNEL
                   </div>
 
@@ -710,7 +710,7 @@ const Community = () => {
                 </div>
 
                 <div className="text-right">
-                  <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/20">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/55">
                     SETS
                   </div>
 
@@ -738,12 +738,12 @@ const Community = () => {
               <div className="flex items-center gap-2">
                 <span className="h-1 w-1 bg-[#FFD43B]/60" />
 
-                <span className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/20">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/55">
                   COMMUNITY DATABASE
                 </span>
               </div>
 
-              <span className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/15">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/50">
                 MLPEKAYOU // {activeConfig.label}
               </span>
             </div>

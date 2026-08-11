@@ -252,12 +252,12 @@ if (showLoginModal) {
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 bg-red-400 shadow-[0_0_10px_rgba(248,113,113,.9)]" />
 
-            <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-red-400/80">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-red-300/95">
               ACCESS DENIED
             </span>
           </div>
 
-          <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-zinc-700">
+          <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
             AUTH NODE
           </span>
         </div>
@@ -281,7 +281,7 @@ if (showLoginModal) {
 
           {/* TITLE */}
           <div className="mt-6 text-center">
-            <div className="font-mono text-[6px] font-bold uppercase tracking-[0.35em] text-zinc-600">
+            <div className="font-mono text-[8px] font-bold uppercase tracking-[0.35em] text-zinc-300">
               TRADING POST
             </div>
 
@@ -298,7 +298,7 @@ if (showLoginModal) {
               Authorization Required
             </div>
 
-            <p className="mt-2 font-mono text-[7px] uppercase leading-5 tracking-[0.07em] text-zinc-600">
+            <p className="mt-2 font-mono text-[8px] uppercase leading-5 tracking-[0.07em] text-zinc-300">
               You cannot access this page without being signed in to an account.
             </p>
           </div>
@@ -323,7 +323,7 @@ if (showLoginModal) {
           <div className="mt-5 flex items-center justify-center gap-3">
             <span className="h-px w-8 bg-white/[0.06]" />
 
-            <span className="font-mono text-[5px] uppercase tracking-[0.3em] text-zinc-700">
+            <span className="font-mono text-[7px] uppercase tracking-[0.3em] text-zinc-400">
               SECURE SESSION GATE
             </span>
 
@@ -333,7 +333,7 @@ if (showLoginModal) {
 
         {/* BOTTOM STATUS */}
         <div className="flex items-center justify-between border-t border-white/[0.06] bg-[#050707] px-4 py-2">
-          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+          <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-400">
             STATUS: UNAUTHORIZED
           </span>
 
@@ -438,11 +438,11 @@ return (
         <div className="hidden items-center gap-2 sm:flex">
           <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.6)]" />
 
-          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.22em] text-white/20">
+          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-white/60">
             TRADING NETWORK
           </span>
 
-          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/60">
+          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/85">
             ONLINE
           </span>
         </div>
@@ -460,7 +460,7 @@ return (
           <div className="mb-2 flex items-center gap-2">
             <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.6)]" />
 
-            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.24em] text-[#FFD400]/65">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[#FFD400]/90">
               TRADING POST // SET MARKET
             </span>
 
@@ -473,7 +473,7 @@ return (
                 {setNames[setId || ""] || `Set ${setId}`}
               </h1>
 
-              <p className="mt-2 max-w-2xl font-mono text-[7px] uppercase leading-[1.7] tracking-[0.12em] text-white/25 sm:text-[8px]">
+              <p className="mt-2 max-w-2xl font-mono text-[8px] uppercase leading-[1.7] tracking-[0.12em] text-white/65 sm:text-[8px]">
                 Select a rarity to view available collector listings.
                 Click a username to inspect their ISO, wishlist, and full
                 trading inventory.
@@ -482,7 +482,7 @@ return (
 
             <div className="flex shrink-0 items-center gap-4 border-l border-white/[0.08] pl-4">
               <div>
-                <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/60">
                   COLLECTORS
                 </div>
 
@@ -496,7 +496,7 @@ return (
               <div className="h-8 w-px bg-white/[0.08]" />
 
               <div>
-                <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/60">
                   PAGE
                 </div>
 
@@ -521,12 +521,12 @@ return (
               <div className="flex items-center gap-2">
                 <span className="h-1 w-1 bg-[#FFD400]" />
 
-                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.22em] text-white/25">
+                <span className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-white/65">
                   FILTER BY RARITY
                 </span>
               </div>
 
-              <span className="font-mono text-[6px] uppercase tracking-[0.16em] text-[#FFD400]/45">
+              <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#FFD400]/80">
                 {selectedRarity
                   ? `ACTIVE // ${selectedRarity}`
                   : "SELECT RARITY"}
@@ -608,7 +608,7 @@ return (
             </div>
 
             {!selectedRarity && (
-              <div className="border-t border-white/[0.05] px-4 py-2.5 font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+              <div className="border-t border-white/[0.05] px-4 py-2.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/60">
                 Select a rarity above to access collector listings.
               </div>
             )}
@@ -620,7 +620,7 @@ return (
         <div className="border border-white/[0.07] bg-[#121212] py-16 text-center">
           <div className="mx-auto mb-3 h-5 w-5 animate-spin border-2 border-white/10 border-t-[#FFD400]" />
 
-          <div className="font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-white/25">
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-white/65">
             Loading Trading Network
           </div>
         </div>
@@ -993,7 +993,7 @@ return (
                                   userId}
                               </div>
 
-                              <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-[#FFD400]/50">
+                              <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD400]/85">
                                 PROFILE TERMINAL //{" "}
                                 {index + 1}
                               </div>
@@ -1027,7 +1027,7 @@ return (
                         </div>
 
                         <div className="border-b border-white/[0.05] bg-[#0f0f0f] px-4 py-2">
-                          <span className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                          <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/60">
                             ISO / WISHLIST / FULL TRADES
                           </span>
                         </div>
@@ -1173,7 +1173,7 @@ return (
                               {tradingProfiles[
                                 userId
                               ] && (
-                                <span className="truncate font-mono text-[6px] uppercase tracking-[0.13em] text-white/25">
+                                <span className="truncate font-mono text-[8px] uppercase tracking-[0.13em] text-white/60">
                                   DISCORD //{" "}
                                   <span className="text-white/45">
                                     {
@@ -1185,14 +1185,14 @@ return (
                                 </span>
                               )}
 
-                              <span className="font-mono text-[6px] uppercase tracking-[0.13em] text-white/20">
+                              <span className="font-mono text-[8px] uppercase tracking-[0.13em] text-white/60">
                                 {tradeCount} TRADE
                                 {tradeCount === 1
                                   ? ""
                                   : "S"}
                               </span>
 
-                              <span className="font-mono text-[6px] uppercase tracking-[0.13em] text-white/20">
+                              <span className="font-mono text-[8px] uppercase tracking-[0.13em] text-white/60">
                                 {saleCount} SALE
                                 {saleCount === 1
                                   ? ""
@@ -1243,7 +1243,7 @@ return (
                             DISCORD //
                           </span>
 
-                          <span className="ml-2 font-mono text-[6px] font-bold tracking-[0.08em] text-[#FFD400]/65">
+                          <span className="ml-2 font-mono text-[8px] font-bold tracking-[0.08em] text-[#FFD400]/90">
                             {
                               tradingProfiles[
                                 userId
@@ -1259,12 +1259,12 @@ return (
                           <div className="flex items-center gap-2">
                             <span className="h-1 w-1 bg-[#FFD400]/70" />
 
-                            <span className="font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-white/20">
+                            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/60">
                               AVAILABLE LISTINGS
                             </span>
                           </div>
 
-                          <span className="font-mono text-[6px] font-bold tracking-[0.12em] text-[#FFD400]/55">
+                          <span className="font-mono text-[8px] font-bold tracking-[0.12em] text-[#FFD400]/85">
                             {filteredCards.length
                               .toString()
                               .padStart(2, "0")}{" "}
@@ -1430,7 +1430,7 @@ return (
 
                       {/* BOTTOM STATUS RAIL */}
                       <div className="flex items-center justify-between border-t border-white/[0.05] bg-[#101010] px-4 py-2">
-                        <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-white/15">
+                        <span className="font-mono text-[7px] uppercase tracking-[0.18em] text-white/55">
                           LISTING NODE //
                           {(index + 1)
                             .toString()
@@ -1440,7 +1440,7 @@ return (
                             )}
                         </span>
 
-                        <span className="font-mono text-[5px] uppercase tracking-[0.16em] text-[#FFD400]/35">
+                        <span className="font-mono text-[7px] uppercase tracking-[0.16em] text-[#FFD400]/80">
                           ACTIVE
                         </span>
                       </div>
@@ -1472,7 +1472,7 @@ return (
           NO LISTINGS FOUND
         </div>
 
-        <div className="mt-1 font-mono text-[6px] uppercase tracking-[0.18em] text-white/15">
+        <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
           NO COLLECTORS MATCH THE CURRENT FILTER
         </div>
       </div>
@@ -1513,7 +1513,7 @@ return (
               </button>
 
               <div className="text-center">
-                <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/15">
+                <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
                   PAGE
                 </div>
 

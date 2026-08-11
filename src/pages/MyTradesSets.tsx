@@ -103,6 +103,150 @@ const sets = [
 },
 ];
 
+const getDisplayCode = (card: any, currentSetId: string) => {
+  const key = String(card.key || "");
+
+  // Promotional Cards: the six SDCC cards are PR-8 through PR-13.
+  if (currentSetId === "9") {
+    const num = Number(card.number);
+    if (num >= 8 && num <= 13) {
+      return `SDCC-${String(num - 7).padStart(2, "0")}`;
+    }
+    return key;
+  }
+
+  // TCG Promos:
+  // RR01–RR06
+  // ※BP01-CR07–※BP01-CR12
+  // ※BP02-CR01–※BP02-CR06
+  if (currentSetId === "tcgpromos") {
+    const match = key.match(/^RR(\d+)$/);
+    if (match) {
+      const num = Number(match[1]);
+
+      if (num >= 1 && num <= 6) {
+        return `RR${String(num).padStart(2, "0")}`;
+      }
+
+      if (num >= 7 && num <= 12) {
+        return `※BP01-CR${String(num).padStart(2, "0")}`;
+      }
+
+      if (num >= 13 && num <= 18) {
+        return `※BP02-CR${String(num - 12).padStart(2, "0")}`;
+      }
+    }
+
+    return key;
+  }
+
+  // Friendships Begin / SD01.
+  // P-prefixed rarities lose the P in display, and the reference mark
+  // goes BEFORE the SD01 prefix:
+  // SD01PER01 -> ※SD01-ER01
+  // SD01PRR01 -> ※SD01-RR01
+  // SD01PSPR01 -> ※SD01-SPR01
+  if (currentSetId === "friendshipsbegin") {
+    const match = key.match(
+      /^SD01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|SR|ER|U|C)(\d+)$/
+    );
+
+    if (match) {
+      const [, rarity, number] = match;
+      const isReferenceRarity = rarity.startsWith("P");
+
+      const displayRarity = isReferenceRarity
+        ? rarity.slice(1)
+        : rarity;
+
+      return `${isReferenceRarity ? "※" : ""}SD01-${displayRarity}${number}`;
+    }
+  }
+
+  // Fantasy Wonderland / BP01.
+  if (currentSetId === "FW") {
+    const match = key.match(
+      /^BP01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)$/
+    );
+
+    if (match) {
+      const [, rarity, number] = match;
+
+      const displayRarity =
+        rarity === "PSPR" ? "SPR" :
+        rarity === "PCR" ? "CR" :
+        rarity === "PGR" ? "GR" :
+        rarity === "PER" ? "ER" :
+        rarity === "PRR" ? "RR" :
+        rarity;
+
+      const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity)
+        ? "※"
+        : "";
+
+      return `${reference}BP01-${displayRarity}${number}`;
+    }
+  }
+
+  // Discord / BP02. A2/B2 are image variants of the same displayed card code.
+  if (currentSetId === "12") {
+    const match = key.match(
+      /^BP02-(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)(?:-(?:A2|B2))?$/
+    );
+
+    if (match) {
+      const [, rarity, number] = match;
+
+      const displayRarity =
+        rarity === "PSPR" ? "SPR" :
+        rarity === "PCR" ? "CR" :
+        rarity === "PGR" ? "GR" :
+        rarity === "PER" ? "ER" :
+        rarity === "PRR" ? "RR" :
+        rarity;
+
+      const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity)
+        ? "※"
+        : "";
+
+      return `${reference}BP02-${displayRarity}${number}`;
+    }
+  }
+
+  // All SN cards display the S rarity as a diamond.
+  // The normal set keys are "SN-1", "SN-2", etc.
+  if (key.startsWith("SN-")) {
+    return `◇N-${key.slice(3)}`;
+  }
+
+  // Also handle compact SN keys if one is supplied by a special set.
+  const compactSnMatch = key.match(/^(.*?)(?:SN)(\d+)$/);
+  if (compactSnMatch) {
+    return `${compactSnMatch[1]}◇N${compactSnMatch[2]}`;
+  }
+
+  // SCR uses the diamond form ONLY in Fun Moments.
+  // The normal keys are "SCR-1", "SCR-2", etc.
+  if (["7", "8", "11"].includes(currentSetId)) {
+    if (key.startsWith("SCR-")) {
+      return `◇CR-${key.slice(4)}`;
+    }
+
+    const compactScrMatch = key.match(/^(.*?)(?:SCR)(\d+)$/);
+    if (compactScrMatch) {
+      return `${compactScrMatch[1]}◇CR${compactScrMatch[2]}`;
+    }
+  }
+
+  // Both SHINING ZR and SZR display as ◇ZR.
+  const zrMatch = key.match(/^(?:SHINING ZR|SZR)-?(\d+)$/);
+  if (zrMatch) {
+    return `◇ZR-${zrMatch[1]}`;
+  }
+
+  return key;
+};
+
 export default function MyTradesSets() {
   const { setId } = useParams();
   const navigate = useNavigate();
@@ -731,7 +875,7 @@ const rarityOrders: Record<string, string[]> = {
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center border border-[#5a4a21] bg-[#1b1911] text-[#e4bd43]">!</span>
                   <div>
-                    <div className="text-[7px] font-bold uppercase tracking-[.34em] text-[#777a72]">INVENTORY CONTROL SYSTEM</div>
+                    <div className="text-[8px] font-bold uppercase tracking-[.34em] text-[#b9bbb3]">INVENTORY CONTROL SYSTEM</div>
                     <div className="mt-1 text-sm font-black uppercase tracking-[.08em] text-[#e4bd43]">Quick Start</div>
                   </div>
                 </div>
@@ -758,7 +902,7 @@ const rarityOrders: Record<string, string[]> = {
             <div className="relative w-full max-w-lg overflow-hidden border border-[#765e20] bg-[#101212] shadow-[0_30px_100px_rgba(0,0,0,.85)]">
               <div className="h-1 bg-[#e4bd43]" />
               <div className="border-b border-[#292c28] bg-[#0d0f0f] px-5 py-4">
-                <div className="text-[7px] font-bold uppercase tracking-[.34em] text-[#777a72]">INVENTORY CONTROL SYSTEM // WARNING</div>
+                <div className="text-[8px] font-bold uppercase tracking-[.34em] text-[#b9bbb3]">INVENTORY CONTROL SYSTEM // WARNING</div>
                 <h2 className="mt-2 text-lg font-black uppercase tracking-[.06em] text-[#e4bd43]">Unsaved Inventory Edits</h2>
               </div>
               <div className="px-5 py-5 sm:px-7">
@@ -797,7 +941,7 @@ const rarityOrders: Record<string, string[]> = {
                 <button onClick={() => {
                   setShowLeavePopup(false);
                   setPendingNavigation(null);
-                }} className="mt-3 w-full py-2 text-[7px] font-bold uppercase tracking-[.2em] text-[#555850] transition hover:text-[#e4bd43]">STAY ON PAGE</button>
+                }} className="mt-3 w-full py-2 text-[8px] font-bold uppercase tracking-[.2em] text-[#b9bbb3] transition hover:text-[#e4bd43]">STAY ON PAGE</button>
               </div>
             </div>
           </div>
@@ -814,7 +958,7 @@ const rarityOrders: Record<string, string[]> = {
                 ←
               </span>
               <span>
-                <span className="block text-[7px] font-bold uppercase tracking-[.32em] text-[#656861]">
+                <span className="block text-[8px] font-bold uppercase tracking-[.32em] text-[#b9bbb3]">
                   SYSTEM // COLLECTION
                 </span>
                 <span className="mt-0.5 block text-[10px] font-black uppercase tracking-[.12em] text-[#dfe0d9]">
@@ -825,7 +969,7 @@ const rarityOrders: Record<string, string[]> = {
 
             <div className="flex items-center gap-4">
               <div className="hidden text-right sm:block">
-                <div className="text-[7px] uppercase tracking-[.3em] text-[#555850]">
+                <div className="text-[8px] uppercase tracking-[.3em] text-[#b9bbb3]">
                   ACCESS NODE
                 </div>
                 <div className="mt-1 text-[9px] font-bold uppercase tracking-[.18em] text-[#b99835]">
@@ -852,7 +996,7 @@ const rarityOrders: Record<string, string[]> = {
             <div className="px-5 py-6 sm:px-8 sm:py-8">
               <div className="mb-3 flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-[#e8c14a] shadow-[0_0_10px_#e8c14a]" />
-                <span className="text-[7px] font-bold uppercase tracking-[.36em] text-[#646760]">
+                <span className="text-[8px] font-bold uppercase tracking-[.36em] text-[#b9bbb3]">
                   INVENTORY CONTROL SYSTEM // NODE {set.prefix}
                 </span>
               </div>
@@ -874,10 +1018,10 @@ const rarityOrders: Record<string, string[]> = {
                 <span className="border border-[#4b4020] bg-[#1b1912] px-2.5 py-1 text-[7px] font-bold uppercase tracking-[.22em] text-[#d9b43f]">
                   {set.prefix}
                 </span>
-                <span className="border border-[#2e312d] bg-[#0d0f0f] px-2.5 py-1 text-[7px] font-bold uppercase tracking-[.22em] text-[#656861]">
+                <span className="border border-[#2e312d] bg-[#0d0f0f] px-2.5 py-1 text-[8px] font-bold uppercase tracking-[.22em] text-[#b9bbb3]">
                   {ownedBonusCards.length} ACTIVE CARDS
                 </span>
-                <span className="border border-[#2e312d] bg-[#0d0f0f] px-2.5 py-1 text-[7px] font-bold uppercase tracking-[.22em] text-[#656861]">
+                <span className="border border-[#2e312d] bg-[#0d0f0f] px-2.5 py-1 text-[8px] font-bold uppercase tracking-[.22em] text-[#b9bbb3]">
                   {Object.keys(tradeCards).length} LISTED
                 </span>
               </div>
@@ -885,19 +1029,19 @@ const rarityOrders: Record<string, string[]> = {
 
             <div className="grid grid-cols-3 border-t border-[#292c28] lg:border-l lg:border-t-0">
               <div className="min-w-[92px] border-r border-[#292c28] bg-[#0d0f0f] px-4 py-5">
-                <div className="text-[7px] uppercase tracking-[.22em] text-[#555850]">MODE</div>
+                <div className="text-[8px] uppercase tracking-[.22em] text-[#b9bbb3]">MODE</div>
                 <div className="mt-2 text-[9px] font-black uppercase text-[#e4bd43]">
                   {listingMode === "trade" ? "TRADE" : "BUY"}
                 </div>
               </div>
               <div className="min-w-[92px] border-r border-[#292c28] bg-[#0d0f0f] px-4 py-5">
-                <div className="text-[7px] uppercase tracking-[.22em] text-[#555850]">EDIT</div>
+                <div className="text-[8px] uppercase tracking-[.22em] text-[#b9bbb3]">EDIT</div>
                 <div className={`mt-2 text-[9px] font-black uppercase ${editMode ? "text-[#e4bd43]" : "text-[#62655e]"}`}>
                   {editMode ? "ACTIVE" : "LOCKED"}
                 </div>
               </div>
               <div className="min-w-[92px] bg-[#0d0f0f] px-4 py-5">
-                <div className="text-[7px] uppercase tracking-[.22em] text-[#555850]">STATUS</div>
+                <div className="text-[8px] uppercase tracking-[.22em] text-[#b9bbb3]">STATUS</div>
                 <div className="mt-2 flex items-center gap-1.5 text-[9px] font-black uppercase text-[#dfe0d9]">
                   <span className="h-1.5 w-1.5 bg-[#e4bd43] shadow-[0_0_7px_#e4bd43]" />
                   READY
@@ -911,7 +1055,7 @@ const rarityOrders: Record<string, string[]> = {
         <section className="mb-5 border border-[#34362f] bg-[#101212] shadow-[0_16px_45px_rgba(0,0,0,.45)]">
           <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="text-[7px] font-bold uppercase tracking-[.3em] text-[#555850]">
+              <div className="text-[8px] font-bold uppercase tracking-[.3em] text-[#b9bbb3]">
                 COMMAND DECK
               </div>
               <div className="mt-1 text-[9px] uppercase tracking-[.12em] text-[#777a72]">
@@ -977,7 +1121,7 @@ const rarityOrders: Record<string, string[]> = {
           : ownedBonusCards.length === 0) ? (
           <section className="border border-[#34362f] bg-[#101212] shadow-[0_20px_55px_rgba(0,0,0,.5)]">
             <div className="border-b border-[#292c28] bg-[#0d0f0f] px-4 py-3">
-              <span className="text-[7px] font-bold uppercase tracking-[.3em] text-[#666961]">
+              <span className="text-[8px] font-bold uppercase tracking-[.3em] text-[#c0c2ba]">
                 SYSTEM RESPONSE // INVENTORY
               </span>
             </div>
@@ -1005,14 +1149,14 @@ const rarityOrders: Record<string, string[]> = {
               <section className="mb-5 border border-[#34362f] bg-[#101212] shadow-[0_16px_45px_rgba(0,0,0,.45)]">
                 <div className="flex items-center justify-between border-b border-[#292c28] bg-[#0d0f0f] px-4 py-3">
                   <div>
-                    <div className="text-[7px] font-bold uppercase tracking-[.3em] text-[#555850]">
+                    <div className="text-[8px] font-bold uppercase tracking-[.3em] text-[#b9bbb3]">
                       SUBSYSTEM // STARTER DECKS
                     </div>
                     <div className="mt-1 text-[9px] font-black uppercase tracking-[.12em] text-[#d9b43f]">
                       Deck Inventory
                     </div>
                   </div>
-                  <span className="text-[7px] uppercase tracking-[.2em] text-[#4f524d]">
+                  <span className="text-[8px] uppercase tracking-[.2em] text-[#aeb0a8]">
                     {activeDeck !== null ? `NODE ${String(activeDeck + 1).padStart(2, "0")}` : "SELECT NODE"}
                   </span>
                 </div>
@@ -1094,7 +1238,7 @@ const rarityOrders: Record<string, string[]> = {
                         </div>
 
                         <div className="mt-2 text-center">
-                          <div className="text-[7px] font-bold uppercase tracking-[.18em] text-[#555850]">
+                          <div className="text-[8px] font-bold uppercase tracking-[.18em] text-[#b9bbb3]">
                             {deck.code}
                           </div>
                           <div className={`mt-1 text-[8px] font-black uppercase tracking-[.08em] ${isActive ? "text-[#e4bd43]" : "text-[#bfc1ba]"}`}>
@@ -1114,7 +1258,7 @@ const rarityOrders: Record<string, string[]> = {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 bg-[#e4bd43] shadow-[0_0_8px_#e4bd43]" />
-                    <span className="text-[7px] font-bold uppercase tracking-[.32em] text-[#5b5e57]">
+                    <span className="text-[8px] font-bold uppercase tracking-[.32em] text-[#b9bbb3]">
                       INVENTORY MATRIX
                     </span>
                   </div>
@@ -1124,7 +1268,7 @@ const rarityOrders: Record<string, string[]> = {
                 </div>
 
                 <div className="flex items-center gap-2 border border-[#34362f] bg-[#101212] px-3 py-2">
-                  <span className="text-[7px] uppercase tracking-[.2em] text-[#555850]">LISTED</span>
+                  <span className="text-[8px] uppercase tracking-[.2em] text-[#b9bbb3]">LISTED</span>
                   <span className="text-sm font-black text-[#e4bd43]">{Object.keys(tradeCards).length}</span>
                 </div>
               </div>
@@ -1189,12 +1333,12 @@ const rarityOrders: Record<string, string[]> = {
                               ? "◇ZR"
                               : rarity === "SN"
                               ? "◇N"
-                              : rarity === "SCR" && set.id !== "4"
+                              : rarity === "SCR" && ["7", "8", "11"].includes(set.id)
                               ? "◇CR"
                               : rarity}
                           </span>
                           <span className="h-px flex-1 bg-[#292c28]" />
-                          <span className="text-[7px] font-bold uppercase tracking-[.2em] text-[#555850]">
+                          <span className="text-[8px] font-bold uppercase tracking-[.2em] text-[#b9bbb3]">
                             {rarityCards.length} NODES
                           </span>
                         </button>
@@ -1254,8 +1398,8 @@ const rarityOrders: Record<string, string[]> = {
 
                                   {/* TECHNICAL CARD OVERLAY */}
                                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                                  <div className="pointer-events-none absolute left-1 top-1 bg-[#0a0c0c]/80 px-1 py-0.5 text-[5px] font-bold uppercase tracking-[.12em] text-[#d8b33d]">
-                                    {key}
+                                  <div className="pointer-events-none absolute left-1 top-1 bg-[#0a0c0c]/80 px-1 py-0.5 text-[7px] font-bold uppercase tracking-[.12em] text-[#f0cf5a]">
+                                    {getDisplayCode(card, set.id)}
                                   </div>
 
                                   <div

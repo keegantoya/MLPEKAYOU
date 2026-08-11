@@ -448,7 +448,7 @@ style={{
 <div
   className="sm:hidden flex items-center gap-2"
   style={{
-    marginTop: "-7px"
+    marginTop: "-10px"
   }}
 >
   {!user ? (
@@ -485,7 +485,7 @@ style={{
   "
 >
   <span className="relative z-10 flex items-center gap-2">
-    <span className="h-1.5 w-1.5 rounded-full bg-[#111517] shadow-[0_0_7px_rgba(17,21,23,.7)]" />
+    <span className="h-1.5 w-1.5 rounded-full bg-[#111517] shadow-[0_0_10px_rgba(17,21,23,.7)]" />
     LOGIN
   </span>
 
@@ -543,7 +543,7 @@ style={{
   }`}
 />
 
-        <span className="absolute bottom-1 right-1 z-20 h-2 w-2 bg-[#a3e635] shadow-[0_0_7px_rgba(163,230,53,0.8)]" />
+        <span className="absolute bottom-1 right-1 z-20 h-2 w-2 bg-[#a3e635] shadow-[0_0_10px_rgba(163,230,53,0.8)]" />
       </button>
     </SheetTrigger>
 
@@ -594,12 +594,12 @@ style={{
     <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
       Edit Profile
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       IDENTIFICATION
     </span>
   </span>
 
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
     CFG
   </span>
 </button>
@@ -620,12 +620,12 @@ style={{
     <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
       Kayou US Events
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       OFFICIAL FEED
     </span>
   </span>
 
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
     SYS
   </span>
 </button>
@@ -646,12 +646,12 @@ style={{
     <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
       Inbox & Friends
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       INTERNAL COMMS
     </span>
   </span>
 
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
     COM
   </span>
 </button>
@@ -681,7 +681,7 @@ style={{
     <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
       CCG
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       CCG STATS
     </span>
   </span>
@@ -703,7 +703,7 @@ style={{
     <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
       TCG
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       TCG STATS
     </span>
   </span>
@@ -733,7 +733,7 @@ style={{
     <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
       Inventory
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       CARD DATABASE
     </span>
   </span>
@@ -754,7 +754,7 @@ style={{
     <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
       Binders
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       DIGITAL MOCK
     </span>
   </span>
@@ -790,12 +790,12 @@ style={{
       ISO / Wishlist
     </span>
 
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600 group-hover:text-[#E7C84B]/70">
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
       WANT & TRADE TARGETS
     </span>
   </span>
 
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/50 group-hover:text-[#E7C84B]">
+  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
     ISO
   </span>
 </button>
@@ -817,12 +817,12 @@ style={{
     <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
       Logout
     </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-red-400/40 group-hover:text-red-300/70">
+    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-red-300/80 group-hover:text-red-300/70">
       TERMINATE SESSION
     </span>
   </span>
 
-  <span className="font-mono text-[9px] font-bold tracking-[0.15em] text-red-400/50 group-hover:text-red-300">
+  <span className="font-mono text-[9px] font-bold tracking-[0.15em] text-red-300/90 group-hover:text-red-300">
     EXIT
   </span>
 </button>
@@ -1023,7 +1023,7 @@ style={{
         />
 
         {/* Status */}
-        <span className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 bg-[#0d1113] px-2 font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+        <span className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 bg-[#0d1113] px-2 font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-zinc-400">
           SYSTEM ONLINE
         </span>
       </button>
@@ -1435,7 +1435,7 @@ style={{
 
             <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
 
-            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/20">
+            <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/60">
               SECURE CHANNEL
             </div>
 
@@ -1451,7 +1451,7 @@ style={{
       {/* FOOTER */}
       <div className="relative flex items-center justify-between border-t border-white/10 bg-black/20 px-6 py-4">
 
-        <div className="hidden text-[9px] font-semibold uppercase tracking-[0.2em] text-white/20 sm:block">
+        <div className="hidden text-[9px] font-semibold uppercase tracking-[0.2em] text-white/60 sm:block">
           MLPEKAY // AUTH SYSTEM
         </div>
 
@@ -1539,7 +1539,7 @@ style={{
             </div>
 
             <div>
-              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-[#E7C84B]/60">
+              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-[#E7C84B]">
                 MLPEKAYOU AUTH SYSTEM
               </div>
 
@@ -1565,7 +1565,7 @@ style={{
               bg-[#15191B]
               font-mono
               text-lg
-              text-[#666]
+              text-zinc-300
               transition-all
               hover:border-[#E7C84B]
               hover:text-[#E7C84B]
@@ -1583,7 +1583,7 @@ style={{
 
         <div className="mb-6">
 
-          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#E7C84B]/60">
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#E7C84B]">
             ACCOUNT RECOVERY
           </div>
 
@@ -1600,7 +1600,7 @@ style={{
         {/* EMAIL */}
         <div>
 
-          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-300">
             EMAIL ADDRESS
           </label>
 
@@ -1742,7 +1742,7 @@ style={{
 
         <div className="flex items-center justify-between">
 
-          <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-[#444]">
+          <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-400">
             RECOVERY NODE 01
           </span>
 
@@ -1833,7 +1833,7 @@ style={{
           </div>
 
           <div>
-            <div className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-red-400/60">
+            <div className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-red-300/90">
               SYSTEM SUPPORT
             </div>
             <div className="mt-1 font-['Oxanium'] text-base font-bold uppercase tracking-[0.08em] text-white">
@@ -1880,10 +1880,10 @@ style={{
 
       <div className="border-t border-red-500/10 bg-[#0c0e0e] px-5 py-2">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-red-400/30">
+          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-red-300/80">
             BUG REPORT PROTOCOL
           </span>
-          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-red-400/40">
+          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-red-300/80">
             DISCORD REQUIRED
           </span>
         </div>
@@ -1923,7 +1923,7 @@ style={{
           </span>
         </div>
 
-        <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-zinc-700">
+        <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-zinc-400">
           AUTH NODE
         </span>
       </div>
@@ -1947,7 +1947,7 @@ style={{
 
         {/* TITLE */}
         <div className="mt-6 text-center">
-          <div className="font-mono text-[6px] font-bold uppercase tracking-[0.35em] text-zinc-600">
+          <div className="font-mono text-[6px] font-bold uppercase tracking-[0.35em] text-zinc-400">
             COLLECTION SYSTEM
           </div>
 
@@ -1964,7 +1964,7 @@ style={{
             Authorization Required
           </div>
 
-          <p className="mt-2 font-mono text-[7px] uppercase leading-5 tracking-[0.07em] text-zinc-600">
+          <p className="mt-2 font-mono text-[7px] uppercase leading-5 tracking-[0.07em] text-zinc-400">
             You cannot access this page without being signed in to an account.
           </p>
         </div>
@@ -1989,7 +1989,7 @@ style={{
         <div className="mt-5 flex items-center justify-center gap-3">
           <span className="h-px w-8 bg-white/[0.06]" />
 
-          <span className="font-mono text-[5px] uppercase tracking-[0.3em] text-zinc-700">
+          <span className="font-mono text-[5px] uppercase tracking-[0.3em] text-zinc-400">
             SECURE SESSION GATE
           </span>
 
@@ -1999,7 +1999,7 @@ style={{
 
       {/* BOTTOM STATUS */}
       <div className="flex items-center justify-between border-t border-white/[0.06] bg-[#050707] px-4 py-2">
-        <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+        <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-400">
           STATUS: UNAUTHORIZED
         </span>
 
@@ -2064,7 +2064,7 @@ style={{
             </div>
 
             <div>
-              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-[#E7C84B]/60">
+              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-[#E7C84B]">
                 MLPEKAYOU AUTH SYSTEM
               </div>
 
@@ -2092,7 +2092,7 @@ style={{
               bg-[#15191B]
               font-mono
               text-lg
-              text-[#666]
+              text-zinc-300
               transition-all
               hover:border-[#E7C84B]
               hover:text-[#E7C84B]
@@ -2107,7 +2107,7 @@ style={{
 
           <span className="h-px flex-1 bg-[#30363A]" />
 
-          <span className="font-mono text-[6px] uppercase tracking-[0.28em] text-[#555]">
+          <span className="font-mono text-[6px] uppercase tracking-[0.28em] text-zinc-400">
             SECURE CONNECTION
           </span>
 
@@ -2134,7 +2134,7 @@ style={{
         {/* Intro */}
         <div className="mb-6">
 
-          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#555]">
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-400">
             {authMode === "login"
               ? "ACCESS YOUR ACCOUNT"
               : "JOIN MLPEKAYOU TODAY!"}
@@ -2151,7 +2151,7 @@ style={{
         {/* Email */}
         <div className="mb-4">
 
-          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-300">
             EMAIL ADDRESS
           </label>
 
@@ -2203,7 +2203,7 @@ style={{
         {/* Password */}
         <div className="mb-4">
 
-          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+          <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-300">
             PASSWORD
           </label>
 
@@ -2253,7 +2253,7 @@ style={{
         {authMode === "signup" && (
           <div className="mb-4">
 
-            <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666]">
+            <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-300">
               CONFIRM PASSWORD
             </label>
 
@@ -2311,7 +2311,7 @@ style={{
             </div>
 
             <div>
-              <div className="font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-red-400">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-red-400">
                 AUTHENTICATION ERROR
               </div>
 
@@ -2347,7 +2347,7 @@ style={{
         hover:text-[#E7C84B]
       "
     >
-      <span className="group-hover:drop-shadow-[0_0_7px_rgba(231,200,75,.35)]">
+      <span className="group-hover:drop-shadow-[0_0_10px_rgba(231,200,75,.35)]">
         FORGOT PASSWORD?
       </span>
 
@@ -2413,7 +2413,7 @@ style={{
                 font-bold
                 uppercase
                 tracking-[0.16em]
-                text-[#666]
+                text-zinc-300
                 hover:border-[#555]
                 hover:bg-[#15191B]
                 hover:text-white
@@ -2467,7 +2467,7 @@ style={{
 
         <div className="flex items-center justify-between">
 
-          <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-[#444]">
+          <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-400">
             AUTH NODE 01
           </span>
 

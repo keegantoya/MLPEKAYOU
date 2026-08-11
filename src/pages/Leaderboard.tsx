@@ -430,7 +430,7 @@ const renderTopThree = (
             {/* TOP TECH BAR */}
             <div className="absolute left-0 right-0 top-0 h-8 border-b border-[#293134] bg-[#080c0d]">
               <div className="flex h-full items-center justify-between px-4">
-                <div className="font-mono text-[8px] tracking-[0.28em] text-[#58666a]">
+                <div className="font-mono text-[8px] tracking-[0.28em] text-[#9aa7aa]">
                   {section.toUpperCase()} // COLLECTOR
                 </div>
 
@@ -599,11 +599,11 @@ const renderTopThree = (
             <div className="absolute bottom-0 left-0 right-0 border-t border-[#293134] bg-[#080c0d]">
               <div className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <div className="font-mono text-[7px] uppercase tracking-[0.22em] text-[#526064]">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-[#9aa7aa]">
                     COLLECTION
                   </div>
 
-                  <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-[#526064]">
+                  <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-[#9aa7aa]">
                     INVENTORY COUNT
                   </div>
                 </div>
@@ -624,7 +624,7 @@ const renderTopThree = (
                     {user.total.toLocaleString()}
                   </span>
 
-                  <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-[#526064]">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-[#9aa7aa]">
                     CRDS
                   </span>
                 </div>
@@ -695,7 +695,7 @@ const renderRemainingRanks = (
                 {String(rank).padStart(2, "0")}
               </div>
 
-              <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#4e5b5f]">
+              <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#9aa7aa]">
                 ONLINE
               </div>
             </div>
@@ -735,7 +735,7 @@ const renderRemainingRanks = (
                   )}
                 </div>
 
-                <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.15em] text-[#566266]">
+                <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.15em] text-[#9aa7aa]">
                   VERIFIED COLLECTOR
                 </div>
               </div>
@@ -745,7 +745,7 @@ const renderRemainingRanks = (
             <div className="mt-5 border-t border-[#252d30] pt-3">
               <div className="flex items-end justify-between">
                 <div>
-                  <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#566266]">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#9aa7aa]">
                     TOTAL INVENTORY
                   </div>
 
@@ -754,7 +754,7 @@ const renderRemainingRanks = (
                   </div>
                 </div>
 
-                <div className="font-mono text-[8px] text-[#596568]">
+                <div className="font-mono text-[8px] text-[#9aa7aa]">
                   CARDS
                 </div>
               </div>
@@ -788,7 +788,7 @@ const renderLeaderboardSection = (
       <div className="mb-6 border-y border-[#252d30] bg-[#0d1112]">
         <div className="flex items-center justify-between px-5 py-4">
           <div>
-            <div className="font-mono text-[8px] uppercase tracking-[0.35em] text-[#536165]">
+            <div className="font-mono text-[8px] uppercase tracking-[0.35em] text-[#9aa7aa]">
               KAYOU INDUSTRIES // COLLECTION SYSTEM
             </div>
 
@@ -804,7 +804,7 @@ const renderLeaderboardSection = (
           </div>
 
           <div className="hidden sm:block text-right">
-            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#536165]">
+            <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#9aa7aa]">
               SYSTEM
             </div>
 
@@ -920,7 +920,7 @@ return (
             <div className="flex items-center gap-3">
               <div className="h-2 w-2 rounded-full bg-[#E7C84B] shadow-[0_0_10px_#E7C84B]" />
 
-              <div className="font-mono text-[8px] uppercase tracking-[0.4em] text-[#59676b]">
+              <div className="font-mono text-[8px] uppercase tracking-[0.4em] text-[#aab5b8]">
                 KAYOU INDUSTRIES // COLLECTOR NETWORK
               </div>
             </div>
@@ -929,7 +929,7 @@ return (
               LEADERBOARD
             </h1>
 
-            <div className="mt-3 max-w-2xl font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.12em] leading-relaxed text-[#667478]">
+            <div className="mt-3 max-w-2xl font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.12em] leading-relaxed text-[#aab5b8]">
               GLOBAL COLLECTION ANALYTICS // CCG + TCG
               <br />
               VERIFIED COLLECTOR NETWORK // LIVE RANKING DATA
@@ -937,7 +937,7 @@ return (
           </div>
 
           <div className="hidden md:flex min-w-[230px] flex-col justify-between border-l border-[#293134] bg-[#080b0c] p-6">
-            <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#4f5c60]">
+            <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#9aa7aa]">
               SYSTEM STATUS
             </div>
 
@@ -950,7 +950,7 @@ return (
                 </span>
               </div>
 
-              <div className="mt-3 font-mono text-[8px] leading-relaxed text-[#536165]">
+              <div className="mt-3 font-mono text-[8px] leading-relaxed text-[#9aa7aa]">
                 COLLECTION ENGINE
                 <br />
                 OPERATIONAL
@@ -960,7 +960,7 @@ return (
         </div>
 
         <div className="border-t border-[#293134] px-6 py-3 sm:px-8">
-          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-[#4f5c60]">
+          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-[#9aa7aa]">
             ACCESS: NORTH AMERICAN VERIFIED COLLECTORS
             // DISCORD AUTHENTICATION REQUIRED
             // MUST BE IN MLPEKAYOU DISCORD SERVER TO QUALIFY
@@ -972,7 +972,7 @@ return (
         <div className="border border-[#293134] bg-[#0b0f10] py-24 text-center">
           <div className="mx-auto mb-5 h-8 w-8 animate-spin rounded-full border border-[#263034] border-t-[#E7C84B]" />
 
-          <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-[#59676b]">
+          <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-[#aab5b8]">
             INITIALIZING COLLECTION DATABASE
           </div>
         </div>
@@ -1060,7 +1060,7 @@ return (
 
         {/* HERO */}
         <header className="text-center mb-14">
-          <div className="mb-3 text-[9px] sm:text-[10px] uppercase tracking-[0.5em] text-[#777]">
+          <div className="mb-3 text-[10px] sm:text-[10px] uppercase tracking-[0.5em] text-[#a3a3a3]">
             Hall of Fame
           </div>
 
@@ -1104,7 +1104,7 @@ return (
           <div className="py-24 text-center">
             <div className="mx-auto mb-5 h-10 w-10 animate-spin rounded-full border-2 border-[#333] border-t-[#f5e6a8]" />
 
-            <div className="text-xs uppercase tracking-[0.25em] text-[#777]">
+            <div className="text-xs uppercase tracking-[0.25em] text-[#a3a3a3]">
               Loading Hall of Fame
             </div>
           </div>

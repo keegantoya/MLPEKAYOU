@@ -141,7 +141,7 @@ const Explore = () => {
               MLPEKAYOU / NETWORK
             </span>
 
-            <span className="hidden text-[9px] uppercase tracking-[0.2em] text-[#555] sm:inline">
+            <span className="hidden text-[9px] uppercase tracking-[0.2em] text-[#888] sm:inline">
               /
             </span>
 
@@ -217,7 +217,7 @@ const Explore = () => {
 
               <div className="mt-8 flex flex-wrap gap-2">
                 <div className="border border-[#373737] bg-[#171717] px-3 py-2">
-                  <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#666]">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#888]">
                     ACCESS
                   </span>
                   <span className="ml-2 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-green-400">
@@ -226,7 +226,7 @@ const Explore = () => {
                 </div>
 
                 <div className="border border-[#373737] bg-[#171717] px-3 py-2">
-                  <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#666]">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#888]">
                     NETWORK
                   </span>
                   <span className="ml-2 font-mono text-[9px] font-bold uppercase tracking-[0.15em] text-[#FFD43B]">
@@ -253,7 +253,7 @@ const Explore = () => {
                     </span>
                   </div>
 
-                  <span className="font-mono text-[8px] text-[#444]">
+                  <span className="font-mono text-[8px] text-[#777]">
                     01
                   </span>
                 </div>
@@ -262,7 +262,7 @@ const Explore = () => {
                   {collectorCount.toLocaleString()}
                 </div>
 
-                <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.25em] text-[#555]">
+                <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.25em] text-[#777]">
                   REGISTERED PROFILES
                 </div>
               </div>
@@ -281,7 +281,7 @@ const Explore = () => {
                     </span>
                   </div>
 
-                  <span className="font-mono text-[8px] text-[#444]">
+                  <span className="font-mono text-[8px] text-[#777]">
                     02
                   </span>
                 </div>
@@ -290,7 +290,7 @@ const Explore = () => {
                   {activeTraders.toLocaleString()}
                 </div>
 
-                <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.25em] text-[#555]">
+                <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.25em] text-[#777]">
                   ACTIVE TRADE NETWORK
                 </div>
               </div>
@@ -314,7 +314,7 @@ const Explore = () => {
               </span>
             </div>
 
-            <span className="hidden font-mono text-[8px] uppercase tracking-[0.25em] text-[#555] sm:block">
+            <span className="hidden font-mono text-[8px] uppercase tracking-[0.25em] text-[#777] sm:block">
               SEARCH / QUERY
             </span>
           </div>
@@ -367,13 +367,13 @@ const Explore = () => {
 
   {/* Search status */}
   <div className="mt-3 flex items-center justify-between px-1">
-    <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#555]">
+    <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#777]">
       {userSearch.trim()
         ? "QUERY ACTIVE"
         : "ENTER COLLECTOR IDENTIFIER"}
     </span>
 
-    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#444]">
+    <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
       LIVE
     </span>
   </div>
@@ -434,7 +434,7 @@ const Explore = () => {
               <div className="absolute bottom-0 left-0 top-0 w-0 bg-[#FFD43B] transition-all duration-200 group-hover:w-1" />
 
               {/* Index */}
-              <span className="hidden w-5 font-mono text-[8px] text-[#444] sm:block">
+              <span className="hidden w-5 font-mono text-[8px] text-[#777] sm:block">
                 {String(index + 1).padStart(2, "0")}
               </span>
 
@@ -475,7 +475,7 @@ const Explore = () => {
                   )}
                 </div>
 
-                <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.25em] text-[#555]">
+                <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.25em] text-[#777]">
                   COLLECTOR PROFILE
                 </div>
               </div>
@@ -484,7 +484,7 @@ const Explore = () => {
               <div className="hidden items-center gap-3 sm:flex">
                 <div className="h-1.5 w-1.5 bg-green-400" />
 
-                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#555] group-hover:text-[#888]">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#777] group-hover:text-[#888]">
                   ACCESS
                 </span>
 
@@ -500,11 +500,11 @@ const Explore = () => {
         <div className="px-6 py-8 text-center">
           <div className="mx-auto mb-3 h-2 w-2 bg-[#555]" />
 
-          <div className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-[#777]">
+          <div className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-[#888]">
             NO COLLECTORS FOUND
           </div>
 
-          <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-[#444]">
+          <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
             MODIFY SEARCH PARAMETERS
           </div>
         </div>
@@ -531,7 +531,7 @@ const Explore = () => {
                 </span>
               </div>
 
-              <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#555]">
+              <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#777]">
                 MODULE 04 / 02
               </span>
             </div>
@@ -567,7 +567,7 @@ const Explore = () => {
                   AWAITING QUERY
                 </div>
 
-                <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-[#555]">
+                <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-[#777]">
                   Search the collector database above to load a public
                   profile and view available trading information.
                 </p>
@@ -587,11 +587,11 @@ const Explore = () => {
         ======================================================= */}
         <div className="mt-5 flex items-center justify-between border-t border-[#292929] pt-3">
 
-          <span className="font-mono text-[7px] uppercase tracking-[0.3em] text-[#444] sm:text-[8px]">
+          <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-[#666] sm:text-[8px]">
             MLPEKAYOU COMMUNITY NETWORK
           </span>
 
-          <span className="font-mono text-[7px] uppercase tracking-[0.25em] text-[#444] sm:text-[8px]">
+          <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#666] sm:text-[8px]">
             EXPLORE / 04
           </span>
         </div>

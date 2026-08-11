@@ -254,7 +254,7 @@ const CollectionModal = () => {
             <h2 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-lg">
               {modeLabel}
             </h2>
-            <span className="font-mono text-[6px] uppercase tracking-[0.18em] text-zinc-700 sm:mt-2 sm:block">
+            <span className="font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-400 sm:mt-2 sm:block">
               {modalTabs.length.toString().padStart(2, "0")} SETS
             </span>
           </div>
@@ -281,7 +281,7 @@ const CollectionModal = () => {
         <div className="min-w-0 flex-1 overflow-x-hidden bg-[#0b0d0d] sm:min-h-0 sm:overflow-y-auto sm:overscroll-contain sm:kayou-scrollbar">
           <div className="sticky top-0 z-20 flex items-center justify-between border-b border-white/[0.08] bg-[#0b0d0d]/95 px-4 py-3 backdrop-blur-xl sm:px-8 sm:py-5">
             <div className="min-w-0">
-              <div className="mb-1 font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/45 sm:text-[6px]">
+              <div className="mb-1 font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/80 sm:text-[8px]">
                 {modeLabel} // COLLECTION
               </div>
               <h1 className="truncate font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
@@ -300,7 +300,7 @@ const CollectionModal = () => {
 
           <div className="p-3 sm:p-8">
             {filteredCards.length === 0 ? (
-              <div className="flex min-h-[220px] items-center justify-center border border-dashed border-white/[0.10] bg-[#090b0b] px-6 text-center font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 sm:min-h-[300px]">
+              <div className="flex min-h-[220px] items-center justify-center border border-dashed border-white/[0.10] bg-[#090b0b] px-6 text-center font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400 sm:min-h-[300px]">
                 There's nothing to see here!
               </div>
             ) : (
@@ -418,11 +418,11 @@ if (profileNotFound) {
   <div className="relative z-10 flex items-center justify-between border-b border-white/[0.07] bg-[#060808]/80 px-4 py-2 sm:px-6">
     <div className="flex items-center gap-3">
       <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]" />
-      <span className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-emerald-400/80">PUBLIC PROFILE LINK</span>
-      <span className="hidden font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-700 sm:inline">/</span>
-      <span className="hidden font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-600 sm:inline">NODE ACTIVE</span>
+      <span className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-emerald-400">PUBLIC PROFILE LINK</span>
+      <span className="hidden font-mono text-[7px] uppercase tracking-[0.25em] text-zinc-500 sm:inline">/</span>
+      <span className="hidden font-mono text-[7px] uppercase tracking-[0.25em] text-zinc-400 sm:inline">NODE ACTIVE</span>
     </div>
-    <span className="font-mono text-[6px] uppercase tracking-[0.28em] text-[#FFD54A]/50">PROFILE_OS // 001</span>
+    <span className="font-mono text-[7px] uppercase tracking-[0.28em] text-[#FFD54A]/80">PROFILE_OS // 001</span>
   </div>
 
   {/* Background */}
@@ -461,9 +461,9 @@ if (profileNotFound) {
         <div>
 
           <div className="mb-3 flex items-center justify-center gap-2 xl:justify-start">
-          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-zinc-600">IDENTITY CHANNEL</span>
+          <span className="font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-zinc-400">IDENTITY CHANNEL</span>
           <span className="h-px w-10 bg-[#FFD54A]/30" />
-          <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-emerald-400/60">SECURE</span>
+          <span className="font-mono text-[7px] uppercase tracking-[0.22em] text-emerald-400">SECURE</span>
         </div>
         <div className="flex items-center justify-center gap-3 xl:justify-start">
 
@@ -484,15 +484,15 @@ if (profileNotFound) {
 
           <div className="mt-5 flex flex-wrap gap-2">
 
-            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-zinc-400">
               Verified Collector
             </span>
 
-            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-zinc-400">
               Kayou U.S. Superfan
             </span>
 
-            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+            <span className="border border-white/[0.08] bg-[#0d0f0f] px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-zinc-400">
               MLPEKAYOU Member
             </span>
 
@@ -562,7 +562,7 @@ if (profileNotFound) {
               className="group relative overflow-hidden border border-white/[0.08] bg-[#0b0e0e] p-4 shadow-[0_14px_34px_rgba(0,0,0,.40)] transition hover:border-[#FFD54A]/30 sm:p-5"
             >
               <div className="mb-3 flex items-center justify-between">
-                <span className="font-mono text-[5px] font-bold uppercase tracking-[0.24em] text-zinc-600">TELEMETRY</span>
+                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.24em] text-zinc-400">TELEMETRY</span>
                 <span className="h-1 w-5 bg-[#FFD54A]/30 transition group-hover:bg-[#FFD54A]" />
               </div>
               <div className="font-['Oxanium'] text-2xl font-black text-[#FFD54A] sm:text-3xl">
@@ -594,7 +594,7 @@ if (profileNotFound) {
             <div className="mb-4 flex items-center justify-between border-b border-white/[0.07] pb-3">
 
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[5px] font-bold uppercase tracking-[0.28em] text-[#FFD54A]/60">MODULE 02</span>
+                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD54A]/90">MODULE 02</span>
                 <span className="h-px w-6 bg-[#FFD54A]/25" />
                 <h2 className="font-['Oxanium'] text-base font-black uppercase tracking-[0.08em] text-white sm:text-lg">
                   ISO
@@ -607,13 +607,13 @@ onClick={() => {
   setSelectedSet(String(visibleIsoCards[0]?.set_id ?? ""));
   setShowCollectionModal(true);
 }}
-  className="font-mono text-[7px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] hover:text-white"
+  className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] hover:text-white"
 >
   View All →
 </button>
             </div>
 {visibleIsoCards.length === 0 ? (
-  <div className="flex min-h-[180px] items-center justify-center border border-dashed border-white/[0.10] bg-[#0b0d0d] px-6 py-10 text-center font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 sm:min-h-[260px]">
+  <div className="flex min-h-[180px] items-center justify-center border border-dashed border-white/[0.10] bg-[#0b0d0d] px-6 py-10 text-center font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400 sm:min-h-[260px]">
     There's nothing to see here!
   </div>
 ) : (
@@ -763,8 +763,8 @@ className={`text-sm ${
 
         </div>
         <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-3">
-          <span className="font-mono text-[5px] uppercase tracking-[0.28em] text-zinc-700">MLPEKAYOU // PUBLIC COLLECTION NETWORK</span>
-          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-emerald-400/40">LINK STABLE</span>
+          <span className="font-mono text-[7px] uppercase tracking-[0.28em] text-zinc-500">MLPEKAYOU // PUBLIC COLLECTION NETWORK</span>
+          <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-emerald-400/70">LINK STABLE</span>
         </div>
 
         <CollectionModal />

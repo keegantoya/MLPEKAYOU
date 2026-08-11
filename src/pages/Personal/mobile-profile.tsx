@@ -368,12 +368,12 @@ const displayName = profile?.username || "Twilight Sparkle";
         <div className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-[#FFD54A] shadow-[0_0_8px_rgba(255,213,74,0.8)]" />
 
-          <span className="font-mono text-[7px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]">
+          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]">
             PROFILE // MODULE 01
           </span>
         </div>
 
-        <span className="font-mono text-[8px] tracking-[0.2em] text-zinc-600">
+        <span className="font-mono text-[8px] tracking-[0.2em] text-zinc-300">
           ONLINE
         </span>
 
@@ -408,14 +408,14 @@ const displayName = profile?.username || "Twilight Sparkle";
             <div className="border border-[#FFD54A]/20 bg-[#0a0c0c] shadow-[0_12px_35px_rgba(0,0,0,.35)]">
               <div className="flex items-center justify-between border-b border-white/[0.07] px-3 py-2.5">
                 <div>
-                  <div className="font-mono text-[5px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/60">
+                  <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
                     IDENTITY CONTROL
                   </div>
                   <div className="mt-1 font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.06em] text-white">
                     Edit Profile Identity
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 font-mono text-[5px] uppercase tracking-[0.2em] text-emerald-400/70">
+                <div className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-emerald-300/90">
                   <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,.8)]" />
                   READY
                 </div>
@@ -424,10 +424,10 @@ const displayName = profile?.username || "Twilight Sparkle";
               <div className="grid gap-px bg-white/[0.06]">
                 <label className="bg-[#0d0f0f] p-3">
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-500">
+                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
                       USERNAME
                     </span>
-                    <span className="font-mono text-[5px] uppercase tracking-[0.16em] text-[#FFD54A]/35">
+                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#FFD54A]/75">
                       PUBLIC ID
                     </span>
                   </div>
@@ -442,10 +442,10 @@ const displayName = profile?.username || "Twilight Sparkle";
 
                 <label className="bg-[#0d0f0f] p-3">
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-500">
+                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
                       DISCORD
                     </span>
-                    <span className="font-mono text-[5px] uppercase tracking-[0.16em] text-[#FFD54A]/35">
+                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#FFD54A]/75">
                       NETWORK ID
                     </span>
                   </div>
@@ -477,7 +477,7 @@ const displayName = profile?.username || "Twilight Sparkle";
 
               </div>
 
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-zinc-300">
                 @{discord || "No Discord username set"}
               </p>
             </>
@@ -487,7 +487,7 @@ const displayName = profile?.username || "Twilight Sparkle";
           <div className="mt-4 grid grid-cols-2 gap-1.5">
 
             <div className="border border-white/[0.07] bg-[#0d0f0f] px-3 py-2">
-              <div className="text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-600">
+              <div className="text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
                 STATUS
               </div>
 
@@ -498,7 +498,7 @@ const displayName = profile?.username || "Twilight Sparkle";
             </div>
 
             <div className="border border-white/[0.07] bg-[#0d0f0f] px-3 py-2">
-              <div className="text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-600">
+              <div className="text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
                 ACCESS
               </div>
 
@@ -519,7 +519,7 @@ const displayName = profile?.username || "Twilight Sparkle";
 
   {/* EDIT PROFILE */}
   <button
-    className={`group relative flex items-center justify-center gap-2 overflow-hidden border px-3 py-2.5 font-mono text-[7px] font-bold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.97] ${
+    className={`group relative flex items-center justify-center gap-2 overflow-hidden border px-3 py-2.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.97] ${
       editingProfile
         ? "border-[#FFD54A] bg-[#FFD54A] text-black shadow-[0_0_18px_rgba(255,213,74,0.18)]"
         : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
@@ -634,7 +634,7 @@ if (tradingError) {
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
     }}
-    className={`group relative flex items-center justify-center gap-2 overflow-hidden border px-3 py-2.5 font-mono text-[7px] font-bold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.97] ${
+    className={`group relative flex items-center justify-center gap-2 overflow-hidden border px-3 py-2.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.97] ${
       copied
         ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-400"
         : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
@@ -663,7 +663,7 @@ if (tradingError) {
 
     <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-[#FFD54A]/30" />
 
-    <div className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+    <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
       COLLECTION
     </div>
 
@@ -671,7 +671,7 @@ if (tradingError) {
       {stats.owned.toLocaleString()}
     </div>
 
-    <div className="mt-1 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-zinc-400">
+    <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-400">
       Cards Owned
     </div>
 
@@ -681,7 +681,7 @@ if (tradingError) {
 
     <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-[#FFD54A]/30" />
 
-    <div className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+    <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
       PROGRESS
     </div>
 
@@ -689,7 +689,7 @@ if (tradingError) {
       {stats.completed}
     </div>
 
-    <div className="mt-1 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-zinc-400">
+    <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-400">
       Sets Mastered
     </div>
 
@@ -708,7 +708,7 @@ if (tradingError) {
 
         <span className="h-px w-6 bg-[#FFD54A]" />
 
-        <h3 className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD54A]">
+        <h3 className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[#FFD54A]">
           {section.title}
         </h3>
 
@@ -768,8 +768,8 @@ if (tradingError) {
                 </div>
 
                 <div
-                  className={`mt-1 truncate text-xs ${
-                    item.danger ? "text-red-400/45" : "text-zinc-500"
+                  className={`mt-1 truncate text-sm ${
+                    item.danger ? "text-red-300/80" : "text-zinc-300"
                   }`}
                 >
                   {item.subtitle}
@@ -803,7 +803,7 @@ if (tradingError) {
   <div className="relative overflow-hidden border border-red-500/20 bg-[#0d0f0f]">
     
     <div className="p-5">
-      <div className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-red-400/70">
+      <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-red-300/90">
         ACCOUNT
       </div>
 
@@ -811,7 +811,7 @@ if (tradingError) {
         Account Deletion
       </h3>
 
-      <p className="mt-2 text-sm leading-6 text-zinc-500">
+      <p className="mt-2 text-sm leading-6 text-zinc-300">
         Request permanent deletion of your MLPEKAYOU account.
         Your account will remain active until the request is
         manually reviewed and fulfilled. If you change your mind,
@@ -872,7 +872,7 @@ if (tradingError) {
           </div>
 
           <div>
-            <div className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-red-400/60">
+            <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-red-300/90">
               SYSTEM SUPPORT
             </div>
             <div className="mt-1 font-['Oxanium'] text-base font-bold uppercase tracking-[0.08em] text-white">
@@ -896,7 +896,7 @@ if (tradingError) {
           <button
             type="button"
             onClick={() => setShowBugReport(false)}
-            className="border border-white/[0.09] bg-[#181a1a] px-4 py-3 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-400 transition-all active:scale-[0.98]"
+            className="border border-white/[0.09] bg-[#181a1a] px-4 py-3 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-all active:scale-[0.98]"
           >
             Close
           </button>
@@ -910,7 +910,7 @@ if (tradingError) {
                 "noopener,noreferrer"
               )
             }
-            className="border border-red-400/70 bg-gradient-to-b from-[#dc2626] to-[#991b1b] px-4 py-3 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_0_16px_rgba(220,38,38,.18)] transition-all active:scale-[0.98]"
+            className="border border-red-400/70 bg-gradient-to-b from-[#dc2626] to-[#991b1b] px-4 py-3 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_0_16px_rgba(220,38,38,.18)] transition-all active:scale-[0.98]"
           >
             Join Discord
           </button>
@@ -919,10 +919,10 @@ if (tradingError) {
 
       <div className="border-t border-red-500/10 bg-[#0c0e0e] px-5 py-2">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-red-400/30">
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-red-300/80">
             BUG REPORT PROTOCOL
           </span>
-          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-red-400/40">
+          <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-red-300/80">
             DISCORD REQUIRED
           </span>
         </div>
@@ -959,7 +959,7 @@ if (tradingError) {
           </div>
 
           <div className="min-w-0">
-            <div className="text-[8px] font-bold uppercase tracking-[0.3em] text-red-400/70">
+            <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-red-300/90">
               ACCOUNT SECURITY
             </div>
 
@@ -978,7 +978,7 @@ if (tradingError) {
         </p>
 
         <div className="mt-5 border border-[#FFD54A]/15 bg-[#181818] p-4">
-          <div className="text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/70">
+          <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/90">
             IMPORTANT
           </div>
 
@@ -992,11 +992,11 @@ if (tradingError) {
         </div>
 
         <div className="mt-5 border-l-2 border-red-500/50 pl-4">
-          <div className="text-[8px] font-bold uppercase tracking-[0.25em] text-red-400/70">
+          <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-red-300/90">
             THIS ACTION CANNOT BE UNDONE
           </div>
 
-          <p className="mt-2 text-xs leading-5 text-zinc-500">
+          <p className="mt-2 text-xs leading-5 text-zinc-300">
             Keegan files through requested deletions once every five
             days. If you change your mind, please contact support as soon
             as possible in the MLPEKayou Discord server. Once your account has
@@ -1099,7 +1099,7 @@ function Placeholder({
     <div className="rounded-2xl border border-dashed border-zinc-700 bg-[#232323] p-8 text-center">
       <h3 className="font-semibold text-white">{title}</h3>
 
-      <p className="mt-2 text-sm text-zinc-500">
+      <p className="mt-2 text-sm text-zinc-300">
         Future section
       </p>
     </div>

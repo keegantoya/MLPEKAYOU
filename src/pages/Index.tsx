@@ -56,7 +56,7 @@ export default function Index() {
 
                 <div className="h-px flex-1 bg-[#E7C84B]/20" />
 
-                <span className="font-mono text-[6px] uppercase tracking-[0.14em] text-zinc-600">
+                <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-zinc-400">
                   NOTICE 01
                 </span>
               </div>
@@ -101,7 +101,7 @@ export default function Index() {
                   href="https://discord.gg/mlpekayou"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-[#E7C84B] transition-colors hover:text-white"
+                  className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[#E7C84B] transition-colors hover:text-white"
                 >
                   <span className="h-1 w-1 bg-[#E7C84B] shadow-[0_0_6px_#E7C84B]" />
                   discord.gg/mlpekayou
@@ -111,12 +111,12 @@ export default function Index() {
 
               <button
                 onClick={dismissUpdateNotice}
-                className="mt-3 w-full border border-[#E7C84B] bg-[#E7C84B] px-4 py-2.5 font-oxanium text-[8px] font-black uppercase tracking-[0.2em] text-[#111111] transition-all duration-200 hover:bg-[#fff1a8]"
+                className="mt-3 w-full border border-[#E7C84B] bg-[#E7C84B] px-4 py-2.5 font-oxanium text-[10px] font-black uppercase tracking-[0.2em] text-[#111111] transition-all duration-200 hover:bg-[#fff1a8]"
               >
                 Acknowledge Update
               </button>
 
-              <div className="mt-1.5 text-center font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
+              <div className="mt-1.5 text-center font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-400">
                 MLPEKAYOU // SYSTEM UPDATE
               </div>
 
@@ -149,7 +149,7 @@ export default function Index() {
         <div className="relative mx-auto w-full max-w-7xl px-3 py-7 sm:px-5 sm:py-8 md:px-8 md:py-10">
 
           <div className="text-center">
-            <p className="mb-2 font-oxanium text-[9px] uppercase tracking-[0.28em] text-yellow-400 sm:text-xs sm:tracking-[0.45em] md:tracking-[0.6rem]">
+            <p className="mb-2 font-oxanium text-[10px] uppercase tracking-[0.28em] text-yellow-400 sm:text-xs sm:tracking-[0.45em] md:tracking-[0.6rem]">
               Welcome To
             </p>
 
@@ -190,7 +190,7 @@ export default function Index() {
     <button
       key={tab.id}
       onClick={() => setActiveTab(tab.id as HomeTab)}
-      className={`group relative min-w-0 overflow-hidden rounded-xl border px-2 py-3 font-oxanium text-[9px] font-bold uppercase tracking-[0.08em] transition-all duration-300 sm:px-4 sm:py-4 sm:text-xs sm:tracking-[0.15em] md:px-6 md:text-sm md:tracking-[0.25em] ${
+      className={`group relative min-w-0 overflow-hidden rounded-xl border px-2 py-3 font-oxanium text-[10px] font-bold uppercase tracking-[0.08em] transition-all duration-300 sm:px-4 sm:py-4 sm:text-xs sm:tracking-[0.15em] md:px-6 md:text-sm md:tracking-[0.25em] ${
         activeTab === tab.id
           ? "border-yellow-400 bg-[#201d0c] text-yellow-300 shadow-[0_0_18px_rgba(250,204,21,0.35)]"
           : "border-[#343434] bg-[#181818] text-white hover:-translate-y-1 hover:border-yellow-400 hover:text-yellow-300 hover:shadow-[0_0_20px_rgba(250,204,21,0.18)]"

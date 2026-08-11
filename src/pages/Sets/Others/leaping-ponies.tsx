@@ -104,11 +104,11 @@ const LeapingPonies = () => {
           <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#050707] px-3 py-2">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]" />
-              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-emerald-400/80">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-emerald-300/95">
                 COLLECTION NETWORK // ONLINE
               </span>
             </div>
-            <span className="font-mono text-[6px] uppercase tracking-[0.24em] text-zinc-700">
+            <span className="font-mono text-[8px] uppercase tracking-[0.24em] text-zinc-400">
               MERCH / ASSET NODE
             </span>
           </div>
@@ -122,7 +122,7 @@ const LeapingPonies = () => {
                 ←
               </span>
               <span className="text-left">
-                <span className="block font-mono text-[5px] uppercase tracking-[0.26em] text-zinc-600">
+                <span className="block font-mono text-[8px] uppercase tracking-[0.26em] text-zinc-300">
                   COLLECTIONS
                 </span>
                 <span className="mt-1 block font-['Oxanium'] text-[9px] font-black uppercase tracking-[0.12em] text-zinc-200">
@@ -133,10 +133,10 @@ const LeapingPonies = () => {
 
             <div className="hidden items-center gap-3 sm:flex">
               <div className="text-right">
-                <div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">
+                <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-zinc-400">
                   SYSTEM
                 </div>
-                <div className="mt-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em] text-emerald-400">
+                <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-emerald-300">
                   SYNC ACTIVE
                 </div>
               </div>
@@ -151,7 +151,7 @@ const LeapingPonies = () => {
             <div className="overflow-hidden border border-white/[0.09] bg-[#080b0b] shadow-[0_20px_55px_rgba(0,0,0,.5)]">
               <div className="border-b border-white/[0.07] bg-[#050707] px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[5px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-300">
                     CONTROL DECK
                   </span>
                   <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/60">
@@ -163,7 +163,7 @@ const LeapingPonies = () => {
               <div className="relative border-b border-white/[0.07] p-4 sm:p-5">
                 <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r border-t border-[#FFD54A]/30" />
 
-                <div className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-zinc-600">
+                <div className="font-mono text-[8px] font-bold uppercase tracking-[0.32em] text-zinc-300">
                   SERIES IDENTIFICATION
                 </div>
 
@@ -183,7 +183,7 @@ const LeapingPonies = () => {
               {/* TELEMETRY */}
               <div className="grid grid-cols-2 gap-px border-b border-white/[0.07] bg-white/[0.06]">
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                     ASSETS
                   </div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-[#FFD54A]">
@@ -192,7 +192,7 @@ const LeapingPonies = () => {
                 </div>
 
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                     TYPE
                   </div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-white">
@@ -201,7 +201,7 @@ const LeapingPonies = () => {
                 </div>
 
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                     COLLECTED
                   </div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-emerald-400">
@@ -210,7 +210,7 @@ const LeapingPonies = () => {
                 </div>
 
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                     REMAINING
                   </div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-zinc-300">
@@ -222,7 +222,7 @@ const LeapingPonies = () => {
               {/* PROGRESS */}
               <div className="border-b border-white/[0.07] p-4 sm:p-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                     COLLECTION STATUS
                   </span>
                   <span className="font-mono text-[6px] font-bold text-[#FFD54A]">
@@ -239,7 +239,7 @@ const LeapingPonies = () => {
                   />
                 </div>
 
-                <div className="mt-3 flex justify-between font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                <div className="mt-3 flex justify-between font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                   <span>LOCAL PROGRESS</span>
                   <span>{completedCount} / {merchItems.length}</span>
                 </div>
@@ -247,13 +247,13 @@ const LeapingPonies = () => {
 
               {/* PRODUCT DATA */}
               <div className="p-4 sm:p-5">
-                <div className="mb-4 font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                <div className="mb-4 font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                   PRODUCT DATA
                 </div>
 
                 <div className="space-y-3">
                   <div className="border-l border-[#FFD54A]/25 pl-3">
-                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                       PRODUCT NAME
                     </div>
                     <div className="mt-1 text-xs font-bold uppercase text-zinc-200">
@@ -262,7 +262,7 @@ const LeapingPonies = () => {
                   </div>
 
                   <div className="border-l border-white/[0.08] pl-3">
-                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                       CATEGORY
                     </div>
                     <div className="mt-1 text-xs font-bold uppercase text-zinc-400">
@@ -271,10 +271,10 @@ const LeapingPonies = () => {
                   </div>
 
                   <div className="border-l border-white/[0.08] pl-3">
-                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                       STORAGE NODE
                     </div>
-                    <div className="mt-1 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+                    <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-300">
                       OTHER MERCH
                     </div>
                   </div>
@@ -297,7 +297,7 @@ const LeapingPonies = () => {
 
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_9px_rgba(52,211,153,.8)]" />
-                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-emerald-400/70">
+                <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-emerald-300/95">
                   LIVE
                 </span>
               </div>
@@ -372,7 +372,7 @@ const LeapingPonies = () => {
                               : "bg-zinc-600"
                           }`}
                         />
-                        <span className="font-mono text-[5px] font-bold uppercase tracking-[0.18em] text-white/60">
+                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/90">
                           ASSET {String(item.id).padStart(2, "0")}
                         </span>
                       </div>
@@ -387,7 +387,7 @@ const LeapingPonies = () => {
                         <div className="font-['Oxanium'] text-[10px] font-black uppercase leading-tight text-white sm:text-[11px]">
                           {item.title}
                         </div>
-                        <div className="mt-1 font-mono text-[5px] uppercase tracking-[0.16em] text-[#FFD54A]/65">
+                        <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em] text-[#FFD54A]/85">
                           {owned ? "COLLECTED" : "AVAILABLE"}
                         </div>
                       </div>
@@ -397,10 +397,10 @@ const LeapingPonies = () => {
               </div>
 
               <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-2">
-                <span className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
+                <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                   OTHER MERCH / PLUSH NODE
                 </span>
-                <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
+                <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
                   06 CARDLESS ASSETS
                 </span>
               </div>

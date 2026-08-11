@@ -95,6 +95,22 @@ const getRarityCode = (rarity: string) => {
   return rarity;
 };
 
+const getDisplayCardCode = (key: string) => {
+  const prrMatch = key.match(/^SD01PRR(\d{2})$/);
+  if (prrMatch) {
+    return `※SD01-RR${prrMatch[1]}`;
+  }
+
+  const perMatch = key.match(/^SD01PER(\d{2})$/);
+  if (perMatch) {
+    const sourceNumber = Number(perMatch[1]);
+    const displayNumber = Math.ceil(sourceNumber / 2);
+    return `※SD01-ER${String(displayNumber).padStart(2, "0")}`;
+  }
+
+  return key;
+};
+
 const getCardBack = (key: string) => {
   // Emerald Rares and Shining Emeralds use the scene back
   if (key.startsWith("SD01ER") || key.startsWith("SD01PER")) {
@@ -231,11 +247,11 @@ useEffect(() => {
           <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#050707] px-3 py-2">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]" />
-              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-emerald-400/80">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-emerald-300/95">
                 COLLECTION NETWORK // ONLINE
               </span>
             </div>
-            <span className="font-mono text-[6px] uppercase tracking-[0.24em] text-zinc-700">
+            <span className="font-mono text-[8px] uppercase tracking-[0.24em] text-zinc-400">
               TCG / FRIENDSHIPS BEGIN / NODE SD
             </span>
           </div>
@@ -249,7 +265,7 @@ useEffect(() => {
                 ←
               </span>
               <span className="text-left">
-                <span className="block font-mono text-[5px] uppercase tracking-[0.26em] text-zinc-600">
+                <span className="block font-mono text-[8px] uppercase tracking-[0.26em] text-zinc-300">
                   COLLECTIONS
                 </span>
                 <span className="mt-1 block font-['Oxanium'] text-[9px] font-black uppercase tracking-[0.12em] text-zinc-200">
@@ -260,10 +276,10 @@ useEffect(() => {
 
             <div className="hidden items-center gap-3 sm:flex">
               <div className="text-right">
-                <div className="font-mono text-[5px] uppercase tracking-[0.25em] text-zinc-700">
+                <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-zinc-400">
                   SYSTEM
                 </div>
-                <div className="mt-1 font-mono text-[7px] font-bold uppercase tracking-[0.15em] text-emerald-400">
+                <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.15em] text-emerald-300">
                   SYNC ACTIVE
                 </div>
               </div>
@@ -277,7 +293,7 @@ useEffect(() => {
             <div className="overflow-hidden border border-white/[0.09] bg-[#080b0b] shadow-[0_20px_55px_rgba(0,0,0,.5)]">
               <div className="border-b border-white/[0.07] bg-[#050707] px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[5px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-300">
                     CONTROL DECK
                   </span>
                   <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/60">
@@ -288,7 +304,7 @@ useEffect(() => {
 
               <div className="relative border-b border-white/[0.07] p-4 sm:p-5">
                 <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r border-t border-[#FFD54A]/30" />
-                <div className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-zinc-600">
+                <div className="font-mono text-[8px] font-bold uppercase tracking-[0.32em] text-zinc-300">
                   SERIES IDENTIFICATION
                 </div>
                 <h1 className="mt-3 font-['Oxanium'] text-3xl font-black uppercase leading-[0.92] tracking-tight text-white sm:text-4xl">
@@ -304,21 +320,21 @@ useEffect(() => {
 
               <div className="grid grid-cols-2 gap-px border-b border-white/[0.07] bg-white/[0.06]">
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">ASSETS</div>
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">ASSETS</div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-[#FFD54A]">194</div>
                 </div>
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">TIERS</div>
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">TIERS</div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-white">09</div>
                 </div>
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">COLLECTED</div>
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">COLLECTED</div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-emerald-400">
                     {Object.values(flipped).filter(Boolean).length}
                   </div>
                 </div>
                 <div className="bg-[#070a0a] p-4">
-                  <div className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">REMAINING</div>
+                  <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">REMAINING</div>
                   <div className="mt-1 font-['Oxanium'] text-2xl font-black text-zinc-300">
                     {Math.max(0, 194 - Object.values(flipped).filter(Boolean).length)}
                   </div>
@@ -327,7 +343,7 @@ useEffect(() => {
 
               <div className="border-b border-white/[0.07] p-4 sm:p-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                     RARITY SELECTOR
                   </span>
                   <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD54A]/50">
@@ -383,7 +399,7 @@ useEffect(() => {
               </div>
 
               <div className="border-b border-white/[0.07] p-4 sm:p-5">
-                <div className="mb-3 font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                <div className="mb-3 font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                   DISPLAY SYSTEMS
                 </div>
 
@@ -415,7 +431,7 @@ useEffect(() => {
                   </span>
                 </button>
 
-                <p className="mt-3 font-mono text-[6px] uppercase leading-4 tracking-[0.06em] text-zinc-700">
+                <p className="mt-3 font-mono text-[8px] uppercase leading-4 tracking-[0.06em] text-zinc-400">
                   {viewMode
                     ? "Click a card to inspect the front and back without changing ownership."
                     : "Click cards to mark them as owned."}
@@ -423,13 +439,13 @@ useEffect(() => {
               </div>
 
               <div className="p-4 sm:p-5">
-                <div className="mb-4 font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
+                <div className="mb-4 font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                   PRODUCT DATA
                 </div>
 
                 <div className="space-y-3">
                   <div className="border-l border-[#FFD54A]/25 pl-3">
-                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                       PRODUCT NAME
                     </div>
                     <div className="mt-1 text-xs font-bold uppercase text-zinc-200">
@@ -438,7 +454,7 @@ useEffect(() => {
                   </div>
 
                   <div className="border-l border-white/[0.08] pl-3">
-                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                       RELEASE DATE
                     </div>
                     <div className="mt-1 text-xs font-bold uppercase text-zinc-400">
@@ -447,7 +463,7 @@ useEffect(() => {
                   </div>
 
                   <div className="border-l border-white/[0.08] pl-3">
-                    <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                       PULL RATES
                     </div>
                     <button
@@ -474,7 +490,7 @@ useEffect(() => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_9px_rgba(52,211,153,.8)]" />
-                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-emerald-400/70">
+                <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-emerald-300/95">
                   LIVE
                 </span>
               </div>
@@ -488,11 +504,11 @@ useEffect(() => {
               <div className="mb-4 flex items-end justify-between border-b border-white/[0.07] pb-3">
                 <div>
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-700">
+                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-400">
                       DECK ARRAY
                     </span>
                     <span className="h-px w-8 bg-[#FFD54A]/25" />
-                    <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD54A]/60">
+                    <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD54A]/85">
                       06 NODES
                     </span>
                   </div>
@@ -541,7 +557,7 @@ useEffect(() => {
               <section className="mb-6 relative overflow-hidden border border-[#FFD54A]/20 bg-[#080b0b] p-3 shadow-[0_18px_45px_rgba(0,0,0,.42)] sm:p-4">
                 <div className="mb-4 flex items-center justify-between border-b border-white/[0.07] pb-3">
                   <div>
-                    <div className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-700">
+                    <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-400">
                       ACTIVE DECK NODE
                     </div>
                     <h2 className="mt-1 font-['Oxanium'] text-xl font-black uppercase text-[#FFD54A]">
@@ -614,7 +630,7 @@ useEffect(() => {
 
                         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2 pb-2 pt-7">
                           <span className="font-mono text-[5px] font-bold uppercase tracking-[0.12em] text-white/70">
-                            {key}
+                            {getDisplayCardCode(key)}
                           </span>
                         </div>
                       </div>
@@ -639,11 +655,11 @@ useEffect(() => {
                     <div className="mb-4 flex items-end justify-between border-b border-white/[0.07] pb-3">
                       <div>
                         <div className="mb-2 flex items-center gap-2">
-                          <span className="font-mono text-[5px] font-bold uppercase tracking-[0.25em] text-zinc-700">
+                          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-400">
                             NODE {String(index + 1).padStart(2, "0")}
                           </span>
                           <span className="h-px w-8 bg-[#FFD54A]/25" />
-                          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD54A]/60">
+                          <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD54A]/85">
                             ACTIVE
                           </span>
                         </div>
@@ -665,7 +681,7 @@ useEffect(() => {
                           </span>
                         </h2>
 
-                        <p className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-700">
+                        <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                           {count} ASSETS / {isRarityComplete(rarity) ? "COMPLETE" : "IN PROGRESS"}
                         </p>
                       </div>
@@ -709,11 +725,11 @@ useEffect(() => {
                               </div>
 
                               <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2 pb-2 pt-7">
-                                <div className="font-mono text-[5px] font-bold uppercase tracking-[0.12em] text-white/70">
-                                  {key}
+                                <div className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-white/90">
+                                  {getDisplayCardCode(key)}
                                 </div>
                                 {owned && !viewMode && (
-                                  <div className="mt-1 font-mono text-[5px] font-bold uppercase tracking-[0.14em] text-emerald-300">
+                                  <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-emerald-200">
                                     OWNED
                                   </div>
                                 )}
@@ -724,7 +740,7 @@ useEffect(() => {
                     </div>
 
                     <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-2">
-                      <span className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
+                      <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                         FRIENDSHIPS BEGIN / RARITY NODE
                       </span>
                       <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
@@ -751,7 +767,7 @@ useEffect(() => {
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-[#FFD54A] shadow-[0_0_8px_rgba(255,212,74,.9)]" />
                 <div>
-                  <div className="font-mono text-[6px] font-black uppercase tracking-[0.25em] text-[#FFD54A]">
+                  <div className="font-mono text-[8px] font-black uppercase tracking-[0.25em] text-[#FFD54A]">
                     CARD INSPECTION
                   </div>
                   <div className="font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
@@ -796,10 +812,10 @@ useEffect(() => {
             </TiltCard>
 
             <div className="mt-2 flex shrink-0 items-center justify-between border border-white/[0.06] bg-[#070a0a] px-3 py-2">
-              <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                 {zoomedCardFlipped ? "REAR ASSET" : "FRONT ASSET"}
               </span>
-              <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/50">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#FFD54A]/80">
                 TAP CARD TO FLIP
               </span>
             </div>

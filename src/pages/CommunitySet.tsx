@@ -581,13 +581,13 @@ const user = {
           </button>
 
           <div className="hidden items-center gap-3 sm:flex">
-            <span className="font-mono text-[7px] uppercase tracking-[0.22em] text-white/20">
+            <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/55">
               COMMUNITY DATABASE
             </span>
 
             <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
 
-            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/65">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/85">
               ONLINE
             </span>
           </div>
@@ -610,7 +610,7 @@ const user = {
               <div className="mb-3 flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
 
-                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/70">
+                <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/90">
                   COLLECTION INTELLIGENCE
                 </span>
 
@@ -634,7 +634,7 @@ const user = {
                 {set.name}
               </h1>
 
-              <p className="mt-4 max-w-2xl font-mono text-[8px] uppercase leading-[1.8] tracking-[0.1em] text-white/30 sm:text-[9px]">
+              <p className="mt-4 max-w-2xl font-mono text-[8px] uppercase leading-[1.8] tracking-[0.1em] text-white/65 sm:text-[9px]">
                 Track collectors approaching completion
                 and review verified finishers in
                 completion order.
@@ -658,7 +658,7 @@ const user = {
                       className="text-[#FFD400]"
                     />
 
-                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/70">
+                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/90">
                       COMPLETION RECORD
                     </span>
                   </div>
@@ -669,7 +669,7 @@ const user = {
                 </div>
 
                 <div className="text-right">
-                  <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
                     VERIFIED
                   </div>
 
@@ -785,21 +785,21 @@ const user = {
                             )}
                           </div>
 
-                          <div className="mt-0.5 font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                          <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
                             {getRankLabel(index)} FINISHER
                           </div>
                         </div>
 
                         {/* Completion */}
                         <div className="hidden shrink-0 text-right sm:block">
-                          <div className="font-mono text-[6px] uppercase tracking-[0.15em] text-white/20">
+                          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-white/55">
                             STATUS
                           </div>
 
                           <div className="mt-1 flex items-center gap-1.5">
                             <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]" />
 
-                            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.1em] text-[#FFD400]/75">
+                            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.1em] text-[#FFD400]/90">
                               COMPLETE
                             </span>
                           </div>
@@ -819,7 +819,7 @@ const user = {
                     NO FINISHERS YET
                   </div>
 
-                  <div className="mt-1 font-mono text-[7px] uppercase tracking-[0.16em] text-white/15">
+                  <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em] text-white/55">
                     THE #1 SLOT REMAINS OPEN
                   </div>
                 </div>
@@ -883,7 +883,7 @@ const user = {
                       className="text-[#FFD400]"
                     />
 
-                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/70">
+                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/90">
                       ACTIVE COLLECTORS
                     </span>
                   </div>
@@ -894,7 +894,7 @@ const user = {
                 </div>
 
                 <div className="text-right">
-                  <div className="font-mono text-[6px] uppercase tracking-[0.18em] text-white/20">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
                     TRACKED
                   </div>
 
@@ -1007,7 +1007,7 @@ const user = {
                                 />
                               </div>
 
-                              <span className="font-mono text-[6px] font-bold tracking-[0.08em] text-white/20">
+                              <span className="font-mono text-[8px] font-bold tracking-[0.08em] text-white/65">
                                 {percentage}%
                               </span>
                             </div>
@@ -1022,7 +1022,7 @@ const user = {
                               </span>
                             </div>
 
-                            <div className="mt-0.5 font-mono text-[5px] uppercase tracking-[0.14em] text-white/15">
+                            <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.14em] text-white/55">
                               CARDS
                             </div>
                           </div>
@@ -1042,7 +1042,7 @@ const user = {
                     NO ACTIVE COLLECTORS
                   </div>
 
-                  <div className="mt-1 font-mono text-[7px] uppercase tracking-[0.16em] text-white/15">
+                  <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em] text-white/55">
                     COLLECTION DATA NOT AVAILABLE
                   </div>
                 </div>
@@ -1056,12 +1056,12 @@ const user = {
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]/60" />
 
-            <span className="font-mono text-[6px] uppercase tracking-[0.22em] text-white/20">
+            <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/55">
               COLLECTION DATABASE // LIVE READOUT
             </span>
           </div>
 
-          <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/15">
+          <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/50">
             {completed.length} COMPLETED
             {" // "}
             {collectors.length} ACTIVE

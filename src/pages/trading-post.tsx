@@ -152,7 +152,7 @@ export default function TradingPost() {
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/65">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/90">
                     KAYOU MARKET NETWORK
                   </span>
 
@@ -166,11 +166,11 @@ export default function TradingPost() {
             </div>
 
             <div className="hidden text-right sm:block">
-              <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/20">
+              <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/60">
                 COLLECTION INDEX
               </div>
 
-              <div className="mt-1 font-mono text-[8px] font-bold tracking-[0.12em] text-[#FFD400]/60">
+              <div className="mt-1 font-mono text-[9px] font-bold tracking-[0.12em] text-[#FFD400]/85">
                 {setButtons.length
                   .toString()
                   .padStart(2, "0")}{" "}
@@ -180,7 +180,7 @@ export default function TradingPost() {
           </div>
 
           <div className="mt-3 flex items-center justify-between">
-            <p className="font-mono text-[7px] uppercase tracking-[0.16em] text-white/25 sm:text-[8px]">
+            <p className="font-mono text-[8px] uppercase tracking-[0.16em] text-white/65 sm:text-[8px]">
               Select a collection to access its trading network
             </p>
 
@@ -272,7 +272,7 @@ export default function TradingPost() {
 
                 {/* Set index */}
                 <div className="absolute right-2 bottom-2 border border-white/10 bg-[#111111]/80 px-1.5 py-1 backdrop-blur-sm">
-                  <span className="font-mono text-[6px] font-bold tracking-[0.12em] text-white/35">
+                  <span className="font-mono text-[8px] font-bold tracking-[0.12em] text-white/65">
                     {(index + 1)
                       .toString()
                       .padStart(2, "0")}
@@ -285,7 +285,7 @@ export default function TradingPost() {
                 <div className="flex items-center gap-1.5">
                   <span className="h-1 w-1 shrink-0 bg-[#FFD400] opacity-70 transition-all duration-300 group-hover:opacity-100 group-hover:shadow-[0_0_6px_rgba(255,212,0,.7)]" />
 
-                  <span className="truncate font-mono text-[6px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/55">
+                  <span className="truncate font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/85">
                     {set.group}
                   </span>
                 </div>
@@ -301,11 +301,11 @@ export default function TradingPost() {
                 </div>
 
                 <div className="mt-1.5 flex items-center justify-between">
-                  <span className="font-mono text-[6px] uppercase tracking-[0.12em] text-white/20">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-white/60">
                     {set.subtitle}
                   </span>
 
-                  <span className="font-mono text-[6px] uppercase tracking-[0.12em] text-white/15">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-white/55">
                     ACCESS
                   </span>
                 </div>
@@ -322,12 +322,12 @@ export default function TradingPost() {
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400] shadow-[0_0_7px_rgba(255,212,0,.5)]" />
 
-            <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-white/20">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/60">
               TRADING NETWORK ONLINE
             </span>
           </div>
 
-          <span className="font-mono text-[6px] uppercase tracking-[0.16em] text-white/15">
+          <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-white/55">
             {visibleSets.length} COLLECTION
             {visibleSets.length === 1 ? "" : "S"}{" "}
             AVAILABLE

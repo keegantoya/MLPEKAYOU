@@ -1,4 +1,3 @@
-import CollectionCard from "@/components/CollectionCard";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -294,7 +293,7 @@ setTradeSets(activeTrades);
             <div>
               <div className="mb-2 flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-[#e8c14a] shadow-[0_0_9px_#e8c14a]" />
-                <span className="text-[8px] font-bold uppercase tracking-[.3em] text-[#656861]">
+                <span className="text-[9px] font-bold uppercase tracking-[.3em] text-[#b9bbb2]">
                   COLLECTION DATABASE // PERSONAL ACCESS
                 </span>
               </div>
@@ -312,15 +311,15 @@ setTradeSets(activeTrades);
 
             <div className="grid grid-cols-3 border border-[#2d302c] bg-[#0c0e0e]">
               <div className="border-r border-[#2d302c] px-3 py-2.5 sm:px-5">
-                <div className="text-[7px] uppercase tracking-[.2em] text-[#555852]">SETS</div>
+                <div className="text-[8px] uppercase tracking-[.2em] text-[#b9bbb2]">SETS</div>
                 <div className="mt-1 text-lg font-black text-[#e4bd43]">{collections.length}</div>
               </div>
               <div className="border-r border-[#2d302c] px-3 py-2.5 sm:px-5">
-                <div className="text-[7px] uppercase tracking-[.2em] text-[#555852]">VISIBLE</div>
+                <div className="text-[8px] uppercase tracking-[.2em] text-[#b9bbb2]">VISIBLE</div>
                 <div className="mt-1 text-lg font-black text-[#e8e8e1]">{filteredCollections.length}</div>
               </div>
               <div className="px-3 py-2.5 sm:px-5">
-                <div className="text-[7px] uppercase tracking-[.2em] text-[#555852]">TRADES</div>
+                <div className="text-[8px] uppercase tracking-[.2em] text-[#b9bbb2]">TRADES</div>
                 <div className="mt-1 text-lg font-black text-[#e8e8e1]">{tradeSets.length}</div>
               </div>
             </div>
@@ -335,14 +334,14 @@ setTradeSets(activeTrades);
             <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-[8px] font-bold uppercase tracking-[.28em] text-[#5e615a]">
+                  <div className="text-[9px] font-bold uppercase tracking-[.28em] text-[#b9bbb2]">
                     CATEGORIES OF SETS
                   </div>
-                  <div className="mt-2 text-[7px] uppercase leading-relaxed tracking-[.13em] text-[#4f524d]">
+                  <div className="mt-2 text-[8px] uppercase leading-relaxed tracking-[.13em] text-[#aeb0a8]">
                     Select a category to filter your collection.
                   </div>
                 </div>
-                <span className="text-[7px] text-[#555850]">{collections.length.toString().padStart(2, "0")}</span>
+                <span className="text-[8px] text-[#b9bbb2]">{collections.length.toString().padStart(2, "0")}</span>
               </div>
             </div>
 
@@ -372,11 +371,11 @@ setTradeSets(activeTrades);
                     }`}>
                       {item.title}
                     </span>
-                    <span className="mt-1 block truncate text-[7px] uppercase tracking-[.14em] text-[#50534d]">
+                    <span className="mt-1 block truncate text-[8px] uppercase tracking-[.14em] text-[#aeb0a8]">
                       {item.subtitle}
                     </span>
                   </span>
-                  <span className={`text-[8px] font-bold ${activeFilter === item.id ? "text-[#efc84b]" : "text-[#555850]"}`}>
+                  <span className={`text-[8px] font-bold ${activeFilter === item.id ? "text-[#efc84b]" : "text-[#b9bbb2]"}`}>
                     {item.count.toString().padStart(2, "0")}
                   </span>
                 </button>
@@ -386,11 +385,11 @@ setTradeSets(activeTrades);
             <div className="border-t border-[#292c28] px-4 py-4">
               <div className="mb-2 flex items-center gap-2">
                 <span className="h-px w-5 bg-[#9b7d2d]" />
-                <span className="text-[7px] font-bold uppercase tracking-[.25em] text-[#8c722b]">
+                <span className="text-[8px] font-bold uppercase tracking-[.25em] text-[#d0ad4a]">
                   INVENTORY ACCESS
                 </span>
               </div>
-              <p className="text-[7px] leading-relaxed tracking-[.12em] text-[#555852]">
+              <p className="text-[8px] leading-relaxed tracking-[.12em] text-[#aeb0a8]">
                 Hidden sets remain excluded from the workspace. Only sets with collected cards are displayed.
               </p>
             </div>
@@ -401,13 +400,13 @@ setTradeSets(activeTrades);
             <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4 sm:px-5">
               <div className="flex items-end justify-between gap-4">
                 <div>
-                  <div className="text-[7px] font-bold uppercase tracking-[.3em] text-[#555852]">ACTIVE CHANNEL</div>
+                  <div className="text-[8px] font-bold uppercase tracking-[.3em] text-[#b9bbb2]">ACTIVE CHANNEL</div>
                   <h2 className="mt-1 text-2xl font-black uppercase tracking-[.05em] text-[#e8e8e1] sm:text-3xl">
                     {activeCategoryLabel}
                   </h2>
                 </div>
                 <div className="text-right">
-                  <div className="text-[7px] uppercase tracking-[.22em] text-[#555852]">VISIBLE SETS</div>
+                  <div className="text-[8px] uppercase tracking-[.22em] text-[#b9bbb2]">VISIBLE SETS</div>
                   <div className="mt-1 text-2xl font-black text-[#e4bd43]">
                     {filteredCollections.length.toString().padStart(2, "0")}
                   </div>
@@ -453,10 +452,10 @@ setTradeSets(activeTrades);
                             </div>
                             <div className="flex items-end justify-between gap-3">
                               <div>
-                                <div className="text-[7px] uppercase tracking-[.18em] text-[#50534d]">CARD CAPACITY</div>
+                                <div className="text-[8px] uppercase tracking-[.18em] text-[#aeb0a8]">CARD CAPACITY</div>
                                 <div className="mt-1 text-lg font-black text-[#d7d8d1]">{col.totalCards}</div>
                               </div>
-                              <span className="text-[8px] font-bold uppercase tracking-[.18em] text-[#b39337] transition-transform group-hover:translate-x-1">
+                              <span className="text-[8px] font-bold uppercase tracking-[.18em] text-[#d0ad4a] transition-transform group-hover:translate-x-1">
                                 OPEN →
                               </span>
                             </div>
@@ -482,8 +481,8 @@ setTradeSets(activeTrades);
                 <div className="flex min-h-[330px] items-center justify-center border border-dashed border-[#30322e] bg-[#0d0f0f]">
                   <div className="text-center">
                     <div className="mx-auto mb-4 h-2 w-2 bg-[#555850]" />
-                    <div className="text-[9px] font-bold uppercase tracking-[.22em] text-[#666961]">No active collection nodes</div>
-                    <div className="mt-2 text-[7px] uppercase tracking-[.14em] text-[#484b46]">Select another category.</div>
+                    <div className="text-[10px] font-bold uppercase tracking-[.22em] text-[#c0c2b9]">No active collection nodes</div>
+                    <div className="mt-2 text-[8px] uppercase tracking-[.14em] text-[#aeb0a8]">Select another category.</div>
                   </div>
                 </div>
               )}
@@ -495,8 +494,8 @@ setTradeSets(activeTrades);
             <div className="border border-[#34362f] bg-[#111313] shadow-[0_18px_55px_rgba(0,0,0,.5)]">
               <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-[8px] font-bold uppercase tracking-[.28em] text-[#5e615a]">INVENTORY STATUS</div>
-                  <span className="flex items-center gap-1.5 text-[7px] uppercase tracking-[.18em] text-[#b19236]">
+                  <div className="text-[9px] font-bold uppercase tracking-[.28em] text-[#b9bbb2]">INVENTORY STATUS</div>
+                  <span className="flex items-center gap-1.5 text-[8px] uppercase tracking-[.18em] text-[#d0ad4a]">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#e3bd43] shadow-[0_0_8px_#e3bd43]" />
                     VERIFIED
                   </span>
@@ -505,11 +504,11 @@ setTradeSets(activeTrades);
 
               <div className="grid grid-cols-2 gap-px bg-[#2a2c28]">
                 <div className="bg-[#111313] p-4">
-                  <div className="text-[7px] uppercase tracking-[.2em] text-[#535650]">OWNED SETS</div>
+                  <div className="text-[8px] uppercase tracking-[.2em] text-[#b9bbb2]">OWNED SETS</div>
                   <div className="mt-2 text-3xl font-black text-[#e5bd43]">{knownOwnedSetCount.toString().padStart(2, "0")}</div>
                 </div>
                 <div className="bg-[#111313] p-4">
-                  <div className="text-[7px] uppercase tracking-[.2em] text-[#535650]">TRADE SETS</div>
+                  <div className="text-[8px] uppercase tracking-[.2em] text-[#b9bbb2]">TRADE SETS</div>
                   <div className="mt-2 text-3xl font-black text-[#e6e6df]">{tradeSets.length.toString().padStart(2, "0")}</div>
                 </div>
               </div>
@@ -517,10 +516,10 @@ setTradeSets(activeTrades);
               <div className="p-4">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="h-px w-6 bg-[#a27f27]" />
-                  <span className="text-[7px] font-bold uppercase tracking-[.25em] text-[#8b7029]">ACTIVE FILTER</span>
+                  <span className="text-[8px] font-bold uppercase tracking-[.25em] text-[#d0ad4a]">ACTIVE FILTER</span>
                 </div>
                 <div className="text-sm font-black uppercase tracking-[.08em] text-[#dfe0d9]">{activeCategoryLabel}</div>
-                <p className="mt-2 text-[7px] uppercase leading-relaxed tracking-[.12em] text-[#555852]">
+                <p className="mt-2 text-[8px] uppercase leading-relaxed tracking-[.12em] text-[#aeb0a8]">
                   Inventory view is limited to visible sets containing collected cards.
                 </p>
               </div>
@@ -528,7 +527,7 @@ setTradeSets(activeTrades);
 
             <div className="border border-[#34362f] bg-[#111313] shadow-[0_18px_55px_rgba(0,0,0,.5)]">
               <div className="border-b border-[#2b2d29] bg-[#0d0f0f] px-4 py-4">
-                <div className="text-[8px] font-bold uppercase tracking-[.28em] text-[#5e615a]">TRADE NETWORK</div>
+                <div className="text-[9px] font-bold uppercase tracking-[.28em] text-[#b9bbb2]">TRADE NETWORK</div>
                 <div className="mt-1 text-lg font-black uppercase tracking-[.05em] text-[#e4e5de]">My Trades</div>
               </div>
 
@@ -556,7 +555,7 @@ setTradeSets(activeTrades);
                                   : `${col.title} (${col.setName})`
                                 : col.title}
                             </div>
-                            <div className="mt-1 text-[7px] uppercase tracking-[.16em] text-[#a1842e]">
+                            <div className="mt-1 text-[8px] uppercase tracking-[.16em] text-[#d0ad4a]">
                               OPEN TRADES →
                             </div>
                           </div>
@@ -566,10 +565,10 @@ setTradeSets(activeTrades);
                 ) : (
                   <div className="border border-dashed border-[#2d302c] px-3 py-7 text-center">
                     <div className="mx-auto mb-3 h-1.5 w-1.5 bg-[#555850]" />
-                    <div className="text-[8px] font-bold uppercase tracking-[.2em] text-[#666961]">
+                    <div className="text-[9px] font-bold uppercase tracking-[.2em] text-[#c0c2b9]">
                       Trades/Sales channel idle
                     </div>
-                    <div className="mt-1 text-[7px] uppercase tracking-[.12em] text-[#474a45]">
+                    <div className="mt-1 text-[8px] uppercase tracking-[.12em] text-[#aeb0a8]">
                       No active trade/sale sets
                     </div>
                   </div>
@@ -580,9 +579,9 @@ setTradeSets(activeTrades);
             <div className="border border-[#34362f] bg-[#0e1010] p-4">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-[#e0b940] shadow-[0_0_8px_#e0b940]" />
-                <span className="text-[7px] font-bold uppercase tracking-[.25em] text-[#8d732b]">SYSTEM ONLINE</span>
+                <span className="text-[8px] font-bold uppercase tracking-[.25em] text-[#d0ad4a]">SYSTEM ONLINE</span>
               </div>
-              <div className="mt-3 text-[7px] uppercase leading-relaxed tracking-[.13em] text-[#4f524d]">
+              <div className="mt-3 text-[8px] uppercase leading-relaxed tracking-[.13em] text-[#aeb0a8]">
                 MLPEKAYOU // PERSONAL COLLECTION DATABASE
               </div>
             </div>
@@ -591,7 +590,7 @@ setTradeSets(activeTrades);
 
         <div className="mt-4 flex items-center justify-center gap-3">
           <span className="h-px w-16 bg-gradient-to-r from-transparent to-[#393b34]" />
-          <span className="text-[7px] font-bold uppercase tracking-[.35em] text-[#41443e]">MLPEKAYOU // INVENTORY</span>
+          <span className="text-[8px] font-bold uppercase tracking-[.35em] text-[#9fa29a]">MLPEKAYOU // INVENTORY</span>
           <span className="h-px w-16 bg-gradient-to-l from-transparent to-[#393b34]" />
         </div>
       </div>

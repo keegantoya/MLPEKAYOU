@@ -829,7 +829,7 @@ const Collections = () => {
             </div>
 
             <div className="mt-4">
-              <div className="flex items-center justify-between font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-600">
+              <div className="flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
                 <span>
                   COLLECTION PROGRESS
                 </span>
@@ -859,7 +859,7 @@ const Collections = () => {
             </div>
 
             <div className="mt-5 text-center">
-              <div className="font-mono text-[7px] uppercase tracking-[0.3em] text-[#E7C84B]/60">
+              <div className="font-mono text-[8px] uppercase tracking-[0.3em] text-[#E7C84B]/80">
                 KAYOU US
               </div>
 
@@ -918,7 +918,7 @@ const Collections = () => {
 
                   <span className="h-px w-10 bg-[#E7C84B]/30" />
 
-                  <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                     MODULE 01
                   </span>
                 </div>
@@ -958,7 +958,7 @@ const Collections = () => {
                         {stat.value}
                       </div>
 
-                      <div className="mt-1.5 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-zinc-600">
+                      <div className="mt-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-400">
                         {stat.label}
                       </div>
                     </div>
@@ -983,7 +983,7 @@ const Collections = () => {
 
                 <div className="mt-2 h-px w-16 bg-[#E7C84B] shadow-[0_0_8px_rgba(231,200,75,0.7)]" />
 
-                <span className="mt-2 font-mono text-[7px] uppercase tracking-[0.25em] text-zinc-600">
+                <span className="mt-2 font-mono text-[8px] uppercase tracking-[0.25em] text-zinc-400">
                   PERSONAL COLLECTION DATABASE
                 </span>
               </div>
@@ -991,7 +991,7 @@ const Collections = () => {
               <div className="flex justify-start">
                 <div className="w-full max-w-[340px] border border-[#30363a] bg-[#101518] px-4 py-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                       COLLECTION PROGRESS
                     </span>
 
@@ -1011,7 +1011,7 @@ const Collections = () => {
                     />
                   </div>
 
-                  <div className="mt-2 flex items-center justify-between font-mono text-[7px] uppercase tracking-[0.16em] text-zinc-600">
+                  <div className="mt-2 flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-400">
                     <span>
                       {totalCardsCollected.toLocaleString()}{" "}
                       ACQUIRED
@@ -1029,13 +1029,13 @@ const Collections = () => {
             <div className="relative flex items-center gap-3 border-t border-[#252b2f] bg-[#0d1113] px-6 py-2.5">
               <span className="h-1 w-1 bg-[#E7C84B] shadow-[0_0_7px_#E7C84B]" />
 
-              <span className="font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-600">
+              <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                 COLLECTION DATABASE //{" "}
                 {totalCardsCollected.toLocaleString()}{" "}
                 CARDS INDEXED
               </span>
 
-              <span className="ml-auto font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-700">
+              <span className="ml-auto font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
                 ACCESS GRANTED
               </span>
             </div>
@@ -1155,11 +1155,11 @@ const Collections = () => {
                                     <span className="h-1 w-1 bg-[#E7C84B] shadow-[0_0_6px_#E7C84B]" />
                                   </span>
 
-                                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-[#E7C84B]/70">
+                                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#E7C84B]/90">
                                     COLLECTION STATUS
                                   </span>
 
-                                  <span className="ml-auto font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-700">
+                                  <span className="ml-auto font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-400">
                                     // 00
                                   </span>
                                 </div>
@@ -1173,7 +1173,7 @@ const Collections = () => {
                                 <div className="mt-2 flex items-center gap-1.5">
                                   <span className="h-px w-8 bg-[#E7C84B]/50" />
                                   <span className="h-px flex-1 bg-[#E7C84B]/10" />
-                                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-900">
+                                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-300">
                                     SET DISABLED IN ISO
                                   </span>
                                 </div>

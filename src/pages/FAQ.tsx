@@ -577,7 +577,7 @@ const CategoryButton = ({
           {category.title}
         </span>
 
-        <span className="mt-0.5 block font-mono text-[8px] tracking-[0.2em] text-zinc-600">
+        <span className="mt-0.5 block font-mono text-[8px] tracking-[0.2em] text-zinc-400">
           {category.code}
         </span>
       </span>
@@ -718,7 +718,7 @@ const CaseResearchSection = ({
               CASE RESEARCH
             </div>
 
-            <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+            <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
               FIELD OBSERVATIONS / OPENING DATA
             </div>
           </div>
@@ -729,7 +729,7 @@ const CaseResearchSection = ({
             NO RESEARCH ENTRIES LOGGED
           </div>
 
-          <div className="mt-2 font-mono text-[8px] leading-5 text-zinc-600">
+          <div className="mt-2 font-mono text-[9px] leading-5 text-zinc-400">
             Report obsevations in the MLPEKAYOU Discord server to see them here.
           </div>
         </div>
@@ -748,7 +748,7 @@ const CaseResearchSection = ({
               CASE RESEARCH
             </div>
 
-            <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+            <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
               FIELD OBSERVATIONS / OPENING DATA
             </div>
           </div>
@@ -771,7 +771,7 @@ const CaseResearchSection = ({
             <div className="absolute bottom-0 right-0 h-4 w-4 border-b border-r border-yellow-400/40" />
 
             <div className="border-b border-zinc-800 bg-[#0f1012] px-4 py-3">
-              <div className="mb-1 font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-yellow-500">
+              <div className="mb-1 font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-yellow-500">
                 OBSERVATION {String(index + 1).padStart(2, "0")}
               </div>
 
@@ -784,7 +784,7 @@ const CaseResearchSection = ({
             </div>
 
             <div className="p-4 sm:p-5">
-              <div className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600">
+              <div className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400">
                 OBSERVATION
               </div>
 
@@ -961,7 +961,7 @@ const FAQ = () => {
                 MLPEKAYOU
               </div>
 
-              <div className="font-mono text-[7px] uppercase tracking-[0.28em] text-zinc-600">
+              <div className="font-mono text-[8px] uppercase tracking-[0.28em] text-zinc-400">
                 PACK CONFIGURATION SYSTEM
               </div>
 
@@ -973,7 +973,7 @@ const FAQ = () => {
           <div className="hidden items-center gap-5 sm:flex">
 
             <div className="text-right">
-              <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-600">
+              <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                 SYSTEM
               </div>
 
@@ -985,7 +985,7 @@ const FAQ = () => {
             <div className="h-6 w-px bg-zinc-800" />
 
             <div className="text-right">
-              <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-600">
+              <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                 MODULE
               </div>
 
@@ -1021,7 +1021,7 @@ const FAQ = () => {
                 NAVIGATION MATRIX
               </div>
 
-              <div className="font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+              <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
                 NORTH AMERICAN PRODUCTS
               </div>
 
@@ -1065,7 +1065,7 @@ const FAQ = () => {
 
               </div>
 
-              <div className="font-mono text-[8px] leading-5 text-zinc-600">
+              <div className="font-mono text-[9px] leading-5 text-zinc-400">
                 PACK ODDS
                 <br />
                 CONFIGURATION DATA GATHERED BY COLLECTORS
@@ -1185,7 +1185,7 @@ const FAQ = () => {
                       </span>
                     </h1>
 
-                    <p className="mt-4 max-w-xl font-mono text-[10px] leading-6 text-zinc-600">
+                    <p className="mt-4 max-w-xl font-mono text-[10px] leading-6 text-zinc-400">
                       SELECT A PRODUCT FAMILY
                       TO ACCESS BOX CONFIGURATION
                       DATA AND PRODUCTION RATIO
@@ -1247,7 +1247,7 @@ const FAQ = () => {
                 <button
                   type="button"
                   onClick={goBack}
-                  className="mb-5 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 transition hover:text-yellow-400"
+                  className="mb-5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400 transition hover:text-yellow-400"
                 >
                   ← RETURN
                 </button>
@@ -1275,7 +1275,7 @@ const FAQ = () => {
 
                   <div className="hidden text-right sm:block">
 
-                    <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+                    <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                       FAMILY CODE
                     </div>
 
@@ -1327,7 +1327,7 @@ const FAQ = () => {
                   <button
                     type="button"
                     onClick={goBack}
-                    className="mb-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-zinc-600 transition hover:text-yellow-400"
+                    className="mb-4 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400 transition hover:text-yellow-400"
                   >
                     ← RETURN TO CATEGORY
                   </button>
@@ -1357,7 +1357,7 @@ const FAQ = () => {
 
                 <div className="hidden text-right sm:block">
 
-                  <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                     CONFIG MATRICES
                   </div>
 
@@ -1390,7 +1390,7 @@ const FAQ = () => {
                         PRODUCTION DATA
                       </div>
 
-                      <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700">
+                      <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
                         MANUAL CONFIGURATION INPUT
                       </div>
 
@@ -1398,7 +1398,7 @@ const FAQ = () => {
 
                   </div>
 
-                  <div className="hidden font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700 sm:block">
+                  <div className="hidden font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400 sm:block">
                     RATIO
                   </div>
 
@@ -1444,14 +1444,14 @@ const FAQ = () => {
                                 </div>
                               ) : (
                                 <div className="flex h-28 w-28 shrink-0 items-center justify-center border border-dashed border-zinc-700 bg-[#08090a] px-2 text-center">
-                                  <span className="font-mono text-[7px] uppercase leading-4 tracking-[0.12em] text-zinc-600">
+                                  <span className="font-mono text-[8px] uppercase leading-4 tracking-[0.12em] text-zinc-400">
                                     NO IMAGE
                                   </span>
                                 </div>
                               )}
 
                               <div className="min-w-0">
-                                <div className="mb-1 font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-yellow-500">
+                                <div className="mb-1 font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-yellow-500">
                                   ASSET {String(tableNumber).padStart(2, "0")}
                                 </div>
                                 <div className="font-mono text-[10px] font-bold uppercase leading-5 tracking-[0.1em] text-zinc-200">
@@ -1495,13 +1495,13 @@ const FAQ = () => {
 
                   <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_7px_rgba(250,204,21,0.8)]" />
 
-                  <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                     INPUT MODULE READY
                   </span>
 
                 </div>
 
-                <span className="font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-800">
+                <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
                   PC-01
                 </span>
 

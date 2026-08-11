@@ -363,7 +363,7 @@ const getTradeCardImage = (card: any) => {
   <div className="absolute left-0 top-20 h-px w-full bg-gradient-to-r from-transparent via-[#FFD54A]/60 to-transparent" />
   <div className="absolute left-0 bottom-20 h-px w-full bg-gradient-to-r from-transparent via-[#FFD54A]/30 to-transparent" />
 
-  <div className="absolute left-5 top-5 flex items-center gap-2 border border-[#FFD54A]/25 bg-[#0a0c0c]/90 px-3 py-1.5 font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD54A] backdrop-blur-xl">
+  <div className="absolute left-5 top-5 flex items-center gap-2 border border-[#FFD54A]/25 bg-[#0a0c0c]/90 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[#FFD54A] backdrop-blur-xl">
     <span className="h-1.5 w-1.5 bg-[#FFD54A] shadow-[0_0_8px_rgba(255,212,0,.8)]" />
     PROFILE // MODULE 01
   </div>
@@ -405,7 +405,7 @@ const getTradeCardImage = (card: any) => {
       {/* NAME / DISCORD */}
       <div className="min-w-0 flex-1">
 
-        <div className="mb-4 flex items-center gap-2 font-mono text-[7px] font-bold uppercase tracking-[0.32em] text-[#FFD54A]/65">
+        <div className="mb-4 flex items-center gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.32em] text-[#FFD54A]/90">
           <span className="h-px w-8 bg-[#FFD54A]" />
           IDENTITY // VERIFIED PROFILE
         </div>
@@ -414,14 +414,14 @@ const getTradeCardImage = (card: any) => {
           <div className="max-w-2xl border border-[#FFD54A]/20 bg-[#0a0c0c] shadow-[0_15px_45px_rgba(0,0,0,.35)]">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
               <div>
-                <div className="font-mono text-[6px] font-bold uppercase tracking-[0.32em] text-[#FFD54A]/60">
+                <div className="font-mono text-[8px] font-bold uppercase tracking-[0.32em] text-[#FFD54A]/85">
                   IDENTITY CONTROL
                 </div>
                 <div className="mt-1 font-['Oxanium'] text-sm font-bold uppercase tracking-[0.08em] text-white">
                   Edit Profile Identity
                 </div>
               </div>
-              <div className="flex items-center gap-2 font-mono text-[6px] uppercase tracking-[0.22em] text-emerald-400/70">
+              <div className="flex items-center gap-2 font-mono text-[8px] uppercase tracking-[0.22em] text-emerald-300/90">
                 <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,.8)]" />
                 READY
               </div>
@@ -430,10 +430,10 @@ const getTradeCardImage = (card: any) => {
             <div className="grid gap-px bg-white/[0.06] sm:grid-cols-2">
               <label className="group bg-[#0d0f0f] p-4">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                     USERNAME
                   </span>
-                  <span className="font-mono text-[6px] uppercase tracking-[0.18em] text-[#FFD54A]/40">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD54A]/75">
                     PUBLIC ID
                   </span>
                 </div>
@@ -448,10 +448,10 @@ const getTradeCardImage = (card: any) => {
 
               <label className="group bg-[#0d0f0f] p-4">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
                     DISCORD
                   </span>
-                  <span className="font-mono text-[6px] uppercase tracking-[0.18em] text-[#FFD54A]/40">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD54A]/75">
                     NETWORK ID
                   </span>
                 </div>
@@ -465,7 +465,7 @@ const getTradeCardImage = (card: any) => {
             </div>
 
             <div className="flex items-center justify-between border-t border-white/[0.07] bg-[#080a0a] px-4 py-3">
-              <div className="font-mono text-[6px] uppercase tracking-[0.2em] text-zinc-600">
+              <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-400">
                 Changes apply to your public profile
               </div>
               <div className="flex items-center gap-2">
@@ -493,11 +493,11 @@ const getTradeCardImage = (card: any) => {
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3">
-              <div className="border border-[#FFD54A]/20 bg-[#0d0f0f] px-3 py-1.5 font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-[#FFD54A]">
+              <div className="border border-[#FFD54A]/20 bg-[#0d0f0f] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-[#FFD54A]">
                 @{discord || "NO DISCORD"}
               </div>
 
-              <div className="border border-emerald-400/20 bg-emerald-400/[0.04] px-3 py-1.5 font-mono text-[7px] font-bold uppercase tracking-[0.22em] text-emerald-400">
+              <div className="border border-emerald-400/20 bg-emerald-400/[0.04] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-emerald-300">
                 VERIFIED
               </div>
             </div>
@@ -664,7 +664,7 @@ if (tradingError) {
     <div className="relative">
 
       <div className="flex items-center justify-between">
-        <div className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+        <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
           COLLECTION
         </div>
 
@@ -681,7 +681,7 @@ if (tradingError) {
 
       <div className="mt-5 h-px w-full bg-gradient-to-r from-[#FFD54A]/30 via-[#FFD54A]/10 to-transparent" />
 
-      <div className="mt-3 font-mono text-[6px] uppercase tracking-[0.22em] text-zinc-600">
+      <div className="mt-3 font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
         FROM ALL SETS
       </div>
 
@@ -699,7 +699,7 @@ if (tradingError) {
     <div className="relative">
 
       <div className="flex items-center justify-between">
-        <div className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+        <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
           PROGRESSION
         </div>
 
@@ -716,7 +716,7 @@ if (tradingError) {
 
       <div className="mt-5 h-px w-full bg-gradient-to-r from-[#FFD54A]/30 via-[#FFD54A]/10 to-transparent" />
 
-      <div className="mt-3 font-mono text-[6px] uppercase tracking-[0.22em] text-zinc-600">
+      <div className="mt-3 font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
         COMPLETION STATUSES
       </div>
 
@@ -734,7 +734,7 @@ if (tradingError) {
     <div className="relative">
 
       <div className="flex items-center justify-between">
-        <div className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-zinc-500">
+        <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
           NETWORK
         </div>
 
@@ -751,7 +751,7 @@ if (tradingError) {
 
       <div className="mt-5 h-px w-full bg-gradient-to-r from-[#FFD54A]/30 via-[#FFD54A]/10 to-transparent" />
 
-      <div className="mt-3 font-mono text-[6px] uppercase tracking-[0.22em] text-zinc-600">
+      <div className="mt-3 font-mono text-[8px] uppercase tracking-[0.22em] text-zinc-400">
         ADD FRIENDS IN EXPLORE!
       </div>
 
@@ -797,7 +797,7 @@ if (tradingError) {
       </span>
 
       {/* Arrow */}
-      <span className="relative z-10 ml-2 inline-block text-[#FFD54A]/40 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[#FFD54A]">
+      <span className="relative z-10 ml-2 inline-block text-[#FFD54A]/75 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[#FFD54A]">
         →
       </span>
     </button>
@@ -813,7 +813,7 @@ if (tradingError) {
   {/* SHOWCASE HEADER */}
   <div className="relative z-10 mb-6 flex items-center justify-between">
     <div>
-      <div className="font-mono text-[7px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/60">
+      <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
         COLLECTION DISPLAY
       </div>
 
@@ -824,7 +824,7 @@ if (tradingError) {
 
     <div className="hidden items-center gap-2 rounded-lg border border-[#FFD54A]/20 bg-[#1b1b1b] px-3 py-2 sm:flex">
       <div className="h-2 w-2 rounded-full bg-[#FFD54A] shadow-[0_0_10px_rgba(255,213,74,0.8)]" />
-      <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-500">
+      <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-300">
         Showcase
       </span>
     </div>
@@ -843,14 +843,14 @@ if (tradingError) {
       <button
         key={key}
         onClick={() => setShowcaseTab(key as any)}
-        className={`group relative overflow-hidden border px-4 py-2.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition-all duration-200 ${
+        className={`group relative overflow-hidden border px-4 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition-all duration-200 ${
           showcaseTab === key
             ? "border-[#FFD54A] bg-[#FFD54A] text-black shadow-[0_0_20px_rgba(255,213,74,0.15)]"
             : "border-[#FFD54A]/15 bg-[#1b1b1b] text-zinc-400 hover:border-[#FFD54A]/50 hover:bg-[#202020] hover:text-white"
         }`}
       >
         <span
-          className={`mr-2 text-[9px] font-black tracking-[0.15em] ${
+          className={`mr-2 text-[10px] font-black tracking-[0.15em] ${
             showcaseTab === key
               ? "text-black/50"
               : "text-[#FFD54A]/40 group-hover:text-[#FFD54A]"
@@ -1025,7 +1025,7 @@ if (tradingError) {
   <div className="pointer-events-none absolute right-0 top-0 h-16 w-16 border-r border-t border-red-500/30" />
   <div className="flex items-start justify-between gap-6">
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-400/70">
+      <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-300/90">
         ACCOUNT
       </div>
 
@@ -1033,7 +1033,7 @@ if (tradingError) {
         Account Deletion
       </h3>
 
-      <p className="mt-2 text-sm leading-6 text-zinc-500">
+      <p className="mt-2 text-sm leading-6 text-zinc-300">
         Request permanent deletion of your MLPEKAYOU account.
         Your account will remain active until the request is
         manually reviewed and fulfilled. If you change your mind,
@@ -1046,7 +1046,7 @@ if (tradingError) {
       type="button"
       onClick={() => setShowDeletionModal(true)}
       disabled={deletionRequested}
-      className={`shrink-0 border px-5 py-3 text-xs font-bold uppercase tracking-[0.15em] transition-all duration-200 ${
+      className={`shrink-0 border px-5 py-3 text-sm font-bold uppercase tracking-[0.15em] transition-all duration-200 ${
         deletionRequested
           ? "cursor-default border-zinc-700 bg-[#171717] text-zinc-600"
           : "border-red-500/30 bg-[#151515] text-red-400 hover:border-red-500/70 hover:bg-red-500/10 hover:text-red-300"
@@ -1087,7 +1087,7 @@ if (tradingError) {
           </div>
 
           <div>
-            <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-red-400/70">
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-300/90">
               ACCOUNT SECURITY
             </div>
 
@@ -1106,7 +1106,7 @@ if (tradingError) {
         </p>
 
         <div className="mt-5 border border-[#FFD54A]/15 bg-[#181818] p-4">
-          <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/70">
+          <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/90">
             IMPORTANT
           </div>
 
@@ -1119,11 +1119,11 @@ if (tradingError) {
         </div>
 
         <div className="mt-5 border-l-2 border-red-500/50 pl-4">
-          <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-red-400/70">
+          <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-300/90">
             THIS ACTION CANNOT BE UNDONE
           </div>
 
-          <p className="mt-2 text-xs leading-5 text-zinc-500">
+          <p className="mt-2 text-sm leading-6 text-zinc-300">
             Keegan files through requested deletions once every five
             days. If you change your mind, please contact support as soon
             as possible in the MLPEKayou Discord server. Once your account has

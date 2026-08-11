@@ -963,7 +963,7 @@ return (
           <div>
 
             <div className="mb-4 flex items-center gap-3">
-              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.35em] text-[#666]">
+              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.35em] text-[#888]">
                 COLLECTOR PROFILE
               </span>
 
@@ -1024,7 +1024,7 @@ return (
 
                   <span className="hidden h-3 w-px bg-[#3A3A3A] sm:block" />
 
-                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#555]">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#888]">
                     ID VERIFIED
                   </span>
 
@@ -1138,7 +1138,7 @@ return (
           {/* Profile system identifier */}
           <div className="hidden text-right lg:block">
 
-            <div className="font-mono text-[8px] uppercase tracking-[0.3em] text-[#555]">
+            <div className="font-mono text-[8px] uppercase tracking-[0.3em] text-[#888]">
               PROFILE MODULE
             </div>
 
@@ -1146,7 +1146,7 @@ return (
               04 / 02
             </div>
 
-            <div className="mt-2 font-mono text-[7px] uppercase tracking-[0.25em] text-[#444]">
+            <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.25em] text-[#777]">
               PUBLIC COLLECTOR NODE
             </div>
 
@@ -1171,7 +1171,7 @@ return (
           </span>
         </div>
 
-        <span className="font-mono text-[7px] uppercase tracking-[0.25em] text-[#555]">
+        <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[#888]">
           LIVE DATA
         </span>
 
@@ -1182,7 +1182,7 @@ return (
         {/* Owned */}
         <div className="border-r border-[#303030] p-4 sm:p-6">
 
-          <div className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666] sm:text-[8px]">
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#888] sm:text-[9px]">
             CARDS OWNED
           </div>
 
@@ -1194,7 +1194,7 @@ return (
             <div className="h-full w-full bg-[#FFD43B]" />
           </div>
 
-          <div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-[#444] sm:text-[7px]">
+          <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-[#777] sm:text-[8px]">
             COLLECTION INVENTORY
           </div>
 
@@ -1203,7 +1203,7 @@ return (
         {/* Completed */}
         <div className="border-r border-[#303030] p-4 sm:p-6">
 
-          <div className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666] sm:text-[8px]">
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#888] sm:text-[9px]">
             SETS COMPLETED
           </div>
 
@@ -1215,7 +1215,7 @@ return (
             <div className="h-full w-3/4 bg-[#FFD43B]" />
           </div>
 
-          <div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-[#444] sm:text-[7px]">
+          <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-[#777] sm:text-[8px]">
             COLLECTION MILESTONES
           </div>
 
@@ -1224,7 +1224,7 @@ return (
         {/* Listings */}
         <div className="p-4 sm:p-6">
 
-          <div className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#666] sm:text-[8px]">
+          <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#888] sm:text-[9px]">
             ACTIVE LISTINGS
           </div>
 
@@ -1236,7 +1236,7 @@ return (
             <div className="h-full w-1/2 bg-[#FFD43B]" />
           </div>
 
-          <div className="mt-2 font-mono text-[6px] uppercase tracking-[0.2em] text-[#444] sm:text-[7px]">
+          <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-[#777] sm:text-[8px]">
             TRADE + SALE INVENTORY
           </div>
 
@@ -1264,12 +1264,12 @@ return (
 
           </div>
 
-          <div className="mt-2 font-mono text-[7px] uppercase tracking-[0.25em] text-[#555]">
+          <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.25em] text-[#888]">
             INVENTORY / TRADING / WISHLIST
           </div>
         </div>
 
-        <div className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+        <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
           NODE ACTIVE
         </div>
 
@@ -1388,7 +1388,7 @@ return (
               ISO DATA RESTRICTED
             </div>
 
-            <p className="mt-2 font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+            <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
               THIS COLLECTOR HAS HIDDEN THEIR ISO
             </p>
 
@@ -1402,11 +1402,11 @@ return (
 
               <div className="mb-3 flex items-center justify-between">
 
-                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#555]">
+                <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#888]">
                   SELECT SET
                 </span>
 
-                <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
                   {ISO_SET_TABS.length} AVAILABLE
                 </span>
 
@@ -1424,7 +1424,7 @@ return (
                       px-3
                       py-2
                       font-mono
-                      text-[7px]
+                      text-[8px]
                       font-bold
                       uppercase
                       tracking-[0.15em]
@@ -1450,7 +1450,7 @@ return (
               {userIsoCards.length === 0 ? (
                 <div className="py-12 text-center">
 
-                  <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#555]">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#888]">
                     NO ISO DATA
                   </div>
 
@@ -1535,11 +1535,11 @@ return (
 
             <div className="mb-3 flex items-center justify-between">
 
-              <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#555]">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#888]">
                 LISTING SET
               </span>
 
-              <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
                 TRADE / SALE
               </span>
 
@@ -1557,7 +1557,7 @@ return (
                     px-3
                     py-2
                     font-mono
-                    text-[7px]
+                    text-[8px]
                     font-bold
                     uppercase
                     tracking-[0.15em]
@@ -1582,7 +1582,7 @@ return (
             {filteredTradeCards.length === 0 ? (
               <div className="py-12 text-center">
 
-                <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#555]">
+                <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#888]">
                   NO ACTIVE LISTINGS
                 </div>
 
@@ -1690,7 +1690,7 @@ return (
 
                     <div className="border-t border-[#2D2D2D] bg-[#191919] px-2 py-2">
 
-                      <div className="truncate font-mono text-[6px] uppercase tracking-[0.12em] text-[#666] sm:text-[7px]">
+                      <div className="truncate font-mono text-[8px] uppercase tracking-[0.12em] text-[#888] sm:text-[8px]">
                         {getSetName(String(card.set_id))}
                       </div>
 
@@ -1719,7 +1719,7 @@ return (
               WISHLIST DATA RESTRICTED
             </div>
 
-            <p className="mt-2 font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+            <p className="mt-2 font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
               THIS COLLECTOR HAS HIDDEN THEIR WISHLIST
             </p>
 
@@ -1732,11 +1732,11 @@ return (
 
               <div className="mb-3 flex items-center justify-between">
 
-                <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#555]">
+                <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#888]">
                   WISHLIST SET
                 </span>
 
-                <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#444]">
+                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#777]">
                   TARGET CARDS
                 </span>
 
@@ -1754,7 +1754,7 @@ return (
                       px-3
                       py-2
                       font-mono
-                      text-[7px]
+                      text-[8px]
                       font-bold
                       uppercase
                       tracking-[0.15em]
@@ -1779,7 +1779,7 @@ return (
               {filteredWishlistCards.length === 0 ? (
                 <div className="py-12 text-center">
 
-                  <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#555]">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#888]">
                     WISHLIST EMPTY
                   </div>
 
@@ -1922,7 +1922,7 @@ return (
           {/* Top technical bar */}
           <div className="flex items-center justify-between border-b border-[#303030] bg-[#1D1D1D] px-4 py-3">
 
-            <span className="font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD43B]">
               CARD INSPECTION
             </span>
 
@@ -1941,7 +1941,7 @@ return (
           {/* Bottom metadata */}
           <div className="flex items-center justify-between border-t border-[#303030] bg-[#1D1D1D] px-4 py-3">
 
-            <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-[#555]">
+            <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#888]">
               {getSetName(String(quickViewCard.set_id))}
             </span>
 

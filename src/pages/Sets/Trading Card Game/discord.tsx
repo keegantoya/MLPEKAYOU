@@ -90,6 +90,22 @@ const getRarityCode = (rarity: string) => {
   return rarity;
 };
 
+const getDisplayCardCode = (key: string) => {
+  const match = key.match(/^BP02-(PER|PGR|PSPR|PCR|PRR)(\d{2})(-A2|-B2)?$/);
+
+  if (!match) return key.replace("BP02-", "");
+
+  const [, rarity, number, variant = ""] = match;
+  const displayRarity =
+    rarity === "PER" ? "ER" :
+    rarity === "PGR" ? "GR" :
+    rarity === "PSPR" ? "SPR" :
+    rarity === "PCR" ? "CR" :
+    "RR";
+
+  return `※BP02-${displayRarity}${number}${variant}`;
+};
+
 const getCardBack = (key: string) => {
   // C25-C48 have unique backs
   if (key.startsWith("BP02-C")) {
@@ -257,7 +273,7 @@ useEffect(() => {
                   <span className="font-mono text-[5px] font-bold uppercase tracking-[0.3em] text-zinc-600">
                     CONTROL DECK
                   </span>
-                  <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/60">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#FFD54A]/85">
                     BP02
                   </span>
                 </div>
@@ -273,7 +289,7 @@ useEffect(() => {
                   <span className="block text-[#FFD54A]">TCG: Discord</span>
                 </h1>
                 <div className="mt-4 h-px bg-gradient-to-r from-[#FFD54A]/50 to-transparent" />
-                <p className="mt-4 font-mono text-[7px] uppercase leading-5 tracking-[0.08em] text-zinc-500">
+                <p className="mt-4 font-mono text-[9px] uppercase leading-5 tracking-[0.08em] text-zinc-300">
                   Series Two trading card assets. Click a card to mark it as owned.
                   Your ISO list automatically reflects the cards you still need.
                 </p>
@@ -307,7 +323,7 @@ useEffect(() => {
                   <span className="font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-zinc-600">
                     RARITY SELECTOR
                   </span>
-                  <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD54A]/50">
+                  <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#FFD54A]/80">
                     13 NODES
                   </span>
                 </div>
@@ -442,7 +458,7 @@ useEffect(() => {
           <main className="min-w-0">
             <div className="mb-4 flex items-center justify-between border border-white/[0.08] bg-[#080b0b] px-4 py-3">
               <div>
-                <div className="font-mono text-[5px] font-bold uppercase tracking-[0.3em] text-zinc-700">
+                <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-300">
                   ASSET MATRIX
                 </div>
                 <div className="mt-1 font-['Oxanium'] text-sm font-black uppercase tracking-[0.08em] text-white">
@@ -533,8 +549,8 @@ useEffect(() => {
                               </div>
 
                               <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-7">
-                                <div className="font-mono text-[6px] font-bold uppercase tracking-[0.14em] text-white/75">
-                                  {key.replace("BP02-", "")}
+                                <div className="font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-white/90">
+                                  {getDisplayCardCode(key)}
                                 </div>
                               </div>
 
@@ -552,7 +568,7 @@ useEffect(() => {
                       <span className="font-mono text-[5px] uppercase tracking-[0.22em] text-zinc-700">
                         DISCORD / RARITY NODE
                       </span>
-                      <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
+                      <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
                         {count} CARD SLOTS
                       </span>
                     </div>
@@ -582,7 +598,7 @@ useEffect(() => {
                   <div className="font-mono text-[6px] font-black uppercase tracking-[0.25em] text-[#FFD54A]">
                     CARD INSPECTION
                   </div>
-                  <div className="font-mono text-[5px] uppercase tracking-[0.18em] text-zinc-700">
+                  <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-400">
                     FRONT / BACK SYSTEM
                   </div>
                 </div>
