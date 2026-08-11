@@ -304,7 +304,7 @@ export default function Index() {
           </p>
 
           <p className="font-semibold text-white">
-            I am sorry for the inconvenience this has caused, and thank you for your patience while I work to get everything back to normal.
+            UPDATE: The MLPEKAYOU.COM domain was restored and rights were given back. By using the .COM domain, you will automatically now be redirected to .COMMUNITY.
           </p>
 
         </div>
