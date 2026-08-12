@@ -103,7 +103,7 @@ const getDisplayRarityCode = (rarity: string) => {
 const getDisplayCardCode = (key: string) => {
   const match = key.match(/^(BP01)(PER|PSPR|PGR|PCR|PRR)(\d{2})$/);
 
-  if (!match) return key.replace("BP01", "");
+  if (!match) return key.replace(/^BP01/, "BP01-");
 
   const [, prefix, rarity, number] = match;
 

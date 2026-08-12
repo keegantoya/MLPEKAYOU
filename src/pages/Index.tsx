@@ -304,7 +304,11 @@ export default function Index() {
           </p>
 
           <p className="font-semibold text-white">
-            UPDATE: The MLPEKAYOU.COM domain was restored and rights were given back. By using the .COM domain, you will automatically now be redirected to .COMMUNITY.
+            As of 17:30 MDT 08/11/2026, the legal team has relinquished the rights of
+            <span className="font-bold text-white"> mlpekayou.com</span> back to me. However,
+            the damage has already been done. Instead of returning to the old domain, using the old
+            domain will automatically redirect you to the new one moving forward. Thank you everyone
+            for your patience in this frustrating situation.
           </p>
 
         </div>
