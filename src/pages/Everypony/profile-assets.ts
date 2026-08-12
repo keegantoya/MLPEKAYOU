@@ -43,6 +43,7 @@ import avatar042 from "@/assets/avatars/avatar042.webp";
 import avatar043 from "@/assets/avatars/avatar043.webp";
 import avatar044 from "@/assets/avatars/avatar044.webp";
 import avatar045 from "@/assets/avatars/avatar045.webp";
+import avatar046 from "@/assets/avatars/avatar046.webp";
 
 
 import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
@@ -100,6 +101,7 @@ const avatarMap: Record<string, string> = {
   avatar043,
   avatar044,
   avatar045,
+  avatar046,
 
   heimantouavatar: heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,
