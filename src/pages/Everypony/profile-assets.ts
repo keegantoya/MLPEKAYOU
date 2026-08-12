@@ -25,6 +25,25 @@ import avatar024 from "@/assets/avatars/avatar024.webp";
 import avatar025 from "@/assets/avatars/avatar025.webp";
 import avatar026 from "@/assets/avatars/avatar026.webp";
 import avatar027 from "@/assets/avatars/avatar027.webp";
+import avatar028 from "@/assets/avatars/avatar028.webp";
+import avatar029 from "@/assets/avatars/avatar029.webp";
+import avatar030 from "@/assets/avatars/avatar030.webp";
+import avatar031 from "@/assets/avatars/avatar031.webp";
+import avatar032 from "@/assets/avatars/avatar032.webp";
+import avatar033 from "@/assets/avatars/avatar033.webp";
+import avatar034 from "@/assets/avatars/avatar034.webp";
+import avatar035 from "@/assets/avatars/avatar035.webp";
+import avatar036 from "@/assets/avatars/avatar036.webp";
+import avatar037 from "@/assets/avatars/avatar037.webp";
+import avatar038 from "@/assets/avatars/avatar038.webp";
+import avatar039 from "@/assets/avatars/avatar039.webp";
+import avatar040 from "@/assets/avatars/avatar040.webp";
+import avatar041 from "@/assets/avatars/avatar041.webp";
+import avatar042 from "@/assets/avatars/avatar042.webp";
+import avatar043 from "@/assets/avatars/avatar043.webp";
+import avatar044 from "@/assets/avatars/avatar044.webp";
+import avatar045 from "@/assets/avatars/avatar045.webp";
+
 
 import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
@@ -35,7 +54,7 @@ import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 
-export const avatarMap: Record<string, string> = {
+const avatarMap: Record<string, string> = {
   avatar001,
   avatar002,
   avatar003,
@@ -63,6 +82,24 @@ export const avatarMap: Record<string, string> = {
   avatar025,
   avatar026,
   avatar027,
+  avatar028,
+  avatar029,
+  avatar030,
+  avatar031,
+  avatar032,
+  avatar033,
+  avatar034,
+  avatar035,
+  avatar036,
+  avatar037,
+  avatar038,
+  avatar039,
+  avatar040,
+  avatar041,
+  avatar042,
+  avatar043,
+  avatar044,
+  avatar045,
 
   heimantouavatar: heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,

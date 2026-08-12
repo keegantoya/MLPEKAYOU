@@ -2,10 +2,6 @@ export default function LinksPage() {
   return (
     <div className="min-h-screen bg-[#090a0a] font-['Oxanium'] text-white">
       <div className="relative mx-auto aspect-[2/1] min-h-screen w-full max-w-[2200px] overflow-hidden bg-[#0b0c0c]">
-        {/* ========================================================= */}
-        {/* BACKGROUND HUD / TECH GRID                               */}
-        {/* ========================================================= */}
-
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.14]"
           style={{
@@ -22,29 +18,18 @@ export default function LinksPage() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_45%_45%,rgba(255,212,0,.045),transparent_42%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,212,0,.035),transparent_20%,transparent_80%,rgba(255,212,0,.025))]" />
 
-        {/* ========================================================= */}
-        {/* OUTER FRAME                                               */}
-        {/* ========================================================= */}
-
         <div className="pointer-events-none absolute inset-[1.2%] border border-[#FFD400]/30" />
         <div className="pointer-events-none absolute inset-[1.7%] border border-white/[0.035]" />
 
-        {/* Top-left technical corner */}
         <div className="absolute left-[1.2%] top-[1.2%] h-[9%] w-[18%] border-l-2 border-t-2 border-[#FFD400]/80" />
         <div className="absolute left-[1.2%] top-[1.2%] h-px w-[28%] bg-[#FFD400]/30" />
         <div className="absolute left-[1.2%] top-[1.2%] h-[1px] w-[7%] bg-[#FFD400]" />
 
-        {/* Top-right technical corner */}
         <div className="absolute right-[1.2%] top-[1.2%] h-[9%] w-[18%] border-r-2 border-t-2 border-[#FFD400]/50" />
         <div className="absolute right-[1.2%] top-[1.2%] h-px w-[28%] bg-[#FFD400]/20" />
 
-        {/* Bottom corners */}
         <div className="absolute bottom-[1.2%] left-[1.2%] h-[7%] w-[14%] border-b-2 border-l-2 border-[#FFD400]/40" />
         <div className="absolute bottom-[1.2%] right-[1.2%] h-[7%] w-[14%] border-b-2 border-r-2 border-[#FFD400]/40" />
-
-        {/* ========================================================= */}
-        {/* HEADER                                                     */}
-        {/* ========================================================= */}
 
         <header className="absolute left-[3%] right-[3%] top-[2.4%] flex items-center justify-between">
           <div className="flex items-center">
@@ -80,32 +65,15 @@ export default function LinksPage() {
           </div>
         </header>
 
-        {/* ========================================================= */}
-        {/* HANDCAM                                                   */}
-        {/* ========================================================= */}
-
         <section className="absolute bottom-[15%] left-[3%] top-[18%] w-[65.5%]">
-          {/* Clean camera frame: nothing extends into the camera area. */}
           <div className="absolute inset-0 border border-[#FFD400]/55 bg-[#050606]/20 shadow-[0_0_45px_rgba(255,212,0,.035)]" />
         </section>
 
-        {/* ========================================================= */}
-        {/* RIGHT COLUMN                                               */}
-        {/* ========================================================= */}
-
         <aside className="absolute bottom-[15%] right-[3%] top-[18%] w-[28%]">
-          {/* ======================================================= */}
-          {/* FACECAM                                                   */}
-          {/* ======================================================= */}
 
           <section className="absolute left-0 right-0 top-0 h-[43%]">
-            {/* Clean camera frame: nothing extends into the camera area. */}
             <div className="absolute inset-0 border border-[#FFD400]/45 bg-[#050606]/20" />
           </section>
-
-          {/* ======================================================= */}
-          {/* AVAILABLE PRODUCTS                                       */}
-          {/* ======================================================= */}
 
           <section className="absolute bottom-[15%] left-0 right-0 top-[40%]">
             <div className="absolute inset-0 border border-[#FFD400]/45 bg-[#0a0b0b]/90" />
@@ -150,10 +118,6 @@ export default function LinksPage() {
             </div>
           </section>
 
-          {/* ======================================================= */}
-          {/* TOP SUPPORTERS                                          */}
-          {/* ======================================================= */}
-
           <section className="absolute bottom-0 left-0 right-0 h-[15%]">
             <div className="absolute inset-0 border border-[#FFD400]/45 bg-[#0a0b0b]/90" />
             <div className="absolute left-0 top-0 h-full w-1 bg-[#FFD400]/70" />
@@ -177,10 +141,6 @@ export default function LinksPage() {
             </div>
           </section>
         </aside>
-
-        {/* ========================================================= */}
-        {/* BOTTOM HUD BAR                                             */}
-        {/* ========================================================= */}
 
         <footer className="absolute bottom-[3.2%] left-[3%] right-[3%] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -207,14 +167,11 @@ export default function LinksPage() {
             <span className="h-2 w-2 rounded-full bg-[#FFD400] shadow-[0_0_12px_#FFD400]" />
           </div>
         </footer>
-
-        {/* Decorative HUD dots / lines */}
         <div className="pointer-events-none absolute left-[3%] top-[12%] flex gap-1">
           <span className="h-1 w-8 bg-[#FFD400]/40" />
           <span className="h-1 w-3 bg-[#FFD400]/20" />
           <span className="h-1 w-1 bg-[#FFD400]" />
         </div>
-
         <div className="pointer-events-none absolute right-[3%] top-[12%] font-mono text-[25px] uppercase tracking-[0.3em] text-white/35">
           KEEGAN // KAYOU INTERFACE
         </div>

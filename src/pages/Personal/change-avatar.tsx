@@ -31,6 +31,24 @@ import avatar024 from "@/assets/avatars/avatar024.webp";
 import avatar025 from "@/assets/avatars/avatar025.webp";
 import avatar026 from "@/assets/avatars/avatar026.webp";
 import avatar027 from "@/assets/avatars/avatar027.webp";
+import avatar028 from "@/assets/avatars/avatar028.webp";
+import avatar029 from "@/assets/avatars/avatar029.webp";
+import avatar030 from "@/assets/avatars/avatar030.webp";
+import avatar031 from "@/assets/avatars/avatar031.webp";
+import avatar032 from "@/assets/avatars/avatar032.webp";
+import avatar033 from "@/assets/avatars/avatar033.webp";
+import avatar034 from "@/assets/avatars/avatar034.webp";
+import avatar035 from "@/assets/avatars/avatar035.webp";
+import avatar036 from "@/assets/avatars/avatar036.webp";
+import avatar037 from "@/assets/avatars/avatar037.webp";
+import avatar038 from "@/assets/avatars/avatar038.webp";
+import avatar039 from "@/assets/avatars/avatar039.webp";
+import avatar040 from "@/assets/avatars/avatar040.webp";
+import avatar041 from "@/assets/avatars/avatar041.webp";
+import avatar042 from "@/assets/avatars/avatar042.webp";
+import avatar043 from "@/assets/avatars/avatar043.webp";
+import avatar044 from "@/assets/avatars/avatar044.webp";
+import avatar045 from "@/assets/avatars/avatar045.webp";
 
 const avatarMap: Record<string, string> = {
   avatar001,
@@ -60,7 +78,24 @@ const avatarMap: Record<string, string> = {
   avatar025,
   avatar026,
   avatar027,
-};
+  avatar028,
+  avatar029,
+  avatar030,
+  avatar031,
+  avatar032,
+  avatar033,
+  avatar034,
+  avatar035,
+  avatar036,
+  avatar037,
+  avatar038,
+  avatar039,
+  avatar040,
+  avatar041,
+  avatar042,
+  avatar043,
+  avatar044,
+  avatar045};
 
 export default function ChangeAvatar() {
   const navigate = useNavigate();
@@ -271,10 +306,9 @@ return (
 
       <div className="grid grid-cols-3 gap-2 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
 
-{Object.entries(avatarMap).map(([name]) => {
-  const isRetiringAvatar =
-    /^avatar(00[1-9]|01[0-5]|027)$/.test(name);
-
+{Object.entries(avatarMap)
+  .filter(([name]) => !/^avatar(00[1-9]|01[0-5]|027)$/.test(name))
+  .map(([name]) => {
   return (
     <button
       key={name}
@@ -291,15 +325,6 @@ return (
         src={getAvatar(name)}
         className="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
       />
-
-      {/* Retiring indicator */}
-      {isRetiringAvatar && (
-        <div className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center border border-[#E7C84B]/70 bg-[#0b0f11]/90 shadow-[0_0_10px_rgba(231,200,75,.15)]">
-          <span className="font-mono text-[9px] font-black leading-none text-[#E7C84B]">
-            !
-          </span>
-        </div>
-      )}
 
       {currentAvatar === name && (
         <div className="absolute bottom-0 left-0 right-0 bg-[#E7C84B] px-1 py-1">
