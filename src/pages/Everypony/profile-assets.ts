@@ -50,6 +50,7 @@ import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
 import TerriAvatar from "@/assets/avatars/terrypfp.webp";
+import Jacobpfp from "@/assets/avatars/jacobpfp.webp";
 
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
@@ -112,6 +113,11 @@ keeganpfp2: KeeganAvatar,
 
   maipfp,
   "maipfp.webp": maipfp,
+
+  Jacobpfp,
+jacobpfp: Jacobpfp,
+"Jacobpfp.webp": Jacobpfp,
+"jacobpfp.webp": Jacobpfp,
 
   terrypfp: TerriAvatar,
   "terrypfp.webp": TerriAvatar,
