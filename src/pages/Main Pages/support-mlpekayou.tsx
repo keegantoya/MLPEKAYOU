@@ -6,17 +6,17 @@ export default function Support() {
   const products = [
     {
       name: "Discord",
-      category: "TCG",
+      category: "BP02",
       price: "$59.80",
       image: "/set-pictures/discordselling.webp",
       scale: "scale-125",
       disclaimer:
-        "Kayou US gave enough Discord promos to give one out for every two boxes. Last stream will be 08/10/2026. Discord will not be restocked to make room for Nightmare Night TCG.",
+        "Every two boxes comes with one Discord promo. If you want a specific one, ask! I have 1.4 cases left as of 08/13/2026.",
       link: "https://stonestradingco.com/collections/my-little-pony/products/discord",
     },
     {
       name: "Star 1 Booster Box",
-      category: "Star",
+      category: "MLPSE01",
       price: "$127.84",
       image: "/set-pictures/staronebox.webp",
       scale: "scale-115",
@@ -25,18 +25,8 @@ export default function Support() {
       link: "https://stonestradingco.com/collections/my-little-pony/products/kayou-my-little-pony-friendship-eternal-cards-star-edition-english-series-1-display-box",
     },
     {
-      name: "Moon 3 Booster Box",
-      category: "Moon",
-      price: "$47.88",
-      image: "/set-pictures/moonthreebox.webp",
-      scale: "scale-95",
-      disclaimer:
-        "To make way for Moon 4, the current stock of Moon 3 1st Ed. will be the last of our stock.",
-      link: "https://stonestradingco.com/collections/my-little-pony/products/kayou-my-little-pony-friendship-eternal-cards-moon-edition-english-series-3-display-box",
-    },
-    {
       name: "Fun Moments 3 Booster Box PREORDER",
-      category: "Fun Moments",
+      category: "FME03",
       price: "$39.80",
       image: "/set-pictures/funmomentsthreeboxstone.webp",
       scale: "scale-95",
@@ -170,7 +160,8 @@ export default function Support() {
 <p className="mt-5 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-[15px]">
   Every purchase helps support MLPEKayou while growing your
   collection. Everything will always be MSRP with spontaneous
-  Discounts, join the Discord server to find them!
+  Discounts, join the Discord server to find them! Don't forget
+  to ask for posters! Every case comes with several.
 </p>
               {/* Status modules */}
               <div className="mt-9 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-3">
@@ -253,12 +244,10 @@ export default function Support() {
 
             <div className="border-t border-zinc-800 px-5 py-4 sm:px-6">
               <p className="max-w-6xl text-sm leading-6 text-zinc-400">
-                Clicking a product below will redirect you to a partner&apos;s
-                page. Any My Little Pony orders placed on the partner&apos;s
-                page will be shipped and fulfilled by the developer of
-                MLPEKayou. This will also be the same way to purchase for
-                Discord streams. Thank you for your support! This will begin
-                around 07/09/2026.
+                Clicking on any products below will redirect you to StonesTradingCo.
+                Any My Little Pony orders placed through the below links will be packed
+                by the developer of MLPEKAYOU. Live openings are available in the
+                Discord server.
               </p>
             </div>
           </div>
@@ -267,7 +256,7 @@ export default function Support() {
           {/* PRODUCT GRID */}
           {/* ========================================================= */}
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((product, index) => (
               <a
                 key={product.name}
@@ -334,7 +323,7 @@ export default function Support() {
                     </span>
 
                     <span className="font-mono text-[8px] text-zinc-700">
-                      {String(index + 1).padStart(2, "0")} / 04
+                      {String(index + 1).padStart(2, "0")} / 03
                     </span>
                   </div>
 
