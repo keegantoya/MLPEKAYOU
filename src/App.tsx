@@ -64,7 +64,13 @@ import ChangeAvatar from "./pages/Personal/change-avatar";
 import PublicProfile from "@/pages/Everypony/PublicProfile";
 
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppRoutes = () => {
 

@@ -278,6 +278,12 @@ const [listingMode, setListingMode] = useState<
 
   useEffect(() => {
   const load = async (userOverride?: any) => {
+    // Never overwrite unsaved inventory edits with a fresh database load.
+    // Supabase can refresh the auth session when a browser tab becomes active.
+    if (inventoryDirtyRef.current) {
+      return;
+    }
+
     let user = userOverride;
 
     if (!user) {
@@ -343,8 +349,18 @@ trades?.forEach((card: any) => {
 
   const {
     data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    load(session?.user);
+  } = supabase.auth.onAuthStateChange((event) => {
+    // Do not reload inventory for auth/session refresh events.
+    // Those can happen when the browser tab becomes active and would
+    // overwrite unsaved quantity edits with old database values.
+    if (event === "SIGNED_OUT") {
+      setProgressMap({});
+      setTradeCards({});
+      setQuantities({});
+      setSavedQuantities({});
+      setInventoryDirty(false);
+      inventoryDirtyRef.current = false;
+    }
   });
 
   return () => subscription.unsubscribe();
@@ -459,11 +475,13 @@ const changeQuantity = (cardKey: string, value: number) => {
 
   setQuantities((prev) => {
     const updated = { ...prev, [cardKey]: next };
-    setInventoryDirty(
-      Object.keys(updated).some(
-        (key) => (updated[key] || 1) !== (savedQuantities[key] || 1)
-      )
+    const dirty = Object.keys(updated).some(
+      (key) => (updated[key] ?? 1) !== (savedQuantities[key] ?? 1)
     );
+
+    setInventoryDirty(dirty);
+    inventoryDirtyRef.current = dirty;
+
     return updated;
   });
 };
@@ -1418,13 +1436,30 @@ const rarityOrders: Record<string, string[]> = {
                                           onChange={(e) => {
                                             const raw = e.target.value;
                                             if (raw === "") {
-                                              setQuantities((prev) => ({ ...prev, [key]: 0 }));
+                                              setQuantities((prev) => {
+                                                const updated = { ...prev, [key]: 0 };
+                                                setInventoryDirty(true);
+                                                inventoryDirtyRef.current = true;
+                                                return updated;
+                                              });
                                               return;
                                             }
 
                                             const value = Number(raw);
                                             if (!isNaN(value)) {
-                                              setQuantities((prev) => ({ ...prev, [key]: value }));
+                                              setQuantities((prev) => {
+                                                const updated = { ...prev, [key]: value };
+                                                const dirty = Object.keys(updated).some(
+                                                  (cardKey) =>
+                                                    (updated[cardKey] ?? 1) !==
+                                                    (savedQuantities[cardKey] ?? 1)
+                                                );
+
+                                                setInventoryDirty(dirty);
+                                                inventoryDirtyRef.current = dirty;
+
+                                                return updated;
+                                              });
                                             }
                                           }}
                                           onBlur={() => {
