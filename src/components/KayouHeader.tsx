@@ -570,262 +570,249 @@ style={{
 </div>
         </div>
 
-        {/* Menu Items */}
 {/* Menu Items */}
-<div className="py-2 px-3 space-y-4">
+<div className="py-2 px-3 space-y-2">
 
   {/* ACCOUNT */}
-  <div className="space-y-2">
-<button
-  onClick={() => {
-    requestNavigation("/desktop-profile");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+  <div className="space-y-1.5">
+    <button
+      onClick={() => {
+        requestNavigation("/desktop-profile");
+        setOpen(false);
+      }}
+      className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+    >
+      <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]" />
+      <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
 
-  <span className="mr-3 flex h-6 w-6 items-center justify-center border border-[#E7C84B]/30 bg-[#151a1d] text-[9px] font-bold text-[#E7C84B]">
-    ID
-  </span>
+      <span className="mr-3 flex h-6 w-6 items-center justify-center border border-[#E7C84B]/30 bg-[#151a1d] text-[9px] font-bold text-[#E7C84B]">
+        ID
+      </span>
 
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
-      Edit Profile
-    </span>
-    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      IDENTIFICATION
-    </span>
-  </span>
+      <span className="flex flex-1 flex-col">
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
+          Edit Profile
+        </span>
+        <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+          IDENTIFICATION
+        </span>
+      </span>
 
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
-    CFG
-  </span>
-</button>
+      <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
+        CFG
+      </span>
+    </button>
 
-<button
-  onClick={() => {
-    requestNavigation("/kayou-news");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+    <button
+      onClick={() => {
+        requestNavigation("/kayou-news");
+        setOpen(false);
+      }}
+      className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+    >
+      <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+      <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
 
-  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
+      <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
 
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
-      Kayou US Events
-    </span>
-    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      OFFICIAL FEED
-    </span>
-  </span>
+      <span className="flex flex-1 flex-col">
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
+          Kayou US Events
+        </span>
+        <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+          OFFICIAL FEED
+        </span>
+      </span>
 
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
-    SYS
-  </span>
-</button>
+      <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
+        SYS
+      </span>
+    </button>
 
-<button
-  onClick={() => {
-    requestNavigation("/inbox");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+    <button
+      onClick={() => {
+        requestNavigation("/inbox");
+        setOpen(false);
+      }}
+      className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+    >
+      <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+      <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
 
-  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
+      <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
 
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
-      Inbox & Friends
-    </span>
-    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      INTERNAL COMMS
-    </span>
-  </span>
+      <span className="flex flex-1 flex-col">
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-200">
+          Inbox & Friends
+        </span>
+        <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+          INTERNAL COMMS
+        </span>
+      </span>
 
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
-    COM
-  </span>
-</button>
+      <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
+        COM
+      </span>
+    </button>
   </div>
 
   {/* PROGRESS */}
+  <div className="space-y-1.5">
 
-<div className="space-y-2">
-  <div className="text-xs font-semibold uppercase tracking-widest text-[#E7C84B]/80 px-1">
-    Progress
+    <div className="grid grid-cols-2 gap-2">
+      <button
+        onClick={() => {
+          requestNavigation("/my-progress");
+          setOpen(false);
+        }}
+        className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+      >
+        <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+
+        <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
+
+        <span className="flex flex-1 flex-col">
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+            CCG
+          </span>
+          <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+            CCG STATS
+          </span>
+        </span>
+      </button>
+
+      <button
+        onClick={() => {
+          requestNavigation("/progress-tcg");
+          setOpen(false);
+        }}
+        className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+      >
+        <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+
+        <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
+
+        <span className="flex flex-1 flex-col">
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+            TCG
+          </span>
+          <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+            TCG STATS
+          </span>
+        </span>
+      </button>
+    </div>
   </div>
 
-  <div className="grid grid-cols-2 gap-2">
-<button
-  onClick={() => {
-    requestNavigation("/my-progress");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+  {/* COLLECTION */}
+  <div className="space-y-1.5">
 
-  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
+    <div className="grid grid-cols-2 gap-2">
+      <button
+        onClick={() => {
+          requestNavigation("/inventory");
+          setOpen(false);
+        }}
+        className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+      >
+        <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]" />
+        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
 
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
-      CCG
-    </span>
-    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      CCG STATS
-    </span>
-  </span>
-</button>
+        <span className="flex flex-1 flex-col">
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+            Inventory
+          </span>
+          <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+            CARD DATABASE
+          </span>
+        </span>
+      </button>
 
-<button
-  onClick={() => {
-    requestNavigation("/progress-tcg");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+      <button
+        onClick={() => {
+          requestNavigation("/binders");
+          setOpen(false);
+        }}
+        className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+      >
+        <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
+        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
 
-  <span className="mr-3 h-5 w-[2px] bg-[#E7C84B]/70 transition-all duration-200 group-hover:h-6 group-hover:bg-[#E7C84B]" />
-
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
-      TCG
-    </span>
-    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      TCG STATS
-    </span>
-  </span>
-</button>
-  </div>
-</div>
-
-{/* COLLECTION */}
-
-<div className="space-y-2">
-  <div className="text-xs font-semibold uppercase tracking-widest text-[#E7C84B]/80 px-1">
-    Collection
+        <span className="flex flex-1 flex-col">
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+            Binders
+          </span>
+          <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+            DIGITAL MOCK
+          </span>
+        </span>
+      </button>
+    </div>
   </div>
 
-  <div className="grid grid-cols-2 gap-2">
-<button
-  onClick={() => {
-    requestNavigation("/inventory");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+  {/* TRADING */}
+  <div className="space-y-1.5">
 
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
-      Inventory
-    </span>
-    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      CARD DATABASE
-    </span>
-  </span>
+    <button
+      onClick={() => {
+        requestNavigation("/iso");
+        setOpen(false);
+      }}
+      className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
+    >
+      <span className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-[#E7C84B]" />
+      <span className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-[#E7C84B]/40" />
+      <span className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-[#E7C84B]/40" />
+      <span className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-[#E7C84B]/50" />
 
-</button>
+      <span className="mr-3 flex h-7 w-7 shrink-0 items-center justify-center border border-[#E7C84B]/30 bg-[#151a1d] font-mono text-[8px] font-bold text-[#E7C84B]">
+        ISO
+      </span>
 
-<button
-  onClick={() => {
-    requestNavigation("/binders");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2.5 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-[#E7C84B]/80" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-[#E7C84B]/50" />
+      <span className="flex flex-1 flex-col">
+        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
+          ISO / Wishlist
+        </span>
 
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
-      Binders
-    </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      DIGITAL MOCK
-    </span>
-  </span>
-</button>
-  </div>
-</div>
+        <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
+          WANT & TRADE TARGETS
+        </span>
+      </span>
 
-{/* TRADING */}
-
-<div className="space-y-2">
-  <div className="text-xs font-semibold uppercase tracking-widest text-[#E7C84B]/80 px-1">
-    Trading
+      <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
+        ISO
+      </span>
+    </button>
   </div>
 
-<button
-  onClick={() => {
-    requestNavigation("/iso");
-    setOpen(false);
-  }}
-  className="group relative flex w-full items-center overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-3 text-left text-white transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#111619] hover:shadow-[0_0_18px_rgba(231,200,75,0.14)]"
->
-  <span className="absolute left-0 top-0 h-3 w-3 border-l-2 border-t-2 border-[#E7C84B]" />
-  <span className="absolute right-0 top-0 h-3 w-3 border-r-2 border-t-2 border-[#E7C84B]/40" />
-  <span className="absolute bottom-0 left-0 h-3 w-3 border-b-2 border-l-2 border-[#E7C84B]/40" />
-  <span className="absolute bottom-0 right-0 h-3 w-3 border-b-2 border-r-2 border-[#E7C84B]/50" />
+  <div className="mx-4 my-2 border-t border-zinc-700" />
 
-  <span className="mr-3 flex h-7 w-7 shrink-0 items-center justify-center border border-[#E7C84B]/30 bg-[#151a1d] font-mono text-[8px] font-bold text-[#E7C84B]">
-    ISO
-  </span>
+  {/* Logout */}
+  <button
+    onClick={() => {
+      handleLogout();
+      setOpen(false);
+    }}
+    className="group relative ml-4 flex w-[calc(100%-2rem)] items-center justify-between overflow-hidden border border-[#4a3030] bg-[#120e0e] px-4 py-2 text-left text-[#dca0a0] transition-all duration-200 hover:border-red-400/70 hover:bg-[#1a1010] hover:text-red-300 hover:shadow-[0_0_18px_rgba(248,113,113,0.12)]"
+  >
+    <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-red-400/70" />
+    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-red-400/40" />
 
-  <span className="flex flex-1 flex-col">
-    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">
-      ISO / Wishlist
+    <span className="flex flex-col">
+      <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+        Logout
+      </span>
+      <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-red-300/80 group-hover:text-red-300/70">
+        TERMINATE SESSION
+      </span>
     </span>
 
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.22em] text-zinc-400 group-hover:text-[#E7C84B]/70">
-      WANT & TRADE TARGETS
+    <span className="font-mono text-[9px] font-bold tracking-[0.15em] text-red-300/90 group-hover:text-red-300">
+      EXIT
     </span>
-  </span>
-
-  <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#E7C84B]/90 group-hover:text-[#E7C84B]">
-    ISO
-  </span>
-</button>
-</div>
-<div className="mx-4 my-4 border-t border-zinc-700" />
-
-{/* Logout */}
-<button
-  onClick={() => {
-    handleLogout();
-    setOpen(false);
-  }}
-  className="group relative ml-4 flex w-[calc(100%-2rem)] items-center justify-between overflow-hidden border border-[#4a3030] bg-[#120e0e] px-4 py-2.5 text-left text-[#dca0a0] transition-all duration-200 hover:border-red-400/70 hover:bg-[#1a1010] hover:text-red-300 hover:shadow-[0_0_18px_rgba(248,113,113,0.12)]"
->
-  <span className="absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-red-400/70" />
-  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-red-400/40" />
-
-  <span className="flex flex-col">
-    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-      Logout
-    </span>
-    <span className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-red-300/80 group-hover:text-red-300/70">
-      TERMINATE SESSION
-    </span>
-  </span>
-
-  <span className="font-mono text-[9px] font-bold tracking-[0.15em] text-red-300/90 group-hover:text-red-300">
-    EXIT
-  </span>
-</button>
+  </button>
 </div>
 
 {/* Social Links */}

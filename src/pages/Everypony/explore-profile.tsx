@@ -359,57 +359,57 @@ if (prefix === "BP02-PER") {
       return;
     }
     
-    if (set.id === "SD") {
-      const progressRow = (isoProgress || []).find(
-        (row: any) => String(row.set_id) === "SD"
-      );
-    
-      const progress = progressRow?.progress || {};
-    
-      const SD_STRUCTURE = [
-        { prefix: "SD01C", count: 9 },
-        { prefix: "SD01U", count: 7 },
-        { prefix: "SD01SR", count: 6 },
-        { prefix: "SD01SPR", count: 10 },
-        { prefix: "SD01GR", count: 6 },
-        { prefix: "SD01CR", count: 6 },
-        { prefix: "SD01ER", count: 6 },
-        { prefix: "SD01PER", count: 12 },
-        { prefix: "SD01PRR", count: 6 },
-      ];
-    
-      SD_STRUCTURE.forEach(({ prefix, count }) => {
-        for (let i = 0; i < count; i++) {
-          let num = i + 1;
-    
-          // SD01PER is numbered 07–18
-          if (prefix === "SD01PER") {
-            num = i + 7;
-            if (num > 18) continue;
-          }
-    
-          const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
-    
-          const isOwned =
-            progress[cardKey] === true ||
-            progress[`BONUS-${cardKey}`] === true ||
-            progress[`STARTER-${cardKey}`] === true;
-    
-          if (
-      !isOwned &&
-      !inProgressCards.has(cardKey)
-    ) {
-            isoCards.push({
-              id: `SD-${cardKey}`,
-              set_id: "SD",
-              card_key: cardKey,
-            });
-          }
-        }
-      });
-    
-      return;
+if (set.id === "SD") {
+  const progressRow = (isoProgress || []).find(
+    (row: any) => String(row.set_id) === "SD"
+  );
+
+  const progress = progressRow?.progress || {};
+
+  const SD_STRUCTURE = [
+    { prefix: "SD01C", count: 9 },
+    { prefix: "SD01U", count: 7 },
+    { prefix: "SD01SR", count: 6 },
+    { prefix: "SD01SPR", count: 10 },
+    { prefix: "SD01GR", count: 6 },
+    { prefix: "SD01CR", count: 6 },
+    { prefix: "SD01ER", count: 6 },
+    { prefix: "SD01PER", count: 12 },
+    { prefix: "SD01PRR", count: 6 },
+  ];
+
+  SD_STRUCTURE.forEach(({ prefix, count }) => {
+    for (let i = 0; i < count; i++) {
+      let num = i + 1;
+
+      if (prefix === "SD01PER") {
+        num = i + 7;
+        if (num > 18) continue;
+      }
+
+      const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
+
+      const isOwned =
+        progress[cardKey] === true ||
+        progress[`BONUS-${cardKey}`] === true ||
+        progress[`STARTER-${cardKey}`] === true;
+
+      const isInProgress =
+        inProgressCards.has(cardKey) ||
+        inProgressCards.has(`BONUS-${cardKey}`);
+
+      if (!isOwned && !isInProgress) {
+        isoCards.push({
+          id: `SD-${cardKey}`,
+          set_id: "SD",
+          card_key: cardKey,
+        });
+      }
     }
+  });
+
+  return;
+}
     
     if (set.id === "tcgpromos") {
   for (let i = 1; i <= 18; i++) {

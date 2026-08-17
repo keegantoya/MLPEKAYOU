@@ -213,7 +213,18 @@ const hiddenIsoCards = new Set(
         row.status === "trade_in_progress" ||
         row.status === "purchase_in_progress"
     )
-    .map((row: any) => String(row.card_key))
+    .flatMap((row: any) => {
+      const cardKey = String(row.card_key);
+
+      if (cardKey.startsWith("BONUS-")) {
+        return [
+          cardKey,
+          `SD-${cardKey}`,
+        ];
+      }
+
+      return [cardKey];
+    })
 );
 
 const iso: Card[] = [];

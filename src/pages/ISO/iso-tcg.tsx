@@ -132,8 +132,9 @@ export default function ISOTCG({
   hiddenSets,
   wishlistMode,
 }: ISOTCGProps) {
-  const [owned, setOwned] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(true);
+
+const [owned, setOwned] = useState<Record<string, boolean>>({});
+const [loading, setLoading] = useState(true);
 const [userId, setUserId] = useState("");
 const { wishlist, toggleWishlist } = useWishlist();
 
@@ -168,25 +169,25 @@ const starterDeckGroups = [
       }
       setUserId(user.id);
 
-      const allOwned: Record<string, boolean> = {};
+const allOwned: Record<string, boolean> = {};
 
-      for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
-        const { data: progress } = await supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", user.id)
-          .eq("set_id", set.id)
-          .single();
+for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
+  const { data: progress } = await supabase
+    .from("collection_progress_raw")
+    .select("progress")
+    .eq("user_id", user.id)
+    .eq("set_id", set.id)
+    .single();
 
-Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-  if (value) {
-    allOwned[key] = true;
-  }
-});
-      }
+  Object.entries(progress?.progress || {}).forEach(([key, value]) => {
+    if (value) {
+      allOwned[key] = true;
+    }
+  });
+}
 
-      setOwned(allOwned);
-      setLoading(false);
+setOwned(allOwned);
+setLoading(false);
     };
 
     load();
@@ -531,8 +532,6 @@ if (set.id === "SD") {
 }
 
 return !owned[card.key];
-
-  return !owned[card.key];
 });
 
         if (missing.length === 0) {
