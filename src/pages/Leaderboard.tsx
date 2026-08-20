@@ -29,14 +29,6 @@ const TCG_SET_IDS = new Set([
   "tcgpromos",
 ]);
 
-const EXCLUDED_USERNAMES = new Set([
-  "HeiManTou (Chinese Collector)",
-]);
-
-const EXCLUDED_USER_IDS = new Set([
-  "6151aa9f-0b2d-4f8f-ab3b-1a09b989e5af",
-]);
-
 const LEADERBOARD_USER_ID =
   "94a1c998-d040-4dd2-b2fb-5f606287139d";
 
@@ -44,6 +36,7 @@ const Leaderboard = () => {
   const [ccgLeaders, setCcgLeaders] = useState<LeaderboardUser[]>([]);
   const [tcgLeaders, setTcgLeaders] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showVerificationNotice, setShowVerificationNotice] = useState(true);
 
   /*
    * ------------------------------------------------------------
@@ -127,17 +120,40 @@ useEffect(() => {
       );
 
       /*
-       * Apply Discord eligibility and exclusions.
+       * Load centralized user exclusions.
+       *
+       * Anyone in leaderboard_exclusions is excluded from
+       * both the leaderboard and community set pages.
+       */
+
+      const { data: excludedUsers, error: exclusionsError } =
+        await supabase
+          .from("leaderboard_exclusions")
+          .select("user_id");
+
+      if (exclusionsError) {
+        console.error(
+          "Leaderboard exclusions error:",
+          exclusionsError
+        );
+        return;
+      }
+
+      const excludedUserIds = new Set(
+        (excludedUsers || []).map(
+          (user: any) => user.user_id
+        )
+      );
+
+      /*
+       * Apply Discord eligibility and centralized exclusions.
        */
 
       const filterEligible = (profiles: any[]) =>
         profiles.filter(
           (profile: any) =>
             eligibleUserIds.has(profile.id) &&
-            profile.username !==
-              "HeiManTou (Chinese Collector)" &&
-            profile.id !==
-              "6151aa9f-0b2d-4f8f-ab3b-1a09b989e5af"
+            !excludedUserIds.has(profile.id)
         );
 
       const eligibleCcgProfiles =
@@ -847,8 +863,71 @@ const renderLeaderboardSection = (
  */
 
 return (
-  <div
-    className="
+  <>
+    {showVerificationNotice && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
+        <div className="relative w-full max-w-2xl overflow-hidden border border-[#E7C84B]/70 bg-[#0b0f10] shadow-[0_0_60px_rgba(231,200,75,.12)]">
+          <CornerBrackets color="#E7C84B" />
+
+          <div className="border-b border-[#293134] bg-[#080c0d] px-6 py-5 sm:px-8">
+            <div className="flex items-center gap-3">
+              <div className="h-2.5 w-2.5 rounded-full bg-[#E7C84B] shadow-[0_0_12px_#E7C84B]" />
+              <div className="font-mono text-[9px] font-bold uppercase tracking-[0.32em] text-[#E7C84B]">
+                LEADERBOARD ACCESS NOTICE
+              </div>
+            </div>
+
+            <h2 className="mt-3 text-2xl font-black uppercase tracking-tight text-[#edf4f6] sm:text-3xl">
+              VERIFIED COLLECTORS ONLY
+            </h2>
+          </div>
+
+          <div className="px-6 py-7 sm:px-8 sm:py-8">
+            <div className="space-y-5 font-mono text-[11px] uppercase leading-[1.8] tracking-[0.08em] text-[#d5dddf]">
+              <p>
+                YOU ARE ONLY ALLOWED ON THIS LEADERBOARD IF YOU ARE A
+                <span className="font-bold text-[#E7C84B]">
+                  {" "}VERIFIED NORTH AMERICAN COLLECTOR.
+                </span>
+              </p>
+
+              <p>
+                IF YOU SHOW UP ON THIS LEADERBOARD AND NOBODY KNOWS WHO YOU ARE,
+                <span className="font-bold text-[#E7C84B]">
+                  {" "}YOU WILL BE BANNED FROM THE LEADERBOARD.
+                </span>
+              </p>
+
+              <p>
+                YOU MUST BE IN THE
+                <span className="font-bold text-[#E7C84B]">
+                  {" "}MLPEKAYOU DISCORD SERVER
+                </span>
+                {" "}TO VERIFY THAT YOU ARE NORTH AMERICAN AND COLLECT NORTH
+                AMERICAN CARDS.
+              </p>
+            </div>
+
+            <div className="mt-7 border-t border-[#293134] pt-5">
+              <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-[#7f8b8e]">
+                DISCORD AUTHENTICATION REQUIRED // VERIFICATION REQUIRED
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowVerificationNotice(false)}
+              className="mt-6 w-full border border-[#E7C84B]/70 bg-[#E7C84B] px-5 py-3.5 font-mono text-[10px] font-black uppercase tracking-[0.25em] text-[#080b0c] transition-all hover:bg-[#f0d66a]"
+            >
+              I UNDERSTAND — CONTINUE
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <div
+      className="
       relative
       min-h-screen
       overflow-hidden
@@ -1148,6 +1227,7 @@ return (
         }}
       />
     </div>
+  </>
   );
 };
 

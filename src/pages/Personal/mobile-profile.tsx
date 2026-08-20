@@ -29,6 +29,11 @@ const [copied, setCopied] = useState(false);
 const [deletionRequested, setDeletionRequested] = useState(false);
 const [showDeletionModal, setShowDeletionModal] = useState(false);
 const [submittingDeletion, setSubmittingDeletion] = useState(false);
+
+  // Leaderboard self-ban
+  const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+  const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
+  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
 const [showBugReport, setShowBugReport] = useState(false);
 
 const [stats, setStats] = useState({
@@ -66,6 +71,20 @@ useEffect(() => {
     setDiscord(tradingProfile?.discord_username || "");
     setUsernameDraft(data?.username || "");
 setDiscordDraft(tradingProfile?.discord_username || "");
+
+    const { data: leaderboardBan, error: leaderboardBanError } =
+      await supabase
+        .from("leaderboard_exclusions")
+        .select("user_id")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+    if (leaderboardBanError) {
+      console.error("Leaderboard ban status error:", leaderboardBanError);
+    }
+
+    setLeaderboardBanned(!!leaderboardBan);
+    setLoadingLeaderboardBan(false);
   };
 
   loadProfile();
@@ -78,6 +97,41 @@ setDiscordDraft(tradingProfile?.discord_username || "");
 
   return () => subscription.unsubscribe();
 }, []);
+
+async function selfBanFromLeaderboard() {
+  if (leaderboardBanned) return;
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    console.error("Leaderboard self-ban: no authenticated session.");
+    return;
+  }
+
+  setLeaderboardBanned(true);
+  setLoadingLeaderboardBan(false);
+
+  const { error } = await supabase
+    .from("leaderboard_exclusions")
+    .upsert(
+      {
+        user_id: session.user.id,
+        reason:
+          "Self-banned from leaderboard because user collects non-North American cards",
+      },
+      { onConflict: "user_id" }
+    );
+
+  if (error) {
+    console.error("Leaderboard self-ban error:", error);
+    setLeaderboardBanned(false);
+    return;
+  }
+
+  setLeaderboardBanned(true);
+}
 
 async function requestAccountDeletion() {
   if (deletionRequested || submittingDeletion) return;
@@ -655,6 +709,136 @@ if (tradingError) {
   </div>
 </div>
 
+
+{/* LEADERBOARD ELIGIBILITY */}
+<div className="relative mx-5 mt-4 overflow-hidden border border-[#FFD54A]/20 bg-[#101212] p-3.5">
+  <div className="pointer-events-none absolute right-0 top-0 h-16 w-16 border-r border-t border-[#FFD54A]/30" />
+
+  <div className="flex items-center justify-between gap-3">
+    <div className="min-w-0">
+      <div className="flex items-center gap-2">
+        <div className="text-[8px] font-bold uppercase tracking-[0.22em] text-[#FFD54A]/90">
+          LEADERBOARD ELIGIBILITY
+        </div>
+
+        <button
+          type="button"
+          aria-label="Leaderboard eligibility information"
+          onClick={() => setShowLeaderboardBanInfo(true)}
+          className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[#FFD54A]/35 bg-[#181818] font-mono text-[8px] font-black text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
+        >
+          ?
+        </button>
+      </div>
+
+      <h3 className="mt-1 font-['Oxanium'] text-sm font-black uppercase tracking-[0.02em] text-white">
+        North American Collector
+      </h3>
+
+      <p className="mt-1 max-w-[220px] text-[10px] leading-4 text-zinc-400">
+        If you collect cards from regions other than North America, toggle this
+        on to permanently remove yourself from all leaderboards.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      role="switch"
+      aria-checked={leaderboardBanned}
+      disabled={leaderboardBanned}
+      onClick={selfBanFromLeaderboard}
+      className={`relative flex h-6 w-11 shrink-0 items-center border p-0.5 transition-all ${
+        leaderboardBanned
+          ? "cursor-not-allowed border-zinc-700 bg-zinc-800 opacity-60"
+          : "cursor-pointer border-[#FFD54A]/50 bg-[#171717] hover:border-[#FFD54A]"
+      }`}
+    >
+      <span
+        className={`h-5 w-5 transition-all ${
+          leaderboardBanned
+            ? "translate-x-6 bg-zinc-500"
+            : "translate-x-0 bg-[#FFD54A]"
+        }`}
+      />
+    </button>
+  </div>
+
+  <div className="mt-3 border-t border-white/[0.07] pt-2.5">
+
+    {leaderboardBanned && (
+      <div className="mt-1 font-mono text-[7px] uppercase tracking-[0.1em] text-zinc-500">
+        LEADERBOARD BAN ACTIVE // CONTACT KEEGAN TO UNDO
+      </div>
+    )}
+  </div>
+</div>
+
+{/* LEADERBOARD BAN INFORMATION MODAL */}
+{showLeaderboardBanInfo && (
+  <div
+    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md"
+    onMouseDown={(e) => {
+      if (e.target === e.currentTarget) setShowLeaderboardBanInfo(false);
+    }}
+  >
+    <div className="relative w-full max-w-sm overflow-hidden border border-[#FFD54A]/30 bg-[#111111]">
+      <div className="absolute left-0 top-0 h-10 w-10 border-l-2 border-t-2 border-[#FFD54A]/70" />
+      <div className="absolute right-0 top-0 h-10 w-10 border-r-2 border-t-2 border-[#FFD54A]/70" />
+      <div className="absolute bottom-0 left-0 h-10 w-10 border-b-2 border-l-2 border-[#FFD54A]/70" />
+      <div className="absolute bottom-0 right-0 h-10 w-10 border-b-2 border-r-2 border-[#FFD54A]/70" />
+
+      <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-5 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/40 bg-[#FFD54A]/10">
+            <span className="font-mono text-sm font-black text-[#FFD54A]">?</span>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
+              LEADERBOARD POLICY
+            </div>
+            <h2 className="mt-1 text-xl font-black uppercase text-white">
+              Regional Collection
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-5 py-6">
+        {leaderboardBanned ? (
+          <>
+            <p className="text-sm leading-6 text-zinc-300">
+              THIS WEBSITE WAS MADE ONLY FOR NORTH AMERICAN COLLECTORS.
+            </p>
+            <p className="mt-4 text-sm leading-6 text-zinc-300">
+              IT IS OK FOR YOU TO CONTINUE TO USE THIS WEBSITE, BUT YOU HAVE
+              BEEN BANNED FROM ANY AND ALL LEADERBOARDS DUE TO YOUR ADVANTAGES.
+            </p>
+            <div className="mt-5 border-l-2 border-[#FFD54A]/60 pl-4">
+              <p className="text-sm font-bold uppercase leading-6 text-[#FFD54A]">
+                IF YOU THINK THIS WAS A MISTAKE, YOU MUST REACH OUT TO KEEGAN.
+              </p>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm leading-6 text-zinc-300">
+            CLICK THE BUTTON IF YOU ARE COLLECTING CHINESE, SEA, EMEA,
+            JAPANESE, OR ANY OF KAYOU&apos;S OTHER REGIONS.
+          </p>
+        )}
+      </div>
+
+      <div className="flex justify-end border-t border-[#292929] bg-[#0c0c0c] px-5 py-4">
+        <button
+          type="button"
+          onClick={() => setShowLeaderboardBanInfo(false)}
+          className="border border-[#FFD54A]/40 bg-[#171717] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
+        >
+          CLOSE
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 {/* Quick Stats */}
 <div className="relative mt-6 grid grid-cols-2 gap-2 px-5">

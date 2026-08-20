@@ -277,6 +277,30 @@ const CommunitySet = () => {
           .map((p: any) => p.user_id)
       );
 
+      /*
+       * Load the same centralized exclusion list used by
+       * the leaderboard.
+       */
+
+      const { data: excludedUsers, error: exclusionsError } =
+        await supabase
+          .from("leaderboard_exclusions")
+          .select("user_id");
+
+      if (exclusionsError) {
+        console.error(
+          "Community exclusions error:",
+          exclusionsError
+        );
+        return;
+      }
+
+      const excludedUserIds = new Set(
+        (excludedUsers || []).map(
+          (user: any) => user.user_id
+        )
+      );
+
       if (!progress || !profiles) return;
 
       const profileMap: Record<string, any> = {};
@@ -289,7 +313,10 @@ const CommunitySet = () => {
       const finished: any[] = [];
 
       progress.forEach((row: any) => {
-        if (!eligibleUserIds.has(row.user_id)) {
+        if (
+          !eligibleUserIds.has(row.user_id) ||
+          excludedUserIds.has(row.user_id)
+        ) {
           return;
         }
 
@@ -421,23 +448,9 @@ const user = {
   updated: row.updated_at,
 };
 
-        if (
-          user.username ===
-            "HeiManTou (Chinese Collector)" ||
-          user.username === "HeiManTou"
-        ) {
-          return;
-        }
-
         const actualTotal = set.total;
 
-        if (
-          id === "7" &&
-          user.username ===
-            "HeiManTou (Chinese Collector)"
-        ) {
-          active.push(user);
-        } else if (owned === actualTotal) {
+        if (owned === actualTotal) {
           finished.push(user);
         } else {
           active.push(user);
