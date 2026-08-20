@@ -718,7 +718,7 @@ if (tradingError) {
     <div className="min-w-0">
       <div className="flex items-center gap-2">
         <div className="text-[8px] font-bold uppercase tracking-[0.22em] text-[#FFD54A]/90">
-          LEADERBOARD ELIGIBILITY
+          REGIONAL ASSOCIATION
         </div>
 
         <button
