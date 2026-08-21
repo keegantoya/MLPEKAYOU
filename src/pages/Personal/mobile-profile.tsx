@@ -34,6 +34,7 @@ const [submittingDeletion, setSubmittingDeletion] = useState(false);
   const [leaderboardBanned, setLeaderboardBanned] = useState(false);
   const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
   const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] = useState(false);
 const [showBugReport, setShowBugReport] = useState(false);
 
 const [stats, setStats] = useState({
@@ -351,6 +352,11 @@ const displayName = profile?.username || "Twilight Sparkle";
           title: "Binders",
           subtitle: "Browse your binders",
           onClick: () => navigate("/binders"),
+        },
+        {
+          title: "Kayou US News",
+          subtitle: "Official News from Kayou US",
+          onClick: () => navigate("/kayou-news"),
         },
       ],
     },
@@ -711,13 +717,13 @@ if (tradingError) {
 
 
 {/* LEADERBOARD ELIGIBILITY */}
-<div className="relative mx-5 mt-4 overflow-hidden border border-[#FFD54A]/20 bg-[#101212] p-3.5">
+<div className="relative mt-7 overflow-hidden border border-[#FFD54A]/20 bg-[#101212] p-5 shadow-[0_20px_50px_rgba(0,0,0,.35)] sm:p-6">
   <div className="pointer-events-none absolute right-0 top-0 h-16 w-16 border-r border-t border-[#FFD54A]/30" />
 
-  <div className="flex items-center justify-between gap-3">
+  <div className="flex items-start justify-between gap-5">
     <div className="min-w-0">
       <div className="flex items-center gap-2">
-        <div className="text-[8px] font-bold uppercase tracking-[0.22em] text-[#FFD54A]/90">
+        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
           REGIONAL ASSOCIATION
         </div>
 
@@ -725,19 +731,15 @@ if (tradingError) {
           type="button"
           aria-label="Leaderboard eligibility information"
           onClick={() => setShowLeaderboardBanInfo(true)}
-          className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[#FFD54A]/35 bg-[#181818] font-mono text-[8px] font-black text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
+          className="flex h-5 w-5 items-center justify-center rounded-full border border-[#FFD54A]/35 bg-[#181818] font-mono text-[10px] font-black text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
         >
           ?
         </button>
       </div>
 
-      <h3 className="mt-1 font-['Oxanium'] text-sm font-black uppercase tracking-[0.02em] text-white">
-        North American Collector
-      </h3>
-
-      <p className="mt-1 max-w-[220px] text-[10px] leading-4 text-zinc-400">
-        If you collect cards from regions other than North America, toggle this
-        on to permanently remove yourself from all leaderboards.
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">
+        If you are using this website to track MLP Kayou cards in regions outside of 
+        North American cards, click this toggle.
       </p>
     </div>
 
@@ -746,15 +748,15 @@ if (tradingError) {
       role="switch"
       aria-checked={leaderboardBanned}
       disabled={leaderboardBanned}
-      onClick={selfBanFromLeaderboard}
-      className={`relative flex h-6 w-11 shrink-0 items-center border p-0.5 transition-all ${
+      onClick={() => setShowLeaderboardBanConfirm(true)}
+      className={`relative mt-1 flex h-8 w-14 shrink-0 items-center border p-1 transition-all ${
         leaderboardBanned
           ? "cursor-not-allowed border-zinc-700 bg-zinc-800 opacity-60"
           : "cursor-pointer border-[#FFD54A]/50 bg-[#171717] hover:border-[#FFD54A]"
       }`}
     >
       <span
-        className={`h-5 w-5 transition-all ${
+        className={`h-6 w-6 transition-all ${
           leaderboardBanned
             ? "translate-x-6 bg-zinc-500"
             : "translate-x-0 bg-[#FFD54A]"
@@ -763,31 +765,102 @@ if (tradingError) {
     </button>
   </div>
 
-  <div className="mt-3 border-t border-white/[0.07] pt-2.5">
+  <div className="mt-5 border-t border-white/[0.07] pt-4">
 
     {leaderboardBanned && (
-      <div className="mt-1 font-mono text-[7px] uppercase tracking-[0.1em] text-zinc-500">
+      <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-500">
         LEADERBOARD BAN ACTIVE // CONTACT KEEGAN TO UNDO
       </div>
     )}
   </div>
 </div>
 
-{/* LEADERBOARD BAN INFORMATION MODAL */}
-{showLeaderboardBanInfo && (
+{/* LEADERBOARD BAN CONFIRMATION MODAL */}
+{showLeaderboardBanConfirm && (
   <div
-    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-3 backdrop-blur-md"
+    className="fixed inset-0 z-[115] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
     onMouseDown={(e) => {
-      if (e.target === e.currentTarget) setShowLeaderboardBanInfo(false);
+      if (e.target === e.currentTarget) {
+        setShowLeaderboardBanConfirm(false);
+      }
     }}
   >
-    <div className="relative w-full max-w-sm overflow-hidden border border-[#FFD54A]/30 bg-[#111111]">
+    <div className="relative w-full max-w-lg overflow-hidden border border-[#FFD54A]/30 bg-[#111111] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
       <div className="absolute left-0 top-0 h-10 w-10 border-l-2 border-t-2 border-[#FFD54A]/70" />
       <div className="absolute right-0 top-0 h-10 w-10 border-r-2 border-t-2 border-[#FFD54A]/70" />
       <div className="absolute bottom-0 left-0 h-10 w-10 border-b-2 border-l-2 border-[#FFD54A]/70" />
       <div className="absolute bottom-0 right-0 h-10 w-10 border-b-2 border-r-2 border-[#FFD54A]/70" />
 
-      <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-5 py-5">
+      <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/40 bg-[#FFD54A]/10">
+            <span className="font-mono text-sm font-black text-[#FFD54A]">!</span>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
+              IMPORTANT
+            </div>
+            <h2 className="mt-1 text-xl font-black uppercase text-white">
+              Are You Sure?
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-6 py-6">
+        <p className="text-sm leading-6 text-zinc-300">
+          This button is <span className="font-bold text-white">ONLY</span> for users who collect cards from regions or languages outside of the North American English release.
+        </p>
+
+        <div className="mt-5 border border-[#FFD54A]/15 bg-[#181818] p-4">
+          <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/90">
+            THIS INCLUDES
+          </div>
+          <p className="mt-2 text-sm font-bold leading-6 text-white">
+            SEA, Chinese, Japanese, or other language/region cards.
+          </p>
+        </div>
+
+        <p className="mt-5 text-sm leading-6 text-zinc-400">
+          If you only collect North American English cards, do not turn this toggle on.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 border-t border-[#292929] bg-[#0c0c0c] px-6 py-4">
+        <button
+          type="button"
+          onClick={() => setShowLeaderboardBanConfirm(false)}
+          className="border border-zinc-700 bg-[#171717] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-300 transition-all hover:border-zinc-500 hover:bg-[#202020] hover:text-white"
+        >
+          NO, CANCEL
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            setShowLeaderboardBanConfirm(false);
+            await selfBanFromLeaderboard();
+          }}
+          className="border border-[#FFD54A]/40 bg-[#FFD54A]/10 px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
+        >
+          YES, CONTINUE
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* LEADERBOARD BAN INFORMATION MODAL */}
+{showLeaderboardBanInfo && (
+  <div
+    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+    onMouseDown={(e) => {
+      if (e.target === e.currentTarget) {
+        setShowLeaderboardBanInfo(false);
+      }
+    }}
+  >
+    <div className="relative w-full max-w-lg overflow-hidden border border-[#FFD54A]/30 bg-[#111111] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
+      <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/40 bg-[#FFD54A]/10">
             <span className="font-mono text-sm font-black text-[#FFD54A]">?</span>
@@ -802,32 +875,29 @@ if (tradingError) {
           </div>
         </div>
       </div>
-
-      <div className="px-5 py-6">
+      <div className="px-6 py-6">
         {leaderboardBanned ? (
           <>
             <p className="text-sm leading-6 text-zinc-300">
-              THIS WEBSITE WAS MADE ONLY FOR NORTH AMERICAN COLLECTORS.
+              This website is only intended for North American English.
             </p>
             <p className="mt-4 text-sm leading-6 text-zinc-300">
-              IT IS OK FOR YOU TO CONTINUE TO USE THIS WEBSITE, BUT YOU HAVE
-              BEEN BANNED FROM ANY AND ALL LEADERBOARDS DUE TO YOUR ADVANTAGES.
+              It is completely okay for you to continue using this website,
+              but you have now been banned from any and all leaderboards.
             </p>
             <div className="mt-5 border-l-2 border-[#FFD54A]/60 pl-4">
               <p className="text-sm font-bold uppercase leading-6 text-[#FFD54A]">
-                IF YOU THINK THIS WAS A MISTAKE, YOU MUST REACH OUT TO KEEGAN.
+                IF YOU THINK THIS WAS A MISTAKE, YOU MUST REACH OUT TO KEEGAN IN THE DISCORD SERVER.
               </p>
             </div>
           </>
         ) : (
           <p className="text-sm leading-6 text-zinc-300">
-            CLICK THE BUTTON IF YOU ARE COLLECTING CHINESE, SEA, EMEA,
-            JAPANESE, OR ANY OF KAYOU&apos;S OTHER REGIONS.
+            This toggle is for users who collect cards from other regions or languages, such as Japanese, Chinese, SEA, etc.
           </p>
         )}
       </div>
-
-      <div className="flex justify-end border-t border-[#292929] bg-[#0c0c0c] px-5 py-4">
+      <div className="flex justify-end border-t border-[#292929] bg-[#0c0c0c] px-6 py-4">
         <button
           type="button"
           onClick={() => setShowLeaderboardBanInfo(false)}

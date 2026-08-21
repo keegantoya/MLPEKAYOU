@@ -1,180 +1,195 @@
 export default function LinksPage() {
+  const products = [
+    {
+      name: "FUN MOMENTS 3",
+      image: "/set-pictures/funmomentsthreeboxstone.webp",
+    },
+    {
+      name: "STAR 1 - 25% OFF",
+      image: "/set-pictures/staronebox.webp",
+    },
+    {
+      name: "DISCORD TCG",
+      image: "/set-pictures/discordselling.webp",
+    },
+  ];
+
+  const supporters = [
+    "Mari",
+    "Badger",
+    "Violet",
+    "Vy",
+    "Brea",
+    "Panda",
+    "Hyve",
+    "Rain",
+    "Kotoshi",
+    "Zen",
+  ];
+
   return (
-    <div className="min-h-screen bg-[#090a0a] font-['Oxanium'] text-white">
-      <div className="relative mx-auto aspect-[2/1] min-h-screen w-full max-w-[2200px] overflow-hidden bg-[#0b0c0c]">
+    <div className="h-screen w-screen overflow-hidden bg-[#ead8e0] font-['Oxanium'] text-[#503c47]">
+      <div className="relative h-full w-full overflow-hidden bg-[#f7edf2]">
+
+        {/* Background */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,#fffafd_0%,transparent_28%),radial-gradient(circle_at_88%_22%,#ead4df_0%,transparent_30%),radial-gradient(circle_at_65%_95%,#fdf5f8_0%,transparent_38%)]" />
+
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.14]"
+          className="pointer-events-none absolute inset-0 opacity-[0.11]"
           style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,212,0,.16) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,212,0,.16) 1px, transparent 1px),
-              linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)
-            `,
-            backgroundSize: "80px 80px, 80px 80px, 20px 20px, 20px 20px",
+            backgroundImage:
+              "radial-gradient(circle, rgba(145,100,120,.25) 1px, transparent 1px)",
+            backgroundSize: "34px 34px",
           }}
         />
 
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_45%_45%,rgba(255,212,0,.045),transparent_42%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,212,0,.035),transparent_20%,transparent_80%,rgba(255,212,0,.025))]" />
+        <div className="pointer-events-none absolute inset-[1.4%] rounded-[42px] border-[3px] border-[#d4afbf]" />
+        <div className="pointer-events-none absolute inset-[2%] rounded-[37px] border-2 border-white" />
 
-        <div className="pointer-events-none absolute inset-[1.2%] border border-[#FFD400]/30" />
-        <div className="pointer-events-none absolute inset-[1.7%] border border-white/[0.035]" />
+        {/* Decorations */}
+        <div className="pointer-events-none absolute left-[3.5%] top-[6%] text-[42px] text-[#c89caf]/50">
+          ✦
+        </div>
 
-        <div className="absolute left-[1.2%] top-[1.2%] h-[9%] w-[18%] border-l-2 border-t-2 border-[#FFD400]/80" />
-        <div className="absolute left-[1.2%] top-[1.2%] h-px w-[28%] bg-[#FFD400]/30" />
-        <div className="absolute left-[1.2%] top-[1.2%] h-[1px] w-[7%] bg-[#FFD400]" />
+        <div className="pointer-events-none absolute right-[4%] top-[6%] text-[44px] text-[#c89caf]/50">
+          ♡
+        </div>
 
-        <div className="absolute right-[1.2%] top-[1.2%] h-[9%] w-[18%] border-r-2 border-t-2 border-[#FFD400]/50" />
-        <div className="absolute right-[1.2%] top-[1.2%] h-px w-[28%] bg-[#FFD400]/20" />
+        <div className="pointer-events-none absolute bottom-[5%] right-[4%] text-[46px] text-[#d3afbf]/45">
+          ♡
+        </div>
 
-        <div className="absolute bottom-[1.2%] left-[1.2%] h-[7%] w-[14%] border-b-2 border-l-2 border-[#FFD400]/40" />
-        <div className="absolute bottom-[1.2%] right-[1.2%] h-[7%] w-[14%] border-b-2 border-r-2 border-[#FFD400]/40" />
-
-        <header className="absolute left-[3%] right-[3%] top-[2.4%] flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="relative flex h-14 w-14 items-center">
+        {/* Header */}
+        <header className="absolute left-[5%] right-[5%] top-[4%] h-[9%]">
+          <div className="flex h-full items-center gap-5">
+            <div className="flex aspect-square h-[min(80px,7vh)] shrink-0 items-center justify-center rounded-[25px] border-[3px] border-white bg-[#dfbfce] text-[clamp(28px,2.2vw,38px)] text-white shadow-[0_10px_25px_rgba(100,65,85,.12)]">
+              ♡
             </div>
 
-            <div>
-              <div className="text-[clamp(22px,2.8vw,52px)] font-black uppercase leading-none tracking-[0.12em]">
-                MLPE<span className="text-[#FFD400]">KAYOU</span>
-              </div>
-              <div className="mt-2 font-mono text-[clamp(15px,.55vw,11px)] uppercase tracking-[0.35em] text-white/30">
-                TRADING CARDS // CREATOR SYSTEM
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden items-center gap-8 md:flex">
-            <div className="text-right">
-              <div className="font-mono text-[18px] uppercase tracking-[0.3em] text-[#FFD400]/70">
-                STREAM STATUS
-              </div>
-              <div className="mt-1 flex items-center justify-end gap-2 font-mono text-[25px] uppercase tracking-[0.2em] text-white/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400] shadow-[0_0_10px_#FFD400]" />
-                SYSTEMS ONLINE
-              </div>
-            </div>
-
-            <div className="h-10 w-px bg-[#FFD400]/20" />
-
-            <div className="font-mono text-[25px] uppercase tracking-[0.22em] text-white/50">
-              01 // LIVE
+            <div className="text-[clamp(34px,4vw,72px)] font-black uppercase leading-[.9] tracking-[0.04em]">
+              MLPE<span className="text-[#b77f99]">KAYOU</span>
             </div>
           </div>
         </header>
 
-        <section className="absolute bottom-[15%] left-[3%] top-[18%] w-[65.5%]">
-          <div className="absolute inset-0 border border-[#FFD400]/55 bg-[#050606]/20 shadow-[0_0_45px_rgba(255,212,0,.035)]" />
-        </section>
+        {/* Main */}
+        <main className="absolute bottom-[7%] left-[5%] right-[5%] top-[14%] flex min-h-0 gap-[2%]">
 
-        <aside className="absolute bottom-[15%] right-[3%] top-[18%] w-[28%]">
+          {/* LEFT / HAND CAM + STONES TRADING CO */}
+          <section className="flex min-h-0 w-[70%] shrink-0 flex-col gap-5">
 
-          <section className="absolute left-0 right-0 top-0 h-[43%]">
-            <div className="absolute inset-0 border border-[#FFD400]/45 bg-[#050606]/20" />
-          </section>
+            {/* HAND CAM */}
+            <div className="relative min-h-0 flex-[1.55]">
+              <div className="absolute left-8 top-8 z-10 px-7 py-3.5 text-[16px] font-black uppercase tracking-[0.2em] text-[#5d4651]">
 
-          <section className="absolute bottom-[15%] left-0 right-0 top-[40%]">
-            <div className="absolute inset-0 border border-[#FFD400]/45 bg-[#0a0b0b]/90" />
-            <div className="absolute left-0 top-0 h-full w-1 bg-[#FFD400]" />
-
-            <div className="absolute -top-3 left-5 bg-[#0b0c0c] px-3 font-mono text-[25px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/70">
-              AVAILABLE PRODUCTS
-            </div>
-
-            <div className="relative grid h-full grid-cols-2 gap-3 px-4 pb-4 pt-5">
-              <div className="flex min-h-0 items-center justify-center border border-white/[0.06] bg-black/20 p-1">
-                <img
-                  src="/set-pictures/discordselling.webp"
-                  alt="Discord"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-
-              <div className="flex min-h-0 items-center justify-center border border-white/[0.06] bg-black/20 p-1">
-                <img
-                  src="/set-pictures/funmomentsthreeboxstone.webp"
-                  alt="Fun Moments 3"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-
-              <div className="flex min-h-0 items-center justify-center border border-white/[0.06] bg-black/20 p-1">
-                <img
-                  src="/set-pictures/moonthreebox.webp"
-                  alt="Moon 3"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-
-              <div className="flex min-h-0 items-center justify-center border border-white/[0.06] bg-black/20 p-1">
-                <img
-                  src="/set-pictures/staronebox.webp"
-                  alt="Star 1"
-                  className="h-full w-full object-contain"
-                />
               </div>
             </div>
-          </section>
 
-          <section className="absolute bottom-0 left-0 right-0 h-[15%]">
-            <div className="absolute inset-0 border border-[#FFD400]/45 bg-[#0a0b0b]/90" />
-            <div className="absolute left-0 top-0 h-full w-1 bg-[#FFD400]/70" />
+            {/* STONES TRADING CO */}
+            <div className="min-h-0 flex-[0.55] rounded-[30px] border-[5px] border-white bg-[#fffafd] px-6 py-4 shadow-[0_14px_30px_rgba(100,65,85,.12)]">
 
-            <div className="absolute -top-3 left-5 bg-[#0b0c0c] px-3 font-mono text-[20px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/70">
-              TOP SUPPORTERS
-            </div>
+              <div className="mb-3 flex items-center justify-between">
+                <div className="text-[clamp(20px,1.5vw,30px)] font-black uppercase leading-none">
+                  <span className="text-[#503c47]">
+                    STONES
+                  </span>
+                  <span className="text-[#b77f99]">
+                    TRADINGCO
+                  </span>
+                </div>
 
-            <div className="relative flex h-full items-center px-7">
-              <div className="grid w-full grid-cols-3 gap-x-5 gap-y-0.5 font-mono text-[clamp(20px,.6vw,12px)] font-bold uppercase tracking-[0.12em] text-white/75">
-                <span className="text-[#FFD400]">Mari</span>
-                <span>Badger</span>
-                <span>Violet</span>
-                <span>Vy</span>
-                <span>Brea</span>
-                <span>Panda</span>
-                <span>Hyve</span>
-                <span>Rain</span>
-                <span>Kotoshi</span>
+                <span className="text-[26px] text-[#c18ea5]">
+                  ✦
+                </span>
+              </div>
+
+              <div className="grid h-[calc(100%-40px)] min-h-0 grid-cols-3 gap-3">
+                {products.map((product) => (
+                  <div
+                    key={product.name}
+                    className="flex min-h-0 flex-col overflow-hidden rounded-[20px] border-[3px] border-[#ead5df] bg-white shadow-[0_8px_18px_rgba(100,65,85,.08)]"
+                  >
+                    <div className="flex shrink-0 items-center justify-center bg-[#dfbfce] px-2 py-2.5">
+                      <span className="text-center text-[clamp(13px,1vw,20px)] font-black uppercase leading-tight tracking-[0.04em] text-[#5d4651]">
+                        {product.name}
+                      </span>
+                    </div>
+
+                    <div className="min-h-0 flex-1 p-2">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
-        </aside>
 
-        <footer className="absolute bottom-[3.2%] left-[3%] right-[3%] flex items-center justify-between">
+          {/* RIGHT SIDE */}
+          <aside className="flex min-h-0 min-w-0 flex-1 flex-col gap-5">
+
+            {/* FACE CAM */}
+            <section className="relative min-h-0 flex-[1]">
+
+              <div className="absolute left-5 top-5 z-10 rounded-full bg-[#dfbfce] px-7 py-3 text-[16px] font-black uppercase tracking-[0.18em] text-[#5d4651]">
+                FACE CAM
+              </div>
+
+              <div className="absolute right-5 top-5 z-10 text-[28px] text-[#c18ea5]">
+                ♡
+              </div>
+
+            </section>
+
+            {/* SUPPORTERS */}
+            <section className="min-h-0 flex-[1.15]">
+              <div className="flex h-full min-h-0 flex-col justify-center rounded-[30px] border-[5px] border-white bg-[#fffafd] px-6 py-6 shadow-[0_14px_30px_rgba(100,65,85,.12)]">
+
+                <div className="mb-5 flex shrink-0 items-center justify-between">
+                  <div className="text-[clamp(24px,1.8vw,36px)] font-black uppercase leading-none tracking-[0.02em]">
+                    Top Supporters
+                  </div>
+
+                  <span className="text-[30px] text-[#c18ea5]">
+                    ✦
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-5 gap-3">
+                  {supporters.map((supporter, index) => (
+                    <div
+                      key={supporter}
+                      className={`flex min-h-[48px] items-center justify-center rounded-xl px-2 py-3 text-center text-[clamp(16px,1.05vw,22px)] font-black uppercase leading-none ${
+                        index === 0
+                          ? "bg-[#dfbfce] text-[#5b4350]"
+                          : "bg-[#f2e3ea] text-[#755664]"
+                      }`}
+                    >
+                      {supporter}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+          </aside>
+        </main>
+
+        {/* Footer */}
+        <footer className="absolute bottom-[2.5%] left-[5%] right-[5%]">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[30px] uppercase tracking-[0.3em] text-[#FFD400]/50">
+            <span className="text-[25px] text-[#c18ea5]">
+              ♡
+            </span>
+
+            <span className="text-[clamp(13px,.8vw,18px)] font-black uppercase tracking-[0.16em] text-[#876675]">
               MLPEKAYOU.COMMUNITY
             </span>
-            <span className="h-px w-14 bg-[#FFD400]/20" />
-            <span className="hidden font-mono text-[25px] uppercase tracking-[0.25em] text-white/35 sm:inline">
-              COLLECT // TRADE // COMPETE
-            </span>
-          </div>
-
-          <div className="flex items-center gap-5">
-            <div className="hidden items-center gap-2 sm:flex">
-              <span className="h-1 w-5 bg-[#FFD400]" />
-              <span className="h-1 w-3 bg-[#FFD400]/50" />
-              <span className="h-1 w-1 bg-[#FFD400]/25" />
-            </div>
-
-            <span className="font-mono text-[35px] uppercase tracking-[0.3em] text-white/40">
-              LIVE
-            </span>
-
-            <span className="h-2 w-2 rounded-full bg-[#FFD400] shadow-[0_0_12px_#FFD400]" />
           </div>
         </footer>
-        <div className="pointer-events-none absolute left-[3%] top-[12%] flex gap-1">
-          <span className="h-1 w-8 bg-[#FFD400]/40" />
-          <span className="h-1 w-3 bg-[#FFD400]/20" />
-          <span className="h-1 w-1 bg-[#FFD400]" />
-        </div>
-        <div className="pointer-events-none absolute right-[3%] top-[12%] font-mono text-[25px] uppercase tracking-[0.3em] text-white/35">
-          KEEGAN // KAYOU INTERFACE
-        </div>
       </div>
     </div>
   );

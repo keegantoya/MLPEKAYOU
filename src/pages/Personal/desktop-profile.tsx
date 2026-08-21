@@ -36,6 +36,7 @@ const [submittingDeletion, setSubmittingDeletion] = useState(false);
 const [leaderboardBanned, setLeaderboardBanned] = useState(false);
 const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
 const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] = useState(false);
 
 const tabs = [
   { label: "Collection", path: "/binders" },
@@ -747,7 +748,7 @@ if (tradingError) {
       role="switch"
       aria-checked={leaderboardBanned}
       disabled={leaderboardBanned}
-      onClick={selfBanFromLeaderboard}
+      onClick={() => setShowLeaderboardBanConfirm(true)}
       className={`relative mt-1 flex h-8 w-14 shrink-0 items-center border p-1 transition-all ${
         leaderboardBanned
           ? "cursor-not-allowed border-zinc-700 bg-zinc-800 opacity-60"
@@ -774,13 +775,13 @@ if (tradingError) {
   </div>
 </div>
 
-{/* LEADERBOARD BAN INFORMATION MODAL */}
-{showLeaderboardBanInfo && (
+{/* LEADERBOARD BAN CONFIRMATION MODAL */}
+{showLeaderboardBanConfirm && (
   <div
-    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+    className="fixed inset-0 z-[115] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
     onMouseDown={(e) => {
       if (e.target === e.currentTarget) {
-        setShowLeaderboardBanInfo(false);
+        setShowLeaderboardBanConfirm(false);
       }
     }}
   >
@@ -793,9 +794,77 @@ if (tradingError) {
       <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/40 bg-[#FFD54A]/10">
+            <span className="font-mono text-sm font-black text-[#FFD54A]">!</span>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
+              IMPORTANT
+            </div>
+            <h2 className="mt-1 text-xl font-black uppercase text-white">
+              Are You Sure?
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-6 py-6">
+        <p className="text-sm leading-6 text-zinc-300">
+          This button is <span className="font-bold text-white">ONLY</span> for users who collect cards from regions or languages outside of the North American English release.
+        </p>
+
+        <div className="mt-5 border border-[#FFD54A]/15 bg-[#181818] p-4">
+          <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/90">
+            THIS INCLUDES
+          </div>
+          <p className="mt-2 text-sm font-bold leading-6 text-white">
+            SEA, Chinese, Japanese, or other language/region cards.
+          </p>
+        </div>
+
+        <p className="mt-5 text-sm leading-6 text-zinc-400">
+          If you only collect North American English cards, do not turn this toggle on.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 border-t border-[#292929] bg-[#0c0c0c] px-6 py-4">
+        <button
+          type="button"
+          onClick={() => setShowLeaderboardBanConfirm(false)}
+          className="border border-zinc-700 bg-[#171717] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-300 transition-all hover:border-zinc-500 hover:bg-[#202020] hover:text-white"
+        >
+          NO, CANCEL
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            setShowLeaderboardBanConfirm(false);
+            await selfBanFromLeaderboard();
+          }}
+          className="border border-[#FFD54A]/40 bg-[#FFD54A]/10 px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
+        >
+          YES, CONTINUE
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* LEADERBOARD BAN INFORMATION MODAL */}
+{showLeaderboardBanInfo && (
+  <div
+    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+    onMouseDown={(e) => {
+      if (e.target === e.currentTarget) {
+        setShowLeaderboardBanInfo(false);
+      }
+    }}
+  >
+    <div className="relative w-full max-w-lg overflow-hidden border border-[#FFD54A]/30 bg-[#111111] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
+      <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/40 bg-[#FFD54A]/10">
             <span className="font-mono text-sm font-black text-[#FFD54A]">?</span>
           </div>
-
           <div>
             <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
               LEADERBOARD POLICY
@@ -806,7 +875,6 @@ if (tradingError) {
           </div>
         </div>
       </div>
-
       <div className="px-6 py-6">
         {leaderboardBanned ? (
           <>
@@ -819,20 +887,16 @@ if (tradingError) {
             </p>
             <div className="mt-5 border-l-2 border-[#FFD54A]/60 pl-4">
               <p className="text-sm font-bold uppercase leading-6 text-[#FFD54A]">
-                IF YOU THINK THIS WAS A MISTAKE, YOU MUST REACH OUT TO KEEGAN IN THE
-                DISCORD SERVER. YOU WILL BE ASKED TO VERIFY YOUR COLLECTION VIA
-                VIDEO AND PHOTOGRAPH TO CONFIRM THAT YOU ARE ELIGIBLE.
+                IF YOU THINK THIS WAS A MISTAKE, YOU MUST REACH OUT TO KEEGAN IN THE DISCORD SERVER.
               </p>
             </div>
           </>
         ) : (
           <p className="text-sm leading-6 text-zinc-300">
-             Click the toggle if you collect any other regions -
-             Japanese, Chinese, SEA, etc...
+            This toggle is for users who collect cards from other regions or languages, such as Japanese, Chinese, SEA, etc.
           </p>
         )}
       </div>
-
       <div className="flex justify-end border-t border-[#292929] bg-[#0c0c0c] px-6 py-4">
         <button
           type="button"
