@@ -570,7 +570,7 @@ const progress =
 
                 100,
 
-                Math.round((collected / totalCards) * 100)
+                Math.floor((collected / totalCards) * 100)
 
               )
 
@@ -1502,7 +1502,7 @@ const isHidden =
 
 const isMastered =
 
-                    col.progress === 100;
+                    (col.collectedCards ?? 0) >= col.totalCards;
 
 const waitingOnKayouIds: string[] = [];
 
