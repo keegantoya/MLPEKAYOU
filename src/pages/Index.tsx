@@ -80,7 +80,7 @@ export default function Index() {
                     No pages have been merged or moved.
                   </span>{" "}
                   The only changes made were on the backend, or changing the
-                  website&apos;s UI. Everything is still exactly where it was
+                  website's UI. Everything is still exactly where it was
                   before; it just looks different.
                 </p>
 
@@ -94,7 +94,7 @@ export default function Index() {
                   out to anybody in the MLPEKAYOU Discord Server. Over{" "}
                   <span className="font-bold text-white">1,000 users</span>{" "}
                   reside in the server and can help explain anything you
-                  don&apos;t understand!
+                  don't understand!
                 </div>
 
                 <a
