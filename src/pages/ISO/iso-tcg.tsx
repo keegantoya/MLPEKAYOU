@@ -6,6 +6,9 @@ import { TCGCharacterMap } from "./Card Characters/card-characters-tcg";
 const getRarityCode = (rarity: string) => {
   return rarity;
 };
+const getDisplayRarity = (rarity: string) => {
+  return rarity.startsWith("P") ? `※${rarity.slice(1)}` : rarity;
+};
 const getDisplayCardCode = (
   setId: string,
   rarity: string,
@@ -123,7 +126,8 @@ const [loading, setLoading] = useState(true);
 const [userId, setUserId] = useState("");
 const { wishlist, toggleWishlist } = useWishlist();
 const [selectedSet, setSelectedSet] =
-  useState<string | null>("SD");
+  useState<string | null>(null);
+const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
 const starterDeckImages = [
   "/starter-decks-boxes/SDTWILIGHT.webp",
   "/starter-decks-boxes/SDFLUTTERSHY.webp",
@@ -186,14 +190,14 @@ setLoading(false);
     load();
   }, []);
   if (loading) {
-    return <div className="text-white">Loading...</div>;
+    return <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>;
   }
 return (
   <div className="space-y-6">
     {/* MOBILE SET NAVIGATION */}
     {!(cardCodeSearch || characterSearch.trim()) && (
-  <div className="md:hidden sticky top-0 z-20 py-2">
-      <div className="flex justify-center gap-2 overflow-x-auto">
+  <div className="sticky top-0 z-20 py-2">
+      <div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">
 {[
   { id: "SD", label: "Friendships Begin" },
   { id: "FW", label: "Fantasy Wonderland" },
@@ -206,19 +210,12 @@ return (
 onClick={() => {
   setSelectedSet(item.id);
 }}
-className={`group flex h-9 shrink-0 items-center gap-2 whitespace-nowrap border px-3 font-oxanium text-[9px] font-bold uppercase tracking-[0.1em] transition-all duration-200 ${
+className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${
   selectedSet === item.id
-    ? "border-yellow-400 bg-[#15191c] text-yellow-400 shadow-[inset_2px_0_0_#facc15]"
-    : "border-[#30363a] bg-[#101417] text-zinc-500 hover:border-yellow-400/50 hover:bg-[#151a1d] hover:text-yellow-400"
+    ? "bg-[#FFD54A] text-zinc-900"
+    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-white/[0.06] dark:text-zinc-300 dark:hover:bg-white/[0.1]"
 }`}
          >
-  <span
-    className={`h-1 w-1 shrink-0 transition-all ${
-      selectedSet === item.id
-        ? "bg-yellow-400 shadow-[0_0_6px_#facc15]"
-        : "bg-zinc-700 group-hover:bg-yellow-400"
-    }`}
-  />
   <span>{item.label}</span>
           </button>
         ))}
@@ -226,9 +223,9 @@ className={`group flex h-9 shrink-0 items-center gap-2 whitespace-nowrap border 
     </div>
 )}
 {!(cardCodeSearch || characterSearch.trim()) &&
-selectedSet === "SD" &&
+(selectedSet === null || selectedSet === "SD") &&
 !hiddenSets.includes("SD") &&
-starterDeckGroups.some((deck) => {
+(searchAllCards || starterDeckGroups.some((deck) => {
 const deckCards = [];
 const add = (rarity: string, count: number) => {
     for (let i = 1; i <= count; i++) {
@@ -249,16 +246,9 @@ const deckIndex = deck.code.slice(-1).charCodeAt(0) - 64;
     `STARTER-SD01RR${String(deckIndex).padStart(2, "0")}`
   );
  return deckCards.some((key) => !owned[key]);
-}) && (
+})) && (
   <section
-    className="
-      p-0
-      md:rounded-lg
-      md:border
-      md:border-zinc-700
-      md:bg-[#202020]
-      md:p-6
-    "
+    className="rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-[#17191a] sm:p-4"
   >
     <h2
   className={`mb-6 text-2xl font-semibold ${
@@ -292,16 +282,16 @@ const deckIndex =
     deckCards.push(
       `STARTER-SD01RR${String(deckIndex).padStart(2, "0")}`
     );
-    return deckCards.some((key) => !owned[key]);
+    return searchAllCards || deckCards.some((key) => !owned[key]);
   })
   .map((deck, i) => (
         <div key={deck.code}>
-          <div className="mb-1 text-center text-xs font-bold text-zinc-300">
+          <div className="mb-2 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
             {deck.code}
           </div>
           <img
   src={starterDeckImages[i]}
-  className="mx-auto w-28 rounded-lg"
+  className="mx-auto w-full max-w-28 rounded-xl"
 />
         </div>
       ))}
@@ -323,11 +313,7 @@ const deckIndex =
   if (cardCodeSearch || characterSearch.trim()) {
     return true;
   }
-  return (
-    window.innerWidth >= 768
-      ? true
-      : selectedSet === set.id
-  );
+  return selectedSet === null || selectedSet === set.id;
 })
   .map((set) => {
 const cards = Object.entries(set.rarities).flatMap(
@@ -474,7 +460,7 @@ if (wishlistMode || searchAllCards) {
   return true;
 }
 if (set.id === "SD") {
-  const statusKey = `BONUS-${card.key}`;
+const statusKey = `BONUS-${card.key}`;
   return !owned[statusKey] && !inProgress.has(statusKey);
 }
 if (set.id === "FW") {
@@ -492,36 +478,54 @@ return (
   <section
     id={`set-${set.id}`}
     key={set.id}
-    className={`
-      p-0
-      ${cardCodeSearch || characterSearch.trim() ? "mt-8" : ""}
-      md:mt-0
-      md:border
-      md:border-[#2b3135]
-      md:bg-[#0f1316]
-      md:p-5
-      md:relative
-      md:overflow-hidden
-    `}
+    className={`rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-[#17191a] sm:p-4 ${
+      cardCodeSearch || characterSearch.trim() ? "mt-6" : ""
+    }`}
   >
-    <div className="hidden md:block absolute left-0 top-0 h-5 w-5 border-l border-t border-yellow-400/50" />
-    <div className="hidden md:block absolute right-0 top-0 h-5 w-5 border-r border-t border-yellow-400/50" />
-    <div className="hidden md:block absolute bottom-0 left-0 h-5 w-5 border-b border-l border-yellow-400/30" />
-    <div className="hidden md:block absolute bottom-0 right-0 h-5 w-5 border-b border-r border-yellow-400/30" />
-    <div className="hidden md:flex mb-5 items-center gap-3 border-b border-[#252b2f] pb-3">
-      <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_8px_#facc15]" />
-      <h2
-        className="font-oxanium text-sm font-bold uppercase tracking-[0.18em]"
-      >
-        {set.name}
-      </h2>
-      <span className="font-mono text-[7px] uppercase tracking-[0.2em] text-zinc-700">
-        {set.prefix} // ACTIVE
-      </span>
-      <div className="h-px flex-1 bg-gradient-to-r from-yellow-400/20 to-transparent" />
-    </div>
+    <div className="mb-4 flex items-center justify-between gap-3">
+<div className="min-w-0">
+<h2 className="truncate text-base font-semibold">{set.name}</h2>
+<p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{missing.length} {missing.length === 1 ? "card" : "cards"}</p>
+</div>
+{(() => {
+const availableRarities = Object.keys(set.rarities).filter((rarity) =>
+missing.some((card) => card.rarity === rarity)
+);
+const selectedRarity =
+selectedRarities[set.id] && availableRarities.includes(selectedRarities[set.id])
+? selectedRarities[set.id]
+: "all";
+return (
+<select
+value={selectedRarity}
+onChange={(event: { target: { value: string } }) =>
+setSelectedRarities((current) => ({
+...current,
+[set.id]: event.target.value,
+}))
+}
+aria-label={`Filter ${set.name} by rarity`}
+className="max-w-[160px] rounded-xl border border-black/10 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-700 outline-none dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200"
+>
+<option value="all">All rarities</option>
+{availableRarities.map((rarity) => (
+<option key={rarity} value={rarity}>{getDisplayRarity(rarity)}</option>
+))}
+</select>
+);
+})()}
+</div>
     <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
-              {missing.map((card) => {
+              {missing.filter((card) => {
+const availableRarities = Object.keys(set.rarities).filter((rarity) =>
+missing.some((item) => item.rarity === rarity)
+);
+const selectedRarity =
+selectedRarities[set.id] && availableRarities.includes(selectedRarities[set.id])
+? selectedRarities[set.id]
+: "all";
+return selectedRarity === "all" || card.rarity === selectedRarity;
+}).map((card) => {
 const fullKey =
   set.id === "SD"
     ? `${set.id}:BONUS-${card.key}`
@@ -534,8 +538,8 @@ const isWishlisted = wishlist.has(fullKey);
 const cardContent = (
   <>
     <div className="mb-2 flex justify-center">
-      <div className="group relative flex items-center gap-2 border border-yellow-400/25 bg-[#0d1113] px-2.5 py-1 shadow-[0_0_12px_rgba(250,204,21,0.06)] transition-all duration-200 hover:border-yellow-400/60 hover:shadow-[0_0_16px_rgba(250,204,21,0.12)]">
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-yellow-300 md:text-[9px]">
+      <div className="rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/[0.06]">
+        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
           {set.id === "SD" ? (
             (() => {
               if (card.rarity === "PER") {
@@ -612,8 +616,6 @@ const index = parseInt(card.key.slice(-2), 10) - 1;
             })()
           )}
         </span>
-        <span className="absolute -left-px -top-px h-1.5 w-1.5 border-l border-t border-yellow-400" />
-        <span className="absolute -bottom-px -right-px h-1.5 w-1.5 border-b border-r border-yellow-400/70" />
       </div>
     </div>
     <img
@@ -626,8 +628,10 @@ const index = parseInt(card.key.slice(-2), 10) - 1;
           ? `/fantasy-wonderland/SD01PER${card.key.slice(-2)}.webp`
           : `/${set.folder}/${card.key}.webp`
       }
-      className={`w-full rounded-lg aspect-[5/7] ${
-  isWishlisted ? "ring-4 ring-pink-400 ring-offset-2" : ""
+      className={`aspect-[5/7] w-full rounded-xl object-cover ${
+isWishlisted
+? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]"
+: ""
 }`}
     />
   </>
@@ -650,14 +654,14 @@ cardKey={
     isWishlisted={isWishlisted}
     toggleWishlist={toggleWishlist}
     onStatusChange={(nextStatus) => {
-      const statusKey =
+const statusKey =
         set.id === "SD"
           ? `BONUS-${card.key}`
           : set.id === "FW"
           ? card.key
           : `${set.id}-${card.key}`;
       setInProgress((prev) => {
-        const next = new Set(prev);
+const next = new Set(prev);
         if (nextStatus) {
           next.add(statusKey);
         } else {

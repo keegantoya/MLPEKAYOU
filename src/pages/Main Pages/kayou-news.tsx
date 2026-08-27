@@ -1,23 +1,16 @@
-import React, { useState } from "react";
-
+import React, { useEffect, useState } from "react";
 type Product = {
   date: string;
   title: string;
   notes: string;
 };
-
 type Tab = "products" | "events";
-
 export default function KayouNews() {
   const [activeTab, setActiveTab] = useState<Tab>("products");
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-
-  const upcomingProducts: Product[] = [
-    {
-      date: "August 2026",
-      title: "My Little Pony TCG: Discord!",
-      notes: "Will release on the seventh of August.",
-    },
+  const [isLightMode, setIsLightMode] = useState(
+    () => document.documentElement.dataset.theme === "light"
+  );
+const upcomingProducts: Product[] = [
     {
       date: "October 2026",
       title: "Moon: Volume Four",
@@ -39,249 +32,264 @@ export default function KayouNews() {
       notes: "No allowed notes at this time.",
     },
   ];
-
+  useEffect(() => {
+    const syncTheme = () => {
+      setIsLightMode(document.documentElement.dataset.theme === "light");
+    };
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
   const renderProducts = () => (
-    <section className="overflow-hidden border border-white/[0.08] bg-[#111313] shadow-[0_24px_70px_rgba(0,0,0,.35)]">
-      <div className="border-b border-white/[0.06] bg-[#0c0e0e] px-5 py-4 sm:px-7">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_9px_rgba(255,212,0,.8)]" />
-          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/55">
-            RELEASE INTELLIGENCE
-          </span>
-        </div>
-
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="font-['Oxanium'] text-xl font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
+    <section
+      className={`rounded-[28px] border p-4 sm:p-6 ${
+        isLightMode
+          ? "border-black/10 bg-white"
+          : "border-white/[0.08] bg-[#151718]"
+      }`}
+    >
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div
+            className={`text-sm font-semibold ${
+              isLightMode ? "text-[#725700]" : "text-[#FFE27A]"
+            }`}
+          >
+            Release Calendar
+          </div>
+          <h2
+            className={`mt-1 text-2xl font-semibold tracking-tight sm:text-3xl ${
+              isLightMode ? "text-zinc-950" : "text-white"
+            }`}
+          >
             Upcoming Products
           </h2>
-
-          <span className="hidden font-mono text-[6px] uppercase tracking-[0.18em] text-white/20 sm:block">
-            {upcomingProducts.length.toString().padStart(2, "0")} ENTRIES
-          </span>
+        </div>
+        <div className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+          {upcomingProducts.length} upcoming releases
         </div>
       </div>
-
-      <div className="p-4 sm:p-6">
-        <div className="grid gap-3 lg:grid-cols-2">
-          {upcomingProducts.map((product, index) => (
-            <article
-              key={index}
-              className="group relative overflow-hidden border border-white/[0.07] bg-[#0b0d0d] p-4 transition-all duration-200 hover:border-[#FFD400]/30 hover:bg-[#101313]"
-            >
-              <div className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-[#FFD400]/70 via-[#FFD400]/10 to-transparent" />
-
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-[#FFD400]/65">
-                  RELEASE WINDOW
-                </span>
-
-                <span className="border border-[#FFD400]/15 bg-[#FFD400]/[0.04] px-2 py-1 font-mono text-[6px] font-bold uppercase tracking-[0.12em] text-[#FFD400]/65">
-                  {product.date}
-                </span>
-              </div>
-
-              <h3 className="font-['Oxanium'] text-base font-bold uppercase leading-tight tracking-[0.03em] text-white transition-colors group-hover:text-[#f5d37a] sm:text-lg">
-                {product.title}
-              </h3>
-
-              <div className="mt-4 border-t border-white/[0.05] pt-3">
-                <span className="font-mono text-[5px] font-bold uppercase tracking-[0.18em] text-white/20">
-                  INTEL
-                </span>
-
-                <p className="mt-1 font-mono text-[8px] leading-relaxed text-white/45">
+      <div className="grid gap-3 md:grid-cols-2">
+        {upcomingProducts.map((product, index) => (
+          <article
+            key={index}
+            className={`rounded-2xl border p-4 transition-colors sm:p-5 ${
+              isLightMode
+                ? "border-black/10 bg-zinc-50 hover:bg-zinc-100/70"
+                : "border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.05]"
+            }`}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h3
+                  className={`text-lg font-semibold leading-snug sm:text-xl ${
+                    isLightMode ? "text-zinc-950" : "text-white"
+                  }`}
+                >
+                  {product.title}
+                </h3>
+                <p
+                  className={`mt-2 text-sm leading-6 sm:text-base ${
+                    isLightMode ? "text-zinc-600" : "text-zinc-400"
+                  }`}
+                >
                   {product.notes || "—"}
                 </p>
               </div>
-            </article>
-          ))}
-        </div>
+              <span
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold ${
+                  isLightMode
+                    ? "border-[#8a6a00]/20 bg-[#c89d13]/10 text-[#725700]"
+                    : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.08] text-[#FFE27A]"
+                }`}
+              >
+                {product.date}
+              </span>
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );
-
   const renderEvents = () => (
-    <section className="relative overflow-hidden border border-white/[0.08] bg-[#111313] shadow-[0_24px_70px_rgba(0,0,0,.35)]">
-      <div className="border-b border-white/[0.06] bg-[#0c0e0e] px-5 py-4 sm:px-7">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="h-1.5 w-1.5 animate-pulse bg-[#FFD400] shadow-[0_0_9px_rgba(255,212,0,.8)]" />
-          <span className="font-mono text-[6px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/55">
-            EVENT INTELLIGENCE
-          </span>
+    <section
+      className={`rounded-[28px] border p-5 sm:p-7 ${
+        isLightMode
+          ? "border-black/10 bg-white"
+          : "border-white/[0.08] bg-[#151718]"
+      }`}
+    >
+      <div className="max-w-2xl">
+        <div
+          className={`text-sm font-semibold ${
+            isLightMode ? "text-[#725700]" : "text-[#FFE27A]"
+          }`}
+        >
+          Events
         </div>
-
-        <h2 className="font-['Oxanium'] text-xl font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
+        <h2
+          className={`mt-1 text-2xl font-semibold tracking-tight sm:text-3xl ${
+            isLightMode ? "text-zinc-950" : "text-white"
+          }`}
+        >
           New Events
         </h2>
-      </div>
-
-      <div className="px-5 py-12 text-center sm:px-10 sm:py-16">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center border border-[#FFD400]/20 bg-[#FFD400]/[0.03] shadow-[0_0_30px_rgba(255,212,0,.05)]">
-          <span className="font-['Oxanium'] text-2xl font-black text-[#FFD400]/70">
+        <div
+          className={`mt-5 rounded-2xl border p-6 sm:p-8 ${
+            isLightMode
+              ? "border-black/10 bg-zinc-50"
+              : "border-white/[0.07] bg-white/[0.03]"
+          }`}
+        >
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl text-2xl font-medium ${
+              isLightMode
+                ? "bg-[#c89d13]/10 text-[#725700]"
+                : "bg-[#FFD54A]/10 text-[#FFE27A]"
+            }`}
+          >
             +
-          </span>
-        </div>
-
-        <div className="mx-auto mt-6 max-w-xl">
-          <div className="mb-2 font-mono text-[6px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/50">
-            AWAITING KAYOU INTEL
           </div>
-
-          <p className="font-['Oxanium'] text-lg font-bold uppercase tracking-[0.03em] text-white sm:text-xl">
+          <h3
+            className={`mt-5 text-xl font-semibold sm:text-2xl ${
+              isLightMode ? "text-zinc-950" : "text-white"
+            }`}
+          >
+            No new events yet
+          </h3>
+          <p
+            className={`mt-2 text-sm leading-6 sm:text-base ${
+              isLightMode ? "text-zinc-600" : "text-zinc-400"
+            }`}
+          >
             New events will be announced when they are passed down by Kayou.
           </p>
-
-          <p className="mt-3 font-mono text-[7px] uppercase leading-relaxed tracking-[0.14em] text-white/20">
+          <p className={`mt-2 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
             No current event schedule has been provided.
           </p>
         </div>
       </div>
-
-      <div className="border-t border-white/[0.05] bg-[#0c0e0e] px-5 py-2.5">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-white/15">
-            EVENT FEED
-          </span>
-          <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-[#FFD400]/35">
-            STANDBY
-          </span>
-        </div>
-      </div>
     </section>
   );
-
   return (
     <div
-      className="min-h-screen overflow-hidden bg-[#090a0a] text-white"
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        setMouse({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        });
-      }}
+      className={`min-h-screen pb-24 transition-colors duration-200 sm:pb-10 ${
+        isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
+      }`}
     >
-      {/* TECH GRID */}
-      <div
-        className="pointer-events-none fixed inset-0 opacity-25"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,212,0,.025) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,212,0,.025) 1px, transparent 1px)
-          `,
-          backgroundSize: "42px 42px",
-        }}
-      />
-
-      {/* AMBIENT CURSOR GLOW */}
-      <div
-        className="pointer-events-none absolute h-[460px] w-[460px] rounded-full bg-[#FFD400]/[0.035] blur-[100px]"
-        style={{
-          left: mouse.x - 230,
-          top: mouse.y - 230,
-        }}
-      />
-
-      {/* HERO */}
-      <section className="relative border-b border-white/[0.07] bg-[#0c0e0e]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,212,0,.07),transparent_42%)]" />
-
-        <div className="relative mx-auto max-w-7xl px-5 pb-10 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
-          <div className="mb-10 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 bg-[#FFD400] shadow-[0_0_12px_rgba(255,212,0,.9)]" />
-              <span className="font-mono text-[7px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/60">
-                KAYOU INTELLIGENCE NETWORK
-              </span>
-            </div>
-
-            <span className="font-mono text-[6px] uppercase tracking-[0.2em] text-white/15">
-              MODULE 07 // LIVE FEED
-            </span>
-          </div>
-
-          <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
-            <div>
-              <div className="mb-3 flex items-center gap-3">
-                <span className="h-px w-10 bg-[#FFD400]/40" />
-                <span className="font-mono text-[6px] font-bold uppercase tracking-[0.3em] text-[#FFD400]/45">
-                  OFFICIAL RELEASE INTELLIGENCE
-                </span>
+      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
+        <section
+          className={`relative overflow-hidden rounded-[30px] border ${
+            isLightMode
+              ? "border-black/10 bg-white shadow-[0_14px_36px_rgba(0,0,0,.05)]"
+              : "border-white/[0.08] bg-[#151718]"
+          }`}
+        >
+          <div
+            className={`absolute inset-0 bg-cover bg-center ${
+              isLightMode ? "opacity-[0.08]" : "opacity-[0.07]"
+            }`}
+            style={{ backgroundImage: "url('/website-assets/exploreequestria.webp')" }}
+          />
+          <div
+            className={`absolute inset-0 ${
+              isLightMode
+                ? "bg-gradient-to-r from-white via-white/95 to-white/80"
+                : "bg-gradient-to-r from-[#151718] via-[#151718]/95 to-[#151718]/80"
+            }`}
+          />
+          <div className="relative p-5 sm:p-7">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <div
+                  className={`text-sm font-semibold ${
+                    isLightMode ? "text-[#725700]" : "text-[#FFE27A]"
+                  }`}
+                >
+                  News & Releases
+                </div>
+                <h1
+                  className={`mt-1 text-4xl font-semibold tracking-tight sm:text-5xl ${
+                    isLightMode ? "text-zinc-950" : "text-white"
+                  }`}
+                >
+                  Kayou News
+                </h1>
+                <p
+                  className={`mt-3 max-w-2xl text-base leading-7 ${
+                    isLightMode ? "text-zinc-600" : "text-zinc-400"
+                  }`}
+                >
+                  Official announcements, release dates, product launches, and future event information.
+                </p>
               </div>
-
-              <h1 className="font-['Oxanium'] text-4xl font-black uppercase leading-none tracking-[0.04em] text-[#f5d37a] sm:text-6xl">
-                Kayou News
-              </h1>
-
-              <p className="mt-5 max-w-2xl font-mono text-[8px] uppercase leading-relaxed tracking-[0.14em] text-white/30 sm:text-[9px]">
-                Official announcements, release dates, product launches, and
-                future event intelligence.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 border border-white/[0.07] bg-[#101212]">
-              <div className="border-r border-white/[0.06] px-5 py-4">
-                <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-white/20">
-                  PRODUCTS
+              <div className="grid grid-cols-2 gap-3 sm:min-w-[290px]">
+                <div
+                  className={`rounded-2xl border p-4 ${
+                    isLightMode
+                      ? "border-black/10 bg-white/85"
+                      : "border-white/10 bg-black/20"
+                  }`}
+                >
+                  <div className={`text-sm font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                    Products
+                  </div>
+                  <div className="mt-1 text-3xl font-semibold">{upcomingProducts.length}</div>
                 </div>
-                <div className="mt-1 font-['Oxanium'] text-2xl font-black text-[#FFD400]">
-                  {upcomingProducts.length}
-                </div>
-              </div>
-
-              <div className="px-5 py-4">
-                <div className="font-mono text-[5px] uppercase tracking-[0.2em] text-white/20">
-                  EVENTS
-                </div>
-                <div className="mt-1 font-['Oxanium'] text-2xl font-black text-white/35">
-                  —
+                <div
+                  className={`rounded-2xl border p-4 ${
+                    isLightMode
+                      ? "border-black/10 bg-white/85"
+                      : "border-white/10 bg-black/20"
+                  }`}
+                >
+                  <div className={`text-sm font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                    Events
+                  </div>
+                  <div className={`mt-1 text-3xl font-semibold ${isLightMode ? "text-zinc-400" : "text-zinc-500"}`}>
+                    —
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* NAV MODULES */}
-          <div className="mt-9 flex flex-wrap gap-2">
-            {[
-              { id: "products", label: "Upcoming Products" },
-              { id: "events", label: "New Events" },
-            ].map((tab) => (
+            <div className="mt-6 grid grid-cols-2 gap-2 sm:max-w-md">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as Tab)}
-                className={`group relative border px-4 py-2.5 font-mono text-[7px] font-bold uppercase tracking-[0.16em] transition-all ${
-                  activeTab === tab.id
-                    ? "border-[#FFD400]/60 bg-[#FFD400] text-[#0b0b0b]"
-                    : "border-white/[0.08] bg-[#111313] text-white/35 hover:border-[#FFD400]/35 hover:text-[#FFD400]"
+                type="button"
+                onClick={() => setActiveTab("products")}
+                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
+                  activeTab === "products"
+                    ? "bg-[#FFD54A] text-black"
+                    : isLightMode
+                    ? "border border-black/10 bg-white/70 text-zinc-600 hover:bg-zinc-100"
+                    : "border border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
                 }`}
               >
-                {tab.label}
+                Upcoming Products
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => setActiveTab("events")}
+                className={`rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
+                  activeTab === "events"
+                    ? "bg-[#FFD54A] text-black"
+                    : isLightMode
+                    ? "border border-black/10 bg-white/70 text-zinc-600 hover:bg-zinc-100"
+                    : "border border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
+                }`}
+              >
+                New Events
+              </button>
+            </div>
           </div>
+        </section>
+        <div className="mt-4">
+          {activeTab === "products" ? renderProducts() : renderEvents()}
         </div>
-      </section>
-
-      {/* CONTENT */}
-      <main className="relative mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10">
-        {activeTab === "products" ? renderProducts() : renderEvents()}
       </main>
-
-      {/* FOOTER STATUS */}
-      <footer className="border-t border-white/[0.06] bg-[#0c0e0e]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-8">
-          <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-white/15">
-            MLPEKAYOU // KAYOU NEWS
-          </span>
-
-          <div className="flex items-center gap-2">
-            <span className="h-1 w-1 bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,.8)]" />
-            <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-emerald-400/40">
-              FEED ONLINE
-            </span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

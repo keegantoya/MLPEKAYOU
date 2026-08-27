@@ -3,7 +3,6 @@ import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { getAvatar } from "../Everypony/profile-assets";
-
 import avatar001 from "@/assets/avatars/avatar001.webp";
 import avatar002 from "@/assets/avatars/avatar002.webp";
 import avatar003 from "@/assets/avatars/avatar003.webp";
@@ -50,7 +49,6 @@ import avatar043 from "@/assets/avatars/avatar043.webp";
 import avatar044 from "@/assets/avatars/avatar044.webp";
 import avatar045 from "@/assets/avatars/avatar045.webp";
 import avatar046 from "@/assets/avatars/avatar046.webp";
-
 const avatarMap: Record<string, string> = {
   avatar001,
   avatar002,
@@ -98,59 +96,119 @@ const avatarMap: Record<string, string> = {
   avatar044,
   avatar045,
   avatar046};
-
 export default function ChangeAvatar() {
-  const navigate = useNavigate();
-
+const navigate = useNavigate();
 const [currentAvatar, setCurrentAvatar] = useState("avatar001");
+const [isLightMode, setIsLightMode] = useState(
+  () => document.documentElement.dataset.theme === "light"
+);
 const [pendingAvatar, setPendingAvatar] = useState<string | null>(null);
 const [saving, setSaving] = useState(false);
-
   useEffect(() => {
-    const loadAvatar = async () => {
-      const {
+const loadAvatar = async () => {
+const {
         data: { session },
       } = await supabase.auth.getSession();
-
       if (!session?.user) return;
-
-      const { data } = await supabase
+const { data } = await supabase
         .from("profiles")
         .select("avatar_url")
         .eq("id", session.user.id)
         .single();
-
       if (data?.avatar_url) {
 setCurrentAvatar(data.avatar_url);
       }
     };
-
     loadAvatar();
   }, []);
-
-  const handleAvatarSelect = async (avatar: string) => {
+useEffect(() => {
+let mounted = true;
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+const syncFromDocument = () => {
+    if (!mounted) return;
+    setIsLightMode(document.documentElement.dataset.theme === "light");
+  };
+const observer = new MutationObserver(syncFromDocument);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "data-theme"],
+  });
+const loadThemePreference = async () => {
+const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!mounted) return;
+    if (!session?.user) {
+      setIsLightMode(false);
+      return;
+    }
+const { data, error } = await supabase
+      .from("user_light_mode_preferences")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (!mounted) return;
+    if (error) {
+      console.error("Unable to load avatar page theme preference:", error);
+    } else {
+      setIsLightMode(Boolean(data));
+    }
+    realtimeChannel = supabase
+      .channel(`change-avatar-theme-${session.user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "\*",
+          schema: "public",
+          table: "user_light_mode_preferences",
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          if (!mounted) return;
+          setIsLightMode(payload.eventType !== "DELETE");
+        }
+      )
+      .subscribe();
+  };
+  syncFromDocument();
+  loadThemePreference();
+  return () => {
+    mounted = false;
+    observer.disconnect();
+    if (realtimeChannel) {
+      supabase.removeChannel(realtimeChannel);
+    }
+  };
+}, []);
+useEffect(() => {
+const background = isLightMode ? "#f5f5f3" : "#0d0f10";
+const previousHtmlBackground = document.documentElement.style.backgroundColor;
+const previousBodyBackground = document.body.style.backgroundColor;
+  document.documentElement.style.backgroundColor = background;
+  document.body.style.backgroundColor = background;
+  return () => {
+    document.documentElement.style.backgroundColor = previousHtmlBackground;
+    document.body.style.backgroundColor = previousBodyBackground;
+  };
+}, [isLightMode]);
+const handleAvatarSelect = async (avatar: string) => {
     try {
       setSaving(true);
-
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
-
       if (!session?.user) return;
-
 await supabase.auth.updateUser({
   data: {
     avatar_url: avatar,
   },
 });
-
 await supabase
   .from("profiles")
   .update({
     avatar_url: avatar,
   })
         .eq("id", session.user.id);
-
 window.dispatchEvent(
   new CustomEvent("profile-updated", {
     detail: {
@@ -158,303 +216,168 @@ window.dispatchEvent(
     },
   })
 );
-
       navigate(-1);
     } finally {
       setSaving(false);
     }
   };
-
-  const confirmAvatarChange = async () => {
+const confirmAvatarChange = async () => {
   if (!pendingAvatar) return;
-
   await handleAvatarSelect(pendingAvatar);
   setPendingAvatar(null);
 };
-
 return (
-<div className="min-h-screen bg-[#171717] text-white">
-  <div className="sticky top-0 z-20 flex h-16 items-center border-b border-zinc-800 bg-[#171717] px-4 pt-6 md:pt-0">
-
-    <button
-      type="button"
-      onClick={() => navigate(-1)}
-      className="group relative flex items-center gap-2 overflow-hidden border border-[#30363a] bg-[#0d1113] px-3 py-2 transition-all duration-200 hover:border-[#E7C84B] hover:bg-[#13191c] hover:shadow-[0_0_18px_rgba(231,200,75,.12)]"
-    >
-      <span className="font-mono text-lg leading-none text-[#E7C84B] transition-transform duration-200 group-hover:-translate-x-0.5">
-        ‹
-      </span>
-
-      <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-400 transition-colors duration-200 group-hover:text-white">
-        Back to My Profile
-      </span>
-
-      <span className="pointer-events-none absolute left-0 top-0 h-2 w-2 border-l border-t border-[#E7C84B] opacity-70" />
-      <span className="pointer-events-none absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#E7C84B] opacity-50" />
-    </button>
-
-    <div className="ml-4 h-5 w-px bg-[#E7C84B]/20" />
-
-    <h1 className="ml-4 font-['Oxanium'] text-xl font-black uppercase tracking-[0.12em] text-white">
-      Change Avatar
-    </h1>
-
-  </div>
-
-  <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-6 md:px-8 md:py-10">
-
-  <div className="relative mx-auto max-w-5xl overflow-hidden border border-[#30363a] bg-[#0b0f11]">
-
-    {/* TECH GRID */}
-    <div
-      className="pointer-events-none absolute inset-0 opacity-40"
-      style={{
-        backgroundImage: `
-          linear-gradient(rgba(231,200,75,0.035) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(231,200,75,0.035) 1px, transparent 1px)
-        `,
-        backgroundSize: "32px 32px",
-      }}
-    />
-
-    {/* HUD CORNERS */}
-    <span className="pointer-events-none absolute left-0 top-0 h-5 w-5 border-l-2 border-t-2 border-[#E7C84B]" />
-    <span className="pointer-events-none absolute right-0 top-0 h-5 w-5 border-r-2 border-t-2 border-[#E7C84B]/50" />
-    <span className="pointer-events-none absolute bottom-0 left-0 h-5 w-5 border-b-2 border-l-2 border-[#E7C84B]/40" />
-    <span className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 border-b-2 border-r-2 border-[#E7C84B]" />
-
-    {/* HEADER */}
-    <div className="relative flex items-center justify-between border-b border-[#252b2f] bg-[#0d1113] px-5 py-3 md:px-6">
-
-      <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 bg-[#E7C84B] shadow-[0_0_8px_#E7C84B]" />
-
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#E7C84B]">
-          PROFILE SYSTEM
-        </span>
-
-        <span className="hidden h-px w-8 bg-[#E7C84B]/30 sm:block" />
-
-        <span className="hidden font-mono text-[7px] uppercase tracking-[0.18em] text-zinc-700 sm:block">
-          AVATAR MODULE
-        </span>
-      </div>
-
-      <span className="font-mono text-[7px] uppercase tracking-[0.18em] text-green-400/70">
-        ● ONLINE
-      </span>
-
-    </div>
-
-    {/* CURRENT AVATAR */}
-    <div className="relative flex flex-col items-center px-5 py-8 md:py-10">
-
-      <div className="mb-3 flex items-center gap-3">
-        <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#E7C84B]/50" />
-
-        <span className="font-mono text-[7px] font-bold uppercase tracking-[0.35em] text-[#E7C84B]/70">
-          CURRENT IDENTITY
-        </span>
-
-        <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#E7C84B]/50" />
-      </div>
-
-      <div className="relative">
-
-        <span className="absolute -left-3 -top-3 h-3 w-3 border-l-2 border-t-2 border-[#E7C84B]" />
-        <span className="absolute -right-3 -top-3 h-3 w-3 border-r-2 border-t-2 border-[#E7C84B]/60" />
-        <span className="absolute -bottom-3 -left-3 h-3 w-3 border-b-2 border-l-2 border-[#E7C84B]/60" />
-        <span className="absolute -bottom-3 -right-3 h-3 w-3 border-b-2 border-r-2 border-[#E7C84B]" />
-
-        <img
-          src={getAvatar(currentAvatar)}
-          className="relative h-28 w-28 border border-[#E7C84B]/50 object-cover shadow-[0_0_25px_rgba(231,200,75,.12)] md:h-36 md:w-36"
-        />
-
-      </div>
-
-      <h2 className="mt-7 font-['Oxanium'] text-2xl font-black uppercase tracking-[0.1em] text-white md:text-3xl">
-        Choose an Avatar
-      </h2>
-
-<p className="mt-2 max-w-2xl text-center font-mono text-[8px] uppercase leading-relaxed tracking-[0.14em] text-zinc-500">
-  Any avatar with{" "}
-  <span className="inline-flex h-4 w-4 items-center justify-center border border-[#E7C84B]/70 bg-[#0b0f11] text-[9px] font-black leading-none text-[#E7C84B]">
-    !
-  </span>{" "}
-  on them will be leaving MLPEKayou soon! They will still display on your profile, but they will be removed from the avatar selector to make room for more future avatars!
-</p>
-
-    </div>
-
-    {/* AVATAR DATABASE */}
-    <div className="relative border-t border-[#252b2f] bg-[#0d1113] px-4 py-5 md:px-6 md:py-6">
-
-      <div className="mb-4 flex items-center justify-between">
-
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 bg-[#E7C84B] shadow-[0_0_7px_#E7C84B]" />
-
-          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#E7C84B]">
-            AVATAR DATABASE
-          </span>
-        </div>
-
-        <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-zinc-700">
-          {Object.keys(avatarMap).length} AVAILABLE
-        </span>
-
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
-
-{Object.entries(avatarMap)
-  .filter(([name]) => !/^avatar(00[1-9]|01[0-5]|027)$/.test(name))
-  .map(([name]) => {
-  return (
-    <button
-      key={name}
-      disabled={saving}
-      onClick={() => setPendingAvatar(name)}
-      className={`group relative overflow-hidden border transition-all duration-200 ${
-        currentAvatar === name
-          ? "border-[#E7C84B] bg-[#E7C84B]/10 shadow-[0_0_18px_rgba(231,200,75,.2)]"
-          : "border-[#30363a] bg-[#101518] hover:border-[#E7C84B]/70 hover:bg-[#13191c]"
-      }`}
-    >
-
-      <img
-        src={getAvatar(name)}
-        className="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
-      />
-
-      {currentAvatar === name && (
-        <div className="absolute bottom-0 left-0 right-0 bg-[#E7C84B] px-1 py-1">
-          <span className="font-mono text-[6px] font-black uppercase tracking-[0.15em] text-[#090b0c]">
-            SELECTED
-          </span>
-        </div>
-      )}
-
-      <span className="pointer-events-none absolute left-0 top-0 h-2.5 w-2.5 border-l-2 border-t-2 border-[#E7C84B] opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-
-      <span className="pointer-events-none absolute right-0 top-0 h-2.5 w-2.5 border-r-2 border-t-2 border-[#E7C84B]/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-
-      <span className="pointer-events-none absolute bottom-0 left-0 h-2.5 w-2.5 border-b-2 border-l-2 border-[#E7C84B]/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-
-      <span className="pointer-events-none absolute bottom-0 right-0 h-2.5 w-2.5 border-b-2 border-r-2 border-[#E7C84B] opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-
-    </button>
-  );
-})}
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-{pendingAvatar && (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
-
-    <div className="relative w-full max-w-md overflow-hidden border border-[#30363a] bg-[#0b0f11] shadow-[0_25px_80px_rgba(0,0,0,.75)]">
-
-      {/* HUD corners */}
-      <span className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-[#E7C84B]" />
-      <span className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-[#E7C84B]/50" />
-      <span className="absolute bottom-0 left-0 h-4 w-4 border-b-2 border-l-2 border-[#E7C84B]/40" />
-      <span className="absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-[#E7C84B]" />
-
-      <div className="border-b border-[#252b2f] bg-[#0d1113] px-5 py-3">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 bg-[#E7C84B] shadow-[0_0_8px_#E7C84B]" />
-
-          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[#E7C84B]">
-            CONFIRM AVATAR CHANGE
-          </span>
-        </div>
-      </div>
-
-      <div className="px-5 py-6">
-
-        {/* CURRENT -> NEW */}
-        <div className="flex items-center justify-center gap-4">
-
-          <div className="text-center">
-            <div className="mb-2 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-              CURRENT
-            </div>
-
-            <div className="border border-[#30363a] bg-[#101518] p-1.5">
-              <img
-                src={getAvatar(currentAvatar)}
-                alt="Current avatar"
-                className="h-24 w-24 object-cover"
-              />
-            </div>
+  <div className={`min-h-screen transition-colors duration-200 ${
+    isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
+  }`}>
+    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-8 md:py-8">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-xl font-medium transition-colors ${
+              isLightMode
+                ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-100"
+                : "border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
+            }`}
+            aria-label="Back to profile"
+          >
+            ‹
+          </button>
+          <img
+            src={getAvatar(currentAvatar)}
+            alt="Current avatar"
+            className={`h-24 w-24 rounded-3xl border object-cover sm:h-28 sm:w-28 ${
+              isLightMode ? "border-black/10" : "border-white/10"
+            }`}
+          />
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Pick an Avatar</h1>
+            <p className={`mt-1 max-w-xl text-sm leading-6 ${
+              isLightMode ? "text-zinc-600" : "text-zinc-400"
+            }`}>
+              Choose a new profile picture from the avatars below.
+            </p>
           </div>
-
-          <ChevronRight className="h-6 w-6 shrink-0 text-[#E7C84B]" />
-
-          <div className="text-center">
-            <div className="mb-2 font-mono text-[7px] font-bold uppercase tracking-[0.2em] text-[#E7C84B]">
-              NEW
-            </div>
-
-            <div className="border border-[#E7C84B] bg-[#E7C84B]/10 p-1.5 shadow-[0_0_18px_rgba(231,200,75,.12)]">
-              <img
-                src={getAvatar(pendingAvatar)}
-                alt="New avatar"
-                className="h-24 w-24 object-cover"
-              />
-            </div>
-          </div>
-
         </div>
-
-        <div className="mt-6 text-center">
-
-          <h2 className="font-['Oxanium'] text-lg font-black uppercase tracking-[0.08em] text-white">
-            Are you sure you want to change your avatar?
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-sm font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-zinc-500">
-            If you have an avatar that is no longer on this list, it can't be undone.
+        <div>
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
+            {Object.entries(avatarMap)
+              .filter(([name]) => !/^avatar(00[1-9]|01[0-5]|027)$/.test(name))
+              .map(([name]) => {
+                const selected = currentAvatar === name;
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    disabled={saving}
+                    onClick={() => setPendingAvatar(name)}
+                    aria-label={selected ? "Current avatar" : "Choose avatar"}
+                    className={`group relative overflow-hidden rounded-3xl border transition-all ${
+                      selected
+                        ? isLightMode
+                          ? "border-[#8a6a00]/45 bg-[#c89d13]/10 ring-2 ring-[#8a6a00]/10"
+                          : "border-[#FFD54A]/55 bg-[#FFD54A]/10 ring-2 ring-[#FFD54A]/10"
+                        : isLightMode
+                        ? "border-black/10 bg-white hover:-translate-y-0.5 hover:border-black/20 hover:shadow-[0_8px_22px_rgba(0,0,0,.08)]"
+                        : "border-white/[0.08] bg-[#151718] hover:-translate-y-0.5 hover:border-white/20 hover:bg-[#1a1c1d]"
+                    }`}
+                  >
+                    <img
+                      src={getAvatar(name)}
+                      alt=""
+                      className="aspect-square w-full object-cover"
+                    />
+                    {selected && (
+                      <div className={`absolute inset-x-2 bottom-2 rounded-full px-2 py-1 text-center text-[11px] font-semibold backdrop-blur-sm ${
+                        isLightMode
+                          ? "bg-white/90 text-[#725700]"
+                          : "bg-[#0d0f10]/85 text-[#FFE27A]"
+                      }`}>
+                        Current
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+          </div>
+          <p className={`mt-5 text-center text-xs leading-5 ${
+            isLightMode ? "text-zinc-500" : "text-zinc-500"
+          }`}>
+            Some older avatars are no longer available to select, but they remain visible for users who already have them.
           </p>
-
         </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-2">
-
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => setPendingAvatar(null)}
-            className="border border-[#30363a] bg-[#101518] px-4 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400 transition-all hover:border-zinc-500 hover:bg-[#13191c] hover:text-white"
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            disabled={saving}
-            onClick={confirmAvatarChange}
-            className="border border-[#E7C84B] bg-[#E7C84B] px-4 py-3 font-mono text-[9px] font-black uppercase tracking-[0.18em] text-[#090b0c] transition-all hover:bg-[#fff1a8]"
-          >
-            {saving ? "Changing..." : "Confirm Change"}
-          </button>
-
-        </div>
-
       </div>
-
-    </div>
-
-  </div>
-)}
-
+    </main>
+    {pendingAvatar && (
+      <div
+        className={`fixed inset-0 z-[9999] flex items-center justify-center px-4 backdrop-blur-md ${
+          isLightMode ? "bg-white/20" : "bg-black/70"
+        }`}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget && !saving) {
+            setPendingAvatar(null);
+          }
+        }}
+      >
+        <div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.30)] ${
+          isLightMode
+            ? "border-black/10 bg-white text-zinc-900"
+            : "border-white/[0.10] bg-[#151718] text-white"
+        }`}>
+          <h2 className="text-xl font-semibold tracking-tight">Use this avatar?</h2>
+          <div className="mt-5 flex items-center justify-center gap-4">
+            <img
+              src={getAvatar(currentAvatar)}
+              alt="Current avatar"
+              className={`h-24 w-24 rounded-3xl border object-cover ${
+                isLightMode ? "border-black/10" : "border-white/10"
+              }`}
+            />
+            <ChevronRight className={isLightMode ? "text-[#725700]" : "text-[#FFE27A]"} />
+            <img
+              src={getAvatar(pendingAvatar)}
+              alt="New avatar"
+              className={`h-24 w-24 rounded-3xl border object-cover ${
+                isLightMode ? "border-[#8a6a00]/30" : "border-[#FFD54A]/40"
+              }`}
+            />
+          </div>
+          <p className={`mt-4 text-center text-sm leading-6 ${
+            isLightMode ? "text-zinc-600" : "text-zinc-300"
+          }`}>
+            Your profile picture will update immediately.
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => setPendingAvatar(null)}
+              className={`rounded-xl border px-4 py-3 text-sm font-semibold ${
+                isLightMode
+                  ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={confirmAvatarChange}
+              className={`rounded-xl border px-4 py-3 text-sm font-semibold ${
+                isLightMode
+                  ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
+                  : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
+              }`}
+            >
+              {saving ? "Changing..." : "Use Avatar"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   </div>
 );
 }

@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
 const setButtons = [
   {
     title: "Eternal Moon I",
@@ -101,7 +100,6 @@ const setButtons = [
     image: "/thumbnails/tcgpromossetimage.webp",
   },
 ];
-
 const groups = [
   "All",
   "Moon",
@@ -111,111 +109,138 @@ const groups = [
   "TCG",
   "Promos",
 ];
-
 export default function TradingPost() {
-  const [activeGroup, setActiveGroup] = useState("All");
-
-  const visibleSets =
-    activeGroup === "All"
-      ? setButtons
-      : setButtons.filter(
-          (set) => set.group === activeGroup
-        );
-
+const [activeGroup, setActiveGroup] = useState("All");
+const [isLightMode, setIsLightMode] = useState(() => {
+  if (typeof document === "undefined") return false;
+  const root = document.documentElement;
   return (
-    <div className="min-h-screen bg-[#171717] font-['Oxanium'] text-white">
-      {/* BACKGROUND GRID */}
+    root.dataset.theme === "light" ||
+    root.classList.contains("light") ||
+    !root.classList.contains("dark")
+  );
+});
+
+useEffect(() => {
+  const syncTheme = () => {
+    const root = document.documentElement;
+    setIsLightMode(
+      root.dataset.theme === "light" ||
+      root.classList.contains("light") ||
+      !root.classList.contains("dark")
+    );
+  };
+
+  syncTheme();
+
+  const observer = new MutationObserver(syncTheme);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "data-theme"],
+  });
+
+  window.addEventListener("themechange", syncTheme);
+
+  return () => {
+    observer.disconnect();
+    window.removeEventListener("themechange", syncTheme);
+  };
+}, []);
+const visibleSets =
+  activeGroup === "All"
+    ? setButtons
+    : setButtons.filter((set) => set.group === activeGroup);
+  return (
+    <div
+      className={`min-h-screen font-['Oxanium'] transition-colors ${
+        isLightMode
+          ? "bg-[#f6f4ef] text-zinc-900"
+          : "bg-[#0f1112] text-zinc-100"
+      }`}
+    >
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.018]"
+        className="pointer-events-none fixed inset-x-0 top-0 h-56"
         style={{
-          backgroundImage:
-            "linear-gradient(#FFD400 1px, transparent 1px), linear-gradient(90deg, #FFD400 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+          background: isLightMode
+            ? "radial-gradient(circle at 50% 0%, rgba(255,213,74,.12), transparent 65%)"
+            : "radial-gradient(circle at 50% 0%, rgba(255,213,74,.07), transparent 65%)",
         }}
       />
-
-      {/* SOFT AMBIENT LIGHT */}
-      <div className="pointer-events-none fixed left-1/2 top-[-180px] h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-[#FFD400]/[0.025] blur-[120px]" />
-
       <main className="relative mx-auto max-w-7xl px-4 pb-12 pt-5 sm:px-6 lg:px-8">
-        {/* HEADER */}
-        <header className="mb-6">
-          <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] pb-4">
-            <div className="flex items-center gap-3">
-              {/* System indicator */}
-              <div className="relative flex h-8 w-8 items-center justify-center border border-[#FFD400]/35 bg-[#121212]">
-                <div className="h-2 w-2 bg-[#FFD400] shadow-[0_0_10px_rgba(255,212,0,.65)]" />
-
-                <div className="absolute left-0 top-0 h-2 w-2 border-l border-t border-[#FFD400]" />
-                <div className="absolute bottom-0 right-0 h-2 w-2 border-b border-r border-[#FFD400]/50" />
+        <header
+          className={`mb-5 overflow-hidden rounded-[26px] border ${
+            isLightMode
+              ? "border-black/10 bg-white"
+              : "border-white/[0.08] bg-[#151718]"
+          }`}
+        >
+          <div className="h-1 bg-gradient-to-r from-[#FFD54A] via-[#e6c445] to-transparent" />
+          <div className="flex items-center justify-between gap-4 p-4 sm:p-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border ${
+                  isLightMode
+                    ? "border-[#d6b43d]/30 bg-[#fff3b8]"
+                    : "border-[#FFD54A]/20 bg-[#FFD54A]/10"
+                }`}
+              >
+                <span className="h-2.5 w-2.5 rounded-full bg-[#d4aa16] shadow-[0_0_10px_rgba(212,170,22,.35)]" />
               </div>
-
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/90">
-                    KAYOU MARKET NETWORK
-                  </span>
-
-                  <span className="h-1 w-1 rounded-full bg-[#FFD400]/60" />
+              <div className="min-w-0">
+                <div
+                  className={`text-sm font-medium ${
+                    isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
+                  }`}
+                >
+                  Trading Network
                 </div>
-
-                <h1 className="mt-0.5 text-2xl font-black uppercase tracking-[0.06em] text-white sm:text-3xl">
+                <h1 className="mt-0.5 text-2xl font-semibold sm:text-3xl">
                   Trading Post
                 </h1>
+                <p
+                  className={`mt-1 text-sm ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  Choose a collection to browse cards for sale or trade.
+                </p>
               </div>
             </div>
-
-            <div className="hidden text-right sm:block">
-              <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/60">
-                COLLECTION INDEX
-              </div>
-
-              <div className="mt-1 font-mono text-[9px] font-bold tracking-[0.12em] text-[#FFD400]/85">
-                {setButtons.length
-                  .toString()
-                  .padStart(2, "0")}{" "}
-                SETS
-              </div>
+            <div
+              className={`hidden rounded-full px-3 py-1.5 text-sm font-medium sm:block ${
+                isLightMode
+                  ? "bg-zinc-100 text-zinc-600"
+                  : "bg-white/[0.05] text-zinc-300"
+              }`}
+            >
+              {setButtons.length} sets
             </div>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between">
-            <p className="font-mono text-[8px] uppercase tracking-[0.16em] text-white/65 sm:text-[8px]">
-              Select a collection to access its trading network
-            </p>
-
-            <span className="hidden h-px flex-1 bg-gradient-to-r from-[#FFD400]/20 to-transparent sm:ml-5 sm:block" />
           </div>
         </header>
-
-        {/* CATEGORY FILTER */}
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex min-w-max items-center gap-1 border border-white/[0.06] bg-[#121212] p-1">
+        <div
+          className={`mb-5 overflow-x-auto rounded-[22px] border p-1.5 ${
+            isLightMode
+              ? "border-black/10 bg-white"
+              : "border-white/[0.08] bg-[#151718]"
+          }`}
+        >
+          <div className="flex min-w-max items-center gap-1.5">
             {groups.map((group) => {
               const active = activeGroup === group;
-
               return (
                 <button
                   key={group}
+                  type="button"
                   onClick={() => setActiveGroup(group)}
-                  className={`
-                    relative
-                    px-3
-                    py-2
-                    font-mono
-                    text-[7px]
-                    font-bold
-                    uppercase
-                    tracking-[0.16em]
-                    transition-all
-                    duration-200
-                    sm:px-4
-                    ${
-                      active
-                        ? "bg-[#FFD400] text-[#111111] shadow-[0_0_12px_rgba(255,212,0,.12)]"
-                        : "text-white/30 hover:bg-white/[0.04] hover:text-white/70"
-                    }
-                  `}
+                  className={`rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition ${
+                    active
+                      ? isLightMode
+                        ? "bg-[#f5e6a0] text-[#654e00] shadow-sm"
+                        : "bg-[#FFD54A] text-[#111]"
+                      : isLightMode
+                      ? "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+                      : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
+                  }`}
                 >
                   {group}
                 </button>
@@ -223,117 +248,99 @@ export default function TradingPost() {
             })}
           </div>
         </div>
-
-        {/* SET GRID */}
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4">
-          {visibleSets.map((set, index) => (
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">
+              {activeGroup === "All" ? "All Collections" : activeGroup}
+            </h2>
+            <p
+              className={`mt-0.5 text-sm ${
+                isLightMode ? "text-zinc-500" : "text-zinc-400"
+              }`}
+            >
+              {visibleSets.length} {visibleSets.length === 1 ? "set" : "sets"} available
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+          {visibleSets.map((set) => (
             <Link
               key={set.to}
               to={set.to}
-              className="
-                group
-                relative
-                overflow-hidden
-                border
-                border-white/[0.08]
-                bg-[#121212]
-                transition-all
-                duration-300
-                hover:-translate-y-0.5
-                hover:border-[#FFD400]/45
-                hover:shadow-[0_8px_28px_rgba(0,0,0,.28)]
-              "
+              className={`group relative overflow-hidden rounded-[22px] border transition hover:-translate-y-0.5 ${
+                isLightMode
+                  ? "border-black/10 bg-white hover:border-[#c9a62d]/45 hover:shadow-[0_12px_28px_rgba(73,55,0,.08)]"
+                  : "border-white/[0.08] bg-[#151718] hover:border-[#FFD54A]/35 hover:shadow-[0_12px_28px_rgba(0,0,0,.28)]"
+              }`}
             >
-              {/* IMAGE */}
-              <div className="relative aspect-[16/10] overflow-hidden bg-[#0d0d0d]">
+              <div className="absolute inset-x-0 top-0 z-20 h-1 bg-gradient-to-r from-[#FFD54A] via-[#e4c13f] to-transparent opacity-80" />
+              <div
+                className={`relative aspect-[16/10] overflow-hidden ${
+                  isLightMode ? "bg-zinc-100" : "bg-[#0d0f10]"
+                }`}
+              >
                 <img
                   src={set.image}
                   alt={set.title}
-                  className="
-                    h-full
-                    w-full
-                    object-cover
-                    transition-transform
-                    duration-500
-                    group-hover:scale-[1.045]
-                  "
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"
                 />
-
-                {/* Dark image gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-black/10" />
-
-                {/* Hover gold wash */}
-                <div className="absolute inset-0 bg-[#FFD400]/0 transition-colors duration-300 group-hover:bg-[#FFD400]/[0.035]" />
-
-                {/* Technical corners */}
-                <div className="absolute left-1.5 top-1.5 h-3.5 w-3.5 border-l border-t border-[#FFD400]/45 transition-colors duration-300 group-hover:border-[#FFD400]" />
-
-                <div className="absolute right-1.5 top-1.5 h-3.5 w-3.5 border-r border-t border-[#FFD400]/25 transition-colors duration-300 group-hover:border-[#FFD400]/70" />
-
-                {/* Set index */}
-                <div className="absolute right-2 bottom-2 border border-white/10 bg-[#111111]/80 px-1.5 py-1 backdrop-blur-sm">
-                  <span className="font-mono text-[8px] font-bold tracking-[0.12em] text-white/65">
-                    {(index + 1)
-                      .toString()
-                      .padStart(2, "0")}
-                  </span>
-                </div>
+                <div
+                  className={`absolute inset-0 ${
+                    isLightMode
+                      ? "bg-gradient-to-t from-white/25 via-transparent to-transparent"
+                      : "bg-gradient-to-t from-black/35 via-transparent to-black/5"
+                  }`}
+                />
+                <span
+                  className={`absolute bottom-2 left-2 rounded-full px-2.5 py-1 text-sm font-medium backdrop-blur-sm ${
+                    isLightMode
+                      ? "bg-white/90 text-[#735900]"
+                      : "bg-[#111]/80 text-[#E8CA55]"
+                  }`}
+                >
+                  {set.group}
+                </span>
               </div>
-
-              {/* INFO */}
-              <div className="relative px-3 py-2.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 shrink-0 bg-[#FFD400] opacity-70 transition-all duration-300 group-hover:opacity-100 group-hover:shadow-[0_0_6px_rgba(255,212,0,.7)]" />
-
-                  <span className="truncate font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/85">
-                    {set.group}
-                  </span>
-                </div>
-
-                <div className="mt-1 flex items-center justify-between gap-2">
-                  <h2 className="truncate text-[11px] font-bold uppercase tracking-[0.025em] text-white/90 transition-colors duration-300 group-hover:text-[#FFD400] sm:text-xs">
+              <div className="p-3.5">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="min-w-0 text-sm font-semibold leading-snug sm:text-base">
                     {set.title}
-                  </h2>
-
-                  <span className="shrink-0 font-mono text-[10px] text-white/15 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-[#FFD400]">
+                  </h3>
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm transition group-hover:translate-x-0.5 ${
+                      isLightMode
+                        ? "bg-zinc-100 text-[#806100]"
+                        : "bg-white/[0.05] text-[#E8CA55]"
+                    }`}
+                  >
                     →
                   </span>
                 </div>
-
-                <div className="mt-1.5 flex items-center justify-between">
-                  <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-white/60">
-                    {set.subtitle}
-                  </span>
-
-                  <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-white/55">
-                    ACCESS
-                  </span>
+                <div
+                  className={`mt-2 text-sm ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  {set.subtitle}
+                </div>
+                <div
+                  className={`mt-3 h-px w-full ${
+                    isLightMode ? "bg-black/[0.06]" : "bg-white/[0.06]"
+                  }`}
+                />
+                <div
+                  className={`mt-2.5 text-sm font-medium ${
+                    isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
+                  }`}
+                >
+                  Browse trading post
                 </div>
               </div>
-
-              {/* Bottom hover rail */}
-              <div className="absolute bottom-0 left-1/2 h-px w-0 -translate-x-1/2 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.5)] transition-all duration-300 group-hover:w-1/2" />
             </Link>
           ))}
-        </div>
-
-        {/* FOOTER STATUS */}
-        <div className="mt-6 flex items-center justify-between border-t border-white/[0.06] pt-3">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400] shadow-[0_0_7px_rgba(255,212,0,.5)]" />
-
-            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/60">
-              TRADING NETWORK ONLINE
-            </span>
-          </div>
-
-          <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-white/55">
-            {visibleSets.length} COLLECTION
-            {visibleSets.length === 1 ? "" : "S"}{" "}
-            AVAILABLE
-          </span>
         </div>
       </main>
     </div>
   );
 }
+

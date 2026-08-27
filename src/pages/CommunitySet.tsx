@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft, Trophy, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { getProfileAssets } from "./Everypony/profile-assets";
-
 const sets: Record<string, { name: string; total: number }> = {
   "1": { name: "Eternal Moon First Edition", total: 186 },
   "2": { name: "Eternal Moon Second Edition", total: 189 },
@@ -18,7 +17,6 @@ const sets: Record<string, { name: string; total: number }> = {
   fantasywonderland: { name: "Fantasy Wonderland", total: 191 },
   discord: { name: "Discord", total: 191 },
 };
-
 const isoSets = [
   {
     id: "1",
@@ -223,29 +221,48 @@ const isoSets = [
     },
   },
 ];
-
 const forcedStillCollecting = [""];
-
 const manualPlacements: Record<string, string[]> = {
   "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"],
   "8": ["Mari", "Keegan", "Jacob"],
 };
-
 const CommunitySet = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-
-  const [collectors, setCollectors] = useState<any[]>([]);
-  const [completed, setCompleted] = useState<any[]>([]);
-  const [showAllFinishers, setShowAllFinishers] = useState(false);
-
-  const set = id ? sets[id] : undefined;
-
+const { id } = useParams();
+const navigate = useNavigate();
+const [collectors, setCollectors] = useState<any[]>([]);
+const [completed, setCompleted] = useState<any[]>([]);
+const [showAllFinishers, setShowAllFinishers] = useState(false);
+const [isLightMode, setIsLightMode] = useState(() => {
+  if (typeof document === "undefined") return false;
+  const root = document.documentElement;
+  return root.dataset.theme === "light" || root.classList.contains("light");
+});
+useEffect(() => {
+  const syncTheme = () => {
+    const root = document.documentElement;
+    setIsLightMode(
+      root.dataset.theme === "light" ||
+      root.classList.contains("light") ||
+      !root.classList.contains("dark")
+    );
+  };
+  syncTheme();
+  const observer = new MutationObserver(syncTheme);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "data-theme"],
+  });
+  window.addEventListener("themechange", syncTheme);
+  return () => {
+    observer.disconnect();
+    window.removeEventListener("themechange", syncTheme);
+  };
+}, []);
+const set = id ? sets[id] : undefined;
   useEffect(() => {
     if (!id || !set) return;
-
-    const load = async () => {
-      const { data: progress } = await supabase
+const load = async () => {
+const { data: progress } = await supabase
         .from("collection_progress_raw")
         .select("user_id, progress, updated_at")
         .eq(
@@ -258,16 +275,13 @@ const CommunitySet = () => {
                 ? "12"
                 : id
         );
-
-      const { data: profiles } = await supabase
+const { data: profiles } = await supabase
         .from("profiles")
         .select("id, username, avatar_url");
-
-      const { data: tradingProfiles } = await supabase
+const { data: tradingProfiles } = await supabase
         .from("trading_profiles")
         .select("user_id, discord_username");
-
-      const eligibleUserIds = new Set(
+const eligibleUserIds = new Set(
         (tradingProfiles || [])
           .filter(
             (p: any) =>
@@ -276,17 +290,14 @@ const CommunitySet = () => {
           )
           .map((p: any) => p.user_id)
       );
-
       /*
        * Load the same centralized exclusion list used by
        * the leaderboard.
        */
-
-      const { data: excludedUsers, error: exclusionsError } =
+const { data: excludedUsers, error: exclusionsError } =
         await supabase
           .from("leaderboard_exclusions")
           .select("user_id");
-
       if (exclusionsError) {
         console.error(
           "Community exclusions error:",
@@ -294,24 +305,18 @@ const CommunitySet = () => {
         );
         return;
       }
-
-      const excludedUserIds = new Set(
+const excludedUserIds = new Set(
         (excludedUsers || []).map(
           (user: any) => user.user_id
         )
       );
-
       if (!progress || !profiles) return;
-
-      const profileMap: Record<string, any> = {};
-
+const profileMap: Record<string, any> = {};
       profiles.forEach((p: any) => {
         profileMap[p.id] = p;
       });
-
-      const active: any[] = [];
-      const finished: any[] = [];
-
+const active: any[] = [];
+const finished: any[] = [];
       progress.forEach((row: any) => {
         if (
           !eligibleUserIds.has(row.user_id) ||
@@ -319,11 +324,9 @@ const CommunitySet = () => {
         ) {
           return;
         }
-
-        let owned = 0;
-
+let owned = 0;
         if (id === "friendshipsbegin") {
-          const BONUS_STRUCTURE = [
+const BONUS_STRUCTURE = [
             { prefix: "SD01C", count: 9 },
             { prefix: "SD01U", count: 7 },
             { prefix: "SD01SR", count: 6 },
@@ -334,15 +337,12 @@ const CommunitySet = () => {
             { prefix: "SD01PER", count: 12 },
             { prefix: "SD01PRR", count: 6 },
           ];
-
-          const getDeckCards = (deckCode: string) => {
-            const cards: string[] = [];
-
-            const deckLetter = deckCode.slice(-1);
-            const deckIndex =
+const getDeckCards = (deckCode: string) => {
+const cards: string[] = [];
+const deckLetter = deckCode.slice(-1);
+const deckIndex =
               deckLetter.charCodeAt(0) - 64;
-
-            const add = (
+const add = (
               rarity: string,
               count: number
             ) => {
@@ -355,25 +355,19 @@ const CommunitySet = () => {
                 );
               }
             };
-
             add("C", 9);
             add("U", 4);
             add("SR", 2);
-
             cards.push(
               `SD01ER${String(deckIndex).padStart(2, "0")}`
             );
-
             add("SPR", 4);
-
             cards.push(
               `SD01RR${String(deckIndex).padStart(2, "0")}`
             );
-
             return cards;
           };
-
-          const starterDecks = [
+const starterDecks = [
             "SD01A",
             "SD01B",
             "SD01C",
@@ -381,34 +375,26 @@ const CommunitySet = () => {
             "SD01E",
             "SD01F",
           ];
-
           starterDecks.forEach((deck) => {
-            const cards = getDeckCards(deck);
-
+const cards = getDeckCards(deck);
             cards.forEach((cardKey) => {
-              const stateKey = `STARTER-${cardKey}`;
-
+const stateKey = `STARTER-${cardKey}`;
               if (row.progress?.[stateKey]) {
                 owned++;
               }
             });
           });
-
           BONUS_STRUCTURE.forEach(
             ({ prefix, count }) => {
               for (let i = 1; i <= count; i++) {
-                let actualIndex = i;
-
+let actualIndex = i;
                 if (prefix === "SD01PER") {
                   actualIndex = i + 6;
                 }
-
-                const key = `${prefix}${String(
+const key = `${prefix}${String(
                   actualIndex
                 ).padStart(2, "0")}`;
-
-                const stateKey = `BONUS-${key}`;
-
+const stateKey = `BONUS-${key}`;
                 if (row.progress?.[stateKey]) {
                   owned++;
                 }
@@ -423,12 +409,10 @@ const CommunitySet = () => {
               v === true || v?.owned === true
           ).length;
         } else {
-          const isoSet = isoSets.find(
+const isoSet = isoSets.find(
             (s) => s.id === id
           );
-
           if (!isoSet) return;
-
           owned = Object.values(
             row.progress || {}
           ).filter(
@@ -436,7 +420,6 @@ const CommunitySet = () => {
               v === true || v?.owned === true
           ).length;
         }
-
 const user = {
   id: row.user_id,
   username:
@@ -447,52 +430,42 @@ const user = {
   owned,
   updated: row.updated_at,
 };
-
-        const actualTotal = set.total;
-
+const actualTotal = set.total;
         if (owned === actualTotal) {
           finished.push(user);
         } else {
           active.push(user);
         }
       });
-
       active.sort((a, b) => {
         if (
           forcedStillCollecting.includes(a.username)
         )
           return -1;
-
         if (
           forcedStillCollecting.includes(b.username)
         )
           return 1;
-
         return b.owned - a.owned;
       });
-
       if (manualPlacements[id || ""]) {
-        const manualOrder =
+const manualOrder =
           manualPlacements[id || ""];
-
         finished.sort((a, b) => {
-          const aIndex = manualOrder.indexOf(
+const aIndex = manualOrder.indexOf(
             a.username
           );
-          const bIndex = manualOrder.indexOf(
+const bIndex = manualOrder.indexOf(
             b.username
           );
-
           if (
             aIndex !== -1 &&
             bIndex !== -1
           ) {
             return aIndex - bIndex;
           }
-
           if (aIndex !== -1) return -1;
           if (bIndex !== -1) return 1;
-
           return (
             new Date(a.updated).getTime() -
             new Date(b.updated).getTime()
@@ -505,586 +478,368 @@ const user = {
             new Date(b.completed_at).getTime()
         );
       }
-
       setCollectors(active.slice(0, 10));
       setCompleted(finished.slice(0, 10));
     };
-
     load();
   }, [id, set]);
-
   if (!set) return null;
-
-  const completionPercentage = (owned: number) =>
-    Math.min(
-      100,
-      Math.round((owned / set.total) * 100)
-    );
-
-  const getRankColor = (index: number) => {
-    if (index === 0) return "#FFD400";
-    if (index === 1) return "#B9B9B9";
-    if (index === 2) return "#A9784A";
-    return "#555555";
-  };
-
-  const getRankLabel = (index: number) => {
-    if (index === 0) return "FIRST";
-    if (index === 1) return "SECOND";
-    if (index === 2) return "THIRD";
-    return `RANK ${index + 1}`;
-  };
-
-  return (
-    <div
-      className="
-        min-h-screen
-        overflow-hidden
-        bg-[#111111]
-        font-['Oxanium']
-        text-white
-      "
-    >
-      {/* Technical background */}
-      <div
-        className="
-          pointer-events-none
-          fixed inset-0
-          opacity-[0.025]
-        "
-        style={{
-          backgroundImage:
-            "linear-gradient(#FFD400 1px, transparent 1px), linear-gradient(90deg, #FFD400 1px, transparent 1px)",
-          backgroundSize: "42px 42px",
-        }}
-      />
-
-      {/* Ambient gold light */}
-      <div className="pointer-events-none fixed left-[10%] top-0 h-[420px] w-[420px] rounded-full bg-[#FFD400]/[0.035] blur-[120px]" />
-
-      <div className="relative mx-auto max-w-7xl px-4 py-5 pb-16 sm:px-6 lg:px-8">
-        {/* TOP NAV */}
-        <div className="mb-7 flex items-center justify-between">
-          <button
-            onClick={() => navigate("/community")}
-            className="
-              group
-              flex items-center gap-2
-              border border-[#303030]
-              bg-[#171717]
-              px-3 py-2
-              font-mono
-              text-[8px]
-              font-bold
-              uppercase
-              tracking-[0.16em]
-              text-white/45
-              transition-all
-              hover:border-[#FFD400]/45
-              hover:bg-[#1c1c1c]
-              hover:text-[#FFD400]
-            "
+const completionPercentage = (owned: number) =>
+  Math.min(100, (owned / set.total) * 100);
+const finisherAward = { icon: "🏆", label: "Finisher" };
+return (
+  <div
+    className={`min-h-screen pb-20 transition-colors ${
+      isLightMode
+        ? "bg-[#f6f4ef] text-zinc-900"
+        : "bg-[#0d0f10] text-zinc-100"
+    }`}
+  >
+    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => navigate("/community")}
+          className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+            isLightMode
+              ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-50"
+              : "border-white/[0.08] bg-[#17191a] text-zinc-300 hover:bg-white/[0.05]"
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Community
+        </button>
+      </div>
+      <section
+        className={`mb-4 overflow-hidden rounded-[26px] border ${
+          isLightMode
+            ? "border-black/10 bg-white"
+            : "border-white/[0.08] bg-[#151718]"
+        }`}
+      >
+        <div className="h-1 bg-[#FFD54A]" />
+        <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
+          <div>
+            <div
+              className={`text-sm font-medium ${
+                isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
+              }`}
+            >
+              Community Set
+            </div>
+            <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
+              {set.name}
+            </h1>
+          </div>
+          <div
+            className={`w-fit rounded-full px-3 py-1.5 text-sm ${
+              isLightMode
+                ? "bg-zinc-100 text-zinc-600"
+                : "bg-white/[0.05] text-zinc-300"
+            }`}
           >
-            <ArrowLeft
-              size={13}
-              className="transition-transform group-hover:-translate-x-0.5"
-            />
-
-            COMMUNITY
-          </button>
-
-          <div className="hidden items-center gap-3 sm:flex">
-            <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/55">
-              COMMUNITY DATABASE
-            </span>
-
-            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
-
-            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/85">
-              ONLINE
-            </span>
+            {set.total} cards
           </div>
         </div>
-
-        {/* SET HERO */}
-        <section className="relative mb-7 overflow-hidden border border-[#303030] bg-[#171717]">
-          {/* Top gold rail */}
-          <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-[#FFD400] to-transparent" />
-
-          {/* Corner brackets */}
-          <div className="absolute left-0 top-0 h-7 w-7 border-l border-t border-[#FFD400]/50" />
-          <div className="absolute right-0 top-0 h-7 w-7 border-r border-t border-[#FFD400]/25" />
-          <div className="absolute bottom-0 left-0 h-5 w-5 border-b border-l border-[#FFD400]/20" />
-          <div className="absolute bottom-0 right-0 h-5 w-5 border-b border-r border-[#FFD400]/35" />
-
-          <div className="relative grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px]">
-            {/* Main title */}
-            <div className="px-5 py-6 sm:px-7 sm:py-8">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
-
-                <span className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[#FFD400]/90">
-                  COLLECTION INTELLIGENCE
-                </span>
-
-                <span className="h-px w-12 bg-[#FFD400]/30" />
-              </div>
-
-              <h1
-                className="
-                  max-w-4xl
-                  font-['Oxanium']
-                  text-3xl
-                  font-black
-                  uppercase
-                  leading-[0.95]
-                  tracking-[0.025em]
-                  text-white
-                  sm:text-4xl
-                  lg:text-5xl
-                "
+      </section>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
+        <section
+          className={`overflow-hidden rounded-[26px] border ${
+            isLightMode
+              ? "border-black/10 bg-white"
+              : "border-white/[0.08] bg-[#151718]"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between border-b px-5 py-4 ${
+              isLightMode ? "border-black/10" : "border-white/[0.08]"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
+                  isLightMode ? "bg-[#fff3b8]" : "bg-[#FFD54A]/10"
+                }`}
               >
-                {set.name}
-              </h1>
-
-              <p className="mt-4 max-w-2xl font-mono text-[8px] uppercase leading-[1.8] tracking-[0.1em] text-white/65 sm:text-[9px]">
-                Track collectors approaching completion
-                and review verified finishers in
-                completion order.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* MAIN GRID */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.45fr)]">
-          {/* COMPLETED */}
-          <section className="relative overflow-hidden border border-[#303030] bg-[#151515]">
-            <div className="absolute left-0 top-0 h-6 w-6 border-l border-t border-[#FFD400]/55" />
-
-            <div className="border-b border-[#2c2c2c] px-5 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Trophy
-                      size={14}
-                      className="text-[#FFD400]"
-                    />
-
-                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/90">
-                      COMPLETION RECORD
-                    </span>
-                  </div>
-
-                  <h2 className="mt-1 font-['Oxanium'] text-lg font-black uppercase tracking-[0.04em] text-white">
-                    Finishers
-                  </h2>
-                </div>
-
-                <div className="text-right">
-                  <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
-                    VERIFIED
-                  </div>
-
-                  <div className="mt-1 font-['Oxanium'] text-sm font-bold text-[#FFD400]">
-                    {completed.length
-                      .toString()
-                      .padStart(2, "0")}
-                  </div>
+                <Trophy size={19} className="text-[#c29a00]" />
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold">Finishers</h2>
+                <div
+                  className={`text-sm ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  Verified completed collections
                 </div>
               </div>
             </div>
-
-            <div className="p-3">
-              {completed.length > 0 ? (
-                <div className="space-y-1.5">
-                  {(showAllFinishers
-                    ? completed
-                    : completed.slice(0, 3)
-                  ).map((user, index) => {
-                    const assets =
-                      getProfileAssets(user);
-
+            <span
+              className={`rounded-full px-3 py-1 text-sm ${
+                isLightMode
+                  ? "bg-zinc-100 text-zinc-600"
+                  : "bg-white/[0.05] text-zinc-300"
+              }`}
+            >
+              {completed.length}
+            </span>
+          </div>
+          <div className="p-3">
+            {completed.length > 0 ? (
+              <div className="space-y-2">
+                {(showAllFinishers ? completed : completed.slice(0, 3)).map(
+                  (user, index) => {
+                    const assets = getProfileAssets(user);
+                    const award = finisherAward;
                     return (
                       <div
                         key={user.id || index}
-                        className="
-                          group
-                          relative
-                          flex
-                          items-center
-                          gap-3
-                          overflow-hidden
-                          border
-                          border-[#292929]
-                          bg-[#191919]
-                          px-3
-                          py-3
-                          transition-all
-                          duration-200
-                          hover:border-[#FFD400]/40
-                          hover:bg-[#1d1d1d]
-                        "
+                        className={`flex items-center gap-3 rounded-2xl border p-3 ${
+                          isLightMode
+                            ? "border-black/10 bg-[#fafafa]"
+                            : "border-white/[0.07] bg-[#1a1c1d]"
+                        }`}
                       >
-                        {/* Rank color rail */}
-                        <div
-                          className="absolute bottom-0 left-0 top-0 w-0.5"
-                          style={{
-                            backgroundColor:
-                              getRankColor(index),
-                          }}
-                        />
-
-                        {/* Rank */}
-                        <div
-                          className="flex h-8 w-9 shrink-0 flex-col items-center justify-center border border-[#303030] bg-[#121212]"
-                          style={{
-                            borderColor:
-                              index < 3
-                                ? `${getRankColor(index)}55`
-                                : undefined,
-                          }}
+                        <span
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl ${
+                            isLightMode ? "bg-white" : "bg-white/[0.05]"
+                          }`}
+                          aria-label={award.label}
+                          title={award.label}
                         >
-                          <span
-                            className="font-['Oxanium'] text-[11px] font-black"
-                            style={{
-                              color:
-                                getRankColor(index),
-                            }}
-                          >
-                            #{index + 1}
-                          </span>
-                        </div>
-
-                        {/* Avatar */}
+                          {award.icon}
+                        </span>
                         <img
                           src={assets.avatar}
                           alt={user.username}
-                          className="
-                            h-10
-                            w-10
-                            shrink-0
-                            border
-                            border-[#444]
-                            object-cover
-                            transition-colors
-                            group-hover:border-[#FFD400]/60
-                          "
+                          className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
+                            isLightMode ? "border-black/10" : "border-white/15"
+                          }`}
                         />
-
-                        {/* User */}
                         <div className="min-w-0 flex-1">
                           <div className="flex min-w-0 items-center gap-1.5">
-                            <span className="truncate font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.02em] text-white/85">
+                            <span className="truncate text-sm font-semibold">
                               {user.username}
                             </span>
-
                             {assets.verification && (
                               <img
-                                src={
-                                  assets.verification
-                                    .badge
-                                }
-                                alt={
-                                  assets.verification
-                                    .label
-                                }
-                                title={
-                                  assets.verification
-                                    .label
-                                }
-                                className="h-3.5 w-3.5 shrink-0 object-contain"
+                                src={assets.verification.badge}
+                                alt={assets.verification.label}
+                                title={assets.verification.label}
+                                className="h-4 w-4 shrink-0 object-contain"
                               />
                             )}
                           </div>
-
-                          <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
-                            {getRankLabel(index)} FINISHER
+                          <div
+                            className={`mt-0.5 text-sm ${
+                              isLightMode ? "text-zinc-500" : "text-zinc-400"
+                            }`}
+                          >
+                            {award.label}
                           </div>
                         </div>
-
-                        {/* Completion */}
-                        <div className="hidden shrink-0 text-right sm:block">
-                          <div className="font-mono text-[8px] uppercase tracking-[0.15em] text-white/55">
-                            STATUS
-                          </div>
-
-                          <div className="mt-1 flex items-center gap-1.5">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]" />
-
-                            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.1em] text-[#FFD400]/90">
-                              COMPLETE
-                            </span>
-                          </div>
-                        </div>
+                        <span
+                          className={`hidden rounded-full px-3 py-1 text-sm sm:inline-flex ${
+                            isLightMode
+                              ? "bg-[#fff3b8] text-[#755b00]"
+                              : "bg-[#FFD54A]/10 text-[#E8CA55]"
+                          }`}
+                        >
+                          Complete
+                        </span>
                       </div>
                     );
-                  })}
-                </div>
-              ) : (
-                <div className="border border-dashed border-[#333] bg-[#121212] px-5 py-10 text-center">
-                  <Trophy
-                    size={22}
-                    className="mx-auto text-[#FFD400]/25"
-                  />
-
-                  <div className="mt-3 font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.14em] text-white/35">
-                    NO FINISHERS YET
-                  </div>
-
-                  <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em] text-white/55">
-                    THE #1 SLOT REMAINS OPEN
-                  </div>
-                </div>
-              )}
-
-              {completed.length > 3 && (
-                <button
-                  onClick={() =>
-                    setShowAllFinishers(
-                      !showAllFinishers
-                    )
                   }
-                  className="
-                    mt-2
-                    flex
-                    w-full
-                    items-center
-                    justify-center
-                    gap-2
-                    border
-                    border-[#303030]
-                    bg-[#121212]
-                    py-2.5
-                    font-mono
-                    text-[7px]
-                    font-bold
-                    uppercase
-                    tracking-[0.2em]
-                    text-white/35
-                    transition-all
-                    hover:border-[#FFD400]/45
-                    hover:text-[#FFD400]
-                  "
+                )}
+              </div>
+            ) : (
+              <div
+                className={`rounded-2xl p-8 text-center ${
+                  isLightMode ? "bg-zinc-50" : "bg-white/[0.03]"
+                }`}
+              >
+                <Trophy
+                  size={24}
+                  className={`mx-auto ${
+                    isLightMode ? "text-zinc-300" : "text-zinc-600"
+                  }`}
+                />
+                <div className="mt-3 text-sm font-semibold">No finishers yet</div>
+              </div>
+            )}
+            {completed.length > 3 && (
+              <button
+                type="button"
+                onClick={() => setShowAllFinishers(!showAllFinishers)}
+                className={`mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border py-2.5 text-sm font-medium transition ${
+                  isLightMode
+                    ? "border-black/10 bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+                    : "border-white/[0.08] bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06]"
+                }`}
+              >
+                {showAllFinishers ? (
+                  <>
+                    Show less
+                    <ChevronUp size={15} />
+                  </>
+                ) : (
+                  <>
+                    View all {completed.length} finishers
+                    <ChevronDown size={15} />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </section>
+        <section
+          className={`overflow-hidden rounded-[26px] border ${
+            isLightMode
+              ? "border-black/10 bg-white"
+              : "border-white/[0.08] bg-[#151718]"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between border-b px-5 py-4 ${
+              isLightMode ? "border-black/10" : "border-white/[0.08]"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
+                  isLightMode ? "bg-zinc-100" : "bg-white/[0.05]"
+                }`}
+              >
+                <Users size={19} />
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold">Still Collecting</h2>
+                <div
+                  className={`text-sm ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
                 >
-                  {showAllFinishers ? (
-                    <>
-                      COLLAPSE
-                      <ChevronUp size={12} />
-                    </>
-                  ) : (
-                    <>
-                      VIEW ALL {completed.length} FINISHERS
-                      <ChevronDown size={12} />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </section>
-
-          {/* STILL COLLECTING */}
-          <section className="relative overflow-hidden border border-[#303030] bg-[#151515]">
-            <div className="absolute right-0 top-0 h-6 w-6 border-r border-t border-[#FFD400]/40" />
-
-            <div className="border-b border-[#2c2c2c] px-5 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Users
-                      size={14}
-                      className="text-[#FFD400]"
-                    />
-
-                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/90">
-                      ACTIVE COLLECTORS
-                    </span>
-                  </div>
-
-                  <h2 className="mt-1 font-['Oxanium'] text-lg font-black uppercase tracking-[0.04em] text-white">
-                    Still Collecting
-                  </h2>
-                </div>
-
-                <div className="text-right">
-                  <div className="font-mono text-[8px] uppercase tracking-[0.18em] text-white/55">
-                    TRACKED
-                  </div>
-
-                  <div className="mt-1 font-['Oxanium'] text-sm font-bold text-[#FFD400]">
-                    {collectors.length
-                      .toString()
-                      .padStart(2, "0")}
-                  </div>
+                  Closest to completing this set
                 </div>
               </div>
             </div>
-
-            <div className="p-3">
-              {collectors.length > 0 ? (
-                <div className="space-y-1.5">
-                  {collectors.map((user, index) => {
-                    const assets =
-                      getProfileAssets(user);
-
-                    const percentage =
-                      completionPercentage(
-                        user.owned
-                      );
-
-                    return (
-                      <div
-                        key={user.id || index}
-                        className="
-                          group
-                          relative
-                          overflow-hidden
-                          border
-                          border-[#292929]
-                          bg-[#191919]
-                          px-3
-                          py-3
-                          transition-all
-                          duration-200
-                          hover:border-[#FFD400]/40
-                          hover:bg-[#1d1d1d]
-                        "
-                      >
-                        {/* Rank rail */}
-                        <div className="absolute bottom-0 left-0 top-0 w-0.5 bg-[#FFD400]/10 transition-colors group-hover:bg-[#FFD400]/55" />
-
-                        <div className="flex items-center gap-3">
-                          {/* Rank */}
-                          <span className="w-5 shrink-0 font-['Oxanium'] text-[9px] font-bold tracking-[0.04em] text-white/20">
-                            #{index + 1}
-                          </span>
-
-                          {/* Avatar */}
-                          <img
-                            src={assets.avatar}
-                            alt={user.username}
-                            className="
-                              h-10
-                              w-10
-                              shrink-0
-                              border
-                              border-[#444]
-                              object-cover
-                              transition-colors
-                              group-hover:border-[#FFD400]/60
-                            "
-                          />
-
-                          {/* Identity */}
-                          <div className="min-w-0 flex-1">
-                            <div className="flex min-w-0 items-center gap-1.5">
-                              <span className="truncate font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.02em] text-white/85">
-                                {user.username}
-                              </span>
-
-                              {assets.verification && (
-                                <img
-                                  src={
-                                    assets.verification
-                                      .badge
-                                  }
-                                  alt={
-                                    assets.verification
-                                      .label
-                                  }
-                                  title={
-                                    assets.verification
-                                      .label
-                                  }
-                                  className="h-3.5 w-3.5 shrink-0 object-contain"
-                                />
-                              )}
-                            </div>
-
-                            <div className="mt-1 flex items-center gap-2">
-                              <div className="h-1 flex-1 overflow-hidden bg-[#292929]">
-                                <div
-                                  className="
-                                    h-full
-                                    bg-gradient-to-r
-                                    from-[#9d7b16]
-                                    via-[#FFD400]
-                                    to-[#f5dc67]
-                                    shadow-[0_0_7px_rgba(255,212,0,.2)]
-                                    transition-all
-                                    duration-500
-                                  "
-                                  style={{
-                                    width: `${percentage}%`,
-                                  }}
-                                />
-                              </div>
-
-                              <span className="font-mono text-[8px] font-bold tracking-[0.08em] text-white/65">
-                                {percentage}%
-                              </span>
-                            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-sm ${
+                isLightMode
+                  ? "bg-zinc-100 text-zinc-600"
+                  : "bg-white/[0.05] text-zinc-300"
+              }`}
+            >
+              {collectors.length}
+            </span>
+          </div>
+          <div className="p-3">
+            {collectors.length > 0 ? (
+              <div className="space-y-2">
+                {collectors.map((user, index) => {
+                  const assets = getProfileAssets(user);
+                  const percentage = completionPercentage(user.owned);
+                  return (
+                    <div
+                      key={user.id || index}
+                      className={`w-full rounded-2xl border p-2.5 sm:p-3 ${
+                        isLightMode
+                          ? "border-black/10 bg-[#fafafa]"
+                          : "border-white/[0.07] bg-[#1a1c1d]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={assets.avatar}
+                          alt={user.username}
+                          className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
+                            isLightMode ? "border-black/10" : "border-white/15"
+                          }`}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate text-sm font-semibold">
+                              {user.username}
+                            </span>
+                            {assets.verification && (
+                              <img
+                                src={assets.verification.badge}
+                                alt={assets.verification.label}
+                                title={assets.verification.label}
+                                className="h-4 w-4 shrink-0 object-contain"
+                              />
+                            )}
                           </div>
-
-                          {/* Count */}
-                          <div className="shrink-0 text-right">
-                            <div className="font-['Oxanium'] text-[11px] font-bold tracking-[0.04em] text-[#FFD400]/80">
-                              {user.owned}
-                              <span className="text-white/20">
-                                /{set.total}
-                              </span>
+                          <div className="mt-2 flex items-center gap-2">
+                            <div
+                              className={`h-2 flex-1 overflow-hidden rounded-full ${
+                                isLightMode ? "bg-zinc-200" : "bg-white/[0.08]"
+                              }`}
+                            >
+                              <div
+                                className="h-full rounded-full bg-[#D2AD28]"
+                                style={{ width: `${percentage}%` }}
+                              />
                             </div>
-
-                            <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.14em] text-white/55">
-                              CARDS
-                            </div>
+                            <span
+                              className={`hidden shrink-0 text-sm font-medium sm:inline ${
+                                isLightMode ? "text-zinc-600" : "text-zinc-300"
+                              }`}
+                            >
+                              {percentage}%
+                            </span>
+                          </div>
+                          <div
+                            className={`mt-1 text-sm sm:hidden ${
+                              isLightMode ? "text-zinc-500" : "text-zinc-400"
+                            }`}
+                          >
+                            {user.owned}/{set.total} cards
+                          </div>
+                        </div>
+                        <div className="hidden shrink-0 text-right sm:block">
+                          <div
+                            className={`text-sm font-semibold ${
+                              isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
+                            }`}
+                          >
+                            {user.owned}/{set.total}
+                          </div>
+                          <div
+                            className={`text-sm ${
+                              isLightMode ? "text-zinc-400" : "text-zinc-500"
+                            }`}
+                          >
+                            cards
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className={`rounded-2xl p-8 text-center ${
+                  isLightMode ? "bg-zinc-50" : "bg-white/[0.03]"
+                }`}
+              >
+                <Users
+                  size={24}
+                  className={`mx-auto ${
+                    isLightMode ? "text-zinc-300" : "text-zinc-600"
+                  }`}
+                />
+                <div className="mt-3 text-sm font-semibold">
+                  No active collectors
                 </div>
-              ) : (
-                <div className="border border-dashed border-[#333] bg-[#121212] px-5 py-10 text-center">
-                  <Users
-                    size={22}
-                    className="mx-auto text-[#FFD400]/25"
-                  />
-
-                  <div className="mt-3 font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.14em] text-white/35">
-                    NO ACTIVE COLLECTORS
-                  </div>
-
-                  <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.16em] text-white/55">
-                    COLLECTION DATA NOT AVAILABLE
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-
-        {/* FOOTER READOUT */}
-        <div className="mt-5 flex flex-col gap-2 border-t border-[#292929] pt-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#FFD400]/60" />
-
-            <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/55">
-              COLLECTION DATABASE // LIVE READOUT
-            </span>
+              </div>
+            )}
           </div>
-
-          <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/50">
-            {completed.length} COMPLETED
-            {" // "}
-            {collectors.length} ACTIVE
-            {" // "}
-            {set.total} TOTAL CARDS
-          </div>
-        </div>
+        </section>
       </div>
     </div>
-  );
+  </div>
+);
 };
-
 export default CommunitySet;

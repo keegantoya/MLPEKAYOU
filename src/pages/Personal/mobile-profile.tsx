@@ -15,11 +15,12 @@ import {
   LogOut,
   Pencil,
 } from "lucide-react";
-
 const MobileProfile = () => {
-  const navigate = useNavigate();
-
+const navigate = useNavigate();
 const [profile, setProfile] = useState<any>(null);
+const [isLightMode, setIsLightMode] = useState(
+  () => document.documentElement.dataset.theme === "light"
+);
 const [discord, setDiscord] = useState("");
 const [editingProfile, setEditingProfile] = useState(false);
 const [usernameDraft, setUsernameDraft] = useState("");
@@ -29,92 +30,132 @@ const [copied, setCopied] = useState(false);
 const [deletionRequested, setDeletionRequested] = useState(false);
 const [showDeletionModal, setShowDeletionModal] = useState(false);
 const [submittingDeletion, setSubmittingDeletion] = useState(false);
-
-  // Leaderboard self-ban
-  const [leaderboardBanned, setLeaderboardBanned] = useState(false);
-  const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
-  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+// Leaderboard self-ban
+const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
+const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
 const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] = useState(false);
 const [showBugReport, setShowBugReport] = useState(false);
-
 const [stats, setStats] = useState({
   owned: 0,
   completed: 0,
 });
-
 useEffect(() => {
-  const loadProfile = async () => {
-    const {
+const loadProfile = async () => {
+const {
       data: { session },
     } = await supabase.auth.getSession();
-
     if (!session?.user) {
       setProfile(null);
       return;
     }
-
-    const { data } = await supabase
+const { data } = await supabase
       .from("profiles")
       .select("id, username, avatar_url")
       .eq("id", session.user.id)
       .single();
-
     if (data) {
       setProfile(data);
     }
-
-    const { data: tradingProfile } = await supabase
+const { data: tradingProfile } = await supabase
       .from("trading_profiles")
       .select("discord_username")
       .eq("user_id", session.user.id)
       .single();
-
     setDiscord(tradingProfile?.discord_username || "");
     setUsernameDraft(data?.username || "");
 setDiscordDraft(tradingProfile?.discord_username || "");
-
-    const { data: leaderboardBan, error: leaderboardBanError } =
+const { data: leaderboardBan, error: leaderboardBanError } =
       await supabase
         .from("leaderboard_exclusions")
         .select("user_id")
         .eq("user_id", session.user.id)
         .maybeSingle();
-
     if (leaderboardBanError) {
       console.error("Leaderboard ban status error:", leaderboardBanError);
     }
-
     setLeaderboardBanned(!!leaderboardBan);
     setLoadingLeaderboardBan(false);
   };
-
   loadProfile();
-
-  const {
+const {
     data: { subscription },
   } = supabase.auth.onAuthStateChange(() => {
     loadProfile();
   });
-
   return () => subscription.unsubscribe();
 }, []);
-
+useEffect(() => {
+  let mounted = true;
+  let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+  const syncFromDocument = () => {
+    if (!mounted) return;
+    setIsLightMode(document.documentElement.dataset.theme === "light");
+  };
+  const observer = new MutationObserver(syncFromDocument);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "data-theme"],
+  });
+  const loadThemePreference = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!mounted) return;
+    if (!session?.user) {
+      setIsLightMode(false);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("user_light_mode_preferences")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (!mounted) return;
+    if (error) {
+      console.error("Unable to load profile theme preference:", error);
+    } else {
+      setIsLightMode(Boolean(data));
+    }
+    realtimeChannel = supabase
+      .channel(`mobile-profile-theme-${session.user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "user_light_mode_preferences",
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        (payload) => {
+          if (!mounted) return;
+          setIsLightMode(payload.eventType !== "DELETE");
+        }
+      )
+      .subscribe();
+  };
+  syncFromDocument();
+  loadThemePreference();
+  return () => {
+    mounted = false;
+    observer.disconnect();
+    if (realtimeChannel) {
+      supabase.removeChannel(realtimeChannel);
+    }
+  };
+}, []);
 async function selfBanFromLeaderboard() {
   if (leaderboardBanned) return;
-
-  const {
+const {
     data: { session },
   } = await supabase.auth.getSession();
-
   if (!session?.user) {
     console.error("Leaderboard self-ban: no authenticated session.");
     return;
   }
-
   setLeaderboardBanned(true);
   setLoadingLeaderboardBan(false);
-
-  const { error } = await supabase
+const { error } = await supabase
     .from("leaderboard_exclusions")
     .upsert(
       {
@@ -124,95 +165,74 @@ async function selfBanFromLeaderboard() {
       },
       { onConflict: "user_id" }
     );
-
   if (error) {
     console.error("Leaderboard self-ban error:", error);
     setLeaderboardBanned(false);
     return;
   }
-
   setLeaderboardBanned(true);
 }
-
 async function requestAccountDeletion() {
   if (deletionRequested || submittingDeletion) return;
-
   setSubmittingDeletion(true);
-
   try {
-    const {
+const {
       data: { session },
     } = await supabase.auth.getSession();
-
     if (!session?.user) {
       setShowDeletionModal(false);
       return;
     }
-
-    const { error } = await supabase
+const { error } = await supabase
       .from("account_deletion_requests")
       .insert({
         user_id: session.user.id,
         username: profile?.username || null,
       });
-
     if (error) {
       console.error("Account deletion request error:", error);
-
       if (error.code === "23505") {
         setDeletionRequested(true);
       }
-
       return;
     }
-
     setDeletionRequested(true);
     setShowDeletionModal(false);
   } finally {
     setSubmittingDeletion(false);
   }
 }
-
  useEffect(() => {
-  const loadStats = async () => {
+const loadStats = async () => {
     try {
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
-
       if (!session?.user) return;
-
 // Total cards owned
 const { data: collection } = await supabase
   .from("collection_progress_raw")
   .select("set_id, progress")
   .eq("user_id", session.user.id);
-
 const filtered = (collection || []).filter(
   (row: any) => row.set_id !== "OTHERMERCH"
 );
-
 let owned = 0;
-
 filtered.forEach((row: any) => {
   owned += Object.values(row.progress || {}).filter((value: any) =>
     value === true ||
     (typeof value === "object" && value?.owned === true)
   ).length;
 });
-
-      // Completed sets
-      const { data: progress } = await supabase
+// Completed sets
+const { data: progress } = await supabase
   .from("collection_progress")
   .select("set_id, progress")
   .eq("user_id", session.user.id);
-
 let completed = 0;
-
 const progressMap = new Map(
   (progress || []).map((row: any) => [String(row.set_id), row])
 );
-
 // Main checklist sets only
 const sets = [
   { id: "1", rarities: { R:30, SR:20, SSR:54, HR:36, UR:16, LSR:15, SGR:8, SC:7 }},
@@ -228,42 +248,33 @@ const sets = [
   { id: "FW", rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PSPR: 11, PGR: 6, PCR: 12, PRR: 6 } },
   { id: "SD", rarities: { C: 9, U: 7, SR: 6, SPR: 10, GR: 6, CR: 6, ER: 6, PER: 12, PRR: 6 } },
 ];
-
 sets.forEach((set) => {
-  const found = progressMap.get(set.id);
-
+const found = progressMap.get(set.id);
   if (!found?.progress) return;
-
-  let owned = 0;
-  let total = 0;
-
+let owned = 0;
+let total = 0;
   Object.entries(set.rarities).forEach(([rarity, count]) => {
     total += count;
-
     for (let i = 1; i <= count; i++) {
-      const key = `${rarity}-${i}`;
+const key = `${rarity}-${i}`;
       if (found.progress[key]) {
         owned++;
       }
     }
   });
-
   if (total > 0 && owned === total) {
     completed++;
   }
 });
-
 // Fantasy Wonderland
 const { data: fwProgress } = await supabase
   .from("collection_progress_raw")
   .select("progress")
   .eq("user_id", session.user.id)
   .eq("set_id", "FW");
-
 const fwRow = fwProgress?.[0];
-
 if (fwRow) {
-  const STRUCTURE = [
+const STRUCTURE = [
     { prefix: "BP01C", count: 48 },
     { prefix: "BP01U", count: 18 },
     { prefix: "BP01ER", count: 6 },
@@ -278,36 +289,30 @@ if (fwRow) {
     { prefix: "BP01PCR", count: 12 },
     { prefix: "BP01PRR", count: 6 },
   ];
-
-  const validKeys = new Set(
+const validKeys = new Set(
     STRUCTURE.flatMap(({ prefix, count }) => {
       if (prefix === "BP01ER") {
         return Array.from({ length: 6 }, (_, i) =>
           `BP01ER${String(i + 7).padStart(2, "0")}`
         );
       }
-
       if (prefix === "BP01PSPR") {
         return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map((n) =>
           `BP01PSPR${String(n).padStart(2, "0")}`
         );
       }
-
       return Array.from({ length: count }, (_, i) =>
         `${prefix}${String(i + 1).padStart(2, "0")}`
       );
     })
   );
-
-  const ownedFW = Object.entries(fwRow.progress || {}).filter(
+const ownedFW = Object.entries(fwRow.progress || {}).filter(
     ([key, val]) => val && validKeys.has(key)
   ).length;
-
   if (ownedFW === validKeys.size) {
     completed++;
   }
 }
-
 setStats({
   owned,
   completed,
@@ -316,15 +321,11 @@ setStats({
       console.error("Failed to load stats:", error);
     }
   };
-
   loadStats();
 }, []);
-
 const { avatar, verification } = getProfileAssets(profile);
-
 const displayName = profile?.username || "Twilight Sparkle";
-
-  const menuSections = [
+const menuSections = [
     {
       title: "Collection",
       items: [
@@ -360,7 +361,6 @@ const displayName = profile?.username || "Twilight Sparkle";
         },
       ],
     },
-
     {
       title: "Community",
       items: [
@@ -383,137 +383,111 @@ const displayName = profile?.username || "Twilight Sparkle";
       ],
     },
   ];
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#080909] pb-24 text-white">
-      <div
-        className="pointer-events-none fixed inset-0 opacity-30"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,212,0,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,212,0,.025) 1px, transparent 1px)",
-          backgroundSize: "42px 42px",
-        }}
-      />
-      <div className="pointer-events-none fixed inset-x-0 top-0 z-50 h-px bg-gradient-to-r from-transparent via-[#FFD54A]/60 to-transparent" />
+    <div
+      className={`mobile-profile-scope relative min-h-screen overflow-hidden pb-24 transition-colors duration-200 ${
+        isLightMode ? "mobile-profile-light bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
+      }`}
+    >
+      <style>{`
+        .mobile-profile-light [class*="bg-[#0"],
+        .mobile-profile-light [class*="bg-[#1"] {
+          background-color: #ffffff !important;
+        }
+        .mobile-profile-light [class*="border-white/"],
+        .mobile-profile-light [class*="border-zinc-8"] {
+          border-color: rgba(24, 24, 27, 0.10) !important;
+        }
+        .mobile-profile-light .text-white,
+        .mobile-profile-light [class*="text-zinc-2"],
+        .mobile-profile-light [class*="text-zinc-3"] {
+          color: #27272a !important;
+        }
+        .mobile-profile-light [class*="text-zinc-4"],
+        .mobile-profile-light [class*="text-zinc-5"],
+        .mobile-profile-light [class*="text-zinc-6"],
+        .mobile-profile-light [class*="text-zinc-7"] {
+          color: #52525b !important;
+        }
+        .mobile-profile-light [class*="bg-white/[0.0"] {
+          background-color: rgba(24, 24, 27, 0.035) !important;
+        }
+        .mobile-profile-light [class*="hover:bg-[#19"]:hover,
+        .mobile-profile-light [class*="hover:bg-[#20"]:hover,
+        .mobile-profile-light [class*="hover:bg-white"]:hover {
+          background-color: rgba(24, 24, 27, 0.055) !important;
+        }
+        .mobile-profile-light input {
+          background: #ffffff !important;
+          color: #18181b !important;
+          border-color: rgba(24, 24, 27, 0.12) !important;
+        }
+        .mobile-profile-light input::placeholder {
+          color: #a1a1aa !important;
+        }
+        .mobile-profile-light [class*="text-[#FFD54A]"],
+        .mobile-profile-light [class*="text-[#FFE27A]"],
+        .mobile-profile-light [class*="text-[#E7C84B]"] {
+          color: #8a6a00 !important;
+        }
+        .mobile-profile-light [class*="border-[#FFD54A]"] {
+          border-color: rgba(138, 106, 0, 0.28) !important;
+        }
+      `}</style>
       {/* Header */}
-      <div className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#090b0b]/95 backdrop-blur-xl">
+      <div className={`sticky top-0 z-20 backdrop-blur-md ${
+          isLightMode ? "bg-[#f5f5f3]/98" : "bg-[#0d0f10]/98"
+        }`}>
         <div className="px-5 py-1">
         </div>
       </div>
-
 {/* Profile Card */}
 <div className="px-5 pt-6">
-
-  <div className="relative overflow-hidden border border-white/[0.09] bg-[#101212] shadow-[0_24px_70px_rgba(0,0,0,.55)]">
-
-    {/* HUD background */}
-    <div className="pointer-events-none absolute inset-0">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,213,74,0.10),transparent_32%)]" />
-
-      <div className="absolute right-0 top-0 h-32 w-32 border-b border-l border-[#FFD54A]/10" />
-
-      <div className="absolute right-5 top-5 h-14 w-14 border border-[#FFD54A]/10">
-        <div className="absolute inset-2 border border-dashed border-[#FFD54A]/10" />
-      </div>
-
-      <div className="absolute left-0 top-0 h-12 w-12 border-l-2 border-t-2 border-[#FFD54A]/60" />
-      <div className="absolute bottom-0 right-0 h-12 w-12 border-b-2 border-r-2 border-[#FFD54A]/60" />
-    </div>
-
+  <div className={`relative overflow-hidden rounded-3xl border bg-[#151718] ${
+      isLightMode
+        ? "border-black/[0.06] shadow-[0_6px_18px_rgba(0,0,0,.05)]"
+        : "border-white/[0.06] shadow-[0_6px_18px_rgba(0,0,0,.14)]"
+    }`}>
     <div className="relative z-10 p-5">
-
-      {/* SYSTEM LABEL */}
-      <div className="mb-5 flex items-center justify-between">
-
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#FFD54A] shadow-[0_0_8px_rgba(255,213,74,0.8)]" />
-
-          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]">
-            PROFILE // MODULE 01
-          </span>
-        </div>
-
-        <span className="font-mono text-[8px] tracking-[0.2em] text-zinc-300">
-          ONLINE
-        </span>
-
-      </div>
-
       {/* PROFILE */}
       <div className="flex items-start gap-4">
-
-        {/* AVATAR */}
-        <div className="relative shrink-0">
-
-          <div className="absolute -inset-2 border border-[#FFD54A]/20" />
-          <div className="absolute -left-2 top-1/2 h-px w-2 bg-[#FFD54A]/50" />
-          <div className="absolute -right-2 top-1/2 h-px w-2 bg-[#FFD54A]/50" />
-
-          <div className="relative border border-white/[0.08] bg-[#0b0d0d] p-1.5">
-            <img
-              src={avatar}
-              alt=""
-              className="h-24 w-24 rounded-md border border-[#FFD54A]/35 bg-[#191a1b] object-cover"
-            />
-          </div>
-
-          <div className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-[#111213] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-
+        {/* AVATAR */}        <div className="relative shrink-0">
+          <img
+            src={avatar}
+            alt=""
+            className="h-24 w-24 rounded-2xl border border-white/[0.10] bg-[#191a1b] object-cover shadow-[0_8px_24px_rgba(0,0,0,.28)]"
+          />
         </div>
-
         <div className="min-w-0 flex-1">
-
           {/* IDENTITY */}
           {editingProfile ? (
-            <div className="border border-[#FFD54A]/20 bg-[#0a0c0c] shadow-[0_12px_35px_rgba(0,0,0,.35)]">
-              <div className="flex items-center justify-between border-b border-white/[0.07] px-3 py-2.5">
-                <div>
-                  <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
-                    IDENTITY CONTROL
-                  </div>
-                  <div className="mt-1 font-['Oxanium'] text-[11px] font-bold uppercase tracking-[0.06em] text-white">
-                    Edit Profile Identity
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-emerald-300/90">
-                  <span className="h-1.5 w-1.5 bg-emerald-400 shadow-[0_0_7px_rgba(52,211,153,.8)]" />
-                  READY
-                </div>
-              </div>
-
-              <div className="grid gap-px bg-white/[0.06]">
-                <label className="bg-[#0d0f0f] p-3">
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
-                      USERNAME
-                    </span>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#FFD54A]/75">
-                      PUBLIC ID
-                    </span>
-                  </div>
+            <div className={`rounded-2xl border p-4 ${
+              isLightMode
+                ? "border-black/10 bg-zinc-50"
+                : "border-white/[0.08] bg-[#101213]"
+            }`}>
+              <div className="space-y-4">
+                <label className="block">
+                  <span className={`mb-1.5 block text-sm font-medium ${isLightMode ? "text-zinc-800" : "text-zinc-200"}`}>
+                    MLPEKAYOU Username
+                  </span>
                   <input
                     value={usernameDraft}
                     onChange={(e) => setUsernameDraft(e.target.value)}
                     autoFocus
-                    className="w-full border border-white/[0.08] bg-[#080a0a] px-2.5 py-2 font-['Oxanium'] text-base font-bold uppercase text-white outline-none transition-colors placeholder:text-zinc-700 focus:border-[#FFD54A]/60"
-                    placeholder="ENTER USERNAME"
+                    className="w-full rounded-xl border px-3 py-2.5 text-base font-medium outline-none transition-colors focus:border-[#8a6a00]/50"
+                    placeholder="Your MLPEKAYOU username"
                   />
                 </label>
-
-                <label className="bg-[#0d0f0f] p-3">
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <span className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
-                      DISCORD
-                    </span>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#FFD54A]/75">
-                      NETWORK ID
-                    </span>
-                  </div>
+                <label className="block">
+                  <span className={`mb-1.5 block text-sm font-medium ${isLightMode ? "text-zinc-800" : "text-zinc-200"}`}>
+                    Discord Username
+                  </span>
                   <input
                     value={discordDraft}
                     onChange={(e) => setDiscordDraft(e.target.value)}
-                    placeholder="ENTER DISCORD USERNAME"
-                    className="w-full border border-white/[0.08] bg-[#080a0a] px-2.5 py-2 font-mono text-xs font-bold text-white outline-none transition-colors placeholder:text-zinc-700 focus:border-[#FFD54A]/60"
+                    className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#8a6a00]/50"
+                    placeholder="Your Discord username"
                   />
                 </label>
               </div>
@@ -521,11 +495,9 @@ const displayName = profile?.username || "Twilight Sparkle";
           ) : (
             <>
               <div className="flex items-center gap-2">
-
-                <h2 className="truncate text-xl font-black tracking-tight text-white">
+                <h2 className="truncate text-xl font-semibold tracking-tight text-white">
                   {displayName}
                 </h2>
-
                 {verification && (
                   <img
                     src={verification.badge}
@@ -534,52 +506,39 @@ const displayName = profile?.username || "Twilight Sparkle";
                     className="h-5 w-5 shrink-0"
                   />
                 )}
-
               </div>
-
               <p className="mt-1 text-sm text-zinc-300">
                 @{discord || "No Discord username set"}
               </p>
             </>
           )}
-
           {/* STATUS / ACCESS */}
-          <div className="mt-4 grid grid-cols-2 gap-1.5">
-
-            <div className="border border-white/[0.07] bg-[#0d0f0f] px-3 py-2">
-              <div className="text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
-                STATUS
-              </div>
-
-              <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                ACTIVE
-              </div>
+          {!editingProfile && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${
+                isLightMode
+                  ? "border-emerald-600/20 bg-emerald-600/[0.08] text-emerald-700"
+                  : "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"
+              }`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${isLightMode ? "bg-emerald-600" : "bg-emerald-400"}`} />
+                Active
+              </span>
+              <span className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                isLightMode
+                  ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
+                  : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.08] text-[#FFE27A]"
+              }`}>
+                SuperFan
+              </span>
             </div>
-
-            <div className="border border-white/[0.07] bg-[#0d0f0f] px-3 py-2">
-              <div className="text-[8px] font-bold uppercase tracking-[0.25em] text-zinc-300">
-                ACCESS
-              </div>
-
-              <div className="mt-1 text-[10px] font-bold text-[#FFD54A]">
-                VERIFIED
-              </div>
-            </div>
-
-          </div>
-
+          )}
         </div>
-
       </div>
-
 {/* PROFILE ACTIONS */}
-
 <div className="mt-4 grid grid-cols-3 gap-2">
-
   {/* EDIT PROFILE */}
   <button
-    className={`group relative flex items-center justify-center gap-2 overflow-hidden border px-3 py-2.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.97] ${
+    className={`group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
       editingProfile
         ? "border-[#FFD54A] bg-[#FFD54A] text-black shadow-[0_0_18px_rgba(255,213,74,0.18)]"
         : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
@@ -587,26 +546,22 @@ const displayName = profile?.username || "Twilight Sparkle";
     onClick={async () => {
       if (editingProfile) {
         setSavingProfile(true);
-
-        const {
+const {
           data: { session },
         } = await supabase.auth.getSession();
-
         if (session?.user) {
           await supabase.auth.updateUser({
             data: {
               username: usernameDraft,
             },
           });
-
           await supabase
             .from("profiles")
             .update({
               username: usernameDraft,
             })
             .eq("id", session.user.id);
-
-         const { error: tradingError } = await supabase
+const { error: tradingError } = await supabase
   .from("trading_profiles")
   .upsert(
     {
@@ -617,29 +572,23 @@ const displayName = profile?.username || "Twilight Sparkle";
       onConflict: "user_id",
     }
   );
-
 if (tradingError) {
   console.error("Failed to save Discord username:", tradingError);
   setSavingProfile(false);
   return;
 }
-
           setProfile((prev: any) => ({
             ...prev,
             username: usernameDraft,
           }));
-
           setDiscord(discordDraft);
         }
-
         setSavingProfile(false);
       }
-
       setEditingProfile(!editingProfile);
     }}
   >
     <Pencil className="h-3.5 w-3.5" />
-
     <span>
       {editingProfile
         ? savingProfile
@@ -648,53 +597,45 @@ if (tradingError) {
         : "Edit Names"}
     </span>
   </button>
-
-
   {/* CHANGE AVATAR */}
   <button
     onClick={() => navigate("/Personal/change-avatar")}
-    className="group relative flex items-center justify-center gap-2 overflow-hidden border border-[#FFD54A]/30 bg-[#FFD54A] px-3 py-2.5 font-mono text-[7px] font-black uppercase tracking-[0.12em] text-black transition-all duration-200 hover:bg-[#FFE27A] hover:shadow-[0_0_18px_rgba(255,213,74,0.18)] active:scale-[0.97]"
+    className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-3 py-2.5 text-xs font-semibold text-black transition-all duration-200 hover:bg-[#FFE27A] active:scale-[0.97]"
   >
     <Pencil
       size={14}
       className="relative"
     />
-
     <span className="relative">
       Edit Avatar
     </span>
   </button>
-
-
   {/* SHARE PROFILE */}
   <button
     onClick={() => {
-      const url = `https://www.mlpekayou.community/${encodeURIComponent(
+const url = `https://www.mlpekayou.community/${encodeURIComponent(
         profile?.username ?? ""
       )}`;
-
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(url);
       } else {
-        const textArea = document.createElement("textarea");
+const textArea = document.createElement("textarea");
         textArea.value = url;
         textArea.style.position = "fixed";
         textArea.style.left = "-999999px";
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-
         try {
           document.execCommand("copy");
         } finally {
           document.body.removeChild(textArea);
         }
       }
-
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
     }}
-    className={`group relative flex items-center justify-center gap-2 overflow-hidden border px-3 py-2.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition-all duration-200 active:scale-[0.97] ${
+    className={`group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
       copied
         ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-400"
         : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
@@ -704,135 +645,121 @@ if (tradingError) {
       {copied ? "✓ Copied" : "Share Profile"}
     </span>
   </button>
-
 </div>
       {/* BIO */}
       <p className="mt-5 border-t border-zinc-800/80 pt-4 text-sm leading-relaxed text-zinc-400">
         {profile?.bio || ""}
       </p>
-
     </div>
   </div>
 </div>
-
-
+{/* Quick Stats */}
+<div className="relative mt-6 grid grid-cols-2 gap-3 px-5">
+  <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
+    <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
+      {stats.owned.toLocaleString()}
+    </div>
+    <div className="mt-1 text-xs font-medium text-zinc-400">
+      Cards Owned
+    </div>
+  </div>
+  <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
+    <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
+      {stats.completed}
+    </div>
+    <div className="mt-1 text-xs font-medium text-zinc-400">
+      Sets Mastered
+    </div>
+  </div>
+</div>
 {/* LEADERBOARD ELIGIBILITY */}
-<div className="relative mt-7 overflow-hidden border border-[#FFD54A]/20 bg-[#101212] p-5 shadow-[0_20px_50px_rgba(0,0,0,.35)] sm:p-6">
-  <div className="pointer-events-none absolute right-0 top-0 h-16 w-16 border-r border-t border-[#FFD54A]/30" />
-
+<div className="relative mx-5 mt-4 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-5 shadow-[0_10px_28px_rgba(0,0,0,.20)] sm:mx-auto sm:max-w-xl sm:p-6">
   <div className="flex items-start justify-between gap-5">
     <div className="min-w-0">
       <div className="flex items-center gap-2">
-        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
-          REGIONAL ASSOCIATION
+        <div className="text-sm font-semibold text-white">
+          Regional Association
         </div>
-
         <button
           type="button"
           aria-label="Leaderboard eligibility information"
           onClick={() => setShowLeaderboardBanInfo(true)}
-          className="flex h-5 w-5 items-center justify-center rounded-full border border-[#FFD54A]/35 bg-[#181818] font-mono text-[10px] font-black text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
+          className="flex h-6 w-6 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.05] text-xs font-semibold text-zinc-300 transition-colors hover:bg-white/[0.10] hover:text-white"
         >
           ?
         </button>
       </div>
-
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-300">
+      <p className="mt-2 max-w-md text-sm leading-6 text-zinc-400">
         If you are using this website to track MLP Kayou cards in regions outside of 
         North American cards, click this toggle.
       </p>
     </div>
-
     <button
       type="button"
       role="switch"
       aria-checked={leaderboardBanned}
       disabled={leaderboardBanned}
       onClick={() => setShowLeaderboardBanConfirm(true)}
-      className={`relative mt-1 flex h-8 w-14 shrink-0 items-center border p-1 transition-all ${
+      className={`relative mt-1 flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition-colors ${
         leaderboardBanned
-          ? "cursor-not-allowed border-zinc-700 bg-zinc-800 opacity-60"
-          : "cursor-pointer border-[#FFD54A]/50 bg-[#171717] hover:border-[#FFD54A]"
+          ? isLightMode
+            ? "cursor-not-allowed bg-zinc-300 opacity-60"
+            : "cursor-not-allowed bg-zinc-700 opacity-60"
+          : isLightMode
+          ? "cursor-pointer bg-zinc-300 hover:bg-zinc-400"
+          : "cursor-pointer bg-zinc-700 hover:bg-zinc-600"
       }`}
     >
       <span
-        className={`h-6 w-6 transition-all ${
+        className={`h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${
           leaderboardBanned
-            ? "translate-x-6 bg-zinc-500"
-            : "translate-x-0 bg-[#FFD54A]"
+            ? "translate-x-6"
+            : "translate-x-0"
         }`}
       />
     </button>
   </div>
-
-  <div className="mt-5 border-t border-white/[0.07] pt-4">
-
+  <div className="mt-4">
     {leaderboardBanned && (
-      <div className="mt-2 font-mono text-[8px] uppercase tracking-[0.16em] text-zinc-500">
-        LEADERBOARD BAN ACTIVE // CONTACT KEEGAN TO UNDO
+      <div className="mt-2 text-xs text-zinc-500">
+        Leaderboard exclusion is active. Contact Keegan to undo it.
       </div>
     )}
   </div>
 </div>
-
 {/* LEADERBOARD BAN CONFIRMATION MODAL */}
 {showLeaderboardBanConfirm && (
   <div
-    className="fixed inset-0 z-[115] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+    className={`fixed inset-0 z-[115] flex items-center justify-center p-4 backdrop-blur-md ${
+      isLightMode ? "bg-white/20" : "bg-black/80"
+    }`}
     onMouseDown={(e) => {
       if (e.target === e.currentTarget) {
         setShowLeaderboardBanConfirm(false);
       }
     }}
   >
-    <div className="relative w-full max-w-lg overflow-hidden border border-[#FFD54A]/30 bg-[#111111] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
-      <div className="absolute left-0 top-0 h-10 w-10 border-l-2 border-t-2 border-[#FFD54A]/70" />
-      <div className="absolute right-0 top-0 h-10 w-10 border-r-2 border-t-2 border-[#FFD54A]/70" />
-      <div className="absolute bottom-0 left-0 h-10 w-10 border-b-2 border-l-2 border-[#FFD54A]/70" />
-      <div className="absolute bottom-0 right-0 h-10 w-10 border-b-2 border-r-2 border-[#FFD54A]/70" />
-
-      <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-6 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/40 bg-[#FFD54A]/10">
-            <span className="font-mono text-sm font-black text-[#FFD54A]">!</span>
-          </div>
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
-              IMPORTANT
-            </div>
-            <h2 className="mt-1 text-xl font-black uppercase text-white">
-              Are You Sure?
-            </h2>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 py-6">
-        <p className="text-sm leading-6 text-zinc-300">
-          This button is <span className="font-bold text-white">ONLY</span> for users who collect cards from regions or languages outside of the North American English release.
-        </p>
-
-        <div className="mt-5 border border-[#FFD54A]/15 bg-[#181818] p-4">
-          <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/90">
-            THIS INCLUDES
-          </div>
-          <p className="mt-2 text-sm font-bold leading-6 text-white">
-            SEA, Chinese, Japanese, or other language/region cards.
-          </p>
-        </div>
-
-        <p className="mt-5 text-sm leading-6 text-zinc-400">
-          If you only collect North American English cards, do not turn this toggle on.
-        </p>
-      </div>
-
-      <div className="flex items-center justify-end gap-3 border-t border-[#292929] bg-[#0c0c0c] px-6 py-4">
+    <div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${
+      isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/[0.10] bg-[#151718] text-white"
+    }`}>
+      <h2 className="text-xl font-semibold tracking-tight">Do not activate this toggle if you only collect American Cards using this app.</h2>
+      <p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
+        Turn this on only if you collect cards outside the North American English release, and if you are using this app to track them.
+      </p>
+      <p className={`mt-3 text-sm font-medium ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>
+        This includes SEA, Chinese, Japanese, and other regional or language cards. This app is only made for North American releases.
+      </p>
+      <div className="mt-6 flex gap-3">
         <button
           type="button"
           onClick={() => setShowLeaderboardBanConfirm(false)}
-          className="border border-zinc-700 bg-[#171717] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-300 transition-all hover:border-zinc-500 hover:bg-[#202020] hover:text-white"
+          className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold ${
+            isLightMode
+              ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+              : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
+          }`}
         >
-          NO, CANCEL
+          Cancel
         </button>
         <button
           type="button"
@@ -840,138 +767,62 @@ if (tradingError) {
             setShowLeaderboardBanConfirm(false);
             await selfBanFromLeaderboard();
           }}
-          className="border border-[#FFD54A]/40 bg-[#FFD54A]/10 px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
+          className="flex-1 rounded-xl bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-black hover:bg-[#FFE27A]"
         >
-          YES, CONTINUE
+          Continue
         </button>
       </div>
     </div>
   </div>
 )}
-
 {/* LEADERBOARD BAN INFORMATION MODAL */}
 {showLeaderboardBanInfo && (
   <div
-    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+    className={`fixed inset-0 z-[110] flex items-center justify-center p-4 backdrop-blur-md ${
+      isLightMode ? "bg-white/20" : "bg-black/80"
+    }`}
     onMouseDown={(e) => {
       if (e.target === e.currentTarget) {
         setShowLeaderboardBanInfo(false);
       }
     }}
   >
-    <div className="relative w-full max-w-lg overflow-hidden border border-[#FFD54A]/30 bg-[#111111] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
-      <div className="border-b border-[#FFD54A]/15 bg-[#0c0c0c] px-6 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center border border-[#FFD54A]/40 bg-[#FFD54A]/10">
-            <span className="font-mono text-sm font-black text-[#FFD54A]">?</span>
-          </div>
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#FFD54A]/90">
-              LEADERBOARD POLICY
-            </div>
-            <h2 className="mt-1 text-xl font-black uppercase text-white">
-              Regional Collection
-            </h2>
-          </div>
+    <div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${
+      isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/[0.10] bg-[#151718] text-white"
+    }`}>
+      <h2 className="text-xl font-semibold tracking-tight">Regional Association</h2>
+      {leaderboardBanned ? (
+        <div className={`mt-3 space-y-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
+          <p>Your account is currently excluded from all leaderboards. This is due to the unfair advantage provided to other regions regarding release dates.</p>
+          <p>If this was a mistake, contact Keegan in the MLPEKAYOU Discord server. You will be required to open a ticket and provide proof that your cards are North American only.</p>
         </div>
-      </div>
-      <div className="px-6 py-6">
-        {leaderboardBanned ? (
-          <>
-            <p className="text-sm leading-6 text-zinc-300">
-              This website is only intended for North American English.
-            </p>
-            <p className="mt-4 text-sm leading-6 text-zinc-300">
-              It is completely okay for you to continue using this website,
-              but you have now been banned from any and all leaderboards.
-            </p>
-            <div className="mt-5 border-l-2 border-[#FFD54A]/60 pl-4">
-              <p className="text-sm font-bold uppercase leading-6 text-[#FFD54A]">
-                IF YOU THINK THIS WAS A MISTAKE, YOU MUST REACH OUT TO KEEGAN IN THE DISCORD SERVER.
-              </p>
-            </div>
-          </>
-        ) : (
-          <p className="text-sm leading-6 text-zinc-300">
-            This toggle is for users who collect cards from other regions or languages, such as Japanese, Chinese, SEA, etc.
-          </p>
-        )}
-      </div>
-      <div className="flex justify-end border-t border-[#292929] bg-[#0c0c0c] px-6 py-4">
-        <button
-          type="button"
-          onClick={() => setShowLeaderboardBanInfo(false)}
-          className="border border-[#FFD54A]/40 bg-[#171717] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFD54A] transition-all hover:border-[#FFD54A] hover:bg-[#FFD54A] hover:text-black"
-        >
-          CLOSE
-        </button>
-      </div>
+      ) : (
+        <p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
+          Use this setting if you collect cards from outside the North American English release, including SEA, Chinese, or Japanese cards.
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={() => setShowLeaderboardBanInfo(false)}
+        className={`mt-6 w-full rounded-xl border px-4 py-3 text-sm font-semibold ${
+          isLightMode
+            ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+            : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
+        }`}
+      >
+        Done
+      </button>
     </div>
   </div>
 )}
-
-{/* Quick Stats */}
-<div className="relative mt-6 grid grid-cols-2 gap-2 px-5">
-
-  <div className="relative overflow-hidden border border-white/[0.08] bg-[#101212] p-4">
-
-    <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-[#FFD54A]/30" />
-
-    <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
-      COLLECTION
-    </div>
-
-    <div className="mt-2 font-['Oxanium'] text-3xl font-black text-[#FFD54A]">
-      {stats.owned.toLocaleString()}
-    </div>
-
-    <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-400">
-      Cards Owned
-    </div>
-
-  </div>
-
-  <div className="relative overflow-hidden border border-white/[0.08] bg-[#101212] p-4">
-
-    <div className="absolute right-0 top-0 h-8 w-8 border-r border-t border-[#FFD54A]/30" />
-
-    <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-zinc-300">
-      PROGRESS
-    </div>
-
-    <div className="mt-2 font-['Oxanium'] text-3xl font-black text-[#FFD54A]">
-      {stats.completed}
-    </div>
-
-    <div className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-400">
-      Sets Mastered
-    </div>
-
-  </div>
-
-</div>
-
-
 {/* Menu Sections */}
-<div className="mt-8 space-y-7 px-5">
-
+<div className="mt-7 space-y-6 px-5">
   {menuSections.map((section) => (
     <div key={section.title}>
-
-      <div className="mb-3 flex items-center gap-2">
-
-        <span className="h-px w-6 bg-[#FFD54A]" />
-
-        <h3 className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[#FFD54A]">
-          {section.title}
-        </h3>
-
-        <span className="h-px flex-1 bg-zinc-800" />
-
+      <div className="mb-2 px-1">
+        <h3 className="text-sm font-semibold text-zinc-300">{section.title}</h3>
       </div>
-
-      <div className="overflow-hidden border border-white/[0.08] bg-[#101212]">
-
+      <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] shadow-[0_10px_28px_rgba(0,0,0,.18)]">
         {section.items.map((item, index) => (
           <button
             key={item.title}
@@ -986,11 +837,9 @@ if (tradingError) {
                 : ""
             }`}
           >
-
             <div className="flex min-w-0 items-center gap-3">
-
               <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center border bg-[#0d0f0f] transition-colors ${
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-white/[0.035] transition-colors ${
                   item.danger
                     ? "border-red-500/30 text-red-400 group-hover:border-red-500/60"
                     : "border-white/[0.08] text-[#FFD54A] group-hover:border-[#FFD54A]/40"
@@ -1010,29 +859,23 @@ if (tradingError) {
                   <User size={16} />
                 )}
               </div>
-
               <div className="min-w-0">
-
                 <div
                   className={`font-semibold ${
-                    item.danger ? "text-red-300" : "text-white"
+                    item.danger ? (isLightMode ? "text-red-700" : "text-red-300") : "text-white"
                   }`}
                 >
                   {item.title}
                 </div>
-
                 <div
                   className={`mt-1 truncate text-sm ${
-                    item.danger ? "text-red-300/80" : "text-zinc-300"
+                    item.danger ? (isLightMode ? "text-red-600" : "text-red-300/80") : "text-zinc-300"
                   }`}
                 >
                   {item.subtitle}
                 </div>
-
               </div>
-
             </div>
-
             <ChevronRight
               size={18}
               className={`shrink-0 transition-all duration-200 group-hover:translate-x-1 ${
@@ -1041,30 +884,19 @@ if (tradingError) {
                   : "text-zinc-700 group-hover:text-[#FFD54A]"
               }`}
             />
-
           </button>
         ))}
-
       </div>
-
     </div>
   ))}
-
 </div>
-
 {/* ACCOUNT / DANGER ZONE */}
 <div className="mt-8 px-5">
-  <div className="relative overflow-hidden border border-red-500/20 bg-[#0d0f0f]">
-    
+  <div className="relative overflow-hidden rounded-2xl border border-red-500/20 bg-[#151718]">
     <div className="p-5">
-      <div className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-red-300/90">
-        ACCOUNT
-      </div>
-
-      <h3 className="mt-1 font-['Oxanium'] text-base font-black uppercase tracking-[0.04em] text-white">
+      <h3 className={`mt-1 font-['Oxanium'] text-base font-black uppercase tracking-[0.04em] ${isLightMode ? "text-zinc-900" : "text-white"}`}>
         Account Deletion
       </h3>
-
       <p className="mt-2 text-sm leading-6 text-zinc-300">
         Request permanent deletion of your MLPEKAYOU account.
         Your account will remain active until the request is
@@ -1072,14 +904,15 @@ if (tradingError) {
         reach out to staff in the MLPEKAYOU Discord server as
         soon as possible.
       </p>
-
       <button
         type="button"
         onClick={() => setShowDeletionModal(true)}
         disabled={deletionRequested}
-        className={`mt-5 w-full border px-4 py-3 text-xs font-bold uppercase tracking-[0.15em] transition-all duration-200 ${
+        className={`mt-5 w-full rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
           deletionRequested
             ? "cursor-default border-zinc-700 bg-[#171717] text-zinc-600"
+            : isLightMode
+            ? "border-red-700/25 bg-red-700/[0.04] text-red-700 active:bg-red-700/[0.08]"
             : "border-red-500/30 bg-[#151515] text-red-400 active:bg-red-500/10"
         }`}
       >
@@ -1090,12 +923,10 @@ if (tradingError) {
     </div>
   </div>
 </div>
-
 {/* Logout */}
 <div className="mt-10 px-5">
-
   <button
-    className="flex w-full items-center justify-center gap-2 border border-red-500/20 bg-red-500/[0.06] py-3.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-red-400 transition-all duration-200 hover:border-red-500/40 hover:bg-red-500/10"
+    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/[0.06] py-3.5 text-sm font-semibold text-red-400 transition-all duration-200 hover:border-red-500/40 hover:bg-red-500/10"
     onClick={async () => {
       await supabase.auth.signOut();
       navigate("/");
@@ -1104,217 +935,115 @@ if (tradingError) {
     <LogOut size={18} />
     Log Out
   </button>
-
 </div>
 {/* REPORT A BUG POPUP */}
 {showBugReport && (
   <div
-    className="fixed inset-0 z-[30000] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm"
+    className={`fixed inset-0 z-[30000] flex items-center justify-center px-4 backdrop-blur-md ${
+      isLightMode ? "bg-white/15" : "bg-black/55"
+    }`}
     onClick={() => setShowBugReport(false)}
   >
     <div
-      className="relative w-full max-w-md overflow-hidden rounded-md border border-red-500/40 bg-[#101212] shadow-[0_0_45px_rgba(220,38,38,.20)]"
+      className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.28)] ${
+        isLightMode
+          ? "border-red-900/10 bg-white text-zinc-900"
+          : "border-white/[0.10] bg-[#151718] text-white"
+      }`}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="pointer-events-none absolute left-0 top-0 h-10 w-10 border-l-2 border-t-2 border-red-500/70" />
-      <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r-2 border-t-2 border-red-500/70" />
-
-      <div className="border-b border-red-500/20 bg-[#1b1010] px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-red-500/50 bg-red-500/10">
-            <span className="text-lg font-black text-red-400">!</span>
-          </div>
-
-          <div>
-            <div className="font-mono text-[8px] font-bold uppercase tracking-[0.3em] text-red-300/90">
-              SYSTEM SUPPORT
-            </div>
-            <div className="mt-1 font-['Oxanium'] text-base font-bold uppercase tracking-[0.08em] text-white">
-              Report a Bug
-            </div>
-          </div>
-        </div>
+      <h2 className={`text-xl font-semibold tracking-tight ${isLightMode ? "text-red-700" : "text-white"}`}>Report a Bug</h2>
+      <p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
+        If you need to contact the developer, you can join the MLPEKAYOU Discord Server or email mlpekayou@gmail.com.
+      </p>
+      <p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
+        Please reserve these communications for serious inquiries such as bugs, glitches, account issues, or Discord server issues.
+      </p>
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => setShowBugReport(false)}
+          className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
+            isLightMode
+              ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+              : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
+          }`}
+        >
+          Close
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            window.open(
+              "https://discord.gg/mlpekayou",
+              "_blank",
+              "noopener,noreferrer"
+            )
+          }
+          className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
+            isLightMode
+              ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:bg-[#c89d13]/20"
+              : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A] hover:bg-[#FFD54A]/15"
+          }`}
+        >
+          Join Discord
+        </button>
       </div>
-
-      <div className="px-5 py-5">
-        <p className="text-sm leading-6 text-zinc-300">
-          Currently, bugs can only be reported in the MLPEKAYOU Discord
-          server. Please join the server and find the{" "}
-          <span className="font-semibold text-red-300">"Important"</span>{" "}
-          category, then the last channel will be{" "}
-          <span className="font-semibold text-red-300">"Bugs."</span>{" "}
-          All requirements of reporting a bug are present in that channel.
-        </p>
-
-        <div className="mt-6 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setShowBugReport(false)}
-            className="border border-white/[0.09] bg-[#181a1a] px-4 py-3 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-all active:scale-[0.98]"
-          >
-            Close
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              window.open(
-                "https://discord.gg/mlpekayou",
-                "_blank",
-                "noopener,noreferrer"
-              )
-            }
-            className="border border-red-400/70 bg-gradient-to-b from-[#dc2626] to-[#991b1b] px-4 py-3 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-white shadow-[0_0_16px_rgba(220,38,38,.18)] transition-all active:scale-[0.98]"
-          >
-            Join Discord
-          </button>
-        </div>
-      </div>
-
-      <div className="border-t border-red-500/10 bg-[#0c0e0e] px-5 py-2">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-red-300/80">
-            BUG REPORT PROTOCOL
-          </span>
-          <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-red-300/80">
-            DISCORD REQUIRED
-          </span>
-        </div>
-      </div>
+      <a
+        href="mailto:mlpekayou@gmail.com"
+        className={`mt-3 block w-full rounded-xl border px-4 py-3 text-center text-sm font-semibold transition-colors ${
+          isLightMode
+            ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-50"
+            : "border-white/10 bg-transparent text-zinc-300 hover:bg-white/[0.05]"
+        }`}
+      >
+        Email Developer
+      </a>
     </div>
   </div>
 )}
-
 {/* ACCOUNT DELETION MODAL */}
 {showDeletionModal && (
   <div
-    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+    className={`fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md ${
+      isLightMode ? "bg-white/20" : "bg-black/80"
+    }`}
     onMouseDown={(e) => {
       if (e.target === e.currentTarget && !submittingDeletion) {
         setShowDeletionModal(false);
       }
     }}
   >
-    <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto border border-red-500/30 bg-[#0d0f0f] shadow-[0_30px_100px_rgba(0,0,0,0.8)]">
-
-      {/* Technical corner brackets */}
-      <div className="absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-red-500/70" />
-      <div className="absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-red-500/70" />
-      <div className="absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-red-500/70" />
-      <div className="absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-red-500/70" />
-
-      {/* Header */}
-      <div className="border-b border-red-500/20 bg-[#0c0c0c] px-5 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-red-500/40 bg-red-500/10">
-            <span className="text-sm font-black text-red-400">
-              !
-            </span>
-          </div>
-
-          <div className="min-w-0">
-            <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-red-300/90">
-              ACCOUNT SECURITY
-            </div>
-
-            <h2 className="mt-1 text-lg font-black text-white">
-              Request Account Deletion
-            </h2>
-          </div>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="px-5 py-5">
-        <p className="text-sm leading-6 text-zinc-300">
-          You're requesting the permanent deletion of your
-          MLPEKAYOU account.
-        </p>
-
-        <div className="mt-5 border border-[#FFD54A]/15 bg-[#181818] p-4">
-          <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-[#FFD54A]/90">
-            IMPORTANT
-          </div>
-
-          <p className="mt-2 text-sm leading-6 text-zinc-400">
-            This does{" "}
-            <span className="font-bold text-white">not</span>{" "}
-            delete your account immediately. Your request will be
-            submitted for manual review. Your account will remain
-            active until the deletion is manually fulfilled.
-          </p>
-        </div>
-
-        <div className="mt-5 border-l-2 border-red-500/50 pl-4">
-          <div className="text-[9px] font-bold uppercase tracking-[0.25em] text-red-300/90">
-            THIS ACTION CANNOT BE UNDONE
-          </div>
-
-          <p className="mt-2 text-xs leading-5 text-zinc-300">
-            Keegan files through requested deletions once every five
-            days. If you change your mind, please contact support as soon
-            as possible in the MLPEKayou Discord server. Once your account has
-            been deleted, it cannot be recovered. All data associated with your
-            e-mail and account will be wiped from the system.
-          </p>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center justify-end gap-2 border-t border-[#292929] bg-[#0c0c0c] px-5 py-4">
+    <div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${
+      isLightMode ? "border-red-200 bg-white text-zinc-900" : "border-red-500/25 bg-[#151718] text-white"
+    }`}>
+      <h2 className={`text-xl font-semibold tracking-tight ${isLightMode ? "text-red-700" : "text-white"}`}>Request account deletion</h2>
+      <p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
+        This sends a request for permanent account deletion. Your account stays active until the request is manually reviewed and completed.
+      </p>
+      <p className={isLightMode ? "mt-3 text-sm font-medium text-red-700" : "mt-3 text-sm font-medium text-red-500"}>
+        Once your account is deleted, it cannot be recovered.
+      </p>
+      <div className="mt-6 flex gap-3">
         <button
           type="button"
           disabled={submittingDeletion}
           onClick={() => setShowDeletionModal(false)}
-          className="
-            border
-            border-zinc-700
-            bg-[#171717]
-            px-4
-            py-3
-            text-xs
-            font-bold
-            uppercase
-            tracking-[0.12em]
-            text-zinc-400
-            transition-all
-            duration-200
-            active:bg-[#202020]
-            active:text-white
-            disabled:cursor-not-allowed
-            disabled:opacity-50
-          "
+          className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${
+            isLightMode
+              ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+              : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
+          }`}
         >
           Cancel
         </button>
-
         <button
           type="button"
           disabled={submittingDeletion}
           onClick={requestAccountDeletion}
-          className="
-            border
-            border-red-500/50
-            bg-red-500/10
-            px-4
-            py-3
-            text-xs
-            font-bold
-            uppercase
-            tracking-[0.12em]
-            text-red-400
-            transition-all
-            duration-200
-            active:border-red-500
-            active:bg-red-500/20
-            active:text-red-300
-            disabled:cursor-not-allowed
-            disabled:opacity-50
-          "
+          className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${isLightMode ? "border-red-700/25 bg-red-700/[0.06] text-red-700" : "border-red-500/30 bg-red-500/[0.08] text-red-500"}`}
         >
-          {submittingDeletion
-            ? "Submitting..."
-            : "Confirm Request"}
+          {submittingDeletion ? "Submitting..." : "Request deletion"}
         </button>
       </div>
     </div>
@@ -1323,7 +1052,6 @@ if (tradingError) {
     </div>
   );
 };
-
 function StatCard({
   value,
   label,
@@ -1336,14 +1064,12 @@ function StatCard({
       <div className="text-2xl font-bold text-[#d4af37]">
         {value.toLocaleString()}
       </div>
-
       <div className="mt-1 text-xs uppercase tracking-wider text-zinc-400">
         {label}
       </div>
     </div>
   );
 }
-
 function Placeholder({
   title,
 }: {
@@ -1352,12 +1078,10 @@ function Placeholder({
   return (
     <div className="rounded-2xl border border-dashed border-zinc-700 bg-[#232323] p-8 text-center">
       <h3 className="font-semibold text-white">{title}</h3>
-
       <p className="mt-2 text-sm text-zinc-300">
         Future section
       </p>
     </div>
   );
 }
-
 export default MobileProfile;

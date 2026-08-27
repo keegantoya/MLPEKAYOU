@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
-
 const logo = "/website-assets/mlpekayouwiki3.webp";
-
 export default function PasswordReset() {
   const navigate = useNavigate();
-
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-
   useEffect(() => {
     const {
       data: { subscription },
@@ -19,277 +15,100 @@ export default function PasswordReset() {
         console.log("Password recovery session detected");
       }
     });
-
     return () => {
       subscription.unsubscribe();
     };
   }, []);
-
   const handleReset = async () => {
     setLoading(true);
     setMessage("");
-
     const { error } = await supabase.auth.updateUser({
       password,
     });
-
     if (error) {
       setMessage(error.message);
     } else {
       setMessage("Password updated successfully!");
-
       setTimeout(() => {
         navigate("/profile");
       }, 1500);
     }
-
     setLoading(false);
   };
-
+  const success = message.includes("successfully");
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#171717] px-4 py-8 font-['Oxanium']">
-
-      {/* SUBTLE TECH GRID */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.018]"
-        style={{
-          backgroundImage:
-            "linear-gradient(#FFD400 1px, transparent 1px), linear-gradient(90deg, #FFD400 1px, transparent 1px)",
-          backgroundSize: "44px 44px",
-        }}
-      />
-
-      {/* AMBIENT GOLD LIGHT */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 bg-[#FFD400]/[0.035] blur-[120px]" />
-
-      {/* MAIN PANEL */}
-      <div className="relative w-full max-w-md">
-
-        {/* TECHNICAL CORNERS */}
-        <div className="pointer-events-none absolute -left-px -top-px z-20 h-8 w-8 border-l border-t border-[#FFD400]/60" />
-        <div className="pointer-events-none absolute -right-px -top-px z-20 h-8 w-8 border-r border-t border-[#FFD400]/30" />
-        <div className="pointer-events-none absolute -bottom-px -left-px z-20 h-7 w-7 border-b border-l border-[#FFD400]/20" />
-        <div className="pointer-events-none absolute -bottom-px -right-px z-20 h-7 w-7 border-b border-r border-[#FFD400]/35" />
-
-        <div className="overflow-hidden border border-white/[0.08] bg-[#111111] shadow-[0_20px_70px_rgba(0,0,0,.45)]">
-
-          {/* SYSTEM BAR */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#0d0d0d] px-4 py-2.5">
-
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 bg-[#FFD400] shadow-[0_0_8px_rgba(255,212,0,.7)]" />
-
-              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.24em] text-white/25">
-                MLPEKAYOU // AUTHENTICATION
-              </span>
-            </div>
-
-            <span className="font-mono text-[6px] font-bold uppercase tracking-[0.18em] text-[#FFD400]/45">
-              SECURE
-            </span>
-
-          </div>
-
-          {/* HEADER */}
-          <div className="px-6 pb-5 pt-5 text-center">
-
-            <div className="mb-2 flex items-center justify-center gap-2">
-              <span className="h-px w-7 bg-[#FFD400]/25" />
-
-              <span className="font-mono text-[6px] font-bold uppercase tracking-[0.25em] text-[#FFD400]/55">
-                ACCOUNT RECOVERY
-              </span>
-
-              <span className="h-px w-7 bg-[#FFD400]/25" />
-            </div>
-
-            <h1 className="text-2xl font-black uppercase tracking-[0.05em] text-white">
-              Reset Password
-            </h1>
-
-            <p className="mx-auto mt-2 max-w-xs font-mono text-[7px] uppercase leading-[1.8] tracking-[0.08em] text-white/25">
-              Enter a new password to restore access to your MLPEKAYOU account.
-            </p>
-
-          </div>
-
-          {/* FORM */}
-          <div className="px-6 pb-6">
-
-            {/* INPUT LABEL */}
-            <div className="mb-2 flex items-center justify-between">
-
-              <label
-                htmlFor="new-password"
-                className="font-mono text-[7px] font-bold uppercase tracking-[0.18em] text-white/35"
-              >
-                New Password
-              </label>
-
-              <span className="font-mono text-[6px] uppercase tracking-[0.14em] text-[#FFD400]/40">
-                REQUIRED
-              </span>
-
-            </div>
-
-            {/* INPUT */}
-            <div className="relative">
-
-              <div className="pointer-events-none absolute left-0 top-0 h-3 w-3 border-l border-t border-[#FFD400]/35" />
-
-              <input
-                id="new-password"
-                type="password"
-                placeholder="Enter new password"
-                value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
-                className="
-                  h-12
-                  w-full
-                  border
-                  border-white/[0.09]
-                  bg-[#181818]
-                  px-4
-                  font-['Oxanium']
-                  text-sm
-                  text-white
-                  outline-none
-                  placeholder:text-white/20
-                  transition-all
-                  duration-200
-                  focus:border-[#FFD400]/55
-                  focus:bg-[#1b1b1b]
-                  focus:shadow-[0_0_16px_rgba(255,212,0,.06)]
-                "
+    <div className="flex min-h-screen items-center justify-center bg-[#f5f5f7] px-4 py-8 font-['Oxanium'] text-zinc-900 transition-colors dark:bg-[#111214] dark:text-white">
+      <div className="w-full max-w-md overflow-hidden rounded-[30px] border border-black/10 bg-white shadow-[0_20px_70px_rgba(0,0,0,0.12)] dark:border-white/10 dark:bg-[#1c1c1e] dark:shadow-[0_20px_70px_rgba(0,0,0,0.4)]">
+        <div className="flex items-center justify-between px-5 pt-4">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            disabled={loading}
+            className="group flex h-5 w-5 items-center justify-center rounded-full bg-[#ff5f57] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)] transition hover:brightness-95 disabled:opacity-50"
+            aria-label="Cancel password reset"
+            title="Cancel"
+          >
+            <span className="text-[11px] font-bold leading-none text-[#7a1f1b] opacity-0 transition-opacity group-hover:opacity-100">×</span>
+          </button>
+          <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-500 dark:bg-white/[0.07] dark:text-zinc-400">
+            Account Recovery
+          </span>
+        </div>
+        <div className="px-6 pb-6 pt-4 sm:px-7 sm:pb-7">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-white/[0.07]">
+              <img
+                src={logo}
+                alt="MLPEKAYOU"
+                className="h-8 w-auto object-contain"
               />
-
-              <div className="pointer-events-none absolute bottom-0 right-0 h-3 w-3 border-b border-r border-[#FFD400]/20" />
-
             </div>
-
-            {/* BUTTONS */}
-            <div className="mt-5 grid grid-cols-2 gap-2">
-
-              <button
-                type="button"
-                onClick={() => navigate("/")}
-                disabled={loading}
-                className="
-                  h-11
-                  border
-                  border-white/[0.08]
-                  bg-[#181818]
-                  font-mono
-                  text-[7px]
-                  font-bold
-                  uppercase
-                  tracking-[0.16em]
-                  text-white/35
-                  transition-all
-                  duration-200
-                  hover:border-white/[0.16]
-                  hover:bg-[#1d1d1d]
-                  hover:text-white/65
-                  disabled:cursor-not-allowed
-                  disabled:opacity-40
-                "
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={handleReset}
-                disabled={loading || !password}
-                className="
-                  relative
-                  h-11
-                  overflow-hidden
-                  border
-                  border-[#FFD400]
-                  bg-[#FFD400]
-                  font-['Oxanium']
-                  text-[8px]
-                  font-black
-                  uppercase
-                  tracking-[0.12em]
-                  text-[#171717]
-                  transition-all
-                  duration-200
-                  hover:bg-[#ffe45c]
-                  hover:shadow-[0_0_18px_rgba(255,212,0,.18)]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-40
-                "
-              >
-                {loading ? "Updating..." : "Update Password"}
-              </button>
-
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight">Reset Password</h1>
+              <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                Choose a new password for your account.
+              </p>
             </div>
-
-            {/* STATUS */}
-            {message && (
-              <div
-                className={`
-                  mt-4
-                  border
-                  px-3
-                  py-3
-                  text-center
-                  ${
-                    message.includes("successfully")
-                      ? "border-[#FFD400]/25 bg-[#FFD400]/[0.04]"
-                      : "border-red-400/20 bg-red-400/[0.04]"
-                  }
-                `}
-              >
-                <div
-                  className={`
-                    font-mono
-                    text-[7px]
-                    font-bold
-                    uppercase
-                    leading-relaxed
-                    tracking-[0.08em]
-                    ${
-                      message.includes("successfully")
-                        ? "text-[#FFD400]/75"
-                        : "text-red-300/70"
-                    }
-                  `}
-                >
-                  {message}
-                </div>
-              </div>
-            )}
-
           </div>
-
-          {/* FOOTER STATUS */}
-          <div className="flex items-center justify-between border-t border-white/[0.05] bg-[#0d0d0d] px-5 py-2.5">
-
-            <span className="font-mono text-[5px] uppercase tracking-[0.18em] text-white/15">
-              AUTH NODE // 04
-            </span>
-
-            <span className="flex items-center gap-1.5 font-mono text-[5px] font-bold uppercase tracking-[0.16em] text-[#FFD400]/40">
-              <span className="h-1 w-1 bg-[#FFD400]/70 shadow-[0_0_5px_rgba(255,212,0,.6)]" />
-              ENCRYPTED
-            </span>
-
+          <div className="rounded-[22px] bg-[#f5f5f7] p-4 dark:bg-white/[0.05]">
+            <label
+              htmlFor="new-password"
+              className="mb-2 block text-sm font-semibold"
+            >
+              New password
+            </label>
+            <input
+              id="new-password"
+              type="password"
+              placeholder="Enter new password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-[#FFD54A] focus:ring-4 focus:ring-[#FFD54A]/15 dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-zinc-500"
+            />
           </div>
-
+          {message && (
+            <div
+              className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+                success
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300"
+                  : "border-red-200 bg-red-50 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-300"
+              }`}
+            >
+              {message}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={loading || !password}
+            className="mt-5 w-full rounded-2xl bg-[#FFD54A] px-4 py-3.5 text-[15px] font-semibold text-zinc-900 transition hover:brightness-95 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {loading ? "Updating..." : "Update Password"}
+          </button>
+          <p className="mt-4 text-center text-xs text-zinc-400 dark:text-zinc-500">
+            You’ll be redirected to your profile after your password is updated.
+          </p>
         </div>
-
-        {/* BOTTOM SYSTEM TEXT */}
-        <div className="mt-3 flex justify-center gap-3 font-mono text-[5px] uppercase tracking-[0.18em] text-white/10">
-          <span>MLPEKAYOU</span>
-          <span>•</span>
-          <span>SECURE ACCOUNT RECOVERY</span>
-        </div>
-
       </div>
     </div>
   );

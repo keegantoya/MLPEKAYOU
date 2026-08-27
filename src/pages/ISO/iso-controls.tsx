@@ -1,19 +1,14 @@
 import { useState } from "react";
-
 interface ISOControlsProps {
   cardCodeSearch: string;
   onCardCodeSearchChange: (value: string) => void;
-
   characterSearch: string;
   onCharacterSearchChange: (value: string) => void;
-
   searchAllCards: boolean;
   onSearchAllCardsChange: (value: boolean) => void;
-
   wishlistMode: boolean;
-wishlistCharacterOnly?: boolean;
-onWishlistModeChange: (value: boolean) => void;
-
+  wishlistCharacterOnly?: boolean;
+  onWishlistModeChange: (value: boolean) => void;
   availableSets: {
     id: string;
     name: string;
@@ -22,17 +17,12 @@ onWishlistModeChange: (value: boolean) => void;
       name: string;
     }[];
   }[];
-
   hiddenSetIds: string[];
-
   onHideSet: (setId: string) => void;
-
-hideISO: boolean;
-onToggleHideISO: () => void;
-
-onClose: () => void;
+  hideISO: boolean;
+  onToggleHideISO: () => void;
+  onClose: () => void;
 }
-
 export default function ISOCONTROLS({
   cardCodeSearch,
   onCardCodeSearchChange,
@@ -46,654 +36,305 @@ export default function ISOCONTROLS({
   availableSets,
   hiddenSetIds,
   onHideSet,
-hideISO,
-onToggleHideISO,
-onClose,
+  hideISO,
+  onToggleHideISO,
+  onClose,
 }: ISOControlsProps) {
   const handleSearchChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     let value = e.target.value.toUpperCase();
-
     value = value.replace(/<>/g, "◇");
     value = value.replace(/#/g, "※");
-
     value = value.replace(/<ZR/g, "◇ZR");
     value = value.replace(/<AR/g, "◇AR");
     value = value.replace(/<CR/g, "◇CR");
     value = value.replace(/<N/g, "◇N");
-
     onCardCodeSearchChange(value);
   };
-
   const handleCharacterSearchChange = (
-  e: React.ChangeEvent<HTMLInputElement>
-) => {
-  onCharacterSearchChange(e.target.value);
-};
-
-const [showHideSets, setShowHideSets] = useState(false);
-const [expanded, setExpanded] = useState<string | null>(null);
-
-if (wishlistCharacterOnly) {
-  return (
-<div className="relative mb-6 overflow-hidden border border-[#30363a] bg-[#0a0d0f] p-4 text-white">
-
-  {/* HUD corners */}
-  <span className="pointer-events-none absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-yellow-400/80" />
-  <span className="pointer-events-none absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-yellow-400/50" />
-  <span className="pointer-events-none absolute bottom-0 left-0 h-4 w-4 border-b-2 border-l-2 border-yellow-400/50" />
-  <span className="pointer-events-none absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-yellow-400/70" />
-
-  {/* Header */}
-  <div className="mb-3 flex items-center justify-between border-b border-[#292f33] pb-2.5">
-    <div className="flex items-center gap-2">
-      <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_8px_#facc15]" />
-
-      <span className="font-oxanium text-[9px] font-bold uppercase tracking-[0.22em] text-yellow-400">
-        Character Search
-      </span>
-    </div>
-
-    <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-zinc-700">
-      QUERY
-    </span>
-  </div>
-
-  {/* Search */}
-  <div className="relative overflow-hidden border border-[#343a3e] bg-[#111518] transition-all duration-200 focus-within:border-yellow-400/70 focus-within:shadow-[0_0_18px_rgba(250,204,21,0.08)]">
-
-    <input
-      type="text"
-      value={characterSearch}
-      onChange={handleCharacterSearchChange}
-      placeholder="SEARCH CHARACTER..."
-      autoComplete="off"
-      spellCheck={false}
-      className="
-        w-full
-        border-0
-        bg-transparent
-        px-3
-        py-3
-        pr-16
-        font-mono
-        text-[11px]
-        uppercase
-        tracking-[0.08em]
-        text-white
-        placeholder:text-zinc-700
-        caret-yellow-400
-        outline-none
-      "
-    />
-
-    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[7px] font-bold uppercase tracking-[0.14em] text-zinc-600">
-      SEARCH
-    </span>
-
-    <div className="pointer-events-none absolute bottom-0 left-0 h-px w-full bg-gradient-to-r from-yellow-400/60 via-yellow-400/20 to-transparent" />
-  </div>
-
-</div>
-  );
-}
-
-  return (
-<aside className="relative w-[300px] shrink-0 overflow-visible border border-[#30363a] bg-[#0a0d0f] p-4 text-white shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-
-  {/* HUD corner brackets */}
-  <div className="pointer-events-none absolute left-0 top-0 h-5 w-5 border-l-2 border-t-2 border-yellow-400/80" />
-  <div className="pointer-events-none absolute right-0 top-0 h-5 w-5 border-r-2 border-t-2 border-yellow-400/80" />
-  <div className="pointer-events-none absolute bottom-0 left-0 h-5 w-5 border-b-2 border-l-2 border-yellow-400/50" />
-  <div className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 border-b-2 border-r-2 border-yellow-400/50" />
-
-  {/* Header */}
-<div className="relative mb-4 border-b border-[#292f33] pb-3">
-
-  <div className="mb-2 flex items-center gap-2">
-    <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_10px_#facc15]" />
-
-    <span className="font-mono text-[7px] font-bold uppercase tracking-[0.45em] text-yellow-400">
-      SYSTEMS ONLINE... ISO
-    </span>
-
-    <span className="ml-auto font-mono text-[7px] text-zinc-700">
-      04
-    </span>
-  </div>
-
-  <div className="flex items-center justify-between gap-3">
-
-    <h1 className="font-oxanium text-xl font-black uppercase tracking-[0.12em] text-white">
-      ISO Controls
-    </h1>
-
-    <button
-      type="button"
-      onClick={onClose}
-      className="flex h-7 w-7 shrink-0 items-center justify-center border border-[#343a3e] bg-[#111518] font-mono text-xs text-zinc-500 transition-colors hover:border-yellow-400 hover:bg-yellow-400 hover:text-black"
-      aria-label="Close ISO Controls"
-    >
-      ✕
-    </button>
-
-  </div>
-
-  <div className="mt-1 flex items-center justify-between">
-    <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-zinc-600">
-      CONTROL INTERFACE
-    </span>
-  </div>
-
-  <div className="absolute bottom-0 left-0 h-px w-16 bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
-
-</div>
-
-<div className="space-y-1.5">
- 
- <label
-  className={`group mt-3 flex min-h-0 items-center justify-between border px-3 py-2.5 transition-all duration-200 ${
-    wishlistMode
-      ? "cursor-not-allowed border-zinc-800 bg-[#111315] opacity-40"
-      : searchAllCards
-      ? "cursor-pointer border-yellow-400/70 bg-yellow-400/[0.06] shadow-[inset_2px_0_0_#facc15]"
-      : "cursor-pointer border-[#343a3e] bg-[#111518] hover:border-yellow-400/50 hover:bg-[#151a1d]"
-  }`}
->
-  <div className="min-w-0 pr-3">
-    <div className="flex items-center gap-2 font-oxanium text-[10px] font-bold uppercase tracking-[0.16em] text-white">
-      <span
-        className={`h-1 w-1 ${
-          searchAllCards
-            ? "bg-yellow-400 shadow-[0_0_7px_#facc15]"
-            : "bg-zinc-700"
-        }`}
-      />
-      Show All Cards
-    </div>
-
-    <div className="mt-0.5 pl-3 font-mono text-[8px] uppercase tracking-[0.08em] text-zinc-600">
-      Display all cards in database.
-    </div>
-  </div>
-
-  <input
-    type="checkbox"
-    checked={searchAllCards}
-    disabled={wishlistMode}
-    onChange={(e) => onSearchAllCardsChange(e.target.checked)}
-    className="h-4 w-4 shrink-0 accent-yellow-400 disabled:cursor-not-allowed"
-  />
-</label>
-
- 
-  <label className="font-oxanium text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400">
-    Card Code Search
-  </label>
-
-  <div className="relative">
-    <input
-      type="text"
-      value={cardCodeSearch}
-      onChange={handleSearchChange}
-      placeholder="TYPE # FOR ※  •  <> FOR ◇"
-      autoComplete="off"
-      spellCheck={false}
-className="
-  w-full
-  border
-  border-[#343a3e]
-  bg-[#111518]
-  px-3
-  py-2
-  pr-8
-  font-mono
-  text-xs
-  uppercase
-  tracking-wider
-  text-white
-  placeholder:text-zinc-600
-  caret-yellow-400
-  outline-none
-  transition-colors
-  focus:border-yellow-400/70
-  focus:bg-[#151a1d]
-"
-    />
-
-<span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-[7px] font-bold tracking-widest text-yellow-400/40">
-  CARD CODE
-</span>
-  </div>
-</div>
-
-<div className="mt-4">
-  <div className="relative overflow-hidden border border-[#343a3e] bg-[#0d1113] transition-all duration-200 focus-within:border-yellow-400/70 focus-within:shadow-[0_0_18px_rgba(250,204,21,0.08)]">
-
-    {/* HUD corners */}
-    <span className="pointer-events-none absolute left-0 top-0 h-2.5 w-2.5 border-l border-t border-yellow-400/80" />
-    <span className="pointer-events-none absolute right-0 top-0 h-2.5 w-2.5 border-r border-t border-yellow-400/40" />
-    <span className="pointer-events-none absolute bottom-0 left-0 h-2.5 w-2.5 border-b border-l border-yellow-400/40" />
-    <span className="pointer-events-none absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-yellow-400/60" />
-
-    {/* Header */}
-    <div className="flex items-center justify-between border-b border-[#242a2e] bg-[#111518] px-3 py-2">
-      <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_7px_#facc15]" />
-
-        <span className="font-oxanium text-[9px] font-bold uppercase tracking-[0.2em] text-yellow-400">
-          Character Search
-        </span>
-      </div>
-
-      <span className="font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-zinc-700">
-        CHAR // 02
-      </span>
-    </div>
-
-    {/* Search field */}
-    <div className="relative">
-      <input
-        type="text"
-        value={characterSearch}
-        onChange={handleCharacterSearchChange}
-        placeholder="SEARCH CHARACTER..."
-        autoComplete="off"
-        spellCheck={false}
-        className="
-          w-full
-          border-0
-          bg-transparent
-          px-3
-          py-3
-          pr-16
-          font-mono
-          text-[11px]
-          uppercase
-          tracking-[0.08em]
-          text-white
-          placeholder:text-zinc-700
-          caret-yellow-400
-          outline-none
-        "
-      />
-
-      {/* Search status */}
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[7px] font-bold uppercase tracking-[0.14em] text-zinc-600">
-        QUERY
-      </span>
-    </div>
-
-    {/* Scan line */}
-    <div className="absolute bottom-0 left-0 h-px w-0 bg-yellow-400 shadow-[0_0_8px_#facc15] transition-all duration-300 focus-within:w-full" />
-
-  </div>
-</div>
-
-<div className="mt-6 space-y-4">
-
-<label
-  className={`group mt-2 flex min-h-0 items-center justify-between border px-3 py-2.5 transition-all duration-200 ${
-    searchAllCards
-      ? "cursor-not-allowed border-zinc-800 bg-[#111315] opacity-40"
-      : wishlistMode
-      ? "cursor-pointer border-yellow-400/70 bg-yellow-400/[0.06] shadow-[inset_2px_0_0_#facc15]"
-      : "cursor-pointer border-[#343a3e] bg-[#111518] hover:border-yellow-400/50 hover:bg-[#151a1d]"
-  }`}
->
-  <div className="min-w-0 pr-3">
-    <div className="flex items-center gap-2 font-oxanium text-[10px] font-bold uppercase tracking-[0.16em] text-white">
-      <span
-        className={`h-1 w-1 ${
-          wishlistMode
-            ? "bg-yellow-400 shadow-[0_0_7px_#facc15]"
-            : "bg-zinc-700"
-        }`}
-      />
-      Wishlist Mode
-    </div>
-
-    <div className="mt-0.5 pl-3 font-mono text-[8px] uppercase tracking-[0.08em] text-zinc-600">
-      Curate your wishlist.
-    </div>
-  </div>
-
-  <input
-    type="checkbox"
-    checked={wishlistMode}
-    disabled={searchAllCards}
-    onChange={(e) => onWishlistModeChange(e.target.checked)}
-    className="h-4 w-4 shrink-0 accent-yellow-400 disabled:cursor-not-allowed"
-  />
-</label>
-
-</div>
-
-<div className="mt-4">
-  <div className="relative group flex items-center gap-2">
-
-    <button
-      type="button"
-      onClick={onToggleHideISO}
-      className={`group relative flex-1 overflow-hidden border px-3 py-3 text-left transition-all duration-200 ${
-        hideISO
-          ? "border-yellow-400 bg-yellow-400/[0.08]"
-          : "border-[#343a3e] bg-[#0f1316] hover:border-yellow-400/70 hover:bg-[#14191c]"
-      }`}
-    >
-      {/* ACTIVE EDGE */}
-      <div
-        className={`absolute inset-y-0 left-0 w-px transition-all duration-200 ${
-          hideISO
-            ? "w-0.5 bg-yellow-400 shadow-[0_0_8px_#facc15]"
-            : "bg-yellow-400/50 group-hover:w-0.5 group-hover:bg-yellow-400"
-        }`}
-      />
-
-      <div className="flex items-center gap-2.5">
-
-        {/* STATUS ICON */}
-        <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center border font-mono text-[8px] font-bold transition-all ${
-            hideISO
-              ? "border-yellow-400 bg-yellow-400 text-black shadow-[0_0_8px_rgba(250,204,21,0.35)]"
-              : "border-yellow-400/40 bg-yellow-400/[0.05] text-yellow-400 group-hover:border-yellow-400 group-hover:bg-yellow-400/[0.1]"
-          }`}
-        >
-          {hideISO ? "✓" : "//"}
-        </span>
-
-        <div className="min-w-0">
-
-          <div
-            className={`font-oxanium text-[9px] font-bold uppercase tracking-[0.18em] ${
-              hideISO ? "text-yellow-300" : "text-white"
-            }`}
-          >
-            {hideISO ? "ISO PRIVATE" : "MAKE MY ISO PRIVATE"}
-          </div>
-
-          <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.11em] text-zinc-600">
-            {hideISO
-              ? "Public visibility disabled"
-              : "Remove ISO from public view"}
-          </div>
-
-        </div>
-
-        <span
-          className={`ml-auto shrink-0 font-mono text-[7px] font-bold uppercase tracking-[0.12em] ${
-            hideISO ? "text-yellow-400" : "text-zinc-700 group-hover:text-yellow-400"
-          }`}
-        >
-          {hideISO ? "PRIVATE" : "PUBLIC"}
-        </span>
-
-      </div>
-
-      {/* BOTTOM SCAN LINE */}
-      <div
-        className={`absolute bottom-0 left-0 h-px bg-yellow-400 shadow-[0_0_8px_#facc15] transition-all duration-300 ${
-          hideISO ? "w-full" : "w-0 group-hover:w-full"
-        }`}
-      />
-
-    </button>
-
-    {/* HELP */}
-    <div className="group/help relative flex h-5 w-5 shrink-0 cursor-help items-center justify-center border border-[#343a3e] bg-[#111518] font-mono text-[8px] font-bold text-yellow-400 transition-all hover:border-yellow-400 hover:bg-yellow-400 hover:text-black">
-      ?
-
-      <div className="pointer-events-none absolute right-0 top-full z-[100] mt-2 w-64 border border-[#343a3e] bg-[#0b0f11] p-3 font-mono text-[8px] uppercase leading-4 tracking-[0.08em] text-zinc-400 opacity-0 shadow-[0_12px_30px_rgba(0,0,0,0.7)] transition-opacity duration-200 group-hover/help:opacity-100">
-        Removes your ISO from public view without affecting your personal collection.
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<div className="relative group mt-6 flex items-center gap-2">
-  <button
-    type="button"
-    onClick={() => setShowHideSets(true)}
-    className="group relative flex-1 overflow-hidden border border-[#343a3e] bg-[#0f1316] px-3 py-3 text-left transition-all duration-200 hover:border-yellow-400/70 hover:bg-[#14191c]"
-  >
-    <div className="absolute inset-y-0 left-0 w-px bg-yellow-400/60 transition-all duration-200 group-hover:w-0.5 group-hover:bg-yellow-400" />
-
-    <div className="flex items-center gap-2.5">
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center border border-yellow-400/40 bg-yellow-400/[0.06] font-mono text-[9px] text-yellow-400 transition-all group-hover:border-yellow-400 group-hover:bg-yellow-400 group-hover:text-black">
-        //
-      </span>
-
-      <div className="min-w-0">
-        <div className="font-oxanium text-[9px] font-bold uppercase tracking-[0.18em] text-white">
-          SET VISIBILITY
-        </div>
-
-        <div className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.12em] text-zinc-600 group-hover:text-zinc-500">
-          Configure hidden collection sets
-        </div>
-      </div>
-
-      <span className="ml-auto font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-yellow-400/50 transition-colors group-hover:text-yellow-400">
-        CONFIG →
-      </span>
-    </div>
-
-    <div className="absolute bottom-0 left-0 h-px w-0 bg-yellow-400 shadow-[0_0_8px_#facc15] transition-all duration-300 group-hover:w-full" />
-  </button>
-
-  <div className="group/help relative flex h-5 w-5 shrink-0 cursor-help items-center justify-center border border-[#343a3e] bg-[#111518] font-mono text-[8px] font-bold text-yellow-400 transition-all hover:border-yellow-400 hover:bg-yellow-400 hover:text-black">
-    ?
-
-    <div className="pointer-events-none absolute right-0 top-full z-[100] mt-2 w-64 border border-[#343a3e] bg-[#0b0f11] p-3 font-mono text-[8px] uppercase leading-4 tracking-[0.08em] text-zinc-400 opacity-0 shadow-[0_12px_30px_rgba(0,0,0,0.7)] transition-opacity duration-200 group-hover/help:opacity-100">
-      Hide specific sets from your personal and public collection views.
-    </div>
-  </div>
-</div>
-
-{showHideSets && (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm sm:p-6">
-
-    <div className="relative flex max-h-[88vh] w-full max-w-[560px] flex-col overflow-hidden border border-[#30363a] bg-[#0a0d0f] text-white shadow-[0_25px_80px_rgba(0,0,0,0.75)]">
-
-      {/* HUD CORNERS */}
-      <div className="pointer-events-none absolute left-0 top-0 z-20 h-7 w-7 border-l-2 border-t-2 border-yellow-400" />
-      <div className="pointer-events-none absolute right-0 top-0 z-20 h-7 w-7 border-r-2 border-t-2 border-yellow-400/70" />
-      <div className="pointer-events-none absolute bottom-0 left-0 z-20 h-7 w-7 border-b-2 border-l-2 border-yellow-400/50" />
-      <div className="pointer-events-none absolute bottom-0 right-0 z-20 h-7 w-7 border-b-2 border-r-2 border-yellow-400/50" />
-
-      {/* HEADER */}
-      <div className="relative shrink-0 border-b border-[#292f33] bg-[#0d1113] px-4 py-4 sm:px-5">
-
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
-
-        <div className="flex items-start justify-between gap-4">
-
-          <div className="min-w-0">
-
-            <div className="mb-1.5 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 bg-yellow-400 shadow-[0_0_8px_#facc15]" />
-
-              <span className="font-mono text-[7px] font-bold uppercase tracking-[0.35em] text-yellow-400">
-                SET VISIBILITY // CONTROL
-              </span>
-            </div>
-
-            <h2 className="font-oxanium text-lg font-black uppercase tracking-[0.12em] text-white sm:text-xl">
-              Hide Sets
-            </h2>
-
-            <div className="mt-1 font-mono text-[7px] uppercase tracking-[0.12em] text-zinc-600">
-              Configure collection visibility parameters
-            </div>
-
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowHideSets(false)}
-            className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#343a3e] bg-[#111518] font-mono text-xs text-zinc-500 transition-all hover:border-red-400 hover:bg-red-500/10 hover:text-red-300"
-            aria-label="Close Hide Sets"
-          >
-            ✕
-          </button>
-
-        </div>
-
-        <div className="mt-4 flex items-center justify-between border-t border-[#202528] pt-3">
-
-          <span className="font-mono text-[7px] uppercase tracking-[0.14em] text-zinc-600">
-            HIDDEN SETS
-          </span>
-
-          <span className="border border-yellow-400/30 bg-yellow-400/[0.05] px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.12em] text-yellow-400">
-            {hiddenSetIds.length} ACTIVE
-          </span>
-
-        </div>
-
-      </div>
-
-      {/* SET LIST */}
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
-
-        <div className="space-y-2">
-
-          {availableSets.map((category) => (
-            <details
-              key={category.id}
-              className="group/category overflow-hidden border border-[#292f33] bg-[#101417]"
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    onCharacterSearchChange(e.target.value);
+  };
+  const [showHideSets, setShowHideSets] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const switchClass = (active: boolean, disabled = false) =>
+    `relative h-7 w-12 shrink-0 rounded-full transition ${
+      disabled
+        ? "cursor-not-allowed bg-zinc-200 opacity-50 dark:bg-white/10"
+        : active
+        ? "bg-[#FFD54A]"
+        : "bg-zinc-200 dark:bg-white/10"
+    }`;
+  if (wishlistCharacterOnly) {
+    return (
+      <div className="mb-4 rounded-[24px] border border-black/10 bg-white p-4 text-zinc-900 shadow-sm dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
+        <label className="mb-2 block text-sm font-semibold">Character search</label>
+        <div className="relative">
+          <input
+            type="text"
+            value={characterSearch}
+            onChange={handleCharacterSearchChange}
+            placeholder="Search a character"
+            autoComplete="off"
+            spellCheck={false}
+            className="w-full rounded-2xl border border-black/10 bg-zinc-100 px-4 py-2.5 pr-10 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-[#FFD54A] focus:ring-4 focus:ring-[#FFD54A]/15 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:placeholder:text-zinc-500"
+          />
+          {characterSearch && (
+            <button
+              type="button"
+              onClick={() => onCharacterSearchChange("")}
+              className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-zinc-200 text-sm text-zinc-500 transition hover:bg-zinc-300 dark:bg-white/10 dark:text-zinc-400 dark:hover:bg-white/15"
+              aria-label="Clear character search"
             >
-
-              <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-3 transition-all hover:bg-[#151a1d] [&::-webkit-details-marker]:hidden">
-
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center border border-yellow-400/30 bg-yellow-400/[0.04] font-mono text-[8px] text-yellow-400 transition-all group-open/category:border-yellow-400/70 group-open/category:bg-yellow-400/[0.08]">
-                  +
-                </span>
-
-                <div className="min-w-0 flex-1">
-
-                  <div className="font-oxanium text-[9px] font-bold uppercase tracking-[0.14em] text-white">
-                    {category.name}
-                  </div>
-
-                  <div className="mt-0.5 font-mono text-[6px] uppercase tracking-[0.1em] text-zinc-700">
-                    {category.children.length} SET
-                    {category.children.length === 1 ? "" : "S"} AVAILABLE
-                  </div>
-
-                </div>
-
-                <span className="font-mono text-[8px] text-zinc-600 transition-colors group-open/category:text-yellow-400">
-                  ▼
-                </span>
-
-              </summary>
-
-              <div className="border-t border-[#292f33] bg-[#0c1012] p-2">
-
-                <div className="space-y-1">
-
-                  {category.children.map((set) => {
-                    const isHidden = hiddenSetIds.includes(set.id);
-
-                    return (
-                      <label
-                        key={set.id}
-                        className={`group/set relative flex cursor-pointer items-center gap-3 overflow-hidden border px-3 py-2.5 transition-all duration-150 ${
-                          isHidden
-                            ? "border-yellow-400/50 bg-yellow-400/[0.07]"
-                            : "border-[#242a2e] bg-[#111518] hover:border-[#3b4449] hover:bg-[#151a1d]"
-                        }`}
-                      >
-
-                        {isHidden && (
-                          <div className="absolute inset-y-0 left-0 w-0.5 bg-yellow-400 shadow-[0_0_8px_#facc15]" />
-                        )}
-
-                        <input
-                          type="checkbox"
-                          checked={isHidden}
-                          onChange={() => onHideSet(set.id)}
-                          className="peer sr-only"
-                        />
-
-                        <span
-                          className={`flex h-4 w-4 shrink-0 items-center justify-center border font-mono text-[8px] font-bold transition-all ${
-                            isHidden
-                              ? "border-yellow-400 bg-yellow-400 text-black shadow-[0_0_8px_rgba(250,204,21,0.35)]"
-                              : "border-[#41494e] bg-[#0b0f11] text-transparent group-hover/set:border-yellow-400/60"
-                          }`}
-                        >
-                          ✓
-                        </span>
-
-                        <span
-                          className={`min-w-0 flex-1 font-oxanium text-[8px] font-semibold uppercase tracking-[0.1em] transition-colors ${
-                            isHidden
-                              ? "text-yellow-300"
-                              : "text-zinc-400 group-hover/set:text-white"
-                          }`}
-                        >
-                          {set.name}
-                        </span>
-
-                        <span
-                          className={`font-mono text-[6px] font-bold uppercase tracking-[0.1em] ${
-                            isHidden
-                              ? "text-yellow-400/70"
-                              : "text-zinc-700"
-                          }`}
-                        >
-                          {isHidden ? "HIDDEN" : "VISIBLE"}
-                        </span>
-
-                      </label>
-                    );
-                  })}
-
-                </div>
-
-              </div>
-
-            </details>
-          ))}
-
+              ×
+            </button>
+          )}
         </div>
-
       </div>
-
-      {/* FOOTER */}
-      <div className="shrink-0 border-t border-[#292f33] bg-[#0d1113] px-4 py-3 sm:px-5">
-
-        <div className="flex items-center justify-between gap-3">
-
-          <div className="flex items-center gap-2">
-            <span className="h-1 w-1 bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.8)]" />
-
-            <span className="font-mono text-[6px] uppercase tracking-[0.14em] text-zinc-600">
-              VISIBILITY CONTROL ONLINE
-            </span>
+    );
+  }
+  return (
+    <>
+      <aside className="flex w-full flex-col overflow-hidden rounded-[28px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-xl dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
+        <div className="shrink-0 px-5 pb-2 pt-3 sm:px-6">
+          <div className="mb-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={onClose}
+              className="group flex h-5 w-5 items-center justify-center rounded-full bg-[#ff5f57] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)] transition hover:brightness-95"
+              aria-label="Close ISO Controls"
+              title="Close"
+            >
+              <span className="text-[11px] font-bold leading-none text-[#7a1f1b] opacity-0 transition-opacity group-hover:opacity-100">×</span>
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setShowHideSets(false)}
-            className="border border-yellow-400/60 bg-yellow-400/[0.06] px-4 py-2 font-oxanium text-[8px] font-bold uppercase tracking-[0.14em] text-yellow-400 transition-all hover:border-yellow-400 hover:bg-yellow-400 hover:text-black"
-          >
-            DONE
-          </button>
-
+          <h1 className="text-xl font-bold tracking-tight">ISO Controls</h1>
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+            Search cards and choose what appears in your ISO.
+          </p>
         </div>
-
-      </div>
-
-    </div>
-  </div>
-)}
-
-</aside>
+        <div className="px-3 pb-3 sm:px-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <section className="rounded-[22px] bg-white p-2.5 shadow-sm dark:bg-white/[0.06]">
+              <label
+                className={`flex items-center justify-between gap-4 rounded-2xl p-2 ${
+                  wishlistMode ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className="text-[15px] font-semibold">Show all cards</div>
+                  <div className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                    Include cards you already own.
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={searchAllCards}
+                  disabled={wishlistMode}
+                  onChange={(e) => onSearchAllCardsChange(e.target.checked)}
+                  className="sr-only"
+                />
+                <span className={switchClass(searchAllCards, wishlistMode)}>
+                  <span
+                    className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+                      searchAllCards ? "left-6" : "left-1"
+                    }`}
+                  />
+                </span>
+              </label>
+            </section>
+            <section className="rounded-[22px] bg-white p-3.5 shadow-sm dark:bg-white/[0.06]">
+              <label className="mb-2 block text-sm font-semibold">Card code</label>
+              <input
+                type="text"
+                value={cardCodeSearch}
+                onChange={handleSearchChange}
+                placeholder="Search card code"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full rounded-2xl border border-black/10 bg-zinc-100 px-4 py-2.5 text-[15px] uppercase text-zinc-900 outline-none transition placeholder:normal-case placeholder:text-zinc-400 focus:border-[#FFD54A] focus:ring-4 focus:ring-[#FFD54A]/15 dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-zinc-500"
+              />
+              <p className="mt-2 text-xs leading-5 text-zinc-400 dark:text-zinc-500">
+                Tip: use # for ※ and &lt;&gt; for ◇.
+              </p>
+            </section>
+            <section className="rounded-[22px] bg-white p-3.5 shadow-sm dark:bg-white/[0.06]">
+              <label className="mb-2 block text-sm font-semibold">Character</label>
+              <input
+                type="text"
+                value={characterSearch}
+                onChange={handleCharacterSearchChange}
+                placeholder="Search character"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full rounded-2xl border border-black/10 bg-zinc-100 px-4 py-2.5 text-[15px] text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-[#FFD54A] focus:ring-4 focus:ring-[#FFD54A]/15 dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-zinc-500"
+              />
+            </section>
+            <section className="rounded-[22px] bg-white p-2.5 shadow-sm dark:bg-white/[0.06]">
+              <label
+                className={`flex items-center justify-between gap-4 rounded-2xl p-2 ${
+                  searchAllCards ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className="text-[15px] font-semibold">Wishlist mode</div>
+                  <div className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                    Add or remove cards from your wishlist.
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={wishlistMode}
+                  disabled={searchAllCards}
+                  onChange={(e) => onWishlistModeChange(e.target.checked)}
+                  className="sr-only"
+                />
+                <span className={switchClass(wishlistMode, searchAllCards)}>
+                  <span
+                    className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+                      wishlistMode ? "left-6" : "left-1"
+                    }`}
+                  />
+                </span>
+              </label>
+            </section>
+            <section className="overflow-hidden rounded-[22px] bg-white shadow-sm dark:bg-white/[0.06] md:col-span-2 xl:col-span-1">
+              <button
+                type="button"
+                onClick={onToggleHideISO}
+                className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-black/[0.025] dark:hover:bg-white/[0.04]"
+              >
+                <div className="min-w-0">
+                  <div className="text-[15px] font-semibold">Private ISO</div>
+                  <div className="mt-0.5 text-sm leading-5 text-zinc-500 dark:text-zinc-400">
+                    Hide your ISO from your public profile.
+                  </div>
+                </div>
+                <span className={switchClass(hideISO)}>
+                  <span
+                    className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+                      hideISO ? "left-6" : "left-1"
+                    }`}
+                  />
+                </span>
+              </button>
+              <div className="mx-4 h-px bg-black/[0.06] dark:bg-white/[0.07]" />
+              <button
+                type="button"
+                onClick={() => setShowHideSets(true)}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-black/[0.025] dark:hover:bg-white/[0.04]"
+              >
+                <div className="min-w-0">
+                  <div className="text-[15px] font-semibold">Set visibility</div>
+                  <div className="mt-0.5 text-sm leading-5 text-zinc-500 dark:text-zinc-400">
+                    Choose which collection sets appear.
+                  </div>
+                </div>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 text-xl text-zinc-500 dark:bg-white/[0.08] dark:text-zinc-300">
+                  ›
+                </span>
+              </button>
+            </section>
+          </div>
+        </div>
+      </aside>
+      {showHideSets && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[82vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[30px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
+            <div className="shrink-0 px-5 pb-4 pt-4">
+              <div className="mb-4 flex items-center justify-end">
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-zinc-500 shadow-sm dark:bg-white/[0.07] dark:text-zinc-400">
+                  {hiddenSetIds.length} hidden
+                </span>
+              </div>
+              <h2 className="text-xl font-bold tracking-tight">Set Visibility</h2>
+              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                Hidden sets will not appear in your collection views.
+              </p>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+              <div className="space-y-2">
+                {availableSets.map((category) => {
+                  const isExpanded = expanded === category.id;
+                  const hiddenInCategory = category.children.filter((set) =>
+                    hiddenSetIds.includes(set.id)
+                  ).length;
+                  return (
+                    <div
+                      key={category.id}
+                      className="overflow-hidden rounded-[22px] bg-white shadow-sm dark:bg-white/[0.06]"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpanded(isExpanded ? null : category.id)
+                        }
+                        className="flex w-full items-center gap-3 p-4 text-left transition hover:bg-black/[0.025] dark:hover:bg-white/[0.04]"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[15px] font-semibold">{category.name}</div>
+                          <div className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                            {category.children.length} {category.children.length === 1 ? "set" : "sets"}
+                            {hiddenInCategory > 0 ? ` · ${hiddenInCategory} hidden` : ""}
+                          </div>
+                        </div>
+                        <span
+                          className={`flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 text-lg text-zinc-500 transition-transform dark:bg-white/[0.08] dark:text-zinc-300 ${
+                            isExpanded ? "rotate-90" : ""
+                          }`}
+                        >
+                          ›
+                        </span>
+                      </button>
+                      {isExpanded && (
+                        <div className="border-t border-black/[0.06] px-2 py-2 dark:border-white/[0.07]">
+                          {category.children.map((set) => {
+                            const isHidden = hiddenSetIds.includes(set.id);
+                            return (
+                              <label
+                                key={set.id}
+                                className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl px-3 py-3 transition hover:bg-zinc-100 dark:hover:bg-white/[0.05]"
+                              >
+                                <span className="min-w-0 flex-1 text-sm font-medium">
+                                  {set.name}
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={isHidden}
+                                  onChange={() => onHideSet(set.id)}
+                                  className="sr-only"
+                                />
+                                <span className={switchClass(isHidden)}>
+                                  <span
+                                    className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+                                      isHidden ? "left-6" : "left-1"
+                                    }`}
+                                  />
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="shrink-0 border-t border-black/[0.06] bg-white/70 p-4 backdrop-blur dark:border-white/[0.07] dark:bg-black/10">
+              <button
+                type="button"
+                onClick={() => setShowHideSets(false)}
+                className="w-full rounded-2xl bg-[#FFD54A] px-4 py-2.5 text-[15px] font-semibold text-zinc-900 transition hover:brightness-95 active:scale-[0.99]"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
