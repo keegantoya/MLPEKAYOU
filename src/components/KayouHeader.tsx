@@ -693,7 +693,7 @@ style={{
     <div className="border-t border-white/10 p-3">
       <div className="mb-2 flex items-center gap-2 px-1">
         <button
-          onClick={() => window.open("https://discord.gg/fb7cHz4kdD", "_blank")}
+          onClick={() => window.open("https://discord.gg/mlpekayou", "_blank")}
           aria-label="Discord"
           title="Discord"
           className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.07] hover:text-white"
