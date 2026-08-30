@@ -166,16 +166,21 @@ const next = !hideISO;
 };
 const isSearching =
   cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
+const visibleHiddenSets = wishlistMode || searchAllCards ? [] : hiddenSets;
 const visibleSections = sections.filter((section) => {
 // Wishlist is always available.
   if (section.id === "wishlist") {
     return true;
   }
-// In Progress only appears when there is// at least one purchase/trade in progress.
+// In Progress only appears when there is at least one purchase/trade in progress.
   if (section.id === "progress") {
     return hasInProgress;
   }
-// A category remains visible if at least one// underlying set is still active.
+// Wishlist Mode and View All Cards restore every card category.
+  if (wishlistMode || searchAllCards) {
+    return true;
+  }
+// In normal mode, a category remains visible if at least one underlying set is still active.
   return section.setIds.some(
     (setId) =>
       !hiddenSets.includes(setId) &&
@@ -197,7 +202,7 @@ const sectionContent = (
           characterSearch={characterSearch}
           wishlistMode={wishlistMode}
           searchAllCards={searchAllCards}
-          hiddenSets={hiddenSets}
+          hiddenSets={visibleHiddenSets}
         />
       )}
       {selectedSection === "fun" && (
@@ -205,7 +210,7 @@ const sectionContent = (
           cardCodeSearch={cardCodeSearch}
           characterSearch={characterSearch}
           searchAllCards={searchAllCards}
-          hiddenSets={hiddenSets}
+          hiddenSets={visibleHiddenSets}
           wishlistMode={wishlistMode}
         />
       )}
@@ -215,7 +220,7 @@ const sectionContent = (
           characterSearch={characterSearch}
           wishlistMode={wishlistMode}
           searchAllCards={searchAllCards}
-          hiddenSets={hiddenSets}
+          hiddenSets={visibleHiddenSets}
         />
       )}
       {selectedSection === "star" && (
@@ -224,7 +229,7 @@ const sectionContent = (
           characterSearch={characterSearch}
           wishlistMode={wishlistMode}
           searchAllCards={searchAllCards}
-          hiddenSets={hiddenSets}
+          hiddenSets={visibleHiddenSets}
         />
       )}
       {selectedSection === "tcg" && (
@@ -233,7 +238,7 @@ const sectionContent = (
           characterSearch={characterSearch}
           wishlistMode={wishlistMode}
           searchAllCards={searchAllCards}
-          hiddenSets={hiddenSets}
+          hiddenSets={visibleHiddenSets}
         />
       )}
       {selectedSection === "promos" && (
@@ -242,7 +247,7 @@ const sectionContent = (
           characterSearch={characterSearch}
           wishlistMode={wishlistMode}
           searchAllCards={searchAllCards}
-          hiddenSets={hiddenSets}
+          hiddenSets={visibleHiddenSets}
         />
       )}
     </>
@@ -250,12 +255,12 @@ const sectionContent = (
 const allSearchContent = (
     <>
       {selectedSection === "progress" && <InProgress />}
-      <ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={hiddenSets} />
-      <ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={hiddenSets} wishlistMode={wishlistMode} />
-      <ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={hiddenSets} />
-      <ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={hiddenSets} />
-      <ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={hiddenSets} />
-      <ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={hiddenSets} />
+      <ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
+      <ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={wishlistMode} />
+      <ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
+      <ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
+      <ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
+      <ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
     </>
   );
   return (

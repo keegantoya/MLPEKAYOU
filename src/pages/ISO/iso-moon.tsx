@@ -110,7 +110,7 @@ const { wishlist, toggleWishlist } = useWishlist();
 const [selectedSet, setSelectedSet] = useState<string | null>(null);
 const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
 const getMissingCount = (set: (typeof sets)[number]) => Object.entries(set.rarities).reduce((total, [rarity, count]) => total + Array.from({ length: count as number }, (_, i) => `${set.id}-${rarity}-${i + 1}`).filter((key) => !owned[key]).length, 0);
-const selectableSets = sets.filter((set) => !hiddenSets.includes(set.id) && (searchAllCards || getMissingCount(set) > 0));
+const selectableSets = sets.filter((set) => !hiddenSets.includes(set.id) && (searchAllCards || wishlistMode || getMissingCount(set) > 0));
   useEffect(() => {
 const load = async () => {
 let activeUserId = publicUserId;
@@ -147,7 +147,7 @@ const { data: progress } = await supabase
   useEffect(() => {
 if (loading || selectedSet === null) return;
 if (!selectableSets.some((set) => set.id === selectedSet)) setSelectedSet(null);
-}, [loading, owned, hiddenSets, selectedSet]);
+}, [loading, owned, hiddenSets, selectedSet, wishlistMode]);
 if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500">Loading...</div>;
   }
@@ -168,7 +168,7 @@ return (
       .filter((set) => !hiddenSets.includes(set.id))
       .filter((set) => {
         if (cardCodeSearch || characterSearch.trim()) return true;
-        if (!searchAllCards && getMissingCount(set) === 0) return false;
+        if (!searchAllCards && !wishlistMode && getMissingCount(set) === 0) return false;
 if (selectedSet === null) return true;
 return set.id === selectedSet;
       })
@@ -255,9 +255,6 @@ const isWishlisted =
                   );
 const cardContent = (
                   <div className={searchAllCards ? "" : "cursor-pointer"}>
-                    <div className="mb-1.5 truncate text-center text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                      {getDisplayCardCode(set.id, card.rarity, card.number)}
-                    </div>
                     <div
                       className={`relative w-full overflow-hidden rounded-xl ${
                         isDoubleWide ? "aspect-[10/7] col-span-2" : "aspect-[5/7]"

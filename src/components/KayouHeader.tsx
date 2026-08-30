@@ -77,6 +77,8 @@ const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [showBugReport, setShowBugReport] = useState(false);
+  const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [resetSubmitting, setResetSubmitting] = useState(false);
   const [showTradesMenu, setShowTradesMenu] = useState(false);
   const [showIsoMenu, setShowIsoMenu] = useState(false);
   const [showLeaderboardMenu, setShowLeaderboardMenu] = useState(false);
@@ -200,8 +202,11 @@ useEffect(() => {
   };
 }, [mobileNavCollapsed]);
   const handleLoginSubmit = async () => {
+  if (authSubmitting) return;
+  setAuthSubmitting(true);
+  try {
   const { error } = await supabase.auth.signInWithPassword({
-    email: loginEmail,
+    email: loginEmail.trim(),
     password: loginPassword,
   });
   if (error) {
@@ -214,17 +219,20 @@ useEffect(() => {
   setLoginPassword("");
   setLoginError("");
   setShowForgot(false);
+  } finally {
+    setAuthSubmitting(false);
+  }
 };
 const handleForgotPassword = async () => {
+  if (resetSubmitting) return;
+  setResetSubmitting(true);
   try {
-    console.log("Sending reset for:", loginEmail);
-    const { data, error } = await supabase.auth.resetPasswordForEmail(
-      loginEmail,
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      loginEmail.trim(),
       {
         redirectTo: window.location.origin + "/password-reset",
       }
     );
-    console.log("Reset response:", data, error);
     if (error) {
       alert("Error sending reset: " + error.message);
     } else {
@@ -233,16 +241,21 @@ const handleForgotPassword = async () => {
 }
   } catch (err) {
     console.error("Reset failed:", err);
+  } finally {
+    setResetSubmitting(false);
   }
 };
   const handleSignupSubmit = async () => {
+  if (authSubmitting) return;
   if (loginPassword !== confirmPassword) {
     setLoginError("Passwords do not match");
     return;
   }
+  setAuthSubmitting(true);
+  try {
   const username = generateUsername();
-  const { data, error } = await supabase.auth.signUp({
-  email: loginEmail,
+  const { error } = await supabase.auth.signUp({
+  email: loginEmail.trim(),
   password: loginPassword,
   options: {
     emailRedirectTo: window.location.origin + "/account-confirmation",
@@ -259,6 +272,9 @@ const handleForgotPassword = async () => {
   setLoginEmail("");
   setLoginPassword("");
   setConfirmPassword("");
+  } finally {
+    setAuthSubmitting(false);
+  }
 };
 const requestNavigation = (path: string) => {
   const event = new CustomEvent("mlpekayou:before-navigation", {
@@ -1192,6 +1208,7 @@ style={{
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button
             type="button"
+            disabled={resetSubmitting}
             onClick={() => {
               setShowForgotPassword(false);
               setAuthMode("login");
@@ -1220,6 +1237,7 @@ style={{
           </Button>
           <Button
             type="button"
+            disabled={resetSubmitting}
             onClick={() => {
               if (!loginEmail.trim()) {
                 setEmailError("ENTER YOUR EMAIL ADDRESS");
@@ -1251,7 +1269,7 @@ style={{
             "
           >
             <span className="relative z-10">
-              SEND RESET EMAIL
+              {resetSubmitting ? "SENDING..." : "SEND RESET EMAIL"}
             </span>
             <span className="pointer-events-none absolute inset-y-0 -left-10 w-8 skew-x-[-20deg] bg-white/30 transition-all duration-500 group-hover:left-[115%]" />
           </Button>
@@ -1521,6 +1539,7 @@ style={{
           <label className="mb-2 block text-sm font-medium text-zinc-300">Email</label>
           <input
             type="email"
+            required
             placeholder="you@example.com"
             value={loginEmail}
             autoComplete="email"
@@ -1538,6 +1557,7 @@ style={{
           <label className="mb-2 block text-sm font-medium text-zinc-300">Password</label>
           <input
             type="password"
+            required
             placeholder="Enter your password"
             value={loginPassword}
             autoComplete={authMode === "login" ? "current-password" : "new-password"}
@@ -1554,6 +1574,7 @@ style={{
             <label className="mb-2 block text-sm font-medium text-zinc-300">Confirm password</label>
             <input
               type="password"
+              required
               placeholder="Enter your password again"
               value={confirmPassword}
               autoComplete="new-password"
@@ -1588,9 +1609,16 @@ style={{
         )}
         <Button
           type="submit"
+          disabled={authSubmitting}
           className="h-11 w-full rounded-xl bg-[#E7C84B] text-sm font-semibold text-[#111517] hover:bg-[#FFE477]"
         >
-          {authMode === "login" ? "Log in" : "Create account"}
+          {authSubmitting
+            ? authMode === "login"
+              ? "Logging in..."
+              : "Creating account..."
+            : authMode === "login"
+            ? "Log in"
+            : "Create account"}
         </Button>
         <div className="mt-5 text-center text-sm text-zinc-500">
           {authMode === "login" ? "New here?" : "Already have an account?"}{" "}

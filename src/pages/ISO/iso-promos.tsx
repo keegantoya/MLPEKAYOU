@@ -10,23 +10,23 @@ const getDisplayCardCode = (
   number: number
 ) => {
   if (setId === "9") {
-    // Standard CCG Promos
+// Standard CCG Promos
     if (number <= 7) {
       return `MLPE-PR-${String(number).padStart(3, "0")}`;
     }
-    // SDCC Promos
+// SDCC Promos
     return `SDCC-${String(number - 7).padStart(3, "0")}`;
   }
   if (setId === "tcgpromos") {
-    // RR-01 through RR-06
+// RR-01 through RR-06
     if (number <= 6) {
       return `RR-${String(number).padStart(2, "0")}`;
     }
-    // BP01 CR-07 through CR-12
+// BP01 CR-07 through CR-12
     if (number <= 12) {
       return `BP01-CR-${String(number).padStart(2, "0")}`;
     }
-    // BP02 CR-01 through CR-06
+// BP02 CR-01 through CR-06
     return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
   }
   return `RR-${String(number).padStart(2, "0")}`;
@@ -83,7 +83,7 @@ const [selectedSet, setSelectedSet] = useState<string | null>(null);
 const getMissingCount = (set: (typeof sets)[number]) =>
     set.cards.filter((number) => !owned[getCardKey(set.id, number)]).length;
 const selectableSets = sets.filter(
-    (set) => !hiddenSets.includes(set.id) && (searchAllCards || getMissingCount(set) > 0)
+    (set) => !hiddenSets.includes(set.id) && (searchAllCards || wishlistMode || getMissingCount(set) > 0)
   );
   useEffect(() => {
 const load = async () => {
@@ -120,7 +120,7 @@ const { data: progress } = await supabase
     if (!selectableSets.some((set) => set.id === selectedSet)) {
       setSelectedSet(null);
     }
-  }, [loading, owned, hiddenSets, selectedSet]);
+  }, [loading, owned, hiddenSets, selectedSet, wishlistMode]);
   if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>;
   }
@@ -150,7 +150,7 @@ const { data: progress } = await supabase
         .filter((set) => !hiddenSets.includes(set.id))
         .filter((set) => {
           if (cardCodeSearch || characterSearch.trim()) return true;
-          if (!searchAllCards && getMissingCount(set) === 0) return false;
+          if (!searchAllCards && !wishlistMode && getMissingCount(set) === 0) return false;
           if (selectedSet === null) return true;
           return set.id === selectedSet;
         })
@@ -214,9 +214,6 @@ const fullKey = `${set.id}:${getCardKey(set.id, card.number)}`;
 const isWishlisted = wishlist.has(fullKey);
 const cardContent = (
                     <div className={searchAllCards ? "" : "cursor-pointer"}>
-                      <div className="mb-1.5 truncate text-center text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-                        {getDisplayCardCode(set.id, card.number)}
-                      </div>
                       <div
                         className={`relative aspect-[5/7] w-full overflow-hidden rounded-xl ${
                           isWishlisted

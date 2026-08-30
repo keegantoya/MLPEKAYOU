@@ -225,7 +225,7 @@ className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition $
 {!(cardCodeSearch || characterSearch.trim()) &&
 (selectedSet === null || selectedSet === "SD") &&
 !hiddenSets.includes("SD") &&
-(searchAllCards || starterDeckGroups.some((deck) => {
+(searchAllCards || wishlistMode || starterDeckGroups.some((deck) => {
 const deckCards = [];
 const add = (rarity: string, count: number) => {
     for (let i = 1; i <= count; i++) {
@@ -282,11 +282,11 @@ const deckIndex =
     deckCards.push(
       `STARTER-SD01RR${String(deckIndex).padStart(2, "0")}`
     );
-    return searchAllCards || deckCards.some((key) => !owned[key]);
+    return searchAllCards || wishlistMode || deckCards.some((key) => !owned[key]);
   })
   .map((deck, i) => (
         <div key={deck.code}>
-          <div className="mb-2 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+          <div className="hidden">
             {deck.code}
           </div>
           <img
@@ -537,7 +537,7 @@ const isWishlisted = wishlist.has(fullKey);
   );
 const cardContent = (
   <>
-    <div className="mb-2 flex justify-center">
+    <div className="hidden">
       <div className="rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/[0.06]">
         <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
           {set.id === "SD" ? (

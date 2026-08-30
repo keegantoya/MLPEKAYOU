@@ -129,7 +129,7 @@ const { wishlist, toggleWishlist } = useWishlist();
 const [selectedSet, setSelectedSet] = useState<string | null>(null);
 const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
 const getMissingCount = (set: (typeof sets)[number]) => Object.entries(set.rarities).reduce((total, [rarity, count]) => total + Array.from({ length: count as number }, (_, i) => `${set.id}-${rarity}-${i + 1}`).filter((key) => !owned[key]).length, 0);
-const selectableSets = sets.filter((set) => !hiddenSets.includes(set.id) && (searchAllCards || getMissingCount(set) > 0));
+const selectableSets = sets.filter((set) => !hiddenSets.includes(set.id) && (searchAllCards || wishlistMode || getMissingCount(set) > 0));
   useEffect(() => {
 const load = async () => {
 const { data } = await supabase.auth.getSession();
@@ -163,7 +163,7 @@ const { data: progress } = await supabase
   useEffect(() => {
 if (loading || selectedSet === null) return;
 if (!selectableSets.some((set) => set.id === selectedSet)) setSelectedSet(null);
-}, [loading, owned, hiddenSets, selectedSet]);
+}, [loading, owned, hiddenSets, selectedSet, wishlistMode]);
 if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500">Loading...</div>;
   }
@@ -182,7 +182,7 @@ return (
 )}
 {sets.filter((set) => !hiddenSets.includes(set.id)).filter((set) => {
 if (cardCodeSearch || characterSearch.trim()) return true;
-if (!searchAllCards && getMissingCount(set) === 0) return false;
+if (!searchAllCards && !wishlistMode && getMissingCount(set) === 0) return false;
 if (selectedSet === null) return true;
 return set.id === selectedSet;
 }).map((set) => {
@@ -218,7 +218,6 @@ const fullKey = `${set.id}:${card.rarity}-${card.number}`;
 const isWishlisted = wishlist.has(fullKey) || wishlist.has(`${set.id}:${card.rarity}-${String(card.number).padStart(3, "0")}`);
 const cardContent = (
 <div className={searchAllCards ? "" : "cursor-pointer"}>
-<div className="mb-1.5 truncate text-center text-xs font-semibold text-zinc-600 dark:text-zinc-300">{getDisplayCardCode(set.id, card.rarity, card.number)}</div>
 <div className={`relative aspect-[5/7] w-full overflow-hidden rounded-xl ${isWishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}>
 <img src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover" />
 </div>

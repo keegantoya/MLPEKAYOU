@@ -197,7 +197,7 @@ export default function ISOCONTROLS({
                     Wishlist mode
                   </div>
                   <div className="mt-0.5 hidden text-sm text-zinc-500 sm:block dark:text-zinc-400">
-                    Add or remove cards from your wishlist.
+                    Add or remove cards from your wishlist. In this mode, you can see all cards, even cards you own, and search by character.
                   </div>
                 </div>
                 <input
