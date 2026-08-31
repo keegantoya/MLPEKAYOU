@@ -320,13 +320,19 @@ const user = data.session?.user;
                                     src={getCardFront(key)}
                                     className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                     alt=""
+                                    loading="lazy"
+                                    decoding="async"
                                   />
-                                  <img
+                                  {!viewMode && owned && (
+                                    <img
                                     src={getCardBack(key)}
                                     className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
                                     alt=""
-                                  />
+                                      loading="lazy"
+                                      decoding="async"
+                                    />
+                                  )}
                                 </div>
                                 {owned && !viewMode && (
                                   <div className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-sm">
@@ -380,13 +386,13 @@ const user = data.session?.user;
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     alt=""
-                  />
+                                  />
                   <img
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
                     alt=""
-                  />
+                                  />
                 </div>
               </div>
             </TiltCard>

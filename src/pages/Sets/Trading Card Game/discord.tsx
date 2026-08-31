@@ -257,8 +257,16 @@ const user = data.session?.user;
                         return (
                           <button key={key} type="button" onClick={() => toggleFlip(key)} aria-label={`${getDisplayCardCode(key)}${owned ? ", collected" : ""}`} className="group relative aspect-[5/7] w-full cursor-pointer overflow-hidden rounded-xl bg-zinc-100 shadow-sm transition duration-200 md:hover:z-10 md:hover: md:hover:shadow-lg dark:bg-white/[0.04]">
                             <div className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}>
-                              <img src={getCardFront(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden" alt="" />
-                              <img src={getCardBack(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden" style={{ transform: "rotateY(180deg)" }} alt="" />
+                              <img src={getCardFront(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden" alt=""
+                                loading="lazy"
+                                decoding="async"
+                              />
+                              {!viewMode && owned && (
+                                <img src={getCardBack(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden" style={{ transform: "rotateY(180deg)" }} alt=""
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              )}
                             </div>
                             {owned && !viewMode && <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#FFD54A] text-sm font-bold text-zinc-900 shadow-sm">✓</span>}
                           </button>
@@ -308,13 +316,13 @@ const user = data.session?.user;
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     alt=""
-                  />
+                                  />
                   <img
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
                     alt=""
-                  />
+                                  />
                 </div>
               </div>
             </TiltCard>

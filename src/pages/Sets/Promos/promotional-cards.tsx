@@ -285,13 +285,19 @@ const tcgProgress: Record<string, boolean> = {};
                                 src={`/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`}
                                 className="absolute inset-0 h-full w-full scale-[1.04] rounded-xl object-cover object-center backface-hidden"
                                 alt=""
+                                loading="lazy"
+                                decoding="async"
                               />
-                              <img
+                              {!viewMode && owned && (
+                                <img
                                 src={getCardBack(number)}
                                 className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                 style={{ transform: "rotateY(180deg) scale(1.035)" }}
                                 alt=""
-                              />
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              )}
                             </div>
                             {owned && !viewMode && (
                               <div className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-sm">
@@ -345,13 +351,19 @@ const tcgProgress: Record<string, boolean> = {};
                                 src={`/tcgpromos/${key}.webp`}
                                 className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                 alt=""
+                                loading="lazy"
+                                decoding="async"
                               />
-                              <img
+                              {!viewMode && owned && (
+                                <img
                                 src="/card-backs/tcgdefaultback.webp"
                                 className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                 style={{ transform: "rotateY(180deg)" }}
                                 alt=""
-                              />
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              )}
                             </div>
                             {owned && !viewMode && (
                               <div className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-sm">
@@ -403,13 +415,13 @@ const tcgProgress: Record<string, boolean> = {};
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full scale-[1.04] rounded-2xl object-cover object-center backface-hidden"
                     alt=""
-                  />
+                                  />
                   <img
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
                     alt=""
-                  />
+                                  />
                 </div>
               </div>
             </TiltCard>
