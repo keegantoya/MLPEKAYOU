@@ -91,7 +91,7 @@ const collections: Collection[] = [
     id: "13",
     title: "Moon",
     setName: "Four",
-    imageUrl: "/thumbnails/moonfoursetimage.png",
+    imageUrl: "/thumbnails/moonfoursetimage.webp",
     totalCards: 162,
     category: "eternal-moon",
     released: false,
@@ -132,6 +132,15 @@ const collections: Collection[] = [
     category: "tcg",
     released: true,
   },
+    {
+    id: "14",
+    title: "Nightmare Night",
+    setName: "TCG",
+    imageUrl: "/thumbnails/nightmarenightsetimage.webp",
+    totalCards: 194,
+    category: "tcg",
+    released: true,
+  },
   {
     id: "9",
     title: "Promos",
@@ -151,7 +160,7 @@ const collections: Collection[] = [
     released: true,
   },
 ];
-const unreleasedSetIds: string[] = ["13"];
+const unreleasedSetIds: string[] = ["13", "14"];
 const databaseSetId: Record<string, string> = {
   tcg: "FW",
   friendshipsbegin: "SD",
@@ -596,7 +605,7 @@ const isWaiting = waitingOnKayouIds.includes(col.id);
                               ? "border-[#8a6a00]/30 bg-white/90 text-[#725700]"
                               : "border-[#FFD54A]/40 bg-black/85 text-[#FFE27A]"
                           }`}>
-                            COMING OCT. 16
+                            COMING SOON
                           </div>
                         </div>
                       )}

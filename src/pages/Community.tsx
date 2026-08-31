@@ -90,6 +90,9 @@ const manualFirstFinishers: Record<
   fantasywonderland: {
     id: "948dcf0c-0ec3-4123-8b8e-f23ad334fb30",
   },
+    "discord": {
+    id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+  },
 };
 type Category =
   | "star"

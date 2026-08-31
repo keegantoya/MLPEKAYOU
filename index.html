@@ -1,112 +1,67 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="manifest" href="/manifest.json" />
-
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/app-icons/appiconsmall.png"
-    />
-
     <meta charset="UTF-8" />
-
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-
+    <meta name="color-scheme" content="light dark" />
     <meta
-      name="color-scheme"
-      content="dark"
+      name="theme-color"
+      content="#f8f8f8"
+      media="(prefers-color-scheme: light)"
     />
-
-    <meta name="theme-color" content="#5a3e84" />
-
+    <meta
+      name="theme-color"
+      content="#0b0f10"
+      media="(prefers-color-scheme: dark)"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-
     <meta
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-
-    <meta
-      name="apple-mobile-web-app-title"
-      content="MLPEKAYOU"
-    />
-
-    <title>MLPEKAYOU</title>
-
-    <link
-      rel="icon"
-      type="image/webp"
-      href="/logos/favicon.webp"
-    />
-
+    <meta name="apple-mobile-web-app-title" content="MLPEKAYOU" />
     <meta
       name="description"
       content="MLPEKAYOU - Track your My Little Pony Kayou US collection"
     />
-
-    <meta
-      name="author"
-      content="Keegan"
+    <meta name="author" content="Keegan" />
+    <title>MLPEKAYOU</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/app-icons/smallerappicon.png"
     />
-
+    <link rel="icon" type="image/png" href="/logos/favicon.png" />
     <!-- Open Graph -->
-    <meta
-      property="og:title"
-      content="MLPEKAYOU"
-    />
-
+    <meta property="og:title" content="MLPEKAYOU" />
     <meta
       property="og:description"
       content="Track your My Little Pony Kayou US collection"
     />
-
-    <meta
-      property="og:type"
-      content="website"
-    />
-
-    <meta
-      property="og:url"
-      content="https://www.mlpekayou.community/"
-    />
-
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.mlpekayou.community/" />
     <meta
       property="og:image"
       content="https://www.mlpekayou.community/website-assets/wikithumbnail.webp"
     />
-
     <!-- Twitter -->
-    <meta
-      name="twitter:card"
-      content="summary_large_image"
-    />
-
-    <meta
-      name="twitter:title"
-      content="MLPEKAYOU"
-    />
-
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MLPEKAYOU" />
     <meta
       name="twitter:description"
       content="Track your My Little Pony Kayou US collection"
     />
-
     <meta
       name="twitter:image"
       content="https://www.mlpekayou.community/website-assets/wikithumbnail.webp"
     />
   </head>
-
   <body>
     <div id="root"></div>
-
-    <script
-      type="module"
-      src="/src/main.tsx"
-    ></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

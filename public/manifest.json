@@ -5,18 +5,18 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#5a3e84",
+  "background_color": "#0b0f10",
+  "theme_color": "#0b0f10",
   "icons": [
     {
-      "src": "/app-icons/appiconsmall.png",
+      "src": "/app-icons/smallerappicon.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/app-icons/appiconbig.webp",
+      "src": "/app-icons/biggerappicon.png",
       "sizes": "1600x1600",
-      "type": "image/webp"
+      "type": "image/png"
     }
   ]
 }
