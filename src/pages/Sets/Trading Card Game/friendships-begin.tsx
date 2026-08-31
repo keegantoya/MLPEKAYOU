@@ -277,8 +277,16 @@ const back = key.includes("C06") || key.includes("C07") || key.includes("C08") |
                       <div key={key} className="group relative aspect-[5/7] cursor-pointer rounded-xl transition-transform duration-200 ease-out md:hover:z-20 md:hover:scale-[1.035]" onClick={() => toggleFlip(viewMode ? key : stateKey)}>
                         <div className="relative h-full w-full overflow-hidden rounded-xl border border-black/10 bg-zinc-100 shadow-sm transition-shadow duration-200 group-hover:shadow-lg dark:border-white/10 dark:bg-white/[0.04]">
                           <div className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}>
-                            <img src={`/friendships-begin/${key}.webp`} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt="" />
-                            <img src={back} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
+                            <img src={`/friendships-begin/${key}.webp`} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt=""
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            {!viewMode && owned && (
+                              <img src={back} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt=""
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            )}
                           </div>
                           {owned && !viewMode && <div className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-sm">✓</div>}
                         </div>
@@ -307,8 +315,16 @@ const owned = flipped[stateKey];
                         <div key={key} className="group relative aspect-[5/7] cursor-pointer rounded-xl transition-transform duration-200 ease-out md:hover:z-20 md:hover:scale-[1.035]" onClick={() => toggleFlip(viewMode ? key : stateKey)}>
                           <div className="relative h-full w-full overflow-hidden rounded-xl border border-black/10 bg-zinc-100 shadow-sm transition-shadow duration-200 group-hover:shadow-lg dark:border-white/10 dark:bg-white/[0.04]">
                             <div className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}>
-                              <img src={getCardFront(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt="" />
-                              <img src={getCardBack(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
+                              <img src={getCardFront(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt=""
+                                loading="lazy"
+                                decoding="async"
+                              />
+                              {!viewMode && owned && (
+                                <img src={getCardBack(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt=""
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              )}
                             </div>
                             {owned && !viewMode && <div className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-sm">✓</div>}
                           </div>
@@ -332,8 +348,10 @@ const owned = flipped[stateKey];
             <TiltCard>
               <div className="relative aspect-[5/7] w-full cursor-pointer overflow-hidden rounded-2xl bg-zinc-900 shadow-2xl" onClick={() => setZoomedCardFlipped(!zoomedCardFlipped)}>
                 <div className={`absolute inset-0 transform-style-preserve-3d transition-transform duration-500 ${zoomedCardFlipped ? "rotate-y-180" : ""}`}>
-                  <img src={zoomedCard} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" alt="" />
-                  <img src={zoomedCardBack || ""} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
+                  <img src={zoomedCard} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" alt=""
+                                  />
+                  <img src={zoomedCardBack || ""} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt=""
+                                  />
                 </div>
               </div>
             </TiltCard>

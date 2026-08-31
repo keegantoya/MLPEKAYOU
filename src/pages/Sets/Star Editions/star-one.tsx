@@ -337,17 +337,23 @@ const owned = flipped[key];
                                   className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                   style={{ transform: "scale(1.035)" }}
                                   alt=""
+                                  loading="lazy"
+                                  decoding="async"
                                   draggable={false}
                                 />
-                                <img
-                                  src={getCardBack(card.rarity, card.number)}
-                                  className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
-                                  style={{
-                                    transform: "rotateY(180deg) scale(1.05)",
-                                  }}
-                                  alt=""
-                                  draggable={false}
-                                />
+                                {!viewMode && owned && (
+                                  <img
+                                    src={getCardBack(card.rarity, card.number)}
+                                    className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
+                                    style={{
+                                      transform: "rotateY(180deg) scale(1.05)",
+                                    }}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                    draggable={false}
+                                  />
+                                )}
                               </div>
                               {owned && !viewMode && (
                                 <span className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-zinc-900 shadow-sm">
@@ -405,14 +411,16 @@ const owned = flipped[key];
                     style={{ transform: "scale(1.035)" }}
                     alt=""
                     draggable={false}
-                  />
+
+                                  />
                   <img
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-[20px] object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.05)" }}
                     alt=""
                     draggable={false}
-                  />
+
+                                  />
                 </div>
               </button>
             </TiltCard>
