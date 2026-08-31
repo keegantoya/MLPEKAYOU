@@ -1,4 +1,4 @@
-import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp3.webp";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 export default function Selling() {

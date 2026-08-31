@@ -46,7 +46,7 @@ import avatar045 from "@/assets/avatars/avatar045.webp";
 import avatar046 from "@/assets/avatars/avatar046.webp";
 
 
-import KeeganAvatar from "@/assets/avatars/keeganpfp2.webp";
+import KeeganAvatar from "@/assets/avatars/keeganpfp3.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
 import TerriAvatar from "@/assets/avatars/terrypfp.webp";
@@ -55,6 +55,7 @@ import Jacobpfp from "@/assets/avatars/jacobpfp.webp";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
+import ownerBadge from "/website-assets/OwnerBadge.webp";
 
 const avatarMap: Record<string, string> = {
   avatar001,
@@ -108,8 +109,8 @@ const avatarMap: Record<string, string> = {
   "heimantouavatar.webp": heimantouAvatar,
 
 keeganpfp: KeeganAvatar,
-keeganpfp2: KeeganAvatar,
-"keeganpfp2.webp": KeeganAvatar,
+keeganpfp3: KeeganAvatar,
+"keeganpfp3.webp": KeeganAvatar,
 
   maipfp,
   "maipfp.webp": maipfp,
@@ -138,10 +139,10 @@ export const VERIFIED_USERS: Record<
     label: string;
   }
 > = {
-  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
-  },
+"17e57e39-bc0c-44e7-b373-ac34c6690185": {
+  badge: ownerBadge,
+  label: "MLPEKAYOU OWNER",
+},
   "94a1c998-d040-4dd2-b2fb-5f606287139d": {
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
@@ -189,6 +190,14 @@ export const VERIFIED_USERS: Record<
     label: "ELEMENT OF LAUGHTER",
   },
     "d7fd86e9-f742-434f-b9e2-a2f59b2fc0d6": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+      "704ba81c-b31b-4fd0-aad7-6f5669fd555b": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+        "81a1f57f-cc99-4322-a765-9ee102cfa2b9": {
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
