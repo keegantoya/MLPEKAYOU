@@ -29,23 +29,6 @@ import {
 import { useRef } from "react";
 import { getProfileAssets } from "../pages/Everypony/profile-assets";
 const logo = "/website-assets/mlpekayouwiki4.webp";
-const generateUsername = () => {
-  const names = [
-    "Twilight Sparkle",
-    "Pinkie Pie",
-    "Applejack",
-    "Fluttershy",
-    "Rarity",
-    "Rainbow Dash",
-    "Princess Celestia",
-    "Princess Luna",
-    "Princess Cadance",
-    "Princess Flurry Heart"
-  ];
-  const name = names[Math.floor(Math.random() * names.length)];
-  const number = Math.floor(Math.random() * 9999);
-  return `${name} ${number}`;
-};
 const KayouHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,7 +46,7 @@ const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
 const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
-  const [newUsername, setNewUsername] = useState("");
+  const [showExistingAccount, setShowExistingAccount] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -261,20 +244,31 @@ const handleForgotPassword = async () => {
   }
   setAuthSubmitting(true);
   try {
-  const username = generateUsername();
-  const { error } = await supabase.auth.signUp({
+  const { data: signupData, error } = await supabase.auth.signUp({
   email: loginEmail.trim(),
   password: loginPassword,
   options: {
-    emailRedirectTo: window.location.origin + "/account-confirmation",
-    data: { username }
+    emailRedirectTo: window.location.origin + "/account-confirmation"
   }
 });
   if (error) {
-    alert(error.message);
+    const errorCode = (error as any).code;
+    const existingAccount =
+      errorCode === "user_already_exists" ||
+      /already registered|already exists|duplicate/i.test(error.message);
+    if (existingAccount) {
+      setShowLogin(false);
+      setShowExistingAccount(true);
+      return;
+    }
+    setLoginError(error.message);
     return;
   }
-  setNewUsername(username);
+  if (signupData.user?.identities?.length === 0) {
+    setShowLogin(false);
+    setShowExistingAccount(true);
+    return;
+  }
   setShowLogin(false);
   setShowSignupSuccess(true);
   setLoginEmail("");
@@ -1054,10 +1048,6 @@ style={{
       <p className="mt-2 text-sm leading-6 text-zinc-400">
         We sent a confirmation email. Open it to verify your account and finish signing up.
       </p>
-      <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4">
-        <div className="text-xs font-medium text-zinc-500">Your username</div>
-        <div className="mt-1 text-lg font-semibold text-[#E7C84B]">{newUsername}</div>
-      </div>
       <p className="mt-4 text-xs leading-5 text-zinc-500">
         If you do not see the email, check your spam or junk folder.
       </p>
@@ -1502,6 +1492,47 @@ style={{
         <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-[#FFD54A]/40">
           MLPEKAYOU // SYSTEM
         </span>
+      </div>
+    </div>
+  </div>
+)}
+{/* EXISTING ACCOUNT POPUP */}
+{showExistingAccount && (
+  <div
+    className="fixed inset-0 z-[30010] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
+    onClick={() => setShowExistingAccount(false)}
+  >
+    <div
+      className="w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#17191b]/95 p-6 shadow-[0_30px_90px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.06)]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-2xl font-semibold tracking-tight text-white">Account already exists</h2>
+      <p className="mt-3 text-sm leading-6 text-zinc-400">
+        Hey! An account already exists with that email. Would you like to send a password reset?
+      </p>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Button
+          type="button"
+          disabled={resetSubmitting}
+          onClick={async () => {
+            setShowExistingAccount(false);
+            await handleForgotPassword();
+          }}
+          className="h-11 flex-1 rounded-xl bg-[#E7C84B] text-sm font-semibold text-[#111517] hover:bg-[#FFE477]"
+        >
+          {resetSubmitting ? "Sending..." : "Send password reset"}
+        </Button>
+        <Button
+          type="button"
+          onClick={() => {
+            setShowExistingAccount(false);
+            setAuthMode("login");
+            setShowLogin(true);
+          }}
+          className="h-11 flex-1 rounded-xl border border-white/10 bg-white/[0.06] text-sm font-semibold text-white hover:bg-white/[0.1]"
+        >
+          Go to login
+        </Button>
       </div>
     </div>
   </div>

@@ -26,6 +26,7 @@ const [editingProfile, setEditingProfile] = useState(false);
 const [usernameDraft, setUsernameDraft] = useState("");
 const [discordDraft, setDiscordDraft] = useState("");
 const [savingProfile, setSavingProfile] = useState(false);
+const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
 const [copied, setCopied] = useState(false);
 const [deletionRequested, setDeletionRequested] = useState(false);
 const [showDeletionModal, setShowDeletionModal] = useState(false);
@@ -86,19 +87,19 @@ const {
   return () => subscription.unsubscribe();
 }, []);
 useEffect(() => {
-  let mounted = true;
-  let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-  const syncFromDocument = () => {
+let mounted = true;
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+const syncFromDocument = () => {
     if (!mounted) return;
     setIsLightMode(document.documentElement.dataset.theme === "light");
   };
-  const observer = new MutationObserver(syncFromDocument);
+const observer = new MutationObserver(syncFromDocument);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
   });
-  const loadThemePreference = async () => {
-    const {
+const loadThemePreference = async () => {
+const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!mounted) return;
@@ -106,7 +107,7 @@ useEffect(() => {
       setIsLightMode(false);
       return;
     }
-    const { data, error } = await supabase
+const { data, error } = await supabase
       .from("user_light_mode_preferences")
       .select("user_id")
       .eq("user_id", session.user.id)
@@ -550,17 +551,47 @@ const {
           data: { session },
         } = await supabase.auth.getSession();
         if (session?.user) {
-          await supabase.auth.updateUser({
-            data: {
-              username: usernameDraft,
-            },
-          });
-          await supabase
+          const originalUsername = profile?.username || "";
+          const nextUsername = usernameDraft.trim();
+          const { data: existingUsername, error: usernameCheckError } = await supabase
+            .from("profiles")
+            .select("id")
+            .ilike("username", nextUsername)
+            .neq("id", session.user.id)
+            .maybeSingle();
+          if (usernameCheckError) {
+            console.error("Failed to check username availability:", usernameCheckError);
+            setSavingProfile(false);
+            return;
+          }
+          if (existingUsername) {
+            setUsernameDraft(originalUsername);
+            setShowUsernameTakenModal(true);
+            setSavingProfile(false);
+            return;
+          }
+          const { error: usernameError } = await supabase
             .from("profiles")
             .update({
-              username: usernameDraft,
+              username: nextUsername,
             })
             .eq("id", session.user.id);
+          if (usernameError) {
+            if (usernameError.code === "23505" || usernameError.message.toLowerCase().includes("duplicate")) {
+              setUsernameDraft(originalUsername);
+              setShowUsernameTakenModal(true);
+            } else {
+              console.error("Failed to save username:", usernameError);
+            }
+            setSavingProfile(false);
+            return;
+          }
+          const { error: authUsernameError } = await supabase.auth.updateUser({
+            data: {
+              username: nextUsername,
+            },
+          });
+          if (authUsernameError) console.error("Failed to update username metadata:", authUsernameError);
 const { error: tradingError } = await supabase
   .from("trading_profiles")
   .upsert(
@@ -579,8 +610,9 @@ if (tradingError) {
 }
           setProfile((prev: any) => ({
             ...prev,
-            username: usernameDraft,
+            username: nextUsername,
           }));
+          setUsernameDraft(nextUsername);
           setDiscord(discordDraft);
         }
         setSavingProfile(false);
@@ -999,6 +1031,16 @@ const textArea = document.createElement("textarea");
       >
         Email Developer
       </a>
+    </div>
+  </div>
+)}
+{/* USERNAME TAKEN MODAL */}
+{showUsernameTakenModal && (
+  <div className={`fixed inset-0 z-[130] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`} onMouseDown={(e) => { if (e.target === e.currentTarget) setShowUsernameTakenModal(false); }}>
+    <div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${isLightMode ? "border-[#8a6a00]/20 bg-white text-zinc-900" : "border-[#FFD54A]/25 bg-[#151718] text-white"}`}>
+      <h2 className={`text-xl font-semibold tracking-tight ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>Username already taken</h2>
+      <p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>That username already belongs to another collector. Your original username has been restored in the editor.</p>
+      <button type="button" onClick={() => setShowUsernameTakenModal(false)} className={`mt-6 w-full rounded-xl border px-4 py-3 text-sm font-semibold ${isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"}`}>Got it</button>
     </div>
   </div>
 )}

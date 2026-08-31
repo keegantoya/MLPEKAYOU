@@ -11,6 +11,7 @@ const [editingProfile, setEditingProfile] = useState(false);
 const [usernameDraft, setUsernameDraft] = useState("");
 const [discordDraft, setDiscordDraft] = useState("");
 const [savingProfile, setSavingProfile] = useState(false);
+const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
 const [stats, setStats] = useState({
   owned: 0,
   completed: 0,
@@ -76,7 +77,7 @@ const { data, error } = await supabase
       .on(
         "postgres_changes",
         {
-          event: "\*",
+          event: "*",
           schema: "public",
           table: "user_light_mode_preferences",
           filter: `user_id=eq.${session.user.id}`,
@@ -379,8 +380,41 @@ const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
-        await supabase.auth.updateUser({ data: { username: usernameDraft } });
-        await supabase.from("profiles").update({ username: usernameDraft }).eq("id", session.user.id);
+        const originalUsername = profile?.username || "";
+        const nextUsername = usernameDraft.trim();
+        const { data: existingUsername, error: usernameCheckError } = await supabase
+          .from("profiles")
+          .select("id")
+          .ilike("username", nextUsername)
+          .neq("id", session.user.id)
+          .maybeSingle();
+        if (usernameCheckError) {
+          console.error("Failed to check username availability:", usernameCheckError);
+          setSavingProfile(false);
+          return;
+        }
+        if (existingUsername) {
+          setUsernameDraft(originalUsername);
+          setShowUsernameTakenModal(true);
+          setSavingProfile(false);
+          return;
+        }
+        const { error: usernameError } = await supabase
+          .from("profiles")
+          .update({ username: nextUsername })
+          .eq("id", session.user.id);
+        if (usernameError) {
+          if (usernameError.code === "23505" || usernameError.message.toLowerCase().includes("duplicate")) {
+            setUsernameDraft(originalUsername);
+            setShowUsernameTakenModal(true);
+          } else {
+            console.error("Failed to save username:", usernameError);
+          }
+          setSavingProfile(false);
+          return;
+        }
+        const { error: authUsernameError } = await supabase.auth.updateUser({ data: { username: nextUsername } });
+        if (authUsernameError) console.error("Failed to update username metadata:", authUsernameError);
 const { error: tradingError } = await supabase
           .from("trading_profiles")
           .upsert(
@@ -392,7 +426,8 @@ const { error: tradingError } = await supabase
           setSavingProfile(false);
           return;
         }
-        setProfile((prev: any) => ({ ...prev, username: usernameDraft }));
+        setProfile((prev: any) => ({ ...prev, username: nextUsername }));
+        setUsernameDraft(nextUsername);
         setDiscord(discordDraft);
       }
       setSavingProfile(false);
@@ -738,6 +773,7 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
         </div>
       )}
       {showDeletionModal && <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/20" : "bg-black/80"}`} onMouseDown={(e) => { if (e.target === e.currentTarget && !submittingDeletion) setShowDeletionModal(false); }}><div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.30)] ${isLightMode ? "border-red-900/10 bg-white text-zinc-900" : "border-red-500/25 bg-[#151718] text-white"}`}><h2 className={`text-xl font-semibold tracking-tight ${isLightMode ? "text-red-700" : "text-white"}`}>Request account deletion</h2><p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>This sends a request for permanent account deletion. Your account stays active until the request is manually reviewed and completed.</p><p className={isLightMode ? "mt-3 text-sm font-medium text-red-700" : "mt-3 text-sm font-medium text-red-500"}>Once your account is deleted, it cannot be recovered.</p><div className="mt-6 flex gap-3"><button type="button" disabled={submittingDeletion} onClick={() => setShowDeletionModal(false)} className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${isLightMode ? "border-black/10 bg-zinc-100 text-zinc-700" : "border-white/10 bg-white/[0.05] text-zinc-300"}`}>Cancel</button><button type="button" disabled={submittingDeletion} onClick={requestAccountDeletion} className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${isLightMode ? "border-red-700/25 bg-red-700/[0.06] text-red-700" : "border-red-500/30 bg-red-500/[0.08] text-red-500"}`}>{submittingDeletion ? "Submitting..." : "Request deletion"}</button></div></div></div>}
+      {showUsernameTakenModal && <div className={`fixed inset-0 z-[130] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`} onMouseDown={(e) => { if (e.target === e.currentTarget) setShowUsernameTakenModal(false); }}><div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.30)] ${isLightMode ? "border-[#8a6a00]/20 bg-white text-zinc-900" : "border-[#FFD54A]/25 bg-[#151718] text-white"}`}><h2 className={`text-xl font-semibold tracking-tight ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>Username already taken</h2><p className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>That username already belongs to another collector. Your original username has been restored in the editor.</p><button type="button" onClick={() => setShowUsernameTakenModal(false)} className={`mt-6 w-full rounded-xl border px-4 py-3 text-sm font-semibold ${isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"}`}>Got it</button></div></div>}
       {selectedShowcaseCard && <div className={`fixed inset-0 z-[120] flex items-center justify-center px-6 pb-6 pt-20 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`} onClick={() => setSelectedShowcaseCard(null)}><button
   type="button"
   className={`relative translate-y-4 overflow-hidden rounded-[26px] ${
