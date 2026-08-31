@@ -72,13 +72,13 @@ const resources = [
   },
 ];
 export default function Index() {
-  const [activeTab, setActiveTab] = useState<HomeTab>("updates");
-  const [showUpdateNotice, setShowUpdateNotice] = useState(false);
-  const [isLightMode, setIsLightMode] = useState(
+const [activeTab, setActiveTab] = useState<HomeTab>("updates");
+const [showUpdateNotice, setShowUpdateNotice] = useState(false);
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light"
   );
   useEffect(() => {
-    const hasSeenUpdateNotice = localStorage.getItem(
+const hasSeenUpdateNotice = localStorage.getItem(
       "mlpekayou-ui-overhaul-notice"
     );
     if (!hasSeenUpdateNotice) {
@@ -86,19 +86,19 @@ export default function Index() {
     }
   }, []);
   useEffect(() => {
-    let mounted = true;
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-    const syncFromDocument = () => {
+let mounted = true;
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+const syncFromDocument = () => {
       if (!mounted) return;
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-    const observer = new MutationObserver(syncFromDocument);
+const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-    const loadThemePreference = async () => {
-      const {
+const loadThemePreference = async () => {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!mounted) return;
@@ -106,7 +106,7 @@ export default function Index() {
         setIsLightMode(false);
         return;
       }
-      const { data, error } = await supabase
+const { data, error } = await supabase
         .from("user_light_mode_preferences")
         .select("user_id")
         .eq("user_id", session.user.id)
@@ -144,17 +144,17 @@ export default function Index() {
       }
     };
   }, []);
-  const dismissUpdateNotice = () => {
+const dismissUpdateNotice = () => {
     localStorage.setItem("mlpekayou-ui-overhaul-notice", "true");
     setShowUpdateNotice(false);
   };
-  const pageBg = isLightMode ? "bg-[#f6f4ee] text-zinc-900" : "bg-[#111111] text-white";
-  const surface = isLightMode
+const pageBg = isLightMode ? "bg-[#f6f4ee] text-zinc-900" : "bg-[#111111] text-white";
+const surface = isLightMode
     ? "border-black/10 bg-white text-zinc-900 shadow-[0_10px_30px_rgba(75,58,18,0.08)]"
     : "border-white/10 bg-[#181818] text-white shadow-[0_10px_30px_rgba(0,0,0,0.24)]";
-  const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
-  const bodyText = isLightMode ? "text-zinc-700" : "text-zinc-300";
-  const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
+const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
+const bodyText = isLightMode ? "text-zinc-700" : "text-zinc-300";
+const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
   return (
     <>
       {showUpdateNotice && (
@@ -270,7 +270,7 @@ export default function Index() {
                 { id: "resources", label: "Resources" },
                 { id: "partnership", label: "About" },
               ].map((tab) => {
-                const selected = activeTab === tab.id;
+const selected = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
@@ -522,17 +522,6 @@ export default function Index() {
           )}
           {activeTab === "partnership" && (
             <div className="space-y-4">
-              <article className={`rounded-2xl border p-5 sm:p-6 ${surface}`}>
-                <p className={`text-sm font-semibold ${accentText}`}>About MLPEKAYOU</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight">A community project</h2>
-                <p className={`mt-4 text-[15px] leading-7 ${bodyText}`}>
-                  MLPEKAYOU is owned and operated by Sam Keegan. Keegan is a prior service
-                  infantry and is not employed by Kayou, but rather by StonesTradingCo.
-                  Kayou retains ownership of all My Little Pony artwork, characters, and
-                  related intellectual property used throughout this website. Images are
-                  provided by Kayou for use on MLPEKAYOU.
-                </p>
-              </article>
               <article
                 className={`rounded-2xl border-l-4 border-l-red-500 border p-5 sm:p-6 ${surface}`}
               >
@@ -577,6 +566,30 @@ export default function Index() {
                     while keeping every feature completely free for the community.
                   </p>
                 </div>
+              </a>
+              <a
+                href="https://pakracards.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`block rounded-2xl border p-5 transition-all sm:p-6 ${surface} ${
+                  isLightMode
+                    ? "hover:border-[#E7C84B]/60"
+                    : "hover:border-[#E7C84B]/40"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className={`text-sm font-semibold ${accentText}`}>Official partner</p>
+                    <h2 className="mt-1 text-2xl font-semibold tracking-tight">PakraCards</h2>
+                  </div>
+                  <span aria-hidden="true" className={`text-2xl ${accentText}`}>↗</span>
+                </div>
+                <p className={`mt-4 text-[15px] leading-7 ${bodyText}`}>
+                  A little Kayou CN store run by a lovely couple, Amber and Hao. Amber and Hao
+                  sell singles, sealed products, live rips, and other things like plushies,
+                  pins, pens, and more! You will never have to worry about a resealed or
+                  counterfeit card from PakraCards.
+                </p>
               </a>
             </div>
           )}

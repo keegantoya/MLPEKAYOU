@@ -12,7 +12,7 @@ export default function KayouNews() {
   );
 const upcomingProducts: Product[] = [
     {
-      date: "October 2026",
+      date: "October 16 2026",
       title: "Moon: Volume Four",
       notes: "U.S. Moon Four will be a reprint of Chinese Moon 11.",
     },

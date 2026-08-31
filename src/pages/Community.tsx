@@ -14,6 +14,7 @@ const sets = [
   { id: "2", name: "Eternal Moon Second Edition", total: 189 },
   { id: "8", name: "Fun Moments Second Edition", total: 136 },
   { id: "3", name: "Eternal Moon Third Edition", total: 290 },
+  { id: "13", name: "Eternal Moon Fourth Edition", total: 162 },
   { id: "11", name: "Fun Moments Third Edition", total: 148 },
   { id: "4", name: "Star First Edition", total: 105 },
   { id: "6", name: "Eternal Rainbow Second Edition", total: 170 },
@@ -106,12 +107,12 @@ const [topCollector, setTopCollector] =
     useState<any>(null);
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
-  const root = document.documentElement;
+const root = document.documentElement;
   return root.dataset.theme === "light" || root.classList.contains("light");
 });
 useEffect(() => {
-  const syncTheme = () => {
-    const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
     setIsLightMode(
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
@@ -119,7 +120,7 @@ useEffect(() => {
     );
   };
   syncTheme();
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
@@ -211,7 +212,7 @@ const visibleSets =
             return ["4"].includes(set.id);
           }
           if (activeCategory === "ccg") {
-            return ["1", "2", "3"].includes(set.id);
+            return ["1", "2", "3", "13"].includes(set.id);
           }
           if (activeCategory === "rainbow") {
             return ["5", "6"].includes(set.id);
@@ -222,8 +223,8 @@ const visibleSets =
           return false;
         });
 const CategoryButton = ({ category }: { category: Category }) => {
-  const config = categoryConfig[category];
-  const active = activeCategory === category;
+const config = categoryConfig[category];
+const active = activeCategory === category;
   return (
     <button
       type="button"
@@ -278,15 +279,25 @@ const CategoryButton = ({ category }: { category: Category }) => {
   );
 };
 const LeaderboardCard = ({ set }: { set: (typeof sets)[number] }) => {
-  const winner = firstFinishers[String(set.id)];
+const winner = firstFinishers[String(set.id)];
+const isLocked = set.id === "13";
   return (
     <button
       type="button"
-      onClick={() => navigate(`/community/${set.id}`)}
-      className={`group relative min-h-[190px] overflow-hidden rounded-[24px] border p-5 text-left transition hover:-translate-y-0.5 ${
+      disabled={isLocked}
+      onClick={() => {
+        if (!isLocked) navigate(`/community/${set.id}`);
+      }}
+      className={`group relative min-h-[190px] overflow-hidden rounded-[24px] border p-5 text-left transition ${
+        isLocked ? "cursor-not-allowed" : "hover:-translate-y-0.5"
+      } ${
         isLightMode
-          ? "border-black/10 bg-white hover:border-[#c9a62d]/45 hover:shadow-lg"
-          : "border-white/[0.08] bg-[#17191a] hover:border-[#FFD54A]/35 hover:bg-[#1b1d1e]"
+          ? isLocked
+            ? "border-black/10 bg-white"
+            : "border-black/10 bg-white hover:border-[#c9a62d]/45 hover:shadow-lg"
+          : isLocked
+            ? "border-white/[0.08] bg-[#17191a]"
+            : "border-white/[0.08] bg-[#17191a] hover:border-[#FFD54A]/35 hover:bg-[#1b1d1e]"
       }`}
     >
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#FFD54A] via-[#E8C54A] to-transparent" />
@@ -375,11 +386,24 @@ const LeaderboardCard = ({ set }: { set: (typeof sets)[number] }) => {
           )}
         </div>
       </div>
+      {isLocked && (
+        <div className={`absolute inset-0 z-30 flex items-center justify-center backdrop-blur-[1px] ${
+          isLightMode ? "bg-white/55" : "bg-black/60"
+        }`}>
+          <div className={`rounded-xl border px-4 py-2 text-center text-sm font-bold tracking-wide shadow-lg sm:text-base ${
+            isLightMode
+              ? "border-[#8a6a00]/30 bg-white/95 text-[#725700]"
+              : "border-[#FFD54A]/40 bg-black/90 text-[#FFE27A]"
+          }`}>
+            UNLOCKS OCT. 16
+          </div>
+        </div>
+      )}
     </button>
   );
 };
 const ChampionPanel = ({ mobile = false }: { mobile?: boolean }) => {
-  const assets = getProfileAssets(topCollector);
+const assets = getProfileAssets(topCollector);
   return (
     <div
       className={`relative overflow-hidden rounded-[26px] border ${

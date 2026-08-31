@@ -419,7 +419,7 @@ const activityStatus = (() => {
       dotClass: "bg-zinc-400",
     };
   }
-  const age = Date.now() - new Date(lastActivityAt).getTime();
+const age = Date.now() - new Date(lastActivityAt).getTime();
   if (age <= 24 * 60 * 60 * 1000) {
     return {
       label: "Active in the last 24 Hours",
@@ -444,11 +444,11 @@ const activityStatus = (() => {
   };
 })();
 useEffect(() => {
-  const syncTheme = () => {
+const syncTheme = () => {
     setIsLightMode(document.documentElement.dataset.theme === "light");
   };
   syncTheme();
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
@@ -533,7 +533,7 @@ const isJacob =
         ) : (
           <>
             <div className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}>
-              <div className="flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:overflow-x-visible">
                 {ISO_SET_TABS.map((set) => <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${selectedSet === set.id ? isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]" : isLightMode ? "border-black/10 bg-zinc-50 text-zinc-600" : "border-white/10 bg-white/[0.04] text-zinc-400"}`}>{set.name}</button>)}
               </div>
             </div>
@@ -549,7 +549,7 @@ const isJacob =
       ) : selectedSection === "trade" ? (
         <>
           <div className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}>
-            <div className="flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:overflow-x-visible">
               {TRADE_SET_TABS.map((set) => <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${selectedSet === set.id ? isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]" : isLightMode ? "border-black/10 bg-zinc-50 text-zinc-600" : "border-white/10 bg-white/[0.04] text-zinc-400"}`}>{set.name}</button>)}
             </div>
           </div>
@@ -566,7 +566,7 @@ const isJacob =
       ) : (
         <>
           <div className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}>
-            <div className="flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:overflow-x-visible">
               {WISHLIST_SET_TABS.map((set) => <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${selectedSet === set.id ? isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]" : isLightMode ? "border-black/10 bg-zinc-50 text-zinc-600" : "border-white/10 bg-white/[0.04] text-zinc-400"}`}>{set.name}</button>)}
             </div>
           </div>

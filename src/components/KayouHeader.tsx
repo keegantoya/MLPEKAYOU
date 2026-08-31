@@ -92,7 +92,7 @@ const { avatar: profileAvatar, verification } =
     .select("*")
     .eq("id", userId)
     .single();
-  if (data?.avatar_url) {
+  if (data) {
 const { avatar } = getProfileAssets(data);
 setAvatarSrc((prev) => {
   if (prev === avatar) return prev;
@@ -159,7 +159,15 @@ useEffect(() => {
 const {
   data: { subscription },
 } = supabase.auth.onAuthStateChange((_event, session) => {
-  setUser(session?.user ?? null);
+  const currentUser = session?.user ?? null;
+  setUser(currentUser);
+  if (currentUser) {
+    getProfile(currentUser.id);
+  } else {
+    setProfile(null);
+    setAvatarSrc(null);
+    sessionStorage.removeItem("avatar");
+  }
 });
 return () => subscription.unsubscribe();
   }, []);

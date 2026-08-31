@@ -8,16 +8,6 @@ export default function Support() {
   );
   const products = [
     {
-      name: "Discord",
-      category: "BP02",
-      price: "$59.80",
-      image: "/set-pictures/discordselling.webp",
-      scale: "scale-125",
-      disclaimer:
-        "Every two boxes comes with one Discord promo. If you want a specific one, ask! I have 1.4 cases left as of 08/13/2026.",
-      link: "https://stonestradingco.com/collections/my-little-pony/products/discord",
-    },
-    {
       name: "Fun Moments 3 Booster Box PREORDER",
       category: "FME03",
       price: "$39.80",

@@ -88,6 +88,15 @@ const collections: Collection[] = [
     released: true,
   },
   {
+    id: "13",
+    title: "Moon",
+    setName: "Four",
+    imageUrl: "/thumbnails/moonfoursetimage.png",
+    totalCards: 162,
+    category: "eternal-moon",
+    released: false,
+  },
+  {
     id: "11",
     title: "Fun Moments",
     setName: "Three",
@@ -142,7 +151,7 @@ const collections: Collection[] = [
     released: true,
   },
 ];
-const unreleasedSetIds: string[] = [];
+const unreleasedSetIds: string[] = ["13"];
 const databaseSetId: Record<string, string> = {
   tcg: "FW",
   friendshipsbegin: "SD",
@@ -372,7 +381,7 @@ const filtered = (
             return true;
           })
   )
-    .filter((c) => c.released)
+    .filter((c) => c.released || unreleasedSetIds.includes(c.id))
     .sort((a, b) => {
       if (sortBy === "set") {
 const categoryDiff =
@@ -580,6 +589,17 @@ const isWaiting = waitingOnKayouIds.includes(col.id);
                       >
                         <CollectionCard {...col} />
                       </div>
+                      {isUnreleased && (
+                        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
+                          <div className={`rounded-xl border px-4 py-2 text-center text-sm font-bold tracking-wide shadow-lg sm:text-base ${
+                            isLightMode
+                              ? "border-[#8a6a00]/30 bg-white/90 text-[#725700]"
+                              : "border-[#FFD54A]/40 bg-black/85 text-[#FFE27A]"
+                          }`}>
+                            COMING OCT. 16
+                          </div>
+                        </div>
+                      )}
                       {isHidden && !isUnreleased && !isWaiting && (
                         <div className="pointer-events-none absolute inset-x-2 top-2 z-30">
                           <div
