@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Shield } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
 export default function DesktopProfile() {
@@ -28,6 +29,7 @@ const [copied, setCopied] = useState(false);
 const [deletionRequested, setDeletionRequested] = useState(false);
 const [showDeletionModal, setShowDeletionModal] = useState(false);
 const [submittingDeletion, setSubmittingDeletion] = useState(false);
+const [isModerator, setIsModerator] = useState(false);
 const [leaderboardBanned, setLeaderboardBanned] = useState(false);
 const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
 const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
@@ -121,6 +123,15 @@ const { data } = await supabase
 if (data) {
   setProfile(data);
 }
+const { data: moderatorRecord, error: moderatorError } = await supabase
+      .from("leaderboard_moderators")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (moderatorError) {
+      console.error("Moderator status error:", moderatorError);
+    }
+    setIsModerator(Boolean(moderatorRecord));
 setUsernameDraft(data?.username || "");
 const { data: trading } = await supabase
       .from("trading_profiles")
@@ -380,9 +391,9 @@ const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
-        const originalUsername = profile?.username || "";
-        const nextUsername = usernameDraft.trim();
-        const { data: existingUsername, error: usernameCheckError } = await supabase
+const originalUsername = profile?.username || "";
+const nextUsername = usernameDraft.trim();
+const { data: existingUsername, error: usernameCheckError } = await supabase
           .from("profiles")
           .select("id")
           .ilike("username", nextUsername)
@@ -399,7 +410,7 @@ const {
           setSavingProfile(false);
           return;
         }
-        const { error: usernameError } = await supabase
+const { error: usernameError } = await supabase
           .from("profiles")
           .update({ username: nextUsername })
           .eq("id", session.user.id);
@@ -413,7 +424,7 @@ const {
           setSavingProfile(false);
           return;
         }
-        const { error: authUsernameError } = await supabase.auth.updateUser({ data: { username: nextUsername } });
+const { error: authUsernameError } = await supabase.auth.updateUser({ data: { username: nextUsername } });
         if (authUsernameError) console.error("Failed to update username metadata:", authUsernameError);
 const { error: tradingError } = await supabase
           .from("trading_profiles")
@@ -508,8 +519,23 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
   return (
     <div className={`min-h-screen transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className={`rounded-3xl border p-6 sm:p-8 ${isLightMode ? "border-black/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,.08)]" : "border-white/[0.08] bg-[#151718] shadow-[0_14px_36px_rgba(0,0,0,.24)]"}`}>
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+        <div className={`relative rounded-3xl border p-6 sm:p-8 ${isLightMode ? "border-black/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,.08)]" : "border-white/[0.08] bg-[#151718] shadow-[0_14px_36px_rgba(0,0,0,.24)]"}`}>
+          {isModerator && (
+            <button
+              type="button"
+              onClick={() => navigate("/leaderboard-moderation")}
+              aria-label="Open leaderboard moderation"
+              title="Leaderboard Moderation"
+              className={`absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
+                isLightMode
+                  ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/25"
+                  : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/60 hover:bg-[#FFD54A]/20"
+              }`}
+            >
+              <Shield size={19} />
+            </button>
+          )}
+          <div className="flex flex-col gap-6 pr-12 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
               <img src={avatar} alt="" className={`h-32 w-32 shrink-0 rounded-3xl border object-cover ${isLightMode ? "border-black/10 bg-zinc-100" : "border-white/[0.10] bg-[#191a1b]"}`} />
               <div className="min-w-0 flex-1">

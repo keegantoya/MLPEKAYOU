@@ -31,6 +31,7 @@ const [copied, setCopied] = useState(false);
 const [deletionRequested, setDeletionRequested] = useState(false);
 const [showDeletionModal, setShowDeletionModal] = useState(false);
 const [submittingDeletion, setSubmittingDeletion] = useState(false);
+const [isModerator, setIsModerator] = useState(false);
 // Leaderboard self-ban
 const [leaderboardBanned, setLeaderboardBanned] = useState(false);
 const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
@@ -58,6 +59,15 @@ const { data } = await supabase
     if (data) {
       setProfile(data);
     }
+const { data: moderatorRecord, error: moderatorError } = await supabase
+      .from("leaderboard_moderators")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (moderatorError) {
+      console.error("Moderator status error:", moderatorError);
+    }
+    setIsModerator(Boolean(moderatorRecord));
 const { data: tradingProfile } = await supabase
       .from("trading_profiles")
       .select("discord_username")
@@ -450,8 +460,23 @@ const menuSections = [
         : "border-white/[0.06] shadow-[0_6px_18px_rgba(0,0,0,.14)]"
     }`}>
     <div className="relative z-10 p-5">
+      {isModerator && (
+        <button
+          type="button"
+          onClick={() => navigate("/leaderboard-moderation")}
+          aria-label="Open leaderboard moderation"
+          title="Leaderboard Moderation"
+          className={`absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
+            isLightMode
+              ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/25"
+              : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/60 hover:bg-[#FFD54A]/20"
+          }`}
+        >
+          <Shield size={18} />
+        </button>
+      )}
       {/* PROFILE */}
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-4 pr-10">
         {/* AVATAR */}        <div className="relative shrink-0">
           <img
             src={avatar}
@@ -551,9 +576,9 @@ const {
           data: { session },
         } = await supabase.auth.getSession();
         if (session?.user) {
-          const originalUsername = profile?.username || "";
-          const nextUsername = usernameDraft.trim();
-          const { data: existingUsername, error: usernameCheckError } = await supabase
+const originalUsername = profile?.username || "";
+const nextUsername = usernameDraft.trim();
+const { data: existingUsername, error: usernameCheckError } = await supabase
             .from("profiles")
             .select("id")
             .ilike("username", nextUsername)
@@ -570,7 +595,7 @@ const {
             setSavingProfile(false);
             return;
           }
-          const { error: usernameError } = await supabase
+const { error: usernameError } = await supabase
             .from("profiles")
             .update({
               username: nextUsername,
@@ -586,7 +611,7 @@ const {
             setSavingProfile(false);
             return;
           }
-          const { error: authUsernameError } = await supabase.auth.updateUser({
+const { error: authUsernameError } = await supabase.auth.updateUser({
             data: {
               username: nextUsername,
             },

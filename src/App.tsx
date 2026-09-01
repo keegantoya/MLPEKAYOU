@@ -50,7 +50,9 @@ import Inbox from "./pages/Friends/inbox";
 import MobileProfile from "./pages/Personal/mobile-profile";
 import DesktopProfile from "./pages/Personal/desktop-profile";
 import ChangeAvatar from "./pages/Personal/change-avatar";
+import LeaderboardModeration from "./pages/Personal/LeaderboardModeration";
 import PublicProfile from "@/pages/Everypony/PublicProfile";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -58,6 +60,7 @@ const queryClient = new QueryClient({
     },
   },
 });
+
 const AppRoutes = () => {
   useEffect(() => {
     let lastUserId: string | null = null;
@@ -84,6 +87,7 @@ const AppRoutes = () => {
       document.removeEventListener("dragstart", preventDrag);
     };
   }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Index />} />
@@ -127,11 +131,16 @@ const AppRoutes = () => {
       <Route path="/progress-tcg" element={<RequireAuth><MyProgressTCG /></RequireAuth>} />
       <Route path="/my-trades/view/:setId" element={<RequireAuth><MyTradesView /></RequireAuth>} />
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
+      <Route
+        path="/leaderboard-moderation"
+        element={<RequireAuth><LeaderboardModeration /></RequireAuth>}
+      />
       <Route path="/:username" element={<PublicProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -163,4 +172,5 @@ const App = () => {
     </QueryClientProvider>
   );
 };
+
 export default App;
