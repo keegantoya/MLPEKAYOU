@@ -139,13 +139,9 @@ export const VERIFIED_USERS: Record<
     label: string;
   }
 > = {
-"17e57e39-bc0c-44e7-b373-ac34c6690185": {
-  badge: ownerBadge,
-  label: "MLPEKAYOU OWNER",
-},
-  "94a1c998-d040-4dd2-b2fb-5f606287139d": {
-    badge: verifiedBadge,
-    label: "MLPEKAYOU STAFF",
+  "17e57e39-bc0c-44e7-b373-ac34c6690185": {
+    badge: ownerBadge,
+    label: "MLPEKAYOU OWNER",
   },
   "408a516c-ee80-4ff8-a869-493e1fd5d961": {
     badge: verifiedBadge,
