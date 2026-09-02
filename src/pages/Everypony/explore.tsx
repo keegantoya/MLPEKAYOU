@@ -3,6 +3,9 @@ import { Search, Users, ArrowUpRight, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import ExploreProfile from "./explore-profile";
 import { getProfileAssets } from "./profile-assets";
+import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
+import elementOfLaughter from "/website-assets/elementoflaughter.webp";
+import ownerBadge from "/website-assets/OwnerBadge.webp";
 const Explore = () => {
 const [collectorCount, setCollectorCount] = useState(0);
 const [userSearch, setUserSearch] = useState("");
@@ -234,6 +237,62 @@ const q = trimmedQuery.toLowerCase();
               <p className={`mt-1 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
                 Search by MLPEKAYOU username.
               </p>
+            </div>
+            <div className={`mb-4 flex flex-wrap items-center gap-2 rounded-2xl border p-2.5 ${
+              isLightMode
+                ? "border-black/[0.08] bg-white"
+                : "border-white/[0.08] bg-[#151718]"
+            }`}>
+              <span className={`px-1 text-xs font-semibold uppercase tracking-wider ${
+                isLightMode ? "text-zinc-500" : "text-zinc-400"
+              }`}>
+                Badge Key
+              </span>
+              {[
+                {
+                  badge: verifiedBadge,
+                  label: "Moderator",
+                  tooltip: "Has special permissions both in the Discord server and on the website to help moderate.",
+                },
+                {
+                  badge: elementOfLaughter,
+                  label: "Top Supporter",
+                  tooltip: "Has spent $1000 or more at StonesTradingCo",
+                },
+                {
+                  badge: ownerBadge,
+                  label: "MLPEKAYOU Owner",
+                  tooltip: "Developer and owner of MLPEKAYOU and the Discord server",
+                },
+              ].map(({ badge, label, tooltip }) => (
+                <button
+                  key={label}
+                  type="button"
+                  aria-label={`${label}: ${tooltip}`}
+                  className={`group relative flex items-center gap-2 rounded-full border px-3 py-1.5 ${
+                    isLightMode
+                      ? "border-black/[0.07] bg-zinc-50 text-zinc-700"
+                      : "border-white/[0.07] bg-white/[0.04] text-zinc-200"
+                  }`}
+                >
+                  <img
+                    src={badge}
+                    alt={label}
+                    className="h-5 w-5 shrink-0 object-contain"
+                  />
+                  <span className="text-xs font-medium">{label}</span>
+                  <span
+                    role="tooltip"
+                    className={`pointer-events-none invisible absolute bottom-full left-1/2 z-[70] mb-2 w-64 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-xl border px-3 py-2 text-left text-xs font-normal leading-5 opacity-0 shadow-xl transition-opacity group-hover:visible group-hover:opacity-100 group-focus:visible group-focus:opacity-100 ${
+                      isLightMode
+                        ? "border-black/10 bg-zinc-950 text-white"
+                        : "border-white/10 bg-white text-zinc-900"
+                    }`}
+                  >
+                    {tooltip}
+                  </span>
+                </button>
+              ))}
             </div>
             <div className="relative">
               <div className={`flex items-center gap-3 rounded-2xl border px-4 transition-colors ${

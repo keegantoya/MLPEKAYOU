@@ -151,15 +151,36 @@ export const VERIFIED_USERS: Record<
     badge: verifiedBadge,
     label: "MLPEKAYOU STAFF",
   },
+    "92845576-094b-4eee-a79b-0b6812bbb786": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+      "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+      "833d359a-7f2d-401b-ae09-70580ea2cfb3": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+      "93fffb1d-6070-4135-9170-90720c69b8a0": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+    "5afa26a7-fda8-4edb-ba43-56241bdd3284": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+    "4a40460e-6c5a-4273-a478-959d61f419bc": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
+    "9d150541-2449-4a28-aad5-cb4a92c20387": {
+    badge: verifiedBadge,
+    label: "MLPEKAYOU STAFF",
+  },
 
-  "2692c7a3-bce3-45b7-8636-5e18bf39edc3": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
-  "2e62bcda-f311-42a1-bf32-cfe74a43d3ef": {
-    badge: blueVerifiedBadge,
-    label: "KAYOU STAFF",
-  },
+
 
   "325585dd-c617-4dd2-8314-d608273cd5f6": {
     badge: elementOfLaughter,
@@ -173,15 +194,7 @@ export const VERIFIED_USERS: Record<
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
-      "5afa26a7-fda8-4edb-ba43-56241bdd3284": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
     "598fab0b-bf8e-428e-af2f-485292ab2647": {
-    badge: elementOfLaughter,
-    label: "ELEMENT OF LAUGHTER",
-  },
-    "4a40460e-6c5a-4273-a478-959d61f419bc": {
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
