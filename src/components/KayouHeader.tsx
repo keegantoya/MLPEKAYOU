@@ -47,6 +47,7 @@ const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [showExistingAccount, setShowExistingAccount] = useState(false);
+  const [showUnconfirmedEmail, setShowUnconfirmedEmail] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -201,6 +202,17 @@ useEffect(() => {
     password: loginPassword,
   });
   if (error) {
+    const errorCode = (error as any).code;
+    const unconfirmedEmail =
+      errorCode === "email_not_confirmed" ||
+      /email not confirmed|email.*not.*confirm/i.test(error.message);
+    if (unconfirmedEmail) {
+      setShowLogin(false);
+      setLoginError("");
+      setShowForgot(false);
+      setShowUnconfirmedEmail(true);
+      return;
+    }
     setLoginError("Incorrect password");
     setShowForgot(true);
     return;
@@ -244,8 +256,23 @@ const handleForgotPassword = async () => {
   }
   setAuthSubmitting(true);
   try {
+  const normalizedEmail = loginEmail.trim().toLowerCase();
+  const { data: hasUnconfirmedEmail, error: emailStatusError } =
+    await supabase.rpc("is_unconfirmed_signup_email", {
+      candidate_email: normalizedEmail,
+    });
+  if (emailStatusError) {
+    setLoginError("Unable to check that email right now. Please try again.");
+    return;
+  }
+  if (hasUnconfirmedEmail) {
+    setShowLogin(false);
+    setLoginError("");
+    setShowUnconfirmedEmail(true);
+    return;
+  }
   const { data: signupData, error } = await supabase.auth.signUp({
-  email: loginEmail.trim(),
+  email: normalizedEmail,
   password: loginPassword,
   options: {
     emailRedirectTo: window.location.origin + "/account-confirmation"
@@ -1132,7 +1159,6 @@ style={{
               hover:text-[#E7C84B]
             "
           >
-            ×
           </button>
         </div>
       </div>
@@ -1357,10 +1383,10 @@ style={{
           Please reserve these communications for serious inquiries, such as:
         </p>
         <ul className={`mt-3 space-y-1.5 text-sm ${isLightMode ? "text-[#6b6252]" : "text-zinc-400"}`}>
-          <li>• Bugs</li>
-          <li>• Glitches</li>
-          <li>• Account issues</li>
-          <li>• Discord server issues</li>
+          <li>â€¢ Bugs</li>
+          <li>â€¢ Glitches</li>
+          <li>â€¢ Account issues</li>
+          <li>â€¢ Discord server issues</li>
         </ul>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -1471,7 +1497,7 @@ style={{
           <span className="flex items-center justify-center gap-3">
             <span>ACKNOWLEDGE</span>
             <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">
-              →
+              â†’
             </span>
           </span>
         </Button>
@@ -1493,6 +1519,30 @@ style={{
           MLPEKAYOU // SYSTEM
         </span>
       </div>
+    </div>
+  </div>
+)}
+{/* UNCONFIRMED EMAIL POPUP */}
+{showUnconfirmedEmail && (
+  <div
+    className="fixed inset-0 z-[30010] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
+    onClick={() => setShowUnconfirmedEmail(false)}
+  >
+    <div
+      className="w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#17191b]/95 p-6 shadow-[0_30px_90px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.06)]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-2xl font-semibold tracking-tight text-white">Email confirmation required</h2>
+      <p className="mt-3 text-sm leading-6 text-zinc-400">
+        Hey! It looks like you never completed the sign-up process with that email. You have to confirm your email before you can log in. If you can&apos;t find the confirmation email, it&apos;s in your junk/spam. Any extra instructions you need will be in the email that was sent to you.
+      </p>
+      <Button
+        type="button"
+        onClick={() => setShowUnconfirmedEmail(false)}
+        className="mt-6 h-11 w-full rounded-xl bg-[#E7C84B] text-sm font-semibold text-[#111517] hover:bg-[#FFE477]"
+      >
+        Got it
+      </Button>
     </div>
   </div>
 )}
@@ -1564,7 +1614,7 @@ style={{
           aria-label="Close"
           className="ml-4 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-xl text-zinc-400 transition hover:bg-white/[0.1] hover:text-white"
         >
-          ×
+          x
         </button>
       </div>
       <form
