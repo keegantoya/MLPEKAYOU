@@ -252,7 +252,7 @@ const q = trimmedQuery.toLowerCase();
                 {
                   badge: verifiedBadge,
                   label: "Moderator",
-                  tooltip: "Has special permissions both in the Discord server and on the website to help moderate.",
+                  tooltip: "Has special permissions both in the Discord server and on the website to help moderate",
                 },
                 {
                   badge: elementOfLaughter,
