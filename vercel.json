@@ -1,28 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "destination": "https://mlpekayou.community/$1",
-      "permanent": true,
-      "has": [
-        {
-          "type": "host",
-          "value": "mlpekayou.com"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "destination": "https://mlpekayou.community/$1",
-      "permanent": true,
-      "has": [
-        {
-          "type": "host",
-          "value": "www.mlpekayou.com"
-        }
-      ]
-    }
-  ],
   "rewrites": [
     {
       "source": "/((?!api|assets|.\\..).*)",
