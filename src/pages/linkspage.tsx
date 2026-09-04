@@ -138,14 +138,6 @@ export default function LinksPage() {
             {/* FACE CAM */}
             <section className="relative min-h-0 flex-[1] overflow-hidden rounded-[18px]" />
 
-            {/* DISCORD BOX */}
-            <section className="relative min-h-0 flex-[0.75] overflow-hidden rounded-[18px]">
-              <img
-                src="/set-pictures/discordselling.webp"
-                alt="Discord TCG"
-                className="h-full w-full rounded-[18px] object-contain"
-              />
-            </section>
 
           </aside>
 
@@ -204,7 +196,7 @@ export default function LinksPage() {
               </span>
 
               <span className="text-[clamp(15px,.95vw,21px)] font-black uppercase tracking-[0.18em] text-[#876675]">
-                STONESTRADINGCO
+                  PAKRACARDS
               </span>
 
             </div>
