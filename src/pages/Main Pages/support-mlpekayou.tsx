@@ -3,41 +3,82 @@ import "@fontsource/oxanium/600.css";
 import "@fontsource/oxanium/700.css";
 import { useEffect, useState } from "react";
 export default function Support() {
-  const [isLightMode, setIsLightMode] = useState(
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light"
   );
-  const products = [
+const products = [
     {
-      name: "Fun Moments 3 Booster Box PREORDER",
-      category: "FME03",
-      price: "$39.80",
-      image: "/set-pictures/funmomentsthreeboxstone.webp",
+      name: "Nightmare Night Gift Set",
+      price: "$119.99",
+      image: "/set-pictures/nightmarenightgiftset.webp",
       scale: "scale-95",
-      disclaimer:
-        "To make way for Fun Moments 4, the current stock of Fun Moments 3 will be the last of our stock.",
-      link: "https://stonestradingco.com/collections/my-little-pony/products/kayou-mlp-fun-moments-3-friendship-eternal",
-    }
+      preorder: true,
+      releaseDate: "SEPT 11, 2026",
+      chineseEdition: false,
+      promo: "",
+      link: "https://stonestradingco.com/collections/my-little-pony",
+    },
+    {
+      name: "Nightmare Night",
+      price: "$59.80",
+      image: "/set-pictures/nightmarenightbox.webp",
+      scale: "scale-95",
+      preorder: true,
+      releaseDate: "SEPT 11, 2026",
+      chineseEdition: false,
+      promo: "",
+      link: "https://stonestradingco.com/collections/my-little-pony",
+    },
+    {
+      name: "Moon 4",
+      price: "$47.88",
+      image: "/set-pictures/moonfourbox.webp",
+      scale: "scale-95",
+      preorder: true,
+      releaseDate: "OCT 16, 2026",
+      chineseEdition: false,
+      promo: "",
+      link: "https://stonestradingco.com/collections/my-little-pony",
+    },
+    {
+      name: "Moon 12",
+      price: "$39.00",
+      image: "/set-pictures/moontwelvecn.webp",
+      scale: "scale-95",
+      preorder: false,
+      releaseDate: "",
+      chineseEdition: true,
+      promo: "",
+      link: "https://pakracards.com/collections/mlpekayou-guest-picks",
+    },
+    {
+      name: "Mistmane Gift Set",
+      price: "$150.00",
+      image: "/set-pictures/mistmanebinderset.webp",
+      scale: "scale-95",
+      preorder: false,
+      releaseDate: "",
+      chineseEdition: true,
+      promo: "Use code 7301HXEKZ5PF for $22 off",
+      link: "https://pakracards.com/collections/mlpekayou-guest-picks",
+    },
   ];
   useEffect(() => {
-    const syncTheme = () => {
+const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
     syncTheme();
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
     return () => observer.disconnect();
   }, []);
-  const upcoming = [
-    "Moon Four",
-    "Nightmare Night",
-    "Nightmare Night Binder Sets",
+const upcoming = [
     "Fun Moments Four",
-    "Chinese Moon Twelve",
-    "Chinese Mistmane Binder Sets",
-    "Nightmare Night Raffle Set",
+    "Raffle Sets 1, 2, 3, and 4",
+    "Endless Kayou CN Merch"
   ];
   return (
     <div
@@ -46,6 +87,12 @@ export default function Support() {
       }`}
       style={{ fontFamily: '"Oxanium", sans-serif' }}
     >
+      <style>{`
+        @keyframes preorder-shine {
+          0% { transform: translateX(-160%) skewX(-20deg); }
+          55%, 100% { transform: translateX(360%) skewX(-20deg); }
+        }
+      `}</style>
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
         <section
           className={`relative overflow-hidden rounded-[30px] border ${
@@ -117,8 +164,13 @@ export default function Support() {
                   <div className={`text-sm font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                     Purchase through
                   </div>
-                  <div className={`mt-1 text-lg font-semibold ${isLightMode ? "text-zinc-900" : "text-white"}`}>
-                    StonesTradingCo
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ${isLightMode ? "bg-zinc-100 text-zinc-900" : "bg-white/[0.07] text-white"}`}>
+                      StonesTradingCo
+                    </span>
+                    <span className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold ${isLightMode ? "bg-[#eee9f0] text-[#55485c]" : "bg-[#85728f]/15 text-[#d8cadf]"}`}>
+                      PakraCards
+                    </span>
                   </div>
                 </div>
               </div>
@@ -152,67 +204,88 @@ export default function Support() {
                 isLightMode ? "text-zinc-600" : "text-zinc-400"
               }`}
             >
-              Clicking a product below will take you to StonesTradingCo. My Little Pony
-              orders placed through these links will be packed by the developer of MLPEKAYOU.
-              Live openings are available in the Discord server.
+              Each product opens at either StonesTradingCo or PakraCards. StonesTradingCo
+              orders are packed by the developer of MLPEKAYOU, and live openings are
+              available in the Discord server.
             </p>
           </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
             {products.map((product) => (
               <a
                 key={product.name}
                 href={product.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group overflow-hidden rounded-[24px] border transition-all duration-200 ${
+                className={`group flex min-w-0 flex-col overflow-hidden rounded-[20px] border transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
                   isLightMode
                     ? "border-black/10 bg-zinc-50 hover:bg-zinc-100/80"
                     : "border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.05]"
                 }`}
               >
                 <div
-                  className={`relative h-80 overflow-hidden sm:h-96 ${
+                  className={`relative aspect-square overflow-hidden ${
                     isLightMode ? "bg-white" : "bg-[#0d0f10]"
                   }`}
                 >
+                  {product.preorder && (
+                    <div className="absolute inset-x-0 top-0 z-10 overflow-hidden border-b border-[#d4b45d]/50 bg-gradient-to-r from-[#22282e] via-[#333c45] to-[#22282e] px-2 py-2 text-center text-[#f8edc9] shadow-[0_4px_14px_rgba(0,0,0,.22)]">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-transparent via-[#f8edc9]/25 to-transparent animate-[preorder-shine_4s_ease-in-out_infinite]" />
+                      <div className="relative text-[10px] font-bold tracking-[0.14em] sm:text-xs">✦ PREORDER ✦</div>
+                      <div className="relative mt-0.5 text-[9px] font-semibold text-[#ded2ad] sm:text-[10px]">RELEASES {product.releaseDate}</div>
+                    </div>
+                  )}
+                  {product.chineseEdition && (
+                    <div className="absolute inset-x-0 top-0 z-10 border-b border-[#a896ad]/35 bg-gradient-to-r from-[#302b33] via-[#4a404f] to-[#302b33] px-2 py-2.5 text-center text-[10px] font-bold tracking-[0.12em] text-[#e8dee9] shadow-[0_4px_14px_rgba(0,0,0,.2)] sm:text-xs">
+                      ◆ CHINESE EDITION ◆
+                    </div>
+                  )}
                   <img
                     src={product.image}
                     alt={product.name}
-                    className={`h-full w-full object-contain p-2 sm:p-3 ${product.scale} transition-transform duration-300 group-hover:scale-[1.03]`}
+                    className={`h-full w-full object-contain p-2 pt-11 sm:p-3 sm:pt-14 ${product.scale} transition-transform duration-300 group-hover:scale-[1.03]`}
                   />
                 </div>
-                <div className="p-5">
+                <div className="flex flex-1 flex-col p-3 sm:p-4">
                   <h3
-                    className={`text-xl font-semibold ${
+                    className={`line-clamp-2 text-sm font-semibold leading-5 sm:text-base ${
                       isLightMode ? "text-zinc-950" : "text-white"
                     }`}
                   >
                     {product.name}
                   </h3>
                   <div
-                    className={`mt-3 text-3xl font-semibold ${
+                    className={`mt-1.5 text-xl font-semibold sm:text-2xl ${
                       isLightMode ? "text-[#725700]" : "text-[#FFE27A]"
                     }`}
                   >
                     {product.price}
                   </div>
-                  {product.disclaimer && (
-                    <p
-                      className={`mt-3 text-sm leading-6 ${
-                        isLightMode ? "text-zinc-600" : "text-zinc-400"
-                      }`}
-                    >
-                      {product.disclaimer}
-                    </p>
+                  {product.preorder && (
+                    <div className={`mt-2 text-[10px] font-semibold leading-4 sm:text-xs ${
+                      isLightMode
+                        ? "text-[#6f5a20]"
+                        : "text-[#d8c78e]"
+                    }`}>
+                      Ships after {product.releaseDate}
+                    </div>
+                  )}
+                  {product.promo && (
+                    <div className={`mt-2 rounded-lg border px-2 py-2 text-[10px] font-semibold leading-4 sm:text-xs ${
+                      isLightMode
+                        ? "border-[#7d6a84]/20 bg-[#f3eff4] text-[#5a4a60]"
+                        : "border-[#a896ad]/20 bg-[#8b7694]/10 text-[#d8cadf]"
+                    }`}>
+                      {product.promo}
+                    </div>
                   )}
                   <div
-                    className={`mt-5 flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold ${
+                    className={`mt-auto flex items-center justify-between pt-3 text-[10px] font-semibold sm:text-xs ${
                       isLightMode
-                        ? "bg-[#c89d13]/12 text-[#725700]"
-                        : "bg-[#FFD54A]/10 text-[#FFE27A]"
+                        ? "text-[#725700]"
+                        : "text-[#FFE27A]"
                     }`}
                   >
-                    <span>View Product</span>
+                    <span>{product.chineseEdition ? "View at PakraCards" : "View at Stones"}</span>
                     <span>→</span>
                   </div>
                 </div>

@@ -242,7 +242,7 @@ const filteredBans = bans.filter((ban) =>
     <div className={`min-h-screen pb-12 ${
       isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
     }`}>
-      <div className="mx-auto w-full max-w-3xl px-4 pt-5 sm:px-6">
+      <div className="mx-auto w-full max-w-3xl px-4 pt-5 sm\:px-6">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -250,8 +250,8 @@ const filteredBans = bans.filter((ban) =>
             aria-label="Go back"
             className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
               isLightMode
-                ? "border-black/10 bg-white text-zinc-700 shadow-sm hover:bg-zinc-100"
-                : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.09]"
+                ? "border-black/10 bg-white text-zinc-700 shadow-sm hover\:bg-zinc-100"
+                : "border-white/10 bg-white/[0.05] text-zinc-300 hover\:bg-white/[0.09]"
             }`}
           >
             <ArrowLeft size={19} />
@@ -319,8 +319,8 @@ const filteredBans = bans.filter((ban) =>
               title={currentView === "active" ? "Moderation History" : "Active Bans"}
               className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
                 isLightMode
-                  ? "border-[#8a6a00]/25 bg-[#c89d13]/10 text-[#725700] hover:bg-[#c89d13]/20"
-                  : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFD54A] hover:bg-[#FFD54A]/20"
+                  ? "border-[#8a6a00]/25 bg-[#c89d13]/10 text-[#725700] hover\:bg-[#c89d13]/20"
+                  : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFD54A] hover\:bg-[#FFD54A]/20"
               }`}
             >
               {currentView === "active" ? <History size={18} /> : <ArrowLeft size={18} />}
@@ -342,8 +342,8 @@ const filteredBans = bans.filter((ban) =>
                     autoComplete="off"
                     className={`w-full rounded-xl border py-3 pl-10 pr-4 text-base outline-none transition-colors ${
                       isLightMode
-                        ? "border-black/10 bg-zinc-50 text-zinc-900 placeholder:text-zinc-500 focus:border-[#8a6a00]/50 focus:bg-white"
-                        : "border-white/10 bg-white/[0.04] text-white placeholder:text-zinc-600 focus:border-[#FFD54A]/50 focus:bg-white/[0.06]"
+                        ? "border-black/10 bg-zinc-50 text-zinc-900 placeholder\:text-zinc-500 focus\:border-[#8a6a00]/50 focus\:bg-white"
+                        : "border-white/10 bg-white/[0.04] text-white placeholder\:text-zinc-600 focus\:border-[#FFD54A]/50 focus\:bg-white/[0.06]"
                     }`}
                   />
                 </label>
@@ -369,7 +369,7 @@ const filteredBans = bans.filter((ban) =>
                   {filteredBans.map((ban, index) => (
                     <div
                       key={ban.userId}
-                      className={`flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${
+                      className={`flex flex-col gap-4 px-5 py-4 sm\:flex-row sm\:items-center sm\:justify-between ${
                         index !== filteredBans.length - 1
                           ? isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]"
                           : ""
@@ -389,8 +389,8 @@ const filteredBans = bans.filter((ban) =>
                         }}
                         className={`flex shrink-0 items-center justify-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-bold transition-colors ${
                           isLightMode
-                            ? "border-[#8a6a00]/25 bg-[#c89d13]/10 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/20"
-                            : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/50 hover:bg-[#FFD54A]/15"
+                            ? "border-[#8a6a00]/25 bg-[#c89d13]/10 text-[#725700] hover\:border-[#8a6a00]/50 hover\:bg-[#c89d13]/20"
+                            : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFD54A] hover\:border-[#FFD54A]/50 hover\:bg-[#FFD54A]/15"
                         }`}
                       >
                         <MoreVertical size={15} />
@@ -422,7 +422,34 @@ const filteredBans = bans.filter((ban) =>
                       : ""
                   }`}
                 >
-                  <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="flex min-w-0 items-center gap-2 sm:hidden">
+                    <img
+                      src={item.moderatorAvatar}
+                      alt=""
+                      className={`h-9 w-9 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-1 whitespace-nowrap text-xs">
+                        <span className={`min-w-0 truncate font-semibold ${isLightMode ? "text-zinc-900" : "text-white"}`}>
+                          {item.moderatorUsername}
+                        </span>
+                        <Shield size={13} className={`shrink-0 ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`} />
+                        <span className={`shrink-0 ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>unbanned</span>
+                        <span className={`min-w-0 truncate font-semibold ${isLightMode ? "text-zinc-900" : "text-white"}`}>
+                          {item.targetUsername}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-zinc-500">
+                        {new Date(item.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <img
+                      src={item.targetAvatar}
+                      alt=""
+                      className={`h-9 w-9 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
+                    />
+                  </div>
+                  <div className="hidden flex-wrap items-center gap-2.5 sm:flex">
                     <div className="flex min-w-0 items-center gap-2">
                       <img
                         src={item.moderatorAvatar}
@@ -446,7 +473,7 @@ const filteredBans = bans.filter((ban) =>
                       </span>
                     </div>
                   </div>
-                  <p className="mt-2 pl-12 text-xs text-zinc-500">
+                  <p className="mt-2 hidden pl-12 text-xs text-zinc-500 sm:block">
                     {new Date(item.createdAt).toLocaleString()}
                   </p>
                 </div>
@@ -485,8 +512,8 @@ const filteredBans = bans.filter((ban) =>
                 aria-label="Close moderator actions"
                 className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
                   isLightMode
-                    ? "border-black/10 text-zinc-600 hover:bg-zinc-100"
-                    : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"
+                    ? "border-black/10 text-zinc-600 hover\:bg-zinc-100"
+                    : "border-white/10 text-zinc-400 hover\:bg-white/[0.06]"
                 }`}
               >
                 <X size={18} />
@@ -496,10 +523,10 @@ const filteredBans = bans.filter((ban) =>
               type="button"
               onClick={unbanUser}
               disabled={unbanning}
-              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-base font-black transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-base font-black transition-colors disabled\:cursor-not-allowed disabled\:opacity-60 ${
                 isLightMode
-                  ? "border-red-600/30 bg-red-50 text-red-700 hover:bg-red-100"
-                  : "border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                  ? "border-red-600/30 bg-red-50 text-red-700 hover\:bg-red-100"
+                  : "border-red-400/30 bg-red-500/10 text-red-300 hover\:bg-red-500/20"
               }`}
             >
               {unbanning ? (
