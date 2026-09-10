@@ -2,87 +2,87 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 export default function MyTrades() {
-const navigate = useNavigate();
-const [activeFilter, setActiveFilter] = useState("moon");
-const [sortBy, setSortBy] = useState("set");
-const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-const [ownedSets, setOwnedSets] = useState<string[]>([]);
-const [tradeSets, setTradeSets] = useState<string[]>([]);
-const [tradePage, setTradePage] = useState(0);
-const [isLightMode, setIsLightMode] = useState(() => {
-  if (typeof document === "undefined") return false;
-  const root = document.documentElement;
-  return root.dataset.theme === "light" || root.classList.contains("light");
-});
-useEffect(() => {
-  const syncTheme = () => {
+  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState("moon");
+  const [sortBy, setSortBy] = useState("set");
+  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+  const [ownedSets, setOwnedSets] = useState<string[]>([]);
+  const [tradeSets, setTradeSets] = useState<string[]>([]);
+  const [tradePage, setTradePage] = useState(0);
+  const [isLightMode, setIsLightMode] = useState(() => {
+    if (typeof document === "undefined") return false;
     const root = document.documentElement;
-    setIsLightMode(
-      root.dataset.theme === "light" ||
-      root.classList.contains("light") ||
-      !root.classList.contains("dark")
-    );
-  };
-  syncTheme();
-  const observer = new MutationObserver(syncTheme);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class", "data-theme"],
+    return root.dataset.theme === "light" || root.classList.contains("light");
   });
-  window.addEventListener("themechange", syncTheme);
-  return () => {
-    observer.disconnect();
-    window.removeEventListener("themechange", syncTheme);
-  };
-}, []);
   useEffect(() => {
-const loadData = async (userOverride?: any) => {
-let user = userOverride;
-    if (!user) {
-const { data } = await supabase.auth.getSession();
-      user = data.session?.user;
-    }
-    if (!user) {
-      setHiddenSets([]);
-      setTradeSets([]);
-      return;
-    }
-const { data: profile } = await supabase
-      .from("profiles")
-      .select("iso_hidden_sets")
-      .eq("id", user.id)
-      .single();
-    setHiddenSets(profile?.iso_hidden_sets || []);
-const { data: progress } = await supabase
-  .from("collection_progress")
-  .select("set_id, progress")
-  .eq("user_id", user.id);
-const owned =
-  (progress || [])
-    .filter((row) => {
-const cards = row.progress || {};
-      return Object.values(cards).some(Boolean);
-    })
-    .map((row) => String(row.set_id).trim());
-setOwnedSets([...new Set(owned)]);
-const { data: trades } = await supabase
-  .from("for_trade")
-  .select("set_id")
-  .eq("user_id", user.id);
-const activeTrades = [
-  ...new Set((trades || []).map((t) => String(t.set_id).trim()))
-];
-setTradeSets(activeTrades);
-  };
-  loadData();
-const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    loadData(session?.user);
-  });
-  return () => subscription.unsubscribe();
-}, []);
-const collections = [
+    const syncTheme = () => {
+      const root = document.documentElement;
+      setIsLightMode(
+        root.dataset.theme === "light" ||
+          root.classList.contains("light") ||
+          !root.classList.contains("dark"),
+      );
+    };
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+    window.addEventListener("themechange", syncTheme);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("themechange", syncTheme);
+    };
+  }, []);
+  useEffect(() => {
+    const loadData = async (userOverride?: any) => {
+      let user = userOverride;
+      if (!user) {
+        const { data } = await supabase.auth.getSession();
+        user = data.session?.user;
+      }
+      if (!user) {
+        setHiddenSets([]);
+        setTradeSets([]);
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("iso_hidden_sets")
+        .eq("id", user.id)
+        .single();
+      setHiddenSets(profile?.iso_hidden_sets || []);
+      const { data: progress } = await supabase
+        .from("collection_progress")
+        .select("set_id, progress")
+        .eq("user_id", user.id);
+      const owned = (progress || [])
+        .filter((row) => {
+          const cards = row.progress || {};
+          return Object.values(cards).some(Boolean);
+        })
+        .map((row) => String(row.set_id).trim());
+      setOwnedSets([...new Set(owned)]);
+      const { data: trades } = await supabase
+        .from("card_market_listings")
+        .select("set_id")
+        .eq("user_id", user.id)
+        .or("is_for_trade.eq.true,is_for_sale.eq.true");
+      const activeTrades = [
+        ...new Set((trades || []).map((t) => String(t.set_id).trim())),
+      ];
+      setTradeSets(activeTrades);
+    };
+    loadData();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      loadData(session?.user);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+  const collections = [
     {
       id: "1",
       title: "Eternal Moon",
@@ -139,71 +139,71 @@ const collections = [
       totalCards: 148,
       category: "fun-moments",
     },
-      {
-    id: "4",
-    title: "Star",
-    setName: "One",
-    imageUrl: "/thumbnails/staronesetimage.webp",
-    totalCards: 105,
-    category: "star",
-  },
-  {
-    id: "6",
-    title: "Rainbow",
-    setName: "Two",
-    imageUrl: "/thumbnails/rainbowtwosetimage.webp",
-    totalCards: 170,
-    category: "rainbow",
-  },
     {
-  id: "FW",
-  title: "Fantasy",
-  setName: "Wonderland",
-  imageUrl: "/thumbnails/fantasysetimage.webp",
-  totalCards:  191,
-  category: "fantasy-wonderland",
-},
-{
-  id: "SD",
-  title: "Friendships",
-  setName: "Begin",
-  imageUrl: "/thumbnails/friendshipsbeginsetimage.webp",
-  totalCards: 194,
-  category: "friendships-begin",
-},
-{
-  id: "12",
-  title: "Discord",
-  setName: "TCG",
-  imageUrl: "/thumbnails/discordsetimage.webp",
-  totalCards: 191,
-  category: "discord",
-},
-{
-  id: "9",
-  title: "Promotional",
-  setName: "Cards",
-  imageUrl: "/thumbnails/promossetimage.webp",
-  totalCards: 12,
-  category: "promo-cards",
-},
-{
-  id: "tcgpromos",
-  title: "TCG",
-  setName: "Promos",
-  imageUrl: "/thumbnails/tcgpromossetimage.webp",
-  totalCards: 18,
-  category: "tcgpromos",
-},
+      id: "4",
+      title: "Star",
+      setName: "One",
+      imageUrl: "/thumbnails/staronesetimage.webp",
+      totalCards: 105,
+      category: "star",
+    },
+    {
+      id: "6",
+      title: "Rainbow",
+      setName: "Two",
+      imageUrl: "/thumbnails/rainbowtwosetimage.webp",
+      totalCards: 170,
+      category: "rainbow",
+    },
+    {
+      id: "FW",
+      title: "Fantasy",
+      setName: "Wonderland",
+      imageUrl: "/thumbnails/fantasysetimage.webp",
+      totalCards: 191,
+      category: "fantasy-wonderland",
+    },
+    {
+      id: "SD",
+      title: "Friendships",
+      setName: "Begin",
+      imageUrl: "/thumbnails/friendshipsbeginsetimage.webp",
+      totalCards: 194,
+      category: "friendships-begin",
+    },
+    {
+      id: "12",
+      title: "Discord",
+      setName: "TCG",
+      imageUrl: "/thumbnails/discordsetimage.webp",
+      totalCards: 191,
+      category: "discord",
+    },
+    {
+      id: "9",
+      title: "Promotional",
+      setName: "Cards",
+      imageUrl: "/thumbnails/promossetimage.webp",
+      totalCards: 12,
+      category: "promo-cards",
+    },
+    {
+      id: "tcgpromos",
+      title: "TCG",
+      setName: "Promos",
+      imageUrl: "/thumbnails/tcgpromossetimage.webp",
+      totalCards: 18,
+      category: "tcgpromos",
+    },
   ];
-const normalizeSetId = (id: string) => {
-const normalized = String(id).trim();
+  const normalizeSetId = (id: string) => {
+    const normalized = String(id).trim();
     return normalized === "FB" ? "SD" : normalized;
   };
-const normalizedOwnedSets = new Set(ownedSets.map(normalizeSetId));
-const normalizedHiddenSets = new Set(hiddenSets.map(normalizeSetId));
-const normalizedTradeSets = new Set(tradeSets.map(normalizeSetId));
-const filteredCollections = collections.filter((col) => {
+  const normalizedOwnedSets = new Set(ownedSets.map(normalizeSetId));
+  const normalizedHiddenSets = new Set(hiddenSets.map(normalizeSetId));
+  const normalizedTradeSets = new Set(tradeSets.map(normalizeSetId));
+  const filteredCollections = collections.filter((col) => {
     if (normalizedHiddenSets.has(normalizeSetId(col.id))) return false;
     if (!normalizedOwnedSets.has(normalizeSetId(col.id))) return false;
     if (activeFilter === "moon") {
@@ -226,7 +226,7 @@ const filteredCollections = collections.filter((col) => {
     }
     return activeFilter === "moon";
   });
-const categoryItems = [
+  const categoryItems = [
     { id: "star", title: "STAR", subtitle: "STAR EDITION", icon: "S" },
     { id: "moon", title: "MOON", subtitle: "ETERNAL MOON", icon: "M" },
     { id: "rainbow", title: "RAINBOW", subtitle: "ETERNAL RAINBOW", icon: "R" },
@@ -234,9 +234,9 @@ const categoryItems = [
     { id: "tcg", title: "TCG", subtitle: "TRADING CARD GAME", icon: "TCG" },
     { id: "promos", title: "PROMOS", subtitle: "PROMOTIONAL", icon: "PR" },
   ];
-const activeCategoryLabel =
+  const activeCategoryLabel =
     categoryItems.find((item) => item.id === activeFilter)?.title || "MOON";
-const slugMap: Record<string, string> = {
+  const slugMap: Record<string, string> = {
     "1": "moon-one",
     "2": "moon-two",
     "3": "moon-three",
@@ -247,24 +247,27 @@ const slugMap: Record<string, string> = {
     "8": "fun-moments-two",
     "11": "fun-moments-three",
     "9": "promotional-cards",
-    "FW": "fantasy-wonderland",
-    "SD": "friendships-begin",
+    FW: "fantasy-wonderland",
+    SD: "friendships-begin",
     "12": "discord",
-    "tcgpromos": "tcg-promos",
+    tcgpromos: "tcg-promos",
   };
-const activeTradeCollections = collections.filter((col) =>
-  normalizedTradeSets.has(normalizeSetId(col.id))
-);
-const tradePageCount = Math.max(1, Math.ceil(activeTradeCollections.length / 2));
-const visibleTradeCollections = activeTradeCollections.slice(
-  tradePage * 2,
-  tradePage * 2 + 2
-);
-useEffect(() => {
-  if (tradePage > tradePageCount - 1) {
-    setTradePage(Math.max(0, tradePageCount - 1));
-  }
-}, [tradePage, tradePageCount]);
+  const activeTradeCollections = collections.filter((col) =>
+    normalizedTradeSets.has(normalizeSetId(col.id)),
+  );
+  const tradePageCount = Math.max(
+    1,
+    Math.ceil(activeTradeCollections.length / 2),
+  );
+  const visibleTradeCollections = activeTradeCollections.slice(
+    tradePage * 2,
+    tradePage * 2 + 2,
+  );
+  useEffect(() => {
+    if (tradePage > tradePageCount - 1) {
+      setTradePage(Math.max(0, tradePageCount - 1));
+    }
+  }, [tradePage, tradePageCount]);
   return (
     <div
       className={`min-h-screen transition-colors ${
@@ -284,9 +287,11 @@ useEffect(() => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold sm:text-3xl">My Inventory</h1>
-              <p className={`mt-1 text-sm ${
-                isLightMode ? "text-zinc-500" : "text-zinc-400"
-              }`}>
+              <p
+                className={`mt-1 text-sm ${
+                  isLightMode ? "text-zinc-500" : "text-zinc-400"
+                }`}
+              >
                 Your collected sets and active trades.
               </p>
             </div>
@@ -296,10 +301,14 @@ useEffect(() => {
                   isLightMode ? "bg-zinc-100" : "bg-white/5"
                 }`}
               >
-                <div className="text-lg font-bold">{filteredCollections.length}</div>
-                <div className={`text-xs ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}>
+                <div className="text-lg font-bold">
+                  {filteredCollections.length}
+                </div>
+                <div
+                  className={`text-xs ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
                   Visible
                 </div>
               </div>
@@ -309,9 +318,11 @@ useEffect(() => {
                 }`}
               >
                 <div className="text-lg font-bold">{tradeSets.length}</div>
-                <div className={`text-xs ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}>
+                <div
+                  className={`text-xs ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
                   Trades
                 </div>
               </div>
@@ -336,8 +347,8 @@ useEffect(() => {
                     activeFilter === item.id
                       ? "bg-[#FFD54A] font-semibold text-zinc-950"
                       : isLightMode
-                      ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                      : "bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
+                        ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                        : "bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
                   }`}
                 >
                   <span>{item.title}</span>
@@ -358,10 +369,13 @@ useEffect(() => {
               }`}
             >
               <h2 className="text-lg font-semibold">{activeCategoryLabel}</h2>
-              <span className={`text-sm ${
-                isLightMode ? "text-zinc-500" : "text-zinc-400"
-              }`}>
-                {filteredCollections.length} set{filteredCollections.length === 1 ? "" : "s"}
+              <span
+                className={`text-sm ${
+                  isLightMode ? "text-zinc-500" : "text-zinc-400"
+                }`}
+              >
+                {filteredCollections.length} set
+                {filteredCollections.length === 1 ? "" : "s"}
               </span>
             </div>
             <div className="p-3 sm:p-4">
@@ -383,23 +397,31 @@ useEffect(() => {
                         className="h-[104px] w-[82px] shrink-0 rounded-xl object-cover"
                       />
                       <div className="min-w-0 flex-1">
-                        <h3 className={`text-base font-semibold leading-tight ${
-                          isLightMode ? "text-zinc-900" : "text-white"
-                        }`}>
+                        <h3
+                          className={`text-base font-semibold leading-tight ${
+                            isLightMode ? "text-zinc-900" : "text-white"
+                          }`}
+                        >
                           {col.title}
                         </h3>
-                        <div className={`mt-1 text-sm ${
-                          isLightMode ? "text-[#806100]" : "text-[#E5C24A]"
-                        }`}>
+                        <div
+                          className={`mt-1 text-sm ${
+                            isLightMode ? "text-[#806100]" : "text-[#E5C24A]"
+                          }`}
+                        >
                           {col.setName}
                         </div>
-                        <div className={`mt-4 flex items-center justify-between gap-3 text-xs ${
-                          isLightMode ? "text-zinc-500" : "text-zinc-400"
-                        }`}>
+                        <div
+                          className={`mt-4 flex items-center justify-between gap-3 text-xs ${
+                            isLightMode ? "text-zinc-500" : "text-zinc-400"
+                          }`}
+                        >
                           <span>{col.totalCards} cards</span>
-                          <span className={`font-medium ${
-                            isLightMode ? "text-zinc-700" : "text-zinc-300"
-                          }`}>
+                          <span
+                            className={`font-medium ${
+                              isLightMode ? "text-zinc-700" : "text-zinc-300"
+                            }`}
+                          >
                             Open →
                           </span>
                         </div>
@@ -408,9 +430,11 @@ useEffect(() => {
                   ))}
                 </div>
               ) : (
-                <div className={`flex min-h-[220px] items-center justify-center text-center text-sm ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-500"
-                }`}>
+                <div
+                  className={`flex min-h-[220px] items-center justify-center text-center text-sm ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-500"
+                  }`}
+                >
                   No sets in this category.
                 </div>
               )}
@@ -426,9 +450,11 @@ useEffect(() => {
             >
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold">Inventory</h2>
-                <span className={`text-xs ${
-                  isLightMode ? "text-[#806100]" : "text-[#E5C24A]"
-                }`}>
+                <span
+                  className={`text-xs ${
+                    isLightMode ? "text-[#806100]" : "text-[#E5C24A]"
+                  }`}
+                >
                   Verified
                 </span>
               </div>
@@ -438,9 +464,11 @@ useEffect(() => {
                 }`}
               >
                 <div className="text-xl font-bold">{tradeSets.length}</div>
-                <div className={`mt-1 text-xs ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}>
+                <div
+                  className={`mt-1 text-xs ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
                   Trade sets
                 </div>
               </div>
@@ -462,7 +490,7 @@ useEffect(() => {
                     type="button"
                     onClick={() =>
                       setTradePage((page) =>
-                        page === 0 ? tradePageCount - 1 : page - 1
+                        page === 0 ? tradePageCount - 1 : page - 1,
                       )
                     }
                     aria-label="Previous trade sets"
@@ -483,7 +511,7 @@ useEffect(() => {
                     type="button"
                     onClick={() =>
                       setTradePage((page) =>
-                        page === tradePageCount - 1 ? 0 : page + 1
+                        page === tradePageCount - 1 ? 0 : page + 1,
                       )
                     }
                     aria-label="Next trade sets"
@@ -525,9 +553,11 @@ useEffect(() => {
                                 : `${col.title} (${col.setName})`
                               : col.title}
                           </div>
-                          <div className={`mt-0.5 text-xs ${
-                            isLightMode ? "text-zinc-500" : "text-zinc-500"
-                          }`}>
+                          <div
+                            className={`mt-0.5 text-xs ${
+                              isLightMode ? "text-zinc-500" : "text-zinc-500"
+                            }`}
+                          >
                             Open trades →
                           </div>
                         </div>
@@ -535,9 +565,11 @@ useEffect(() => {
                     ))}
                   </div>
                 ) : (
-                  <div className={`py-6 text-center text-sm ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-500"
-                  }`}>
+                  <div
+                    className={`py-6 text-center text-sm ${
+                      isLightMode ? "text-zinc-500" : "text-zinc-500"
+                    }`}
+                  >
                     No active trade or sale sets.
                   </div>
                 )}
