@@ -184,7 +184,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     }
     return key;
   }
-  //  TCG Promos:// RR01â€“RR06// â€»BP01-CR07â€“â€»BP01-CR12// â€»BP02-CR01â€“â€»BP02-CR06
+  //  TCG Promos:// RR01-RR06// \u203BBP01-CR07-\u203BBP01-CR12// \u203BBP02-CR01-\u203BBP02-CR06
   if (currentSetId === "tcgpromos") {
     const match = key.match(/^RR(\d+)$/);
     if (match) {
@@ -193,15 +193,15 @@ const getDisplayCode = (card: any, currentSetId: string) => {
         return `RR${String(num).padStart(2, "0")}`;
       }
       if (num >= 7 && num <= 12) {
-        return `â€»BP01-CR${String(num).padStart(2, "0")}`;
+        return `\u203BBP01-CR${String(num).padStart(2, "0")}`;
       }
       if (num >= 13 && num <= 18) {
-        return `â€»BP02-CR${String(num - 12).padStart(2, "0")}`;
+        return `\u203BBP02-CR${String(num - 12).padStart(2, "0")}`;
       }
     }
     return key;
   }
-  //  Friendships Begin / SD01.// P-prefixed rarities lose the P in display, and the reference mark// goes BEFORE the SD01 prefix:// SD01PER01 -> â€»SD01-ER01// SD01PRR01 -> â€»SD01-RR01// SD01PSPR01 -> â€»SD01-SPR01
+  //  Friendships Begin / SD01.// P-prefixed rarities lose the P in display, and the reference mark// goes BEFORE the SD01 prefix:// SD01PER01 -> \u203BSD01-ER01// SD01PRR01 -> \u203BSD01-RR01// SD01PSPR01 -> \u203BSD01-SPR01
   if (currentSetId === "friendshipsbegin") {
     const match = key.match(
       /^SD01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|SR|ER|U|C)(\d+)$/,
@@ -210,7 +210,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       const [, rarity, number] = match;
       const isReferenceRarity = rarity.startsWith("P");
       const displayRarity = isReferenceRarity ? rarity.slice(1) : rarity;
-      return `${isReferenceRarity ? "â€»" : ""}SD01-${displayRarity}${number}`;
+      return `${isReferenceRarity ? "\u203B" : ""}SD01-${displayRarity}${number}`;
     }
   }
   //  Fantasy Wonderland / BP01.
@@ -233,7 +233,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
                   ? "RR"
                   : rarity;
       const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity)
-        ? "â€»"
+        ? "\u203B"
         : "";
       return `${reference}BP01-${displayRarity}${number}`;
     }
@@ -258,34 +258,34 @@ const getDisplayCode = (card: any, currentSetId: string) => {
                   ? "RR"
                   : rarity;
       const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity)
-        ? "â€»"
+        ? "\u203B"
         : "";
       return `${reference}BP02-${displayRarity}${number}`;
     }
   }
   //  All SN cards display the S rarity as a diamond.// The normal set keys are "SN-1", "SN-2", etc.
   if (key.startsWith("SN-")) {
-    return `â—‡N-${key.slice(3)}`;
+    return `\u25C7N-${key.slice(3)}`;
   }
   //  Also handle compact SN keys if one is supplied by a special set.
   const compactSnMatch = key.match(/^(.\*?)(?:SN)(\d+)$/);
   if (compactSnMatch) {
-    return `${compactSnMatch[1]}â—‡N${compactSnMatch[2]}`;
+    return `${compactSnMatch[1]}\u25C7N${compactSnMatch[2]}`;
   }
   //  SCR uses the diamond form ONLY in Fun Moments.// The normal keys are "SCR-1", "SCR-2", etc.
   if (["7", "8", "11"].includes(currentSetId)) {
     if (key.startsWith("SCR-")) {
-      return `â—‡CR-${key.slice(4)}`;
+      return `\u25C7CR-${key.slice(4)}`;
     }
     const compactScrMatch = key.match(/^(.\*?)(?:SCR)(\d+)$/);
     if (compactScrMatch) {
-      return `${compactScrMatch[1]}â—‡CR${compactScrMatch[2]}`;
+      return `${compactScrMatch[1]}\u25C7CR${compactScrMatch[2]}`;
     }
   }
-  //  Both SHINING ZR and SZR display as â—‡ZR.
+  //  Both SHINING ZR and SZR display as \u25C7ZR.
   const zrMatch = key.match(/^(?:SHINING ZR|SZR)-?(\d+)$/);
   if (zrMatch) {
-    return `â—‡ZR-${zrMatch[1]}`;
+    return `\u25C7ZR-${zrMatch[1]}`;
   }
   return key;
 };
@@ -385,7 +385,7 @@ export default function MyTradesSets() {
         setQuantities({});
         return;
       }
-      //  ðŸ”¹ LOAD PROGRESS
+      //  [LOAD] LOAD PROGRESS
       const { data: progress } = await supabase
         .from("collection_progress")
         .select("set_id, progress")
@@ -414,7 +414,7 @@ export default function MyTradesSets() {
         };
       });
       setMarketListings(listingMap);
-      //  ðŸ”¹ LOAD QUANTITIES
+      //  [LOAD] LOAD QUANTITIES
       const { data: qtyData } = await supabase
         .from("card_quantity")
         .select("card_key, quantity")
@@ -800,7 +800,7 @@ export default function MyTradesSets() {
       for (let i = 1; i <= count; i++) {
         let actualIndex = i;
         if (prefix === "SD01PER") {
-          actualIndex = i + 6; //  shift to 07â€“18
+          actualIndex = i + 6; //  shift to 07-18
         }
         const num = String(actualIndex).padStart(2, "0");
         cards.push({
@@ -961,14 +961,14 @@ export default function MyTradesSets() {
       "GR",
       "CR",
       "RR",
-      "â€»ER",
-      "â€»SPR",
-      "â€»GR",
-      "â€»CR",
-      "â€»RR",
+      "\u203BER",
+      "\u203BSPR",
+      "\u203BGR",
+      "\u203BCR",
+      "\u203BRR",
     ],
     //  Friendships Begin
-    friendshipsbegin: ["C", "U", "SR", "SPR", "GR", "CR", "ER", "â€»ER", "â€»RR"],
+    friendshipsbegin: ["C", "U", "SR", "SPR", "GR", "CR", "ER", "\u203BER", "\u203BRR"],
     //  Promos
     "9": ["PR"],
     tcgpromos: ["PR"],
@@ -1375,7 +1375,7 @@ export default function MyTradesSets() {
               : "border-white/10 bg-[#151718] text-zinc-200 hover:bg-white/[0.06]"
           }`}
         >
-          â† Back to Inventory
+          &larr; Back to Inventory
         </button>
         <section
           className={`rounded-[26px] border p-4 sm:p-5 ${
@@ -1402,7 +1402,7 @@ export default function MyTradesSets() {
                 }`}
               >
                 <span>{ownedBonusCards.length} cards owned</span>
-                <span>â€¢</span>
+                <span>&bull;</span>
                 <span>{activeListingsCount} listed</span>
               </div>
             </div>
@@ -1614,7 +1614,7 @@ export default function MyTradesSets() {
                                   }
                                   className="px-1"
                                 >
-                                  âˆ’
+                                  &minus;
                                 </button>
                               )}
                               <span className="px-1">
@@ -1698,11 +1698,11 @@ export default function MyTradesSets() {
                       );
                       rarity = match?.[0] || "OTHER";
                       if (set.id === "tcgpromos") rarity = "PR";
-                      if (rarity === "PER") rarity = "â€»ER";
-                      if (rarity === "PSPR") rarity = "â€»SPR";
-                      if (rarity === "PCR") rarity = "â€»CR";
-                      if (rarity === "PRR") rarity = "â€»RR";
-                      if (rarity === "PGR") rarity = "â€»GR";
+                      if (rarity === "PER") rarity = "\u203BER";
+                      if (rarity === "PSPR") rarity = "\u203BSPR";
+                      if (rarity === "PCR") rarity = "\u203BCR";
+                      if (rarity === "PRR") rarity = "\u203BRR";
+                      if (rarity === "PGR") rarity = "\u203BGR";
                     }
                     if (!acc[rarity]) acc[rarity] = [];
                     acc[rarity].push(card);
@@ -1720,12 +1720,12 @@ export default function MyTradesSets() {
                     const isCollapsed = collapsedRarities[collapseKey];
                     const rarityLabel =
                       rarity === "SHINING ZR" || rarity === "SZR"
-                        ? "â—‡ZR"
+                        ? "\u25C7ZR"
                         : rarity === "SN"
-                          ? "â—‡N"
+                          ? "\u25C7N"
                           : rarity === "SCR" &&
                               ["7", "8", "11"].includes(set.id)
-                            ? "â—‡CR"
+                            ? "\u25C7CR"
                             : rarity;
                     return (
                       <div
@@ -1758,7 +1758,7 @@ export default function MyTradesSets() {
                               isLightMode ? "text-zinc-500" : "text-zinc-400"
                             }`}
                           >
-                            {rarityCards.length} cards {isCollapsed ? "+" : "âˆ’"}
+                            {rarityCards.length} cards {isCollapsed ? "+" : "-"}
                           </span>
                         </button>
                         {!isCollapsed && (
@@ -1913,7 +1913,7 @@ export default function MyTradesSets() {
                                             }
                                             className="px-1"
                                           >
-                                            âˆ’
+                                            &minus;
                                           </button>
                                         )}
                                         <span className="px-1">
@@ -1948,7 +1948,7 @@ export default function MyTradesSets() {
                                             : "bg-sky-500"
                                       }`}
                                     >
-                                      âœ“
+                                      &#10003;
                                     </div>
                                   )}
                                 </div>
