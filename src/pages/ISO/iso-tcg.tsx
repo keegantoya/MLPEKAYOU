@@ -1,8 +1,47 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
 import { TCGCharacterMap } from "./Card Characters/card-characters-tcg";
+const MissingImageCard = ({
+  src,
+  className,
+  style,
+}: {
+  src: string;
+  className: string;
+  style?: CSSProperties;
+}) => {
+  const [failed, setFailed] = useState(false);
+  const landscape = className.includes("landscape-card");
+  const imageClass = landscape
+    ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover"
+    : className;
+  const imageStyle = landscape
+    ? { transform: "translate(-50%, -50%) rotate(-90deg)" }
+    : style;
+  if (failed) {
+    return (
+      <div
+        className={`${landscape ? "relative aspect-[5/7] overflow-hidden rounded-xl" : className} flex items-center justify-center bg-zinc-300 grayscale dark:bg-zinc-700`}
+        style={landscape ? style : undefined}
+      >
+        <span className="rounded-lg bg-zinc-800/80 px-2 py-1 text-center text-[10px] font-black tracking-wider text-white sm:text-xs">
+          COMING SOON
+        </span>
+      </div>
+    );
+  }
+  return (
+    landscape ? (
+      <div className={`${className.replace("landscape-card", "")} relative aspect-[5/7] overflow-hidden rounded-xl`}>
+        <img src={src} className={imageClass} style={imageStyle} onError={() => setFailed(true)} alt="" />
+      </div>
+    ) : (
+      <img src={src} className={className} style={style} onError={() => setFailed(true)} alt="" />
+    )
+  );
+};
 const getRarityCode = (rarity: string) => {
   return rarity;
 };
@@ -105,6 +144,27 @@ const sets = [
       PRR: 6,
     },
   },
+  {
+    id: "14",
+    name: "NIGHTMARE NIGHT",
+    folder: "nightmare-night",
+    prefix: "BP03",
+    rarities: {
+      C: 48,
+      U: 18,
+      ER: 6,
+      SR: 14,
+      SPR: 28,
+      GR: 12,
+      CR: 12,
+      RR: 6,
+      PER: 12,
+      PGR: 5,
+      PSPR: 11,
+      PCR: 12,
+      PRR: 6,
+    },
+  },
 ];
 interface ISOTCGProps {
   cardCodeSearch: string;
@@ -194,7 +254,6 @@ setLoading(false);
   }
 return (
   <div className="space-y-6">
-    {/* MOBILE SET NAVIGATION */}
     {!(cardCodeSearch || characterSearch.trim()) && (
   <div className="sticky top-0 z-20 py-2">
       <div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">
@@ -202,6 +261,7 @@ return (
   { id: "SD", label: "Friendships Begin" },
   { id: "FW", label: "Fantasy Wonderland" },
   { id: "12", label: "Discord" },
+  { id: "14", label: "Nightmare Night" },
 ]
 .filter((item) => !hiddenSets.includes(item.id))
 .map((item) => (
@@ -334,6 +394,60 @@ const cards = Object.entries(set.rarities).flatMap(
           TCGCharacterMap[`SD-${rarity}-${i + 1}`] ?? [],
       }));
     }
+    if (set.id === "14") {
+      if (rarity === "ER") {
+        return ["01", "02"].flatMap((number) =>
+          ["A", "B", "C"].map((variant) => ({
+            rarity,
+            key: `BP03-ER${number}-${variant}`,
+            characters: [],
+          })),
+        );
+      }
+      if (rarity === "PER") {
+        return ["01", "02"].flatMap((number) =>
+          ["A", "A2", "B", "B2", "C", "C2"].map((variant) => ({
+            rarity,
+            key: `PBP03-ER${number}-${variant}`,
+            characters: [],
+          })),
+        );
+      }
+      if (rarity === "PGR") {
+        return ["07", "08", "09", "11", "12"].map((number) => ({
+          rarity,
+          key: `PBP03-GR${number}`,
+          characters: [],
+        }));
+      }
+      if (rarity === "PSPR") {
+        return ["01", "02", "05", "10", "14", "15", "16", "18", "23", "24", "26"].map((number) => ({
+          rarity,
+          key: `PBP03-SPR${number}`,
+          characters: [],
+        }));
+      }
+      if (rarity === "PCR") {
+        return Array.from({ length: 12 }, (_, i) => ({
+          rarity,
+          key: `PBP03-CR${String(i + 1).padStart(2, "0")}`,
+          characters: [],
+        }));
+      }
+      if (rarity === "PRR") {
+        return Array.from({ length: 6 }, (_, i) => ({
+          rarity,
+          key: `PBP03-RR${String(i + 1).padStart(2, "0")}`,
+          characters: [],
+        }));
+      }
+      return Array.from({ length: count as number }, (_, i) => ({
+        rarity,
+        key: `BP03-${rarity}${String(i + 1).padStart(2, "0")}`,
+        characters: [],
+      }));
+    }
+
     if (set.id === "12") {
       if (rarity === "PER") {
         return Array.from({ length: 6 }, (_, i) => [
@@ -397,6 +511,21 @@ const displayNum = Math.ceil((num - 6) / 2) + 6;
       displayCode = `※SD01-RR${card.key.slice(-2)}`;
     } else {
       displayCode = card.key.replace(/^SD01/, "SD01-");
+    }
+  } else if (set.id === "14") {
+    if (card.rarity === "PER") {
+      const match = card.key.match(/PBP03-ER(\d{2})/);
+      displayCode = match ? `※BP03-ER${match[1]}` : card.key;
+    } else if (card.rarity === "PSPR") {
+      displayCode = `※BP03-SPR${card.key.slice(-2)}`;
+    } else if (card.rarity === "PGR") {
+      displayCode = `※BP03-GR${card.key.slice(-2)}`;
+    } else if (card.rarity === "PCR") {
+      displayCode = `※BP03-CR${card.key.slice(-2)}`;
+    } else if (card.rarity === "PRR") {
+      displayCode = `※BP03-RR${card.key.slice(-2)}`;
+    } else {
+      displayCode = card.key.replace(/^BP03/, "BP03-");
     }
   } else if (set.id === "12") {
     if (card.rarity === "PER") {
@@ -526,6 +655,8 @@ selectedRarities[set.id] && availableRarities.includes(selectedRarities[set.id])
 : "all";
 return selectedRarity === "all" || card.rarity === selectedRarity;
 }).map((card) => {
+const landscape =
+  set.id === "14" && /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.key);
 const fullKey =
   set.id === "SD"
     ? `${set.id}:BONUS-${card.key}`
@@ -618,17 +749,19 @@ const index = parseInt(card.key.slice(-2), 10) - 1;
         </span>
       </div>
     </div>
-    <img
+    <MissingImageCard
       src={
         set.id === "12"
           ? `/cards/discord/${card.key}.webp`
+          : set.id === "14"
+          ? `/cards/nightmare-night/${card.key}.webp`
           : card.key.startsWith("BP01ER")
           ? `/fantasy-wonderland/SD01ER${card.key.slice(-2)}.webp`
           : card.key.startsWith("BP01PER")
           ? `/fantasy-wonderland/SD01PER${card.key.slice(-2)}.webp`
           : `/${set.folder}/${card.key}.webp`
       }
-      className={`aspect-[5/7] w-full rounded-xl object-cover ${
+      className={`${landscape ? "landscape-card" : "aspect-[5/7] w-full"} rounded-xl object-cover ${
 isWishlisted
 ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]"
 : ""

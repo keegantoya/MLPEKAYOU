@@ -4,7 +4,7 @@ import { useWishlist } from "./wishlist-in-iso";
 import { supabase } from "@/lib/supabase";
 import { promoCharacterMap } from "./Card Characters/card-characters-promos";
 const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
-const tcgCards = Array.from({ length: 18 }, (_, i) => i + 1);
+const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
 const getDisplayCardCode = (
   setId: string,
   number: number
@@ -27,7 +27,21 @@ const getDisplayCardCode = (
       return `BP01-CR-${String(number).padStart(2, "0")}`;
     }
 // BP02 CR-01 through CR-06
-    return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
+    if (number <= 18) {
+      return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
+    }
+    const newPromoNames: Record<number, string> = {
+      19: "TK-01",
+      20: "※TK-01",
+      21: "※TK-01",
+      22: "※BP03-CR-01",
+      23: "※BP03-CR-02",
+      24: "※BP03-CR-03",
+      25: "※BP01-CR-04",
+      26: "※BP01-CR-05",
+      27: "※BP01-CR-06",
+    };
+    return newPromoNames[number] || `RR-${String(number).padStart(2, "0")}`;
   }
   return `RR-${String(number).padStart(2, "0")}`;
 };

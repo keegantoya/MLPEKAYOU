@@ -6,6 +6,7 @@ const setImages: Record<string, string> = {
   friendshipsbegin_decks: "/thumbnails/friendshipsbeginsetimage.webp",
   FW: "/thumbnails/fantasysetimage.webp",
   discord: "/thumbnails/discordsetimage.webp",
+  "14": "/thumbnails/nightmarenightsetimage.webp",
   tcgpromos: "/thumbnails/tcgpromossetimage.webp",
 };
 const sets = [
@@ -38,9 +39,16 @@ const sets = [
   isNew: false,
 },
   {
+  id: "14",
+  name: "Nightmare Night",
+  total: 190,
+  rarities: {},
+  isNew: false,
+},
+  {
   id: "tcgpromos",
   name: "TCG Promos",
-  total: 18,
+  total: 27,
   rarities: null,
   isNew: false,
 },
@@ -50,17 +58,18 @@ const releasedRoutes: Record<string, string> = {
   "friendshipsbegin_decks": "/friendships-begin",
   "FW": "/fantasy-wonderland",
   "discord": "/discord",
+  "14": "/nightmare-night",
   "tcgpromos": "/promotional-cards",
 };
 const MyProgressTCG = () => {
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
-  const root = document.documentElement;
+const root = document.documentElement;
   return root.dataset.theme === "light" || root.classList.contains("light");
 });
 useEffect(() => {
-  const syncTheme = () => {
-    const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
     setIsLightMode(
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
@@ -68,7 +77,7 @@ useEffect(() => {
     );
   };
   syncTheme();
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
@@ -117,6 +126,10 @@ rawHidden.forEach((id: string) => {
       break;
     case "12":
       mappedHidden.push("discord");
+      break;
+    case "14":
+    case "nightmare-night":
+      mappedHidden.push("14");
       break;
     case "TCG_PROMOS":
       mappedHidden.push("tcgpromos");
@@ -217,8 +230,8 @@ const owned = Object.values(tcgPromosProgress).filter(Boolean).length;
   return;
 }
 // DISCORD
-if (set.id === "discord") {
-const progressData = progressMap.get("12")?.progress || {};
+if (set.id === "discord" || set.id === "14") {
+const progressData = progressMap.get(set.id === "14" ? "14" : "12")?.progress || {};
 const owned = Object.values(progressData).filter(
     (value) =>
       value === true ||
@@ -283,6 +296,7 @@ const mainSets = sets.filter((set) =>
       "friendshipsbegin_decks",
       "FW",
       "discord",
+      "14",
     ].includes(set.id)
   );
 const promoSets = sets.filter((set) => set.id === "tcgpromos");
@@ -341,15 +355,15 @@ const renderSectionHeader = (title: string, count?: number) => (
   </div>
 );
 const renderSetCard = (set: any) => {
-  const owned = progress[set.id] || 0;
-  const percent =
+const owned = progress[set.id] || 0;
+const percent =
     set.total > 0
       ? Math.min(100, Math.round((owned / set.total) * 100))
       : 0;
-  const isMastered = percent === 100;
-  const route = releasedRoutes[set.id];
-  const image = setImages[set.id];
-  const unit = set.id === "friendshipsbegin_decks" ? "decks" : "cards";
+const isMastered = percent === 100;
+const route = releasedRoutes[set.id];
+const image = setImages[set.id];
+const unit = set.id === "friendshipsbegin_decks" ? "decks" : "cards";
   return (
     <button
       key={set.id}

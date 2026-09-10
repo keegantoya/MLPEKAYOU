@@ -19,7 +19,7 @@ const set = {
   setId: "9",
 };
 const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
-const tcgCards = Array.from({ length: 18 }, (_, i) => i + 1);
+const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
 const ccgHidden = hiddenSets.includes("9");
 const tcgHidden = hiddenSets.includes("tcgpromos");
 const getCardBack = (number?: number) => {

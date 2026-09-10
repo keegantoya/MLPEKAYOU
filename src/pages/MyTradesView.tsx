@@ -1,9 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 type TradeCard = {
-  id: string;
   user_id: string;
   set_id: string;
   card_key: string;
@@ -14,25 +13,18 @@ type TradeCard = {
   sale_quantity: number;
 };
 export default function MyTradesView() {
-  const { setId } = useParams();
-  const navigate = useNavigate();
-  const [cards, setCards] = useState<TradeCard[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCard, setSelectedCard] = useState<TradeCard | null>(null);
-  const [activeMap, setActiveMap] = useState<Record<string, boolean>>({});
-  const [popupPos, setPopupPos] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
-  const popupRef = useRef<HTMLDivElement | null>(null);
-  const [isLightMode, setIsLightMode] = useState(() => {
+const { setId } = useParams();
+const navigate = useNavigate();
+const [cards, setCards] = useState<TradeCard[]>([]);
+const [loading, setLoading] = useState(true);
+const [isLightMode, setIsLightMode] = useState(() => {
     if (typeof document === "undefined") return false;
-    const root = document.documentElement;
+const root = document.documentElement;
     return root.dataset.theme === "light" || root.classList.contains("light");
   });
   useEffect(() => {
-    const syncTheme = () => {
-      const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
       setIsLightMode(
         root.dataset.theme === "light" ||
           root.classList.contains("light") ||
@@ -40,7 +32,7 @@ export default function MyTradesView() {
       );
     };
     syncTheme();
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -53,68 +45,40 @@ export default function MyTradesView() {
   }, []);
   useEffect(() => {
     if (!setId) return;
-    const load = async () => {
+const load = async () => {
       setLoading(true);
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+const { data } = await supabase.auth.getSession();
+const user = data.session?.user;
       if (!user) return;
-      const { data: trades } = await supabase
+const { data: trades } = await supabase
         .from("card_market_listings")
         .select(
           "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity",
         )
         .eq("user_id", user.id);
-      const filtered = (trades || []).filter((card) => {
+const filtered = (trades || []).filter((card) => {
         if (!card.is_for_trade && !card.is_for_sale) return false;
-        //  Friendships Begin (bonus + starters all live under same set_id)
+//  Friendships Begin (bonus + starters all live under same set_id)
         if (setId === "SD_BONUS" || setId === "SD_STARTERS") {
           return card.set_id === "friendshipsbegin";
         }
         return String(card.set_id) === String(setId);
       });
-      const normalized = filtered.map((card) => ({
-        ...card,
-        id: `${card.user_id}-${card.set_id}-${card.card_key}`,
-      })) as TradeCard[];
-      setCards(normalized);
-      const { data: activeCards } = await supabase
-        .from("actively_trading_cards")
-        .select("set_id, card_key")
-        .eq("user_id", user.id);
-      const activeSet = new Set(
-        (activeCards || []).map((card) => `${card.set_id}-${card.card_key}`),
-      );
-      const map: Record<string, boolean> = {};
-      normalized.forEach((card) => {
-        map[card.id] = activeSet.has(`${card.set_id}-${card.card_key}`);
-      });
-      setActiveMap(map);
+      setCards(filtered as TradeCard[]);
       setLoading(false);
     };
     load();
   }, [setId]);
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(event.target as Node)
-      ) {
-        setSelectedCard(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-  const getRarityCode = (rarity: string) => {
+const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
   };
-  const getCardImage = (card: TradeCard) => {
+const getCardImage = (card: TradeCard) => {
     if (card.set_id === "friendshipsbegin") {
       return `/friendships-begin/${card.card_key}.webp`;
     }
     if (card.set_id === "FW") {
-      const num = card.card_key.slice(-2);
+const num = card.card_key.slice(-2);
       if (card.card_key.startsWith("BP01ER")) {
         return `/fantasy-wonderland/SD01ER${num}.webp`;
       }
@@ -123,19 +87,22 @@ export default function MyTradesView() {
       }
       return `/fantasy-wonderland/${card.card_key}.webp`;
     }
+    if (String(card.set_id) === "14") {
+      return `/cards/nightmare-night/${card.card_key}.webp`;
+    }
     if (card.set_id === "12") {
       return `/cards/discord/${card.card_key}.webp`;
     }
     if (card.set_id === "9") {
-      const number = card.card_key.split("-")[1];
+const number = card.card_key.split("-")[1];
       return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
     }
     if (card.set_id === "tcgpromos") {
       return `/tcgpromos/${card.card_key}.webp`;
     }
-    const [rarityRaw, number] = card.card_key.split("-");
-    const rarity = getRarityCode(rarityRaw);
-    const config: any = {
+const [rarityRaw, number] = card.card_key.split("-");
+const rarity = getRarityCode(rarityRaw);
+const config: any = {
       "1": { folder: "first-edition-moon", prefix: "M1" },
       "2": { folder: "second-edition-moon", prefix: "M2" },
       "3": { folder: "third-edition-moon", prefix: "M3" },
@@ -146,50 +113,13 @@ export default function MyTradesView() {
       "8": { folder: "fun-moments-two", prefix: "FM2" },
       "11": { folder: "fun-moments-three", prefix: "FM3" },
     };
-    const c = config[card.set_id];
+const c = config[card.set_id];
     if (!c) return "";
     return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}${
       card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
         ? ".webp"
         : ".webp"
     }`;
-  };
-  const markCompleted = async () => {
-    if (!selectedCard) return;
-    const { error } = await supabase
-      .from("card_market_listings")
-      .delete()
-      .eq("user_id", selectedCard.user_id)
-      .eq("set_id", selectedCard.set_id)
-      .eq("card_key", selectedCard.card_key);
-    if (error) {
-      console.error("Failed to remove listing:", error);
-      return;
-    }
-    setCards((prev) => prev.filter((card) => card.id !== selectedCard.id));
-    setSelectedCard(null);
-  };
-  const toggleActive = async () => {
-    if (!selectedCard) return;
-    const current = activeMap[selectedCard.id];
-    const result = current
-      ? await supabase
-          .from("actively_trading_cards")
-          .delete()
-          .eq("user_id", selectedCard.user_id)
-          .eq("set_id", selectedCard.set_id)
-          .eq("card_key", selectedCard.card_key)
-      : await supabase.from("actively_trading_cards").insert({
-          user_id: selectedCard.user_id,
-          set_id: selectedCard.set_id,
-          card_key: selectedCard.card_key,
-        });
-    if (result.error) {
-      console.error("Failed to update active listing:", result.error);
-      return;
-    }
-    setActiveMap((prev) => ({ ...prev, [selectedCard.id]: !current }));
-    setSelectedCard(null);
   };
   return (
     <div
@@ -264,17 +194,14 @@ export default function MyTradesView() {
                 }`}
               >
                 <div className="text-xl font-semibold">
-                  {
-                    Object.keys(activeMap).filter((key) => activeMap[key])
-                      .length
-                  }
+                  {cards.filter((card) => card.is_for_sale).length}
                 </div>
                 <div
                   className={`mt-1 text-sm ${
                     isLightMode ? "text-zinc-500" : "text-zinc-400"
                   }`}
                 >
-                  Active
+                  For sale
                 </div>
               </div>
             </div>
@@ -314,15 +241,18 @@ export default function MyTradesView() {
             {(
               Object.entries(
                 cards.reduce((acc: Record<string, TradeCard[]>, card) => {
-                  let rarity = card.card_key.split("-")[0];
-                  if (card.set_id === "tcgpromos") {
+let rarity = card.card_key.split("-")[0];
+                  if (String(card.set_id) === "14") {
+                    const match = card.card_key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
+                    rarity = match ? `${match[1] ? "※" : ""}${match[2]}` : "OTHER";
+                  } else if (card.set_id === "tcgpromos") {
                     rarity = "PR";
                   } else if (
                     card.set_id === "FW" ||
                     card.set_id === "12" ||
                     card.set_id === "friendshipsbegin"
                   ) {
-                    const match = card.card_key.match(
+const match = card.card_key.match(
                       /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/,
                     );
                     rarity = match?.[0] || "OTHER";
@@ -339,7 +269,7 @@ export default function MyTradesView() {
               ) as [string, TradeCard[]][]
             )
               .sort(([a], [b]) => {
-                const rarityOrders: Record<string, string[]> = {
+const rarityOrders: Record<string, string[]> = {
                   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
                   "2": [
                     "R",
@@ -435,9 +365,10 @@ export default function MyTradesView() {
                     "※ER",
                     "※RR",
                   ],
+                  "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "※ER", "※SPR", "※GR", "※CR", "※RR"],
                   tcgpromos: ["PR"],
                 };
-                const currentOrder =
+const currentOrder =
                   rarityOrders[
                     String(setId) === "discord" ? "12" : String(setId)
                   ] || [];
@@ -479,52 +410,26 @@ export default function MyTradesView() {
                   <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4 sm:gap-2.5">
                     {rarityCards
                       .sort((a, b) => {
-                        const numA = parseInt(a.card_key.split("-")[1]);
-                        const numB = parseInt(b.card_key.split("-")[1]);
+const numA = parseInt(a.card_key.split("-")[1]);
+const numB = parseInt(b.card_key.split("-")[1]);
                         return numA - numB;
                       })
                       .map((card) => {
-                        const [rarityCode, number] = card.card_key.split("-");
-                        const isDoubleCard =
+const [rarityCode, number] = card.card_key.split("-");
+const isDoubleCard =
                           card.set_id === "3" &&
                           rarityCode === "SZR" &&
                           Number(number) === 1;
-                        const shouldZoom = ![
-                          "12",
-                          "FW",
-                          "SD",
-                          "FB",
-                          "friendshipsbegin",
-                        ].includes(String(card.set_id));
+const isLandscape =
+                          String(card.set_id) === "14" &&
+                          /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key);
                         return (
                           <div
                             key={`${card.set_id}-${card.card_key}`}
                             className={isDoubleCard ? "col-span-2" : ""}
                           >
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                const rect =
-                                  event.currentTarget.getBoundingClientRect();
-                                const screenWidth = window.innerWidth;
-                                const cardCenter = rect.left + rect.width / 2;
-                                let adjustedLeft = cardCenter;
-                                if (cardCenter < screenWidth * 0.3) {
-                                  adjustedLeft = rect.left + rect.width + 20;
-                                } else if (cardCenter > screenWidth * 0.7) {
-                                  adjustedLeft = rect.left - 20;
-                                }
-                                setPopupPos({
-                                  top: rect.top + window.scrollY,
-                                  left: adjustedLeft + window.scrollX,
-                                });
-                                setSelectedCard(card);
-                              }}
-                              className={`relative overflow-hidden rounded-xl border p-0.5 ${
-                                isLightMode
-                                  ? "border-black/10 bg-zinc-50 hover:border-[#9A7200]"
-                                  : "border-white/10 bg-[#0f1112] hover:border-[#FFD54A]/50"
-                              } ${isDoubleCard ? "aspect-[10/7]" : "aspect-[5/7]"}`}
+                            <div
+                              className={`relative overflow-hidden rounded-xl ${isDoubleCard ? "aspect-[10/7]" : "aspect-[5/7]"}`}
                             >
                               {card.set_id === "11" &&
                               card.card_key === "N-10" ? (
@@ -536,24 +441,27 @@ export default function MyTradesView() {
                                   </p>
                                 </div>
                               ) : (
-                                <div className="h-full w-full overflow-hidden rounded-[10px]">
+                                <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                   <img
                                     src={getCardImage(card)}
                                     alt={card.card_key}
-                                    className={`h-full w-full object-cover object-center ${
-                                      shouldZoom ? "scale-[1.045]" : ""
-                                    }`}
+                                    className={isLandscape
+                                      ? "absolute object-contain object-center"
+                                      : "h-full w-full object-cover object-center"}
+                                    style={isLandscape
+                                      ? {
+                                          left: "50%",
+                                          top: "50%",
+                                          width: "140%",
+                                          height: "71.4285714286%",
+                                          maxWidth: "none",
+                                          transform: "translate(-50%, -50%) rotate(-90deg)",
+                                        }
+                                      : { transform: "scale(1.035)" }}
                                   />
                                 </div>
                               )}
-                              {activeMap[card.id] && (
-                                <div className="absolute inset-1 flex items-center justify-center rounded-[10px] bg-black/65">
-                                  <span className="rounded-lg bg-emerald-500 px-2 py-1 text-sm font-semibold text-white">
-                                    Active
-                                  </span>
-                                </div>
-                              )}
-                            </button>
+                            </div>
                             <div className="mt-1 flex min-h-5 flex-wrap items-center gap-1 px-0.5 text-[10px] font-semibold sm:text-xs">
                               {card.is_for_trade && (
                                 <span className="rounded-md bg-emerald-500/12 px-1.5 py-0.5 text-emerald-600 dark:text-emerald-400">
@@ -562,8 +470,7 @@ export default function MyTradesView() {
                               )}
                               {card.is_for_sale && (
                                 <span className="rounded-md bg-sky-500/12 px-1.5 py-0.5 text-sky-600 dark:text-sky-400">
-                                  ${Number(card.asking_price || 0).toFixed(2)} ·{" "}
-                                  {card.sale_quantity}
+                                  ${Number(card.asking_price || 0).toFixed(2)} · {card.sale_quantity}
                                 </span>
                               )}
                             </div>
@@ -576,74 +483,6 @@ export default function MyTradesView() {
           </div>
         )}
       </div>
-      {selectedCard && popupPos && (
-        <div
-          className="absolute z-50"
-          style={{
-            top: popupPos.top + 10,
-            left: popupPos.left,
-            transform: "translateX(-50%)",
-          }}
-        >
-          <div
-            ref={popupRef}
-            className={`w-64 overflow-hidden rounded-[20px] border shadow-2xl ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/10 bg-[#17191a]"
-            }`}
-          >
-            <div
-              className={`border-b px-4 py-3 ${
-                isLightMode ? "border-black/10" : "border-white/10"
-              }`}
-            >
-              <h3 className="text-base font-semibold">Card Options</h3>
-            </div>
-            <div className="p-2">
-              <button
-                type="button"
-                onClick={markCompleted}
-                className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-medium transition ${
-                  isLightMode ? "hover:bg-zinc-100" : "hover:bg-white/[0.06]"
-                }`}
-              >
-                <span>Mark as Completed</span>
-                <span
-                  className={isLightMode ? "text-[#806100]" : "text-[#FFD54A]"}
-                >
-                  ✓
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={toggleActive}
-                className={`mt-1 flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-medium transition ${
-                  isLightMode ? "hover:bg-zinc-100" : "hover:bg-white/[0.06]"
-                }`}
-              >
-                <span>
-                  {activeMap[selectedCard.id]
-                    ? "Stop Actively Trading"
-                    : "Actively Trading"}
-                </span>
-                <span className="text-emerald-500">●</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedCard(null)}
-                className={`mt-1 w-full rounded-xl px-3 py-3 text-left text-sm transition ${
-                  isLightMode
-                    ? "text-zinc-500 hover:bg-zinc-100"
-                    : "text-zinc-400 hover:bg-white/[0.06]"
-                }`}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

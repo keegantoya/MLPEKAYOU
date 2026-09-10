@@ -41,6 +41,7 @@ import StarOne from "./pages/Sets/Star Editions/star-one";
 import FantasyWonderland from "./pages/Sets/Trading Card Game/fantasy-wonderland";
 import FriendshipsBegin from "./pages/Sets/Trading Card Game/friendships-begin";
 import Discord from "./pages/Sets/Trading Card Game/discord";
+import NightmareNight from "./pages/Sets/Trading Card Game/nightmare-night";
 import PromotionalCards from "./pages/Sets/Promos/promotional-cards";
 import LeapingPonies from "./pages/Sets/Others/leaping-ponies";
 import Explore from "./pages/Everypony/explore";
@@ -104,6 +105,7 @@ const AppRoutes = () => {
       <Route path="/fantasy-wonderland" element={<RequireAuth><FantasyWonderland /></RequireAuth>} />
       <Route path="/friendships-begin" element={<RequireAuth><FriendshipsBegin /></RequireAuth>} />
       <Route path="/discord" element={<RequireAuth><Discord /></RequireAuth>} />
+      <Route path="/nightmare-night" element={<RequireAuth><NightmareNight /></RequireAuth>} />
       <Route path="/promotional-cards" element={<RequireAuth><PromotionalCards /></RequireAuth>} />
       <Route path="/leaping-ponies" element={<RequireAuth><LeapingPonies /></RequireAuth>} />
       <Route path="/explore" element={<RequireAuth><Explore /></RequireAuth>} />

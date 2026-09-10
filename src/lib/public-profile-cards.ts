@@ -172,12 +172,18 @@ export function usePublicProfileCards(userId?: string) {
           return { set_id, card_key };
         });
         const { data: trades } = await supabase
-          .from("for_trade")
-          .select("set_id, card_key, listing_type")
-          .eq("user_id", userId);
+          .from("card_market_listings")
+          .select("set_id, card_key")
+          .eq("user_id", userId)
+          .eq("is_for_trade", true);
         setIsoCards([]);
         setWishlistCards(wishlistCards);
-        setTradeCards((trades ?? []) as Card[]);
+        setTradeCards(
+          (trades ?? []).map((trade: any) => ({
+            ...trade,
+            listing_type: "trade" as const,
+          })),
+        );
         setLoading(false);
         return;
       }
@@ -246,7 +252,7 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       }
-      for (let i = 1; i <= 18; i++) {
+      for (let i = 1; i <= 27; i++) {
         const cardKey = `RR${String(i).padStart(2, "0")}`;
         const value = progressMap["tcgpromos"]?.[cardKey];
         const owned =
@@ -343,6 +349,80 @@ export function usePublicProfileCards(userId?: string) {
           }
         }
       });
+      // Nightmare Night (Set 14)
+      const nightmareNightProgress = progressMap["14"] || {};
+      const nightmareNightKeys = [
+        ...Array.from(
+          { length: 48 },
+          (_, i) => `BP03-C${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...Array.from(
+          { length: 18 },
+          (_, i) => `BP03-U${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...["01", "02"].flatMap((number) =>
+          ["A", "B", "C"].map((variant) => `BP03-ER${number}-${variant}`),
+        ),
+        ...Array.from(
+          { length: 14 },
+          (_, i) => `BP03-SR${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...Array.from(
+          { length: 28 },
+          (_, i) => `BP03-SPR${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...Array.from(
+          { length: 12 },
+          (_, i) => `BP03-GR${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...Array.from(
+          { length: 12 },
+          (_, i) => `BP03-CR${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...Array.from(
+          { length: 6 },
+          (_, i) => `BP03-RR${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...["01", "02"].flatMap((number) =>
+          ["A", "A2", "B", "B2", "C", "C2"].map(
+            (variant) => `PBP03-ER${number}-${variant}`,
+          ),
+        ),
+        ...["07", "08", "09", "11", "12"].map((number) => `PBP03-GR${number}`),
+        ...[
+          "01",
+          "02",
+          "05",
+          "10",
+          "14",
+          "15",
+          "16",
+          "18",
+          "23",
+          "24",
+          "26",
+        ].map((number) => `PBP03-SPR${number}`),
+        ...Array.from(
+          { length: 12 },
+          (_, i) => `PBP03-CR${String(i + 1).padStart(2, "0")}`,
+        ),
+        ...Array.from(
+          { length: 6 },
+          (_, i) => `PBP03-RR${String(i + 1).padStart(2, "0")}`,
+        ),
+      ];
+      nightmareNightKeys.forEach((cardKey) => {
+        const value = nightmareNightProgress[cardKey];
+        const owned =
+          value === true ||
+          (typeof value === "object" && value !== null && value.owned === true);
+        if (!owned) {
+          iso.push({
+            set_id: "14",
+            card_key: cardKey,
+          });
+        }
+      });
       // Friendships Begin (SD)
       const sdProgress = progressMap["SD"] || {};
       const SD_STRUCTURE = [
@@ -396,6 +476,7 @@ export function usePublicProfileCards(userId?: string) {
             "9",
             "11",
             "12",
+            "14",
             "FW",
             "SD",
             "tcgpromos",
@@ -430,9 +511,10 @@ export function usePublicProfileCards(userId?: string) {
       });
       // Trades
       const { data: trades } = await supabase
-        .from("for_trade")
-        .select("set_id, card_key, listing_type")
-        .eq("user_id", userId);
+        .from("card_market_listings")
+        .select("set_id, card_key")
+        .eq("user_id", userId)
+        .eq("is_for_trade", true);
       setIsoCards(
         iso.filter(
           (card) =>
@@ -441,7 +523,12 @@ export function usePublicProfileCards(userId?: string) {
         ),
       );
       setWishlistCards(wishlistCards);
-      setTradeCards((trades ?? []) as Card[]);
+      setTradeCards(
+        (trades ?? []).map((trade: any) => ({
+          ...trade,
+          listing_type: "trade" as const,
+        })),
+      );
       setLoading(false);
     };
     load();

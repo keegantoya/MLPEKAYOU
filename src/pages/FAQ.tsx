@@ -248,10 +248,34 @@ const categories: Category[] = [
           tableCount: 1,
         },
       },
+      {
+        id: "nightmare-night",
+        title: "NIGHTMARE NIGHT",
+        code: "BP03",
+        product: {
+          id: "nightmare-night",
+          title: "NIGHTMARE NIGHT",
+          image: "/set-pictures/nightmarenightbox.webp",
+          tableCount: 2,
+          tableAssets: [
+            { image: "/set-pictures/nightmarenightbox.webp", label: "BOX" },
+            { image: "/set-pictures/nightmarenightgiftbox.webp", label: "GIFT BOX" },
+          ],
+        },
+      },
     ],
   },
 ];
+const nightmareNightConfigurations: OddsRow[] = [
+  { configuration: "2C + 2U/SPR + 1ER", ratio: "6:20" },
+  {
+    configuration: "2C + 1U/SPR + 1U/SPR/SR/RR/GR/CR/GR※/SPR※/CR※/RR※ + 1ER/ER※",
+    ratio: "14:20",
+  },
+];
+
 const packConfigurations: Record<string, OddsRow[][]> = {
+  "nightmare-night": [nightmareNightConfigurations, nightmareNightConfigurations],
   "star-one": [
     [
       { configuration: "1SCR + 2SSR + / UR", ratio: "10:16" },
@@ -487,11 +511,13 @@ const ConfigurationTable = ({
   rows,
   tableNumber,
   totalTables,
+  label,
   isLightMode,
 }: {
   rows: OddsRow[];
   tableNumber: number;
   totalTables: number;
+  label?: string;
   isLightMode: boolean;
 }) => (
   <div className={`overflow-hidden rounded-[22px] border ${
@@ -501,7 +527,7 @@ const ConfigurationTable = ({
       <div className={`border-b px-4 py-2.5 text-sm font-semibold ${
         isLightMode ? "border-black/[0.06] text-zinc-600" : "border-white/[0.06] text-zinc-300"
       }`}>
-        Configuration {tableNumber}
+        {label ?? `Configuration ${tableNumber}`}
       </div>
     )}
     <div className={`grid grid-cols-[minmax(0,1fr)_110px] border-b px-4 py-2.5 text-xs font-semibold uppercase tracking-wide ${
@@ -699,7 +725,7 @@ const getTableAsset = (product: Product, tableNumber: number) =>
                   <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">{selectedProduct.title}</h2>
                 </div>
                 <div className={`hidden text-sm sm:block ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                  {selectedProduct.tableCount} {selectedProduct.tableCount === 1 ? "configuration" : "configurations"}
+                  {selectedProduct.tableCount} {selectedProduct.id === "nightmare-night" ? "box types" : selectedProduct.tableCount === 1 ? "configuration" : "configurations"}
                 </div>
               </div>
               <div className="space-y-4">
@@ -724,14 +750,21 @@ const tableAsset = getTableAsset(selectedProduct, tableNumber);
                         )}
                         <div>
                           <div className={`text-xs font-medium ${isLightMode ? "text-[#806100]" : "text-[#E8CA55]"}`}>
-                            {selectedProduct.tableCount > 1 ? `Configuration ${tableNumber}` : "Box"}
+                            {selectedProduct.id === "nightmare-night" ? tableAsset.label : selectedProduct.tableCount > 1 ? `Configuration ${tableNumber}` : "Box"}
                           </div>
-                          <div className="mt-1 text-sm font-semibold">{tableAsset.label}</div>
+                          <div className="mt-1 text-sm font-semibold">
+                            {selectedProduct.id === "nightmare-night"
+                              ? tableNumber === 1
+                                ? "NIGHTMARE NIGHT STANDARD BOX"
+                                : "NIGHTMARE NIGHT GIFT BOX"
+                              : tableAsset.label}
+                          </div>
                         </div>
                       </div>
                       <ConfigurationTable
                         tableNumber={tableNumber}
                         totalTables={selectedProduct.tableCount}
+                        label={selectedProduct.id === "nightmare-night" ? tableAsset.label : undefined}
                         rows={getRows(selectedProduct.id, tableNumber)}
                         isLightMode={isLightMode}
                       />

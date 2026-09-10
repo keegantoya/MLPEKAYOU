@@ -59,28 +59,28 @@ const setButtons = [
   },
   {
     title: "Fun Moments III",
-    subtitle: "188 Cards",
+    subtitle: "148 Cards",
     group: "Fun Moments",
     to: "/trading-post/11",
     image: "/thumbnails/funthreesetimage.webp",
   },
   {
     title: "Promo Cards",
-    subtitle: "5 Cards",
+    subtitle: "12 Cards",
     group: "Promos",
     to: "/trading-post/9",
     image: "/thumbnails/promossetimage.webp",
   },
   {
     title: "Friendships Begin",
-    subtitle: "244 Cards",
+    subtitle: "194 Cards",
     group: "TCG",
     to: "/trading-post/friendshipsbegin",
     image: "/thumbnails/friendshipsbeginsetimage.webp",
   },
   {
     title: "Fantasy Wonderland",
-    subtitle: "201 Cards",
+    subtitle: "191 Cards",
     group: "TCG",
     to: "/trading-post/FW",
     image: "/thumbnails/fantasysetimage.webp",
@@ -93,8 +93,15 @@ const setButtons = [
     image: "/thumbnails/discordsetimage.webp",
   },
   {
+    title: "Nightmare Night",
+    subtitle: "190 Cards",
+    group: "TCG",
+    to: "/trading-post/14",
+    image: "/thumbnails/nightmarenightsetimage.webp",
+  },
+  {
     title: "TCG Promos",
-    subtitle: "18 Cards",
+    subtitle: "27 Cards",
     group: "Promos",
     to: "/trading-post/tcgpromos",
     image: "/thumbnails/tcgpromossetimage.webp",
@@ -113,34 +120,29 @@ export default function TradingPost() {
 const [activeGroup, setActiveGroup] = useState("All");
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
-  const root = document.documentElement;
+const root = document.documentElement;
   return (
     root.dataset.theme === "light" ||
     root.classList.contains("light") ||
     !root.classList.contains("dark")
   );
 });
-
 useEffect(() => {
-  const syncTheme = () => {
-    const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
     setIsLightMode(
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
       !root.classList.contains("dark")
     );
   };
-
   syncTheme();
-
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
   });
-
   window.addEventListener("themechange", syncTheme);
-
   return () => {
     observer.disconnect();
     window.removeEventListener("themechange", syncTheme);
@@ -226,7 +228,7 @@ const visibleSets =
         >
           <div className="flex min-w-max items-center gap-1.5">
             {groups.map((group) => {
-              const active = activeGroup === group;
+const active = activeGroup === group;
               return (
                 <button
                   key={group}
@@ -343,4 +345,3 @@ const visibleSets =
     </div>
   );
 }
-

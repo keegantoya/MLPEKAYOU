@@ -132,12 +132,12 @@ const collections: Collection[] = [
     category: "tcg",
     released: true,
   },
-    {
+  {
     id: "14",
     title: "Nightmare Night",
     setName: "TCG",
     imageUrl: "/thumbnails/nightmarenightsetimage.webp",
-    totalCards: 194,
+    totalCards: 190,
     category: "tcg",
     released: true,
   },
@@ -146,7 +146,7 @@ const collections: Collection[] = [
     title: "Promos",
     setName: "Promotional Cards",
     imageUrl: "/thumbnails/promossetimage.webp",
-    totalCards: 30,
+    totalCards: 39,
     category: "promos",
     released: true,
   },
@@ -160,7 +160,7 @@ const collections: Collection[] = [
     released: true,
   },
 ];
-const unreleasedSetIds: string[] = ["13", "14"];
+const unreleasedSetIds: string[] = ["13"];
 const databaseSetId: Record<string, string> = {
   tcg: "FW",
   friendshipsbegin: "SD",
@@ -168,28 +168,28 @@ const databaseSetId: Record<string, string> = {
 const Collections = () => {
 const location = useLocation();
 const [activeCategory, setActiveCategory] = useState(
-    location.state?.category || "all"
+    location.state?.category || "all",
   );
 const [sets, setSets] = useState<Collection[]>([]);
 const [hiddenSets, setHiddenSets] = useState<string[]>([]);
 const [hideMastered, setHideMastered] = useState(true);
 const [sortBy, setSortBy] = useState<"release" | "set">("release");
 const [isLightMode, setIsLightMode] = useState(
-  () => document.documentElement.dataset.theme === "light"
-);
+    () => document.documentElement.dataset.theme === "light",
+  );
   useEffect(() => {
 const syncTheme = () => {
-    setIsLightMode(document.documentElement.dataset.theme === "light");
-  };
-  syncTheme();
+      setIsLightMode(document.documentElement.dataset.theme === "light");
+    };
+    syncTheme();
 const observer = new MutationObserver(syncTheme);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class", "data-theme"],
-  });
-  return () => observer.disconnect();
-}, []);
-useEffect(() => {
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
     if (location.state?.category) {
       setActiveCategory(location.state.category);
     }
@@ -208,26 +208,19 @@ const { data } = await supabase.auth.getSession();
             ...set,
             progress: 0,
             collectedCards: 0,
-          }))
+          })),
         );
         return;
       }
-const { data: collectionData, error: collectionError } =
-        await supabase
-          .from("collection_progress")
-          .select("set_id, progress")
-          .eq("user_id", user.id);
+const { data: collectionData, error: collectionError } = await supabase
+        .from("collection_progress")
+        .select("set_id, progress")
+        .eq("user_id", user.id);
       if (collectionError) {
-        console.error(
-          "Failed to load collection progress:",
-          collectionError
-        );
+        console.error("Failed to load collection progress:", collectionError);
       }
 const progressRows = new Map<string, any>(
-        (collectionData || []).map((row: any) => [
-          String(row.set_id),
-          row,
-        ])
+        (collectionData || []).map((row: any) => [String(row.set_id), row]),
       );
 const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -235,33 +228,26 @@ const { data: profile, error: profileError } = await supabase
         .eq("id", user.id)
         .single();
       if (profileError) {
-        console.error(
-          "Failed to load hidden collection sets:",
-          profileError
-        );
+        console.error("Failed to load hidden collection sets:", profileError);
       }
-const storedHiddenSets: string[] = Array.isArray(
-        profile?.iso_hidden_sets
-      )
+const storedHiddenSets: string[] = Array.isArray(profile?.iso_hidden_sets)
         ? profile.iso_hidden_sets
         : [];
-const mappedHiddenSets = storedHiddenSets.flatMap(
-        (id: string) => {
-          switch (id) {
-            case "FW":
-              return ["tcg"];
-            case "SD":
-            case "SD_STARTERS":
-            case "SD_BONUS":
-              return ["friendshipsbegin"];
-            case "TCG_PROMOS":
-            case "tcgpromos":
-              return ["tcgpromos"];
-            default:
-              return [id];
-          }
+const mappedHiddenSets = storedHiddenSets.flatMap((id: string) => {
+        switch (id) {
+          case "FW":
+            return ["tcg"];
+          case "SD":
+          case "SD_STARTERS":
+          case "SD_BONUS":
+            return ["friendshipsbegin"];
+          case "TCG_PROMOS":
+          case "tcgpromos":
+            return ["tcgpromos"];
+          default:
+            return [id];
         }
-      );
+      });
 const uniqueHiddenSets = [...new Set(mappedHiddenSets)];
       setHiddenSets(uniqueHiddenSets);
 const countProgress = (row: any, setId: string): number => {
@@ -288,7 +274,7 @@ const rarities: Record<string, number> = {
             }
           });
           return Object.entries(row.progress).filter(
-            ([key, value]) => Boolean(value) && validKeys.has(key)
+            ([key, value]) => Boolean(value) && validKeys.has(key),
           ).length;
         }
         return Object.values(row.progress).filter(Boolean).length;
@@ -301,16 +287,14 @@ const row = progressRows.get(dbId);
       });
       progressMap["tcgpromos"] = countProgress(
         progressRows.get("tcgpromos"),
-        "tcgpromos"
+        "tcgpromos",
       );
 const updated = collections.map((set) => {
 let collected = progressMap[set.id] || 0;
 let totalCards = set.totalCards;
         if (set.id === "9") {
-const ccgPromosHidden =
-            uniqueHiddenSets.includes("9");
-const tcgPromosHidden =
-            uniqueHiddenSets.includes("tcgpromos");
+const ccgPromosHidden = uniqueHiddenSets.includes("9");
+const tcgPromosHidden = uniqueHiddenSets.includes("tcgpromos");
 const ccgCollected = progressMap["9"] || 0;
 const tcgCollected = progressMap["tcgpromos"] || 0;
 const visibleCCGCollected = ccgPromosHidden
@@ -318,20 +302,15 @@ const visibleCCGCollected = ccgPromosHidden
             : Math.min(ccgCollected, 12);
 const visibleTCGCollected = tcgPromosHidden
             ? 0
-            : Math.min(tcgCollected, 18);
+            : Math.min(tcgCollected, 27);
 const visibleCCGTotal = ccgPromosHidden ? 0 : 12;
-const visibleTCGTotal = tcgPromosHidden ? 0 : 18;
-          collected =
-            visibleCCGCollected + visibleTCGCollected;
-          totalCards =
-            visibleCCGTotal + visibleTCGTotal;
+const visibleTCGTotal = tcgPromosHidden ? 0 : 27;
+          collected = visibleCCGCollected + visibleTCGCollected;
+          totalCards = visibleCCGTotal + visibleTCGTotal;
         }
 const progress =
           totalCards > 0
-            ? Math.min(
-                100,
-                Math.floor((collected / totalCards) * 100)
-              )
+            ? Math.min(100, Math.floor((collected / totalCards) * 100))
             : 0;
         return {
           ...set,
@@ -345,11 +324,9 @@ const progress =
     load();
 const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        load(session?.user);
-      }
-    );
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      load(session?.user);
+    });
     return () => {
       subscription.unsubscribe();
     };
@@ -364,15 +341,12 @@ const setOrder: Record<string, number> = {
     merch: 7,
   };
 const promoNodeFullyHidden =
-    hiddenSets.includes("9") &&
-    hiddenSets.includes("tcgpromos");
+    hiddenSets.includes("9") && hiddenSets.includes("tcgpromos");
 const filtered = (
     activeCategory === "all"
       ? sets
           .filter((c) => c.category !== "merch")
-          .filter(
-            (c) => !hideMastered || c.progress !== 100
-          )
+          .filter((c) => !hideMastered || c.progress !== 100)
           .filter((c) => {
             if (c.id === "9") {
               return !promoNodeFullyHidden;
@@ -380,9 +354,7 @@ const filtered = (
             return !hiddenSets.includes(c.id);
           })
       : sets
-          .filter(
-            (c) => c.category === activeCategory
-          )
+          .filter((c) => c.category === activeCategory)
           .filter((c) => {
             if (c.id === "9") {
               return !promoNodeFullyHidden;
@@ -394,162 +366,152 @@ const filtered = (
     .sort((a, b) => {
       if (sortBy === "set") {
 const categoryDiff =
-          (setOrder[a.category] ?? 999) -
-          (setOrder[b.category] ?? 999);
+          (setOrder[a.category] ?? 999) - (setOrder[b.category] ?? 999);
         if (categoryDiff !== 0) {
           return categoryDiff;
         }
       }
       return (
-        collections.findIndex(
-          (s) => s.id === a.id
-        ) -
-        collections.findIndex(
-          (s) => s.id === b.id
-        )
+        collections.findIndex((s) => s.id === a.id) -
+        collections.findIndex((s) => s.id === b.id)
       );
     });
 const ccgSets = sets.filter(
     (set) =>
       set.released &&
-      set.category !== "tcg" &&
+      (set.category !== "tcg" || set.id === "14") &&
       set.category !== "merch" &&
       set.id !== "9" &&
       set.id !== "tcgpromos" &&
-      !hiddenSets.includes(set.id)
+      !hiddenSets.includes(set.id),
   );
 const totalSets = ccgSets.length;
-const completedSets = ccgSets.filter(
-    (set) => set.progress === 100
-  ).length;
+const completedSets = ccgSets.filter((set) => set.progress === 100).length;
 const ccgCardsCollected = ccgSets.reduce(
     (sum, set) => sum + (set.collectedCards || 0),
-    0
+    0,
   );
 const ccgCardsAvailable = ccgSets.reduce(
     (sum, set) => sum + (set.totalCards || 0),
-    0
+    0,
   );
 const promoSet = sets.find((set) => set.id === "9");
 const promoCardsCollected = promoSet?.collectedCards || 0;
 const promoCardsAvailable = promoSet?.totalCards || 0;
-const totalCardsCollected =
-    ccgCardsCollected + promoCardsCollected;
-const totalCardsAvailable =
-    ccgCardsAvailable + promoCardsAvailable;
+const totalCardsCollected = ccgCardsCollected + promoCardsCollected;
+const totalCardsAvailable = ccgCardsAvailable + promoCardsAvailable;
 const completionRate =
     totalCardsAvailable > 0
-      ? Math.round(
-          (totalCardsCollected / totalCardsAvailable) * 100
-        )
+      ? Math.round((totalCardsCollected / totalCardsAvailable) * 100)
       : 0;
   return (
-  <div
-    className={`min-h-screen pb-24 font-['Oxanium'] transition-colors duration-200 sm:pb-10 ${
-      isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
-    }`}
-  >
-    <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
-      <section
-        className={`rounded-[24px] border p-4 sm:p-5 ${
-          isLightMode
-            ? "border-black/10 bg-white shadow-[0_10px_28px_rgba(0,0,0,.04)]"
-            : "border-white/[0.08] bg-[#151718]"
-        }`}
-      >
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          {[
-            {
-              label: "Sets Mastered",
-              value: `${completedSets}/${totalSets}`,
-            },
-            {
-              label: "Cards Collected",
-              value: totalCardsCollected.toLocaleString(),
-            },
-            {
-              label: "Complete",
-              value: `${completionRate}%`,
-            },
-          ].map((stat) => (
+    <div
+      className={`min-h-screen pb-24 font-['Oxanium'] transition-colors duration-200 sm:pb-10 ${
+        isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
+      }`}
+    >
+      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
+        <section
+          className={`rounded-[24px] border p-4 sm:p-5 ${
+            isLightMode
+              ? "border-black/10 bg-white shadow-[0_10px_28px_rgba(0,0,0,.04)]"
+              : "border-white/[0.08] bg-[#151718]"
+          }`}
+        >
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {[
+              {
+                label: "Sets Mastered",
+                value: `${completedSets}/${totalSets}`,
+              },
+              {
+                label: "Cards Collected",
+                value: totalCardsCollected.toLocaleString(),
+              },
+              {
+                label: "Complete",
+                value: `${completionRate}%`,
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className={`rounded-2xl border px-3 py-3 text-center sm:px-4 ${
+                  isLightMode
+                    ? "border-black/10 bg-zinc-50"
+                    : "border-white/10 bg-black/20"
+                }`}
+              >
+                <div
+                  className={`text-xl font-semibold sm:text-2xl ${
+                    isLightMode ? "text-[#725700]" : "text-[#FFE27A]"
+                  }`}
+                >
+                  {stat.value}
+                </div>
+                <div
+                  className={`mt-1 text-[11px] font-medium sm:text-xs ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center gap-3">
             <div
-              key={stat.label}
-              className={`rounded-2xl border px-3 py-3 text-center sm:px-4 ${
-                isLightMode
-                  ? "border-black/10 bg-zinc-50"
-                  : "border-white/10 bg-black/20"
+              className={`h-2 flex-1 overflow-hidden rounded-full ${
+                isLightMode ? "bg-zinc-200" : "bg-white/[0.08]"
               }`}
             >
               <div
-                className={`text-xl font-semibold sm:text-2xl ${
-                  isLightMode ? "text-[#725700]" : "text-[#FFE27A]"
-                }`}
-              >
-                {stat.value}
-              </div>
-              <div
-                className={`mt-1 text-[11px] font-medium sm:text-xs ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
-                {stat.label}
-              </div>
+                className="h-full rounded-full bg-[#FFD54A]"
+                style={{ width: `${completionRate}%` }}
+              />
             </div>
-          ))}
-        </div>
-        <div className="mt-3 flex items-center gap-3">
-          <div
-            className={`h-2 flex-1 overflow-hidden rounded-full ${
-              isLightMode ? "bg-zinc-200" : "bg-white/[0.08]"
-            }`}
-          >
-            <div
-              className="h-full rounded-full bg-[#FFD54A]"
-              style={{ width: `${completionRate}%` }}
-            />
+            <span
+              className={`shrink-0 text-xs font-medium ${
+                isLightMode ? "text-zinc-500" : "text-zinc-400"
+              }`}
+            >
+              {totalCardsCollected.toLocaleString()} /{" "}
+              {totalCardsAvailable.toLocaleString()}
+            </span>
           </div>
-          <span
-            className={`shrink-0 text-xs font-medium ${
-              isLightMode ? "text-zinc-500" : "text-zinc-400"
-            }`}
-          >
-            {totalCardsCollected.toLocaleString()} / {totalCardsAvailable.toLocaleString()}
-          </span>
-        </div>
-      </section>
-      <div className="mt-4 md:hidden">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { label: "All", value: "all" },
-            { label: "Star", value: "star" },
-            { label: "Moon", value: "eternal-moon" },
-            { label: "Rainbow", value: "rainbow" },
-            { label: "Fun Moments", value: "fun-moments" },
-            { label: "TCG", value: "tcg" },
-            { label: "Promos", value: "promos" },
-            { label: "Merch", value: "merch" },
-          ].map((item) => {
+        </section>
+        <div className="mt-4 md:hidden">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "All", value: "all" },
+              { label: "Star", value: "star" },
+              { label: "Moon", value: "eternal-moon" },
+              { label: "Rainbow", value: "rainbow" },
+              { label: "Fun Moments", value: "fun-moments" },
+              { label: "TCG", value: "tcg" },
+              { label: "Promos", value: "promos" },
+              { label: "Merch", value: "merch" },
+            ].map((item) => {
 const active = activeCategory === item.value;
-            return (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setActiveCategory(item.value)}
-                className={`rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
-                  active
-                    ? "border-[#FFD54A] bg-[#FFD54A] text-black"
-                    : isLightMode
-                    ? "border-black/10 bg-white text-zinc-600"
-                    : "border-white/10 bg-[#151718] text-zinc-300"
-                }`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setActiveCategory(item.value)}
+                  className={`rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
+                    active
+                      ? "border-[#FFD54A] bg-[#FFD54A] text-black"
+                      : isLightMode
+                        ? "border-black/10 bg-white text-zinc-600"
+                        : "border-white/10 bg-[#151718] text-zinc-300"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
-      <div className="mt-4 flex gap-6">
+        <div className="mt-4 flex gap-6">
           <aside className="hidden shrink-0 md:block">
             <CatalogSidebar
               activeCategory={activeCategory}
@@ -592,19 +554,21 @@ const isWaiting = waitingOnKayouIds.includes(col.id);
                           isUnreleased || isWaiting
                             ? "pointer-events-none opacity-50 grayscale"
                             : isHidden
-                            ? "opacity-50 grayscale"
-                            : ""
+                              ? "opacity-50 grayscale"
+                              : ""
                         }`}
                       >
                         <CollectionCard {...col} />
                       </div>
                       {isUnreleased && (
                         <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
-                          <div className={`rounded-xl border px-4 py-2 text-center text-sm font-bold tracking-wide shadow-lg sm:text-base ${
-                            isLightMode
-                              ? "border-[#8a6a00]/30 bg-white/90 text-[#725700]"
-                              : "border-[#FFD54A]/40 bg-black/85 text-[#FFE27A]"
-                          }`}>
+                          <div
+                            className={`rounded-xl border px-4 py-2 text-center text-sm font-bold tracking-wide shadow-lg sm:text-base ${
+                              isLightMode
+                                ? "border-[#8a6a00]/30 bg-white/90 text-[#725700]"
+                                : "border-[#FFD54A]/40 bg-black/85 text-[#FFE27A]"
+                            }`}
+                          >
                             COMING SOON
                           </div>
                         </div>
@@ -622,28 +586,31 @@ const isWaiting = waitingOnKayouIds.includes(col.id);
                           </div>
                         </div>
                       )}
-                      {isMastered && !isHidden && !isUnreleased && !isWaiting && (
-                        <div className="pointer-events-none absolute left-2 top-2 z-30">
-                          <div
-                            className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${
-                              isLightMode
-                                ? "border-[#8a6a00]/20 bg-white/95 text-[#725700]"
-                                : "border-[#FFD54A]/25 bg-black/75 text-[#FFE27A]"
-                            }`}
-                          >
-                            Mastered
+                      {isMastered &&
+                        !isHidden &&
+                        !isUnreleased &&
+                        !isWaiting && (
+                          <div className="pointer-events-none absolute left-2 top-2 z-30">
+                            <div
+                              className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                                isLightMode
+                                  ? "border-[#8a6a00]/20 bg-white/95 text-[#725700]"
+                                  : "border-[#FFD54A]/25 bg-black/75 text-[#FFE27A]"
+                              }`}
+                            >
+                              Mastered
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   );
                 })}
               </div>
             )}
           </div>
-      </div>
-    </main>
-  </div>
-);
+        </div>
+      </main>
+    </div>
+  );
 };
 export default Collections;

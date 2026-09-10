@@ -53,6 +53,12 @@ const sets = [
     name: "Discord",
     total: 191,
   },
+  {
+    id: "14",
+    dbId: "14",
+    name: "Nightmare Night",
+    total: 190,
+  },
 ];
 const manualFirstFinishers: Record<
   string,
@@ -208,6 +214,7 @@ const visibleSets =
             "fantasywonderland",
             "discord",
             "friendshipsbegin",
+            "14",
           ].includes(set.id)
         )
       : sets.filter((set) => {

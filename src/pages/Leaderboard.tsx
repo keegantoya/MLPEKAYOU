@@ -24,6 +24,7 @@ const TCG_SET_IDS = new Set([
   "SD",
   "FW",
   "tcgpromos",
+  "14"
 ]);
 const LEADERBOARD_USER_ID =
   "94a1c998-d040-4dd2-b2fb-5f606287139d";

@@ -16,6 +16,7 @@ const sets: Record<string, { name: string; total: number }> = {
   friendshipsbegin: { name: "Friendships Begin", total: 194 },
   fantasywonderland: { name: "Fantasy Wonderland", total: 191 },
   discord: { name: "Discord", total: 191 },
+  "14": { name: "Nightmare Night", total: 190 },
 };
 const isoSets = [
   {
@@ -220,6 +221,27 @@ const isoSets = [
       PRR: 6,
     },
   },
+  {
+    id: "14",
+    name: "Nightmare Night",
+    folder: "nightmare-night",
+    prefix: "BP03",
+    rarities: {
+      C: 48,
+      U: 18,
+      ER: 6,
+      SR: 14,
+      SPR: 28,
+      GR: 12,
+      CR: 12,
+      RR: 6,
+      PER: 12,
+      PSPR: 11,
+      PGR: 5,
+      PCR: 12,
+      PRR: 6,
+    },
+  },
 ];
 const forcedStillCollecting = [""];
 const manualPlacements: Record<string, string[]> = {
@@ -234,12 +256,12 @@ const [completed, setCompleted] = useState<any[]>([]);
 const [showAllFinishers, setShowAllFinishers] = useState(false);
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
-  const root = document.documentElement;
+const root = document.documentElement;
   return root.dataset.theme === "light" || root.classList.contains("light");
 });
 useEffect(() => {
-  const syncTheme = () => {
-    const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
     setIsLightMode(
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
@@ -247,7 +269,7 @@ useEffect(() => {
     );
   };
   syncTheme();
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
@@ -290,10 +312,7 @@ const eligibleUserIds = new Set(
           )
           .map((p: any) => p.user_id)
       );
-      /*
-       * Load the same centralized exclusion list used by
-       * the leaderboard.
-       */
+// Use the centralized leaderboard exclusion list.
 const { data: excludedUsers, error: exclusionsError } =
         await supabase
           .from("leaderboard_exclusions")
@@ -589,8 +608,8 @@ return (
               <div className="space-y-2">
                 {(showAllFinishers ? completed : completed.slice(0, 3)).map(
                   (user, index) => {
-                    const assets = getProfileAssets(user);
-                    const award = finisherAward;
+const assets = getProfileAssets(user);
+const award = finisherAward;
                     return (
                       <div
                         key={user.id || index}
@@ -737,8 +756,8 @@ return (
             {collectors.length > 0 ? (
               <div className="space-y-2">
                 {collectors.map((user, index) => {
-                  const assets = getProfileAssets(user);
-                  const percentage = completionPercentage(user.owned);
+const assets = getProfileAssets(user);
+const percentage = completionPercentage(user.owned);
                   return (
                     <div
                       key={user.id || index}

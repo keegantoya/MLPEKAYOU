@@ -95,11 +95,18 @@ const sets = [
   rarities: {}
 },
 {
+  id: "14",
+  name: "Nightmare Night",
+  folder: "nightmare-night",
+  prefix: "BP03",
+  rarities: {},
+},
+{
   id: "tcgpromos",
   name: "TCG Promos",
   folder: "tcgpromos",
   prefix: "RR",
-  rarities: { PR: 18 }
+  rarities: { PR: 27 }
 },
 ];
 const binders = [
@@ -144,6 +151,7 @@ TCG: [
   { id: "FW", label: "Fantasy Wonderland" },
   { id: "discord", label: "Discord" },
   { id: "friendshipsbegin", label: "Friendships Begin" },
+  { id: "14", label: "Nightmare Night" },
 ],
   Promos: [
     { id: "tcgpromos", label: "TCG Promos" },
@@ -153,12 +161,12 @@ TCG: [
 export default function MyCollectionBinder() {
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
-  const root = document.documentElement;
+const root = document.documentElement;
   return root.dataset.theme === "light" || root.classList.contains("light");
 });
 useEffect(() => {
-  const syncTheme = () => {
-    const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
     setIsLightMode(
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
@@ -166,7 +174,7 @@ useEffect(() => {
     );
   };
   syncTheme();
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
@@ -414,7 +422,29 @@ const num = String(i + 1).padStart(2, "0");
       image: `/cards/discord/BP02-${rarity}${num}.webp`,
     };
   });
-});
+  });
+} else if (selectedSet.id === "14") {
+  const nightmareKeys = [
+    ...Array.from({ length: 48 }, (_, i) => `BP03-C${String(i + 1).padStart(2, "0")}`),
+    ...Array.from({ length: 18 }, (_, i) => `BP03-U${String(i + 1).padStart(2, "0")}`),
+    ...["01", "02"].flatMap((n) => ["A", "B", "C"].map((v) => `BP03-ER${n}-${v}`)),
+    ...Array.from({ length: 14 }, (_, i) => `BP03-SR${String(i + 1).padStart(2, "0")}`),
+    ...Array.from({ length: 28 }, (_, i) => `BP03-SPR${String(i + 1).padStart(2, "0")}`),
+    ...Array.from({ length: 12 }, (_, i) => `BP03-GR${String(i + 1).padStart(2, "0")}`),
+    ...Array.from({ length: 12 }, (_, i) => `BP03-CR${String(i + 1).padStart(2, "0")}`),
+    ...Array.from({ length: 6 }, (_, i) => `BP03-RR${String(i + 1).padStart(2, "0")}`),
+    ...["01", "02"].flatMap((n) => ["A", "A2", "B", "B2", "C", "C2"].map((v) => `PBP03-ER${n}-${v}`)),
+    ...["07", "08", "09", "11", "12"].map((n) => `PBP03-GR${n}`),
+    ...["01", "02", "05", "10", "14", "15", "16", "18", "23", "24", "26"].map((n) => `PBP03-SPR${n}`),
+    ...Array.from({ length: 12 }, (_, i) => `PBP03-CR${String(i + 1).padStart(2, "0")}`),
+    ...Array.from({ length: 6 }, (_, i) => `PBP03-RR${String(i + 1).padStart(2, "0")}`),
+  ];
+  cards = nightmareKeys.map((key) => ({
+    rarity: key.includes("ER") ? "ER" : key.includes("GR") ? "GR" : "",
+    number: 0,
+    key,
+    image: `/cards/nightmare-night/${key}.webp`,
+  }));
 } else if (selectedSet.id === "friendshipsbegin") {
 const BONUS_STRUCTURE = [
     { prefix: "SD01C", count: 9 },
@@ -444,7 +474,7 @@ const key = `${prefix}${num}`;
     })
   );
 } else if (selectedSet.id === "tcgpromos") {
-  cards = Array.from({ length: 18 }, (_, i) => ({
+  cards = Array.from({ length: 27 }, (_, i) => ({
     rarity: "PR",
     number: i + 1,
     key: `RR${String(i + 1).padStart(2, "0")}`,
@@ -530,7 +560,7 @@ const layoutMap = {
 };
 const { cols, rows, width } = layoutMap[layout];
 const slotsPerPage = cols * rows;
-// Count the empty sleeves before the first card so the binder// always ends on a complete spread.
+// Count the empty sleeves before the first card so the binder always ends on a complete spread.
 const totalSleeves = startSlot + cards.length;
 const totalPages = Math.ceil(totalSleeves / slotsPerPage);
 // Always render complete left/right spreads.
@@ -627,26 +657,35 @@ const owned =
       );
     }
 const shouldZoomCard =
-      !["12", "FW", "discord", "friendshipsbegin", "SD", "FB"].includes(
+      !["12", "14", "FW", "discord", "friendshipsbegin", "SD", "FB"].includes(
         String(selectedSet.id)
       );
+const landscape =
+      selectedSet.id === "14" && /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.key);
     return (
       <div
         key={cardIndex}
-        className="aspect-[2.5/3.5] overflow-hidden rounded-lg"
+        className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg"
       >
         <img
           src={card.image}
           loading="lazy"
           draggable={false}
           style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
+            width: landscape ? "140%" : "100%",
+            height: landscape ? "71.4286%" : "100%",
+            objectFit: landscape ? "contain" : "cover",
+            position: landscape ? "absolute" : "static",
+            left: landscape ? "50%" : undefined,
+            top: landscape ? "50%" : undefined,
             userSelect: "none",
             backfaceVisibility: "hidden",
             willChange: "transform",
-            transform: shouldZoomCard ? "scale(1.06)" : "scale(1)",
+            transform: landscape
+              ? "translate(-50%, -50%) rotate(-90deg) scale(1.4)"
+              : shouldZoomCard
+              ? "scale(1.06)"
+              : "scale(1)",
           }}
           className="block h-full w-full"
         />
@@ -744,23 +783,23 @@ return (
             <input
               value={userSearch}
               onChange={async (e) => {
-                const value = e.target.value;
+const value = e.target.value;
                 setUserSearch(value);
                 if (!value.trim()) {
                   setSearchResults([]);
                   return;
                 }
-                const { data: profiles } = await supabase
+const { data: profiles } = await supabase
                   .from("profiles")
                   .select(`id, username, avatar_url`)
                   .ilike("username", `%${value}%`)
                   .limit(20);
-                const ids = (profiles || []).map((p) => p.id);
-                const { data: trading } = await supabase
+const ids = (profiles || []).map((p) => p.id);
+const { data: trading } = await supabase
                   .from("trading_profiles")
                   .select("user_id")
                   .in("user_id", ids);
-                const validIds = new Set((trading || []).map((t) => t.user_id));
+const validIds = new Set((trading || []).map((t) => t.user_id));
                 setSearchResults((profiles || []).filter((p) => validIds.has(p.id)));
               }}
               placeholder="Search collectors"
@@ -812,9 +851,9 @@ return (
             <button
               type="button"
               onClick={() => {
-                const layouts = ["2x2", "3x3", "4x3", "4x4", "6x6"] as const;
-                const current = (layouts as readonly string[]).includes(layout) ? layout : "3x3";
-                const next = layouts[(layouts.indexOf(current as never) + 1) % layouts.length];
+const layouts = ["2x2", "3x3", "4x3", "4x4", "6x6"] as const;
+const current = (layouts as readonly string[]).includes(layout) ? layout : "3x3";
+const next = layouts[(layouts.indexOf(current as never) + 1) % layouts.length];
                 setLayout(next);
                 setPreviewLayout(next);
                 setSpread(1);
@@ -998,7 +1037,7 @@ const active = currentSidebarSet === set.id;
                     }}
                     onTouchEnd={(e) => {
                       if (!isMobile || rotateMobileBinder) return;
-                      const delta = e.changedTouches[0].clientX - touchStartX.current;
+const delta = e.changedTouches[0].clientX - touchStartX.current;
                       if (Math.abs(delta) < 50) return;
                       if (delta < 0) {
                         setSpread((s) => Math.min(totalSpreads, s + 1));
@@ -1178,7 +1217,7 @@ const pageSize =
                           : previewLayout === "4x4"
                           ? 16
                           : 36;
-// Exact same GLOBAL SLOT mapping used by the binder:// LEFT = first block of slots// RIGHT = second block of slots// Slot 1 = global slot 0.
+// Exact same GLOBAL SLOT mapping used by the binder: LEFT = first block of slots; RIGHT = second block of slots; Slot 1 = global slot 0.
 const offset = side === "right" ? pageSize : 0;
 const previewCols =
                         previewLayout === "2x2"

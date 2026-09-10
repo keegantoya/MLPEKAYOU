@@ -40,8 +40,8 @@ export default function ISOCONTROLS({
   onToggleHideISO,
   onClose,
 }: ISOControlsProps) {
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.toUpperCase();
+const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+let value = e.target.value.toUpperCase();
     value = value.replace(/<>/g, "◇");
     value = value.replace(/#/g, "※");
     value = value.replace(/<ZR/g, "◇ZR");
@@ -50,14 +50,14 @@ export default function ISOCONTROLS({
     value = value.replace(/<N/g, "◇N");
     onCardCodeSearchChange(value);
   };
-  const handleCharacterSearchChange = (
+const handleCharacterSearchChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     onCharacterSearchChange(e.target.value);
   };
-  const [showHideSets, setShowHideSets] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const switchClass = (active: boolean, disabled = false) =>
+const [showHideSets, setShowHideSets] = useState(false);
+const [expanded, setExpanded] = useState<string | null>(null);
+const switchClass = (active: boolean, disabled = false) =>
     `relative h-6 w-10 shrink-0 rounded-full transition sm:h-7 sm:w-12 ${
       disabled
         ? "cursor-not-allowed bg-zinc-200 opacity-50 dark:bg-white/10"
@@ -95,6 +95,31 @@ export default function ISOCONTROLS({
       </div>
     );
   }
+  const setsForVisibility = availableSets.some((category) =>
+    category.children.some((set) => set.id === "14"),
+  )
+    ? availableSets
+    : availableSets.some((category) => category.id === "tcg")
+      ? availableSets.map((category) =>
+          category.id === "tcg"
+            ? {
+                ...category,
+                children: [
+                  ...category.children,
+                  { id: "14", name: "Nightmare Night" },
+                ],
+              }
+            : category,
+        )
+      : [
+          ...availableSets,
+          {
+            id: "tcg",
+            name: "TCG",
+            children: [{ id: "14", name: "Nightmare Night" }],
+          },
+        ];
+
   return (
     <>
       <aside className="mx-auto flex max-h-[72dvh] w-full flex-col overflow-y-auto rounded-[22px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-xl sm:max-h-none sm:overflow-hidden sm:rounded-[28px] dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
@@ -260,9 +285,9 @@ export default function ISOCONTROLS({
       </aside>
       {showHideSets && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[82vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[30px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
-            <div className="shrink-0 px-5 pb-4 pt-4">
-              <div className="mb-4 flex items-center justify-end">
+          <div className="flex max-h-[70vh] w-full max-w-[500px] flex-col overflow-hidden rounded-[24px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
+            <div className="shrink-0 px-4 pb-3 pt-3">
+              <div className="mb-2 flex items-center justify-end">
                 <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-zinc-500 shadow-sm dark:bg-white/[0.07] dark:text-zinc-400">
                   {hiddenSetIds.length} hidden
                 </span>
@@ -276,9 +301,9 @@ export default function ISOCONTROLS({
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
               <div className="space-y-2">
-                {availableSets.map((category) => {
-                  const isExpanded = expanded === category.id;
-                  const hiddenInCategory = category.children.filter((set) =>
+                {setsForVisibility.map((category) => {
+const isExpanded = expanded === category.id;
+const hiddenInCategory = category.children.filter((set) =>
                     hiddenSetIds.includes(set.id),
                   ).length;
                   return (
@@ -291,7 +316,7 @@ export default function ISOCONTROLS({
                         onClick={() =>
                           setExpanded(isExpanded ? null : category.id)
                         }
-                        className="flex w-full items-center gap-3 p-4 text-left transition hover:bg-black/[0.025] dark:hover:bg-white/[0.04]"
+                        className="flex w-full items-center gap-3 p-3 text-left transition hover:bg-black/[0.025] dark:hover:bg-white/[0.04]"
                       >
                         <div className="min-w-0 flex-1">
                           <div className="text-[15px] font-semibold">
@@ -316,11 +341,11 @@ export default function ISOCONTROLS({
                       {isExpanded && (
                         <div className="border-t border-black/[0.06] px-2 py-2 dark:border-white/[0.07]">
                           {category.children.map((set) => {
-                            const isHidden = hiddenSetIds.includes(set.id);
+const isHidden = hiddenSetIds.includes(set.id);
                             return (
                               <label
                                 key={set.id}
-                                className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl px-3 py-3 transition hover:bg-zinc-100 dark:hover:bg-white/[0.05]"
+                                className="flex cursor-pointer items-center justify-between gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-zinc-100 dark:hover:bg-white/[0.05]"
                               >
                                 <span className="min-w-0 flex-1 text-sm font-medium">
                                   {set.name}

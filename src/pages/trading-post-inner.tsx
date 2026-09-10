@@ -8,7 +8,6 @@ type TradeCard = {
   user_id: string;
   set_id: string;
   card_key: string;
-  actively_trading?: boolean;
   is_for_trade: boolean;
   is_for_sale: boolean;
   asking_price: number | null;
@@ -58,6 +57,21 @@ const rarityMap: Record<string, string[]> = {
     "PCR",
     "PRR",
   ],
+    "14": [
+    "C",
+    "U",
+    "ER",
+    "SR",
+    "SPR",
+    "GR",
+    "CR",
+    "RR",
+    "PER",
+    "PSPR",
+    "PGR",
+    "PCR",
+    "PRR",
+  ],
 };
 const getCardImage = (card: TradeCard) => {
 const [rarity, number] = card.card_key.split("-");
@@ -73,6 +87,9 @@ const num = card.card_key.slice(-2);
       return `/fantasy-wonderland/SD01PER${num}.webp`;
     }
     return `/fantasy-wonderland/${card.card_key}.webp`;
+  }
+  if (String(card.set_id) === "14") {
+    return `/cards/nightmare-night/${card.card_key}.webp`;
   }
   if (card.set_id === "12") {
     return `/cards/discord/${card.card_key}.webp`;
@@ -106,6 +123,38 @@ const c = config[card.set_id];
       : ".webp"
   }`;
 };
+function ListingCardImage({ card }: { card: TradeCard }) {
+  const src = getCardImage(card);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const isLandscape =
+    String(card.set_id) === "14" &&
+    /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key);
+  if (!src || failedSrc === src) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center rounded-[inherit] bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100">
+        <span className="px-2 text-center text-xs font-bold">COMING SOON</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={card.card_key}
+      onError={() => setFailedSrc(src)}
+      draggable={false}
+      className={isLandscape ? "absolute object-contain" : "absolute inset-0 h-full w-full object-cover"}
+      style={isLandscape ? {
+        left: "50%",
+        top: "50%",
+        width: "140%",
+        height: "71.4285714286%",
+        maxWidth: "none",
+        transform: "translate(-50%, -50%) rotate(-90deg)",
+      } : { transform: "scale(1.035)" }}
+    />
+  );
+}
+
 export default function TradingPostInner() {
 const { setId } = useParams();
 const navigate = useNavigate();
@@ -190,6 +239,7 @@ const setNames: Record<string, string> = {
     friendshipsbegin: "Friendships Begin",
     FW: "Fantasy Wonderland",
     "12": "Discord",
+    "14": "Nightmare Night",
     tcgpromos: "TCG Promos",
   };
   useEffect(() => {
@@ -215,9 +265,8 @@ const databaseSetId = setId === "SD" ? "friendshipsbegin" : setId;
 let query = supabase
           .from("card_market_listings")
           .select(
-            "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity, updated_at",
+            "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity",
           )
-          .order("updated_at", { ascending: false })
           .order("user_id", { ascending: true })
           .order("card_key", { ascending: true })
           .range(from, from + pageSize - 1);
@@ -228,15 +277,6 @@ const { data } = await query;
         if (data.length < pageSize) break;
         from += pageSize;
       }
-const { data: activeCards } = await supabase
-        .from("actively_trading_cards")
-        .select("user_id, set_id, card_key")
-        .eq("set_id", databaseSetId);
-const activeSet = new Set(
-        (activeCards || []).map(
-          (card) => `${card.user_id}-${card.set_id}-${card.card_key}`,
-        ),
-      );
 const uniqueTrades = Array.from(
         new Map(
           allTrades.map((card) => [
@@ -245,13 +285,12 @@ const uniqueTrades = Array.from(
           ]),
         ).values(),
       );
-const trades = uniqueTrades.map((card) => ({
-        ...card,
-        id: `${card.user_id}-${card.set_id}-${card.card_key}`,
-        actively_trading: activeSet.has(
-          `${card.user_id}-${card.set_id}-${card.card_key}`,
-        ),
-      }));
+const trades = uniqueTrades
+        .filter((card) => card.is_for_trade || card.is_for_sale)
+        .map((card) => ({
+          ...card,
+          id: `${card.user_id}-${card.set_id}-${card.card_key}`,
+        }));
 const { data: profileData } = await supabase
         .from("profiles")
         .select("id, username, avatar_url");
@@ -445,6 +484,10 @@ const { error } = await supabase.from("trading_post_card_reports").insert({
     );
   }
 const getRarity = (key: string) => {
+    if (setId === "14") {
+      const match = key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
+      return match ? `${match[1]}${match[2]}` : "";
+    }
     if (key.startsWith("RR")) return "PR";
     if (setId === "friendshipsbegin") {
 const match = key.match(/SD01([A-Z]+)\d+/);
@@ -565,19 +608,21 @@ const pagedUsers = sortedVisibleUsers.slice(
 const active = selectedRarity === rarity;
 const label =
                     rarity === "SHINING ZR" || rarity === "SZR"
-                      ? "⬦ZR"
+                      ? "\u2B26ZR"
                       : rarity === "SN"
-                        ? "⬦N"
+                        ? "\u2B26N"
                         : rarity === "LC"
                           ? "PR"
                           : rarity === "SCR" && setId !== "4"
-                            ? "⬦CR"
+                            ? "\u2B26CR"
                             : rarity === "SAR"
-                              ? "◇AR"
+                              ? "\u25C7AR"
                               : (setId === "FW" ||
-                                    setId === "friendshipsbegin") &&
+                                    setId === "friendshipsbegin" ||
+                                    setId === "12" ||
+                                    setId === "14") &&
                                   rarity.startsWith("P")
-                                ? `※${rarity.slice(1)}`
+                                ? `\u203B${rarity.slice(1)}`
                                 : rarity;
                   return (
                     <button
@@ -614,7 +659,7 @@ const label =
             <div
               className={`mt-3 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
             >
-              Loading listings…
+              Loading listings...
             </div>
           </section>
         )}
@@ -698,7 +743,8 @@ const saleCount = filteredCards.filter(
                               isLightMode ? "text-zinc-500" : "text-zinc-400"
                             }`}
                           >
-                            Collector profile · ISO · Wishlist · Trades
+                            Collector profile &middot; ISO &middot; Wishlist
+                            &middot; Trades
                           </div>
                         </div>
                       </div>
@@ -856,7 +902,7 @@ const saleCount = filteredCards.filter(
                           : "bg-white/[0.07] text-zinc-200 hover:bg-white/[0.12]"
                       }`}
                     >
-                      View profile →
+                      View profile &rarr;
                     </button>
                   </div>
                   <div className="p-3 sm:p-4">
@@ -873,8 +919,8 @@ const saleCount = filteredCards.filter(
                     <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 [grid-auto-flow:dense]">
                       {filteredCards
                         .sort((a, b) => {
-                          if (setId === "friendshipsbegin") {
-                            return a.card_key.localeCompare(b.card_key);
+                          if (setId === "friendshipsbegin" || setId === "14") {
+                            return a.card_key.localeCompare(b.card_key, undefined, { numeric: true });
                           }
 const getNum = (key: string) => {
                             if (!key.includes("-")) {
@@ -894,11 +940,7 @@ const isDoubleCard =
                           return (
                             <div
                               key={card.id}
-                              className={`relative overflow-hidden rounded-[14px] border ${
-                                isLightMode
-                                  ? "border-black/10 bg-zinc-100"
-                                  : "border-white/[0.08] bg-[#0d0f10]"
-                              } ${
+                              className={`relative overflow-hidden rounded-[14px] ${
                                 isDoubleCard
                                   ? "col-span-2 aspect-[10/7]"
                                   : "aspect-[5/7]"
@@ -910,22 +952,11 @@ const isDoubleCard =
                                 aria-label={`View ${card.card_key} listing details`}
                                 className="absolute inset-0 h-full w-full"
                               >
-                                <img
-                                  src={getCardImage(card)}
-                                  alt={card.card_key}
-                                  className="absolute inset-[-2.5%] h-[105%] w-[105%] max-w-none object-cover"
-                                />
-                                {card.actively_trading && (
-                                  <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                                    <span className="rounded-full bg-[#FFD54A] px-2.5 py-1 text-xs font-semibold text-zinc-900">
-                                      Active
-                                    </span>
-                                  </div>
-                                )}
+                                <ListingCardImage card={card} />
                                 <div className="absolute left-1.5 top-1.5 flex gap-1">
                                   {card.is_for_trade && (
                                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">
-                                      ⇄
+                                      &#8644;
                                     </span>
                                   )}
                                   {card.is_for_sale && (
@@ -997,7 +1028,7 @@ const alreadyReported =
                   : "bg-white/[0.06] text-zinc-300"
               }`}
             >
-              ← Previous
+              &larr; Previous
             </button>
             <span
               className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
@@ -1014,7 +1045,7 @@ const alreadyReported =
                   : "bg-white/[0.06] text-zinc-300"
               }`}
             >
-              Next →
+              Next &rarr;
             </button>
           </div>
         )}
@@ -1039,11 +1070,15 @@ const alreadyReported =
                   isLightMode ? "bg-zinc-100" : "bg-black/25"
                 }`}
               >
-                <img
-                  src={getCardImage(selectedCard)}
-                  alt="Selected listing"
-                  className="max-h-[32dvh] w-full max-w-[220px] rounded-xl object-contain sm:max-h-[48dvh]"
-                />
+                <div
+                  className="relative overflow-hidden rounded-xl"
+                  style={{
+                    width: "min(220px, 22.85dvh)",
+                    aspectRatio: selectedCard.set_id === "3" && selectedCard.card_key === "SZR-001" ? "10 / 7" : "5 / 7",
+                  }}
+                >
+                  <ListingCardImage card={selectedCard} />
+                </div>
               </div>
               <div className="p-3.5 sm:p-4">
                 <div className="flex items-center gap-3">

@@ -45,12 +45,12 @@ const sections = [
   {
     id: "tcg",
     label: "TCG",
-    setIds: ["FW", "SD", "12", "tcgpromos"],
+    setIds: ["FW", "SD", "12", "14"],
   },
   {
     id: "promos",
     label: "Promos",
-    setIds: ["9"],
+    setIds: ["9", "tcgpromos"],
   },
 ] as const;
 export default function ISO() {
@@ -121,7 +121,7 @@ const owned = Object.values(row.progress || {}).filter(
       ).length;
 const totalCards: Record<string, number> = {
   "9": 12,
-  tcgpromos: 18,
+  tcgpromos: 27,
 };
 const total = totalCards[setId];
 if (total && owned >= total) {
@@ -391,8 +391,8 @@ const active = selectedSection === item.id;
                 { id: "fun", name: "Fun Moments", children: [{ id: "7", name: "First Edition" }, { id: "8", name: "Second Edition" }, { id: "11", name: "Third Edition" }] },
                 { id: "rainbow", name: "Rainbow", children: [{ id: "5", name: "First Edition" }, { id: "6", name: "Second Edition" }] },
                 { id: "star", name: "Star", children: [{ id: "4", name: "First Edition" }] },
-                { id: "tcg", name: "TCG", children: [{ id: "FW", name: "Fantasy Wonderland" }, { id: "SD", name: "Friendships Begin" }, { id: "12", name: "Discord" }, { id: "tcgpromos", name: "TCG Promos" }] },
-                { id: "promos", name: "Promos", children: [{ id: "9", name: "Promotional Cards" }] },
+                { id: "tcg", name: "TCG", children: [{ id: "FW", name: "Fantasy Wonderland" }, { id: "SD", name: "Friendships Begin" }, { id: "12", name: "Discord" }] },
+                { id: "promos", name: "Promos", children: [{ id: "9", name: "Promotional Cards" }, { id: "tcgpromos", name: "TCG Promos" }] },
               ]}
               hiddenSetIds={hiddenSets}
               onHideSet={toggleSet}

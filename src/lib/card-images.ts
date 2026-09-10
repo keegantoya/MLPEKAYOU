@@ -92,5 +92,9 @@ export function getTradeCardImage(card: Card) {
     return `/cards/discord/${card.card_key}.webp`;
   }
 
+    if (setId === "14") {
+    return `/cards/nightmare-night/${card.card_key}.webp`;
+  }
+
   return "/placeholder-card.webp";
 }

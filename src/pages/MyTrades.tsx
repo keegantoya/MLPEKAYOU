@@ -2,21 +2,21 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 export default function MyTrades() {
-  const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState("moon");
-  const [sortBy, setSortBy] = useState("set");
-  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-  const [ownedSets, setOwnedSets] = useState<string[]>([]);
-  const [tradeSets, setTradeSets] = useState<string[]>([]);
-  const [tradePage, setTradePage] = useState(0);
-  const [isLightMode, setIsLightMode] = useState(() => {
+const navigate = useNavigate();
+const [activeFilter, setActiveFilter] = useState("moon");
+const [sortBy, setSortBy] = useState("set");
+const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+const [ownedSets, setOwnedSets] = useState<string[]>([]);
+const [tradeSets, setTradeSets] = useState<string[]>([]);
+const [tradePage, setTradePage] = useState(0);
+const [isLightMode, setIsLightMode] = useState(() => {
     if (typeof document === "undefined") return false;
-    const root = document.documentElement;
+const root = document.documentElement;
     return root.dataset.theme === "light" || root.classList.contains("light");
   });
   useEffect(() => {
-    const syncTheme = () => {
-      const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
       setIsLightMode(
         root.dataset.theme === "light" ||
           root.classList.contains("light") ||
@@ -24,7 +24,7 @@ export default function MyTrades() {
       );
     };
     syncTheme();
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -36,10 +36,10 @@ export default function MyTrades() {
     };
   }, []);
   useEffect(() => {
-    const loadData = async (userOverride?: any) => {
-      let user = userOverride;
+const loadData = async (userOverride?: any) => {
+let user = userOverride;
       if (!user) {
-        const { data } = await supabase.auth.getSession();
+const { data } = await supabase.auth.getSession();
         user = data.session?.user;
       }
       if (!user) {
@@ -47,42 +47,42 @@ export default function MyTrades() {
         setTradeSets([]);
         return;
       }
-      const { data: profile } = await supabase
+const { data: profile } = await supabase
         .from("profiles")
         .select("iso_hidden_sets")
         .eq("id", user.id)
         .single();
       setHiddenSets(profile?.iso_hidden_sets || []);
-      const { data: progress } = await supabase
+const { data: progress } = await supabase
         .from("collection_progress")
         .select("set_id, progress")
         .eq("user_id", user.id);
-      const owned = (progress || [])
+const owned = (progress || [])
         .filter((row) => {
-          const cards = row.progress || {};
+const cards = row.progress || {};
           return Object.values(cards).some(Boolean);
         })
         .map((row) => String(row.set_id).trim());
       setOwnedSets([...new Set(owned)]);
-      const { data: trades } = await supabase
+const { data: trades } = await supabase
         .from("card_market_listings")
         .select("set_id")
         .eq("user_id", user.id)
         .or("is_for_trade.eq.true,is_for_sale.eq.true");
-      const activeTrades = [
+const activeTrades = [
         ...new Set((trades || []).map((t) => String(t.set_id).trim())),
       ];
       setTradeSets(activeTrades);
     };
     loadData();
-    const {
+const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       loadData(session?.user);
     });
     return () => subscription.unsubscribe();
   }, []);
-  const collections = [
+const collections = [
     {
       id: "1",
       title: "Eternal Moon",
@@ -180,6 +180,14 @@ export default function MyTrades() {
       category: "discord",
     },
     {
+      id: "14",
+      title: "Nightmare Night",
+      setName: "TCG",
+      imageUrl: "/thumbnails/nightmarenightsetimage.webp",
+      totalCards: 190,
+      category: "nightmare-night",
+    },
+    {
       id: "9",
       title: "Promotional",
       setName: "Cards",
@@ -192,18 +200,18 @@ export default function MyTrades() {
       title: "TCG",
       setName: "Promos",
       imageUrl: "/thumbnails/tcgpromossetimage.webp",
-      totalCards: 18,
+      totalCards: 27,
       category: "tcgpromos",
     },
   ];
-  const normalizeSetId = (id: string) => {
-    const normalized = String(id).trim();
+const normalizeSetId = (id: string) => {
+const normalized = String(id).trim();
     return normalized === "FB" ? "SD" : normalized;
   };
-  const normalizedOwnedSets = new Set(ownedSets.map(normalizeSetId));
-  const normalizedHiddenSets = new Set(hiddenSets.map(normalizeSetId));
-  const normalizedTradeSets = new Set(tradeSets.map(normalizeSetId));
-  const filteredCollections = collections.filter((col) => {
+const normalizedOwnedSets = new Set(ownedSets.map(normalizeSetId));
+const normalizedHiddenSets = new Set(hiddenSets.map(normalizeSetId));
+const normalizedTradeSets = new Set(tradeSets.map(normalizeSetId));
+const filteredCollections = collections.filter((col) => {
     if (normalizedHiddenSets.has(normalizeSetId(col.id))) return false;
     if (!normalizedOwnedSets.has(normalizeSetId(col.id))) return false;
     if (activeFilter === "moon") {
@@ -222,11 +230,11 @@ export default function MyTrades() {
       return col.id === "9" || col.id === "tcgpromos";
     }
     if (activeFilter === "tcg") {
-      return col.id === "SD" || col.id === "FW" || col.id === "12";
+      return col.id === "SD" || col.id === "FW" || col.id === "12" || col.id === "14";
     }
     return activeFilter === "moon";
   });
-  const categoryItems = [
+const categoryItems = [
     { id: "star", title: "STAR", subtitle: "STAR EDITION", icon: "S" },
     { id: "moon", title: "MOON", subtitle: "ETERNAL MOON", icon: "M" },
     { id: "rainbow", title: "RAINBOW", subtitle: "ETERNAL RAINBOW", icon: "R" },
@@ -234,9 +242,9 @@ export default function MyTrades() {
     { id: "tcg", title: "TCG", subtitle: "TRADING CARD GAME", icon: "TCG" },
     { id: "promos", title: "PROMOS", subtitle: "PROMOTIONAL", icon: "PR" },
   ];
-  const activeCategoryLabel =
+const activeCategoryLabel =
     categoryItems.find((item) => item.id === activeFilter)?.title || "MOON";
-  const slugMap: Record<string, string> = {
+const slugMap: Record<string, string> = {
     "1": "moon-one",
     "2": "moon-two",
     "3": "moon-three",
@@ -250,16 +258,17 @@ export default function MyTrades() {
     FW: "fantasy-wonderland",
     SD: "friendships-begin",
     "12": "discord",
+    "14": "nightmare-night",
     tcgpromos: "tcg-promos",
   };
-  const activeTradeCollections = collections.filter((col) =>
+const activeTradeCollections = collections.filter((col) =>
     normalizedTradeSets.has(normalizeSetId(col.id)),
   );
-  const tradePageCount = Math.max(
+const tradePageCount = Math.max(
     1,
     Math.ceil(activeTradeCollections.length / 2),
   );
-  const visibleTradeCollections = activeTradeCollections.slice(
+const visibleTradeCollections = activeTradeCollections.slice(
     tradePage * 2,
     tradePage * 2 + 2,
   );

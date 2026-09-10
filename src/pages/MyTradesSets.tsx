@@ -167,11 +167,18 @@ const sets = [
     rarities: {},
   },
   {
+    id: "14",
+    name: "Nightmare Night",
+    folder: "nightmare-night",
+    prefix: "BP03",
+    rarities: {},
+  },
+  {
     id: "tcgpromos",
     name: "TCG Promos",
     folder: "tcgpromos",
     prefix: "RR",
-    rarities: { PR: 18 },
+    rarities: { PR: 27 },
   },
 ];
 const getDisplayCode = (card: any, currentSetId: string) => {
@@ -197,6 +204,18 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       if (num >= 13 && num <= 18) {
         return `\u203BBP02-CR${String(num - 12).padStart(2, "0")}`;
       }
+      const newPromoNames: Record<number, string> = {
+        19: "TK-01",
+        20: "\u203BTK-01",
+        21: "\u203BTK-01",
+        22: "\u203BBP03-CR01",
+        23: "\u203BBP03-CR02",
+        24: "\u203BBP03-CR03",
+        25: "\u203BBP01-CR04",
+        26: "\u203BBP01-CR05",
+        27: "\u203BBP01-CR06",
+      };
+      if (newPromoNames[num]) return newPromoNames[num];
     }
     return key;
   }
@@ -266,7 +285,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     return `\u25C7N-${key.slice(3)}`;
   }
   //  Also handle compact SN keys if one is supplied by a special set.
-  const compactSnMatch = key.match(/^(.\*?)(?:SN)(\d+)$/);
+  const compactSnMatch = key.match(/^(.*?)(?:SN)(\d+)$/);
   if (compactSnMatch) {
     return `${compactSnMatch[1]}\u25C7N${compactSnMatch[2]}`;
   }
@@ -275,7 +294,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     if (key.startsWith("SCR-")) {
       return `\u25C7CR-${key.slice(4)}`;
     }
-    const compactScrMatch = key.match(/^(.\*?)(?:SCR)(\d+)$/);
+    const compactScrMatch = key.match(/^(.*?)(?:SCR)(\d+)$/);
     if (compactScrMatch) {
       return `${compactScrMatch[1]}\u25C7CR${compactScrMatch[2]}`;
     }
@@ -286,6 +305,12 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     return `\u25C7ZR-${zrMatch[1]}`;
   }
   return key;
+};
+const isNonZoomTcgPromo = (card: any) => {
+  const match = String(card?.key || "").match(/^RR(\d+)$/);
+  if (!match) return false;
+  const number = Number(match[1]);
+  return number <= 8 || number === 13 || (number >= 14 && number <= 18) || (number >= 22 && number <= 24);
 };
 export default function MyTradesSets() {
   const { setId } = useParams();
@@ -760,6 +785,7 @@ export default function MyTradesSets() {
     "fantasy-wonderland": "FW",
     "friendships-begin": "friendshipsbegin",
     discord: "12",
+    "nightmare-night": "14",
     "tcg-promos": "tcgpromos",
   };
   const resolvedSetId = slugMap[setId || ""] || setId;
@@ -854,6 +880,43 @@ export default function MyTradesSets() {
         });
       }
     });
+  } else if (set.id === "14") {
+    const nightmareKeys = [
+      ...Array.from({ length: 48 }, (_, i) => `BP03-C${String(i + 1).padStart(2, "0")}`),
+      ...Array.from({ length: 18 }, (_, i) => `BP03-U${String(i + 1).padStart(2, "0")}`),
+      ...["01", "02"].flatMap((n) => ["A", "B", "C"].map((v) => `BP03-ER${n}-${v}`)),
+      ...Array.from({ length: 14 }, (_, i) => `BP03-SR${String(i + 1).padStart(2, "0")}`),
+      ...Array.from({ length: 28 }, (_, i) => `BP03-SPR${String(i + 1).padStart(2, "0")}`),
+      ...Array.from({ length: 12 }, (_, i) => `BP03-GR${String(i + 1).padStart(2, "0")}`),
+      ...Array.from({ length: 12 }, (_, i) => `BP03-CR${String(i + 1).padStart(2, "0")}`),
+      ...Array.from({ length: 6 }, (_, i) => `BP03-RR${String(i + 1).padStart(2, "0")}`),
+      ...["01", "02"].flatMap((n) => ["A", "A2", "B", "B2", "C", "C2"].map((v) => `PBP03-ER${n}-${v}`)),
+      ...["07", "08", "09", "11", "12"].map((n) => `PBP03-GR${n}`),
+      ...["01", "02", "05", "10", "14", "15", "16", "18", "23", "24", "26"].map((n) => `PBP03-SPR${n}`),
+      ...Array.from({ length: 12 }, (_, i) => `PBP03-CR${String(i + 1).padStart(2, "0")}`),
+      ...Array.from({ length: 6 }, (_, i) => `PBP03-RR${String(i + 1).padStart(2, "0")}`),
+    ];
+    const nightmareRarity = (key: string) => {
+      if (key.startsWith("PBP03-ER")) return "※ER";
+      if (key.startsWith("PBP03-GR")) return "※GR";
+      if (key.startsWith("PBP03-SPR")) return "※SPR";
+      if (key.startsWith("PBP03-CR")) return "※CR";
+      if (key.startsWith("PBP03-RR")) return "※RR";
+      if (key.startsWith("BP03-U")) return "U";
+      if (key.startsWith("BP03-ER")) return "ER";
+      if (key.startsWith("BP03-SR")) return "SR";
+      if (key.startsWith("BP03-SPR")) return "SPR";
+      if (key.startsWith("BP03-GR")) return "GR";
+      if (key.startsWith("BP03-CR")) return "CR";
+      if (key.startsWith("BP03-C")) return "C";
+      return "RR";
+    };
+    cards = nightmareKeys.map((key) => ({
+      key,
+      rarity: nightmareRarity(key),
+      number: Number(key.match(/(\d{2})(?=-|$)/)?.[1] || 0),
+      image: `/cards/nightmare-night/${key}.webp`,
+    }));
   } else if (set.id === "12") {
     const DISCORD_STRUCTURE = [
       { prefix: "BP02-C", count: 48 },
@@ -894,7 +957,7 @@ export default function MyTradesSets() {
       }
     });
   } else if (set.id === "tcgpromos") {
-    for (let i = 1; i <= 18; i++) {
+    for (let i = 1; i <= 27; i++) {
       const num = String(i).padStart(2, "0");
       cards.push({
         key: `RR${num}`,
@@ -965,6 +1028,7 @@ export default function MyTradesSets() {
     ],
     //  Friendships Begin
     friendshipsbegin: ["C", "U", "SR", "SPR", "GR", "CR", "ER", "\u203BER", "\u203BRR"],
+    "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
     //  Promos
     "9": ["PR"],
     tcgpromos: ["PR"],
@@ -1021,9 +1085,10 @@ export default function MyTradesSets() {
                       }
                       alt={getDisplayCode(selectedCard, set.id)}
                       className={`h-full w-full ${
-                        ["12", "FW", "friendshipsbegin", "FB"].includes(set.id)
-                          ? "object-cover"
-                          : "object-cover scale-[1.04]"
+                        ["12", "14", "FW", "friendshipsbegin", "FB"].includes(set.id) ||
+                        isNonZoomTcgPromo(selectedCard)
+                          ? "object-contain"
+                          : "object-cover scale-[1.035]"
                       }`}
                     />
                   </div>
@@ -1118,7 +1183,7 @@ export default function MyTradesSets() {
                           value={listingDraft.askingPrice}
                           onChange={(event) => {
                             const value = event.target.value;
-                            if (/^\d*(\.\d{0,2})?$/.test(value))
+                            if (/^\d*(.\d{0,2})?$/.test(value))
                               updateListingDraft({ askingPrice: value });
                           }}
                           placeholder="0.00"
@@ -1767,6 +1832,9 @@ export default function MyTradesSets() {
                           >
                             {rarityCards.map((card) => {
                               const key = card.key;
+                              const isLandscape =
+                                set.id === "14" &&
+                                /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(key);
                               const listing = marketListings[key];
                               const isStarterDeck =
                                 set.id === "friendshipsbegin" &&
@@ -1779,14 +1847,14 @@ export default function MyTradesSets() {
                                 <div
                                   key={key}
                                   onClick={() => openCardDetails(card)}
-                                  className={`group relative cursor-pointer overflow-hidden rounded-xl border p-0.5 transition ${
+                                  className={`group relative cursor-pointer overflow-hidden rounded-xl p-0.5 transition ${
                                     isStarterDeck
                                       ? isLightMode
-                                        ? "cursor-default border-black/10"
-                                        : "cursor-default border-white/10"
-                                      : isLightMode
-                                        ? "border-black/10 hover:border-[#9A7200]"
-                                        : "border-white/10 hover:border-[#FFD54A]/60"
+                                    ? "cursor-default"
+                                    : "cursor-default"
+                                  : isLightMode
+                                        ? ""
+                                        : ""
                                   } ${
                                     listing?.is_for_trade &&
                                     listing?.is_for_sale
@@ -1802,7 +1870,7 @@ export default function MyTradesSets() {
                                       : "aspect-[5/7]"
                                   }`}
                                 >
-                                  <div className="h-full w-full overflow-hidden rounded-[10px]">
+                                  <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                     <img
                                       src={
                                         set.id === "9"
@@ -1816,13 +1884,24 @@ export default function MyTradesSets() {
                                       className={`h-full w-full ${
                                         [
                                           "12",
+                                          "14",
                                           "FW",
                                           "friendshipsbegin",
                                           "FB",
-                                        ].includes(set.id)
-                                          ? "object-cover"
-                                          : "object-cover scale-[1.04]"
+                                        ].includes(set.id) ||
+                                        isNonZoomTcgPromo(card)
+                                          ? "object-contain"
+                                          : isLandscape
+                                            ? "h-full w-full object-contain"
+                                            : "object-cover scale-[1.035]"
                                       }`}
+                                      style={
+                                        isLandscape
+                                          ? {
+                                              transform: "rotate(-90deg) scale(1.4)",
+                                            }
+                                          : undefined
+                                      }
                                     />
                                   </div>
                                   <div

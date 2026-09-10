@@ -3,44 +3,55 @@ import { useNavigate } from "react-router-dom";
 import { Shield } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
+function ShowcaseImage({ src, alt, className }: { src: string; alt: string; className: string }) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  return failedSrc === src ? (
+    <div role="img" aria-label={`${alt} — coming soon`} className="absolute inset-0 flex items-center justify-center bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100">
+      <span className="px-2 text-center text-sm font-bold">COMING SOON</span>
+    </div>
+  ) : (
+    <img src={src} alt={alt} className={className} onError={() => setFailedSrc(src)} />
+  );
+}
+
 export default function DesktopProfile() {
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
-  const [isLightMode, setIsLightMode] = useState(
+const navigate = useNavigate();
+const [profile, setProfile] = useState<any>(null);
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-  const [discord, setDiscord] = useState("");
-  const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [usernameDraft, setUsernameDraft] = useState("");
-  const [discordDraft, setDiscordDraft] = useState("");
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
-  const [stats, setStats] = useState({
+const [discord, setDiscord] = useState("");
+const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
+const [editingProfile, setEditingProfile] = useState(false);
+const [usernameDraft, setUsernameDraft] = useState("");
+const [discordDraft, setDiscordDraft] = useState("");
+const [savingProfile, setSavingProfile] = useState(false);
+const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
+const [stats, setStats] = useState({
     owned: 0,
     completed: 0,
     friends: 0,
   });
-  const [showcaseTab, setShowcaseTab] = useState<
+const [showcaseTab, setShowcaseTab] = useState<
     "moon" | "star" | "fun" | "rainbow" | "tcg"
   >("moon");
-  const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
-  const [selectedShowcaseCard, setSelectedShowcaseCard] = useState<any | null>(
+const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
+const [selectedShowcaseCard, setSelectedShowcaseCard] = useState<any | null>(
     null,
   );
-  const isMoon3SZR001 = (card: any) =>
+const isMoon3SZR001 = (card: any) =>
     getTradeCardImage(card) === "/cards/third-edition-moon/M3SZR001.webp";
-  const [copied, setCopied] = useState(false);
-  const [deletionRequested, setDeletionRequested] = useState(false);
-  const [showDeletionModal, setShowDeletionModal] = useState(false);
-  const [submittingDeletion, setSubmittingDeletion] = useState(false);
-  const [isModerator, setIsModerator] = useState(false);
-  const [leaderboardBanned, setLeaderboardBanned] = useState(false);
-  const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
-  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
-  const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
+const [copied, setCopied] = useState(false);
+const [deletionRequested, setDeletionRequested] = useState(false);
+const [showDeletionModal, setShowDeletionModal] = useState(false);
+const [submittingDeletion, setSubmittingDeletion] = useState(false);
+const [isModerator, setIsModerator] = useState(false);
+const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
+const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
     useState(false);
-  const tabs = [
+const tabs = [
     { label: "Collection", path: "/binders" },
     { label: "Inventory", path: "/inventory" },
     { label: "Wishlist & ISO", path: "/iso" },
@@ -49,19 +60,19 @@ export default function DesktopProfile() {
     { label: "Kayou Events", path: "/kayou-news" },
   ];
   useEffect(() => {
-    let mounted = true;
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-    const syncFromDocument = () => {
+let mounted = true;
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+const syncFromDocument = () => {
       if (!mounted) return;
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-    const observer = new MutationObserver(syncFromDocument);
+const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-    const loadThemePreference = async () => {
-      const {
+const loadThemePreference = async () => {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!mounted) return;
@@ -69,7 +80,7 @@ export default function DesktopProfile() {
         setIsLightMode(false);
         return;
       }
-      const { data, error } = await supabase
+const { data, error } = await supabase
         .from("user_light_mode_preferences")
         .select("user_id")
         .eq("user_id", session.user.id)
@@ -111,7 +122,7 @@ export default function DesktopProfile() {
   useEffect(() => {
     loadProfile();
     loadStats();
-    const {
+const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
       loadProfile();
@@ -119,12 +130,12 @@ export default function DesktopProfile() {
     });
     return () => subscription.unsubscribe();
   }, []);
-  async function loadProfile() {
-    const {
+async function loadProfile() {
+const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) return;
-    const { data } = await supabase
+const { data } = await supabase
       .from("profiles")
       .select("id, username, avatar_url")
       .eq("id", session.user.id)
@@ -132,7 +143,7 @@ export default function DesktopProfile() {
     if (data) {
       setProfile(data);
     }
-    const { data: moderatorRecord, error: moderatorError } = await supabase
+const { data: moderatorRecord, error: moderatorError } = await supabase
       .from("leaderboard_moderators")
       .select("user_id")
       .eq("user_id", session.user.id)
@@ -142,7 +153,7 @@ export default function DesktopProfile() {
     }
     setIsModerator(Boolean(moderatorRecord));
     setUsernameDraft(data?.username || "");
-    const { data: trading } = await supabase
+const { data: trading } = await supabase
       .from("trading_profiles")
       .select("discord_username, trade_access_revoked")
       .eq("user_id", session.user.id)
@@ -150,7 +161,7 @@ export default function DesktopProfile() {
     setDiscord(trading?.discord_username || "");
     setDiscordDraft(trading?.discord_username || "");
     setTradeAccessRevoked(Boolean(trading?.trade_access_revoked));
-    const { data: leaderboardBan, error: leaderboardBanError } = await supabase
+const { data: leaderboardBan, error: leaderboardBanError } = await supabase
       .from("leaderboard_exclusions")
       .select("user_id")
       .eq("user_id", session.user.id)
@@ -164,9 +175,9 @@ export default function DesktopProfile() {
     setLeaderboardBanned(!!leaderboardBan);
     setLoadingLeaderboardBan(false);
   }
-  async function selfBanFromLeaderboard() {
+async function selfBanFromLeaderboard() {
     if (leaderboardBanned) return;
-    const {
+const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) {
@@ -175,7 +186,7 @@ export default function DesktopProfile() {
     }
     setLeaderboardBanned(true);
     setLoadingLeaderboardBan(false);
-    const { error } = await supabase
+const { error } = await supabase
       .from("leaderboard_exclusions")
       .upsert(
         {
@@ -194,18 +205,18 @@ export default function DesktopProfile() {
     }
     setLeaderboardBanned(true);
   }
-  async function requestAccountDeletion() {
+async function requestAccountDeletion() {
     if (deletionRequested || submittingDeletion) return;
     setSubmittingDeletion(true);
     try {
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
         setShowDeletionModal(false);
         return;
       }
-      const { error } = await supabase
+const { error } = await supabase
         .from("account_deletion_requests")
         .insert({
           user_id: session.user.id,
@@ -224,19 +235,19 @@ export default function DesktopProfile() {
       setSubmittingDeletion(false);
     }
   }
-  async function loadStats() {
-    const {
+async function loadStats() {
+const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) return;
-    const { data: collection } = await supabase
+const { data: collection } = await supabase
       .from("collection_progress_raw")
       .select("set_id, progress")
       .eq("user_id", session.user.id);
-    const filtered = (collection || []).filter(
+const filtered = (collection || []).filter(
       (row: any) => row.set_id !== "OTHERMERCH",
     );
-    let owned = 0;
+let owned = 0;
     filtered.forEach((row: any) => {
       owned += Object.values(row.progress || {}).filter(
         (value: any) =>
@@ -244,23 +255,23 @@ export default function DesktopProfile() {
           (typeof value === "object" && value?.owned === true),
       ).length;
     });
-    const { data: friends } = await supabase
+const { data: friends } = await supabase
       .from("friend_requests")
       .select("sender_id, receiver_id")
       .eq("status", "accepted");
-    const friendCount = (friends ?? []).filter(
+const friendCount = (friends ?? []).filter(
       (friend: any) =>
         friend.sender_id === session.user.id ||
         friend.receiver_id === session.user.id,
     ).length;
-    const { data: progress } = await supabase
+const { data: progress } = await supabase
       .from("collection_progress")
       .select("set_id, progress")
       .eq("user_id", session.user.id);
-    const progressMap = new Map(
+const progressMap = new Map(
       (progress || []).map((row: any) => [String(row.set_id), row]),
     );
-    const sets = [
+const sets = [
       {
         id: "1",
         rarities: {
@@ -430,12 +441,12 @@ export default function DesktopProfile() {
         },
       },
     ];
-    let completed = 0;
+let completed = 0;
     sets.forEach((set) => {
-      const found = progressMap.get(set.id);
+const found = progressMap.get(set.id);
       if (!found?.progress) return;
-      let total = 0;
-      let ownedCards = 0;
+let total = 0;
+let ownedCards = 0;
       Object.entries(set.rarities).forEach(([rarity, count]) => {
         total += count;
         for (let i = 1; i <= count; i++) {
@@ -452,19 +463,19 @@ export default function DesktopProfile() {
       friends: friendCount,
     });
   }
-  const { avatar, verification } = getProfileAssets(profile);
-  const displayName = profile?.username || "Twilight Sparkle";
+const { avatar, verification } = getProfileAssets(profile);
+const displayName = profile?.username || "Twilight Sparkle";
   useEffect(() => {
-    const loadShowcaseCards = async () => {
-      const {
+const loadShowcaseCards = async () => {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) return;
-      const { data } = await supabase
+const { data } = await supabase
         .from("collection_progress_raw")
         .select("set_id, progress")
         .eq("user_id", session.user.id);
-      const showcaseRarities = [
+const showcaseRarities = [
         "SHINING ZR",
         "SZR",
         "SC",
@@ -475,11 +486,20 @@ export default function DesktopProfile() {
         "XR",
         "PRR",
       ];
-      const cards: any[] = [];
+const cards: any[] = [];
       (data || []).forEach((row: any) => {
         Object.entries(row.progress || {}).forEach(([card_key, owned]) => {
+          if (String(row.set_id) === "14") {
+            const isOwned = owned === true ||
+              (typeof owned === "object" && owned !== null &&
+                "owned" in owned && owned.owned === true);
+            if (isOwned && /^PBP03-RR0[1-6]$/.test(card_key)) {
+              cards.push({ set_id: "14", card_key });
+            }
+            return;
+          }
           if (!owned) return;
-          const rarity =
+const rarity =
             String(row.set_id) === "FW" ||
             String(row.set_id) === "SD" ||
             String(row.set_id) === "12" ||
@@ -499,10 +519,10 @@ export default function DesktopProfile() {
     };
     loadShowcaseCards();
   }, []);
-  const getTradeCardImage = (card: any) => {
+const getTradeCardImage = (card: any) => {
     if (!card) return "";
     if (card.set_id === "friendshipsbegin" || card.set_id === "SD") {
-      const cleanKey = String(card.card_key)
+const cleanKey = String(card.card_key)
         .replace(/^BONUS-/, "")
         .replace(/^STARTER-/, "");
       return `/friendships-begin/${cleanKey}.webp`;
@@ -510,15 +530,18 @@ export default function DesktopProfile() {
     if (card.set_id === "FW") {
       return `/fantasy-wonderland/${card.card_key}.webp`;
     }
+    if (String(card.set_id) === "14") {
+      return `/cards/nightmare-night/${card.card_key}.webp`;
+    }
     if (card.set_id === "12") {
       return `/cards/discord/${card.card_key}.webp`;
     }
     if (card.set_id === "tcgpromos") {
       return `/tcgpromos/${card.card_key}.webp`;
     }
-    const [rarityRaw, number] = String(card.card_key).split("-");
-    const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
-    const config: Record<string, { folder: string; prefix: string }> = {
+const [rarityRaw, number] = String(card.card_key).split("-");
+const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
+const config: Record<string, { folder: string; prefix: string }> = {
       "1": { folder: "first-edition-moon", prefix: "M1" },
       "2": { folder: "second-edition-moon", prefix: "M2" },
       "3": { folder: "third-edition-moon", prefix: "M3" },
@@ -529,23 +552,23 @@ export default function DesktopProfile() {
       "8": { folder: "fun-moments-two", prefix: "FM2" },
       "11": { folder: "fun-moments-three", prefix: "FM3" },
     };
-    const c = config[String(card.set_id)];
+const c = config[String(card.set_id)];
     if (!c) return "";
     return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(
       3,
       "0",
     )}.webp`;
   };
-  async function handleProfileEdit() {
+async function handleProfileEdit() {
     if (editingProfile) {
       setSavingProfile(true);
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
-        const originalUsername = profile?.username || "";
-        const nextUsername = usernameDraft.trim();
-        const { data: existingUsername, error: usernameCheckError } =
+const originalUsername = profile?.username || "";
+const nextUsername = usernameDraft.trim();
+const { data: existingUsername, error: usernameCheckError } =
           await supabase
             .from("profiles")
             .select("id")
@@ -566,7 +589,7 @@ export default function DesktopProfile() {
           setSavingProfile(false);
           return;
         }
-        const { error: usernameError } = await supabase
+const { error: usernameError } = await supabase
           .from("profiles")
           .update({ username: nextUsername })
           .eq("id", session.user.id);
@@ -583,7 +606,7 @@ export default function DesktopProfile() {
           setSavingProfile(false);
           return;
         }
-        const { error: authUsernameError } = await supabase.auth.updateUser({
+const { error: authUsernameError } = await supabase.auth.updateUser({
           data: { username: nextUsername },
         });
         if (authUsernameError)
@@ -591,7 +614,7 @@ export default function DesktopProfile() {
             "Failed to update username metadata:",
             authUsernameError,
           );
-        const { error: tradingError } = tradeAccessRevoked
+const { error: tradingError } = tradeAccessRevoked
           ? { error: null }
           : await supabase
               .from("trading_profiles")
@@ -612,12 +635,12 @@ export default function DesktopProfile() {
     }
     setEditingProfile(!editingProfile);
   }
-  function handleShareProfile() {
-    const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
+function handleShareProfile() {
+const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url);
     } else {
-      const textArea = document.createElement("textarea");
+const textArea = document.createElement("textarea");
       textArea.value = url;
       textArea.style.position = "fixed";
       textArea.style.left = "-999999px";
@@ -633,7 +656,7 @@ export default function DesktopProfile() {
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   }
-  const showcaseTabs: Array<
+const showcaseTabs: Array<
     ["moon" | "star" | "fun" | "rainbow" | "tcg", string]
   > = [
     ["moon", "Moon"],
@@ -642,7 +665,7 @@ export default function DesktopProfile() {
     ["rainbow", "Rainbow"],
     ["tcg", "TCG"],
   ];
-  const visibleShowcaseCards = showcaseCards
+const visibleShowcaseCards = showcaseCards
     .filter((card) => {
       switch (showcaseTab) {
         case "moon":
@@ -670,6 +693,9 @@ export default function DesktopProfile() {
             String(card.card_key).startsWith("XR-")
           );
         case "tcg":
+          if (String(card.set_id) === "14") {
+            return /^PBP03-RR0[1-6]$/.test(card.card_key);
+          }
           return (
             ["FW", "SD", "12", "friendshipsbegin", "tcgpromos"].includes(
               String(card.set_id),
@@ -680,7 +706,7 @@ export default function DesktopProfile() {
       }
     })
     .sort((a, b) => {
-      const setOrder: Record<string, number> = {
+const setOrder: Record<string, number> = {
         "7": 1,
         "8": 2,
         "11": 3,
@@ -695,8 +721,9 @@ export default function DesktopProfile() {
         SD: 12,
         "12": 13,
         tcgpromos: 14,
+        "14": 15,
       };
-      const rarityOrder: Record<string, number> = {
+const rarityOrder: Record<string, number> = {
         SC: 1,
         "SHINING ZR": 2,
         SZR: 3,
@@ -707,11 +734,14 @@ export default function DesktopProfile() {
         XR: 1,
         PRR: 1,
       };
-      const setDiff =
+const setDiff =
         (setOrder[String(a.set_id)] ?? 999) -
         (setOrder[String(b.set_id)] ?? 999);
       if (setDiff !== 0) return setDiff;
-      const rarityA = [
+      if (String(a.set_id) === "14") {
+        return String(a.card_key).localeCompare(String(b.card_key));
+      }
+const rarityA = [
         "12",
         "FW",
         "SD",
@@ -720,7 +750,7 @@ export default function DesktopProfile() {
       ].includes(String(a.set_id))
         ? "PRR"
         : String(a.card_key).split("-")[0];
-      const rarityB = [
+const rarityB = [
         "12",
         "FW",
         "SD",
@@ -729,11 +759,11 @@ export default function DesktopProfile() {
       ].includes(String(b.set_id))
         ? "PRR"
         : String(b.card_key).split("-")[0];
-      const rarityDiff =
+const rarityDiff =
         (rarityOrder[rarityA] ?? 999) - (rarityOrder[rarityB] ?? 999);
       if (rarityDiff !== 0) return rarityDiff;
-      const numA = parseInt(String(a.card_key).match(/\d+/)?.[0] ?? "0", 10);
-      const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
+const numA = parseInt(String(a.card_key).match(/\d+/)?.[0] ?? "0", 10);
+const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
       return numA - numB;
     });
   return (
@@ -847,7 +877,7 @@ export default function DesktopProfile() {
                       ? "border-red-500/20 bg-red-50 text-red-700"
                       : "border-red-400/20 bg-red-500/10 text-red-300"
                   }`}>
-                    Your trade and sale rights have been revoked based on community reports. You can appeal by emailing <a className="font-bold underline" href="mailto:mlpekayou@gmail.com">mlpekayou@gmail.com</a> or opening a ticket in the <a className="font-bold underline" href="https://discord.gg/mlpekayou" target="_blank" rel="noreferrer">MLPEKAYOU Discord server</a>.
+                    Your trade and sale rights have been revoked based on community reports. You can appeal by emailing <a className="font-bold underline" href="mailto:mlpekayou\@gmail.com">mlpekayou\@gmail.com</a> or opening a ticket in the <a className="font-bold underline" href="https://discord.gg/mlpekayou" target="_blank" rel="noreferrer">MLPEKAYOU Discord server</a>.
                   </div>
                 )}
                 {profile?.bio && (
@@ -1044,11 +1074,11 @@ export default function DesktopProfile() {
                     />
                   </>
                 ) : (
-                  <img
+                  <ShowcaseImage
                     src={getTradeCardImage(card)}
                     alt={card.card_key}
                     className={`h-full w-full transition-transform duration-300 ${
-                      ["FW", "SD", "friendshipsbegin"].includes(
+                      ["FW", "SD", "friendshipsbegin", "14"].includes(
                         String(card.set_id),
                       )
                         ? "object-contain p-1 group-hover:scale-[1.035]"
@@ -1322,10 +1352,10 @@ export default function DesktopProfile() {
             }
             onClick={(e) => e.stopPropagation()}
           >
-            <img
+            <ShowcaseImage
               src={getTradeCardImage(selectedShowcaseCard)}
               alt="Selected card"
-              className={`h-full w-full ${isMoon3SZR001(selectedShowcaseCard) ? "object-cover object-center" : ["FW", "SD", "friendshipsbegin"].includes(String(selectedShowcaseCard.set_id)) ? "object-contain" : ["1", "2", "3", "4", "5", "6", "7", "8", "11"].includes(String(selectedShowcaseCard.set_id)) ? "scale-[1.015] object-cover object-center" : "object-cover"}`}
+              className={`h-full w-full ${isMoon3SZR001(selectedShowcaseCard) ? "object-cover object-center" : ["FW", "SD", "friendshipsbegin", "14"].includes(String(selectedShowcaseCard.set_id)) ? "object-contain" : ["1", "2", "3", "4", "5", "6", "7", "8", "11"].includes(String(selectedShowcaseCard.set_id)) ? "scale-[1.015] object-cover object-center" : "object-cover"}`}
             />
           </button>
         </div>
