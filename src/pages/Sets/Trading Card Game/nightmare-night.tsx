@@ -160,7 +160,7 @@ const num = Number(key.replace("BP03-C", ""));
       }
     }
 // RR01-RR06 have unique backs
-    const rrMatch = key.match(/^BP03-RR(0[1-6])$/);
+const rrMatch = key.match(/^BP03-RR(0[1-6])$/);
     if (rrMatch) {
       return `/tcg-card-backs/BP02-RR${rrMatch[1]}.webp`;
     }
@@ -534,14 +534,18 @@ const landscape = isLandscapeCommon(key);
                 >
                   <img
                     src={zoomedCard}
-                    className={`absolute inset-0 h-full w-full rounded-2xl backface-hidden ${
-                      zoomedCardKey && /^BP03-ER0[12]-[ABC]$/.test(zoomedCardKey)
-                        ? "object-contain"
-                        : "object-scale-down"
+                    className={`absolute rounded-2xl backface-hidden ${
+                      zoomedCardKey && isLandscapeCommon(zoomedCardKey)
+                        ? "left-1/2 top-1/2 h-full w-[140%] max-w-none object-contain"
+                        : `inset-0 h-full w-full ${
+                            zoomedCardKey && /^BP03-ER0[12]-[ABC]$/.test(zoomedCardKey)
+                              ? "object-contain"
+                              : "object-scale-down"
+                          }`
                     }`}
                     style={
                       zoomedCardKey && isLandscapeCommon(zoomedCardKey)
-                        ? { transform: "rotate(-90deg)" }
+                        ? { transform: "translate(-50%, -50%) rotate(-90deg)" }
                         : undefined
                     }
                     alt=""
