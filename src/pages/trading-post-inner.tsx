@@ -132,7 +132,9 @@ export default function TradingPostInner() {
   const [reportComment, setReportComment] = useState("");
   const [wantsStaffContact, setWantsStaffContact] = useState(false);
   const [reporterDiscord, setReporterDiscord] = useState("");
-  const [reportedCardKeys, setReportedCardKeys] = useState<Set<string>>(new Set());
+  const [reportedCardKeys, setReportedCardKeys] = useState<Set<string>>(
+    new Set(),
+  );
   const [isReportingCard, setIsReportingCard] = useState(false);
   const [cardReportError, setCardReportError] = useState("");
   const [isLightMode, setIsLightMode] = useState(() => {
@@ -249,7 +251,11 @@ export default function TradingPostInner() {
       const { data: sessionData } = await supabase.auth.getSession();
       const sessionUserId = sessionData.session?.user.id;
       let reportData: { reported_user_id: string }[] = [];
-      let cardReportData: { reported_user_id: string; set_id: string; card_key: string }[] = [];
+      let cardReportData: {
+        reported_user_id: string;
+        set_id: string;
+        card_key: string;
+      }[] = [];
       if (sessionUserId) {
         setCurrentUserId(sessionUserId);
         const { data } = await supabase
@@ -278,7 +284,17 @@ export default function TradingPostInner() {
       );
       const tradeMap: Record<string, TradeCard[]> = {};
       (trades || []).forEach((card: TradeCard) => {
-        if (tradingMap[card.user_id]?.trade_access_revoked) return;
+        const tradingProfile = tradingMap[card.user_id];
+        const hasDiscordUsername = Boolean(
+          tradingProfile?.discord_username?.trim(),
+        );
+        if (
+          !tradingProfile ||
+          tradingProfile.trade_access_revoked ||
+          !hasDiscordUsername
+        ) {
+          return;
+        }
         if (!tradeMap[card.user_id]) {
           tradeMap[card.user_id] = [];
         }
@@ -295,7 +311,8 @@ export default function TradingPostInner() {
         setReportedCardKeys(
           new Set(
             cardReportData.map(
-              (report) => `${report.reported_user_id}-${report.set_id}-${report.card_key}`,
+              (report) =>
+                `${report.reported_user_id}-${report.set_id}-${report.card_key}`,
             ),
           ),
         );
@@ -321,7 +338,9 @@ export default function TradingPostInner() {
     setIsReporting(true);
     setReportError("");
     if (wantsStaffContact && !reporterDiscord.trim()) {
-      setReportError("Enter your Discord username so a staff member can contact you.");
+      setReportError(
+        "Enter your Discord username so a staff member can contact you.",
+      );
       setIsReporting(false);
       return;
     }
@@ -331,7 +350,9 @@ export default function TradingPostInner() {
       reason: "inactive_or_unresponsive",
       reporter_comment: reportComment.trim() || null,
       wants_staff_contact: wantsStaffContact,
-      contact_discord_username: wantsStaffContact ? reporterDiscord.trim() : null,
+      contact_discord_username: wantsStaffContact
+        ? reporterDiscord.trim()
+        : null,
     });
     if (error) {
       if (error.code === "23505") {
@@ -370,7 +391,9 @@ export default function TradingPostInner() {
     });
     if (error && error.code !== "23505") {
       console.error("Failed to report card listing:", error);
-      setCardReportError("This card report could not be submitted. Please try again.");
+      setCardReportError(
+        "This card report could not be submitted. Please try again.",
+      );
       setIsReportingCard(false);
       return;
     }
@@ -671,12 +694,32 @@ export default function TradingPostInner() {
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         {currentUserId !== userId && (
-                          <button type="button" onClick={() => { if (!reportedUsers.has(userId)) { setReportError(""); setReportTarget(userId); } }} disabled={reportedUsers.has(userId)} className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold ${reportedUsers.has(userId) ? isLightMode ? "bg-emerald-100 text-emerald-700" : "bg-emerald-500/15 text-emerald-400" : isLightMode ? "bg-red-50 text-red-600" : "bg-red-500/10 text-red-400"}`}>
-                            {reportedUsers.has(userId) ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
-                            {reportedUsers.has(userId) ? "Reported" : "Report user"}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!reportedUsers.has(userId)) {
+                                setReportError("");
+                                setReportTarget(userId);
+                              }
+                            }}
+                            disabled={reportedUsers.has(userId)}
+                            className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold ${reportedUsers.has(userId) ? (isLightMode ? "bg-emerald-100 text-emerald-700" : "bg-emerald-500/15 text-emerald-400") : isLightMode ? "bg-red-50 text-red-600" : "bg-red-500/10 text-red-400"}`}
+                          >
+                            {reportedUsers.has(userId) ? (
+                              <ShieldCheck size={16} />
+                            ) : (
+                              <ShieldAlert size={16} />
+                            )}
+                            {reportedUsers.has(userId)
+                              ? "Reported"
+                              : "Report user"}
                           </button>
                         )}
-                        <button type="button" onClick={() => setOpenProfile(null)} className={`rounded-full px-3 py-2 text-sm font-medium ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300"}`}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenProfile(null)}
+                          className={`rounded-full px-3 py-2 text-sm font-medium ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300"}`}
+                        >
                           Close
                         </button>
                       </div>
@@ -740,7 +783,9 @@ export default function TradingPostInner() {
                         }`}
                       >
                         {tradingProfiles[userId]?.discord_username && (
-                          <span>Discord: {tradingProfiles[userId].discord_username}</span>
+                          <span>
+                            Discord: {tradingProfiles[userId].discord_username}
+                          </span>
                         )}
                         <span>
                           {tradeCount} trade{tradeCount === 1 ? "" : "s"}
@@ -785,7 +830,11 @@ export default function TradingPostInner() {
                         ) : (
                           <ShieldAlert size={19} />
                         )}
-                        <span className="hidden sm:inline">{reportedUsers.has(userId) ? "Reported" : "Report user"}</span>
+                        <span className="hidden sm:inline">
+                          {reportedUsers.has(userId)
+                            ? "Reported"
+                            : "Report user"}
+                        </span>
                       </button>
                     )}
                     <button
@@ -845,27 +894,71 @@ export default function TradingPostInner() {
                                   : "aspect-[5/7]"
                               }`}
                             >
-                              <button type="button" onClick={() => setSelectedCard(card)} aria-label={`View ${card.card_key} listing details`} className="absolute inset-0 h-full w-full">
-                                <img src={getCardImage(card)} alt={card.card_key} className="absolute inset-[-2.5%] h-[105%] w-[105%] max-w-none object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCard(card)}
+                                aria-label={`View ${card.card_key} listing details`}
+                                className="absolute inset-0 h-full w-full"
+                              >
+                                <img
+                                  src={getCardImage(card)}
+                                  alt={card.card_key}
+                                  className="absolute inset-[-2.5%] h-[105%] w-[105%] max-w-none object-cover"
+                                />
                                 {card.actively_trading && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                                    <span className="rounded-full bg-[#FFD54A] px-2.5 py-1 text-xs font-semibold text-zinc-900">Active</span>
+                                    <span className="rounded-full bg-[#FFD54A] px-2.5 py-1 text-xs font-semibold text-zinc-900">
+                                      Active
+                                    </span>
                                   </div>
                                 )}
                                 <div className="absolute left-1.5 top-1.5 flex gap-1">
-                                  {card.is_for_trade && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">⇄</span>}
-                                  {card.is_for_sale && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-zinc-900">$</span>}
+                                  {card.is_for_trade && (
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">
+                                      ⇄
+                                    </span>
+                                  )}
+                                  {card.is_for_sale && (
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-zinc-900">
+                                      $
+                                    </span>
+                                  )}
                                 </div>
                               </button>
-                              {card.is_for_sale && currentUserId !== userId && (() => {
-                                const reportKey = `${card.user_id}-${card.set_id}-${card.card_key}`;
-                                const alreadyReported = reportedCardKeys.has(reportKey);
-                                return (
-                                  <button type="button" onClick={() => { setCardReportError(""); setSelectedCard(card); }} disabled={alreadyReported} title={alreadyReported ? "You already reported this price" : "Report this card's price"} aria-label={alreadyReported ? "Card price already reported" : `Report ${card.card_key} price`} className={`absolute bottom-1.5 right-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border shadow-lg backdrop-blur-sm ${alreadyReported ? "border-emerald-400/30 bg-emerald-500/90 text-white" : "border-white/20 bg-red-500/90 text-white hover:bg-red-600"}`}>
-                                    {alreadyReported ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
-                                  </button>
-                                );
-                              })()}
+                              {card.is_for_sale &&
+                                currentUserId !== userId &&
+                                (() => {
+                                  const reportKey = `${card.user_id}-${card.set_id}-${card.card_key}`;
+                                  const alreadyReported =
+                                    reportedCardKeys.has(reportKey);
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setCardReportError("");
+                                        setSelectedCard(card);
+                                      }}
+                                      disabled={alreadyReported}
+                                      title={
+                                        alreadyReported
+                                          ? "You already reported this price"
+                                          : "Report this card's price"
+                                      }
+                                      aria-label={
+                                        alreadyReported
+                                          ? "Card price already reported"
+                                          : `Report ${card.card_key} price`
+                                      }
+                                      className={`absolute bottom-1.5 right-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border shadow-lg backdrop-blur-sm ${alreadyReported ? "border-emerald-400/30 bg-emerald-500/90 text-white" : "border-white/20 bg-red-500/90 text-white hover:bg-red-600"}`}
+                                    >
+                                      {alreadyReported ? (
+                                        <ShieldCheck size={16} />
+                                      ) : (
+                                        <ShieldAlert size={16} />
+                                      )}
+                                    </button>
+                                  );
+                                })()}
                             </div>
                           );
                         })}
@@ -931,9 +1024,11 @@ export default function TradingPostInner() {
             }`}
           >
             <div className="grid sm:grid-cols-[minmax(160px,0.8fr)_minmax(250px,1.2fr)]">
-              <div className={`flex items-center justify-center p-3 ${
-                isLightMode ? "bg-zinc-100" : "bg-black/25"
-              }`}>
+              <div
+                className={`flex items-center justify-center p-3 ${
+                  isLightMode ? "bg-zinc-100" : "bg-black/25"
+                }`}
+              >
                 <img
                   src={getCardImage(selectedCard)}
                   alt="Selected listing"
@@ -943,65 +1038,106 @@ export default function TradingPostInner() {
               <div className="p-3.5 sm:p-4">
                 <div className="flex items-center gap-3">
                   <img
-                    src={getProfileAssets(profiles[selectedCard.user_id]).avatar}
+                    src={
+                      getProfileAssets(profiles[selectedCard.user_id]).avatar
+                    }
                     alt=""
                     className="h-10 w-10 rounded-full object-cover"
                   />
                   <div className="min-w-0">
-                    <h2 id="listing-details-title" className="truncate text-lg font-bold">
+                    <h2
+                      id="listing-details-title"
+                      className="truncate text-lg font-bold"
+                    >
                       {profiles[selectedCard.user_id]?.username || "Collector"}
                     </h2>
                     <div className="mt-1 inline-flex max-w-full items-center rounded-lg bg-[#5865F2]/15 px-2.5 py-1 text-sm font-bold text-[#5865F2]">
-                      Discord: {tradingProfiles[selectedCard.user_id]?.discord_username || "Not provided"}
+                      Discord:{" "}
+                      {tradingProfiles[selectedCard.user_id]
+                        ?.discord_username || "Not provided"}
                     </div>
                   </div>
                 </div>
                 <div className="mt-3 space-y-2">
                   {selectedCard.is_for_trade && (
-                    <div className={`flex items-center justify-between rounded-xl px-3 py-2.5 ${
-                      isLightMode ? "bg-emerald-50" : "bg-emerald-500/10"
-                    }`}>
-                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">For trade</span>
-                      <span className="font-bold">{selectedCard.trade_quantity}</span>
+                    <div
+                      className={`flex items-center justify-between rounded-xl px-3 py-2.5 ${
+                        isLightMode ? "bg-emerald-50" : "bg-emerald-500/10"
+                      }`}
+                    >
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        For trade
+                      </span>
+                      <span className="font-bold">
+                        {selectedCard.trade_quantity}
+                      </span>
                     </div>
                   )}
                   {selectedCard.is_for_sale && (
-                    <div className={`rounded-xl px-3 py-2.5 ${
-                      isLightMode ? "bg-sky-50" : "bg-sky-500/10"
-                    }`}>
+                    <div
+                      className={`rounded-xl px-3 py-2.5 ${
+                        isLightMode ? "bg-sky-50" : "bg-sky-500/10"
+                      }`}
+                    >
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-sky-600 dark:text-sky-400">For sale</span>
-                        <span className="font-bold">{selectedCard.sale_quantity}</span>
+                        <span className="font-semibold text-sky-600 dark:text-sky-400">
+                          For sale
+                        </span>
+                        <span className="font-bold">
+                          {selectedCard.sale_quantity}
+                        </span>
                       </div>
                       <div className="mt-2 flex items-center justify-between text-sm">
-                        <span className={isLightMode ? "text-zinc-500" : "text-zinc-400"}>Asking price</span>
-                        <span className="text-lg font-bold">${Number(selectedCard.asking_price || 0).toFixed(2)}</span>
+                        <span
+                          className={
+                            isLightMode ? "text-zinc-500" : "text-zinc-400"
+                          }
+                        >
+                          Asking price
+                        </span>
+                        <span className="text-lg font-bold">
+                          ${Number(selectedCard.asking_price || 0).toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   )}
                 </div>
-                {selectedCard.is_for_sale && currentUserId !== selectedCard.user_id && (() => {
-                  const reportKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
-                  const alreadyReported = reportedCardKeys.has(reportKey);
-                  return (
-                    <>
-                      <button
-                        type="button"
-                        onClick={submitCardReport}
-                        disabled={alreadyReported || isReportingCard}
-                        className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
-                          alreadyReported
-                            ? isLightMode ? "bg-zinc-100 text-zinc-400" : "bg-white/[0.04] text-zinc-500"
-                            : "bg-red-500/10 text-red-500 hover:bg-red-500/15"
-                        }`}
-                      >
-                        {alreadyReported ? <ShieldCheck size={17} /> : <ShieldAlert size={17} />}
-                        {alreadyReported ? "Price already reported" : "Report overpriced card"}
-                      </button>
-                      {cardReportError && <p className="mt-2 text-sm text-red-500">{cardReportError}</p>}
-                    </>
-                  );
-                })()}
+                {selectedCard.is_for_sale &&
+                  currentUserId !== selectedCard.user_id &&
+                  (() => {
+                    const reportKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
+                    const alreadyReported = reportedCardKeys.has(reportKey);
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          onClick={submitCardReport}
+                          disabled={alreadyReported || isReportingCard}
+                          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
+                            alreadyReported
+                              ? isLightMode
+                                ? "bg-zinc-100 text-zinc-400"
+                                : "bg-white/[0.04] text-zinc-500"
+                              : "bg-red-500/10 text-red-500 hover:bg-red-500/15"
+                          }`}
+                        >
+                          {alreadyReported ? (
+                            <ShieldCheck size={17} />
+                          ) : (
+                            <ShieldAlert size={17} />
+                          )}
+                          {alreadyReported
+                            ? "Price already reported"
+                            : "Report overpriced card"}
+                        </button>
+                        {cardReportError && (
+                          <p className="mt-2 text-sm text-red-500">
+                            {cardReportError}
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                 <button
                   type="button"
                   onClick={() => {
@@ -1009,7 +1145,9 @@ export default function TradingPostInner() {
                     setCardReportError("");
                   }}
                   className={`mt-3 w-full rounded-xl px-4 py-3 text-sm font-semibold ${
-                    isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.07] text-zinc-200"
+                    isLightMode
+                      ? "bg-zinc-100 text-zinc-700"
+                      : "bg-white/[0.07] text-zinc-200"
                   }`}
                 >
                   Close
@@ -1020,7 +1158,7 @@ export default function TradingPostInner() {
         </div>
       )}
       {reportTarget && (
-          <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
           <div
             role="dialog"
             aria-modal="true"
@@ -1046,20 +1184,65 @@ export default function TradingPostInner() {
               and trades so only active users appear here and nobody&apos;s time
               is wasted.
             </p>
-            <p className={`mt-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold ${isLightMode ? "bg-amber-50 text-amber-800" : "bg-amber-500/10 text-amber-300"}`}>You can only report this user once.</p>
+            <p
+              className={`mt-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold ${isLightMode ? "bg-amber-50 text-amber-800" : "bg-amber-500/10 text-amber-300"}`}
+            >
+              You can only report this user once.
+            </p>
             <label className="mt-3 block">
-              <span className="mb-1.5 block text-sm font-semibold">Comment for moderators <span className="font-normal text-zinc-500">(optional)</span></span>
-              <textarea value={reportComment} onChange={(event) => { const words = event.target.value.trim().split(/\s+/).filter(Boolean); setReportComment(words.length <= 1500 ? event.target.value : words.slice(0, 1500).join(" ")); }} rows={3} className={`w-full resize-none rounded-xl border px-3 py-2.5 text-base outline-none ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-900" : "border-white/10 bg-white/[0.05] text-white"}`} placeholder="Add anything moderators should know..." />
-              <span className="mt-1 block text-right text-xs text-zinc-500">{reportComment.trim() ? reportComment.trim().split(/\s+/).length : 0} / 1,500 words</span>
+              <span className="mb-1.5 block text-sm font-semibold">
+                Comment for moderators{" "}
+                <span className="font-normal text-zinc-500">(optional)</span>
+              </span>
+              <textarea
+                value={reportComment}
+                onChange={(event) => {
+                  const words = event.target.value
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean);
+                  setReportComment(
+                    words.length <= 1500
+                      ? event.target.value
+                      : words.slice(0, 1500).join(" "),
+                  );
+                }}
+                rows={3}
+                className={`w-full resize-none rounded-xl border px-3 py-2.5 text-base outline-none ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-900" : "border-white/10 bg-white/[0.05] text-white"}`}
+                placeholder="Add anything moderators should know..."
+              />
+              <span className="mt-1 block text-right text-xs text-zinc-500">
+                {reportComment.trim()
+                  ? reportComment.trim().split(/\s+/).length
+                  : 0}{" "}
+                / 1,500 words
+              </span>
             </label>
-            <label className={`mt-2.5 flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.04]"}`}>
-              <input type="checkbox" checked={wantsStaffContact} onChange={(event) => setWantsStaffContact(event.target.checked)} className="mt-0.5 h-4 w-4 accent-[#FFD54A]" />
-              <span className="text-sm font-medium">I would like to be contacted by a staff member in the Discord server.</span>
+            <label
+              className={`mt-2.5 flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.04]"}`}
+            >
+              <input
+                type="checkbox"
+                checked={wantsStaffContact}
+                onChange={(event) => setWantsStaffContact(event.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-[#FFD54A]"
+              />
+              <span className="text-sm font-medium">
+                I would like to be contacted by a staff member in the Discord
+                server.
+              </span>
             </label>
             {wantsStaffContact && (
               <label className="mt-3 block">
-                <span className="mb-1.5 block text-sm font-semibold">Your Discord username</span>
-                <input value={reporterDiscord} onChange={(event) => setReporterDiscord(event.target.value)} className={`w-full rounded-xl border px-3 py-2.5 text-base outline-none ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-900" : "border-white/10 bg-white/[0.05] text-white"}`} placeholder="Discord username" />
+                <span className="mb-1.5 block text-sm font-semibold">
+                  Your Discord username
+                </span>
+                <input
+                  value={reporterDiscord}
+                  onChange={(event) => setReporterDiscord(event.target.value)}
+                  className={`w-full rounded-xl border px-3 py-2.5 text-base outline-none ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-900" : "border-white/10 bg-white/[0.05] text-white"}`}
+                  placeholder="Discord username"
+                />
               </label>
             )}
             {reportError && (
