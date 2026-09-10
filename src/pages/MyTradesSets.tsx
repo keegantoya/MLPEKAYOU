@@ -184,7 +184,6 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     }
     return key;
   }
-  //  TCG Promos:// RR01-RR06// \u203BBP01-CR07-\u203BBP01-CR12// \u203BBP02-CR01-\u203BBP02-CR06
   if (currentSetId === "tcgpromos") {
     const match = key.match(/^RR(\d+)$/);
     if (match) {
@@ -201,7 +200,6 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     }
     return key;
   }
-  //  Friendships Begin / SD01.// P-prefixed rarities lose the P in display, and the reference mark// goes BEFORE the SD01 prefix:// SD01PER01 -> \u203BSD01-ER01// SD01PRR01 -> \u203BSD01-RR01// SD01PSPR01 -> \u203BSD01-SPR01
   if (currentSetId === "friendshipsbegin") {
     const match = key.match(
       /^SD01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|SR|ER|U|C)(\d+)$/,
@@ -369,7 +367,6 @@ export default function MyTradesSets() {
   }, []);
   useEffect(() => {
     const load = async (userOverride?: any) => {
-      //  Never overwrite unsaved inventory edits with a fresh database load.// Supabase can refresh the auth session when a browser tab becomes active.
       if (inventoryDirtyRef.current) {
         return;
       }
@@ -434,7 +431,6 @@ export default function MyTradesSets() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
-      //  Do not reload inventory for auth/session refresh events.// Those can happen when the browser tab becomes active and would// overwrite unsaved quantity edits with old database values.
       if (event === "SIGNED_OUT") {
         setProgressMap({});
         setMarketListings({});

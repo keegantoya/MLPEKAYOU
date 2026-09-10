@@ -1383,10 +1383,10 @@ style={{
           Please reserve these communications for serious inquiries, such as:
         </p>
         <ul className={`mt-3 space-y-1.5 text-sm ${isLightMode ? "text-[#6b6252]" : "text-zinc-400"}`}>
-          <li>â€¢ Bugs</li>
-          <li>â€¢ Glitches</li>
-          <li>â€¢ Account issues</li>
-          <li>â€¢ Discord server issues</li>
+          <li>Bugs</li>
+          <li>Glitches</li>
+          <li>Account issues</li>
+          <li>Discord server issues</li>
         </ul>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
