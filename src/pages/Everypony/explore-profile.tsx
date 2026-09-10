@@ -26,12 +26,12 @@ const {
   wishlistCards: userWishlistCards,
   tradeCards,
 } = usePublicProfileCards(user?.id);
+// Preserve the existing public trade-card source exactly as-is.
 const userTradeCards = tradeCards.filter(
   (x: any) => (x.listing_type || "trade") === "trade"
 );
-const userPurchaseCards = tradeCards.filter(
-  (x: any) => x.listing_type === "purchase"
-);
+const [saleListings, setSaleListings] = useState<any[]>([]);
+const [salesLoading, setSalesLoading] = useState(true);
 const [userProfileSettings, setuserProfileSettings] =
   useState({
     hide_iso: false,
@@ -54,6 +54,7 @@ const [alreadyFriends, setAlreadyFriends] = useState(false);
 const [copied, setCopied] = useState(false);
 const [discordUsername, setDiscordUsername] = useState("");
 const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
+const [copiedDiscord, setCopiedDiscord] = useState(false);
 const [isLightMode, setIsLightMode] = useState(
   () => document.documentElement.dataset.theme === "light"
 );
@@ -91,6 +92,22 @@ const { data: tradingProfileData } = await supabase
   .eq("user_id", user.id)
   .maybeSingle();
 setDiscordUsername(tradingProfileData?.discord_username || "");
+// Sales use the current listing table. Trades continue to use usePublicProfileCards above.
+const { data: saleRows, error: salesError } = await supabase
+  .from("card_market_listings")
+  .select("user_id, set_id, card_key, is_for_sale, asking_price, sale_quantity")
+  .eq("user_id", user.id);
+if (salesError) console.error("Failed to load sale listings:", salesError);
+setSaleListings(
+  (saleRows || [])
+    .filter((row: any) => Boolean(row.is_for_sale))
+    .map((row: any) => ({
+      ...row,
+      id: `${row.user_id}-${row.set_id}-${row.card_key}-sale`,
+      type: "sale",
+    }))
+);
+setSalesLoading(false);
 const { data: activityData } = await supabase
   .from("user_activity")
   .select("last_activity_at")
@@ -524,9 +541,8 @@ const { error } = await supabase
 function isMoon3DoubleWide(card: any) {
   if (!card) return false;
 const setId = String(card.set_id);
-const cardKey = String(card.card_key)
-    .replace(/^SZR-0*/, "SZR-");
-  return setId === "3" && cardKey === "SZR-1";
+const cardKey = String(card.card_key).toUpperCase();
+  return setId === "3" && /^SZR-0*1(?:L5)?$/.test(cardKey);
 }
 function getSetName(setId: string) {
 const names: Record<string, string> = {
@@ -595,14 +611,11 @@ const filteredIsoCards =
     (card) => String(card.set_id) === selectedSet
   );
 const allTradeCards = [
-  ...userTradeCards.map((card) => ({
+  ...userTradeCards.map((card: any) => ({
     ...card,
     type: "trade",
   })),
-  ...userPurchaseCards.map((card) => ({
-    ...card,
-    type: "sale",
-  })),
+  ...saleListings,
 ];
 const TRADE_SET_TABS = Array.from(
   new Set(allTradeCards.map((card) => String(card.set_id)))
@@ -899,13 +912,13 @@ return (
               <button
                 type="button"
                 onClick={() => {
-                  const url = `https://www.mlpekayou.community/${encodeURIComponent(
+const url = `https://www.mlpekayou.community/${encodeURIComponent(
                     user?.username ?? ""
                   )}`;
                   if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(url);
                   } else {
-                    const textArea = document.createElement("textarea");
+const textArea = document.createElement("textarea");
                     textArea.value = url;
                     textArea.style.position = "fixed";
                     textArea.style.left = "-999999px";
@@ -1074,7 +1087,11 @@ return (
             </div>
           </div>
           <div className="p-3 sm:p-5">
-            {filteredTradeCards.length === 0 ? (
+            {salesLoading ? (
+              <div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
+                Loading listings…
+              </div>
+            ) : filteredTradeCards.length === 0 ? (
               <div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                 No listings to show.
               </div>
@@ -1104,7 +1121,7 @@ return (
                     <span className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-[10px] font-semibold ${
                       isLightMode ? "bg-white/90 text-zinc-700" : "bg-black/70 text-white"
                     }`}>
-                      {card.type === "sale" ? "For Sale" : "Trade"}
+                      {card.type === "sale" ? `For Sale · $${Number(card.asking_price || 0).toFixed(2)}` : "Trade"}
                     </span>
                   </button>
                 ))}
@@ -1183,28 +1200,80 @@ return (
         }`}
         onClick={() => setQuickViewCard(null)}
       >
-        <button
-          type="button"
+        {quickViewCard.type === "sale" || quickViewCard.type === "trade" ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Card details"
           onClick={(e) => e.stopPropagation()}
-          className={`relative overflow-hidden rounded-[20px] bg-transparent ${
-            isMoon3DoubleWide(quickViewCard)
-              ? "w-[min(92vw,850px)]"
-              : "w-[min(82vw,425px)]"
+          className={`relative max-h-[calc(100dvh-2rem)] w-[min(94vw,590px)] overflow-y-auto rounded-[20px] border p-2.5 shadow-2xl sm:max-h-[min(520px,calc(100dvh-3rem))] sm:p-3 ${
+            isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#17191a]"
           }`}
         >
-          <img
-            src={getTradeCardImage(quickViewCard)}
-            alt={quickViewCard.card_key}
-            className={`block max-h-[76vh] w-full bg-transparent ${
-              String(quickViewCard.set_id) === "12" ||
-              String(quickViewCard.set_id) === "FW" ||
-              String(quickViewCard.set_id) === "SD" ||
-              String(quickViewCard.set_id) === "tcgpromos"
-                ? "object-contain"
-                : "scale-[1.05] object-cover"
+          <button
+            type="button"
+            aria-label="Close card details"
+            onClick={() => setQuickViewCard(null)}
+            className={`absolute right-3 top-3 z-10 rounded-full px-3 py-1.5 text-sm font-semibold ${
+              isLightMode ? "bg-white/90 text-zinc-700 shadow" : "bg-black/70 text-white"
             }`}
-          />
-        </button>
+          >
+            ×
+          </button>
+          <div className={isMoon3DoubleWide(quickViewCard) ? "grid grid-cols-1 gap-3" : "grid grid-cols-[minmax(0,150px)_minmax(0,1fr)] items-start gap-3 sm:grid-cols-[minmax(0,280px)_230px]"}>
+            <div className={`relative mx-auto w-full overflow-hidden rounded-md ${isMoon3DoubleWide(quickViewCard) ? "max-w-[440px] aspect-[10/7]" : "max-w-[150px] aspect-[5/7] sm:max-w-[280px]"}`}>
+              <img src={getTradeCardImage(quickViewCard)} alt={quickViewCard.card_key} className={`absolute inset-0 h-full w-full max-w-none ${String(quickViewCard.set_id) === "12" || String(quickViewCard.set_id) === "FW" || String(quickViewCard.set_id) === "SD" || String(quickViewCard.set_id) === "tcgpromos" ? "object-contain" : "scale-[1.05] object-cover"}`} />
+            </div>
+            <div className={`min-w-0 p-0.5 ${isMoon3DoubleWide(quickViewCard) ? "mx-auto grid w-full max-w-[440px] gap-3 sm:grid-cols-2" : "pt-9 sm:pt-2"}`}>
+              {quickViewCard.type === "sale" ? (
+                <div className={`rounded-2xl border p-3 ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.04]"}`}>
+                  <div className={`text-xs font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>For sale</div>
+                  <div className="mt-2 text-sm">Price: <span className="font-semibold">${Number(quickViewCard.asking_price || 0).toFixed(2)}</span></div>
+                  <div className="mt-2 text-sm">Available: <span className="font-semibold">{quickViewCard.sale_quantity ?? 0}</span></div>
+                </div>
+              ) : (
+                <div className={`rounded-2xl border p-3 ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.04]"}`}>
+                  <div className={`text-xs font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Available for trade</div>
+                  {quickViewCard.trade_quantity != null && <div className="mt-2 text-sm">Trade quantity: <span className="font-semibold">{quickViewCard.trade_quantity}</span></div>}
+                </div>
+              )}
+              <div className={`mt-3 rounded-2xl border p-3 ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-white/[0.03]"}`}>
+                <div className="flex items-center gap-3">
+                  <img src={avatar} alt={user?.username} className="h-11 w-11 rounded-xl object-cover" />
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold">{user?.username}</div>
+                    <div className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Listing owner</div>
+                  </div>
+                </div>
+                {discordUsername ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(discordUsername);
+                        setCopiedDiscord(true);
+                        window.setTimeout(() => setCopiedDiscord(false), 2500);
+                      } catch {
+                        console.error("Could not copy Discord username");
+                      }
+                    }}
+                    className={`mt-3 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium ${isLightMode ? "bg-[#c89d13]/12 text-[#725700] hover:bg-[#c89d13]/20" : "bg-[#FFD54A]/10 text-[#FFE27A] hover:bg-[#FFD54A]/15"}`}
+                  >
+                    <span>Discord: {discordUsername}</span>
+                    <span>{copiedDiscord ? "Copied" : "Copy"}</span>
+                  </button>
+                ) : (
+                  <div className={`mt-3 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>This user has not shared a Discord username.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        ) : (
+          <button type="button" aria-label="Close card preview" onClick={(event) => event.stopPropagation()} className={`relative overflow-hidden rounded-md bg-transparent ${isMoon3DoubleWide(quickViewCard) ? "w-[min(82vw,440px)] aspect-[10/7]" : "h-[min(46dvh,340px)] aspect-[5/7] sm:h-[min(55vh,420px)]"}`}>
+            <img src={getTradeCardImage(quickViewCard)} alt={quickViewCard.card_key} className={`absolute inset-0 h-full w-full max-w-none ${String(quickViewCard.set_id) === "12" || String(quickViewCard.set_id) === "FW" || String(quickViewCard.set_id) === "SD" || String(quickViewCard.set_id) === "tcgpromos" ? "object-contain" : "scale-[1.05] object-cover"}`} />
+          </button>
+        )}
       </div>
     )}
   </div>

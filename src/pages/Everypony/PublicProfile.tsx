@@ -14,12 +14,14 @@ const [discord, setDiscord] = useState("");
 const [copied, setCopied] = useState(false);
 const [showCollectionModal, setShowCollectionModal] = useState(false);
 const [collectionMode, setCollectionMode] = useState<
-  "iso" | "wishlist" | "trade"
+  "iso" | "wishlist" | "trade" | "sale"
 >("iso");
+const [marketListings, setMarketListings] = useState<any[]>([]);
 const [selectedSet, setSelectedSet] = useState("1");
 const [stats, setStats] = useState({
   owned: 0,
   trades: 0,
+  sales: 0,
   wishlist: 0,
 });
 const [hiddenIsoSets, setHiddenIsoSets] = useState<string[]>([]);
@@ -34,6 +36,14 @@ const [sendingRequest, setSendingRequest] = useState(false);
 const isEmbedded =
   typeof window !== "undefined" &&
   new URLSearchParams(window.location.search).get("embed") === "1";
+useEffect(() => {
+  if (!showCollectionModal) return;
+  const previousOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+  return () => {
+    document.body.style.overflow = previousOverflow;
+  };
+}, [showCollectionModal]);
 useEffect(() => {
 let cancelled = false;
 const loadProfile = async () => {
@@ -142,17 +152,17 @@ let owned = 0;
           (typeof value === "object" && value?.owned === true)
       ).length;
     });
-const { count: trades } = await supabase
-      .from("for_trade")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", profile.id);
+const { data: listings } = await supabase.from("card_market_listings").select("user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity, updated_at").eq("user_id", profile.id);
+const activeListings = (listings || []).filter((card: any) => (card.is_for_trade && Number(card.trade_quantity) > 0) || (card.is_for_sale && Number(card.sale_quantity) > 0));
+    setMarketListings(activeListings);
 const { count: wishlist } = await supabase
       .from("wishlists")
       .select("*", { count: "exact", head: true })
       .eq("user_id", profile.id);
     setStats({
       owned,
-      trades: trades ?? 0,
+      trades: activeListings.filter((card: any) => card.is_for_trade).length,
+      sales: activeListings.filter((card: any) => card.is_for_sale).length,
       wishlist: wishlist ?? 0,
     });
   };
@@ -162,9 +172,19 @@ const { avatar } = getProfileAssets(profile);
 const {
   isoCards,
   wishlistCards,
-  tradeCards,
+  tradeCards: legacyTradeCards,
   loading,
 } = usePublicProfileCards(profile?.id);
+const tradeCards = useMemo(() => {
+const merged = new Map<string, any>();
+  legacyTradeCards.forEach((card: any) => merged.set(`${card.set_id}:${card.card_key}`, { ...card, type: "trade", is_for_trade: true }));
+  marketListings.filter((card: any) => card.is_for_trade && Number(card.trade_quantity) > 0).forEach((card: any) => {
+const key = `${card.set_id}:${card.card_key}`;
+    merged.set(key, { ...(merged.get(key) || {}), ...card, type: "trade", is_for_trade: true });
+  });
+  return Array.from(merged.values());
+}, [legacyTradeCards, marketListings]);
+const saleCards = useMemo(() => marketListings.filter((card: any) => card.is_for_sale && Number(card.sale_quantity) > 0).map((card: any) => ({ ...card, type: "sale" })), [marketListings]);
 const getSetName = (setId: string) => {
 const names: Record<string, string> = {
     "1": "Moon One",
@@ -218,10 +238,12 @@ const modalCards = useMemo(() => {
       return wishlistCards;
     case "trade":
       return tradeCards;
+    case "sale":
+      return saleCards;
     default:
       return visibleIsoCards;
   }
-}, [collectionMode, visibleIsoCards, wishlistCards, tradeCards]);
+}, [collectionMode, visibleIsoCards, wishlistCards, tradeCards, saleCards]);
 const modalTabs = useMemo(() => {
   return Array.from(
     new Set(modalCards.map((c: any) => String(c.set_id)))
@@ -308,17 +330,19 @@ const modeLabel =
       ? "ISO"
       : collectionMode === "wishlist"
       ? "Wishlist"
+      : collectionMode === "sale"
+      ? "For Sale"
       : "For Trade";
   return (
     <div
-      className={`fixed inset-0 z-[9999] overflow-y-auto p-3 backdrop-blur-md sm:flex sm:items-center sm:justify-center sm:overflow-hidden sm:p-8 ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden p-3 backdrop-blur-md sm:p-8 ${
         isLightMode ? "bg-white/35" : "bg-black/80"
       }`}
       onClick={() => setShowCollectionModal(false)}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`relative flex min-h-full w-full flex-col overflow-hidden rounded-[28px] border ${
+        className={`relative flex h-[min(82dvh,620px)] min-h-0 w-full max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[22px] border sm:rounded-[28px] ${
           isEmbedded
             ? "sm:h-[88vh] sm:min-h-0 sm:w-[94vw] sm:max-w-[980px] sm:flex-row"
             : "sm:h-[72vh] sm:min-h-0 sm:w-[78vw] sm:max-w-[1080px] sm:flex-row"
@@ -450,6 +474,8 @@ const rarityDiff = order.indexOf(getRarity(a)) - order.indexOf(getRarity(b));
                             : "scale-[1.05] object-cover"
                         }`}
                       />
+                      {(card.is_for_trade || card.is_for_sale) && <div className="absolute left-1.5 top-1.5 flex gap-1">{card.is_for_trade && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">⇄</span>}{card.is_for_sale && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-black">$</span>}</div>}
+                      {card.is_for_sale && card.asking_price != null && <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/80 px-2 py-1 text-[10px] font-bold text-white">${Number(card.asking_price).toFixed(2)}</span>}
                     </div>
                   ))}
               </div>
@@ -624,8 +650,8 @@ const textArea = document.createElement("textarea");
       <section
         className={
           isEmbedded
-            ? "mt-3 grid gap-3 lg:grid-cols-2 2xl:grid-cols-3"
-            : "mt-4 grid gap-4 xl:grid-cols-3"
+            ? "mt-3 grid gap-3 lg:grid-cols-2 2xl:grid-cols-4"
+            : "mt-4 grid gap-4 xl:grid-cols-4"
         }
       >
         {[
@@ -645,7 +671,13 @@ const textArea = document.createElement("textarea");
             title: "For Trade",
             cards: tradeCards,
             mode: "trade" as const,
-            count: stats.trades,
+            count: tradeCards.length,
+          },
+          {
+            title: "For Sale",
+            cards: saleCards,
+            mode: "sale" as const,
+            count: stats.sales,
           },
         ].map((section) => (
           <div
@@ -723,6 +755,8 @@ const textArea = document.createElement("textarea");
                           : "scale-[1.05] object-cover"
                       }`}
                     />
+                    {(card.is_for_trade || card.is_for_sale) && <div className="absolute left-1.5 top-1.5 flex gap-1">{card.is_for_trade && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">⇄</span>}{card.is_for_sale && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-black">$</span>}</div>}
+                    {card.is_for_sale && card.asking_price != null && <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/80 px-2 py-1 text-[10px] font-bold text-white">${Number(card.asking_price).toFixed(2)}</span>}
                   </div>
                 ))}
               </div>
