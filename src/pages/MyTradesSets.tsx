@@ -991,14 +991,14 @@ export default function MyTradesSets() {
       <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
         {selectedCard && listingDraft && (
           <div
-            className="fixed inset-0 z-[150] flex items-center justify-center overflow-y-auto bg-black/65 p-3 backdrop-blur-md sm:p-5"
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-black/65 p-2 backdrop-blur-md sm:p-5"
             role="dialog"
             aria-modal="true"
             aria-labelledby="card-details-title"
             onMouseDown={(event) => event.preventDefault()}
           >
             <div
-              className={`my-auto w-full max-w-4xl overflow-hidden rounded-[26px] shadow-2xl ${
+              className={`max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-[20px] shadow-2xl md:max-w-4xl md:rounded-[26px] ${
                 isLightMode
                   ? "bg-white text-zinc-900"
                   : "bg-[#17191a] text-white"
@@ -1007,7 +1007,7 @@ export default function MyTradesSets() {
             >
               <div className="grid md:grid-cols-[minmax(250px,0.85fr)_minmax(320px,1.15fr)]">
                 <div
-                  className={`flex items-center justify-center p-4 sm:p-6 ${
+                  className={`flex items-center justify-center p-2.5 sm:p-6 ${
                     isLightMode ? "bg-zinc-100" : "bg-black/25"
                   }`}
                 >
@@ -1016,9 +1016,9 @@ export default function MyTradesSets() {
                       set.id === "3" &&
                       selectedCard.rarity === "SZR" &&
                       selectedCard.number === 1
-                        ? "max-w-[520px] aspect-[10/7]"
-                        : "max-w-[310px] aspect-[5/7]"
-                    } overflow-hidden rounded-2xl`}
+                        ? "aspect-[10/7] max-w-[170px] md:max-w-[520px]"
+                        : "aspect-[5/7] max-w-[105px] md:max-w-[310px]"
+                    } overflow-hidden rounded-xl md:rounded-2xl`}
                   >
                     <img
                       src={
@@ -1038,10 +1038,10 @@ export default function MyTradesSets() {
                     />
                   </div>
                 </div>
-                <div className="flex flex-col p-4 sm:p-6">
+                <div className="flex flex-col p-3 sm:p-6">
                   <div>
                     <div
-                      className={`text-xs font-medium uppercase tracking-[0.18em] ${
+                      className={`text-[10px] font-medium uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em] ${
                         isLightMode ? "text-zinc-500" : "text-zinc-400"
                       }`}
                     >
@@ -1049,12 +1049,12 @@ export default function MyTradesSets() {
                     </div>
                     <h2
                       id="card-details-title"
-                      className="mt-1 text-2xl font-bold"
+                      className="mt-0.5 text-lg font-bold sm:mt-1 sm:text-2xl"
                     >
                       {getDisplayCode(selectedCard, set.id)}
                     </h2>
                   </div>
-                  <div className="mt-5 grid grid-cols-2 gap-2">
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5">
                     <button
                       type="button"
                       onClick={() =>
@@ -1067,7 +1067,7 @@ export default function MyTradesSets() {
                               : listingDraft.tradeQuantity,
                         })
                       }
-                      className={`min-h-12 rounded-xl px-3 py-3 text-sm font-bold transition ${
+                      className={`min-h-10 rounded-xl px-2 py-2 text-xs font-bold transition sm:min-h-12 sm:px-3 sm:py-3 sm:text-sm ${
                         listingDraft.isForTrade
                           ? "bg-emerald-500 text-white"
                           : isLightMode
@@ -1091,7 +1091,7 @@ export default function MyTradesSets() {
                               : listingDraft.saleQuantity,
                         })
                       }
-                      className={`min-h-12 rounded-xl px-3 py-3 text-sm font-bold transition ${
+                      className={`min-h-10 rounded-xl px-2 py-2 text-xs font-bold transition sm:min-h-12 sm:px-3 sm:py-3 sm:text-sm ${
                         listingDraft.isForSale
                           ? "bg-sky-500 text-white"
                           : isLightMode
@@ -1104,9 +1104,9 @@ export default function MyTradesSets() {
                         : "Mark for sale"}
                     </button>
                   </div>
-                  <div className="mt-5 space-y-3">
+                  <div className="mt-3 space-y-2 sm:mt-5 sm:space-y-3">
                     <label
-                      className={`block rounded-xl p-3 ${
+                      className={`block rounded-xl px-2.5 py-2 sm:p-3 ${
                         listingDraft.isForSale
                           ? isLightMode
                             ? "bg-zinc-100"
@@ -1116,8 +1116,10 @@ export default function MyTradesSets() {
                             : "bg-white/[0.025] text-zinc-600"
                       }`}
                     >
-                      <span className="text-sm font-semibold">Looking for</span>
-                      <div className="mt-2 flex items-center gap-2">
+                      <span className="text-xs font-semibold sm:text-sm">
+                        Looking for
+                      </span>
+                      <div className="mt-1 flex items-center gap-2 sm:mt-2">
                         <span className="font-semibold">$</span>
                         <input
                           type="text"
@@ -1134,7 +1136,7 @@ export default function MyTradesSets() {
                         />
                       </div>
                     </label>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
                       {[
                         {
                           label: "Personal quantity",
@@ -1154,7 +1156,7 @@ export default function MyTradesSets() {
                       ].map((field) => (
                         <label
                           key={field.key}
-                          className={`rounded-xl p-3 ${
+                          className={`min-w-0 rounded-xl p-2 sm:p-3 ${
                             field.enabled
                               ? isLightMode
                                 ? "bg-zinc-100"
@@ -1164,7 +1166,7 @@ export default function MyTradesSets() {
                                 : "bg-white/[0.025] text-zinc-600"
                           }`}
                         >
-                          <span className="text-sm font-semibold">
+                          <span className="block min-h-7 text-[10px] font-semibold leading-tight sm:min-h-0 sm:text-sm">
                             {field.label}
                           </span>
                           <input
@@ -1180,14 +1182,14 @@ export default function MyTradesSets() {
                                 });
                               }
                             }}
-                            className="mt-2 w-full bg-transparent text-base font-bold outline-none disabled:cursor-not-allowed"
+                            className="mt-1 w-full bg-transparent text-base font-bold outline-none disabled:cursor-not-allowed sm:mt-2"
                           />
                         </label>
                       ))}
                     </div>
                   </div>
                   {cardSaveError && (
-                    <div className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm font-medium text-red-500">
+                    <div className="mt-2 rounded-xl bg-red-500/10 px-3 py-2 text-xs font-medium text-red-500 sm:mt-4 sm:text-sm">
                       {cardSaveError}
                     </div>
                   )}
@@ -1195,12 +1197,12 @@ export default function MyTradesSets() {
                     type="button"
                     onClick={saveCardDetails}
                     disabled={isSavingCard}
-                    className="mt-5 min-h-12 w-full rounded-xl bg-[#FFD54A] px-5 py-3 text-base font-bold text-black transition hover:bg-[#ffe277] disabled:cursor-wait disabled:opacity-60"
+                    className="mt-3 min-h-10 w-full rounded-xl bg-[#FFD54A] px-4 py-2 text-sm font-bold text-black transition hover:bg-[#ffe277] disabled:cursor-wait disabled:opacity-60 sm:mt-5 sm:min-h-12 sm:px-5 sm:py-3 sm:text-base"
                   >
                     {isSavingCard ? "Saving..." : "Save"}
                   </button>
                   <p
-                    className={`mt-2 text-center text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
+                    className={`mt-1.5 text-center text-[10px] sm:mt-2 sm:text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
                   >
                     Save your changes before returning to your inventory.
                   </p>
