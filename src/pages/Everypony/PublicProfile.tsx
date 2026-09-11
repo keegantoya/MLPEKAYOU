@@ -6,47 +6,47 @@ import NotFound from "../NotFound";
 import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import { getTradeCardImage } from "@/lib/card-images";
 export default function PublicProfile() {
-const { username } = useParams();
-const [profile, setProfile] = useState<any>(null);
-const [profileLoading, setProfileLoading] = useState(true);
-const [profileNotFound, setProfileNotFound] = useState(false);
-const [discord, setDiscord] = useState("");
-const [copied, setCopied] = useState(false);
-const [showCollectionModal, setShowCollectionModal] = useState(false);
-const [collectionMode, setCollectionMode] = useState<
+  const { username } = useParams();
+  const [profile, setProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileNotFound, setProfileNotFound] = useState(false);
+  const [discord, setDiscord] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [showCollectionModal, setShowCollectionModal] = useState(false);
+  const [collectionMode, setCollectionMode] = useState<
     "iso" | "wishlist" | "trade" | "sale"
   >("iso");
-const [marketListings, setMarketListings] = useState<any[]>([]);
-const [selectedSet, setSelectedSet] = useState("1");
-const [stats, setStats] = useState({
+  const [marketListings, setMarketListings] = useState<any[]>([]);
+  const [selectedSet, setSelectedSet] = useState("1");
+  const [stats, setStats] = useState({
     owned: 0,
     trades: 0,
     sales: 0,
     wishlist: 0,
   });
-const [hiddenIsoSets, setHiddenIsoSets] = useState<string[]>([]);
-const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
-const [isLightMode, setIsLightMode] = useState(
+  const [hiddenIsoSets, setHiddenIsoSets] = useState<string[]>([]);
+  const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
+  const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-const [currentUserId, setCurrentUserId] = useState("");
-const [isFriend, setIsFriend] = useState(false);
-const [requestPending, setRequestPending] = useState(false);
-const [sendingRequest, setSendingRequest] = useState(false);
-const isEmbedded =
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [isFriend, setIsFriend] = useState(false);
+  const [requestPending, setRequestPending] = useState(false);
+  const [sendingRequest, setSendingRequest] = useState(false);
+  const isEmbedded =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("embed") === "1";
   useEffect(() => {
     if (!showCollectionModal) return;
-const previousOverflow = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [showCollectionModal]);
   useEffect(() => {
-let cancelled = false;
-const loadProfile = async () => {
+    let cancelled = false;
+    const loadProfile = async () => {
       setProfileLoading(true);
       setProfileNotFound(false);
       setProfile(null);
@@ -57,11 +57,11 @@ const loadProfile = async () => {
         }
         return;
       }
-const { data: profiles, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
         .select("*");
       if (cancelled) return;
-const profileData = (profiles || []).find(
+      const profileData = (profiles || []).find(
         (p: any) =>
           String(p.username).toLowerCase() === String(username).toLowerCase(),
       );
@@ -71,8 +71,8 @@ const profileData = (profiles || []).find(
         return;
       }
       setProfile(profileData);
-const legacyHidden = profileData.iso_hidden_sets || [];
-const hidden = [
+      const legacyHidden = profileData.iso_hidden_sets || [];
+      const hidden = [
         ...(profileData.iso_hidden_sets?.length
           ? profileData.iso_hidden_sets
           : legacyHidden),
@@ -81,21 +81,21 @@ const hidden = [
           : legacyHidden),
       ];
       setHiddenIsoSets(hidden);
-const { data: tradingProfile } = await supabase
+      const { data: tradingProfile } = await supabase
         .from("trading_profiles")
         .select("discord_username")
         .eq("user_id", profileData.id)
         .maybeSingle();
       if (cancelled) return;
       setDiscord(tradingProfile?.discord_username || "");
-const {
+      const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!cancelled) {
         setCurrentUserId(session?.user?.id || "");
       }
       if (session?.user && session.user.id !== profileData.id) {
-const [{ data: friendship }, { data: pendingRequest }] =
+        const [{ data: friendship }, { data: pendingRequest }] =
           await Promise.all([
             supabase
               .from("friends")
@@ -119,7 +119,7 @@ const [{ data: friendship }, { data: pendingRequest }] =
         setIsFriend(false);
         setRequestPending(false);
       }
-const { data: activityData } = await supabase
+      const { data: activityData } = await supabase
         .from("user_activity")
         .select("last_activity_at")
         .eq("user_id", profileData.id)
@@ -135,16 +135,16 @@ const { data: activityData } = await supabase
     };
   }, [username]);
   useEffect(() => {
-const loadStats = async () => {
+    const loadStats = async () => {
       if (!profile?.id) return;
-const { data: collection } = await supabase
+      const { data: collection } = await supabase
         .from("collection_progress_raw")
         .select("set_id, progress")
         .eq("user_id", profile.id);
-const filtered = (collection || []).filter(
+      const filtered = (collection || []).filter(
         (row: any) => row.set_id !== "OTHERMERCH",
       );
-let owned = 0;
+      let owned = 0;
       filtered.forEach((row: any) => {
         owned += Object.values(row.progress || {}).filter(
           (value: any) =>
@@ -152,19 +152,19 @@ let owned = 0;
             (typeof value === "object" && value?.owned === true),
         ).length;
       });
-const { data: listings } = await supabase
+      const { data: listings } = await supabase
         .from("card_market_listings")
         .select(
           "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity, updated_at",
         )
         .eq("user_id", profile.id);
-const activeListings = (listings || []).filter(
+      const activeListings = (listings || []).filter(
         (card: any) =>
           (card.is_for_trade && Number(card.trade_quantity) > 0) ||
           (card.is_for_sale && Number(card.sale_quantity) > 0),
       );
       setMarketListings(activeListings);
-const { count: wishlist } = await supabase
+      const { count: wishlist } = await supabase
         .from("wishlists")
         .select("*", { count: "exact", head: true })
         .eq("user_id", profile.id);
@@ -177,11 +177,11 @@ const { count: wishlist } = await supabase
     };
     loadStats();
   }, [profile]);
-const { avatar } = getProfileAssets(profile);
-const { isoCards, wishlistCards, loading } = usePublicProfileCards(
+  const { avatar } = getProfileAssets(profile);
+  const { isoCards, wishlistCards, loading } = usePublicProfileCards(
     profile?.id,
   );
-const tradeCards = useMemo(() => {
+  const tradeCards = useMemo(() => {
     return marketListings
       .filter(
         (card: any) => card.is_for_trade && Number(card.trade_quantity) > 0,
@@ -191,7 +191,7 @@ const tradeCards = useMemo(() => {
         type: "trade",
       }));
   }, [marketListings]);
-const saleCards = useMemo(
+  const saleCards = useMemo(
     () =>
       marketListings
         .filter(
@@ -200,8 +200,8 @@ const saleCards = useMemo(
         .map((card: any) => ({ ...card, type: "sale" })),
     [marketListings],
   );
-const getSetName = (setId: string) => {
-const names: Record<string, string> = {
+  const getSetName = (setId: string) => {
+    const names: Record<string, string> = {
       "1": "Moon One",
       "2": "Moon Two",
       "3": "Moon Three",
@@ -221,10 +221,10 @@ const names: Record<string, string> = {
     };
     return names[String(setId)] ?? String(setId);
   };
-const visibleIsoCards = useMemo(
+  const visibleIsoCards = useMemo(
     () =>
       isoCards.filter((card: any) => {
-const setId = String(card.set_id);
+        const setId = String(card.set_id);
         if (hiddenIsoSets.includes(setId)) {
           return false;
         }
@@ -243,7 +243,7 @@ const setId = String(card.set_id);
       }),
     [isoCards, hiddenIsoSets],
   );
-const modalCards = useMemo(() => {
+  const modalCards = useMemo(() => {
     switch (collectionMode) {
       case "wishlist":
         return wishlistCards;
@@ -255,13 +255,13 @@ const modalCards = useMemo(() => {
         return visibleIsoCards;
     }
   }, [collectionMode, visibleIsoCards, wishlistCards, tradeCards, saleCards]);
-const modalTabs = useMemo(() => {
+  const modalTabs = useMemo(() => {
     return Array.from(new Set(modalCards.map((c: any) => String(c.set_id))));
   }, [modalCards]);
-const filteredCards = modalCards.filter(
+  const filteredCards = modalCards.filter(
     (c: any) => String(c.set_id) === selectedSet,
   );
-const activityStatus = (() => {
+  const activityStatus = (() => {
     if (!lastActivityAt) {
       return {
         label: "Inactive",
@@ -270,7 +270,7 @@ const activityStatus = (() => {
         dotClass: "bg-zinc-400",
       };
     }
-const age = Date.now() - new Date(lastActivityAt).getTime();
+    const age = Date.now() - new Date(lastActivityAt).getTime();
     if (age <= 24 * 60 * 60 * 1000) {
       return {
         label: "Active in the last 24 Hours",
@@ -297,22 +297,22 @@ const age = Date.now() - new Date(lastActivityAt).getTime();
     };
   })();
   useEffect(() => {
-const syncTheme = () => {
+    const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
     syncTheme();
-const observer = new MutationObserver(syncTheme);
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
     return () => observer.disconnect();
   }, []);
-async function sendFriendRequest() {
+  async function sendFriendRequest() {
     if (!currentUserId || !profile?.id || currentUserId === profile.id) return;
     if (isFriend || requestPending || sendingRequest) return;
     setSendingRequest(true);
-const { data: targetProfile } = await supabase
+    const { data: targetProfile } = await supabase
       .from("profiles")
       .select("allow_friend_requests")
       .eq("id", profile.id)
@@ -322,7 +322,7 @@ const { data: targetProfile } = await supabase
       setSendingRequest(false);
       return;
     }
-const { error } = await supabase.from("friend_requests").insert({
+    const { error } = await supabase.from("friend_requests").insert({
       sender_id: currentUserId,
       receiver_id: profile.id,
       status: "pending",
@@ -332,9 +332,9 @@ const { error } = await supabase.from("friend_requests").insert({
     }
     setSendingRequest(false);
   }
-const CollectionModal = () => {
+  const CollectionModal = () => {
     if (!showCollectionModal) return null;
-const modeLabel =
+    const modeLabel =
       collectionMode === "iso"
         ? "ISO"
         : collectionMode === "wishlist"
@@ -460,7 +460,7 @@ const modeLabel =
                   {filteredCards
                     .slice()
                     .sort((a: any, b: any) => {
-const rarityOrder: Record<string, string[]> = {
+                      const rarityOrder: Record<string, string[]> = {
                         "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
                         "2": [
                           "R",
@@ -577,9 +577,23 @@ const rarityOrder: Record<string, string[]> = {
                           "PCR",
                           "PRR",
                         ],
-                        "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "PER", "PSPR", "PGR", "PCR", "PRR"],
+                        "14": [
+                          "C",
+                          "U",
+                          "ER",
+                          "SR",
+                          "SPR",
+                          "GR",
+                          "CR",
+                          "RR",
+                          "PER",
+                          "PSPR",
+                          "PGR",
+                          "PCR",
+                          "PRR",
+                        ],
                       };
-const getRarity = (card: any) => {
+                      const getRarity = (card: any) => {
                         if (card.set_id === "FW")
                           return (
                             card.card_key.match(/BP01([A-Z]+)d+/)?.[1] ?? ""
@@ -601,12 +615,12 @@ const getRarity = (card: any) => {
                           );
                         return card.card_key.split("-")[0];
                       };
-const getNumber = (card: any) => {
-const match = card.card_key.match(/(d+)$/);
+                      const getNumber = (card: any) => {
+                        const match = card.card_key.match(/(d+)$/);
                         return match ? parseInt(match[1], 10) : 0;
                       };
-const order = rarityOrder[String(a.set_id)] ?? [];
-const rarityDiff =
+                      const order = rarityOrder[String(a.set_id)] ?? [];
+                      const rarityDiff =
                         order.indexOf(getRarity(a)) -
                         order.indexOf(getRarity(b));
                       if (rarityDiff !== 0) return rarityDiff;
@@ -624,6 +638,22 @@ const rarityDiff =
                       >
                         <img
                           src={getTradeCardImage(card)}
+                          style={
+                            String(card.set_id) === "14" &&
+                            /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key)
+                              ? {
+                                  left: "50%",
+                                  top: "50%",
+                                  right: "auto",
+                                  bottom: "auto",
+                                  width: "140%",
+                                  height: "71.4285714286%",
+                                  maxWidth: "none",
+                                  transform:
+                                    "translate(-50%, -50%) rotate(-90deg)",
+                                }
+                              : undefined
+                          }
                           alt={card.card_key}
                           className={`absolute inset-0 h-full w-full bg-transparent ${
                             [
@@ -826,11 +856,11 @@ const rarityDiff =
                   <button
                     type="button"
                     onClick={() => {
-const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
+                      const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
                       if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(url);
                       } else {
-const textArea = document.createElement("textarea");
+                        const textArea = document.createElement("textarea");
                         textArea.value = url;
                         textArea.style.position = "fixed";
                         textArea.style.left = "-999999px";
@@ -1001,6 +1031,22 @@ const textArea = document.createElement("textarea");
                     >
                       <img
                         src={getTradeCardImage(card)}
+                        style={
+                          String(card.set_id) === "14" &&
+                          /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key)
+                            ? {
+                                left: "50%",
+                                top: "50%",
+                                right: "auto",
+                                bottom: "auto",
+                                width: "140%",
+                                height: "71.4285714286%",
+                                maxWidth: "none",
+                                transform:
+                                  "translate(-50%, -50%) rotate(-90deg)",
+                              }
+                            : undefined
+                        }
                         alt={card.card_key}
                         className={`absolute inset-0 h-full w-full bg-transparent ${
                           [
@@ -1008,7 +1054,7 @@ const textArea = document.createElement("textarea");
                             "SD",
                             "friendshipsbegin",
                             "12",
-                              "14",
+                            "14",
                             "tcgpromos",
                           ].includes(String(card.set_id))
                             ? "object-contain"

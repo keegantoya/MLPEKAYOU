@@ -397,7 +397,7 @@ const cards = Object.entries(set.rarities).flatMap(
     if (set.id === "14") {
       if (rarity === "ER") {
         return ["01", "02"].flatMap((number) =>
-          ["A", "B", "C"].map((variant) => ({
+          ["AA", "BB", "CC"].map((variant) => ({
             rarity,
             key: `BP03-ER${number}-${variant}`,
             characters: [],
@@ -421,7 +421,7 @@ const cards = Object.entries(set.rarities).flatMap(
         }));
       }
       if (rarity === "PSPR") {
-        return ["01", "02", "05", "10", "14", "15", "16", "18", "23", "24", "26"].map((number) => ({
+        return ["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map((number) => ({
           rarity,
           key: `PBP03-SPR${number}`,
           characters: [],

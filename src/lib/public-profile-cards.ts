@@ -390,17 +390,17 @@ export function usePublicProfileCards(userId?: string) {
         ),
         ...["07", "08", "09", "11", "12"].map((number) => `PBP03-GR${number}`),
         ...[
-          "01",
-          "02",
-          "05",
-          "10",
-          "14",
-          "15",
+          "03",
+          "04",
+          "06",
+          "08",
+          "11",
           "16",
-          "18",
+          "17",
+          "19",
+          "20",
           "23",
-          "24",
-          "26",
+          "25",
         ].map((number) => `PBP03-SPR${number}`),
         ...Array.from(
           { length: 12 },
@@ -421,43 +421,6 @@ export function usePublicProfileCards(userId?: string) {
             set_id: "14",
             card_key: cardKey,
           });
-        }
-      });
-      // Friendships Begin (SD)
-      const sdProgress = progressMap["SD"] || {};
-      const SD_STRUCTURE = [
-        { prefix: "SD01C", count: 9 },
-        { prefix: "SD01U", count: 7 },
-        { prefix: "SD01SR", count: 6 },
-        { prefix: "SD01SPR", count: 10 },
-        { prefix: "SD01GR", count: 6 },
-        { prefix: "SD01CR", count: 6 },
-        { prefix: "SD01ER", count: 6 },
-        { prefix: "SD01PER", count: 12 },
-        { prefix: "SD01PRR", count: 6 },
-      ];
-      SD_STRUCTURE.forEach(({ prefix, count }) => {
-        for (let i = 0; i < count; i++) {
-          let cardKey = "";
-          if (prefix === "SD01PER") {
-            cardKey = `${prefix}${String(i + 7).padStart(2, "0")}`;
-          } else if (prefix === "SD01ER") {
-            cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
-          } else {
-            cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
-          }
-          const value = sdProgress[`BONUS-${cardKey}`];
-          const owned =
-            value === true ||
-            (typeof value === "object" &&
-              value !== null &&
-              value.owned === true);
-          if (!owned) {
-            iso.push({
-              set_id: "SD",
-              card_key: `BONUS-${cardKey}`,
-            });
-          }
         }
       });
       // Everything else (Rainbow, Fun, Star, Promos, etc.)

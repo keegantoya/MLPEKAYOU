@@ -280,6 +280,9 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${reference}BP02-${displayRarity}${number}`;
     }
   }
+  if (currentSetId === "14" && key.startsWith("PBP03-")) {
+    return `※${key.slice(1)}`;
+  }
   //  All SN cards display the S rarity as a diamond.// The normal set keys are "SN-1", "SN-2", etc.
   if (key.startsWith("SN-")) {
     return `\u25C7N-${key.slice(3)}`;
@@ -884,7 +887,9 @@ export default function MyTradesSets() {
     const nightmareKeys = [
       ...Array.from({ length: 48 }, (_, i) => `BP03-C${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 18 }, (_, i) => `BP03-U${String(i + 1).padStart(2, "0")}`),
-      ...["01", "02"].flatMap((n) => ["A", "B", "C"].map((v) => `BP03-ER${n}-${v}`)),
+...["01", "02"].flatMap((n) =>
+  ["A", "B", "C"].map((v) => `BP03-ER${n}-${v}`),
+),
       ...Array.from({ length: 14 }, (_, i) => `BP03-SR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 28 }, (_, i) => `BP03-SPR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 12 }, (_, i) => `BP03-GR${String(i + 1).padStart(2, "0")}`),
@@ -892,7 +897,7 @@ export default function MyTradesSets() {
       ...Array.from({ length: 6 }, (_, i) => `BP03-RR${String(i + 1).padStart(2, "0")}`),
       ...["01", "02"].flatMap((n) => ["A", "A2", "B", "B2", "C", "C2"].map((v) => `PBP03-ER${n}-${v}`)),
       ...["07", "08", "09", "11", "12"].map((n) => `PBP03-GR${n}`),
-      ...["01", "02", "05", "10", "14", "15", "16", "18", "23", "24", "26"].map((n) => `PBP03-SPR${n}`),
+      ...["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map((n) => `PBP03-SPR${n}`),
       ...Array.from({ length: 12 }, (_, i) => `PBP03-CR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 6 }, (_, i) => `PBP03-RR${String(i + 1).padStart(2, "0")}`),
     ];
@@ -911,12 +916,16 @@ export default function MyTradesSets() {
       if (key.startsWith("BP03-C")) return "C";
       return "RR";
     };
-    cards = nightmareKeys.map((key) => ({
-      key,
-      rarity: nightmareRarity(key),
-      number: Number(key.match(/(\d{2})(?=-|$)/)?.[1] || 0),
-      image: `/cards/nightmare-night/${key}.webp`,
-    }));
+    cards = nightmareKeys.map((key) => {
+      const erMatch = key.match(/^BP03-ER(0[12])-([ABC])$/);
+      const imageKey = erMatch ? `${key}${erMatch[2]}` : key;
+      return {
+        key,
+        rarity: nightmareRarity(key),
+        number: Number(key.match(/(\d{2})(?=-|$)/)?.[1] || 0),
+        image: `/cards/nightmare-night/${imageKey}.webp`,
+      };
+    });
   } else if (set.id === "12") {
     const DISCORD_STRUCTURE = [
       { prefix: "BP02-C", count: 48 },

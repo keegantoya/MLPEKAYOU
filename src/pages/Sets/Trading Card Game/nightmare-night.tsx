@@ -3,17 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import TiltCard from "@/components/TiltCards";
 const NightmareNight = () => {
-const navigate = useNavigate();
-const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-const [loaded, setLoaded] = useState(false);
-const [lastSavedProgress, setLastSavedProgress] = useState("");
-const [viewMode, setViewMode] = useState(false);
-const [selectedRarity, setSelectedRarity] = useState("C");
-const [zoomedCard, setZoomedCard] = useState<string | null>(null);
-const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
-const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
-const [zoomedCardKey, setZoomedCardKey] = useState<string | null>(null);
-const set = {
+  const navigate = useNavigate();
+  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+  const [loaded, setLoaded] = useState(false);
+  const [lastSavedProgress, setLastSavedProgress] = useState("");
+  const [viewMode, setViewMode] = useState(false);
+  const [selectedRarity, setSelectedRarity] = useState("C");
+  const [zoomedCard, setZoomedCard] = useState<string | null>(null);
+  const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
+  const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
+  const [zoomedCardKey, setZoomedCardKey] = useState<string | null>(null);
+  const set = {
     folder: "nightmare-night",
     setId: "14",
     rarities: {
@@ -32,7 +32,7 @@ const set = {
       PRR: 6,
     },
   };
-const rarityNames: Record<string, string> = {
+  const rarityNames: Record<string, string> = {
     C: "COMMON",
     U: "UNCOMMON",
     ER: "EMERALD RARE",
@@ -47,7 +47,7 @@ const rarityNames: Record<string, string> = {
     PCR: "SHINING COLORFUL RARE",
     PRR: "SHINING RUBY RARE",
   };
-const cards = Object.entries(set.rarities).flatMap(([rarity]) => {
+  const cards = Object.entries(set.rarities).flatMap(([rarity]) => {
     if (rarity === "ER") {
       return ["01", "02"].flatMap((number) =>
         ["A", "B", "C"].map((variant) => ({
@@ -72,17 +72,17 @@ const cards = Object.entries(set.rarities).flatMap(([rarity]) => {
     }
     if (rarity === "PSPR") {
       return [
-        "01",
-        "02",
-        "05",
-        "10",
-        "14",
-        "15",
+        "03",
+        "04",
+        "06",
+        "08",
+        "11",
         "16",
-        "18",
+        "17",
+        "19",
+        "20",
         "23",
-        "24",
-        "26",
+        "25",
       ].map((number) => ({ rarity, key: `PBP03-SPR${number}` }));
     }
     if (rarity === "PCR") {
@@ -97,84 +97,74 @@ const cards = Object.entries(set.rarities).flatMap(([rarity]) => {
         key: `PBP03-RR${String(i + 1).padStart(2, "0")}`,
       }));
     }
-const count = set.rarities[rarity as keyof typeof set.rarities];
+    const count = set.rarities[rarity as keyof typeof set.rarities];
     return Array.from({ length: count }, (_, i) => ({
       rarity,
       key: `BP03-${rarity}${String(i + 1).padStart(2, "0")}`,
     }));
   });
-const isRarityComplete = (rarity: string) => {
-    if (rarity === "PSPR" || rarity === "PRR") return false;
-const total = set.rarities[rarity as keyof typeof set.rarities];
-const owned = cards.filter(
+  const isRarityComplete = (rarity: string) => {
+    const total = set.rarities[rarity as keyof typeof set.rarities];
+    const owned = cards.filter(
       (card) => card.rarity === rarity && flipped[card.key],
     ).length;
     return owned === total;
   };
-const getRarityCode = (rarity: string) => {
+  const getRarityCode = (rarity: string) => {
     return rarity;
   };
-const getDisplayCardCode = (key: string) => {
-const parallelMatch = key.match(
+  const getDisplayCardCode = (key: string) => {
+    const parallelMatch = key.match(
       /^PBP03-(ER|GR|SPR|CR|RR)(\d{2})(-(?:A|A2|B|B2|C|C2))?$/,
     );
     if (parallelMatch) {
       return `\u203BBP03-${parallelMatch[1]}${parallelMatch[2]}${parallelMatch[3] ?? ""}`;
     }
-const match = key.match(
+    const match = key.match(
       /^BP03-(C|U|ER|SR|SPR|GR|CR|RR|PER|PGR|PSPR|PCR|PRR)(\d{2})(-A|-B|-C|-A2|-B2)?$/,
     );
     if (!match) return key.replace("BP03-", "");
-const [, rarity, number, variant = ""] = match;
+    const [, rarity, number, variant = ""] = match;
     if (rarity === "PER") return `\u203BBP03-ER${number}`;
     if (rarity === "PGR") return `\u203BBP03-GR${number}${variant}`;
-    if (rarity === "PSPR") {
-const psprDisplayNumbers: Record<string, string> = {
-        "01": "01",
-        "02": "02",
-        "03": "05",
-        "04": "10",
-        "05": "14",
-        "06": "15",
-        "07": "16",
-        "08": "18",
-        "09": "23",
-        "10": "24",
-        "11": "26",
-      };
-      return `\u203BBP03-SPR${psprDisplayNumbers[number] ?? number}`;
-    }
+    if (rarity === "PSPR") return `\u203BBP03-SPR${number}${variant}`;
     if (rarity === "PCR") return `\u203BBP03-CR${number}${variant}`;
     if (rarity === "PRR") return `\u203BBP03-RR${number}${variant}`;
     return `BP03-${rarity}${number}${variant}`;
   };
-const getCardBack = (key: string) => {
+  const getCardBack = (key: string) => {
     if (key.startsWith("BP03-ER") || key.startsWith("PBP03-ER")) {
       return "/tcg-card-backs/SCENECARDBACK.webp";
     }
-// C25-C48 have unique backs
+    // C25-C48 have unique backs
     if (key.startsWith("BP03-C")) {
-const num = Number(key.replace("BP03-C", ""));
+      const num = Number(key.replace("BP03-C", ""));
       if (num >= 25 && num <= 48) {
         return `/card-backs/nightmare-night/${key}.webp`;
       }
     }
-// RR01-RR06 have unique backs
-const rrMatch = key.match(/^BP03-RR(0[1-6])$/);
+    // RR01-RR06 have unique backs
+    const rrMatch = key.match(/^BP03-RR(0[1-6])$/);
     if (rrMatch) {
       return `/tcg-card-backs/BP02-RR${rrMatch[1]}.webp`;
     }
+    const prrMatch = key.match(/^PBP03-RR(0[1-6])$/);
+    if (prrMatch) {
+      return `/tcg-card-backs/PRR${prrMatch[1]}BACK.webp`;
+    }
     return `/card-backs/tcgdefaultback.webp`;
   };
-const getCardFront = (key: string) => {
-    return `/cards/nightmare-night/${key}.webp`;
+  const getCardFront = (key: string) => {
+    const erMatch = key.match(/^BP03-ER(0[12])-([ABC])$/);
+    const imageKey = erMatch ? `${key}${erMatch[2]}` : key;
+    return `/cards/nightmare-night/${imageKey}.webp`;
   };
-const isLandscapeCommon = (key: string) => {
-const match = key.match(/^BP03-C(\d{2})$/);
-const number = match ? Number(match[1]) : 0;
+  const isLandscapeCommon = (key: string) => {
+    const match = key.match(/^BP03-C(\d{2})$/);
+    const number = match ? Number(match[1]) : 0;
     return number >= 25 && number <= 48;
   };
-const toggleFlip = (key: string) => {
+  const toggleFlip = (key: string) => {
     if (viewMode) {
       setZoomedCard(getCardFront(key));
       setZoomedCardBack(getCardBack(key));
@@ -188,14 +178,14 @@ const toggleFlip = (key: string) => {
     }));
   };
   useEffect(() => {
-const loadProgress = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
+    const loadProgress = async () => {
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
       if (!user) {
         setLoaded(true);
         return;
       }
-const { data: saved } = await supabase
+      const { data: saved } = await supabase
         .from("collection_progress_raw")
         .select("progress")
         .eq("user_id", user.id)
@@ -211,11 +201,11 @@ const { data: saved } = await supabase
   }, []);
   useEffect(() => {
     if (!loaded) return;
-const current = JSON.stringify(flipped);
+    const current = JSON.stringify(flipped);
     if (current === lastSavedProgress) return;
-const saveProgress = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
+    const saveProgress = async () => {
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
       if (!user) return;
       await supabase.from("collection_progress_raw").upsert(
         {
@@ -231,8 +221,8 @@ const user = data.session?.user;
     };
     saveProgress();
   }, [flipped, loaded, lastSavedProgress]);
-const ownedCount = cards.filter((card) => flipped[card.key]).length;
-const rarityLabel = (rarity: string) =>
+  const ownedCount = cards.filter((card) => flipped[card.key]).length;
+  const rarityLabel = (rarity: string) =>
     rarity === "PER"
       ? "\u203BER"
       : rarity === "PGR"
@@ -352,11 +342,10 @@ const rarityLabel = (rarity: string) =>
                     window.innerWidth >= 768 || rarity === selectedRarity,
                 )
                 .map(([rarity, count]) => {
-const rarityCards = cards.filter(
+                  const rarityCards = cards.filter(
                     (card) => card.rarity === rarity,
                   );
-const isComingSoon = rarity === "PSPR" || rarity === "PRR";
-const rarityOwned = rarityCards.filter(
+                  const rarityOwned = rarityCards.filter(
                     (card) => flipped[card.key],
                   ).length;
                   return (
@@ -374,125 +363,75 @@ const rarityOwned = rarityCards.filter(
                             </span>
                           </h2>
                           <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-                            {isComingSoon
-                              ? "Images coming soon"
-                              : `${rarityOwned} of ${count} collected`}
+                            {`${rarityOwned} of ${count} collected`}
                           </p>
                         </div>
-                        {!isComingSoon && isRarityComplete(rarity) && (
+                        {isRarityComplete(rarity) && (
                           <span className="rounded-full bg-[#FFD54A] px-2.5 py-1 text-xs font-semibold text-zinc-900">
                             Complete
                           </span>
                         )}
                       </div>
-                      {rarity === "ER" && (
-                        <div className="mb-4 flex items-start gap-3 rounded-2xl bg-amber-100 px-3.5 py-3 text-amber-950 ring-1 ring-inset ring-amber-400/60 dark:bg-amber-400/10 dark:text-amber-100 dark:ring-amber-300/25">
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-sm font-black text-white dark:bg-amber-300 dark:text-zinc-950">
-                            !
-                          </span>
-                          <div>
-                            <div className="text-sm font-bold">
-                              Official image quality warning
-                            </div>
-                            <p className="mt-0.5 text-xs font-medium leading-5 sm:text-sm">
-                              These six previews use the original image files
-                              provided by Kayou. I cannot make them a higher
-                              quality. They will be updated when Kayou sends
-                              better images!
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {isComingSoon && (
-                        <div className="mb-4 flex items-start gap-3 rounded-2xl bg-amber-100 px-3.5 py-3 text-amber-950 ring-1 ring-inset ring-amber-400/60 dark:bg-amber-400/10 dark:text-amber-100 dark:ring-amber-300/25">
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-sm font-black text-white dark:bg-amber-300 dark:text-zinc-950">
-                            !
-                          </span>
-                          <div>
-                            <div className="text-sm font-bold">
-                              Card images coming soon
-                            </div>
-                            <p className="mt-0.5 text-xs font-medium leading-5 sm:text-sm">
-                              Kayou did not provide the {rarityLabel(rarity)}{" "}
-                              card images with the rest of the set. These cards
-                              will be added as soon as Kayou supplies the
-                              missing files.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {isComingSoon ? (
-                        <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-amber-400/70 bg-amber-50/70 px-6 py-10 text-center dark:border-amber-300/30 dark:bg-amber-400/[0.06]">
-                          <div className="rounded-full bg-amber-500 px-4 py-1.5 text-xs font-black tracking-[0.18em] text-white dark:bg-amber-300 dark:text-zinc-950">
-                            COMING SOON
-                          </div>
-                          <p className="mt-3 max-w-lg text-sm font-medium text-amber-950 dark:text-amber-100">
-                            No {rarityLabel(rarity)} card images were supplied
-                            by Kayou, so there are no previews to show yet.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
-                          {rarityCards.map((card) => {
-const key = card.key;
-const owned = flipped[key];
-const landscape = isLandscapeCommon(key);
-                            return (
-                              <button
-                                key={key}
-                                type="button"
-                                onClick={() => toggleFlip(key)}
-                                aria-label={`${getDisplayCardCode(key)}${owned ? ", collected" : ""}`}
-                                className="group relative aspect-[5/7] w-full cursor-pointer overflow-hidden rounded-xl bg-zinc-100 shadow-sm transition duration-200 md:hover:z-10 md:hover: md:hover:shadow-lg dark:bg-white/[0.04]"
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
+                        {rarityCards.map((card) => {
+                          const key = card.key;
+                          const owned = flipped[key];
+                          const landscape = isLandscapeCommon(key);
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => toggleFlip(key)}
+                              aria-label={`${getDisplayCardCode(key)}${owned ? ", collected" : ""}`}
+                              className="group relative aspect-[5/7] w-full cursor-pointer overflow-hidden rounded-xl bg-zinc-100 shadow-sm transition duration-200 md:hover:z-10 md:hover:shadow-lg dark:bg-white/[0.04]"
+                            >
+                              <div
+                                className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}
                               >
-                                <div
-                                  className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}
-                                >
-                                  <img
-                                    src={getCardFront(key)}
-                                    className={
-                                      landscape
-                                        ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover object-center backface-hidden"
-                                        : "absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
-                                    }
-                                    style={
-                                      landscape
-                                        ? {
-                                            transform:
-                                              "translate(-50%, -50%) rotate(-90deg)",
-                                          }
-                                        : undefined
-                                    }
-                                    alt=""
-                                  />
-                                  <img
-                                    src={getCardBack(key)}
-                                    className={
-                                      landscape
-                                        ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover object-center backface-hidden"
-                                        : "absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
-                                    }
-                                    style={
-                                      landscape
-                                        ? {
-                                            transform:
-                                              "translate(-50%, -50%) rotateY(180deg) rotateZ(-90deg)",
-                                          }
-                                        : { transform: "rotateY(180deg)" }
-                                    }
-                                    alt=""
-                                  />
-                                </div>
-                                {owned && !viewMode && (
-                                  <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#FFD54A] text-sm font-bold text-zinc-900 shadow-sm">
-                                    &#10003;
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
+                                <img
+                                  src={getCardFront(key)}
+                                  className={
+                                    landscape
+                                      ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover object-center backface-hidden"
+                                      : "absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
+                                  }
+                                  style={
+                                    landscape
+                                      ? {
+                                          transform:
+                                            "translate(-50%, -50%) rotate(-90deg)",
+                                        }
+                                      : undefined
+                                  }
+                                  alt=""
+                                />
+                                <img
+                                  src={getCardBack(key)}
+                                  className={
+                                    landscape
+                                      ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover object-center backface-hidden"
+                                      : "absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
+                                  }
+                                  style={
+                                    landscape
+                                      ? {
+                                          transform:
+                                            "translate(-50%, -50%) rotateY(180deg) rotateZ(-90deg)",
+                                        }
+                                      : { transform: "rotateY(180deg)" }
+                                  }
+                                  alt=""
+                                />
+                              </div>
+                              {owned && !viewMode && (
+                                <span className="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#FFD54A] text-sm font-bold text-zinc-900 shadow-sm">
+                                  &#10003;
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </section>
                   );
                 })}
@@ -537,11 +476,7 @@ const landscape = isLandscapeCommon(key);
                     className={`absolute rounded-2xl backface-hidden ${
                       zoomedCardKey && isLandscapeCommon(zoomedCardKey)
                         ? "left-1/2 top-1/2 h-full w-[140%] max-w-none object-contain"
-                        : `inset-0 h-full w-full ${
-                            zoomedCardKey && /^BP03-ER0[12]-[ABC]$/.test(zoomedCardKey)
-                              ? "object-contain"
-                              : "object-scale-down"
-                          }`
+                        : "inset-0 h-full w-full object-scale-down"
                     }`}
                     style={
                       zoomedCardKey && isLandscapeCommon(zoomedCardKey)
@@ -567,7 +502,8 @@ const landscape = isLandscapeCommon(key);
                               width: "140%",
                               height: "71.4285714286%",
                               maxWidth: "none",
-                              transform: "translate(-50%, -50%) rotateY(180deg) rotateZ(-90deg)",
+                              transform:
+                                "translate(-50%, -50%) rotateY(180deg) rotateZ(-90deg)",
                             }
                           : {
                               inset: 0,

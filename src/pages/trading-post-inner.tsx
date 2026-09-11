@@ -57,7 +57,7 @@ const rarityMap: Record<string, string[]> = {
     "PCR",
     "PRR",
   ],
-    "14": [
+  "14": [
     "C",
     "U",
     "ER",
@@ -74,12 +74,12 @@ const rarityMap: Record<string, string[]> = {
   ],
 };
 const getCardImage = (card: TradeCard) => {
-const [rarity, number] = card.card_key.split("-");
+  const [rarity, number] = card.card_key.split("-");
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
     return `/friendships-begin/${card.card_key}.webp`;
   }
   if (card.set_id === "FW") {
-const num = card.card_key.slice(-2);
+    const num = card.card_key.slice(-2);
     if (card.card_key.startsWith("BP01ER")) {
       return `/fantasy-wonderland/SD01ER${num}.webp`;
     }
@@ -89,7 +89,9 @@ const num = card.card_key.slice(-2);
     return `/fantasy-wonderland/${card.card_key}.webp`;
   }
   if (String(card.set_id) === "14") {
-    return `/cards/nightmare-night/${card.card_key}.webp`;
+    const erMatch = card.card_key.match(/^BP03-ER(0[12])-([ABC])$/);
+    const imageKey = erMatch ? `${card.card_key}${erMatch[2]}` : card.card_key;
+    return `/cards/nightmare-night/${imageKey}.webp`;
   }
   if (card.set_id === "12") {
     return `/cards/discord/${card.card_key}.webp`;
@@ -100,7 +102,7 @@ const num = card.card_key.slice(-2);
   if (card.set_id === "tcgpromos") {
     return `/tcgpromos/${card.card_key}.webp`;
   }
-const config: any = {
+  const config: any = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
     "2": { folder: "second-edition-moon", prefix: "M2" },
     "3": { folder: "third-edition-moon", prefix: "M3" },
@@ -111,11 +113,11 @@ const config: any = {
     "8": { folder: "fun-moments-two", prefix: "FM2" },
     "11": { folder: "fun-moments-three", prefix: "FM3" },
   };
-const getRarityCode = (rarity: string) => {
+  const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
   };
-const c = config[card.set_id];
+  const c = config[card.set_id];
   if (!c) return "";
   return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}${
     card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
@@ -142,53 +144,60 @@ function ListingCardImage({ card }: { card: TradeCard }) {
       alt={card.card_key}
       onError={() => setFailedSrc(src)}
       draggable={false}
-      className={isLandscape ? "absolute object-contain" : "absolute inset-0 h-full w-full object-cover"}
-      style={isLandscape ? {
-        left: "50%",
-        top: "50%",
-        width: "140%",
-        height: "71.4285714286%",
-        maxWidth: "none",
-        transform: "translate(-50%, -50%) rotate(-90deg)",
-      } : { transform: "scale(1.035)" }}
+      className={
+        isLandscape
+          ? "absolute object-contain"
+          : "absolute inset-0 h-full w-full object-cover"
+      }
+      style={
+        isLandscape
+          ? {
+              left: "50%",
+              top: "50%",
+              width: "140%",
+              height: "71.4285714286%",
+              maxWidth: "none",
+              transform: "translate(-50%, -50%) rotate(-90deg)",
+            }
+          : { transform: "scale(1.035)" }
+      }
     />
   );
 }
-
 export default function TradingPostInner() {
-const { setId } = useParams();
-const navigate = useNavigate();
-const [groupedTrades, setGroupedTrades] = useState<
+  const { setId } = useParams();
+  const navigate = useNavigate();
+  const [groupedTrades, setGroupedTrades] = useState<
     Record<string, TradeCard[]>
   >({});
-const [profiles, setProfiles] = useState<Record<string, any>>({});
-const [tradingProfiles, setTradingProfiles] = useState<
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [tradingProfiles, setTradingProfiles] = useState<
     Record<string, { discord_username: string; trade_access_revoked: boolean }>
   >({});
-const [loading, setLoading] = useState(true);
-const [showLoginModal, setShowLoginModal] = useState(false);
-const [selectedRarity, setSelectedRarity] = useState<string | null>(
+  const [loading, setLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [selectedRarity, setSelectedRarity] = useState<string | null>(
     setId === "9" || setId === "tcgpromos" ? "PR" : null,
   );
-const [page, setPage] = useState(0);
-const [openProfile, setOpenProfile] = useState<string | null>(null);
-const [selectedCard, setSelectedCard] = useState<TradeCard | null>(null);
-const [reportTarget, setReportTarget] = useState<string | null>(null);
-const [reportedUsers, setReportedUsers] = useState<Set<string>>(new Set());
-const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-const [isReporting, setIsReporting] = useState(false);
-const [reportError, setReportError] = useState("");
-const [reportComment, setReportComment] = useState("");
-const [wantsStaffContact, setWantsStaffContact] = useState(false);
-const [reporterDiscord, setReporterDiscord] = useState("");
-const [reportedCardKeys, setReportedCardKeys] = useState<Set<string>>(
+  const [page, setPage] = useState(0);
+  const [openProfile, setOpenProfile] = useState<string | null>(null);
+  const [selectedCard, setSelectedCard] = useState<TradeCard | null>(null);
+  const [reportTarget, setReportTarget] = useState<string | null>(null);
+  const [reportedUsers, setReportedUsers] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [reportComment, setReportComment] = useState("");
+  const [wantsStaffContact, setWantsStaffContact] = useState(false);
+  const [reporterDiscord, setReporterDiscord] = useState("");
+  const [reportedCardKeys, setReportedCardKeys] = useState<Set<string>>(
     new Set(),
   );
-const [isReportingCard, setIsReportingCard] = useState(false);
-const [cardReportError, setCardReportError] = useState("");
-const [isLightMode, setIsLightMode] = useState(() => {
+  const [isReportingCard, setIsReportingCard] = useState(false);
+  const [cardReportError, setCardReportError] = useState("");
+  const [isLightMode, setIsLightMode] = useState(() => {
     if (typeof document === "undefined") return false;
-const root = document.documentElement;
+    const root = document.documentElement;
     return (
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
@@ -196,8 +205,8 @@ const root = document.documentElement;
     );
   });
   useEffect(() => {
-const syncTheme = () => {
-const root = document.documentElement;
+    const syncTheme = () => {
+      const root = document.documentElement;
       setIsLightMode(
         root.dataset.theme === "light" ||
           root.classList.contains("light") ||
@@ -205,7 +214,7 @@ const root = document.documentElement;
       );
     };
     syncTheme();
-const observer = new MutationObserver(syncTheme);
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -218,14 +227,14 @@ const observer = new MutationObserver(syncTheme);
   }, []);
   useEffect(() => {
     if (!selectedCard && !reportTarget) return;
-const previousOverflow = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [selectedCard, reportTarget]);
-const USERS_PER_PAGE = 10;
-const setNames: Record<string, string> = {
+  const USERS_PER_PAGE = 10;
+  const setNames: Record<string, string> = {
     "1": "Eternal Moon: First Edition",
     "5": "Rainbow: First Edition",
     "7": "Fun Moments: First Edition",
@@ -243,8 +252,8 @@ const setNames: Record<string, string> = {
     tcgpromos: "TCG Promos",
   };
   useEffect(() => {
-const checkAuth = async () => {
-const { data } = await supabase.auth.getSession();
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
       if (!data.session) {
         setShowLoginModal(true);
       } else {
@@ -255,14 +264,14 @@ const { data } = await supabase.auth.getSession();
   }, []);
   useEffect(() => {
     if (!setId) return;
-const load = async () => {
+    const load = async () => {
       setLoading(true);
-let allTrades: any[] = [];
-let from = 0;
-const pageSize = 1000;
-const databaseSetId = setId === "SD" ? "friendshipsbegin" : setId;
+      let allTrades: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      const databaseSetId = setId === "SD" ? "friendshipsbegin" : setId;
       while (true) {
-let query = supabase
+        let query = supabase
           .from("card_market_listings")
           .select(
             "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity",
@@ -271,13 +280,13 @@ let query = supabase
           .order("card_key", { ascending: true })
           .range(from, from + pageSize - 1);
         query = query.eq("set_id", databaseSetId);
-const { data } = await query;
+        const { data } = await query;
         if (!data || data.length === 0) break;
         allTrades = [...allTrades, ...data];
         if (data.length < pageSize) break;
         from += pageSize;
       }
-const uniqueTrades = Array.from(
+      const uniqueTrades = Array.from(
         new Map(
           allTrades.map((card) => [
             `${card.user_id}-${card.set_id}-${card.card_key}`,
@@ -285,42 +294,42 @@ const uniqueTrades = Array.from(
           ]),
         ).values(),
       );
-const trades = uniqueTrades
+      const trades = uniqueTrades
         .filter((card) => card.is_for_trade || card.is_for_sale)
         .map((card) => ({
           ...card,
           id: `${card.user_id}-${card.set_id}-${card.card_key}`,
         }));
-const { data: profileData } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("id, username, avatar_url");
-const { data: tradingData } = await supabase
+      const { data: tradingData } = await supabase
         .from("trading_profiles")
         .select("user_id, discord_username, trade_access_revoked");
-const { data: sessionData } = await supabase.auth.getSession();
-const sessionUserId = sessionData.session?.user.id;
-let reportData: { reported_user_id: string }[] = [];
-let cardReportData: {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sessionUserId = sessionData.session?.user.id;
+      let reportData: { reported_user_id: string }[] = [];
+      let cardReportData: {
         reported_user_id: string;
         set_id: string;
         card_key: string;
       }[] = [];
       if (sessionUserId) {
         setCurrentUserId(sessionUserId);
-const { data } = await supabase
+        const { data } = await supabase
           .from("trading_post_user_reports")
           .select("reported_user_id")
           .eq("reporter_user_id", sessionUserId);
         reportData = data || [];
-const { data: cardReports } = await supabase
+        const { data: cardReports } = await supabase
           .from("trading_post_card_reports")
           .select("reported_user_id, set_id, card_key")
           .eq("reporter_user_id", sessionUserId);
         cardReportData = cardReports || [];
       }
-const profileMap: Record<string, any> = {};
+      const profileMap: Record<string, any> = {};
       (profileData || []).forEach((p) => (profileMap[p.id] = p));
-const tradingMap: Record<
+      const tradingMap: Record<
         string,
         { discord_username: string; trade_access_revoked: boolean }
       > = {};
@@ -331,10 +340,10 @@ const tradingMap: Record<
             trade_access_revoked: Boolean(p.trade_access_revoked),
           }),
       );
-const tradeMap: Record<string, TradeCard[]> = {};
+      const tradeMap: Record<string, TradeCard[]> = {};
       (trades || []).forEach((card: TradeCard) => {
-const tradingProfile = tradingMap[card.user_id];
-const hasDiscordUsername = Boolean(
+        const tradingProfile = tradingMap[card.user_id];
+        const hasDiscordUsername = Boolean(
           tradingProfile?.discord_username?.trim(),
         );
         if (
@@ -369,7 +378,7 @@ const hasDiscordUsername = Boolean(
       }, 0);
     };
     load();
-const channel = supabase
+    const channel = supabase
       .channel("trades")
       .on(
         "postgres_changes",
@@ -381,7 +390,7 @@ const channel = supabase
       supabase.removeChannel(channel);
     };
   }, [setId]);
-const submitReport = async () => {
+  const submitReport = async () => {
     if (!reportTarget || !currentUserId || reportedUsers.has(reportTarget))
       return;
     setIsReporting(true);
@@ -393,7 +402,7 @@ const submitReport = async () => {
       setIsReporting(false);
       return;
     }
-const { error } = await supabase.from("trading_post_user_reports").insert({
+    const { error } = await supabase.from("trading_post_user_reports").insert({
       reporter_user_id: currentUserId,
       reported_user_id: reportTarget,
       reason: "inactive_or_unresponsive",
@@ -424,13 +433,13 @@ const { error } = await supabase.from("trading_post_user_reports").insert({
     setReporterDiscord("");
     setIsReporting(false);
   };
-const submitCardReport = async () => {
+  const submitCardReport = async () => {
     if (!selectedCard || !currentUserId || !selectedCard.is_for_sale) return;
-const reportKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
+    const reportKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
     if (reportedCardKeys.has(reportKey)) return;
     setIsReportingCard(true);
     setCardReportError("");
-const { error } = await supabase.from("trading_post_card_reports").insert({
+    const { error } = await supabase.from("trading_post_card_reports").insert({
       reporter_user_id: currentUserId,
       reported_user_id: selectedCard.user_id,
       set_id: selectedCard.set_id,
@@ -483,23 +492,25 @@ const { error } = await supabase.from("trading_post_card_reports").insert({
       </div>
     );
   }
-const getRarity = (key: string) => {
+  const getRarity = (key: string) => {
     if (setId === "14") {
-      const match = key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
+      const match = key.match(
+        /^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/,
+      );
       return match ? `${match[1]}${match[2]}` : "";
     }
     if (key.startsWith("RR")) return "PR";
     if (setId === "friendshipsbegin") {
-const match = key.match(/SD01([A-Z]+)\d+/);
+      const match = key.match(/SD01([A-Z]+)\d+/);
       return match ? match[1] : "";
     }
     if (setId === "FW") {
-const match = key.match(/BP01([A-Z]+)\d+/);
+      const match = key.match(/BP01([A-Z]+)\d+/);
       return match ? match[1] : "";
     }
     if (setId === "12") {
       if (key.startsWith("BP02-PER")) return "PER";
-const match = key.match(/BP02-([A-Z]+)\d+/);
+      const match = key.match(/BP02-([A-Z]+)\d+/);
       return match ? match[1] : "";
     }
     if (key.includes("-")) {
@@ -507,7 +518,7 @@ const match = key.match(/BP02-([A-Z]+)\d+/);
     }
     return "";
   };
-const visibleUsers = Object.entries(groupedTrades).filter(
+  const visibleUsers = Object.entries(groupedTrades).filter(
     ([userId, cards]) => {
       if (!tradingProfiles[userId]) return false;
       if (!selectedRarity && setId !== "9" && setId !== "tcgpromos") {
@@ -516,19 +527,19 @@ const visibleUsers = Object.entries(groupedTrades).filter(
       return cards.some((c) => getRarity(c.card_key) === selectedRarity);
     },
   );
-const totalPages = Math.ceil(visibleUsers.length / USERS_PER_PAGE);
-const filterCardsForRarity = (cards: TradeCard[]) => {
+  const totalPages = Math.ceil(visibleUsers.length / USERS_PER_PAGE);
+  const filterCardsForRarity = (cards: TradeCard[]) => {
     if (setId === "9" || setId === "tcgpromos") {
       return cards.filter((card) => getRarity(card.card_key) === "PR");
     }
     if (!selectedRarity) return [];
     return cards.filter((card) => getRarity(card.card_key) === selectedRarity);
   };
-const sortedVisibleUsers = [...visibleUsers].sort(
+  const sortedVisibleUsers = [...visibleUsers].sort(
     ([, cardsA], [, cardsB]) =>
       filterCardsForRarity(cardsB).length - filterCardsForRarity(cardsA).length,
   );
-const pagedUsers = sortedVisibleUsers.slice(
+  const pagedUsers = sortedVisibleUsers.slice(
     page * USERS_PER_PAGE,
     page * USERS_PER_PAGE + USERS_PER_PAGE,
   );
@@ -605,8 +616,8 @@ const pagedUsers = sortedVisibleUsers.slice(
             >
               <div className="flex gap-2 overflow-x-auto">
                 {rarityMap[setId].map((rarity) => {
-const active = selectedRarity === rarity;
-const label =
+                  const active = selectedRarity === rarity;
+                  const label =
                     rarity === "SHINING ZR" || rarity === "SZR"
                       ? "\u2B26ZR"
                       : rarity === "SN"
@@ -703,12 +714,12 @@ const label =
         {!loading && pagedUsers.length > 0 && (
           <div className="space-y-3">
             {pagedUsers.map(([userId, cards]) => {
-const filteredCards = filterCardsForRarity(cards);
-const assets = getProfileAssets(profiles[userId]);
-const tradeCount = filteredCards.filter(
+              const filteredCards = filterCardsForRarity(cards);
+              const assets = getProfileAssets(profiles[userId]);
+              const tradeCount = filteredCards.filter(
                 (card) => card.is_for_trade,
               ).length;
-const saleCount = filteredCards.filter(
+              const saleCount = filteredCards.filter(
                 (card) => card.is_for_sale,
               ).length;
               if (openProfile === userId) {
@@ -920,11 +931,15 @@ const saleCount = filteredCards.filter(
                       {filteredCards
                         .sort((a, b) => {
                           if (setId === "friendshipsbegin" || setId === "14") {
-                            return a.card_key.localeCompare(b.card_key, undefined, { numeric: true });
+                            return a.card_key.localeCompare(
+                              b.card_key,
+                              undefined,
+                              { numeric: true },
+                            );
                           }
-const getNum = (key: string) => {
+                          const getNum = (key: string) => {
                             if (!key.includes("-")) {
-const match = key.match(/(\d+)$/);
+                              const match = key.match(/(\d+)$/);
                               return match ? parseInt(match[1]) : 0;
                             }
                             return parseInt(key.split("-")[1]);
@@ -932,8 +947,8 @@ const match = key.match(/(\d+)$/);
                           return getNum(a.card_key) - getNum(b.card_key);
                         })
                         .map((card) => {
-const [rarity, number] = card.card_key.split("-");
-const isDoubleCard =
+                          const [rarity, number] = card.card_key.split("-");
+                          const isDoubleCard =
                             card.set_id === "3" &&
                             rarity === "SZR" &&
                             Number(number) === 1;
@@ -969,8 +984,8 @@ const isDoubleCard =
                               {card.is_for_sale &&
                                 currentUserId !== userId &&
                                 (() => {
-const reportKey = `${card.user_id}-${card.set_id}-${card.card_key}`;
-const alreadyReported =
+                                  const reportKey = `${card.user_id}-${card.set_id}-${card.card_key}`;
+                                  const alreadyReported =
                                     reportedCardKeys.has(reportKey);
                                   return (
                                     <button
@@ -1074,7 +1089,11 @@ const alreadyReported =
                   className="relative overflow-hidden rounded-xl"
                   style={{
                     width: "min(220px, 22.85dvh)",
-                    aspectRatio: selectedCard.set_id === "3" && selectedCard.card_key === "SZR-001" ? "10 / 7" : "5 / 7",
+                    aspectRatio:
+                      selectedCard.set_id === "3" &&
+                      selectedCard.card_key === "SZR-001"
+                        ? "10 / 7"
+                        : "5 / 7",
                   }}
                 >
                   <ListingCardImage card={selectedCard} />
@@ -1150,8 +1169,8 @@ const alreadyReported =
                 {selectedCard.is_for_sale &&
                   currentUserId !== selectedCard.user_id &&
                   (() => {
-const reportKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
-const alreadyReported = reportedCardKeys.has(reportKey);
+                    const reportKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
+                    const alreadyReported = reportedCardKeys.has(reportKey);
                     return (
                       <>
                         <button
@@ -1242,7 +1261,7 @@ const alreadyReported = reportedCardKeys.has(reportKey);
               <textarea
                 value={reportComment}
                 onChange={(event) => {
-const words = event.target.value
+                  const words = event.target.value
                     .trim()
                     .split(/\s+/)
                     .filter(Boolean);
