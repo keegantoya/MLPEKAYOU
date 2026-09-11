@@ -499,8 +499,9 @@ export default function LGSBoards() {
     setDeckPlayer(null);
   }, []);
   const ownStore = stores.find((store) => store.id === staff?.store_id);
+  const canCreate = !!staff?.active && staff.role === "STAFF" && !!staff.store_id;
   const canManage =
-    !!event && (staff?.role === "ALLGS" || event.store_id === staff?.store_id);
+    canCreate && !!event && event.store_id === staff?.store_id;
   const editable = canManage && event?.status === "active";
   const safeParticipantPage = Math.min(
     participantPage,
@@ -701,6 +702,9 @@ export default function LGSBoards() {
       await loadEvent(id, true);
     });
   const write = async (action: string, data: Record<string, unknown> = {}) => {
+    if (!canCreate || (action !== "create_event" && !canManage)) {
+      throw new Error("You have view-only access to this event.");
+    }
     const { data: result, error: writeError } = await db.rpc("lgs_write", {
       p_action: action,
       p_data: { event_id: eventRef.current, ...data },
@@ -826,6 +830,7 @@ export default function LGSBoards() {
       await Promise.all([loadEdits(0), loadEdits(0, true)]);
     });
   const beginNewEvent = () => {
+    if (!canCreate) return;
     setEventStoreId(staff?.role === "ALLGS" ? "" : (staff?.store_id ?? ""));
     setTitle("");
     setLeagueName("");
@@ -838,7 +843,7 @@ export default function LGSBoards() {
   };
   const boardStoreName =
     staff?.role === "ALLGS"
-      ? "All stores · Master access"
+      ? "All stores · View-only access"
       : (ownStore?.name ?? "Your store");
   const eventCard = (item: LGSEvent) => (
     <article key={item.id} className="lgs-event-tile">
@@ -920,7 +925,7 @@ export default function LGSBoards() {
             >
               {busy ? "Working…" : "Refresh"}
             </button>
-            {staff && !event && (
+            {canCreate && !event && (
               <button
                 type="button"
                 className="lgs-primary"
@@ -1504,7 +1509,7 @@ export default function LGSBoards() {
           </>
         )}
       </div>
-      {staff && dialog === "new" && (
+      {staff && canCreate && dialog === "new" && (
         <Modal title="Create your event" close={closeDialog} busy={busy}>
           {messages}
           <form className="lgs-form lgs-create-form" onSubmit={createEvent}>
@@ -1637,7 +1642,7 @@ export default function LGSBoards() {
           </form>
         </Modal>
       )}
-      {staff && dialog === "players" && (
+      {staff && editable && dialog === "players" && (
         <Modal title="Add a player" close={closeDialog} busy={busy}>
           {messages}
           <form
@@ -1803,7 +1808,7 @@ export default function LGSBoards() {
           </div>
         </Modal>
       )}
-      {staff && deckPlayer && (
+      {staff && editable && deckPlayer && (
         <Modal
           title={`${deckPlayer.player_name}’s deck`}
           close={closeDialog}
@@ -1847,7 +1852,7 @@ export default function LGSBoards() {
           </button>
         </Modal>
       )}
-      {staff && dialog === "player_id" && idPlayer && (
+      {staff && editable && dialog === "player_id" && idPlayer && (
         <Modal
           title={`Player ID · ${idPlayer.player_name}`}
           close={closeDialog}
@@ -1975,7 +1980,7 @@ export default function LGSBoards() {
           )}
         </Modal>
       )}
-      {staff && dialog === "finish" && (
+      {staff && editable && dialog === "finish" && (
         <Modal
           title="Finish this event?"
           close={closeDialog}
