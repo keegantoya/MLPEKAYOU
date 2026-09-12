@@ -1007,7 +1007,7 @@ export default function LGSBoards() {
               </button>
             )}
             {!canManage && (
-              <p className="lgs-message">
+              <p className="lgs-message lgs-viewer-notice">
                 You’re viewing another store’s event. This board is read-only.
               </p>
             )}
@@ -2065,4 +2065,62 @@ const STYLES = `
 .dark .lgs-ui,.lgs-ui.dark,[data-theme="dark"] .lgs-ui{--lgs-bg:#141617;--lgs-panel:#202324;--lgs-soft:#2c3032;--lgs-text:#f5f5f3;--lgs-muted:#b6b8b8;--lgs-accent:#ffda4b;--lgs-accent-text:#252728}
 .lgs-ui .lgs-primary{background:#ffda4b;color:#252728}.lgs-ui .lgs-primary:hover:not(:disabled){background:#ffe376}.lgs-ui .lgs-id-edit{display:block;background:transparent;color:var(--lgs-accent);padding:4px 0;min-height:32px;font-size:13px;text-decoration:underline;text-underline-offset:3px}.lgs-player-id{align-self:center}.lgs-person{grid-template-columns:52px minmax(0,1fr) minmax(130px,.6fr) 44px;padding:10px 14px;min-height:80px}.lgs-person .lgs-deck-thumb{width:52px;min-height:60px!important}.lgs-person .lgs-deck-thumb img{height:54px}.lgs-player-list{grid-template-columns:1fr!important;gap:8px}.lgs-placement select{width:170px;max-width:50%;margin:0;flex-shrink:0}.lgs-placement{min-height:56px}.lgs-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;font-size:14px;color:var(--lgs-muted)}.lgs-pagination>div{display:flex;align-items:center;gap:10px}.lgs-pagination button{font-size:14px;padding:8px 12px;min-height:40px}.lgs-roster{max-height:none}.lgs-success-notice{position:fixed;bottom:24px;right:24px;z-index:10020;max-width:min(420px,calc(100vw - 32px));background:var(--lgs-panel);box-shadow:0 5px 30px #0002;pointer-events:none}.lgs-modal .lgs-success-notice{position:static;max-width:none;box-shadow:none;background:var(--lgs-soft)}.lgs-event-tile{background:var(--lgs-panel);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;min-width:0}.lgs-event-tile .lgs-event-card{border-radius:0;box-shadow:none;background:transparent;flex:1}.lgs-history .lgs-event-tile{background:var(--lgs-soft)}.lgs-history .lgs-event-tile .lgs-event-card{background:transparent}.lgs-card-edits{display:flex;align-items:center;gap:7px;background:transparent;color:var(--lgs-accent);padding:0 24px 16px;font-size:14px;text-align:left}.lgs-event-activity{margin-top:20px}.lgs-event-activity>summary{color:var(--lgs-muted);cursor:pointer;padding:10px 0;font-size:14px}.lgs-edit-sentences{display:grid;gap:10px;margin-top:12px;font-size:15px}.lgs-ui .lgs-edit-sentences p{margin:0;line-height:1.65;overflow-wrap:anywhere}.lgs-no-edits{padding:18px;background:var(--lgs-soft);border-radius:16px;margin-top:16px}.lgs-no-edits p{color:var(--lgs-muted);font-size:14px;line-height:1.6}.lgs-note-change>div{margin-top:12px;padding:12px;background:var(--lgs-panel);border-radius:12px}.lgs-note-change>div>span{font-size:12px;color:var(--lgs-muted)}.lgs-ui .lgs-note-change>div>p{white-space:pre-wrap;margin-top:5px}.lgs-id-dialog .lgs-finish-actions{margin-top:6px}
 @media(max-width:650px){.lgs-person{grid-template-columns:52px minmax(0,1fr) 44px}.lgs-pagination{flex-wrap:wrap}.lgs-pagination>div{gap:8px}.lgs-pagination button{padding:8px 10px}.lgs-placement select{width:145px}.lgs-success-notice{bottom:16px;right:16px}.lgs-card-edits{padding-left:20px}}
+
+.lgs-ui p.lgs-viewer-notice{margin:20px 0 24px;padding:16px 18px;line-height:1.6}
+@media(max-width:719px){
+  .lgs-page{width:100%;min-width:0;padding:calc(96px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .lgs-appbar{align-items:flex-start;flex-direction:column;gap:18px;margin-bottom:28px}
+  .lgs-app-title,.lgs-heading>div{min-width:0;max-width:100%;overflow-wrap:anywhere}
+  .lgs-appbar h1{font-size:28px}
+  .lgs-toolbar{display:flex;flex-wrap:wrap;width:100%;gap:10px}
+  .lgs-toolbar button{flex:1 1 auto;padding:12px;min-height:48px}
+  .lgs-toolbar .lgs-primary{margin-left:0}
+  .lgs-heading{flex-direction:column;gap:12px;margin:16px 0 24px}
+  .lgs-heading h1{font-size:28px}
+  .lgs-ui p.lgs-viewer-notice{margin:20px 0 24px;padding:16px}
+  .lgs-panel{padding:18px}
+  .lgs-row{flex-wrap:wrap;gap:12px}
+  .lgs-row>h2,.lgs-row>h3{min-width:0}
+  .lgs-stats{gap:8px}
+  .lgs-stats>div{min-width:0;padding:14px 6px}
+  .lgs-stats strong{font-size:26px}
+  .lgs-stats span{display:block;font-size:13px;line-height:1.4;margin-top:4px}
+  .lgs-tabs{width:100%;max-width:none}
+  .lgs-tabs button{min-height:48px}
+  .lgs-events,.lgs-overview{grid-template-columns:minmax(0,1fr)}
+  .lgs-event-card{padding:18px;gap:14px}
+  .lgs-event-date{width:54px}
+  .lgs-event-copy>strong{font-size:19px}
+  .lgs-person{grid-template-columns:52px minmax(0,1fr) 44px;padding:12px;gap:8px 10px}
+  .lgs-person .lgs-deck-thumb{grid-column:1;grid-row:1/3}
+  .lgs-person-name{grid-column:2;grid-row:1}
+  .lgs-player-id{grid-column:2;grid-row:2}
+  .lgs-player-id>span{display:inline;margin-right:6px}
+  .lgs-person>.lgs-quiet{grid-column:3;grid-row:1/3;padding:0;width:44px}
+  .lgs-ui .lgs-id-edit{min-height:44px;padding:10px 0;font-size:14px}
+  .lgs-pagination{flex-direction:column;align-items:flex-start;gap:10px}
+  .lgs-pagination>div{width:100%;justify-content:space-between;gap:6px;flex-wrap:wrap}
+  .lgs-pagination button{min-height:44px;padding:8px 10px}
+  .lgs-placement{flex-wrap:wrap;gap:8px}
+  .lgs-placement>span{min-width:0}
+  .lgs-placement select{width:145px}
+  .lgs-overlay{padding:calc(16px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+  .lgs-ui .lgs-modal{min-width:0;max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:18px}
+  .lgs-modal>.lgs-row{flex-wrap:nowrap;align-items:flex-start}
+  .lgs-modal>.lgs-row>button{flex-shrink:0}
+  .lgs-date-grid{grid-template-columns:minmax(0,1fr)}
+  .lgs-event-store>div{min-width:0;overflow-wrap:anywhere}
+  .lgs-roster-player{flex-wrap:wrap}
+  .lgs-roster-player>span:first-child{flex:1 1 140px}
+  .lgs-table-wrap{max-width:100%}
+  .lgs-ui .lgs-edited-link{flex-wrap:wrap}
+  .lgs-success-notice{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:380px){
+  .lgs-toolbar .lgs-primary{flex-basis:100%}
+  .lgs-panel{padding:14px}
+  .lgs-history{padding:6px 12px}
+  .lgs-event-card{padding:16px;gap:12px}
+  .lgs-modal .lgs-deck-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 `;
