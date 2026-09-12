@@ -33,6 +33,7 @@ const MobileProfile = () => {
   const [showDeletionModal, setShowDeletionModal] = useState(false);
   const [submittingDeletion, setSubmittingDeletion] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  const [lgsAccess, setLgsAccess] = useState<string | null>(null);
   //  Leaderboard self-ban
   const [leaderboardBanned, setLeaderboardBanned] = useState(false);
   const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
@@ -51,6 +52,7 @@ const MobileProfile = () => {
       } = await supabase.auth.getSession();
       if (!session?.user) {
         setProfile(null);
+        setLgsAccess(null);
         return;
       }
       const { data } = await supabase
@@ -70,6 +72,15 @@ const MobileProfile = () => {
         console.error("Moderator status error:", moderatorError);
       }
       setIsModerator(Boolean(moderatorRecord));
+      const { data: lgsStaff, error: lgsError } = await supabase
+        .from("lgs_staff")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (lgsError) {
+        console.error("LGS staff status error:", lgsError);
+      }
+      setLgsAccess(lgsError ? null : (lgsStaff?.role ?? null));
       const { data: tradingProfile } = await supabase
         .from("trading_profiles")
         .select("discord_username, trade_access_revoked")
@@ -497,6 +508,23 @@ const MobileProfile = () => {
   const { avatar, verification } = getProfileAssets(profile);
   const displayName = profile?.username || "Twilight Sparkle";
   const menuSections = [
+    ...(lgsAccess !== null
+      ? [
+          {
+            title: "LGS",
+            items: [
+              {
+                title: "LGS Boards",
+                subtitle:
+                  lgsAccess === "ALLGS"
+                    ? "All stores · View-only access"
+                    : "Your store’s events and attendance",
+                onClick: () => navigate("/lgs-boards"),
+              },
+            ],
+          },
+        ]
+      : []),
     {
       title: "Collection",
       items: [
@@ -686,7 +714,11 @@ const MobileProfile = () => {
                           onChange={(e) => setDiscordDraft(e.target.value)}
                           disabled={tradeAccessRevoked}
                           className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#8a6a00]/50"
-                          placeholder={tradeAccessRevoked ? "Trading access revoked" : "Your Discord username"}
+                          placeholder={
+                            tradeAccessRevoked
+                              ? "Trading access revoked"
+                              : "Your Discord username"
+                          }
                         />
                       </label>
                     </div>
@@ -738,8 +770,27 @@ const MobileProfile = () => {
                   </div>
                 )}
                 {tradeAccessRevoked && (
-                  <div className={`mt-4 rounded-xl border px-3 py-3 text-sm leading-relaxed ${isLightMode ? "border-red-200 bg-red-50 text-red-800" : "border-red-400/20 bg-red-400/[0.08] text-red-200"}`}>
-                    Your trade and sale rights have been revoked based on community reports. You can appeal by emailing <a href="mailto:mlpekayou@gmail.com" className="font-semibold underline">mlpekayou@gmail.com</a> or opening a ticket in the <a href="https://discord.gg/mlpekayou" target="_blank" rel="noreferrer" className="font-semibold underline">MLPEKAYOU Discord server</a>.
+                  <div
+                    className={`mt-4 rounded-xl border px-3 py-3 text-sm leading-relaxed ${isLightMode ? "border-red-200 bg-red-50 text-red-800" : "border-red-400/20 bg-red-400/[0.08] text-red-200"}`}
+                  >
+                    Your trade and sale rights have been revoked based on
+                    community reports. You can appeal by emailing{" "}
+                    <a
+                      href="mailto:mlpekayou@gmail.com"
+                      className="font-semibold underline"
+                    >
+                      mlpekayou@gmail.com
+                    </a>{" "}
+                    or opening a ticket in the{" "}
+                    <a
+                      href="https://discord.gg/mlpekayou"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold underline"
+                    >
+                      MLPEKAYOU Discord server
+                    </a>
+                    .
                   </div>
                 )}
               </div>
@@ -822,17 +873,15 @@ const MobileProfile = () => {
                         );
                       const { error: tradingError } = tradeAccessRevoked
                         ? { error: null }
-                        : await supabase
-                            .from("trading_profiles")
-                            .upsert(
-                              {
-                                user_id: session.user.id,
-                                discord_username: discordDraft.trim(),
-                              },
-                              {
-                                onConflict: "user_id",
-                              },
-                            );
+                        : await supabase.from("trading_profiles").upsert(
+                            {
+                              user_id: session.user.id,
+                              discord_username: discordDraft.trim(),
+                            },
+                            {
+                              onConflict: "user_id",
+                            },
+                          );
                       if (tradingError) {
                         console.error(
                           "Failed to save Discord username:",
@@ -1263,7 +1312,7 @@ const MobileProfile = () => {
               className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
             >
               If you need to contact the developer, you can join the MLPEKAYOU
-              Discord Server or email mlpekayou\@gmail.com.
+              Discord Server or email mlpekayou@gmail.com.
             </p>
             <p
               className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
@@ -1302,7 +1351,7 @@ const MobileProfile = () => {
               </button>
             </div>
             <a
-              href="mailto:mlpekayou\@gmail.com"
+              href="mailto:mlpekayou@gmail.com"
               className={`mt-3 block w-full rounded-xl border px-4 py-3 text-center text-sm font-semibold transition-colors ${
                 isLightMode
                   ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-50"
