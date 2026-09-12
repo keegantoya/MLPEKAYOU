@@ -15,7 +15,7 @@ import {
 // New tables may not be in your generated Supabase types yet.
 const db = supabase as unknown as SupabaseClient;
 const DECKS = [
-  { id: "TWILIGHTSPARKLE", name: "Twilight Sparkle", image: "/tcg-card-backs/PRR01BACK.webp" },
+  { id: "TWILIGHTSPARKLE", name: "Twilight", image: "/tcg-card-backs/PRR01BACK.webp" },
   { id: "FLUTTERSHY", name: "Fluttershy", image: "/tcg-card-backs/PRR02BACK.webp" },
   { id: "PINKIEPIE", name: "Pinkie Pie", image: "/tcg-card-backs/PRR03BACK.webp" },
   { id: "APPLEJACK", name: "Applejack", image: "/tcg-card-backs/PRR04BACK.webp" },
