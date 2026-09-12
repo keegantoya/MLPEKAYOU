@@ -2068,7 +2068,7 @@ const STYLES = `
 
 .lgs-ui p.lgs-viewer-notice{margin:20px 0 24px;padding:16px 18px;line-height:1.6}
 @media(max-width:719px){
-  .lgs-page{width:100%;min-width:0;padding:calc(96px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .lgs-page{width:100%;min-width:0;padding:calc(48px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
   .lgs-appbar{align-items:flex-start;flex-direction:column;gap:18px;margin-bottom:28px}
   .lgs-app-title,.lgs-heading>div{min-width:0;max-width:100%;overflow-wrap:anywhere}
   .lgs-appbar h1{font-size:28px}
