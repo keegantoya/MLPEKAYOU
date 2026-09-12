@@ -15,12 +15,12 @@ import {
 // New tables may not be in your generated Supabase types yet.
 const db = supabase as unknown as SupabaseClient;
 const DECKS = [
-  { id: "APPLEJACK", name: "Applejack", image: "SDAPPLEJACK.webp" },
-  { id: "FLUTTERSHY", name: "Fluttershy", image: "SDFLUTTERSHY.webp" },
-  { id: "PINKIEPIE", name: "Pinkie Pie", image: "SDPINKIEPIE.webp" },
-  { id: "RAINBOWDASH", name: "Rainbow Dash", image: "SDRAINBOWDASH.webp" },
-  { id: "RARITY", name: "Rarity", image: "SDRARITY.webp" },
-  { id: "TWILIGHT", name: "Twilight Sparkle", image: "SDTWILIGHT.webp" },
+  { id: "APPLEJACK", name: "Applejack", image: "PRR01BACK.webp" },
+  { id: "FLUTTERSHY", name: "Fluttershy", image: "PRR02BACK.webp" },
+  { id: "PINKIEPIE", name: "Pinkie Pie", image: "PRR03BACK.webp" },
+  { id: "RAINBOWDASH", name: "Rainbow Dash", image: "PRR04BACK.webp" },
+  { id: "RARITY", name: "Rarity", image: "PRR05BACK.webp" },
+  { id: "TWILIGHT", name: "Twilight Sparkle", image: "PRR06BACK.webp" },
 ] as const;
 type DeckId = (typeof DECKS)[number]["id"];
 type Staff = {
