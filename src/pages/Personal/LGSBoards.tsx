@@ -15,12 +15,12 @@ import {
 // New tables may not be in your generated Supabase types yet.
 const db = supabase as unknown as SupabaseClient;
 const DECKS = [
-  { id: "APPLEJACK", name: "Applejack", image: "PRR01BACK.webp" },
-  { id: "FLUTTERSHY", name: "Fluttershy", image: "PRR02BACK.webp" },
-  { id: "PINKIEPIE", name: "Pinkie Pie", image: "PRR03BACK.webp" },
-  { id: "RAINBOWDASH", name: "Rainbow Dash", image: "PRR04BACK.webp" },
-  { id: "RARITY", name: "Rarity", image: "PRR05BACK.webp" },
-  { id: "TWILIGHT", name: "Twilight Sparkle", image: "PRR06BACK.webp" },
+  { id: "TWILIGHTSPARKLE", name: "Twilight Sparkle", image: "/tcg-card-backs/PRR01BACK.webp" },
+  { id: "FLUTTERSHY", name: "Fluttershy", image: "/tcg-card-backs/PRR02BACK.webp" },
+  { id: "PINKIEPIE", name: "Pinkie Pie", image: "/tcg-card-backs/PRR03BACK.webp" },
+  { id: "APPLEJACK", name: "Applejack", image: "/tcg-card-backs/PRR04BACK.webp" },
+  { id: "RAINBOWDASH", name: "Rainbow Dash", image: "/tcg-card-backs/PRR05BACK.webp" },
+  { id: "RARITY", name: "Rarity", image: "/tcg-card-backs/PRR06BACK.webp" },
 ] as const;
 type DeckId = (typeof DECKS)[number]["id"];
 type Staff = {
@@ -303,7 +303,8 @@ function errorMessage(error: unknown) {
     : "Something went wrong. Please try again.";
 }
 function deckImage(id: DeckId) {
-  return `/starter-decks-boxes/SD${id}.webp`;
+  const deck = DECKS.find((item) => item.id === id);
+  return deck?.image ?? "";
 }
 // Explicit pagination keeps rosters and attendance from silently stopping at 1,000 rows.
 async function fetchAll<T>(
@@ -1245,7 +1246,7 @@ export default function LGSBoards() {
                       return (
                         <div className="lgs-deck-option" key={deck.id}>
                           <img
-                            src={`/starter-decks-boxes/${deck.image}`}
+                            src={deck.image}
                             alt={deck.name}
                           />
                           <strong>{deck.name}</strong>
@@ -1717,7 +1718,7 @@ export default function LGSBoards() {
                     disabled={busy}
                     onClick={() => setEntryDeck(deck.id)}
                   >
-                    <img src={`/starter-decks-boxes/${deck.image}`} alt="" />
+                    <img src={deck.image} alt="" />
                     <strong>{deck.name}</strong>
                   </button>
                 ))}
@@ -1831,7 +1832,7 @@ export default function LGSBoards() {
                   )
                 }
               >
-                <img src={`/starter-decks-boxes/${deck.image}`} alt="" />
+                <img src={deck.image} alt="" />
                 <strong>{deck.name}</strong>
               </button>
             ))}
