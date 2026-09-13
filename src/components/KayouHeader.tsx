@@ -1,5 +1,9 @@
+import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   ShoppingBag,
+  Shield,
+  Store,
   Home,
   Trophy,
   Medal,
@@ -30,6 +34,11 @@ import { useRef } from "react";
 import { getProfileAssets } from "../pages/Everypony/profile-assets";
 const logo = "/website-assets/mlpekayouwiki4.webp";
 const KayouHeader = () => {
+
+  const [staffAccess, setStaffAccess] = useState<{ userId: string; lgs: boolean; moderator: boolean } | null>(null);
+  const [showHeaderLgs, setShowHeaderLgs] = useState(false);
+  const [showLGSReview, setShowLGSReview] = useState(false);
+  const headerStaffRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<any>(null);
@@ -70,6 +79,45 @@ const [showProgressMenu, setShowProgressMenu] = useState(false);
 const menuRef = useRef<HTMLDivElement>(null);
 const { avatar: profileAvatar, verification } =
   getProfileAssets(profile ?? {});
+  const canUseLgs = !!user && staffAccess?.userId === user.id && staffAccess.lgs;
+  const canModerate = !!user && staffAccess?.userId === user.id && staffAccess.moderator;
+  const canReviewLGS = user?.id === "17e57e39-bc0c-44e7-b373-ac34c6690185";
+  useEffect(() => {
+    let active = true;
+    let request = 0;
+    const refresh = async () => {
+      const ticket = ++request;
+      setStaffAccess(null);
+      if (!user?.id) return;
+      const db = supabase as unknown as SupabaseClient;
+      try {
+        const [lgs, moderator] = await Promise.all([
+          db.from("lgs_staff").select("role, store_id").eq("user_id", user.id).eq("active", true).maybeSingle(),
+          db.from("leaderboard_moderators").select("user_id").eq("user_id", user.id).maybeSingle(),
+        ]);
+        if (!active || ticket !== request) return;
+        setStaffAccess({ userId: user.id,
+          lgs: !lgs.error && !!lgs.data && (lgs.data.role === "ALLGS" || (lgs.data.role === "STAFF" && !!lgs.data.store_id)),
+          moderator: !moderator.error && !!moderator.data,
+        });
+      } catch { if (active && ticket === request) setStaffAccess(null); }
+    };
+    setShowHeaderLgs(false);
+    setShowLGSReview(false);
+    void refresh();
+    window.addEventListener("focus", refresh);
+    return () => { active = false; ++request; window.removeEventListener("focus", refresh); };
+  }, [user?.id]);
+  useEffect(() => {
+    if (!showHeaderLgs) return;
+    const close = (event: MouseEvent) => {
+      if (!headerStaffRef.current?.contains(event.target as Node)) setShowHeaderLgs(false);
+    };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setShowHeaderLgs(false); };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", escape); };
+  }, [showHeaderLgs]);
   const getProfile = async (userId: string) => {
   const { data } = await supabase
     .from("profiles")
@@ -402,9 +450,40 @@ const handleThemeToggle = async () => {
   }
   return location.pathname.startsWith(path);
 };
+const staffButtons = (
+  <div ref={headerStaffRef} className="kayou-staff-actions">
+    {(canUseLgs || canReviewLGS) && (
+      <div className="kayou-staff-lgs">
+        <button type="button" className="kayou-staff-button" aria-label="LGS" title="LGS" aria-expanded={canReviewLGS ? showHeaderLgs : undefined}
+          onClick={() => { if (canReviewLGS) setShowHeaderLgs(value => !value); else requestNavigation("/lgs-boards"); }}>
+          <Store size={18} aria-hidden="true" /><span>LGS</span>
+        </button>
+        {canReviewLGS && showHeaderLgs && (
+          <div className="kayou-staff-menu">
+            {canUseLgs && <button type="button" onClick={() => { setShowHeaderLgs(false); requestNavigation("/lgs-boards"); }}>LGS Boards</button>}
+            <button type="button" onClick={() => { setShowHeaderLgs(false); setShowLGSReview(true); }}>LGS Applications</button>
+          </div>
+        )}
+      </div>
+    )}
+    {canModerate && <button type="button" className="kayou-staff-button" title="Leaderboard moderation" aria-label="Leaderboard moderation" onClick={() => requestNavigation("/leaderboard-moderation")}><Shield size={18} aria-hidden="true" /><span>Moderation</span></button>}
+  </div>
+);
 return (
   <div className={`kayou-header-scope ${isLightMode ? "kayou-header-light" : ""}`}>
 <style>{`
+  .kayou-header-scope .kayou-staff-actions{display:flex;align-items:center;gap:6px}
+  .kayou-staff-lgs{position:relative}
+  .kayou-header-scope .kayou-staff-button{display:flex;align-items:center;justify-content:center;gap:6px;height:40px;min-width:40px;padding:0 10px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);color:#e7c84b;font-size:13px;cursor:pointer}
+  .kayou-header-light .kayou-staff-button{background:#fffaf0;border-color:#e7c84b55;color:#6d5210}
+  .kayou-staff-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:190px;padding:6px;border-radius:14px;background:#17191b;box-shadow:0 12px 32px #0005;z-index:21000}
+  .kayou-staff-menu button{display:block;width:100%;text-align:left;padding:12px;border-radius:9px;color:#f4f4f5;font-size:14px}
+  .kayou-staff-menu button:hover{background:#ffffff12}
+  .kayou-header-light .kayou-staff-menu{background:#fff}
+  .kayou-header-light .kayou-staff-menu button{color:#312d24}
+  .kayou-staff-button:focus-visible,.kayou-staff-menu button:focus-visible{outline:2px solid #e7c84b;outline-offset:3px}
+  @media(min-width:640px){.kayou-staff-button span{display:none}}
+
   .kayou-header-light { color: #5f4a12; }
   .kayou-header-light [class*="bg-[#0"],
   .kayou-header-light [class*="bg-[#1"],
@@ -681,7 +760,7 @@ style={{
         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white"
       >
         <Mail className="h-[18px] w-[18px] text-zinc-400" />
-        <span>Inbox & Friends</span>
+        <span>Inbox &amp; Friends</span>
       </button>
       <button
         onClick={() => {
@@ -984,10 +1063,11 @@ style={{
 </div>
 {/* RIGHT SIDE */}
 <div className="hidden sm:flex items-center gap-2 min-w-[40px]">
+  {staffButtons}
   {user && (
 <Button
   onClick={() => setShowBugReport(true)}
-  className="hidden h-10 items-center rounded-full border border-white/10 bg-white/[0.045] px-4 text-sm font-medium text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] transition-all duration-200 sm:flex hover:border-white/20 hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
+  className="flex h-10 items-center rounded-full border border-white/10 bg-white/[0.045] px-4 text-sm font-medium text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] transition-all duration-200 sm:flex hover:border-white/20 hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
 >
   Report a bug
 </Button>
@@ -1062,6 +1142,7 @@ style={{
   </button>
 </div>
 </header>
+{canReviewLGS && showLGSReview && <LGSApproveDeny isLightMode={isLightMode} onClose={() => setShowLGSReview(false)} />}
 {/* SIGNUP SUCCESS POPUP */}
 {showSignupSuccess && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-md">

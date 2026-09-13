@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProfileAssets } from "../Everypony/profile-assets";
+import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
 import { supabase } from "@/lib/supabase";
 import {
   ChevronRight,
@@ -16,126 +17,171 @@ import {
   Pencil,
 } from "lucide-react";
 const MobileProfile = () => {
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
-  const [isLightMode, setIsLightMode] = useState(
+const navigate = useNavigate();
+const loadCounts = useRef<Record<string, number>>({});
+const [profileLoads, setProfileLoads] = useState<Record<string, boolean>>({ profile: false, stats: false, theme: false });
+const [profileLoadErrors, setProfileLoadErrors] = useState<Record<string, boolean>>({});
+const trackProfileLoad = useCallback(async (key: string, task: () => Promise<void>) => {
+  loadCounts.current[key] = (loadCounts.current[key] ?? 0) + 1;
+  setProfileLoads(previous => ({ ...previous, [key]: false }));
+  try {
+    await task();
+    setProfileLoadErrors(previous => ({ ...previous, [key]: false }));
+  } catch (error) {
+    console.error(`Unable to load profile ${key}:`, error);
+    setProfileLoadErrors(previous => ({ ...previous, [key]: true }));
+  } finally {
+    loadCounts.current[key] -= 1;
+    if (loadCounts.current[key] === 0) setProfileLoads(previous => ({ ...previous, [key]: true }));
+  }
+}, []);
+
+const [profile, setProfile] = useState<any>(null);
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-  const [discord, setDiscord] = useState("");
-  const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [usernameDraft, setUsernameDraft] = useState("");
-  const [discordDraft, setDiscordDraft] = useState("");
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [deletionRequested, setDeletionRequested] = useState(false);
-  const [showDeletionModal, setShowDeletionModal] = useState(false);
-  const [submittingDeletion, setSubmittingDeletion] = useState(false);
-  const [isModerator, setIsModerator] = useState(false);
-  const [lgsAccess, setLgsAccess] = useState<string | null>(null);
-  //  Leaderboard self-ban
-  const [leaderboardBanned, setLeaderboardBanned] = useState(false);
-  const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
-  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
-  const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
+const [discord, setDiscord] = useState("");
+const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
+const [editingProfile, setEditingProfile] = useState(false);
+const [usernameDraft, setUsernameDraft] = useState("");
+const [discordDraft, setDiscordDraft] = useState("");
+const [savingProfile, setSavingProfile] = useState(false);
+const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
+const [copied, setCopied] = useState(false);
+const [deletionRequested, setDeletionRequested] = useState(false);
+const [showDeletionModal, setShowDeletionModal] = useState(false);
+const [submittingDeletion, setSubmittingDeletion] = useState(false);
+const [isModerator, setIsModerator] = useState(false);
+const [canReviewLGS, setCanReviewLGS] = useState(false);
+const [showLGSReview, setShowLGSReview] = useState(false);
+const [lgsAccess, setLgsAccess] = useState<string | null>(null);
+//  Leaderboard self-ban
+const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
+const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
     useState(false);
-  const [showBugReport, setShowBugReport] = useState(false);
-  const [stats, setStats] = useState({
+const [showBugReport, setShowBugReport] = useState(false);
+const [stats, setStats] = useState({
     owned: 0,
     completed: 0,
   });
   useEffect(() => {
-    const loadProfile = async () => {
-      const {
+let mounted = true;
+let authVersion = 0;
+const applyReviewAccess = (id?: string) => {
+      if (!mounted) return;
+const allowed = id === "17e57e39-bc0c-44e7-b373-ac34c6690185";
+      setCanReviewLGS(allowed);
+      if (!allowed) setShowLGSReview(false);
+    };
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      authVersion++;
+      applyReviewAccess(session?.user?.id);
+    });
+const initialVersion = authVersion;
+    void supabase.auth.getSession().then(({ data, error }) => {
+      if (mounted && authVersion === initialVersion) applyReviewAccess(error ? undefined : data.session?.user?.id);
+    }).catch(() => { if (mounted && authVersion === initialVersion) applyReviewAccess(); });
+    return () => { mounted = false; subscription.unsubscribe(); };
+  }, []);
+  useEffect(() => {
+const loadProfile = async () => {
+    return trackProfileLoad("profile", async () => {
+const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await checkedProfileRequest(supabase.auth.getSession());
+      setCanReviewLGS(session?.user?.id === "17e57e39-bc0c-44e7-b373-ac34c6690185");
       if (!session?.user) {
         setProfile(null);
         setLgsAccess(null);
         return;
       }
-      const { data } = await supabase
+const { data } = await checkedProfileRequest(supabase
         .from("profiles")
         .select("id, username, avatar_url")
         .eq("id", session.user.id)
-        .single();
+        .single());
       if (data) {
+        await preloadProfileAvatar(getProfileAssets(data).avatar);
         setProfile(data);
       }
-      const { data: moderatorRecord, error: moderatorError } = await supabase
+const { data: moderatorRecord, error: moderatorError } = await checkedProfileRequest(supabase
         .from("leaderboard_moderators")
         .select("user_id")
         .eq("user_id", session.user.id)
-        .maybeSingle();
+        .maybeSingle());
       if (moderatorError) {
         console.error("Moderator status error:", moderatorError);
       }
       setIsModerator(Boolean(moderatorRecord));
-      const { data: lgsStaff, error: lgsError } = await supabase
+const { data: lgsStaff, error: lgsError } = await checkedProfileRequest(supabase
         .from("lgs_staff")
         .select("role")
         .eq("user_id", session.user.id)
-        .maybeSingle();
+        .maybeSingle());
       if (lgsError) {
         console.error("LGS staff status error:", lgsError);
       }
       setLgsAccess(lgsError ? null : (lgsStaff?.role ?? null));
-      const { data: tradingProfile } = await supabase
+const { data: tradingProfile } = await checkedProfileRequest(supabase
         .from("trading_profiles")
         .select("discord_username, trade_access_revoked")
         .eq("user_id", session.user.id)
-        .single();
+        .maybeSingle());
       setDiscord(tradingProfile?.discord_username || "");
       setTradeAccessRevoked(Boolean(tradingProfile?.trade_access_revoked));
       setUsernameDraft(data?.username || "");
       setDiscordDraft(tradingProfile?.discord_username || "");
-      const { data: leaderboardBan, error: leaderboardBanError } =
-        await supabase
+const { data: leaderboardBan, error: leaderboardBanError } =
+        await checkedProfileRequest(supabase
           .from("leaderboard_exclusions")
           .select("user_id")
           .eq("user_id", session.user.id)
-          .maybeSingle();
+          .maybeSingle());
       if (leaderboardBanError) {
         console.error("Leaderboard ban status error:", leaderboardBanError);
       }
       setLeaderboardBanned(!!leaderboardBan);
       setLoadingLeaderboardBan(false);
-    };
+    
+    });
+  };
     loadProfile();
-    const {
+const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
-      loadProfile();
+      setTimeout(() => { void loadProfile(); }, 0);
     });
     return () => subscription.unsubscribe();
   }, []);
   useEffect(() => {
-    let mounted = true;
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-    const syncFromDocument = () => {
+let mounted = true;
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+const syncFromDocument = () => {
       if (!mounted) return;
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-    const observer = new MutationObserver(syncFromDocument);
+const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-    const loadThemePreference = async () => {
-      const {
+const loadThemePreference = async () => {
+    return trackProfileLoad("theme", async () => {
+const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await checkedProfileRequest(supabase.auth.getSession());
       if (!mounted) return;
       if (!session?.user) {
         setIsLightMode(false);
         return;
       }
-      const { data, error } = await supabase
+const { data, error } = await checkedProfileRequest(supabase
         .from("user_light_mode_preferences")
         .select("user_id")
         .eq("user_id", session.user.id)
-        .maybeSingle();
+        .maybeSingle());
       if (!mounted) return;
       if (error) {
         console.error("Unable to load profile theme preference:", error);
@@ -158,7 +204,9 @@ const MobileProfile = () => {
           },
         )
         .subscribe();
-    };
+    
+    });
+  };
     syncFromDocument();
     loadThemePreference();
     return () => {
@@ -169,9 +217,9 @@ const MobileProfile = () => {
       }
     };
   }, []);
-  async function selfBanFromLeaderboard() {
+async function selfBanFromLeaderboard() {
     if (leaderboardBanned) return;
-    const {
+const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) {
@@ -180,7 +228,7 @@ const MobileProfile = () => {
     }
     setLeaderboardBanned(true);
     setLoadingLeaderboardBan(false);
-    const { error } = await supabase.from("leaderboard_exclusions").upsert(
+const { error } = await supabase.from("leaderboard_exclusions").upsert(
       {
         user_id: session.user.id,
         reason:
@@ -195,18 +243,18 @@ const MobileProfile = () => {
     }
     setLeaderboardBanned(true);
   }
-  async function requestAccountDeletion() {
+async function requestAccountDeletion() {
     if (deletionRequested || submittingDeletion) return;
     setSubmittingDeletion(true);
     try {
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
         setShowDeletionModal(false);
         return;
       }
-      const { error } = await supabase
+const { error } = await supabase
         .from("account_deletion_requests")
         .insert({
           user_id: session.user.id,
@@ -226,21 +274,22 @@ const MobileProfile = () => {
     }
   }
   useEffect(() => {
-    const loadStats = async () => {
+const loadStats = async () => {
+    return trackProfileLoad("stats", async () => {
       try {
-        const {
+const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await checkedProfileRequest(supabase.auth.getSession());
         if (!session?.user) return;
-        //  Total cards owned
-        const { data: collection } = await supabase
+//  Total cards owned
+const { data: collection } = await checkedProfileRequest(supabase
           .from("collection_progress_raw")
           .select("set_id, progress")
-          .eq("user_id", session.user.id);
-        const filtered = (collection || []).filter(
+          .eq("user_id", session.user.id));
+const filtered = (collection || []).filter(
           (row: any) => row.set_id !== "OTHERMERCH",
         );
-        let owned = 0;
+let owned = 0;
         filtered.forEach((row: any) => {
           owned += Object.values(row.progress || {}).filter(
             (value: any) =>
@@ -248,17 +297,17 @@ const MobileProfile = () => {
               (typeof value === "object" && value?.owned === true),
           ).length;
         });
-        //  Completed sets
-        const { data: progress } = await supabase
+//  Completed sets
+const { data: progress } = await checkedProfileRequest(supabase
           .from("collection_progress")
           .select("set_id, progress")
-          .eq("user_id", session.user.id);
-        let completed = 0;
-        const progressMap = new Map(
+          .eq("user_id", session.user.id));
+let completed = 0;
+const progressMap = new Map(
           (progress || []).map((row: any) => [String(row.set_id), row]),
         );
-        //  Main checklist sets only
-        const sets = [
+//  Main checklist sets only
+const sets = [
           {
             id: "1",
             rarities: {
@@ -429,14 +478,14 @@ const MobileProfile = () => {
           },
         ];
         sets.forEach((set) => {
-          const found = progressMap.get(set.id);
+const found = progressMap.get(set.id);
           if (!found?.progress) return;
-          let owned = 0;
-          let total = 0;
+let owned = 0;
+let total = 0;
           Object.entries(set.rarities).forEach(([rarity, count]) => {
             total += count;
             for (let i = 1; i <= count; i++) {
-              const key = `${rarity}-${i}`;
+const key = `${rarity}-${i}`;
               if (found.progress[key]) {
                 owned++;
               }
@@ -446,15 +495,15 @@ const MobileProfile = () => {
             completed++;
           }
         });
-        //  Fantasy Wonderland
-        const { data: fwProgress } = await supabase
+//  Fantasy Wonderland
+const { data: fwProgress } = await checkedProfileRequest(supabase
           .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", session.user.id)
-          .eq("set_id", "FW");
-        const fwRow = fwProgress?.[0];
+          .eq("set_id", "FW"));
+const fwRow = fwProgress?.[0];
         if (fwRow) {
-          const STRUCTURE = [
+const STRUCTURE = [
             { prefix: "BP01C", count: 48 },
             { prefix: "BP01U", count: 18 },
             { prefix: "BP01ER", count: 6 },
@@ -469,7 +518,7 @@ const MobileProfile = () => {
             { prefix: "BP01PCR", count: 12 },
             { prefix: "BP01PRR", count: 6 },
           ];
-          const validKeys = new Set(
+const validKeys = new Set(
             STRUCTURE.flatMap(({ prefix, count }) => {
               if (prefix === "BP01ER") {
                 return Array.from(
@@ -488,7 +537,7 @@ const MobileProfile = () => {
               );
             }),
           );
-          const ownedFW = Object.entries(fwRow.progress || {}).filter(
+const ownedFW = Object.entries(fwRow.progress || {}).filter(
             ([key, val]) => val && validKeys.has(key),
           ).length;
           if (ownedFW === validKeys.size) {
@@ -501,26 +550,31 @@ const MobileProfile = () => {
         });
       } catch (error) {
         console.error("Failed to load stats:", error);
+        throw error;
       }
-    };
+    
+    });
+  };
     loadStats();
   }, []);
-  const { avatar, verification } = getProfileAssets(profile);
-  const displayName = profile?.username || "Twilight Sparkle";
-  const menuSections = [
-    ...(lgsAccess !== null
+const { avatar, verification } = getProfileAssets(profile);
+const displayName = profile?.username || "Twilight Sparkle";
+const menuSections = [
+    ...(lgsAccess !== null || canReviewLGS
       ? [
           {
             title: "LGS",
             items: [
-              {
+              ...(lgsAccess !== null ? [{
                 title: "LGS Boards",
-                subtitle:
-                  lgsAccess === "ALLGS"
-                    ? "All stores · View-only access"
-                    : "Your store’s events and attendance",
+                subtitle: lgsAccess === "ALLGS" ? "All stores · View-only access" : "Your store’s events and attendance",
                 onClick: () => navigate("/lgs-boards"),
-              },
+              }] : []),
+              ...(canReviewLGS ? [{
+                title: "LGS Applications",
+                subtitle: "Review applications and decision history",
+                onClick: () => setShowLGSReview(true),
+              }] : []),
             ],
           },
         ]
@@ -582,6 +636,8 @@ const MobileProfile = () => {
       ],
     },
   ];
+  if (!Object.values(profileLoads).every(Boolean)) return <ProfileLoadingScreen light={isLightMode} failed={false} />;
+  if (Object.values(profileLoadErrors).some(Boolean) || !profile) return <ProfileLoadingScreen light={isLightMode} failed />;
   return (
     <div
       className={`mobile-profile-scope relative min-h-screen overflow-hidden pb-24 transition-colors duration-200 ${
@@ -807,13 +863,13 @@ const MobileProfile = () => {
                 onClick={async () => {
                   if (editingProfile) {
                     setSavingProfile(true);
-                    const {
+const {
                       data: { session },
                     } = await supabase.auth.getSession();
                     if (session?.user) {
-                      const originalUsername = profile?.username || "";
-                      const nextUsername = usernameDraft.trim();
-                      const {
+const originalUsername = profile?.username || "";
+const nextUsername = usernameDraft.trim();
+const {
                         data: existingUsername,
                         error: usernameCheckError,
                       } = await supabase
@@ -836,7 +892,7 @@ const MobileProfile = () => {
                         setSavingProfile(false);
                         return;
                       }
-                      const { error: usernameError } = await supabase
+const { error: usernameError } = await supabase
                         .from("profiles")
                         .update({
                           username: nextUsername,
@@ -860,7 +916,7 @@ const MobileProfile = () => {
                         setSavingProfile(false);
                         return;
                       }
-                      const { error: authUsernameError } =
+const { error: authUsernameError } =
                         await supabase.auth.updateUser({
                           data: {
                             username: nextUsername,
@@ -871,7 +927,7 @@ const MobileProfile = () => {
                           "Failed to update username metadata:",
                           authUsernameError,
                         );
-                      const { error: tradingError } = tradeAccessRevoked
+const { error: tradingError } = tradeAccessRevoked
                         ? { error: null }
                         : await supabase.from("trading_profiles").upsert(
                             {
@@ -922,13 +978,13 @@ const MobileProfile = () => {
               {/* SHARE PROFILE */}
               <button
                 onClick={() => {
-                  const url = `https://www.mlpekayou.community/${encodeURIComponent(
+const url = `https://www.mlpekayou.community/${encodeURIComponent(
                     profile?.username ?? "",
                   )}`;
                   if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(url);
                   } else {
-                    const textArea = document.createElement("textarea");
+const textArea = document.createElement("textarea");
                     textArea.value = url;
                     textArea.style.position = "fixed";
                     textArea.style.left = "-999999px";
@@ -1459,6 +1515,9 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
+      {canReviewLGS && showLGSReview && (
+        <LGSApproveDeny isLightMode={isLightMode} onClose={() => setShowLGSReview(false)} />
+      )}
     </div>
   );
 };
@@ -1483,3 +1542,64 @@ function Placeholder({ title }: { title: string }) {
   );
 }
 export default MobileProfile;
+
+function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boolean }) {
+  const logo = light ? "/website-assets/mlpekayouwiki4.webp" : "/website-assets/darkmodelogo.webp";
+  return (
+    <div className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}>
+      <style>{`
+        .profile-loading-screen{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:grid;place-items:center;overflow:hidden;padding:96px 24px;background:#0d0f10;color:#f4f4f5}
+        .profile-loading-screen.profile-loading-light{background:#f5f5f3;color:#27272a}
+        .profile-loading-pattern{position:absolute;inset:-160px -260px;z-index:-2;pointer-events:none;background-repeat:repeat;background-size:240px 140px;opacity:.065;animation:profile-logo-drift 36s linear infinite;will-change:transform}
+        .profile-loading-light .profile-loading-pattern{opacity:.075}
+        .profile-loading-vignette{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,rgba(13,15,16,.96) 0%,rgba(13,15,16,.72) 28%,rgba(13,15,16,.12) 75%)}
+        .profile-loading-light .profile-loading-vignette{background:radial-gradient(ellipse at center,rgba(245,245,243,.96) 0%,rgba(245,245,243,.72) 28%,rgba(245,245,243,.12) 75%)}
+        .profile-loading-content{width:100%;max-width:400px;text-align:center}
+        .profile-loading-brand{position:relative;display:flex;align-items:center;justify-content:center;width:240px;max-width:80%;height:120px;margin:0 auto 20px}
+        .profile-loading-brand::before{content:"";position:absolute;inset:20px 28px;border-radius:50%;background:rgba(255,218,75,.12);filter:blur(30px)}
+        .profile-loading-brand img{position:relative;width:100%;max-height:120px;object-fit:contain;filter:drop-shadow(0 5px 18px rgba(0,0,0,.15))}
+        .profile-loading-content p{margin:0;font-size:18px;font-weight:600;line-height:1.6}
+        .profile-loading-dots{display:inline-block;width:1.2em;text-align:left;animation:profile-loading-dots 1.4s steps(1,end) infinite}
+        .profile-loading-retry{margin-top:20px;min-height:44px;padding:10px 22px;border:0;border-radius:12px;background:#ffda4b;color:#252728;font-size:16px;font-weight:600;cursor:pointer}
+        .profile-loading-retry:focus-visible{outline:3px solid #90bfff;outline-offset:4px}
+        @keyframes profile-logo-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(240px,140px,0)}}
+        @keyframes profile-loading-dots{0%,24%{clip-path:inset(0 66.66% 0 0)}25%,49%{clip-path:inset(0 33.33% 0 0)}50%,74%{clip-path:inset(0)}75%,100%{clip-path:inset(0 33.33% 0 0)}}
+        @media(prefers-reduced-motion:reduce){.profile-loading-pattern,.profile-loading-dots{animation:none;will-change:auto}}
+      `}</style>
+      <div className="profile-loading-pattern" style={{ backgroundImage: `url("${logo}")` }} aria-hidden="true" />
+      <div className="profile-loading-vignette" aria-hidden="true" />
+      <div className="profile-loading-content">
+        <div className="profile-loading-brand">
+          <img src={logo} alt="MLPEKAYOU" />
+        </div>
+        {failed ? (
+          <>
+            <p role="alert">We couldn’t load your profile. Please try again.</p>
+            <button type="button" className="profile-loading-retry" onClick={() => window.location.reload()}>Try again</button>
+          </>
+        ) : (
+          <p role="status" aria-live="polite">
+            <span className="sr-only">Loading your profile</span>
+            <span aria-hidden="true">Loading your profile<span className="profile-loading-dots">...</span></span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+async function checkedProfileRequest<T extends { error?: unknown }>(request: PromiseLike<T>): Promise<T> {
+  const result = await request;
+  if (result.error) throw result.error;
+  return result;
+}
+
+function preloadProfileAvatar(src: string | null | undefined): Promise<void> {
+  if (!src) return Promise.resolve();
+  return new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+    image.src = src;
+    if (image.complete) resolve();
+  });
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import LGSApplications from "@/pages/Pop-Ups/LGSApplications";
 import { supabase } from "@/lib/supabase";
 type HomeTab = "updates" | "tutorial" | "resources" | "partnership";
 const tutorialItems = [
@@ -72,6 +73,7 @@ const resources = [
   },
 ];
 export default function Index() {
+  const [showLGSApplication, setShowLGSApplication] = useState(false);
 const [activeTab, setActiveTab] = useState<HomeTab>("updates");
 const [showUpdateNotice, setShowUpdateNotice] = useState(false);
 const [isLightMode, setIsLightMode] = useState(
@@ -157,6 +159,7 @@ const bodyText = isLightMode ? "text-zinc-700" : "text-zinc-300";
 const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
   return (
     <>
+      {showLGSApplication && <LGSApplications onClose={() => setShowLGSApplication(false)} isLightMode={isLightMode} />}
       {showUpdateNotice && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4 backdrop-blur-md">
           <div
@@ -478,10 +481,23 @@ const selected = activeTab === tab.id;
               <div className="mb-5">
                 <h2 className="text-2xl font-semibold tracking-tight">Community resources</h2>
                 <p className={`mt-1 text-sm leading-6 ${muted}`}>
-                  Helpful third-party resources made by members of the Kayou community.
+                  Event hosting tools and helpful resources from the Kayou community.
                 </p>
               </div>
               <div className="space-y-4">
+                <article className={`rounded-2xl border p-5 sm:p-6 ${surface}`}>
+                  <p className={`text-sm font-semibold ${accentText}`}>For local game stores</p>
+                  <h3 className="mt-1 text-2xl font-semibold tracking-tight">LGS Hosting Organization Program</h3>
+                  <p className={`mt-3 text-sm leading-6 ${bodyText}`}>
+                    Give your staff a shared place to manage tournaments and track events as they happen.
+                    Apply for your store whether you already host events or are preparing for your first one.
+                    Please choose one representative to submit your store’s application.
+                  </p>
+                  <button type="button" onClick={() => setShowLGSApplication(true)}
+                    className="mt-5 rounded-xl bg-[#E7C84B] px-5 py-3 text-base font-semibold text-[#111111] transition hover:bg-[#FFE477] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E7C84B]">
+                    Apply for the LGS Program
+                  </button>
+                </article>
                 {resources.map((resource) => (
                   <a
                     key={resource.title}

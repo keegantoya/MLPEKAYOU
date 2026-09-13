@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Store } from "lucide-react";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
 function ShowcaseImage({
@@ -13,7 +11,7 @@ function ShowcaseImage({
   alt: string;
   className: string;
 }) {
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+const [failedSrc, setFailedSrc] = useState<string | null>(null);
   return failedSrc === src ? (
     <div
       role="img"
@@ -32,44 +30,60 @@ function ShowcaseImage({
   );
 }
 export default function DesktopProfile() {
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
-  const [isLightMode, setIsLightMode] = useState(
+const navigate = useNavigate();
+const loadCounts = useRef<Record<string, number>>({});
+const [profileLoads, setProfileLoads] = useState<Record<string, boolean>>({ profile: false, stats: false, theme: false, showcase: false });
+const [profileLoadErrors, setProfileLoadErrors] = useState<Record<string, boolean>>({});
+const trackProfileLoad = useCallback(async (key: string, task: () => Promise<void>) => {
+  loadCounts.current[key] = (loadCounts.current[key] ?? 0) + 1;
+  setProfileLoads(previous => ({ ...previous, [key]: false }));
+  try {
+    await task();
+    setProfileLoadErrors(previous => ({ ...previous, [key]: false }));
+  } catch (error) {
+    console.error(`Unable to load profile ${key}:`, error);
+    setProfileLoadErrors(previous => ({ ...previous, [key]: true }));
+  } finally {
+    loadCounts.current[key] -= 1;
+    if (loadCounts.current[key] === 0) setProfileLoads(previous => ({ ...previous, [key]: true }));
+  }
+}, []);
+
+const [profile, setProfile] = useState<any>(null);
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-  const [discord, setDiscord] = useState("");
-  const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [usernameDraft, setUsernameDraft] = useState("");
-  const [discordDraft, setDiscordDraft] = useState("");
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
-  const [stats, setStats] = useState({
+const [discord, setDiscord] = useState("");
+const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
+const [editingProfile, setEditingProfile] = useState(false);
+const [usernameDraft, setUsernameDraft] = useState("");
+const [discordDraft, setDiscordDraft] = useState("");
+const [savingProfile, setSavingProfile] = useState(false);
+const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
+const [stats, setStats] = useState({
     owned: 0,
     completed: 0,
     friends: 0,
   });
-  const [showcaseTab, setShowcaseTab] = useState<
+const [showcaseTab, setShowcaseTab] = useState<
     "moon" | "star" | "fun" | "rainbow" | "tcg"
   >("moon");
-  const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
-  const [selectedShowcaseCard, setSelectedShowcaseCard] = useState<any | null>(
+const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
+const [selectedShowcaseCard, setSelectedShowcaseCard] = useState<any | null>(
     null,
   );
-  const isMoon3SZR001 = (card: any) =>
+const isMoon3SZR001 = (card: any) =>
     getTradeCardImage(card) === "/cards/third-edition-moon/M3SZR001.webp";
-  const [copied, setCopied] = useState(false);
-  const [deletionRequested, setDeletionRequested] = useState(false);
-  const [showDeletionModal, setShowDeletionModal] = useState(false);
-  const [submittingDeletion, setSubmittingDeletion] = useState(false);
-  const [isModerator, setIsModerator] = useState(false);
-  const [lgsAccess, setLgsAccess] = useState<"STAFF" | "ALLGS" | null>(null);
-  const [leaderboardBanned, setLeaderboardBanned] = useState(false);
-  const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
-  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
-  const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
+const [copied, setCopied] = useState(false);
+const [deletionRequested, setDeletionRequested] = useState(false);
+const [showDeletionModal, setShowDeletionModal] = useState(false);
+const [submittingDeletion, setSubmittingDeletion] = useState(false);
+const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
+const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
     useState(false);
-  const tabs = [
+const tabs = [
     { label: "Collection", path: "/binders" },
     { label: "Inventory", path: "/inventory" },
     { label: "Wishlist & ISO", path: "/iso" },
@@ -78,88 +92,32 @@ export default function DesktopProfile() {
     { label: "Kayou Events", path: "/kayou-news" },
   ];
   useEffect(() => {
-    let mounted = true;
-    let request = 0;
-    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
-    const refreshLgsAccess = async () => {
-      const ticket = ++request;
-      try {
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
-        if (!mounted || ticket !== request) return;
-        if (sessionError || !session?.user) {
-          setLgsAccess(null);
-          return;
-        }
-        const { data, error } = await (supabase as unknown as SupabaseClient)
-          .from("lgs_staff")
-          .select("role, store_id")
-          .eq("user_id", session.user.id)
-          .eq("active", true)
-          .maybeSingle();
-        if (!mounted || ticket !== request) return;
-        setLgsAccess(
-          !error &&
-            data &&
-            (data.role === "ALLGS" || (data.role === "STAFF" && data.store_id))
-            ? (data.role as "STAFF" | "ALLGS")
-            : null,
-        );
-      } catch {
-        if (mounted && ticket === request) setLgsAccess(null);
-      }
-    };
-    const scheduleRefresh = () => {
-      if (!mounted) return;
-      ++request;
-      setLgsAccess(null);
-      clearTimeout(refreshTimer);
-      // Keep Supabase requests outside its auth-change callback.
-      refreshTimer = setTimeout(() => {
-        void refreshLgsAccess();
-      }, 0);
-    };
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(scheduleRefresh);
-    void refreshLgsAccess();
-    window.addEventListener("focus", scheduleRefresh);
-    return () => {
-      mounted = false;
-      ++request;
-      clearTimeout(refreshTimer);
-      subscription.unsubscribe();
-      window.removeEventListener("focus", scheduleRefresh);
-    };
-  }, []);
-  useEffect(() => {
-    let mounted = true;
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-    const syncFromDocument = () => {
+let mounted = true;
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+const syncFromDocument = () => {
       if (!mounted) return;
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-    const observer = new MutationObserver(syncFromDocument);
+const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-    const loadThemePreference = async () => {
-      const {
+const loadThemePreference = async () => {
+    return trackProfileLoad("theme", async () => {
+const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await checkedProfileRequest(supabase.auth.getSession());
       if (!mounted) return;
       if (!session?.user) {
         setIsLightMode(false);
         return;
       }
-      const { data, error } = await supabase
+const { data, error } = await checkedProfileRequest(supabase
         .from("user_light_mode_preferences")
         .select("user_id")
         .eq("user_id", session.user.id)
-        .maybeSingle();
+        .maybeSingle());
       if (!mounted) return;
       if (error) {
         console.error(
@@ -185,7 +143,9 @@ export default function DesktopProfile() {
           },
         )
         .subscribe();
-    };
+    
+    });
+  };
     syncFromDocument();
     loadThemePreference();
     return () => {
@@ -197,59 +157,53 @@ export default function DesktopProfile() {
   useEffect(() => {
     loadProfile();
     loadStats();
-    const {
+const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
-      loadProfile();
-      loadStats();
+      setTimeout(() => { void loadProfile(); void loadStats(); }, 0);
     });
     return () => subscription.unsubscribe();
   }, []);
-  async function loadProfile() {
-    const {
+async function loadProfile() {
+    return trackProfileLoad("profile", async () => {
+const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await checkedProfileRequest(supabase.auth.getSession());
     if (!session?.user) return;
-    const { data } = await supabase
+const { data } = await checkedProfileRequest(supabase
       .from("profiles")
       .select("id, username, avatar_url")
       .eq("id", session.user.id)
-      .single();
+      .single());
     if (data) {
+      await preloadProfileAvatar(getProfileAssets(data).avatar);
       setProfile(data);
     }
-    const { data: moderatorRecord, error: moderatorError } = await supabase
-      .from("leaderboard_moderators")
-      .select("user_id")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    if (moderatorError) {
-      console.error("Moderator status error:", moderatorError);
-    }
-    setIsModerator(Boolean(moderatorRecord));
     setUsernameDraft(data?.username || "");
-    const { data: trading } = await supabase
+const { data: trading } = await checkedProfileRequest(supabase
       .from("trading_profiles")
       .select("discord_username, trade_access_revoked")
       .eq("user_id", session.user.id)
-      .single();
+      .maybeSingle());
     setDiscord(trading?.discord_username || "");
     setDiscordDraft(trading?.discord_username || "");
     setTradeAccessRevoked(Boolean(trading?.trade_access_revoked));
-    const { data: leaderboardBan, error: leaderboardBanError } = await supabase
+const { data: leaderboardBan, error: leaderboardBanError } = await checkedProfileRequest(supabase
       .from("leaderboard_exclusions")
       .select("user_id")
       .eq("user_id", session.user.id)
-      .maybeSingle();
+      .maybeSingle());
     if (leaderboardBanError) {
       console.error("Leaderboard ban status error:", leaderboardBanError);
     }
     setLeaderboardBanned(!!leaderboardBan);
     setLoadingLeaderboardBan(false);
+  
+    });
   }
-  async function selfBanFromLeaderboard() {
+async function selfBanFromLeaderboard() {
     if (leaderboardBanned) return;
-    const {
+const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) {
@@ -258,7 +212,7 @@ export default function DesktopProfile() {
     }
     setLeaderboardBanned(true);
     setLoadingLeaderboardBan(false);
-    const { error } = await supabase.from("leaderboard_exclusions").upsert(
+const { error } = await supabase.from("leaderboard_exclusions").upsert(
       {
         user_id: session.user.id,
         reason:
@@ -275,18 +229,18 @@ export default function DesktopProfile() {
     }
     setLeaderboardBanned(true);
   }
-  async function requestAccountDeletion() {
+async function requestAccountDeletion() {
     if (deletionRequested || submittingDeletion) return;
     setSubmittingDeletion(true);
     try {
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
         setShowDeletionModal(false);
         return;
       }
-      const { error } = await supabase
+const { error } = await supabase
         .from("account_deletion_requests")
         .insert({
           user_id: session.user.id,
@@ -305,19 +259,20 @@ export default function DesktopProfile() {
       setSubmittingDeletion(false);
     }
   }
-  async function loadStats() {
-    const {
+async function loadStats() {
+    return trackProfileLoad("stats", async () => {
+const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await checkedProfileRequest(supabase.auth.getSession());
     if (!session?.user) return;
-    const { data: collection } = await supabase
+const { data: collection } = await checkedProfileRequest(supabase
       .from("collection_progress_raw")
       .select("set_id, progress")
-      .eq("user_id", session.user.id);
-    const filtered = (collection || []).filter(
+      .eq("user_id", session.user.id));
+const filtered = (collection || []).filter(
       (row: any) => row.set_id !== "OTHERMERCH",
     );
-    let owned = 0;
+let owned = 0;
     filtered.forEach((row: any) => {
       owned += Object.values(row.progress || {}).filter(
         (value: any) =>
@@ -325,23 +280,23 @@ export default function DesktopProfile() {
           (typeof value === "object" && value?.owned === true),
       ).length;
     });
-    const { data: friends } = await supabase
+const { data: friends } = await checkedProfileRequest(supabase
       .from("friend_requests")
       .select("sender_id, receiver_id")
-      .eq("status", "accepted");
-    const friendCount = (friends ?? []).filter(
+      .eq("status", "accepted"));
+const friendCount = (friends ?? []).filter(
       (friend: any) =>
         friend.sender_id === session.user.id ||
         friend.receiver_id === session.user.id,
     ).length;
-    const { data: progress } = await supabase
+const { data: progress } = await checkedProfileRequest(supabase
       .from("collection_progress")
       .select("set_id, progress")
-      .eq("user_id", session.user.id);
-    const progressMap = new Map(
+      .eq("user_id", session.user.id));
+const progressMap = new Map(
       (progress || []).map((row: any) => [String(row.set_id), row]),
     );
-    const sets = [
+const sets = [
       {
         id: "1",
         rarities: {
@@ -511,12 +466,12 @@ export default function DesktopProfile() {
         },
       },
     ];
-    let completed = 0;
+let completed = 0;
     sets.forEach((set) => {
-      const found = progressMap.get(set.id);
+const found = progressMap.get(set.id);
       if (!found?.progress) return;
-      let total = 0;
-      let ownedCards = 0;
+let total = 0;
+let ownedCards = 0;
       Object.entries(set.rarities).forEach(([rarity, count]) => {
         total += count;
         for (let i = 1; i <= count; i++) {
@@ -532,20 +487,23 @@ export default function DesktopProfile() {
       completed,
       friends: friendCount,
     });
+  
+    });
   }
-  const { avatar, verification } = getProfileAssets(profile);
-  const displayName = profile?.username || "Twilight Sparkle";
+const { avatar, verification } = getProfileAssets(profile);
+const displayName = profile?.username || "Twilight Sparkle";
   useEffect(() => {
-    const loadShowcaseCards = async () => {
-      const {
+const loadShowcaseCards = async () => {
+    return trackProfileLoad("showcase", async () => {
+const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await checkedProfileRequest(supabase.auth.getSession());
       if (!session?.user) return;
-      const { data } = await supabase
+const { data } = await checkedProfileRequest(supabase
         .from("collection_progress_raw")
         .select("set_id, progress")
-        .eq("user_id", session.user.id);
-      const showcaseRarities = [
+        .eq("user_id", session.user.id));
+const showcaseRarities = [
         "SHINING ZR",
         "SZR",
         "SC",
@@ -556,11 +514,11 @@ export default function DesktopProfile() {
         "XR",
         "PRR",
       ];
-      const cards: any[] = [];
+const cards: any[] = [];
       (data || []).forEach((row: any) => {
         Object.entries(row.progress || {}).forEach(([card_key, owned]) => {
           if (String(row.set_id) === "14") {
-            const isOwned =
+const isOwned =
               owned === true ||
               (typeof owned === "object" &&
                 owned !== null &&
@@ -572,7 +530,7 @@ export default function DesktopProfile() {
             return;
           }
           if (!owned) return;
-          const rarity =
+const rarity =
             String(row.set_id) === "FW" ||
             String(row.set_id) === "SD" ||
             String(row.set_id) === "12" ||
@@ -589,13 +547,15 @@ export default function DesktopProfile() {
         });
       });
       setShowcaseCards(cards);
-    };
+    
+    });
+  };
     loadShowcaseCards();
   }, []);
-  const getTradeCardImage = (card: any) => {
+const getTradeCardImage = (card: any) => {
     if (!card) return "";
     if (card.set_id === "friendshipsbegin" || card.set_id === "SD") {
-      const cleanKey = String(card.card_key)
+const cleanKey = String(card.card_key)
         .replace(/^BONUS-/, "")
         .replace(/^STARTER-/, "");
       return `/friendships-begin/${cleanKey}.webp`;
@@ -612,9 +572,9 @@ export default function DesktopProfile() {
     if (card.set_id === "tcgpromos") {
       return `/tcgpromos/${card.card_key}.webp`;
     }
-    const [rarityRaw, number] = String(card.card_key).split("-");
-    const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
-    const config: Record<string, { folder: string; prefix: string }> = {
+const [rarityRaw, number] = String(card.card_key).split("-");
+const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
+const config: Record<string, { folder: string; prefix: string }> = {
       "1": { folder: "first-edition-moon", prefix: "M1" },
       "2": { folder: "second-edition-moon", prefix: "M2" },
       "3": { folder: "third-edition-moon", prefix: "M3" },
@@ -625,23 +585,23 @@ export default function DesktopProfile() {
       "8": { folder: "fun-moments-two", prefix: "FM2" },
       "11": { folder: "fun-moments-three", prefix: "FM3" },
     };
-    const c = config[String(card.set_id)];
+const c = config[String(card.set_id)];
     if (!c) return "";
     return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(
       3,
       "0",
     )}.webp`;
   };
-  async function handleProfileEdit() {
+async function handleProfileEdit() {
     if (editingProfile) {
       setSavingProfile(true);
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
-        const originalUsername = profile?.username || "";
-        const nextUsername = usernameDraft.trim();
-        const { data: existingUsername, error: usernameCheckError } =
+const originalUsername = profile?.username || "";
+const nextUsername = usernameDraft.trim();
+const { data: existingUsername, error: usernameCheckError } =
           await supabase
             .from("profiles")
             .select("id")
@@ -662,7 +622,7 @@ export default function DesktopProfile() {
           setSavingProfile(false);
           return;
         }
-        const { error: usernameError } = await supabase
+const { error: usernameError } = await supabase
           .from("profiles")
           .update({ username: nextUsername })
           .eq("id", session.user.id);
@@ -679,7 +639,7 @@ export default function DesktopProfile() {
           setSavingProfile(false);
           return;
         }
-        const { error: authUsernameError } = await supabase.auth.updateUser({
+const { error: authUsernameError } = await supabase.auth.updateUser({
           data: { username: nextUsername },
         });
         if (authUsernameError)
@@ -687,7 +647,7 @@ export default function DesktopProfile() {
             "Failed to update username metadata:",
             authUsernameError,
           );
-        const { error: tradingError } = tradeAccessRevoked
+const { error: tradingError } = tradeAccessRevoked
           ? { error: null }
           : await supabase
               .from("trading_profiles")
@@ -711,12 +671,12 @@ export default function DesktopProfile() {
     }
     setEditingProfile(!editingProfile);
   }
-  function handleShareProfile() {
-    const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
+function handleShareProfile() {
+const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url);
     } else {
-      const textArea = document.createElement("textarea");
+const textArea = document.createElement("textarea");
       textArea.value = url;
       textArea.style.position = "fixed";
       textArea.style.left = "-999999px";
@@ -732,7 +692,7 @@ export default function DesktopProfile() {
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   }
-  const showcaseTabs: Array<
+const showcaseTabs: Array<
     ["moon" | "star" | "fun" | "rainbow" | "tcg", string]
   > = [
     ["moon", "Moon"],
@@ -741,7 +701,7 @@ export default function DesktopProfile() {
     ["rainbow", "Rainbow"],
     ["tcg", "TCG"],
   ];
-  const visibleShowcaseCards = showcaseCards
+const visibleShowcaseCards = showcaseCards
     .filter((card) => {
       switch (showcaseTab) {
         case "moon":
@@ -782,7 +742,7 @@ export default function DesktopProfile() {
       }
     })
     .sort((a, b) => {
-      const setOrder: Record<string, number> = {
+const setOrder: Record<string, number> = {
         "7": 1,
         "8": 2,
         "11": 3,
@@ -799,7 +759,7 @@ export default function DesktopProfile() {
         tcgpromos: 14,
         "14": 15,
       };
-      const rarityOrder: Record<string, number> = {
+const rarityOrder: Record<string, number> = {
         SC: 1,
         "SHINING ZR": 2,
         SZR: 3,
@@ -810,14 +770,14 @@ export default function DesktopProfile() {
         XR: 1,
         PRR: 1,
       };
-      const setDiff =
+const setDiff =
         (setOrder[String(a.set_id)] ?? 999) -
         (setOrder[String(b.set_id)] ?? 999);
       if (setDiff !== 0) return setDiff;
       if (String(a.set_id) === "14") {
         return String(a.card_key).localeCompare(String(b.card_key));
       }
-      const rarityA = [
+const rarityA = [
         "12",
         "FW",
         "SD",
@@ -826,7 +786,7 @@ export default function DesktopProfile() {
       ].includes(String(a.set_id))
         ? "PRR"
         : String(a.card_key).split("-")[0];
-      const rarityB = [
+const rarityB = [
         "12",
         "FW",
         "SD",
@@ -835,13 +795,15 @@ export default function DesktopProfile() {
       ].includes(String(b.set_id))
         ? "PRR"
         : String(b.card_key).split("-")[0];
-      const rarityDiff =
+const rarityDiff =
         (rarityOrder[rarityA] ?? 999) - (rarityOrder[rarityB] ?? 999);
       if (rarityDiff !== 0) return rarityDiff;
-      const numA = parseInt(String(a.card_key).match(/\d+/)?.[0] ?? "0", 10);
-      const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
+const numA = parseInt(String(a.card_key).match(/\d+/)?.[0] ?? "0", 10);
+const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
       return numA - numB;
     });
+  if (!Object.values(profileLoads).every(Boolean)) return <ProfileLoadingScreen light={isLightMode} failed={false} />;
+  if (Object.values(profileLoadErrors).some(Boolean) || !profile) return <ProfileLoadingScreen light={isLightMode} failed />;
   return (
     <div
       className={`min-h-screen transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}
@@ -850,49 +812,7 @@ export default function DesktopProfile() {
         <div
           className={`relative rounded-3xl border p-6 sm:p-8 ${isLightMode ? "border-black/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,.08)]" : "border-white/[0.08] bg-[#151718] shadow-[0_14px_36px_rgba(0,0,0,.24)]"}`}
         >
-          {(isModerator || lgsAccess !== null) && (
-            <div className="absolute right-5 top-5 z-20 flex flex-col gap-2">
-              {isModerator && (
-                <button
-                  type="button"
-                  onClick={() => navigate("/leaderboard-moderation")}
-                  aria-label="Open leaderboard moderation"
-                  title="Leaderboard Moderation"
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl border transition-colors ${
-                    isLightMode
-                      ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/25"
-                      : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/60 hover:bg-[#FFD54A]/20"
-                  }`}
-                >
-                  <Shield size={19} aria-hidden="true" />
-                </button>
-              )}
-              {lgsAccess !== null && (
-                <button
-                  type="button"
-                  onClick={() => navigate("/lgs-boards")}
-                  aria-label={
-                    lgsAccess === "ALLGS"
-                      ? "Open LGS Boards for all stores"
-                      : "Open your store’s LGS Boards"
-                  }
-                  title={
-                    lgsAccess === "ALLGS"
-                      ? "LGS Boards · All stores"
-                      : "LGS Boards"
-                  }
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl border transition-colors ${
-                    isLightMode
-                      ? "border-sky-700/25 bg-sky-600/10 text-sky-800 hover:border-sky-700/50 hover:bg-sky-600/20"
-                      : "border-sky-300/30 bg-sky-400/10 text-sky-300 hover:border-sky-300/60 hover:bg-sky-400/20"
-                  }`}
-                >
-                  <Store size={21} aria-hidden="true" />
-                </button>
-              )}
-            </div>
-          )}
-          <div className="flex flex-col gap-6 pr-12 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
               <img
                 src={avatar}
@@ -1488,4 +1408,65 @@ export default function DesktopProfile() {
       )}
     </div>
   );
+}
+
+function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boolean }) {
+  const logo = light ? "/website-assets/mlpekayouwiki4.webp" : "/website-assets/darkmodelogo.webp";
+  return (
+    <div className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}>
+      <style>{`
+        .profile-loading-screen{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:grid;place-items:center;overflow:hidden;padding:96px 24px;background:#0d0f10;color:#f4f4f5}
+        .profile-loading-screen.profile-loading-light{background:#f5f5f3;color:#27272a}
+        .profile-loading-pattern{position:absolute;inset:-160px -260px;z-index:-2;pointer-events:none;background-repeat:repeat;background-size:240px 140px;opacity:.065;animation:profile-logo-drift 36s linear infinite;will-change:transform}
+        .profile-loading-light .profile-loading-pattern{opacity:.075}
+        .profile-loading-vignette{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,rgba(13,15,16,.96) 0%,rgba(13,15,16,.72) 28%,rgba(13,15,16,.12) 75%)}
+        .profile-loading-light .profile-loading-vignette{background:radial-gradient(ellipse at center,rgba(245,245,243,.96) 0%,rgba(245,245,243,.72) 28%,rgba(245,245,243,.12) 75%)}
+        .profile-loading-content{width:100%;max-width:400px;text-align:center}
+        .profile-loading-brand{position:relative;display:flex;align-items:center;justify-content:center;width:240px;max-width:80%;height:120px;margin:0 auto 20px}
+        .profile-loading-brand::before{content:"";position:absolute;inset:20px 28px;border-radius:50%;background:rgba(255,218,75,.12);filter:blur(30px)}
+        .profile-loading-brand img{position:relative;width:100%;max-height:120px;object-fit:contain;filter:drop-shadow(0 5px 18px rgba(0,0,0,.15))}
+        .profile-loading-content p{margin:0;font-size:18px;font-weight:600;line-height:1.6}
+        .profile-loading-dots{display:inline-block;width:1.2em;text-align:left;animation:profile-loading-dots 1.4s steps(1,end) infinite}
+        .profile-loading-retry{margin-top:20px;min-height:44px;padding:10px 22px;border:0;border-radius:12px;background:#ffda4b;color:#252728;font-size:16px;font-weight:600;cursor:pointer}
+        .profile-loading-retry:focus-visible{outline:3px solid #90bfff;outline-offset:4px}
+        @keyframes profile-logo-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(240px,140px,0)}}
+        @keyframes profile-loading-dots{0%,24%{clip-path:inset(0 66.66% 0 0)}25%,49%{clip-path:inset(0 33.33% 0 0)}50%,74%{clip-path:inset(0)}75%,100%{clip-path:inset(0 33.33% 0 0)}}
+        @media(prefers-reduced-motion:reduce){.profile-loading-pattern,.profile-loading-dots{animation:none;will-change:auto}}
+      `}</style>
+      <div className="profile-loading-pattern" style={{ backgroundImage: `url("${logo}")` }} aria-hidden="true" />
+      <div className="profile-loading-vignette" aria-hidden="true" />
+      <div className="profile-loading-content">
+        <div className="profile-loading-brand">
+          <img src={logo} alt="MLPEKAYOU" />
+        </div>
+        {failed ? (
+          <>
+            <p role="alert">We couldn’t load your profile. Please try again.</p>
+            <button type="button" className="profile-loading-retry" onClick={() => window.location.reload()}>Try again</button>
+          </>
+        ) : (
+          <p role="status" aria-live="polite">
+            <span className="sr-only">Loading your profile</span>
+            <span aria-hidden="true">Loading your profile<span className="profile-loading-dots">...</span></span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+async function checkedProfileRequest<T extends { error?: unknown }>(request: PromiseLike<T>): Promise<T> {
+  const result = await request;
+  if (result.error) throw result.error;
+  return result;
+}
+
+function preloadProfileAvatar(src: string | null | undefined): Promise<void> {
+  if (!src) return Promise.resolve();
+  return new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+    image.src = src;
+    if (image.complete) resolve();
+  });
 }

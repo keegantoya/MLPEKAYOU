@@ -871,16 +871,13 @@ export default function LGSBoards() {
             {item.status === "active" ? "In progress" : "Completed"}
           </span>
           <strong>{item.name}</strong>
-          <span className="lgs-muted">{dateLabel(item.event_date)}</span>
-          {staff?.role === "ALLGS" && stores.length > 1 && (
-            <span className="lgs-muted">
-              {stores.find((store) => store.id === item.store_id)?.name ??
-                "Store"}
-            </span>
-          )}
-          {item.league_name && (
-            <span className="lgs-muted">{item.league_name}</span>
-          )}
+          <span className="lgs-event-meta">
+            <span>{dateLabel(item.event_date)}</span>
+            {staff?.role === "ALLGS" && stores.length > 1 && (
+              <span>{stores.find((store) => store.id === item.store_id)?.name ?? "Store"}</span>
+            )}
+            {item.league_name && <span>{item.league_name}</span>}
+          </span>
           <span className="lgs-event-link">
             {item.status === "active" ? "Continue event" : "View results"}
             <ArrowUpRight size={17} aria-hidden="true" />
@@ -903,6 +900,27 @@ export default function LGSBoards() {
   return (
     <main className="lgs-ui lgs-page">
       <style>{STYLES}</style>
+      <header className="lgs-logo-header" aria-label="MLPEKAYOU">
+        <span className="lgs-logo-rail" aria-hidden="true" />
+        <button
+          type="button"
+          className="lgs-logo-home"
+          onClick={() => navigate("/")}
+          aria-label="MLPEKAYOU home"
+        >
+          <img
+            className="lgs-logo-light"
+            src="/website-assets/mlpekayouwiki4.webp"
+            alt="MLP Kayou Wiki"
+          />
+          <img
+            className="lgs-logo-dark"
+            src="/website-assets/darkmodelogo.webp"
+            alt="MLP Kayou Wiki"
+          />
+        </button>
+        <span className="lgs-logo-rail lgs-logo-rail-right" aria-hidden="true" />
+      </header>
       <div className="lgs-shell">
         <header className="lgs-appbar">
           <div className="lgs-app-title">
@@ -1461,6 +1479,11 @@ export default function LGSBoards() {
                   </label>
                 )}
               </div>
+              {!loading && active.length === 0 && (
+                <p className="lgs-open-empty">
+                  {canCreate ? "No open events. Use New Event to get started." : "No open events for this store right now."}
+                </p>
+              )}
               {active.length > 0 && (
                 <div className="lgs-events">{active.map(eventCard)}</div>
               )}
@@ -2123,5 +2146,98 @@ const STYLES = `
   .lgs-history{padding:6px 12px}
   .lgs-event-card{padding:16px;gap:12px}
   .lgs-modal .lgs-deck-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+.lgs-logo-header{display:none}
+@media(min-width:720px){
+  .lgs-page{padding-top:calc(64px + clamp(20px,3vw,44px))}
+  .lgs-logo-header{position:fixed;inset:0 0 auto;z-index:100;height:64px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff 0%,#fffdf7 72%,#fffaf0 100%);box-shadow:0 10px 40px rgba(160,120,20,.14),0 0 30px rgba(231,200,75,.16),inset 0 -1px 0 rgba(190,145,30,.30)}
+  .lgs-ui .lgs-logo-home{display:flex;align-items:center;justify-content:center;width:120px;height:54px;padding:0;background:transparent;border-radius:8px}
+  .lgs-logo-home img{height:42px;width:auto;object-fit:contain;transform:translateY(1px) scale(1.9);filter:drop-shadow(0 4px 12px rgba(0,0,0,.18))}
+  .lgs-logo-light{display:block}
+  .lgs-logo-dark{display:none}
+  .dark .lgs-logo-header,.lgs-ui.dark .lgs-logo-header,[data-theme="dark"] .lgs-logo-header{background:linear-gradient(180deg,#0d1113 0%,#0b0e10 72%,#090b0d 100%);box-shadow:0 10px 35px rgba(0,0,0,.45),inset 0 -1px 0 rgba(250,204,21,.10)}
+  .dark .lgs-logo-light,.lgs-ui.dark .lgs-logo-light,[data-theme="dark"] .lgs-logo-light{display:none}
+  .dark .lgs-logo-dark,.lgs-ui.dark .lgs-logo-dark,[data-theme="dark"] .lgs-logo-dark{display:block}
+}
+
+/* Compact boards and event history. */
+.lgs-shell{max-width:1400px}
+.lgs-appbar{margin-bottom:22px;gap:18px}
+.lgs-appbar h1{font-size:28px}
+.lgs-brand{display:none}
+.lgs-appbar p{font-size:15px}
+.lgs-toolbar .lgs-secondary{background:var(--lgs-panel)}
+.lgs-section-heading{margin-bottom:14px;gap:14px}
+.lgs-section-heading h2{font-size:20px;gap:10px}
+.lgs-section-heading p{margin-top:4px;font-size:14px}
+.lgs-section-heading h2 .lgs-pill{padding:3px 10px;font-size:14px;color:var(--lgs-muted)}
+.lgs-events{gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))}
+.lgs-event-tile{border-radius:16px;box-shadow:0 2px 8px #00000006}
+.lgs-event-tile .lgs-event-card{padding:18px;gap:14px;align-items:center}
+.lgs-event-date{width:52px;padding:8px 6px;border-radius:12px;color:var(--lgs-accent)}
+.lgs-event-date>svg{display:none}
+.lgs-event-date strong{font-size:24px;margin:0}
+.lgs-event-date>span{font-size:13px}
+.lgs-event-copy{flex:1}
+.lgs-event-copy>strong{font-size:18px;line-height:1.35;margin-top:6px}
+.lgs-event-copy .lgs-pill{padding:3px 9px;font-size:12px}
+.lgs-event-meta{display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:5px;color:var(--lgs-muted);font-size:14px;line-height:1.5}
+.lgs-event-meta>span{overflow-wrap:anywhere}
+.lgs-event-link{font-size:14px;margin-top:10px}
+.lgs-ui .lgs-card-edits{padding:8px 18px;min-height:44px;font-size:13px;background:color-mix(in srgb,var(--lgs-accent) 5%,var(--lgs-panel))}
+.lgs-ui p.lgs-open-empty{padding:18px;margin:0;background:var(--lgs-panel);border-radius:14px;color:var(--lgs-muted);font-size:15px}
+.lgs-history{padding:0;margin-top:24px;background:transparent;box-shadow:none}
+.lgs-history-toggle{padding:12px 0;margin-bottom:4px}
+.lgs-history-heading{gap:10px}
+.lgs-history-heading>svg{width:21px;height:21px}
+.lgs-history-toggle strong{font-size:19px}
+.lgs-history-toggle .lgs-muted{font-size:14px;margin-top:2px}
+.lgs-history-toggle>span:last-child{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--lgs-panel);font-size:22px}
+.lgs-history .lgs-events{grid-template-columns:1fr;gap:8px;padding-bottom:0}
+.lgs-history .lgs-event-tile{background:var(--lgs-panel);border-radius:12px}
+.lgs-history .lgs-event-card{padding:12px 16px;gap:12px}
+.lgs-history .lgs-event-date{width:44px;padding:6px;border-radius:9px}
+.lgs-history .lgs-event-date strong{font-size:21px}
+.lgs-history .lgs-event-copy{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;align-items:center}
+.lgs-history .lgs-event-copy>.lgs-pill{display:none}
+.lgs-history .lgs-event-copy>strong{grid-column:1;grid-row:1;margin:0;font-size:16px}
+.lgs-history .lgs-event-meta{grid-column:1;grid-row:2;margin-top:3px;font-size:13px}
+.lgs-history .lgs-event-link{grid-column:2;grid-row:1/3;margin:0;white-space:nowrap}
+.lgs-history .lgs-card-edits{padding:6px 16px 6px 72px}
+.lgs-stats{gap:10px;margin-bottom:18px}
+.lgs-stats>div{padding:12px 10px;border-radius:14px;background:var(--lgs-panel)}
+.lgs-stats strong{font-size:25px;color:var(--lgs-accent)}
+.lgs-tabs{padding:4px;gap:4px;border-radius:12px}
+.lgs-tabs button{border-radius:9px}
+.lgs-tabs .selected{box-shadow:0 2px 5px #0000000a;color:var(--lgs-accent)}
+.lgs-panel{border-radius:16px}
+.lgs-heading{margin-bottom:18px}
+@media(hover:hover){
+  .lgs-event-tile .lgs-event-card:hover:not(:disabled){background:color-mix(in srgb,var(--lgs-accent) 5%,var(--lgs-panel));box-shadow:none}
+  .lgs-toolbar .lgs-secondary:hover:not(:disabled){background:var(--lgs-soft)}
+}
+@media(min-width:720px){
+  .lgs-logo-header{gap:28px}
+  .lgs-logo-rail{display:flex;align-items:center;gap:4px}
+  .lgs-logo-rail::before{content:"";width:32px;height:1px;background:linear-gradient(90deg,transparent,rgba(250,204,21,.5))}
+  .lgs-logo-rail::after{content:"";width:4px;height:4px;background:#facc15;box-shadow:0 0 7px #facc15}
+  .lgs-logo-rail-right{transform:rotate(180deg)}
+  .lgs-logo-header::before,.lgs-logo-header::after{content:"";position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(250,204,21,.35),transparent);pointer-events:none}
+  .lgs-logo-header::before{top:0}
+  .lgs-logo-header::after{bottom:0}
+}
+@media(max-width:719px){
+  .lgs-appbar{gap:14px;margin-bottom:20px}
+  .lgs-history .lgs-event-card{padding:12px;gap:10px}
+  .lgs-history .lgs-event-copy{column-gap:8px}
+  .lgs-history .lgs-event-link{font-size:13px}
+  .lgs-history .lgs-card-edits{padding-left:66px}
+  .lgs-history-heading{align-items:flex-start}
+  .lgs-history-heading>svg{margin-top:3px}
+}
+@media(max-width:420px){
+  .lgs-history .lgs-event-copy{grid-template-columns:minmax(0,1fr)}
+  .lgs-history .lgs-event-link{grid-column:1;grid-row:3;margin-top:5px}
 }
 `;
