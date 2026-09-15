@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 const BUCKET = "card-images";
 const URL_LIFETIME_SECONDS = 24 * 60 * 60;
 const CACHE_LIFETIME_MS = 23 * 60 * 60 * 1000;
-const SESSION_CACHE_KEY = "mlpekayou:signed-card-images:v1";
+const LOCAL_CACHE_KEY = "mlpekayou:signed-card-images:v2";
 const PROTECTED_PREFIXES = [
   "cards/",
   "card-backs/",
@@ -57,28 +57,28 @@ function normalizeProtectedPath(src?: string) {
   }
 }
 
-function loadSessionCache() {
+function loadLocalCache() {
   if (cacheLoaded || typeof window === "undefined") return;
   cacheLoaded = true;
 
   try {
     const stored = JSON.parse(
-      window.sessionStorage.getItem(SESSION_CACHE_KEY) ?? "{}",
+      window.localStorage.getItem(LOCAL_CACHE_KEY) ?? "{}",
     ) as Record<string, CacheEntry>;
     const now = Date.now();
     Object.entries(stored).forEach(([path, entry]) => {
       if (entry?.url && entry.expiresAt > now) memoryCache.set(path, entry);
     });
   } catch {
-    window.sessionStorage.removeItem(SESSION_CACHE_KEY);
+    window.localStorage.removeItem(LOCAL_CACHE_KEY);
   }
 }
 
-function saveSessionCache() {
+function saveLocalCache() {
   if (typeof window === "undefined") return;
   try {
-    window.sessionStorage.setItem(
-      SESSION_CACHE_KEY,
+    window.localStorage.setItem(
+      LOCAL_CACHE_KEY,
       JSON.stringify(Object.fromEntries(memoryCache)),
     );
   } catch {
@@ -137,11 +137,11 @@ async function flushQueue() {
       notify(path, result.signedUrl);
     });
   });
-  saveSessionCache();
+  saveLocalCache();
 }
 
 function requestSignedUrl(path: string, listener: (url?: string) => void) {
-  loadSessionCache();
+  loadLocalCache();
   const cached = memoryCache.get(path);
   if (cached && cached.expiresAt > Date.now()) {
     listener(cached.url);
@@ -170,7 +170,7 @@ supabase.auth.onAuthStateChange((event) => {
   memoryCache.clear();
   queuedPaths.clear();
   if (typeof window !== "undefined") {
-    window.sessionStorage.removeItem(SESSION_CACHE_KEY);
+    window.localStorage.removeItem(LOCAL_CACHE_KEY);
   }
   listeners.forEach((pathListeners) => {
     pathListeners.forEach((listener) => listener());
@@ -184,7 +184,7 @@ const CardImage = forwardRef<
   const protectedPath = normalizeProtectedPath(src);
   const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(() => {
     if (!protectedPath) return src;
-    loadSessionCache();
+    loadLocalCache();
     const cached = memoryCache.get(protectedPath);
     return cached && cached.expiresAt > Date.now() ? cached.url : undefined;
   });
