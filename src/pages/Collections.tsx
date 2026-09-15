@@ -166,23 +166,23 @@ const databaseSetId: Record<string, string> = {
   friendshipsbegin: "SD",
 };
 const Collections = () => {
-const location = useLocation();
-const [activeCategory, setActiveCategory] = useState(
+  const location = useLocation();
+  const [activeCategory, setActiveCategory] = useState(
     location.state?.category || "all",
   );
-const [sets, setSets] = useState<Collection[]>([]);
-const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-const [hideMastered, setHideMastered] = useState(true);
-const [sortBy, setSortBy] = useState<"release" | "set">("release");
-const [isLightMode, setIsLightMode] = useState(
+  const [sets, setSets] = useState<Collection[]>([]);
+  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+  const [hideMastered, setHideMastered] = useState(true);
+  const [sortBy, setSortBy] = useState<"release" | "set">("release");
+  const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
   useEffect(() => {
-const syncTheme = () => {
+    const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
     syncTheme();
-const observer = new MutationObserver(syncTheme);
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -195,10 +195,10 @@ const observer = new MutationObserver(syncTheme);
     }
   }, [location.state]);
   useEffect(() => {
-const load = async (userOverride?: any) => {
-let user = userOverride;
+    const load = async (userOverride?: any) => {
+      let user = userOverride;
       if (!user) {
-const { data } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
         user = data.session?.user;
       }
       if (!user) {
@@ -212,17 +212,17 @@ const { data } = await supabase.auth.getSession();
         );
         return;
       }
-const { data: collectionData, error: collectionError } = await supabase
+      const { data: collectionData, error: collectionError } = await supabase
         .from("collection_progress")
         .select("set_id, progress")
         .eq("user_id", user.id);
       if (collectionError) {
         console.error("Failed to load collection progress:", collectionError);
       }
-const progressRows = new Map<string, any>(
+      const progressRows = new Map<string, any>(
         (collectionData || []).map((row: any) => [String(row.set_id), row]),
       );
-const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("iso_hidden_sets")
         .eq("id", user.id)
@@ -230,10 +230,10 @@ const { data: profile, error: profileError } = await supabase
       if (profileError) {
         console.error("Failed to load hidden collection sets:", profileError);
       }
-const storedHiddenSets: string[] = Array.isArray(profile?.iso_hidden_sets)
+      const storedHiddenSets: string[] = Array.isArray(profile?.iso_hidden_sets)
         ? profile.iso_hidden_sets
         : [];
-const mappedHiddenSets = storedHiddenSets.flatMap((id: string) => {
+      const mappedHiddenSets = storedHiddenSets.flatMap((id: string) => {
         switch (id) {
           case "FW":
             return ["tcg"];
@@ -248,15 +248,15 @@ const mappedHiddenSets = storedHiddenSets.flatMap((id: string) => {
             return [id];
         }
       });
-const uniqueHiddenSets = [...new Set(mappedHiddenSets)];
+      const uniqueHiddenSets = [...new Set(mappedHiddenSets)];
       setHiddenSets(uniqueHiddenSets);
-const countProgress = (row: any, setId: string): number => {
+      const countProgress = (row: any, setId: string): number => {
         if (!row?.progress) {
           return 0;
         }
         if (setId === "3") {
-const validKeys = new Set<string>();
-const rarities: Record<string, number> = {
+          const validKeys = new Set<string>();
+          const rarities: Record<string, number> = {
             R: 60,
             SR: 40,
             SSR: 40,
@@ -279,36 +279,36 @@ const rarities: Record<string, number> = {
         }
         return Object.values(row.progress).filter(Boolean).length;
       };
-const progressMap: Record<string, number> = {};
+      const progressMap: Record<string, number> = {};
       collections.forEach((set) => {
-const dbId = databaseSetId[set.id] || set.id;
-const row = progressRows.get(dbId);
+        const dbId = databaseSetId[set.id] || set.id;
+        const row = progressRows.get(dbId);
         progressMap[set.id] = countProgress(row, String(dbId));
       });
       progressMap["tcgpromos"] = countProgress(
         progressRows.get("tcgpromos"),
         "tcgpromos",
       );
-const updated = collections.map((set) => {
-let collected = progressMap[set.id] || 0;
-let totalCards = set.totalCards;
+      const updated = collections.map((set) => {
+        let collected = progressMap[set.id] || 0;
+        let totalCards = set.totalCards;
         if (set.id === "9") {
-const ccgPromosHidden = uniqueHiddenSets.includes("9");
-const tcgPromosHidden = uniqueHiddenSets.includes("tcgpromos");
-const ccgCollected = progressMap["9"] || 0;
-const tcgCollected = progressMap["tcgpromos"] || 0;
-const visibleCCGCollected = ccgPromosHidden
+          const ccgPromosHidden = uniqueHiddenSets.includes("9");
+          const tcgPromosHidden = uniqueHiddenSets.includes("tcgpromos");
+          const ccgCollected = progressMap["9"] || 0;
+          const tcgCollected = progressMap["tcgpromos"] || 0;
+          const visibleCCGCollected = ccgPromosHidden
             ? 0
             : Math.min(ccgCollected, 12);
-const visibleTCGCollected = tcgPromosHidden
+          const visibleTCGCollected = tcgPromosHidden
             ? 0
             : Math.min(tcgCollected, 27);
-const visibleCCGTotal = ccgPromosHidden ? 0 : 12;
-const visibleTCGTotal = tcgPromosHidden ? 0 : 27;
+          const visibleCCGTotal = ccgPromosHidden ? 0 : 12;
+          const visibleTCGTotal = tcgPromosHidden ? 0 : 27;
           collected = visibleCCGCollected + visibleTCGCollected;
           totalCards = visibleCCGTotal + visibleTCGTotal;
         }
-const progress =
+        const progress =
           totalCards > 0
             ? Math.min(100, Math.floor((collected / totalCards) * 100))
             : 0;
@@ -322,7 +322,7 @@ const progress =
       setSets(updated);
     };
     load();
-const {
+    const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       load(session?.user);
@@ -331,7 +331,7 @@ const {
       subscription.unsubscribe();
     };
   }, []);
-const setOrder: Record<string, number> = {
+  const setOrder: Record<string, number> = {
     star: 1,
     "eternal-moon": 2,
     rainbow: 3,
@@ -340,9 +340,9 @@ const setOrder: Record<string, number> = {
     promos: 6,
     merch: 7,
   };
-const promoNodeFullyHidden =
+  const promoNodeFullyHidden =
     hiddenSets.includes("9") && hiddenSets.includes("tcgpromos");
-const filtered = (
+  const filtered = (
     activeCategory === "all"
       ? sets
           .filter((c) => c.category !== "merch")
@@ -365,7 +365,7 @@ const filtered = (
     .filter((c) => c.released || unreleasedSetIds.includes(c.id))
     .sort((a, b) => {
       if (sortBy === "set") {
-const categoryDiff =
+        const categoryDiff =
           (setOrder[a.category] ?? 999) - (setOrder[b.category] ?? 999);
         if (categoryDiff !== 0) {
           return categoryDiff;
@@ -376,7 +376,7 @@ const categoryDiff =
         collections.findIndex((s) => s.id === b.id)
       );
     });
-const ccgSets = sets.filter(
+  const ccgSets = sets.filter(
     (set) =>
       set.released &&
       (set.category !== "tcg" || set.id === "14") &&
@@ -385,22 +385,22 @@ const ccgSets = sets.filter(
       set.id !== "tcgpromos" &&
       !hiddenSets.includes(set.id),
   );
-const totalSets = ccgSets.length;
-const completedSets = ccgSets.filter((set) => set.progress === 100).length;
-const ccgCardsCollected = ccgSets.reduce(
+  const totalSets = ccgSets.length;
+  const completedSets = ccgSets.filter((set) => set.progress === 100).length;
+  const ccgCardsCollected = ccgSets.reduce(
     (sum, set) => sum + (set.collectedCards || 0),
     0,
   );
-const ccgCardsAvailable = ccgSets.reduce(
+  const ccgCardsAvailable = ccgSets.reduce(
     (sum, set) => sum + (set.totalCards || 0),
     0,
   );
-const promoSet = sets.find((set) => set.id === "9");
-const promoCardsCollected = promoSet?.collectedCards || 0;
-const promoCardsAvailable = promoSet?.totalCards || 0;
-const totalCardsCollected = ccgCardsCollected + promoCardsCollected;
-const totalCardsAvailable = ccgCardsAvailable + promoCardsAvailable;
-const completionRate =
+  const promoSet = sets.find((set) => set.id === "9");
+  const promoCardsCollected = promoSet?.collectedCards || 0;
+  const promoCardsAvailable = promoSet?.totalCards || 0;
+  const totalCardsCollected = ccgCardsCollected + promoCardsCollected;
+  const totalCardsAvailable = ccgCardsAvailable + promoCardsAvailable;
+  const completionRate =
     totalCardsAvailable > 0
       ? Math.round((totalCardsCollected / totalCardsAvailable) * 100)
       : 0;
@@ -410,7 +410,7 @@ const completionRate =
         isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
       }`}
     >
-      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
+      <main className="w-full max-w-none px-4 py-5 sm:px-6 sm:py-8">
         <section
           className={`rounded-[24px] border p-4 sm:p-5 ${
             isLightMode
@@ -491,7 +491,7 @@ const completionRate =
               { label: "Promos", value: "promos" },
               { label: "Merch", value: "merch" },
             ].map((item) => {
-const active = activeCategory === item.value;
+              const active = activeCategory === item.value;
               return (
                 <button
                   key={item.value}
@@ -536,17 +536,17 @@ const active = activeCategory === item.value;
                 No sets to show with the current filters.
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(auto-fill,minmax(170px,1fr))]">
                 {filtered.map((col) => {
-const isHidden =
+                  const isHidden =
                     col.id === "9"
                       ? promoNodeFullyHidden
                       : hiddenSets.includes(col.id);
-const isMastered =
+                  const isMastered =
                     (col.collectedCards ?? 0) >= col.totalCards;
-const waitingOnKayouIds: string[] = [];
-const isUnreleased = unreleasedSetIds.includes(col.id);
-const isWaiting = waitingOnKayouIds.includes(col.id);
+                  const waitingOnKayouIds: string[] = [];
+                  const isUnreleased = unreleasedSetIds.includes(col.id);
+                  const isWaiting = waitingOnKayouIds.includes(col.id);
                   return (
                     <div key={col.id} className="group relative">
                       <div

@@ -2,7 +2,15 @@ import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeft, ShieldAlert, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Handshake,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import { getProfileAssets } from "@/pages/Everypony/profile-assets";
 type TradeCard = {
   id: string;
@@ -14,6 +22,11 @@ type TradeCard = {
   asking_price: number | null;
   trade_quantity: number;
   sale_quantity: number;
+};
+type InventoryCard = {
+  id: string;
+  set_id: string;
+  card_key: string;
 };
 const rarityMap: Record<string, string[]> = {
   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
@@ -165,6 +178,21 @@ function ListingCardImage({ card }: { card: TradeCard }) {
     />
   );
 }
+function InventoryCardImage({ card }: { card: InventoryCard }) {
+  return (
+    <ListingCardImage
+      card={{
+        ...card,
+        user_id: "",
+        is_for_trade: false,
+        is_for_sale: false,
+        asking_price: null,
+        trade_quantity: 0,
+        sale_quantity: 0,
+      }}
+    />
+  );
+}
 export default function TradingPostInner() {
   const { setId } = useParams();
   const navigate = useNavigate();
@@ -196,6 +224,18 @@ export default function TradingPostInner() {
   );
   const [isReportingCard, setIsReportingCard] = useState(false);
   const [cardReportError, setCardReportError] = useState("");
+  const [showUnsetPriceNotice, setShowUnsetPriceNotice] = useState(false);
+  const [sentOfferKeys, setSentOfferKeys] = useState<Set<string>>(new Set());
+  const [offerTarget, setOfferTarget] = useState<TradeCard | null>(null);
+  const [inventoryCards, setInventoryCards] = useState<InventoryCard[]>([]);
+  const [inventoryLoaded, setInventoryLoaded] = useState(false);
+  const [selectedOfferCards, setSelectedOfferCards] = useState<InventoryCard[]>(
+    [],
+  );
+  const [offerContact, setOfferContact] = useState("");
+  const [offerSearch, setOfferSearch] = useState("");
+  const [offerError, setOfferError] = useState("");
+  const [isSendingOffer, setIsSendingOffer] = useState(false);
   const [isLightMode, setIsLightMode] = useState(() => {
     if (typeof document === "undefined") return false;
     const root = document.documentElement;
@@ -227,13 +267,14 @@ export default function TradingPostInner() {
     };
   }, []);
   useEffect(() => {
-    if (!selectedCard && !reportTarget) return;
+    if (!selectedCard && !reportTarget && !showUnsetPriceNotice && !offerTarget)
+      return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [selectedCard, reportTarget]);
+  }, [selectedCard, reportTarget, showUnsetPriceNotice, offerTarget]);
   const USERS_PER_PAGE = 10;
   const setNames: Record<string, string> = {
     "1": "Eternal Moon: First Edition",
@@ -301,32 +342,60 @@ export default function TradingPostInner() {
           ...card,
           id: `${card.user_id}-${card.set_id}-${card.card_key}`,
         }));
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url");
-      const { data: tradingData } = await supabase
-        .from("trading_profiles")
-        .select("user_id, discord_username, trade_access_revoked");
       const { data: sessionData } = await supabase.auth.getSession();
       const sessionUserId = sessionData.session?.user.id;
+      const participantIds = Array.from(
+        new Set([
+          ...trades.map((card) => card.user_id),
+          ...(sessionUserId ? [sessionUserId] : []),
+        ]),
+      );
+      const [profilesResult, tradingProfilesResult] = participantIds.length
+        ? await Promise.all([
+            supabase
+              .from("profiles")
+              .select("id, username, avatar_url")
+              .in("id", participantIds),
+            supabase
+              .from("trading_profiles")
+              .select("user_id, discord_username, trade_access_revoked")
+              .in("user_id", participantIds),
+          ])
+        : [{ data: [] }, { data: [] }];
+      const profileData = profilesResult.data;
+      const tradingData = tradingProfilesResult.data;
       let reportData: { reported_user_id: string }[] = [];
       let cardReportData: {
         reported_user_id: string;
         set_id: string;
         card_key: string;
       }[] = [];
+      let sentOfferData: {
+        recipient_id: string;
+        target_set_id: string;
+        target_card_key: string;
+      }[] = [];
       if (sessionUserId) {
         setCurrentUserId(sessionUserId);
-        const { data } = await supabase
-          .from("trading_post_user_reports")
-          .select("reported_user_id")
-          .eq("reporter_user_id", sessionUserId);
-        reportData = data || [];
-        const { data: cardReports } = await supabase
-          .from("trading_post_card_reports")
-          .select("reported_user_id, set_id, card_key")
-          .eq("reporter_user_id", sessionUserId);
-        cardReportData = cardReports || [];
+        const [userReportsResult, cardReportsResult, sentOffersResult] =
+          await Promise.all([
+            supabase
+              .from("trading_post_user_reports")
+              .select("reported_user_id")
+              .eq("reporter_user_id", sessionUserId),
+            supabase
+              .from("trading_post_card_reports")
+              .select("reported_user_id, set_id, card_key")
+              .eq("reporter_user_id", sessionUserId),
+            supabase
+              .from("trade_offers")
+              .select("recipient_id, target_set_id, target_card_key")
+              .eq("sender_id", sessionUserId)
+              .eq("target_set_id", databaseSetId),
+          ]);
+        reportData = userReportsResult.data || [];
+        cardReportData = cardReportsResult.data || [];
+        sentOfferData = sentOffersResult.data || [];
       }
       const profileMap: Record<string, any> = {};
       (profileData || []).forEach((p) => (profileMap[p.id] = p));
@@ -372,6 +441,14 @@ export default function TradingPostInner() {
             cardReportData.map(
               (report) =>
                 `${report.reported_user_id}-${report.set_id}-${report.card_key}`,
+            ),
+          ),
+        );
+        setSentOfferKeys(
+          new Set(
+            sentOfferData.map(
+              (offer) =>
+                `${offer.recipient_id}-${offer.target_set_id}-${offer.target_card_key}`,
             ),
           ),
         );
@@ -436,6 +513,11 @@ export default function TradingPostInner() {
   };
   const submitCardReport = async () => {
     if (!selectedCard || !currentUserId || !selectedCard.is_for_sale) return;
+    if (Number(selectedCard.asking_price ?? 0) <= 0) {
+      setCardReportError("");
+      setShowUnsetPriceNotice(true);
+      return;
+    }
     const reportKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
     if (reportedCardKeys.has(reportKey)) return;
     setIsReportingCard(true);
@@ -458,6 +540,114 @@ export default function TradingPostInner() {
     }
     setReportedCardKeys((current) => new Set(current).add(reportKey));
     setIsReportingCard(false);
+  };
+  const openOfferComposer = async (card: TradeCard) => {
+    if (!currentUserId || currentUserId === card.user_id) return;
+    const offerKey = `${card.user_id}-${card.set_id}-${card.card_key}`;
+    if (sentOfferKeys.has(offerKey)) return;
+    setOfferTarget(card);
+    setSelectedCard(null);
+    setSelectedOfferCards([]);
+    setOfferSearch("");
+    setOfferError("");
+    setOfferContact(
+      tradingProfiles[currentUserId]?.discord_username?.trim() || "",
+    );
+    if (inventoryLoaded) return;
+    const { data, error } = await supabase
+      .from("collection_progress_raw")
+      .select("set_id, progress")
+      .eq("user_id", currentUserId);
+    if (error) {
+      console.error("Unable to load offer inventory:", error);
+      setOfferError("Your inventory could not be loaded. Please try again.");
+      return;
+    }
+    const ownedCards = (data || []).flatMap((row: any) =>
+      Object.entries(row.progress || {})
+        .filter(([, value]) => {
+          if (value === true) return true;
+          return Boolean(
+            value &&
+            typeof value === "object" &&
+            (value as { owned?: boolean }).owned,
+          );
+        })
+        .map(([cardKey]) => ({
+          id: `${row.set_id}-${cardKey}`,
+          set_id: String(row.set_id),
+          card_key: cardKey,
+        })),
+    );
+    ownedCards.sort(
+      (a: InventoryCard, b: InventoryCard) =>
+        a.set_id.localeCompare(b.set_id, undefined, { numeric: true }) ||
+        a.card_key.localeCompare(b.card_key, undefined, { numeric: true }),
+    );
+    setInventoryCards(ownedCards);
+    setInventoryLoaded(true);
+  };
+  const toggleOfferCard = (card: InventoryCard) => {
+    setOfferError("");
+    setSelectedOfferCards((current) => {
+      if (current.some((selected) => selected.id === card.id)) {
+        return current.filter((selected) => selected.id !== card.id);
+      }
+      if (current.length >= 10) {
+        setOfferError("You can include a maximum of 10 cards.");
+        return current;
+      }
+      return [...current, card];
+    });
+  };
+  const submitOffer = async () => {
+    if (!offerTarget || !currentUserId || isSendingOffer) return;
+    const contact = offerContact.trim();
+    if (selectedOfferCards.length === 0) {
+      setOfferError("Choose at least one card from your inventory.");
+      return;
+    }
+    if (!contact) {
+      setOfferError("Add a Discord username or another point of contact.");
+      return;
+    }
+    if (contact.length > 100) {
+      setOfferError("Your point of contact must be 100 characters or fewer.");
+      return;
+    }
+    setIsSendingOffer(true);
+    setOfferError("");
+    const offerKey = `${offerTarget.user_id}-${offerTarget.set_id}-${offerTarget.card_key}`;
+    const { error } = await supabase.from("trade_offers").insert({
+      sender_id: currentUserId,
+      recipient_id: offerTarget.user_id,
+      target_set_id: offerTarget.set_id,
+      target_card_key: offerTarget.card_key,
+      offered_cards: selectedOfferCards.map((card) => ({
+        set_id: card.set_id,
+        card_key: card.card_key,
+      })),
+      contact,
+    });
+    if (error) {
+      if (error.code === "23505") {
+        setSentOfferKeys((current) => new Set(current).add(offerKey));
+        setOfferTarget(null);
+      } else {
+        console.error("Unable to send trade offer:", error);
+        setOfferError(
+          error.code === "42501"
+            ? "This card is no longer available for trade."
+            : "Your offer could not be sent. Please try again.",
+        );
+      }
+      setIsSendingOffer(false);
+      return;
+    }
+    setSentOfferKeys((current) => new Set(current).add(offerKey));
+    setOfferTarget(null);
+    setSelectedOfferCards([]);
+    setIsSendingOffer(false);
   };
   if (showLoginModal) {
     return (
@@ -544,6 +734,18 @@ export default function TradingPostInner() {
     page * USERS_PER_PAGE,
     page * USERS_PER_PAGE + USERS_PER_PAGE,
   );
+  const normalizedOfferSearch = offerSearch.trim().toLocaleLowerCase();
+  const visibleOfferInventory = inventoryCards
+    .filter((card) => {
+      if (!normalizedOfferSearch) return true;
+      return (
+        card.card_key.toLocaleLowerCase().includes(normalizedOfferSearch) ||
+        (setNames[card.set_id] || card.set_id)
+          .toLocaleLowerCase()
+          .includes(normalizedOfferSearch)
+      );
+    })
+    .slice(0, 80);
   return (
     <div
       className={`min-h-screen pb-16 font-['Oxanium'] transition-colors ${
@@ -991,7 +1193,14 @@ export default function TradingPostInner() {
                                   return (
                                     <button
                                       type="button"
-                                      onClick={() => {
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        if (
+                                          Number(card.asking_price ?? 0) <= 0
+                                        ) {
+                                          setShowUnsetPriceNotice(true);
+                                          return;
+                                        }
                                         setCardReportError("");
                                         setSelectedCard(card);
                                       }}
@@ -1167,6 +1376,33 @@ export default function TradingPostInner() {
                     </div>
                   )}
                 </div>
+                {selectedCard.is_for_trade &&
+                  currentUserId !== selectedCard.user_id &&
+                  (() => {
+                    const offerKey = `${selectedCard.user_id}-${selectedCard.set_id}-${selectedCard.card_key}`;
+                    const alreadySent = sentOfferKeys.has(offerKey);
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => void openOfferComposer(selectedCard)}
+                        disabled={alreadySent}
+                        className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                          alreadySent
+                            ? isLightMode
+                              ? "bg-zinc-100 text-zinc-400"
+                              : "bg-white/[0.04] text-zinc-500"
+                            : "bg-[#FFD54A] text-zinc-900 hover:bg-[#ffe06a]"
+                        }`}
+                      >
+                        {alreadySent ? (
+                          <Check size={17} />
+                        ) : (
+                          <Handshake size={17} />
+                        )}
+                        {alreadySent ? "Offer already sent" : "Make an offer"}
+                      </button>
+                    );
+                  })()}
                 {selectedCard.is_for_sale &&
                   currentUserId !== selectedCard.user_id &&
                   (() => {
@@ -1176,7 +1412,14 @@ export default function TradingPostInner() {
                       <>
                         <button
                           type="button"
-                          onClick={submitCardReport}
+                          onClick={() => {
+                            if (Number(selectedCard.asking_price ?? 0) <= 0) {
+                              setCardReportError("");
+                              setShowUnsetPriceNotice(true);
+                              return;
+                            }
+                            void submitCardReport();
+                          }}
                           disabled={alreadyReported || isReportingCard}
                           className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
                             alreadyReported
@@ -1219,6 +1462,277 @@ export default function TradingPostInner() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {offerTarget && (
+        <div
+          className="fixed inset-0 z-[135] flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm"
+          onMouseDown={() => !isSendingOffer && setOfferTarget(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="offer-title"
+            onMouseDown={(event) => event.stopPropagation()}
+            className={`flex max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-[24px] border shadow-2xl ${
+              isLightMode
+                ? "border-black/10 bg-white text-zinc-900"
+                : "border-white/10 bg-[#17191a] text-white"
+            }`}
+          >
+            <div
+              className={`flex items-center justify-between gap-4 border-b p-4 sm:p-5 ${
+                isLightMode ? "border-black/10" : "border-white/10"
+              }`}
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#b88a00] dark:text-[#FFE27A]">
+                  <Handshake size={17} />
+                  Trade offer
+                </div>
+                <h2
+                  id="offer-title"
+                  className="mt-1 truncate text-xl font-bold"
+                >
+                  Offer for {offerTarget.card_key}
+                </h2>
+                <p
+                  className={`mt-1 text-sm ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  Choose up to 10 cards. This offer expires after 7 days.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOfferTarget(null)}
+                disabled={isSendingOffer}
+                aria-label="Close offer"
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                  isLightMode ? "bg-zinc-100" : "bg-white/[0.07]"
+                }`}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+              <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+                <div className="space-y-4">
+                  <div
+                    className={`rounded-2xl border p-3 ${
+                      isLightMode
+                        ? "border-black/10 bg-zinc-50"
+                        : "border-white/[0.08] bg-white/[0.03]"
+                    }`}
+                  >
+                    <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                      You want
+                    </div>
+                    <div className="mx-auto mt-3 aspect-[5/7] w-28 overflow-hidden rounded-xl">
+                      <ListingCardImage card={offerTarget} />
+                    </div>
+                    <div className="mt-3 text-center text-sm font-bold">
+                      {offerTarget.card_key}
+                    </div>
+                    <div className="mt-1 text-center text-xs text-zinc-500">
+                      {setNames[offerTarget.set_id] || offerTarget.set_id}
+                    </div>
+                  </div>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold">
+                      Point of contact <span className="text-red-500">*</span>
+                    </span>
+                    <input
+                      value={offerContact}
+                      onChange={(event) => setOfferContact(event.target.value)}
+                      maxLength={100}
+                      placeholder="Discord username"
+                      className={`w-full rounded-xl border px-3 py-2.5 text-base outline-none focus:border-[#d5ad24] ${
+                        isLightMode
+                          ? "border-black/10 bg-white"
+                          : "border-white/10 bg-white/[0.05]"
+                      }`}
+                    />
+                  </label>
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-semibold">Your inventory</h3>
+                      <p className="text-sm text-zinc-500">
+                        {selectedOfferCards.length} of 10 cards selected
+                      </p>
+                    </div>
+                    <label className="relative block sm:w-72">
+                      <Search
+                        size={16}
+                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                      />
+                      <input
+                        value={offerSearch}
+                        onChange={(event) => setOfferSearch(event.target.value)}
+                        placeholder="Search card or set"
+                        className={`w-full rounded-xl border py-2.5 pl-9 pr-3 text-base outline-none focus:border-[#d5ad24] ${
+                          isLightMode
+                            ? "border-black/10 bg-white"
+                            : "border-white/10 bg-white/[0.05]"
+                        }`}
+                      />
+                    </label>
+                  </div>
+                  {!inventoryLoaded ? (
+                    <div className="py-16 text-center text-sm text-zinc-500">
+                      Loading your inventory...
+                    </div>
+                  ) : visibleOfferInventory.length === 0 ? (
+                    <div
+                      className={`mt-4 rounded-2xl border p-8 text-center text-sm ${
+                        isLightMode
+                          ? "border-black/10 bg-zinc-50 text-zinc-500"
+                          : "border-white/[0.08] bg-white/[0.03] text-zinc-400"
+                      }`}
+                    >
+                      No owned cards match this search.
+                    </div>
+                  ) : (
+                    <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-6">
+                      {visibleOfferInventory.map((card) => {
+                        const selected = selectedOfferCards.some(
+                          (item) => item.id === card.id,
+                        );
+                        const selectionFull =
+                          selectedOfferCards.length >= 10 && !selected;
+                        return (
+                          <button
+                            key={card.id}
+                            type="button"
+                            onClick={() => toggleOfferCard(card)}
+                            disabled={selectionFull}
+                            className={`group relative overflow-hidden rounded-xl border p-1.5 text-left transition ${
+                              selected
+                                ? "border-[#FFD54A] bg-[#FFD54A]/10 ring-2 ring-[#FFD54A]/30"
+                                : isLightMode
+                                  ? "border-black/10 bg-zinc-50 hover:border-[#c89d13]/50"
+                                  : "border-white/[0.08] bg-white/[0.03] hover:border-[#FFD54A]/30"
+                            } disabled:opacity-35`}
+                          >
+                            <span className="relative block aspect-[5/7] overflow-hidden rounded-lg">
+                              <InventoryCardImage card={card} />
+                            </span>
+                            <span className="mt-1.5 block truncate px-0.5 text-[11px] font-bold">
+                              {card.card_key}
+                            </span>
+                            {selected && (
+                              <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-zinc-900 shadow-lg">
+                                <Check size={14} />
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {selectedOfferCards.length > 0 && (
+                <div
+                  className={`mt-4 rounded-2xl border p-3 ${
+                    isLightMode
+                      ? "border-[#c89d13]/20 bg-[#c89d13]/[0.05]"
+                      : "border-[#FFD54A]/15 bg-[#FFD54A]/[0.05]"
+                  }`}
+                >
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Cards in your offer
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOfferCards.map((card) => (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => toggleOfferCard(card)}
+                        className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold ${
+                          isLightMode
+                            ? "bg-white text-zinc-700"
+                            : "bg-black/25 text-zinc-200"
+                        }`}
+                      >
+                        {card.card_key}
+                        <X size={12} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {offerError && (
+                <p className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-sm font-medium text-red-500">
+                  {offerError}
+                </p>
+              )}
+            </div>
+            <div
+              className={`grid grid-cols-2 gap-2 border-t p-4 sm:flex sm:justify-end ${
+                isLightMode ? "border-black/10" : "border-white/10"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setOfferTarget(null)}
+                disabled={isSendingOffer}
+                className={`rounded-xl px-5 py-3 text-sm font-semibold ${
+                  isLightMode
+                    ? "bg-zinc-100 text-zinc-700"
+                    : "bg-white/[0.07] text-zinc-200"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void submitOffer()}
+                disabled={isSendingOffer || !inventoryLoaded}
+                className="rounded-xl bg-[#FFD54A] px-5 py-3 text-sm font-semibold text-zinc-900 disabled:opacity-50"
+              >
+                {isSendingOffer ? "Sending..." : "Send offer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showUnsetPriceNotice && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="unset-price-title"
+            className={`w-full max-w-sm rounded-[20px] p-5 shadow-2xl ${
+              isLightMode ? "bg-white text-zinc-900" : "bg-[#17191a] text-white"
+            }`}
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFD54A]/15 text-[#b88a00]">
+              <ShieldAlert size={20} />
+            </div>
+            <h2 id="unset-price-title" className="mt-3 text-lg font-bold">
+              Price not set yet
+            </h2>
+            <p
+              className={`mt-2 text-sm leading-relaxed ${
+                isLightMode ? "text-zinc-600" : "text-zinc-300"
+              }`}
+            >
+              A price of $0.00 means this person has not set their asking price
+              since the new pricing update rolled out. It is not an overpriced
+              listing and cannot be reported.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowUnsetPriceNotice(false)}
+              className="mt-5 w-full rounded-xl bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-[#ffe06a]"
+            >
+              Got it
+            </button>
           </div>
         </div>
       )}
