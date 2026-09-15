@@ -112,6 +112,7 @@ const excludedUserIds = new Set(
 const filterEligible = (profiles: any[]) =>
         profiles.filter(
           (profile: any) =>
+            profile.rank_worthy === true &&
             eligibleUserIds.has(profile.id) &&
             !excludedUserIds.has(profile.id)
         );
