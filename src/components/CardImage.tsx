@@ -8,9 +8,9 @@ import {
 import { supabase } from "@/lib/supabase";
 
 const BUCKET = "card-images";
-const URL_LIFETIME_SECONDS = 24 * 60 * 60;
-const CACHE_LIFETIME_MS = 23 * 60 * 60 * 1000;
-const LOCAL_CACHE_KEY = "mlpekayou:signed-card-images:v2";
+const URL_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
+const CACHE_LIFETIME_MS = (7 * 24 - 1) * 60 * 60 * 1000;
+const LOCAL_CACHE_KEY = "mlpekayou:signed-card-images:v3";
 const LOADING_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="744" height="1040" viewBox="0 0 744 1040">
     <rect width="744" height="1040" rx="28" fill="#e5e7eb"/>
