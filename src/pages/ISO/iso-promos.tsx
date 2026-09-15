@@ -31,7 +31,7 @@ const getDisplayCardCode = (
     if (number <= 18) {
       return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
     }
-    const newPromoNames: Record<number, string> = {
+const newPromoNames: Record<number, string> = {
       19: "TK-01",
       20: "※TK-01",
       21: "※TK-01",
@@ -230,29 +230,35 @@ const isWishlisted = wishlist.has(fullKey);
 const cardContent = (
                     <div className={searchAllCards ? "" : "cursor-pointer"}>
                       <div
-                        className={`relative aspect-[5/7] w-full overflow-hidden rounded-xl ${
+                        className={`relative aspect-[5/7] w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${
                           isWishlisted
                             ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]"
                             : ""
                         }`}
                       >
-                        {set.id === "9" ? (
-                          <CardImage
-                            src={getImage(set.id, card.number)}
-                            alt={getDisplayCardCode(set.id, card.number)}
-                            className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover"
-                          />
-                        ) : (
-                          <CardImage
-                            src={getImage(set.id, card.number)}
-                            alt={getDisplayCardCode(set.id, card.number)}
-                            className={`h-full w-full object-cover ${
-                              card.number >= 9 && card.number <= 12
-                                ? "scale-[1.02] object-center"
-                                : ""
-                            }`}
-                          />
-                        )}
+                        <CardImage
+                          src={getImage(set.id, card.number)}
+                          alt={getDisplayCardCode(set.id, card.number)}
+                          className={
+                            set.id === "9" && card.number === 1
+                              ? "h-full w-full scale-[1.02] object-contain object-center"
+                              : set.id === "9" && card.number === 7
+                                ? "h-full w-full scale-[1.06] object-contain object-center"
+                                : set.id === "9" && [2, 3, 4, 5].includes(card.number)
+                                  ? "h-full w-full scale-[1.05] object-contain object-center"
+                                  : set.id === "9"
+                                    ? "h-full w-full scale-[1.08] object-contain object-center"
+                                    : set.id === "tcgpromos" && card.number === 11
+                                      ? "h-full w-full translate-y-[2px] scale-[1.02] object-cover object-center"
+                                      : set.id === "tcgpromos" && card.number === 10
+                                        ? "h-full w-full scale-[1.02] object-cover object-center"
+                                        : set.id === "tcgpromos" && card.number === 9
+                                          ? "h-full w-full -translate-y-px scale-[1.01] object-cover object-center"
+                                          : set.id === "tcgpromos" && card.number === 12
+                                            ? "h-full w-full -translate-y-[2px] object-cover object-center"
+                                            : "h-full w-full scale-[1.01] object-contain object-center"
+                          }
+                        />
                       </div>
                     </div>
                   );

@@ -1,5 +1,5 @@
 import CardImage from "@/components/CardImage";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { getTradeCardImage } from "@/lib/card-images";
 import ISOChecking from "./iso-checking";
@@ -7,11 +7,82 @@ type Card = {
   set_id: string;
   card_key: string;
 };
-const isTCGCard = (setId: string) =>
-  setId === "FW" ||
-  setId === "SD" ||
-  setId === "12" ||
-  setId === "tcgpromos";
+const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11"]);
+
+const getCardNumber = (cardKey: string) => {
+  const match = cardKey.match(/(\d+)$/);
+  return match ? Number(match[1]) : null;
+};
+
+const getImageClassName = (card: Card) => {
+  const base = "absolute inset-0 h-full w-full";
+
+  if (standardZoomSets.has(card.set_id)) {
+    return `${base} scale-[1.05] object-contain object-center`;
+  }
+
+  const cardNumber = getCardNumber(card.card_key);
+
+  if (card.set_id === "9") {
+    if (cardNumber === 1) {
+      return `${base} scale-[1.02] object-contain object-center`;
+    }
+    if (cardNumber === 7) {
+      return `${base} scale-[1.06] object-contain object-center`;
+    }
+    if (cardNumber !== null && [2, 3, 4, 5].includes(cardNumber)) {
+      return `${base} scale-[1.05] object-contain object-center`;
+    }
+    return `${base} scale-[1.08] object-contain object-center`;
+  }
+
+  if (card.set_id === "tcgpromos") {
+    if (cardNumber === 11) {
+      return `${base} translate-y-[2px] scale-[1.02] object-cover object-center`;
+    }
+    if (cardNumber === 10) {
+      return `${base} scale-[1.02] object-cover object-center`;
+    }
+    if (cardNumber === 9) {
+      return `${base} -translate-y-px scale-[1.01] object-cover object-center`;
+    }
+    if (cardNumber === 12) {
+      return `${base} -translate-y-[2px] object-cover object-center`;
+    }
+    return `${base} scale-[1.01] object-contain object-center`;
+  }
+
+  const contained = ["SD", "FW", "12", "14"].includes(card.set_id);
+  return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
+};
+
+const WishlistImage = ({ card }: { card: Card }) => {
+  const isLandscape =
+    card.set_id === "14" &&
+    /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key);
+  const style: CSSProperties = {
+    backgroundColor: "transparent",
+    backgroundImage: "none",
+    ...(isLandscape
+      ? { transform: "translate(-50%, -50%) rotate(-90deg)" }
+      : {}),
+  };
+
+  return (
+    <CardImage
+      src={getTradeCardImage(card)}
+      alt={card.card_key}
+      className={
+        isLandscape
+          ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none object-cover"
+          : getImageClassName(card)
+      }
+      style={style}
+      loading="lazy"
+      draggable={false}
+    />
+  );
+};
 export default function Wishlist() {
   const [cards, setCards] = useState<Card[]>([]);
   const [userId, setUserId] = useState("");
@@ -100,13 +171,14 @@ export default function Wishlist() {
           </div>
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
             {cards.map((card) => {
-              const allowZoom = !isTCGCard(card.set_id);
               return (
                 <div
                   key={`${card.set_id}:${card.card_key}`}
                   className="group relative overflow-visible"
                 >
                   <ISOChecking
+                    contentClassName="!rounded-[2px]"
+                    contentStyle={{ borderRadius: "2px" }}
                     userId={userId}
                     setId={card.set_id}
                     cardKey={card.card_key}
@@ -114,18 +186,8 @@ export default function Wishlist() {
                     isWishlisted
                     toggleWishlist={removeFromWishlist}
                   >
-                    <div className="relative overflow-hidden rounded-xl border border-black/10 bg-zinc-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/[0.08] dark:bg-white/[0.04]">
-                      <CardImage
-                        src={getTradeCardImage(card)}
-                        alt={card.card_key}
-                        className={`aspect-[5/7] w-full object-cover ${
-                          allowZoom
-                            ? "transition-transform duration-300 ease-out group-hover:scale-[1.045]"
-                            : ""
-                        }`}
-                        loading="lazy"
-                        draggable={false}
-                      />
+                    <div className="relative aspect-[5/7] overflow-hidden rounded-[6px] bg-transparent transition hover:-translate-y-0.5">
+                      <WishlistImage card={card} />
                     </div>
                   </ISOChecking>
                 </div>

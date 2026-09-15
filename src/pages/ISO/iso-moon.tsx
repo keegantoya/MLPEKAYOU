@@ -257,7 +257,7 @@ const isWishlisted =
 const cardContent = (
                   <div className={searchAllCards ? "" : "cursor-pointer"}>
                     <div
-                      className={`relative w-full overflow-hidden rounded-xl ${
+                      className={`relative w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${
                         isDoubleWide ? "aspect-[10/7] col-span-2" : "aspect-[5/7]"
                       } ${
                         isWishlisted
@@ -270,7 +270,7 @@ const cardContent = (
                           card.number
                         ).padStart(3, "0")}.webp`}
                         alt={getDisplayCardCode(set.id, card.rarity, card.number)}
-                        className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover"
+                        className="h-full w-full scale-[1.05] object-contain object-center"
                       />
                     </div>
                   </div>

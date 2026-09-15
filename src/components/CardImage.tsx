@@ -277,12 +277,12 @@ const CardImage = forwardRef<
       style={
         protectedPath
           ? {
-              ...style,
               backgroundColor: "#e5e7eb",
               backgroundImage: `url("${LOADING_PLACEHOLDER}")`,
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
+              ...style,
             }
           : style
       }

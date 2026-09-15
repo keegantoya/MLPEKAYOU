@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
 import { useWishlist } from "./wishlist-in-iso";
@@ -7,6 +7,8 @@ type Status =
   | "trade_in_progress";
 interface ISOCheckingProps {
   className?: string;
+  contentClassName?: string;
+  contentStyle?: CSSProperties;
   userId: string;
   setId: string;
   cardKey: string;
@@ -19,6 +21,8 @@ interface ISOCheckingProps {
 }
 export default function ISOChecking({
   className,
+  contentClassName,
+  contentStyle,
   userId,
   setId,
   cardKey,
@@ -184,7 +188,8 @@ const { error } = await supabase
       ref={menuRef}
     >
       <div
-        className={`relative cursor-pointer overflow-hidden rounded-xl transition ${open ? "ring-2 ring-[#FFD54A]/50 shadow-lg" : ""}`}
+        className={`relative cursor-pointer overflow-hidden rounded-[6px] transition sm:rounded-xl ${contentClassName ?? ""} ${open ? "ring-2 ring-[#FFD54A]/50 shadow-lg" : ""}`}
+        style={contentStyle}
         onClick={(e) => {
 const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
 const menuHeight = wishlistMode ? 170 : toggleWishlist ? 380 : 300;

@@ -256,8 +256,8 @@ const fullKey = `${set.id}:${card.rarity}-${card.number}`;
 const isWishlisted = wishlist.has(fullKey) || wishlist.has(`${set.id}:${card.rarity}-${String(card.number).padStart(3, "0")}`);
 const cardContent = (
                 <div className={searchAllCards ? "" : "cursor-pointer"}>
-                  <div className={`relative aspect-[5/7] w-full overflow-hidden rounded-xl ${isWishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}>
-                    <CardImage src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover" />
+                  <div className={`relative aspect-[5/7] w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${isWishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}>
+                    <CardImage src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="h-full w-full scale-[1.05] object-contain object-center" />
                   </div>
                 </div>
               );

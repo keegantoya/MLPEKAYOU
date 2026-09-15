@@ -12,12 +12,12 @@ const getDisplayCardCode = (
   rarity: string,
   number: number
 ) => {
-  const rarityCode = getRarityCode(rarity);
-  const cardNumber = String(number).padStart(3, "0");
+const rarityCode = getRarityCode(rarity);
+const cardNumber = String(number).padStart(3, "0");
   if (setId === "4" && rarity === "SAR") {
     return `MLPSE01-◇AR-${cardNumber}`;
   }
-  const baseCode = "MLPSE01";
+const baseCode = "MLPSE01";
   return `${baseCode}-${rarity === "SAR" ? "◇AR" : rarityCode}-${cardNumber}`;
 };
 const sets = [
@@ -52,15 +52,15 @@ export default function ISOSTAR({
   hiddenSets,
   wishlistMode,
 }: ISOSTARProps) {
-  const [owned, setOwned] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState("");
-  const { wishlist, toggleWishlist } = useWishlist();
-  const [selectedSet, setSelectedSet] = useState<string | null>(
+const [owned, setOwned] = useState<Record<string, boolean>>({});
+const [loading, setLoading] = useState(true);
+const [userId, setUserId] = useState("");
+const { wishlist, toggleWishlist } = useWishlist();
+const [selectedSet, setSelectedSet] = useState<string | null>(
     window.innerWidth >= 768 ? "4" : null
   );
-  const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
-  const getMissingCount = (set: (typeof sets)[number]) =>
+const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
+const getMissingCount = (set: (typeof sets)[number]) =>
     Object.entries(set.rarities).reduce(
       (total, [rarity, count]) =>
         total +
@@ -70,23 +70,23 @@ export default function ISOSTAR({
         ).filter((key) => !owned[key]).length,
       0
     );
-  const selectableSets = sets.filter(
+const selectableSets = sets.filter(
     (set) =>
       !hiddenSets.includes(set.id) &&
       (searchAllCards || wishlistMode || getMissingCount(set) > 0)
   );
   useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
+const load = async () => {
+const { data } = await supabase.auth.getSession();
+const user = data.session?.user;
       if (!user) {
         setLoading(false);
         return;
       }
       setUserId(user.id);
-      const allOwned: Record<string, boolean> = {};
+const allOwned: Record<string, boolean> = {};
       for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
-        const { data: progress } = await supabase
+const { data: progress } = await supabase
           .from("collection_progress_raw")
           .select("progress")
           .eq("user_id", user.id)
@@ -139,28 +139,28 @@ export default function ISOSTAR({
         .filter((set) => {
           if (cardCodeSearch || characterSearch.trim()) return true;
           if (!searchAllCards && !wishlistMode && getMissingCount(set) === 0) return false;
-          const activeSet = selectableSets.some((item) => item.id === selectedSet)
+const activeSet = selectableSets.some((item) => item.id === selectedSet)
             ? selectedSet
             : selectableSets[0]?.id ?? null;
           return set.id === activeSet;
         })
         .map((set) => {
-          const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
             Array.from({ length: count as number }, (_, i) => ({
               rarity,
               number: i + 1,
               characters: starCharacterMap[`${set.id}-${rarity}-${i + 1}`] ?? [],
             }))
           );
-          const missing = cards.filter((card) => {
-            const displayCode = getDisplayCardCode(
+const missing = cards.filter((card) => {
+const displayCode = getDisplayCardCode(
               set.id,
               card.rarity,
               card.number
             ).toUpperCase();
-            const codeSearch = cardCodeSearch.trim().toUpperCase();
+const codeSearch = cardCodeSearch.trim().toUpperCase();
             if (codeSearch !== "" && !displayCode.startsWith(codeSearch)) return false;
-            const character = characterSearch.trim().toLowerCase();
+const character = characterSearch.trim().toLowerCase();
             if (
               character !== "" &&
               !card.characters.some((name) => name.toLowerCase().includes(character))
@@ -171,19 +171,19 @@ export default function ISOSTAR({
             return !owned[`${set.id}-${card.rarity}-${card.number}`];
           });
           if (missing.length === 0) return null;
-          const availableRarities = Object.keys(set.rarities).filter((rarity) =>
+const availableRarities = Object.keys(set.rarities).filter((rarity) =>
             missing.some((card) => card.rarity === rarity)
           );
-          const selectedRarity =
+const selectedRarity =
             selectedRarities[set.id] &&
             availableRarities.includes(selectedRarities[set.id])
               ? selectedRarities[set.id]
               : "all";
-          const visibleCards =
+const visibleCards =
             selectedRarity === "all"
               ? missing
               : missing.filter((card) => card.rarity === selectedRarity);
-          const displayRarity = (rarity: string) =>
+const displayRarity = (rarity: string) =>
             rarity === "SAR" ? "◇AR" : rarity;
           return (
             <section
@@ -221,16 +221,16 @@ export default function ISOSTAR({
               </div>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
                 {visibleCards.map((card) => {
-                  const fullKey = `${set.id}:${card.rarity}-${card.number}`;
-                  const isWishlisted =
+const fullKey = `${set.id}:${card.rarity}-${card.number}`;
+const isWishlisted =
                     wishlist.has(fullKey) ||
                     wishlist.has(
                       `${set.id}:${card.rarity}-${String(card.number).padStart(3, "0")}`
                     );
-                  const cardContent = (
+const cardContent = (
                     <div className={searchAllCards ? "" : "cursor-pointer"}>
                       <div
-                        className={`relative aspect-[5/7] w-full overflow-hidden rounded-xl ${
+                        className={`relative aspect-[5/7] w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${
                           isWishlisted
                             ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]"
                             : ""
@@ -241,7 +241,7 @@ export default function ISOSTAR({
                             card.rarity
                           )}${String(card.number).padStart(3, "0")}.webp`}
                           alt={getDisplayCardCode(set.id, card.rarity, card.number)}
-                          className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover"
+                          className="h-full w-full scale-[1.05] object-contain object-center"
                         />
                       </div>
                     </div>
