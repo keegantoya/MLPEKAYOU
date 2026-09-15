@@ -1579,7 +1579,6 @@ style={{
           <span className="flex items-center justify-center gap-3">
             <span>ACKNOWLEDGE</span>
             <span className="text-sm transition-transform duration-200 group-hover:translate-x-1">
-              â†’
             </span>
           </span>
         </Button>

@@ -2,6 +2,7 @@ import CardImage from "@/components/CardImage";
 import { useState, useEffect, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import TiltCard from "@/components/TiltCards";
 // Edit only the quoted text to change the source shown under each CCG promo.
 const CCG_PROMO_SOURCES: Record<string, string> = {
@@ -223,31 +224,19 @@ const PromotionalCards = () => {
           tcgProgress[key] = value;
         }
       });
-      await Promise.all([
-        supabase.from("collection_progress_raw").upsert(
-          {
-            user_id: user.id,
-            set_id: "9",
-            progress: ccgProgress,
-          },
-          {
-            onConflict: "user_id,set_id",
-          },
-        ),
-        supabase.from("collection_progress_raw").upsert(
-          {
-            user_id: user.id,
-            set_id: "tcgpromos",
-            progress: tcgProgress,
-          },
-          {
-            onConflict: "user_id,set_id",
-          },
-        ),
+      const saveErrors = await Promise.all([
+        saveCollectionProgress("9", ccgProgress),
+        saveCollectionProgress("tcgpromos", tcgProgress),
       ]);
+      const saveError = saveErrors.find(Boolean);
+      if (saveError) {
+        console.error("Unable to save promotional progress:", saveError);
+        return;
+      }
       setLastSavedProgress(JSON.stringify(flipped));
     };
-    saveProgress();
+    const saveTimer = window.setTimeout(saveProgress, 400);
+    return () => window.clearTimeout(saveTimer);
   }, [flipped, loaded, lastSavedProgress]);
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 text-zinc-900 transition-colors dark:bg-[#101112] dark:text-white sm:pb-8">

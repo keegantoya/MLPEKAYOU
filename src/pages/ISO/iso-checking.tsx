@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
+import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { useWishlist } from "./wishlist-in-iso";
 type Status =
   | "purchase_in_progress"
@@ -143,18 +144,7 @@ const { data } = await supabase
 const progress = data?.progress || {};
 const progressKey = cardKey;
     progress[progressKey] = true;
-const { error } = await supabase
-      .from("collection_progress_raw")
-      .upsert(
-        {
-          user_id: userId,
-          set_id: setId,
-          progress,
-        },
-        {
-          onConflict: "user_id,set_id",
-        }
-      );
+const error = await saveCollectionProgress(setId, progress);
     setLoading(false);
     if (error) {
       console.error(error);

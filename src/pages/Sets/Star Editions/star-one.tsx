@@ -2,6 +2,7 @@ import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import TiltCard from "@/components/TiltCards";
 const StarOne = () => {
 const navigate = useNavigate();
@@ -136,21 +137,15 @@ const saveProgress = async () => {
 const { data } = await supabase.auth.getSession();
 const user = data.session?.user;
     if (!user) return;
-    await supabase
-      .from("collection_progress_raw")
-      .upsert(
-        {
-          user_id: user.id,
-          set_id: set.setId,
-          progress: flipped,
-        },
-        {
-          onConflict: "user_id,set_id",
-        }
-      );
+    const saveError = await saveCollectionProgress(set.setId, flipped);
+    if (saveError) {
+      console.error("Unable to save collection progress:", saveError);
+      return;
+    }
     setLastSavedProgress(current);
   };
-  saveProgress();
+  const saveTimer = window.setTimeout(saveProgress, 400);
+  return () => window.clearTimeout(saveTimer);
 }, [flipped, loaded, lastSavedProgress]);
 const collectedCount = cards.filter(
     (card) => flipped[`${card.rarity}-${card.number}`]

@@ -8,25 +8,6 @@ type LeaderboardUser = {
   avatar_url?: string | null;
   total: number;
 };
-const CCG_SET_IDS = new Set([
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "11",
-]);
-const TCG_SET_IDS = new Set([
-  "12",
-  "SD",
-  "FW",
-  "tcgpromos",
-  "14"
-]);
 const LEADERBOARD_USER_ID =
   "94a1c998-d040-4dd2-b2fb-5f606287139d";
 const Leaderboard = () => {
@@ -154,12 +135,12 @@ const allEligibleIds = Array.from(
         return;
       }
 const {
-        data: rawProgress,
+        data: progressTotals,
         error: progressError,
       } = await supabase
-        .from("collection_progress_raw")
-        .select("user_id, set_id, progress")
-        .in("user_id", allEligibleIds);
+        .rpc("get_leaderboard_progress_totals", {
+          p_user_ids: allEligibleIds,
+        });
       if (progressError) {
         console.error(
           "Leaderboard collection progress error:",
@@ -167,35 +148,18 @@ const {
         );
         return;
       }
-const ccgTotals = new Map<string, number>();
-const tcgTotals = new Map<string, number>();
-      (rawProgress || []).forEach((row: any) => {
-const setId = String(row.set_id);
-const owned = Object.values(
-          row.progress || {}
-        ).filter(
-          (value: any) =>
-            value === true ||
-            (typeof value === "object" &&
-              value?.owned === true)
-        ).length;
-        if (CCG_SET_IDS.has(setId)) {
-const current =
-            ccgTotals.get(row.user_id) || 0;
-          ccgTotals.set(
-            row.user_id,
-            current + owned
-          );
-        }
-        if (TCG_SET_IDS.has(setId)) {
-const current =
-            tcgTotals.get(row.user_id) || 0;
-          tcgTotals.set(
-            row.user_id,
-            current + owned
-          );
-        }
-      });
+const ccgTotals = new Map<string, number>(
+        (progressTotals || []).map((row: any) => [
+          row.user_id,
+          Number(row.ccg_total) || 0,
+        ]),
+      );
+const tcgTotals = new Map<string, number>(
+        (progressTotals || []).map((row: any) => [
+          row.user_id,
+          Number(row.tcg_total) || 0,
+        ]),
+      );
 const ccgLeaderboard = eligibleCcgProfiles
         .map((profile: any) => ({
           id: profile.id,

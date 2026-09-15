@@ -1,6 +1,6 @@
 import CardImage from "@/components/CardImage";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
 import NotFound from "../NotFound";
@@ -8,6 +8,8 @@ import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import { getTradeCardImage } from "@/lib/card-images";
 export default function PublicProfile() {
   const { username } = useParams();
+  const navigate = useNavigate();
+  const [loginRequired, setLoginRequired] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileNotFound, setProfileNotFound] = useState(false);
@@ -38,19 +40,29 @@ export default function PublicProfile() {
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("embed") === "1";
   useEffect(() => {
-    if (!showCollectionModal) return;
+    if (!showCollectionModal && !loginRequired) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [showCollectionModal]);
+  }, [showCollectionModal, loginRequired]);
   useEffect(() => {
     let cancelled = false;
     const loadProfile = async () => {
       setProfileLoading(true);
       setProfileNotFound(false);
       setProfile(null);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (!session?.user) {
+        setLoginRequired(true);
+        setProfileLoading(false);
+        return;
+      }
+      setLoginRequired(false);
       if (!username) {
         if (!cancelled) {
           setProfileLoading(false);
@@ -58,14 +70,13 @@ export default function PublicProfile() {
         }
         return;
       }
-      const { data: profiles, error } = await supabase
+      const { data: profileData, error } = await supabase
         .from("profiles")
-        .select("*");
+        .select("*")
+        .ilike("username", username)
+        .limit(1)
+        .maybeSingle();
       if (cancelled) return;
-      const profileData = (profiles || []).find(
-        (p: any) =>
-          String(p.username).toLowerCase() === String(username).toLowerCase(),
-      );
       if (error || !profileData) {
         setProfileLoading(false);
         setProfileNotFound(true);
@@ -89,9 +100,6 @@ export default function PublicProfile() {
         .maybeSingle();
       if (cancelled) return;
       setDiscord(tradingProfile?.discord_username || "");
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
       if (!cancelled) {
         setCurrentUserId(session?.user?.id || "");
       }
@@ -698,6 +706,86 @@ export default function PublicProfile() {
       </div>
     );
   };
+  if (loginRequired) {
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="login-required-title"
+        className={`fixed inset-0 z-[30000] flex items-center justify-center overflow-y-auto px-4 py-6 backdrop-blur-md ${
+          isLightMode ? "bg-zinc-100/90" : "bg-black/85"
+        }`}
+      >
+        <div
+          className={`w-full max-w-lg overflow-hidden rounded-[26px] border p-5 shadow-[0_30px_90px_rgba(0,0,0,.45)] sm:p-7 ${
+            isLightMode
+              ? "border-black/10 bg-white text-zinc-900"
+              : "border-white/10 bg-[#17191b] text-white"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E7C84B] text-xl font-black text-[#111517]">
+              !
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C9A92D]">
+                Account required
+              </p>
+              <h1
+                id="login-required-title"
+                className="mt-1 font-['Oxanium'] text-2xl font-bold tracking-tight"
+              >
+                You must be logged in!
+              </h1>
+            </div>
+          </div>
+
+          <div
+            className={`mt-5 rounded-2xl border px-4 py-4 text-sm leading-6 sm:px-5 ${
+              isLightMode
+                ? "border-black/[0.08] bg-zinc-50 text-zinc-600"
+                : "border-white/[0.07] bg-black/20 text-zinc-300"
+            }`}
+          >
+            <p>
+              Unfortunately, this feature could only remain publicly available
+              for so long. Automated systems, including Meta AI and OpenAI,
+              repeatedly accessed the card images and created unsustainable
+              hosting costs.
+            </p>
+            <p className="mt-3">
+              Public profiles now need to be protected behind the same login
+              wall as the rest of MLPEKAYOU. I understand that this is anything
+              but ideal, but keeping the site running currently costs close to
+              $250–$300 each month because of this traffic.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="mt-5 min-h-12 w-full rounded-2xl bg-[#E7C84B] px-5 py-3 text-base font-bold text-[#111517] transition hover:bg-[#FFE477] active:scale-[0.99]"
+          >
+            Go to Homescreen
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.length > 1) navigate(-1);
+              else navigate("/");
+            }}
+            className={`mt-3 min-h-11 w-full rounded-2xl border px-5 py-2.5 text-sm font-semibold transition ${
+              isLightMode
+                ? "border-black/10 bg-white text-zinc-600 hover:bg-zinc-100"
+                : "border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
+            }`}
+          >
+            Go back
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (profileLoading) {
     return null;
   }

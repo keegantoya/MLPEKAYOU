@@ -2,6 +2,7 @@ import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 const LeapingPonies = () => {
 const navigate = useNavigate();
 const merchItems = [
@@ -53,16 +54,8 @@ const progressObject: Record<string, boolean> = {};
     updated.forEach((itemId) => {
       progressObject[String(itemId)] = true;
     });
-    await supabase.from("collection_progress_raw").upsert(
-      {
-        user_id: user.id,
-        set_id: "OTHERMERCH",
-        progress: progressObject,
-      },
-      {
-        onConflict: "user_id,set_id",
-      }
-    );
+    const saveError = await saveCollectionProgress("OTHERMERCH", progressObject);
+    if (saveError) console.error("Unable to save collection progress:", saveError);
   };
 const completedCount = completed.length;
 const remainingCount = merchItems.length - completedCount;

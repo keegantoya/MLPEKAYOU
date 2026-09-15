@@ -8,6 +8,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -66,6 +67,149 @@ import LGSBoards from "./pages/Personal/LGSBoards";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
+
+const PUBLIC_AUTH_PATHS = new Set([
+  "/",
+  "/password-reset",
+  "/account-confirmation",
+]);
+
+function SiteAccessGate({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [authState, setAuthState] = useState<
+    "checking" | "authenticated" | "anonymous"
+  >("checking");
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
+  const normalizedPath =
+    location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
+  const isBlockedRoute =
+    authState === "anonymous" && !PUBLIC_AUTH_PATHS.has(normalizedPath);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      setAuthState(session?.user ? "authenticated" : "anonymous");
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setAuthState(session?.user ? "authenticated" : "anonymous");
+      if (session?.user) setShowLoginRequired(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      authState !== "anonymous" ||
+      PUBLIC_AUTH_PATHS.has(normalizedPath)
+    ) {
+      return;
+    }
+
+    setShowLoginRequired(true);
+    navigate("/", { replace: true });
+  }, [authState, navigate, normalizedPath]);
+
+  useEffect(() => {
+    if (!showLoginRequired) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showLoginRequired]);
+
+  if (authState === "checking" && !PUBLIC_AUTH_PATHS.has(normalizedPath)) {
+    return (
+      <div className="fixed inset-0 z-[30000] flex items-center justify-center bg-[#111111] px-4 text-white">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#181818] px-5 py-4 shadow-xl">
+          <span className="h-3 w-3 animate-pulse rounded-full bg-[#E7C84B]" />
+          <span className="text-sm font-semibold">Checking your session…</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {!isBlockedRoute && children}
+      {(showLoginRequired || isBlockedRoute) && authState === "anonymous" && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="site-login-required-title"
+          aria-describedby="site-login-required-message"
+          className="fixed inset-0 z-[30000] flex items-center justify-center overflow-y-auto bg-black/85 px-4 py-5 backdrop-blur-md"
+        >
+          <div className="my-auto w-full max-w-xl rounded-[26px] border border-white/10 bg-[#17191b] p-5 text-white shadow-[0_30px_90px_rgba(0,0,0,.55)] sm:p-7">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E7C84B] text-xl font-black text-[#111517]">
+                !
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#E7C84B]">
+                  Account required
+                </p>
+                <h1
+                  id="site-login-required-title"
+                  className="mt-1 font-['Oxanium'] text-2xl font-bold tracking-tight sm:text-3xl"
+                >
+                  You must now log in or create an account in order to go
+                  anywhere.
+                </h1>
+              </div>
+            </div>
+
+            <div
+              id="site-login-required-message"
+              className="mt-5 max-h-[52vh] space-y-3 overflow-y-auto rounded-2xl border border-white/[0.07] bg-black/20 px-4 py-4 text-sm leading-6 text-zinc-300 sm:max-h-none sm:px-5"
+            >
+              <p>
+                This is due to Meta AI and OpenAI continually finding ways
+                around my firewalls and ramping my bill up toward $300 every
+                single month. Every firewall I put up, they found a way around,
+                and now it has given me no choice but to lock everything down.
+              </p>
+              <p>
+                If you find your way around this screen, you’ll find that all
+                information reads 0 or does not load. You must have an account
+                now to proceed.
+              </p>
+              <p>
+                I know this is inconvenient, and I apologize. MLPEKAYOU is a
+                project that I work on in my free time. It has zero paywalls and
+                does not require any payments or special subscriptions. It is
+                entirely free.
+              </p>
+              <p>
+                I cannot keep pouring as much money as I do into it to satisfy
+                AI scraping. I do hope you understand.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLoginRequired(false)}
+              className="mt-5 min-h-12 w-full rounded-2xl bg-[#E7C84B] px-5 py-3 text-base font-bold text-[#111517] transition hover:bg-[#FFE477] active:scale-[0.99]"
+            >
+              Return to the homepage to log in
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 function RequireLGSStaff({ children }: { children: ReactNode }) {
   const [access, setAccess] = useState<"checking" | "allowed" | "denied">(
@@ -431,7 +575,9 @@ function AppLayout() {
             : `min-h-screen sm:pt-[64px] sm:pb-0 ${standalone ? "pt-[88px]" : "pt-[52px]"}`
         }
       >
-        <AppRoutes />
+        <SiteAccessGate>
+          <AppRoutes />
+        </SiteAccessGate>
       </div>
     </>
   );

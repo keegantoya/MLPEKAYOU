@@ -298,12 +298,22 @@ const { data: progress } = await supabase
                 ? "12"
                 : id
         );
+const progressUserIds = Array.from(
+        new Set((progress || []).map((row: any) => row.user_id)),
+      );
+      if (progressUserIds.length === 0) {
+        setCollectors([]);
+        setCompleted([]);
+        return;
+      }
 const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, username, avatar_url");
+        .select("id, username, avatar_url")
+        .in("id", progressUserIds);
 const { data: tradingProfiles } = await supabase
         .from("trading_profiles")
-        .select("user_id, discord_username");
+        .select("user_id, discord_username")
+        .in("user_id", progressUserIds);
 const eligibleUserIds = new Set(
         (tradingProfiles || [])
           .filter(
