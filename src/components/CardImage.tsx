@@ -10,6 +10,19 @@ const BUCKET = "card-images";
 const URL_LIFETIME_SECONDS = 24 * 60 * 60;
 const CACHE_LIFETIME_MS = 23 * 60 * 60 * 1000;
 const LOCAL_CACHE_KEY = "mlpekayou:signed-card-images:v2";
+const LOADING_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="744" height="1040" viewBox="0 0 744 1040">
+    <rect width="744" height="1040" rx="28" fill="#e5e7eb"/>
+    <circle cx="372" cy="464" r="30" fill="none" stroke="#6b7280" stroke-width="8" stroke-linecap="round" stroke-dasharray="138 52"/>
+    <text x="372" y="548" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="600" fill="#4b5563">Loading…</text>
+  </svg>
+`)}`;
+const UNAVAILABLE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="744" height="1040" viewBox="0 0 744 1040">
+    <rect width="744" height="1040" rx="28" fill="#e5e7eb"/>
+    <text x="372" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="600" fill="#4b5563">Image unavailable</text>
+  </svg>
+`)}`;
 const PROTECTED_PREFIXES = [
   "cards/",
   "card-backs/",
@@ -186,7 +199,9 @@ const CardImage = forwardRef<
     if (!protectedPath) return src;
     loadLocalCache();
     const cached = memoryCache.get(protectedPath);
-    return cached && cached.expiresAt > Date.now() ? cached.url : undefined;
+    return cached && cached.expiresAt > Date.now()
+      ? cached.url
+      : LOADING_PLACEHOLDER;
   });
 
   useEffect(() => {
@@ -194,16 +209,34 @@ const CardImage = forwardRef<
       setResolvedSrc(src);
       return;
     }
-    setResolvedSrc(undefined);
-    return requestSignedUrl(protectedPath, setResolvedSrc);
+    setResolvedSrc(LOADING_PLACEHOLDER);
+    return requestSignedUrl(protectedPath, (url) => {
+      setResolvedSrc(url ?? UNAVAILABLE_PLACEHOLDER);
+    });
   }, [protectedPath, src]);
+
+  const { style, ...imageProps } = props;
+  const isWaiting = protectedPath && resolvedSrc === LOADING_PLACEHOLDER;
 
   return (
     <img
       ref={ref}
       src={resolvedSrc}
       loading={loading ?? "lazy"}
-      {...props}
+      aria-busy={isWaiting || undefined}
+      style={
+        protectedPath
+          ? {
+              ...style,
+              backgroundColor: "#e5e7eb",
+              backgroundImage: `url("${LOADING_PLACEHOLDER}")`,
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+            }
+          : style
+      }
+      {...imageProps}
     />
   );
 });
