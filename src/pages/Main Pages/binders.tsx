@@ -1,5 +1,5 @@
 import CardImage from "@/components/CardImage";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
@@ -276,6 +276,17 @@ export default function MyCollectionBinder() {
     "3x3" | "4x3" | "4x4" | "2x2" | "6x6"
   >("3x3");
   const [startSlot, setStartSlot] = useState(0);
+  const [rarityOrder, setRarityOrder] = useState<string[]>([]);
+  const [rarityDrag, setRarityDrag] = useState<{
+    rarity: string;
+    x: number;
+    y: number;
+    width: number;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const draggedRarity = useRef<string | null>(null);
+  const lastRarityTarget = useRef<string | null>(null);
   const touchStartX = useRef(0);
   const isMobile = useMemo(
     () => window.matchMedia("(max-width: 767px)").matches,
@@ -361,6 +372,11 @@ export default function MyCollectionBinder() {
   );
   const activeSetIds =
     selectedBinder === "CCG" ? visibleCCGOrder : [selectedSetId];
+  const rarityResetKey = selectedBinder === "CCG" ? "CCG" : selectedSetId;
+  useEffect(() => {
+    setRarityOrder([]);
+    setSpread(1);
+  }, [rarityResetKey]);
   const slugMap: Record<string, string> = {
     "1": "1",
     "2": "2",
@@ -635,6 +651,61 @@ export default function MyCollectionBinder() {
     });
     cards = combinedCards;
   }
+  const defaultRarityOrder = Array.from(
+    new Set(cards.map((card) => String(card.rarity)).filter(Boolean)),
+  );
+  const activeRarityOrder = [
+    ...rarityOrder.filter((rarity) => defaultRarityOrder.includes(rarity)),
+    ...defaultRarityOrder.filter((rarity) => !rarityOrder.includes(rarity)),
+  ];
+  const rarityRank = new Map(
+    activeRarityOrder.map((rarity, index) => [rarity, index]),
+  );
+  cards = cards
+    .map((card, originalIndex) => ({ card, originalIndex }))
+    .sort((a, b) => {
+      if (selectedBinder === "CCG") {
+        const setDifference =
+          visibleCCGOrder.indexOf(a.card.setId) -
+          visibleCCGOrder.indexOf(b.card.setId);
+        if (setDifference !== 0) return setDifference;
+      }
+      const rarityDifference =
+        (rarityRank.get(a.card.rarity) ?? Number.MAX_SAFE_INTEGER) -
+        (rarityRank.get(b.card.rarity) ?? Number.MAX_SAFE_INTEGER);
+      return rarityDifference || a.originalIndex - b.originalIndex;
+    })
+    .map(({ card }) => card);
+  const moveRarity = (movingRarity: string, targetRarity: string) => {
+    if (movingRarity === targetRarity) return;
+    setRarityOrder((currentOrder) => {
+      const nextOrder = currentOrder.length
+        ? [...currentOrder]
+        : [...defaultRarityOrder];
+      const fromIndex = nextOrder.indexOf(movingRarity);
+      const toIndex = nextOrder.indexOf(targetRarity);
+      if (fromIndex < 0 || toIndex < 0) return nextOrder;
+      nextOrder.splice(fromIndex, 1);
+      nextOrder.splice(toIndex, 0, movingRarity);
+      return nextOrder;
+    });
+    setStartSlot(0);
+    setSpread(1);
+  };
+  const handleRarityPointerMove = (clientX: number, clientY: number) => {
+    const target = document
+      .elementFromPoint(clientX, clientY)
+      ?.closest<HTMLElement>("[data-rarity]");
+    const targetRarity = target?.dataset.rarity;
+    if (
+      draggedRarity.current &&
+      targetRarity &&
+      targetRarity !== lastRarityTarget.current
+    ) {
+      lastRarityTarget.current = targetRarity;
+      moveRarity(draggedRarity.current, targetRarity);
+    }
+  };
   const ownedCards = cards;
   const layoutMap = {
     "2x2": { cols: 2, rows: 2, width: 240 },
@@ -1332,7 +1403,7 @@ export default function MyCollectionBinder() {
             onClick={() => setShowCustomization(false)}
           />
           <div
-            className={`relative z-10 flex w-full max-w-[760px] flex-col overflow-hidden rounded-[24px] border ${
+            className={`relative z-10 flex max-h-[calc(100dvh-24px)] w-full max-w-[760px] flex-col overflow-hidden rounded-[24px] border ${
               isLightMode
                 ? "border-black/10 bg-white"
                 : "border-white/10 bg-[#101212]"
@@ -1364,11 +1435,138 @@ export default function MyCollectionBinder() {
                 ✕
               </button>
             </div>
-            <div>
+            <div className="min-h-0 overflow-y-auto">
               <div className="p-4 sm:p-5">
                 <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-600 dark:text-white/50">
-                  Choose a layout and starting slot.
+                  Choose a layout, starting slot, and rarity order.
                 </p>
+                <div
+                  className={`mb-5 rounded-[18px] border p-3 ${
+                    isLightMode
+                      ? "border-black/10 bg-zinc-50"
+                      : "border-white/10 bg-[#080909]"
+                  }`}
+                >
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <div
+                        className={`text-sm font-semibold ${
+                          isLightMode ? "text-zinc-800" : "text-zinc-200"
+                        }`}
+                      >
+                        Rarity order
+                      </div>
+                      <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                        Drag rarities into the order you want to see them.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRarityOrder([]);
+                        setStartSlot(0);
+                        setSpread(1);
+                      }}
+                      className="shrink-0 rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:border-[#FFD400]/60 dark:border-white/10 dark:bg-[#151717] dark:text-zinc-300"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {activeRarityOrder.map((rarity, index) => (
+                      <div
+                        key={rarity}
+                        data-rarity={rarity}
+                        onPointerDown={(event) => {
+                          const bounds =
+                            event.currentTarget.getBoundingClientRect();
+                          event.currentTarget.setPointerCapture(
+                            event.pointerId,
+                          );
+                          draggedRarity.current = rarity;
+                          lastRarityTarget.current = rarity;
+                          setRarityDrag({
+                            rarity,
+                            x: event.clientX,
+                            y: event.clientY,
+                            width: bounds.width,
+                            offsetX: event.clientX - bounds.left,
+                            offsetY: event.clientY - bounds.top,
+                          });
+                        }}
+                        onPointerMove={(event) => {
+                          if (!draggedRarity.current) return;
+                          setRarityDrag((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  x: event.clientX,
+                                  y: event.clientY,
+                                }
+                              : null,
+                          );
+                          handleRarityPointerMove(event.clientX, event.clientY);
+                        }}
+                        onPointerUp={(event) => {
+                          if (
+                            event.currentTarget.hasPointerCapture(
+                              event.pointerId,
+                            )
+                          ) {
+                            event.currentTarget.releasePointerCapture(
+                              event.pointerId,
+                            );
+                          }
+                          draggedRarity.current = null;
+                          lastRarityTarget.current = null;
+                          setRarityDrag(null);
+                        }}
+                        onPointerCancel={() => {
+                          draggedRarity.current = null;
+                          lastRarityTarget.current = null;
+                          setRarityDrag(null);
+                        }}
+                        className={`flex touch-none select-none cursor-grab items-center gap-2 rounded-xl border px-2.5 py-2 text-sm font-semibold transition-opacity active:cursor-grabbing ${
+                          isLightMode
+                            ? "border-black/10 bg-white text-zinc-700"
+                            : "border-white/10 bg-[#151717] text-zinc-200"
+                        } ${rarityDrag?.rarity === rarity ? "opacity-25" : "opacity-100"}`}
+                      >
+                        <GripVertical
+                          className="h-4 w-4 shrink-0 text-zinc-400"
+                          aria-hidden="true"
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                          {rarity}
+                        </span>
+                        <span className="text-[10px] tabular-nums text-zinc-400">
+                          {index + 1}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {rarityDrag && (
+                  <div
+                    className={`pointer-events-none fixed z-[2147483647] flex items-center gap-2 rounded-xl border px-2.5 py-2 text-sm font-semibold shadow-2xl ring-2 ring-[#FFD400]/70 ${
+                      isLightMode
+                        ? "border-black/10 bg-white text-zinc-700"
+                        : "border-white/10 bg-[#151717] text-zinc-200"
+                    }`}
+                    style={{
+                      left: rarityDrag.x - rarityDrag.offsetX,
+                      top: rarityDrag.y - rarityDrag.offsetY,
+                      width: rarityDrag.width,
+                      transform: "rotate(2deg) scale(1.04)",
+                    }}
+                    aria-hidden="true"
+                  >
+                    <GripVertical className="h-4 w-4 shrink-0 text-[#C39700]" />
+                    <span className="min-w-0 flex-1 truncate">
+                      {rarityDrag.rarity}
+                    </span>
+                  </div>
+                )}
                 <div className="mb-5 flex flex-wrap justify-center gap-2">
                   {(["3x3", "4x3", "4x4", "2x2", "6x6"] as const).map(
                     (value) => (

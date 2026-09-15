@@ -31,106 +31,101 @@ interface Friend {
   tradingProfile: any;
 }
 export default function Inbox() {
-const [activeTab, setActiveTab] = useState<
-    "notifications" | "friends"
-  >("notifications");
-const [loading, setLoading] = useState(true);
-const [requests, setRequests] = useState<FriendRequest[]>([]);
-const [friends, setFriends] = useState<Friend[]>([]);
-const [allowFriendRequests, setAllowFriendRequests] = useState(true);
-const [confirmUnfriend, setConfirmUnfriend] = useState<string | null>(null);
-const [editingNickname, setEditingNickname] = useState<string | null>(null);
-const [nicknameInput, setNicknameInput] = useState("");
-const [messageFriend, setMessageFriend] = useState<Friend | null>(null);
-const [isLightMode, setIsLightMode] = useState(
-    () => document.documentElement.dataset.theme === "light"
+  const [activeTab, setActiveTab] = useState<"notifications" | "friends">(
+    "notifications",
+  );
+  const [loading, setLoading] = useState(true);
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [allowFriendRequests, setAllowFriendRequests] = useState(true);
+  const [confirmUnfriend, setConfirmUnfriend] = useState<string | null>(null);
+  const [editingNickname, setEditingNickname] = useState<string | null>(null);
+  const [nicknameInput, setNicknameInput] = useState("");
+  const [messageFriend, setMessageFriend] = useState<Friend | null>(null);
+  const [isLightMode, setIsLightMode] = useState(
+    () => document.documentElement.dataset.theme === "light",
   );
   useEffect(() => {
+    let active = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    const connect = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!active || !session?.user) return;
+      const userId = session.user.id;
+      channel = supabase
+        .channel(`inbox-updates-${userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "messages",
+            filter: `receiver=eq.${userId}`,
+          },
+          () => void loadInbox(false),
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "friend_requests",
+            filter: `receiver_id=eq.${userId}`,
+          },
+          () => void loadInbox(false),
+        )
+        .subscribe();
+    };
     void loadInbox();
-const channel = supabase
-      .channel("inbox-updates")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-        },
-async (payload) => {
-const {
-            data: { session },
-          } = await supabase.auth.getSession();
-          if (!session?.user) return;
-const row = payload.new as any;
-          if (
-            row.sender !== session.user.id &&
-            row.receiver !== session.user.id
-          ) {
-            return;
-          }
-          setFriends((current) =>
-            current.map((friend) => {
-              if (friend.id !== row.sender) return friend;
-const unread =
-                row.receiver === session.user.id && row.read_at == null
-                  ? (friend.unreadMessages ?? 0) + 1
-                  : Math.max((friend.unreadMessages ?? 1) - 1, 0);
-              return {
-                ...friend,
-                unreadMessages: unread,
-              };
-            })
-          );
-        }
-      )
-      .subscribe();
+    void connect();
     return () => {
-      supabase.removeChannel(channel);
+      active = false;
+      if (channel) void supabase.removeChannel(channel);
     };
   }, []);
   useEffect(() => {
-const syncTheme = () => {
+    const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
     syncTheme();
-const observer = new MutationObserver(syncTheme);
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
     return () => observer.disconnect();
   }, []);
-async function loadInbox() {
-    setLoading(true);
-const {
+  async function loadInbox(showLoading = true) {
+    if (showLoading) setLoading(true);
+    const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) {
       setLoading(false);
       return;
     }
-const userId = session.user.id;
-const { data: myProfile } = await supabase
+    const userId = session.user.id;
+    const { data: myProfile } = await supabase
       .from("profiles")
       .select("allow_friend_requests")
       .eq("id", userId)
       .single();
     setAllowFriendRequests(myProfile?.allow_friend_requests ?? true);
-const { data: requestRows } = await supabase
+    const { data: requestRows } = await supabase
       .from("friend_requests")
       .select("*")
       .eq("receiver_id", userId)
       .eq("status", "pending");
     if (requestRows && requestRows.length > 0) {
-const senderIds = requestRows.map((request) => request.sender_id);
-const { data: profiles } = await supabase
+      const senderIds = requestRows.map((request) => request.sender_id);
+      const { data: profiles } = await supabase
         .from("profiles")
         .select("id, username, avatar_url")
         .in("id", senderIds);
-const merged = requestRows.map((request) => {
-const profile = profiles?.find(
-          (item) => item.id === request.sender_id
-        );
+      const merged = requestRows.map((request) => {
+        const profile = profiles?.find((item) => item.id === request.sender_id);
         return {
           ...request,
           username: profile?.username ?? "Unknown User",
@@ -141,44 +136,44 @@ const profile = profiles?.find(
     } else {
       setRequests([]);
     }
-const { data: friendRows } = await supabase
+    const { data: friendRows } = await supabase
       .from("friends")
       .select("*")
       .eq("user_id", userId);
     if (friendRows && friendRows.length > 0) {
-const ids = friendRows.map((friend) => friend.friend_id);
-const { data: profiles } = await supabase
+      const ids = friendRows.map((friend) => friend.friend_id);
+      const { data: profiles } = await supabase
         .from("profiles")
         .select("*")
         .in("id", ids);
-const { data: tradingProfiles } = await supabase
+      const { data: tradingProfiles } = await supabase
         .from("trading_profiles")
         .select("*")
         .in("user_id", ids);
-const { data: nicknames } = await supabase
+      const { data: nicknames } = await supabase
         .from("friend_nicknames")
         .select("*")
         .eq("user_id", userId);
-const { data: favorites } = await supabase
+      const { data: favorites } = await supabase
         .from("favorite_friends")
         .select("friend_id")
         .eq("user_id", userId);
-const favoriteIds = new Set(
-        favorites?.map((favorite) => favorite.friend_id) ?? []
+      const favoriteIds = new Set(
+        favorites?.map((favorite) => favorite.friend_id) ?? [],
       );
-const { data: unreadRows } = await supabase
+      const { data: unreadRows } = await supabase
         .from("messages")
         .select("sender")
         .eq("receiver", userId)
         .is("read_at", null);
-const unreadCounts = (unreadRows ?? []).reduce(
+      const unreadCounts = (unreadRows ?? []).reduce(
         (acc: Record<string, number>, row: any) => {
           acc[row.sender] = (acc[row.sender] ?? 0) + 1;
           return acc;
         },
-        {}
+        {},
       );
-const loadedFriends =
+      const loadedFriends =
         profiles?.map((profile) => ({
           id: profile.id,
           username: profile.username,
@@ -190,7 +185,7 @@ const loadedFriends =
           profile,
           tradingProfile:
             tradingProfiles?.find(
-              (tradingProfile) => tradingProfile.user_id === profile.id
+              (tradingProfile) => tradingProfile.user_id === profile.id,
             ) ?? null,
         })) ?? [];
       loadedFriends.sort((a, b) => {
@@ -198,7 +193,7 @@ const loadedFriends =
           return Number(b.favorite) - Number(a.favorite);
         }
         return (a.nickname || a.username).localeCompare(
-          b.nickname || b.username
+          b.nickname || b.username,
         );
       });
       setFriends(loadedFriends);
@@ -207,18 +202,19 @@ const loadedFriends =
     }
     setLoading(false);
   }
-async function acceptRequest(request: FriendRequest) {
+  async function acceptRequest(request: FriendRequest) {
     await supabase.rpc("accept_friend_request", {
       request_id: request.id,
     });
     setRequests((previous) =>
-      previous.filter((item) => item.id !== request.id)
+      previous.filter((item) => item.id !== request.id),
     );
+    window.dispatchEvent(new CustomEvent("header-inbox-update"));
     void loadInbox();
   }
-async function toggleFriendRequests() {
-const newValue = !allowFriendRequests;
-const {
+  async function toggleFriendRequests() {
+    const newValue = !allowFriendRequests;
+    const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) return;
@@ -230,7 +226,7 @@ const {
       .eq("id", session.user.id);
     setAllowFriendRequests(newValue);
   }
-async function denyRequest(request: FriendRequest) {
+  async function denyRequest(request: FriendRequest) {
     await supabase
       .from("friend_requests")
       .update({
@@ -238,75 +234,74 @@ async function denyRequest(request: FriendRequest) {
       })
       .eq("id", request.id);
     setRequests((previous) =>
-      previous.filter((item) => item.id !== request.id)
+      previous.filter((item) => item.id !== request.id),
     );
+    window.dispatchEvent(new CustomEvent("header-inbox-update"));
   }
-async function unfriend(friendId: string) {
+  async function unfriend(friendId: string) {
     await supabase.rpc("unfriend", {
       friend: friendId,
     });
     setConfirmUnfriend(null);
     void loadInbox();
   }
-async function toggleFavorite(friendId: string) {
-const {
+  async function toggleFavorite(friendId: string) {
+    const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) return;
-const friend = friends.find((item) => item.id === friendId);
+    const friend = friends.find((item) => item.id === friendId);
     if (!friend) return;
     if (friend.favorite) {
-const { error } = await supabase
+      const { error } = await supabase
         .from("favorite_friends")
         .delete()
         .eq("user_id", session.user.id)
         .eq("friend_id", friendId);
       console.log(error);
     } else {
-const { error } = await supabase.from("favorite_friends").insert({
+      const { error } = await supabase.from("favorite_friends").insert({
         user_id: session.user.id,
         friend_id: friendId,
       });
       console.log(error);
     }
     setFriends((current) => {
-const updated = current.map((item) =>
+      const updated = current.map((item) =>
         item.id === friendId
           ? {
               ...item,
               favorite: !item.favorite,
             }
-          : item
+          : item,
       );
       updated.sort((a, b) => {
         if (a.favorite !== b.favorite) {
           return Number(b.favorite) - Number(a.favorite);
         }
         return (a.nickname || a.username).localeCompare(
-          b.nickname || b.username
+          b.nickname || b.username,
         );
       });
       return [...updated];
     });
   }
-async function saveNickname(friendId: string) {
-const {
+  async function saveNickname(friendId: string) {
+    const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) return;
-const nickname = nicknameInput.trim();
-const { error } = await supabase
-      .from("friend_nicknames")
-      .upsert(
-        {
-          user_id: session.user.id,
-          friend_id: friendId,
-          nickname,
-        },
-        {
-          onConflict: "user_id,friend_id",
-        }
-      );
+    const nickname = nicknameInput.trim();
+    const { error } = await supabase.from("friend_nicknames").upsert(
+      {
+        user_id: session.user.id,
+        friend_id: friendId,
+        nickname,
+      },
+      {
+        onConflict: "user_id,friend_id",
+      },
+    );
     if (error) {
       alert(error.message);
       return;
@@ -318,33 +313,44 @@ const { error } = await supabase
               ...friend,
               nickname,
             }
-          : friend
-      )
+          : friend,
+      ),
     );
     setEditingNickname(null);
     setNicknameInput("");
   }
-function openFriendProfile(username: string) {
+  function openFriendProfile(username: string) {
     window.location.href = `https://www.mlpekayou.community/${encodeURIComponent(
-      username
+      username,
     )}`;
   }
-async function closeMessages() {
-  const closingFriend = messageFriend;
-  setMessageFriend(null);
-  if (!closingFriend) return;
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) return;
-  const { data: unread } = await supabase.from("messages").select("id").eq("sender", closingFriend.id).eq("receiver", session.user.id).is("read_at", null);
-  setFriends((current) => current.map((friend) => friend.id === closingFriend.id ? { ...friend, unreadMessages: unread?.length ?? 0 } : friend));
-  window.dispatchEvent(new CustomEvent("header-message-update"));
-}
+  async function closeMessages() {
+    const closingFriend = messageFriend;
+    setMessageFriend(null);
+    if (!closingFriend) return;
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    const { data: unread } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("sender", closingFriend.id)
+      .eq("receiver", session.user.id)
+      .is("read_at", null);
+    setFriends((current) =>
+      current.map((friend) =>
+        friend.id === closingFriend.id
+          ? { ...friend, unreadMessages: unread?.length ?? 0 }
+          : friend,
+      ),
+    );
+    window.dispatchEvent(new CustomEvent("header-message-update"));
+  }
   return (
     <div
       className={`min-h-screen px-3 py-4 transition-colors duration-200 sm:px-6 sm:py-8 ${
-        isLightMode
-          ? "bg-[#f5f5f3] text-zinc-900"
-          : "bg-[#0d0f10] text-white"
+        isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
       }`}
     >
       <div className="mx-auto max-w-6xl">
@@ -361,8 +367,7 @@ async function closeMessages() {
               isLightMode ? "opacity-[0.07]" : "opacity-[0.06]"
             }`}
             style={{
-              backgroundImage:
-                "url('/website-assets/exploreequestria.webp')",
+              backgroundImage: "url('/website-assets/exploreequestria.webp')",
             }}
           />
           <div
@@ -495,9 +500,7 @@ async function closeMessages() {
             <div className="mb-4 flex items-center gap-2">
               <UserPlus
                 size={18}
-                className={
-                  isLightMode ? "text-[#725700]" : "text-[#FFE27A]"
-                }
+                className={isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}
               />
               <div>
                 <h2 className="text-lg font-semibold">Friend Requests</h2>
@@ -560,9 +563,7 @@ async function closeMessages() {
                           src={getProfileAssets(request).avatar}
                           alt={request.username}
                           className={`h-14 w-14 rounded-2xl border object-cover ${
-                            isLightMode
-                              ? "border-black/10"
-                              : "border-white/10"
+                            isLightMode ? "border-black/10" : "border-white/10"
                           }`}
                         />
                         <div className="min-w-0">
@@ -571,9 +572,7 @@ async function closeMessages() {
                           </div>
                           <div
                             className={`mt-1 text-sm ${
-                              isLightMode
-                                ? "text-zinc-500"
-                                : "text-zinc-400"
+                              isLightMode ? "text-zinc-500" : "text-zinc-400"
                             }`}
                           >
                             Wants to add you as a friend.
@@ -637,9 +636,7 @@ async function closeMessages() {
                 }`}
               >
                 <div>
-                  <div className="text-sm font-semibold">
-                    Friend Requests
-                  </div>
+                  <div className="text-sm font-semibold">Friend Requests</div>
                   <div
                     className={`mt-0.5 text-xs ${
                       isLightMode ? "text-zinc-500" : "text-zinc-400"
@@ -719,21 +716,41 @@ async function closeMessages() {
                     }`}
                   >
                     <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
-                      {friend.favorite && <span className={`flex h-9 w-9 items-center justify-center rounded-full border ${isLightMode ? "border-[#8a6a00]/20 bg-[#fff8dc] text-[#8a6a00]" : "border-[#FFD54A]/20 bg-[#2a271b] text-[#FFE27A]"}`} title="Favorite friend"><Star size={15} fill="currentColor" /></span>}
-                      <button type="button" onClick={() => setMessageFriend(friend)} aria-label={`Message ${friend.username}`} title={`Message ${friend.username}`} className={`relative flex h-9 w-9 items-center justify-center rounded-full border shadow-sm transition-colors ${isLightMode ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-100" : "border-white/10 bg-[#222425] text-zinc-200 hover:bg-[#2b2d2e]"}`}>
+                      {friend.favorite && (
+                        <span
+                          className={`flex h-9 w-9 items-center justify-center rounded-full border ${isLightMode ? "border-[#8a6a00]/20 bg-[#fff8dc] text-[#8a6a00]" : "border-[#FFD54A]/20 bg-[#2a271b] text-[#FFE27A]"}`}
+                          title="Favorite friend"
+                        >
+                          <Star size={15} fill="currentColor" />
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setMessageFriend(friend)}
+                        aria-label={`Message ${friend.username}`}
+                        title={`Message ${friend.username}`}
+                        className={`relative flex h-9 w-9 items-center justify-center rounded-full border shadow-sm transition-colors ${isLightMode ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-100" : "border-white/10 bg-[#222425] text-zinc-200 hover:bg-[#2b2d2e]"}`}
+                      >
                         <MessageSquare size={17} />
-                        {(friend.unreadMessages ?? 0) > 0 && <span className={`absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 bg-red-500 ${isLightMode ? "border-white" : "border-[#222425]"}`} />}
+                        {(friend.unreadMessages ?? 0) > 0 && (
+                          <span
+                            className={`absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 bg-red-500 ${isLightMode ? "border-white" : "border-[#222425]"}`}
+                          />
+                        )}
                       </button>
                     </div>
                     <div className="flex items-start gap-4">
-                      <button type="button" onClick={() => openFriendProfile(friend.username)} className="relative shrink-0 rounded-2xl text-left" aria-label={`Open ${friend.username}'s profile`}>
+                      <button
+                        type="button"
+                        onClick={() => openFriendProfile(friend.username)}
+                        className="relative shrink-0 rounded-2xl text-left"
+                        aria-label={`Open ${friend.username}'s profile`}
+                      >
                         <CardImage
                           src={getProfileAssets(friend.profile).avatar}
                           alt={friend.nickname || friend.username}
                           className={`h-16 w-16 rounded-2xl border object-cover ${
-                            isLightMode
-                              ? "border-black/10"
-                              : "border-white/10"
+                            isLightMode ? "border-black/10" : "border-white/10"
                           }`}
                         />
                       </button>
@@ -789,7 +806,13 @@ async function closeMessages() {
                         ) : (
                           <>
                             <div className="flex items-center gap-2 pr-20">
-                              <button type="button" onClick={() => openFriendProfile(friend.username)} className="truncate text-left font-semibold hover:underline">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openFriendProfile(friend.username)
+                                }
+                                className="truncate text-left font-semibold hover:underline"
+                              >
                                 {friend.nickname || friend.username}
                               </button>
                               {getProfileAssets(friend.profile)
@@ -849,9 +872,7 @@ async function closeMessages() {
                                 <Star
                                   size={15}
                                   fill={
-                                    friend.favorite
-                                      ? "currentColor"
-                                      : "none"
+                                    friend.favorite ? "currentColor" : "none"
                                   }
                                 />
                               </button>
@@ -890,7 +911,7 @@ async function closeMessages() {
                               setConfirmUnfriend(friend.id);
                               setTimeout(() => {
                                 setConfirmUnfriend((current) =>
-                                  current === friend.id ? null : current
+                                  current === friend.id ? null : current,
                                 );
                               }, 3000);
                             }
@@ -917,16 +938,46 @@ async function closeMessages() {
         )}
       </div>
       {messageFriend && (
-        <div className={`fixed inset-0 z-[10000] flex items-start justify-center p-4 pt-24 backdrop-blur-md sm:items-center sm:pt-4 ${isLightMode ? "bg-white/40" : "bg-black/75"}`} onClick={() => void closeMessages()}>
-          <div onClick={(event) => event.stopPropagation()} className={`relative h-[min(600px,78dvh)] w-[420px] max-w-[94vw] overflow-hidden rounded-[24px] border shadow-[0_20px_60px_rgba(0,0,0,.28)] sm:h-[480px] ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}>
-            <div className={`flex h-16 items-center justify-between border-b px-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}>
+        <div
+          className={`fixed inset-0 z-[10000] flex items-start justify-center p-4 pt-24 backdrop-blur-md sm:items-center sm:pt-4 ${isLightMode ? "bg-white/40" : "bg-black/75"}`}
+          onClick={() => void closeMessages()}
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className={`relative h-[min(600px,78dvh)] w-[420px] max-w-[94vw] overflow-hidden rounded-[24px] border shadow-[0_20px_60px_rgba(0,0,0,.28)] sm:h-[480px] ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}
+          >
+            <div
+              className={`flex h-16 items-center justify-between border-b px-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
+            >
               <div className="flex min-w-0 items-center gap-2.5">
-                <CardImage src={getProfileAssets(messageFriend.profile).avatar} alt="" className="h-9 w-9 rounded-full object-cover" />
-                <div className="min-w-0"><div className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Messages</div><div className="truncate font-semibold">{messageFriend.nickname || messageFriend.username}</div></div>
+                <CardImage
+                  src={getProfileAssets(messageFriend.profile).avatar}
+                  alt=""
+                  className="h-9 w-9 rounded-full object-cover"
+                />
+                <div className="min-w-0">
+                  <div
+                    className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
+                  >
+                    Messages
+                  </div>
+                  <div className="truncate font-semibold">
+                    {messageFriend.nickname || messageFriend.username}
+                  </div>
+                </div>
               </div>
-              <button type="button" onClick={() => void closeMessages()} className={`rounded-lg px-3 py-1.5 text-xl ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/[0.06]"}`} aria-label="Close messages">×</button>
+              <button
+                type="button"
+                onClick={() => void closeMessages()}
+                className={`rounded-lg px-3 py-1.5 text-xl ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/[0.06]"}`}
+                aria-label="Close messages"
+              >
+                ×
+              </button>
             </div>
-            <div className="h-[calc(100%-64px)] overflow-hidden"><Messages otherUserId={messageFriend.id} /></div>
+            <div className="h-[calc(100%-64px)] overflow-hidden">
+              <Messages otherUserId={messageFriend.id} />
+            </div>
           </div>
         </div>
       )}

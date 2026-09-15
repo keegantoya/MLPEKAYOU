@@ -17,197 +17,304 @@ import {
   LogOut,
   Pencil,
 } from "lucide-react";
-const MobileProfile = () => {
-const navigate = useNavigate();
-const loadCounts = useRef<Record<string, number>>({});
-const [profileLoads, setProfileLoads] = useState<Record<string, boolean>>({ profile: false, stats: false, theme: false });
-const [profileLoadErrors, setProfileLoadErrors] = useState<Record<string, boolean>>({});
-const trackProfileLoad = useCallback(async (key: string, task: () => Promise<void>) => {
-  loadCounts.current[key] = (loadCounts.current[key] ?? 0) + 1;
-  setProfileLoads(previous => ({ ...previous, [key]: false }));
-  try {
-    await task();
-    setProfileLoadErrors(previous => ({ ...previous, [key]: false }));
-  } catch (error) {
-    console.error(`Unable to load profile ${key}:`, error);
-    setProfileLoadErrors(previous => ({ ...previous, [key]: true }));
-  } finally {
-    loadCounts.current[key] -= 1;
-    if (loadCounts.current[key] === 0) setProfileLoads(previous => ({ ...previous, [key]: true }));
-  }
-}, []);
 
-const [profile, setProfile] = useState<any>(null);
-const [isLightMode, setIsLightMode] = useState(
+const PUSH_PUBLIC_KEY =
+  "BMd3JmZpZQ2g4-wuBUeuUEMGJAuoaW8E2qTJkzOFWGh8G2tWg7SYca6wIACs_Nbd3JunbUFBHww91hfHQ6PM2xE";
+const PUSH_SERVICE_WORKER = "/push-sw.js";
+const PUSH_SCOPE = "/push-notifications/";
+
+const MobileProfile = () => {
+  const navigate = useNavigate();
+  const loadCounts = useRef<Record<string, number>>({});
+  const [profileLoads, setProfileLoads] = useState<Record<string, boolean>>({
+    profile: false,
+    stats: false,
+    theme: false,
+  });
+  const [profileLoadErrors, setProfileLoadErrors] = useState<
+    Record<string, boolean>
+  >({});
+  const trackProfileLoad = useCallback(
+    async (key: string, task: () => Promise<void>) => {
+      loadCounts.current[key] = (loadCounts.current[key] ?? 0) + 1;
+      setProfileLoads((previous) => ({ ...previous, [key]: false }));
+      try {
+        await task();
+        setProfileLoadErrors((previous) => ({ ...previous, [key]: false }));
+      } catch (error) {
+        console.error(`Unable to load profile ${key}:`, error);
+        setProfileLoadErrors((previous) => ({ ...previous, [key]: true }));
+      } finally {
+        loadCounts.current[key] -= 1;
+        if (loadCounts.current[key] === 0)
+          setProfileLoads((previous) => ({ ...previous, [key]: true }));
+      }
+    },
+    [],
+  );
+  const [profile, setProfile] = useState<any>(null);
+  const [inboxNotificationCount, setInboxNotificationCount] = useState(0);
+  const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-const [discord, setDiscord] = useState("");
-const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
-const [editingProfile, setEditingProfile] = useState(false);
-const [usernameDraft, setUsernameDraft] = useState("");
-const [discordDraft, setDiscordDraft] = useState("");
-const [savingProfile, setSavingProfile] = useState(false);
-const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
-const [copied, setCopied] = useState(false);
-const [deletionRequested, setDeletionRequested] = useState(false);
-const [showDeletionModal, setShowDeletionModal] = useState(false);
-const [submittingDeletion, setSubmittingDeletion] = useState(false);
-const [isModerator, setIsModerator] = useState(false);
-const [canReviewLGS, setCanReviewLGS] = useState(false);
-const [showLGSReview, setShowLGSReview] = useState(false);
-const [lgsAccess, setLgsAccess] = useState<string | null>(null);
-//  Leaderboard self-ban
-const [leaderboardBanned, setLeaderboardBanned] = useState(false);
-const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
-const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
-const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
+  const [discord, setDiscord] = useState("");
+  const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [usernameDraft, setUsernameDraft] = useState("");
+  const [discordDraft, setDiscordDraft] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [deletionRequested, setDeletionRequested] = useState(false);
+  const [showDeletionModal, setShowDeletionModal] = useState(false);
+  const [submittingDeletion, setSubmittingDeletion] = useState(false);
+  const [pushSupported, setPushSupported] = useState(true);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushStatusMessage, setPushStatusMessage] = useState("");
+  const [showPushEnabledModal, setShowPushEnabledModal] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
+  const [canReviewLGS, setCanReviewLGS] = useState(false);
+  const [showLGSReview, setShowLGSReview] = useState(false);
+  const [lgsAccess, setLgsAccess] = useState<string | null>(null);
+  //  Leaderboard self-ban
+  const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+  const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
+  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+  const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
     useState(false);
-const [showBugReport, setShowBugReport] = useState(false);
-const [stats, setStats] = useState({
+  const [showBugReport, setShowBugReport] = useState(false);
+  const [stats, setStats] = useState({
     owned: 0,
     completed: 0,
   });
   useEffect(() => {
-let mounted = true;
-let authVersion = 0;
-const applyReviewAccess = (id?: string) => {
+    let mounted = true;
+    let authVersion = 0;
+    const applyReviewAccess = (id?: string) => {
       if (!mounted) return;
-const allowed = id === "17e57e39-bc0c-44e7-b373-ac34c6690185";
+      const allowed = id === "17e57e39-bc0c-44e7-b373-ac34c6690185";
       setCanReviewLGS(allowed);
       if (!allowed) setShowLGSReview(false);
     };
-const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       authVersion++;
       applyReviewAccess(session?.user?.id);
     });
-const initialVersion = authVersion;
-    void supabase.auth.getSession().then(({ data, error }) => {
-      if (mounted && authVersion === initialVersion) applyReviewAccess(error ? undefined : data.session?.user?.id);
-    }).catch(() => { if (mounted && authVersion === initialVersion) applyReviewAccess(); });
-    return () => { mounted = false; subscription.unsubscribe(); };
+    const initialVersion = authVersion;
+    void supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (mounted && authVersion === initialVersion)
+          applyReviewAccess(error ? undefined : data.session?.user?.id);
+      })
+      .catch(() => {
+        if (mounted && authVersion === initialVersion) applyReviewAccess();
+      });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
   useEffect(() => {
-const loadProfile = async () => {
-    return trackProfileLoad("profile", async () => {
-const {
-        data: { session },
-      } = await checkedProfileRequest(supabase.auth.getSession());
-      setCanReviewLGS(session?.user?.id === "17e57e39-bc0c-44e7-b373-ac34c6690185");
-      if (!session?.user) {
-        setProfile(null);
-        setLgsAccess(null);
-        return;
-      }
-const { data } = await checkedProfileRequest(supabase
-        .from("profiles")
-        .select("id, username, avatar_url")
-        .eq("id", session.user.id)
-        .single());
-      if (data) {
-        await preloadProfileAvatar(getProfileAssets(data).avatar);
-        setProfile(data);
-      }
-const { data: moderatorRecord, error: moderatorError } = await checkedProfileRequest(supabase
-        .from("leaderboard_moderators")
-        .select("user_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle());
-      if (moderatorError) {
-        console.error("Moderator status error:", moderatorError);
-      }
-      setIsModerator(Boolean(moderatorRecord));
-const { data: lgsStaff, error: lgsError } = await checkedProfileRequest(supabase
-        .from("lgs_staff")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .maybeSingle());
-      if (lgsError) {
-        console.error("LGS staff status error:", lgsError);
-      }
-      setLgsAccess(lgsError ? null : (lgsStaff?.role ?? null));
-const { data: tradingProfile } = await checkedProfileRequest(supabase
-        .from("trading_profiles")
-        .select("discord_username, trade_access_revoked")
-        .eq("user_id", session.user.id)
-        .maybeSingle());
-      setDiscord(tradingProfile?.discord_username || "");
-      setTradeAccessRevoked(Boolean(tradingProfile?.trade_access_revoked));
-      setUsernameDraft(data?.username || "");
-      setDiscordDraft(tradingProfile?.discord_username || "");
-const { data: leaderboardBan, error: leaderboardBanError } =
-        await checkedProfileRequest(supabase
-          .from("leaderboard_exclusions")
-          .select("user_id")
-          .eq("user_id", session.user.id)
-          .maybeSingle());
-      if (leaderboardBanError) {
-        console.error("Leaderboard ban status error:", leaderboardBanError);
-      }
-      setLeaderboardBanned(!!leaderboardBan);
-      setLoadingLeaderboardBan(false);
-    
-    });
-  };
+    const loadProfile = async () => {
+      return trackProfileLoad("profile", async () => {
+        const {
+          data: { session },
+        } = await checkedProfileRequest(supabase.auth.getSession());
+        setCanReviewLGS(
+          session?.user?.id === "17e57e39-bc0c-44e7-b373-ac34c6690185",
+        );
+        if (!session?.user) {
+          setProfile(null);
+          setLgsAccess(null);
+          return;
+        }
+        const { data } = await checkedProfileRequest(
+          supabase
+            .from("profiles")
+            .select("id, username, avatar_url")
+            .eq("id", session.user.id)
+            .single(),
+        );
+        if (data) {
+          await preloadProfileAvatar(getProfileAssets(data).avatar);
+          setProfile(data);
+        }
+        const { data: moderatorRecord, error: moderatorError } =
+          await checkedProfileRequest(
+            supabase
+              .from("leaderboard_moderators")
+              .select("user_id")
+              .eq("user_id", session.user.id)
+              .maybeSingle(),
+          );
+        if (moderatorError) {
+          console.error("Moderator status error:", moderatorError);
+        }
+        setIsModerator(Boolean(moderatorRecord));
+        const { data: lgsStaff, error: lgsError } = await checkedProfileRequest(
+          supabase
+            .from("lgs_staff")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .maybeSingle(),
+        );
+        if (lgsError) {
+          console.error("LGS staff status error:", lgsError);
+        }
+        setLgsAccess(lgsError ? null : (lgsStaff?.role ?? null));
+        const { data: tradingProfile } = await checkedProfileRequest(
+          supabase
+            .from("trading_profiles")
+            .select("discord_username, trade_access_revoked")
+            .eq("user_id", session.user.id)
+            .maybeSingle(),
+        );
+        setDiscord(tradingProfile?.discord_username || "");
+        setTradeAccessRevoked(Boolean(tradingProfile?.trade_access_revoked));
+        setUsernameDraft(data?.username || "");
+        setDiscordDraft(tradingProfile?.discord_username || "");
+        const { data: leaderboardBan, error: leaderboardBanError } =
+          await checkedProfileRequest(
+            supabase
+              .from("leaderboard_exclusions")
+              .select("user_id")
+              .eq("user_id", session.user.id)
+              .maybeSingle(),
+          );
+        if (leaderboardBanError) {
+          console.error("Leaderboard ban status error:", leaderboardBanError);
+        }
+        setLeaderboardBanned(!!leaderboardBan);
+        setLoadingLeaderboardBan(false);
+      });
+    };
     loadProfile();
-const {
+    const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
-      setTimeout(() => { void loadProfile(); }, 0);
+      setTimeout(() => {
+        void loadProfile();
+      }, 0);
     });
     return () => subscription.unsubscribe();
   }, []);
   useEffect(() => {
-let mounted = true;
-let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-const syncFromDocument = () => {
+    if (!profile?.id) {
+      setInboxNotificationCount(0);
+      return;
+    }
+    let active = true;
+    const refreshInboxCount = async () => {
+      const [messagesResult, requestsResult] = await Promise.all([
+        supabase
+          .from("messages")
+          .select("id", { count: "exact", head: true })
+          .eq("receiver", profile.id)
+          .is("read_at", null),
+        supabase
+          .from("friend_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("receiver_id", profile.id)
+          .eq("status", "pending"),
+      ]);
+      if (!active) return;
+      setInboxNotificationCount(
+        (messagesResult.count ?? 0) + (requestsResult.count ?? 0),
+      );
+    };
+    const refresh = () => void refreshInboxCount();
+    const channel = supabase
+      .channel(`mobile-profile-inbox-${profile.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+          filter: `receiver=eq.${profile.id}`,
+        },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "friend_requests",
+          filter: `receiver_id=eq.${profile.id}`,
+        },
+        refresh,
+      )
+      .subscribe();
+    void refreshInboxCount();
+    window.addEventListener("focus", refresh);
+    window.addEventListener("header-message-update", refresh);
+    window.addEventListener("header-inbox-update", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("header-message-update", refresh);
+      window.removeEventListener("header-inbox-update", refresh);
+      void supabase.removeChannel(channel);
+    };
+  }, [profile?.id]);
+  useEffect(() => {
+    let mounted = true;
+    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+    const syncFromDocument = () => {
       if (!mounted) return;
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-const observer = new MutationObserver(syncFromDocument);
+    const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-const loadThemePreference = async () => {
-    return trackProfileLoad("theme", async () => {
-const {
-        data: { session },
-      } = await checkedProfileRequest(supabase.auth.getSession());
-      if (!mounted) return;
-      if (!session?.user) {
-        setIsLightMode(false);
-        return;
-      }
-const { data, error } = await checkedProfileRequest(supabase
-        .from("user_light_mode_preferences")
-        .select("user_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle());
-      if (!mounted) return;
-      if (error) {
-        console.error("Unable to load profile theme preference:", error);
-      } else {
-        setIsLightMode(Boolean(data));
-      }
-      realtimeChannel = supabase
-        .channel(`mobile-profile-theme-${session.user.id}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "user_light_mode_preferences",
-            filter: `user_id=eq.${session.user.id}`,
-          },
-          (payload) => {
-            if (!mounted) return;
-            setIsLightMode(payload.eventType !== "DELETE");
-          },
-        )
-        .subscribe();
-    
-    });
-  };
+    const loadThemePreference = async () => {
+      return trackProfileLoad("theme", async () => {
+        const {
+          data: { session },
+        } = await checkedProfileRequest(supabase.auth.getSession());
+        if (!mounted) return;
+        if (!session?.user) {
+          setIsLightMode(false);
+          return;
+        }
+        const { data, error } = await checkedProfileRequest(
+          supabase
+            .from("user_light_mode_preferences")
+            .select("user_id")
+            .eq("user_id", session.user.id)
+            .maybeSingle(),
+        );
+        if (!mounted) return;
+        if (error) {
+          console.error("Unable to load profile theme preference:", error);
+        } else {
+          setIsLightMode(Boolean(data));
+        }
+        realtimeChannel = supabase
+          .channel(`mobile-profile-theme-${session.user.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "user_light_mode_preferences",
+              filter: `user_id=eq.${session.user.id}`,
+            },
+            (payload) => {
+              if (!mounted) return;
+              setIsLightMode(payload.eventType !== "DELETE");
+            },
+          )
+          .subscribe();
+      });
+    };
     syncFromDocument();
     loadThemePreference();
     return () => {
@@ -218,9 +325,9 @@ const { data, error } = await checkedProfileRequest(supabase
       }
     };
   }, []);
-async function selfBanFromLeaderboard() {
+  async function selfBanFromLeaderboard() {
     if (leaderboardBanned) return;
-const {
+    const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) {
@@ -229,7 +336,7 @@ const {
     }
     setLeaderboardBanned(true);
     setLoadingLeaderboardBan(false);
-const { error } = await supabase.from("leaderboard_exclusions").upsert(
+    const { error } = await supabase.from("leaderboard_exclusions").upsert(
       {
         user_id: session.user.id,
         reason:
@@ -244,18 +351,18 @@ const { error } = await supabase.from("leaderboard_exclusions").upsert(
     }
     setLeaderboardBanned(true);
   }
-async function requestAccountDeletion() {
+  async function requestAccountDeletion() {
     if (deletionRequested || submittingDeletion) return;
     setSubmittingDeletion(true);
     try {
-const {
+      const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
         setShowDeletionModal(false);
         return;
       }
-const { error } = await supabase
+      const { error } = await supabase
         .from("account_deletion_requests")
         .insert({
           user_id: session.user.id,
@@ -275,307 +382,452 @@ const { error } = await supabase
     }
   }
   useEffect(() => {
-const loadStats = async () => {
-    return trackProfileLoad("stats", async () => {
-      try {
-const {
-          data: { session },
-        } = await checkedProfileRequest(supabase.auth.getSession());
-        if (!session?.user) return;
-//  Total cards owned
-const { data: collection } = await checkedProfileRequest(supabase
-          .from("collection_progress_raw")
-          .select("set_id, progress")
-          .eq("user_id", session.user.id));
-const filtered = (collection || []).filter(
-          (row: any) => row.set_id !== "OTHERMERCH",
+    let mounted = true;
+    const supported = supportsWebPush();
+    setPushSupported(supported);
+    if (!profile?.id || !supported) {
+      setPushEnabled(false);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    void getExistingPushRegistration()
+      .then((registration) => registration?.pushManager.getSubscription())
+      .then((subscription) => {
+        if (mounted) setPushEnabled(Boolean(subscription));
+      })
+      .catch((error) => {
+        console.error("Unable to check push notification status:", error);
+        if (mounted) setPushEnabled(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [profile?.id]);
+
+  async function enablePushNotifications() {
+    if (pushBusy) return;
+    setPushStatusMessage("");
+
+    if (!supportsWebPush()) {
+      setPushSupported(false);
+      setPushStatusMessage(
+        "Push notifications are not supported in this browser. On iPhone, add MLPEKAYOU to your Home Screen and open it there.",
+      );
+      return;
+    }
+    if (isIosBrowser() && !isStandaloneApp()) {
+      setPushStatusMessage(
+        "On iPhone or iPad, first add MLPEKAYOU to your Home Screen, then open that saved icon and enable notifications here.",
+      );
+      return;
+    }
+
+    setPushBusy(true);
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        setPushStatusMessage(
+          permission === "denied"
+            ? "Notifications are blocked. Allow them in your phone or browser settings, then try again."
+            : "Notifications were not enabled.",
         );
-let owned = 0;
-        filtered.forEach((row: any) => {
-          owned += Object.values(row.progress || {}).filter(
-            (value: any) =>
-              value === true ||
-              (typeof value === "object" && value?.owned === true),
-          ).length;
+        return;
+      }
+
+      const registration = await getPushRegistration();
+      let subscription = await registration.pushManager.getSubscription();
+      let createdSubscription = false;
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(PUSH_PUBLIC_KEY),
         });
-//  Completed sets
-const { data: progress } = await checkedProfileRequest(supabase
-          .from("collection_progress")
-          .select("set_id, progress")
-          .eq("user_id", session.user.id));
-let completed = 0;
-const progressMap = new Map(
-          (progress || []).map((row: any) => [String(row.set_id), row]),
-        );
-//  Main checklist sets only
-const sets = [
-          {
-            id: "1",
-            rarities: {
-              R: 30,
-              SR: 20,
-              SSR: 54,
-              HR: 36,
-              UR: 16,
-              LSR: 15,
-              SGR: 8,
-              SC: 7,
-            },
-          },
-          {
-            id: "5",
-            rarities: {
-              R: 30,
-              SR: 15,
-              FR: 18,
-              TR: 12,
-              TGR: 8,
-              MTR: 18,
-              SSR: 15,
-              UR: 15,
-              USR: 8,
-              XR: 7,
-            },
-          },
-          {
-            id: "7",
-            rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 },
-          },
-          {
-            id: "2",
-            rarities: {
-              R: 30,
-              SR: 20,
-              SSR: 54,
-              HR: 30,
-              UR: 16,
-              LSR: 16,
-              SGR: 8,
-              ZR: 7,
-              SC: 7,
-              "SHINING ZR": 1,
-            },
-          },
-          {
-            id: "3",
-            rarities: {
-              R: 60,
-              SR: 40,
-              SSR: 40,
-              HR: 60,
-              UR: 18,
-              LSR: 32,
-              SGR: 16,
-              ZR: 14,
-              SC: 7,
-              SZR: 3,
-            },
-          },
-          {
-            id: "8",
-            rarities: {
-              N: 20,
-              SN: 20,
-              R: 35,
-              SR: 15,
-              SSR: 15,
-              UR: 10,
-              UGR: 9,
-              CR: 12,
-            },
-          },
-          {
-            id: "11",
-            rarities: {
-              N: 20,
-              SN: 20,
-              R: 35,
-              SR: 15,
-              SSR: 15,
-              UR: 10,
-              UGR: 9,
-              CR: 12,
-              SCR: 12,
-            },
-          },
-          {
-            id: "6",
-            rarities: {
-              BASE: 18,
-              R: 30,
-              SR: 14,
-              ST: 20,
-              SSR: 15,
-              FR: 18,
-              TR: 12,
-              TGR: 8,
-              UR: 19,
-              USR: 8,
-              XR: 8,
-            },
-          },
-          {
-            id: "4",
-            rarities: {
-              SSR: 20,
-              SCR: 18,
-              UR: 18,
-              USR: 15,
-              AR: 9,
-              OR: 7,
-              BP: 9,
-              SAR: 9,
-            },
-          },
-          {
-            id: "12",
-            rarities: {
-              C: 48,
-              U: 18,
-              ER: 6,
-              SR: 14,
-              SPR: 28,
-              GR: 12,
-              CR: 12,
-              RR: 6,
-              PER: 12,
-              PSPR: 11,
-              PGR: 6,
-              PCR: 12,
-              PRR: 6,
-            },
-          },
-          {
-            id: "FW",
-            rarities: {
-              C: 48,
-              U: 18,
-              ER: 6,
-              SR: 14,
-              SPR: 28,
-              GR: 12,
-              CR: 12,
-              RR: 6,
-              PER: 12,
-              PSPR: 11,
-              PGR: 6,
-              PCR: 12,
-              PRR: 6,
-            },
-          },
-          {
-            id: "SD",
-            rarities: {
-              C: 9,
-              U: 7,
-              SR: 6,
-              SPR: 10,
-              GR: 6,
-              CR: 6,
-              ER: 6,
-              PER: 12,
-              PRR: 6,
-            },
-          },
-        ];
-        sets.forEach((set) => {
-const found = progressMap.get(set.id);
-          if (!found?.progress) return;
-let owned = 0;
-let total = 0;
-          Object.entries(set.rarities).forEach(([rarity, count]) => {
-            total += count;
-            for (let i = 1; i <= count; i++) {
-const key = `${rarity}-${i}`;
-              if (found.progress[key]) {
-                owned++;
-              }
-            }
-          });
-          if (total > 0 && owned === total) {
-            completed++;
-          }
-        });
-//  Fantasy Wonderland
-const { data: fwProgress } = await checkedProfileRequest(supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", session.user.id)
-          .eq("set_id", "FW"));
-const fwRow = fwProgress?.[0];
-        if (fwRow) {
-const STRUCTURE = [
-            { prefix: "BP01C", count: 48 },
-            { prefix: "BP01U", count: 18 },
-            { prefix: "BP01ER", count: 6 },
-            { prefix: "BP01SR", count: 14 },
-            { prefix: "BP01SPR", count: 28 },
-            { prefix: "BP01GR", count: 12 },
-            { prefix: "BP01CR", count: 12 },
-            { prefix: "BP01RR", count: 6 },
-            { prefix: "BP01PER", count: 12 },
-            { prefix: "BP01PSPR", count: 11 },
-            { prefix: "BP01PGR", count: 6 },
-            { prefix: "BP01PCR", count: 12 },
-            { prefix: "BP01PRR", count: 6 },
-          ];
-const validKeys = new Set(
-            STRUCTURE.flatMap(({ prefix, count }) => {
-              if (prefix === "BP01ER") {
-                return Array.from(
-                  { length: 6 },
-                  (_, i) => `BP01ER${String(i + 7).padStart(2, "0")}`,
-                );
-              }
-              if (prefix === "BP01PSPR") {
-                return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
-                  (n) => `BP01PSPR${String(n).padStart(2, "0")}`,
-                );
-              }
-              return Array.from(
-                { length: count },
-                (_, i) => `${prefix}${String(i + 1).padStart(2, "0")}`,
-              );
-            }),
-          );
-const ownedFW = Object.entries(fwRow.progress || {}).filter(
-            ([key, val]) => val && validKeys.has(key),
-          ).length;
-          if (ownedFW === validKeys.size) {
-            completed++;
-          }
-        }
-        setStats({
-          owned,
-          completed,
-        });
-      } catch (error) {
-        console.error("Failed to load stats:", error);
+        createdSubscription = true;
+      }
+
+      const { error } = await supabase.functions.invoke("push-notifications", {
+        body: {
+          action: "subscribe",
+          subscription: subscription.toJSON(),
+        },
+      });
+      if (error) {
+        if (createdSubscription) await subscription.unsubscribe();
         throw error;
       }
-    
-    });
-  };
+
+      setPushEnabled(true);
+      setShowPushEnabledModal(true);
+    } catch (error) {
+      console.error("Unable to enable push notifications:", error);
+      setPushStatusMessage(
+        "Push notifications could not be enabled. Please try again.",
+      );
+    } finally {
+      setPushBusy(false);
+    }
+  }
+
+  async function disablePushNotifications() {
+    if (pushBusy) return;
+    setPushBusy(true);
+    setPushStatusMessage("");
+    try {
+      const registration = await getExistingPushRegistration();
+      const subscription = await registration?.pushManager.getSubscription();
+      if (subscription) {
+        const { error } = await supabase.functions.invoke(
+          "push-notifications",
+          {
+            body: {
+              action: "unsubscribe",
+              endpoint: subscription.endpoint,
+            },
+          },
+        );
+        if (error) throw error;
+        await subscription.unsubscribe();
+      }
+      setPushEnabled(false);
+      setPushStatusMessage("Push notifications are off on this device.");
+    } catch (error) {
+      console.error("Unable to disable push notifications:", error);
+      setPushStatusMessage(
+        "Push notifications could not be turned off. Please try again.",
+      );
+    } finally {
+      setPushBusy(false);
+    }
+  }
+  useEffect(() => {
+    const loadStats = async () => {
+      return trackProfileLoad("stats", async () => {
+        try {
+          const {
+            data: { session },
+          } = await checkedProfileRequest(supabase.auth.getSession());
+          if (!session?.user) return;
+          //  Total cards owned
+          const { data: collection } = await checkedProfileRequest(
+            supabase
+              .from("collection_progress_raw")
+              .select("set_id, progress")
+              .eq("user_id", session.user.id),
+          );
+          const filtered = (collection || []).filter(
+            (row: any) => row.set_id !== "OTHERMERCH",
+          );
+          let owned = 0;
+          filtered.forEach((row: any) => {
+            owned += Object.values(row.progress || {}).filter(
+              (value: any) =>
+                value === true ||
+                (typeof value === "object" && value?.owned === true),
+            ).length;
+          });
+          //  Completed sets
+          const { data: progress } = await checkedProfileRequest(
+            supabase
+              .from("collection_progress")
+              .select("set_id, progress")
+              .eq("user_id", session.user.id),
+          );
+          let completed = 0;
+          const progressMap = new Map(
+            (progress || []).map((row: any) => [String(row.set_id), row]),
+          );
+          //  Main checklist sets only
+          const sets = [
+            {
+              id: "1",
+              rarities: {
+                R: 30,
+                SR: 20,
+                SSR: 54,
+                HR: 36,
+                UR: 16,
+                LSR: 15,
+                SGR: 8,
+                SC: 7,
+              },
+            },
+            {
+              id: "5",
+              rarities: {
+                R: 30,
+                SR: 15,
+                FR: 18,
+                TR: 12,
+                TGR: 8,
+                MTR: 18,
+                SSR: 15,
+                UR: 15,
+                USR: 8,
+                XR: 7,
+              },
+            },
+            {
+              id: "7",
+              rarities: {
+                N: 20,
+                SN: 20,
+                R: 35,
+                SR: 15,
+                SSR: 15,
+                UR: 10,
+                CR: 12,
+              },
+            },
+            {
+              id: "2",
+              rarities: {
+                R: 30,
+                SR: 20,
+                SSR: 54,
+                HR: 30,
+                UR: 16,
+                LSR: 16,
+                SGR: 8,
+                ZR: 7,
+                SC: 7,
+                "SHINING ZR": 1,
+              },
+            },
+            {
+              id: "3",
+              rarities: {
+                R: 60,
+                SR: 40,
+                SSR: 40,
+                HR: 60,
+                UR: 18,
+                LSR: 32,
+                SGR: 16,
+                ZR: 14,
+                SC: 7,
+                SZR: 3,
+              },
+            },
+            {
+              id: "8",
+              rarities: {
+                N: 20,
+                SN: 20,
+                R: 35,
+                SR: 15,
+                SSR: 15,
+                UR: 10,
+                UGR: 9,
+                CR: 12,
+              },
+            },
+            {
+              id: "11",
+              rarities: {
+                N: 20,
+                SN: 20,
+                R: 35,
+                SR: 15,
+                SSR: 15,
+                UR: 10,
+                UGR: 9,
+                CR: 12,
+                SCR: 12,
+              },
+            },
+            {
+              id: "6",
+              rarities: {
+                BASE: 18,
+                R: 30,
+                SR: 14,
+                ST: 20,
+                SSR: 15,
+                FR: 18,
+                TR: 12,
+                TGR: 8,
+                UR: 19,
+                USR: 8,
+                XR: 8,
+              },
+            },
+            {
+              id: "4",
+              rarities: {
+                SSR: 20,
+                SCR: 18,
+                UR: 18,
+                USR: 15,
+                AR: 9,
+                OR: 7,
+                BP: 9,
+                SAR: 9,
+              },
+            },
+            {
+              id: "12",
+              rarities: {
+                C: 48,
+                U: 18,
+                ER: 6,
+                SR: 14,
+                SPR: 28,
+                GR: 12,
+                CR: 12,
+                RR: 6,
+                PER: 12,
+                PSPR: 11,
+                PGR: 6,
+                PCR: 12,
+                PRR: 6,
+              },
+            },
+            {
+              id: "FW",
+              rarities: {
+                C: 48,
+                U: 18,
+                ER: 6,
+                SR: 14,
+                SPR: 28,
+                GR: 12,
+                CR: 12,
+                RR: 6,
+                PER: 12,
+                PSPR: 11,
+                PGR: 6,
+                PCR: 12,
+                PRR: 6,
+              },
+            },
+            {
+              id: "SD",
+              rarities: {
+                C: 9,
+                U: 7,
+                SR: 6,
+                SPR: 10,
+                GR: 6,
+                CR: 6,
+                ER: 6,
+                PER: 12,
+                PRR: 6,
+              },
+            },
+          ];
+          sets.forEach((set) => {
+            const found = progressMap.get(set.id);
+            if (!found?.progress) return;
+            let owned = 0;
+            let total = 0;
+            Object.entries(set.rarities).forEach(([rarity, count]) => {
+              total += count;
+              for (let i = 1; i <= count; i++) {
+                const key = `${rarity}-${i}`;
+                if (found.progress[key]) {
+                  owned++;
+                }
+              }
+            });
+            if (total > 0 && owned === total) {
+              completed++;
+            }
+          });
+          //  Fantasy Wonderland
+          const { data: fwProgress } = await checkedProfileRequest(
+            supabase
+              .from("collection_progress_raw")
+              .select("progress")
+              .eq("user_id", session.user.id)
+              .eq("set_id", "FW"),
+          );
+          const fwRow = fwProgress?.[0];
+          if (fwRow) {
+            const STRUCTURE = [
+              { prefix: "BP01C", count: 48 },
+              { prefix: "BP01U", count: 18 },
+              { prefix: "BP01ER", count: 6 },
+              { prefix: "BP01SR", count: 14 },
+              { prefix: "BP01SPR", count: 28 },
+              { prefix: "BP01GR", count: 12 },
+              { prefix: "BP01CR", count: 12 },
+              { prefix: "BP01RR", count: 6 },
+              { prefix: "BP01PER", count: 12 },
+              { prefix: "BP01PSPR", count: 11 },
+              { prefix: "BP01PGR", count: 6 },
+              { prefix: "BP01PCR", count: 12 },
+              { prefix: "BP01PRR", count: 6 },
+            ];
+            const validKeys = new Set(
+              STRUCTURE.flatMap(({ prefix, count }) => {
+                if (prefix === "BP01ER") {
+                  return Array.from(
+                    { length: 6 },
+                    (_, i) => `BP01ER${String(i + 7).padStart(2, "0")}`,
+                  );
+                }
+                if (prefix === "BP01PSPR") {
+                  return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
+                    (n) => `BP01PSPR${String(n).padStart(2, "0")}`,
+                  );
+                }
+                return Array.from(
+                  { length: count },
+                  (_, i) => `${prefix}${String(i + 1).padStart(2, "0")}`,
+                );
+              }),
+            );
+            const ownedFW = Object.entries(fwRow.progress || {}).filter(
+              ([key, val]) => val && validKeys.has(key),
+            ).length;
+            if (ownedFW === validKeys.size) {
+              completed++;
+            }
+          }
+          setStats({
+            owned,
+            completed,
+          });
+        } catch (error) {
+          console.error("Failed to load stats:", error);
+          throw error;
+        }
+      });
+    };
     loadStats();
   }, []);
-const { avatar, verification } = getProfileAssets(profile);
-const displayName = profile?.username || "Twilight Sparkle";
-const menuSections = [
+  const { avatar, verification } = getProfileAssets(profile);
+  const displayName = profile?.username || "Twilight Sparkle";
+  const menuSections = [
     ...(lgsAccess !== null || canReviewLGS
       ? [
           {
             title: "LGS",
             items: [
-              ...(lgsAccess !== null ? [{
-                title: "LGS Boards",
-                subtitle: lgsAccess === "ALLGS" ? "All stores · View-only access" : "Your store’s events and attendance",
-                onClick: () => navigate("/lgs-boards"),
-              }] : []),
-              ...(canReviewLGS ? [{
-                title: "LGS Applications",
-                subtitle: "Review applications and decision history",
-                onClick: () => setShowLGSReview(true),
-              }] : []),
+              ...(lgsAccess !== null
+                ? [
+                    {
+                      title: "LGS Boards",
+                      subtitle:
+                        lgsAccess === "ALLGS"
+                          ? "All stores · View-only access"
+                          : "Your store’s events and attendance",
+                      onClick: () => navigate("/lgs-boards"),
+                    },
+                  ]
+                : []),
+              ...(canReviewLGS
+                ? [
+                    {
+                      title: "LGS Applications",
+                      subtitle: "Review applications and decision history",
+                      onClick: () => setShowLGSReview(true),
+                    },
+                  ]
+                : []),
             ],
           },
         ]
@@ -620,8 +872,12 @@ const menuSections = [
       items: [
         {
           title: "Inbox & Friends",
-          subtitle: "Messages and friends",
+          subtitle:
+            inboxNotificationCount > 0
+              ? "New messages or friend requests"
+              : "Messages and friends",
           onClick: () => navigate("/inbox"),
+          badge: inboxNotificationCount,
         },
         {
           title: "Support MLPEKAYOU",
@@ -637,8 +893,10 @@ const menuSections = [
       ],
     },
   ];
-  if (!Object.values(profileLoads).every(Boolean)) return <ProfileLoadingScreen light={isLightMode} failed={false} />;
-  if (Object.values(profileLoadErrors).some(Boolean) || !profile) return <ProfileLoadingScreen light={isLightMode} failed />;
+  if (!Object.values(profileLoads).every(Boolean))
+    return <ProfileLoadingScreen light={isLightMode} failed={false} />;
+  if (Object.values(profileLoadErrors).some(Boolean) || !profile)
+    return <ProfileLoadingScreen light={isLightMode} failed />;
   return (
     <div
       className={`mobile-profile-scope relative min-h-screen overflow-hidden pb-24 transition-colors duration-200 ${
@@ -778,6 +1036,62 @@ const menuSections = [
                           }
                         />
                       </label>
+                      <div
+                        className={`flex items-center justify-between gap-4 rounded-xl border px-3 py-3 ${
+                          isLightMode
+                            ? "border-black/10 bg-white"
+                            : "border-white/[0.08] bg-[#151718]"
+                        }`}
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                              pushEnabled
+                                ? "bg-[#FFD54A]/15 text-[#FFD54A]"
+                                : isLightMode
+                                  ? "bg-zinc-100 text-zinc-500"
+                                  : "bg-white/[0.06] text-zinc-400"
+                            }`}
+                          >
+                            <Bell size={18} aria-hidden="true" />
+                          </span>
+                          <div className="min-w-0">
+                            <div
+                              className={`text-sm font-semibold ${isLightMode ? "text-zinc-800" : "text-zinc-100"}`}
+                            >
+                              Push notifications
+                            </div>
+                            <div
+                              className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
+                            >
+                              {pushEnabled
+                                ? "Messages and friend requests"
+                                : "Off on this device"}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-label="Push notifications"
+                          aria-checked={pushEnabled}
+                          disabled={pushBusy || !pushSupported}
+                          onClick={() =>
+                            void (pushEnabled
+                              ? disablePushNotifications()
+                              : enablePushNotifications())
+                          }
+                          className={`relative flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                            pushEnabled ? "bg-[#FFD54A]" : "bg-zinc-600"
+                          }`}
+                        >
+                          <span
+                            className={`h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${
+                              pushEnabled ? "translate-x-6" : "translate-x-0"
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -833,10 +1147,10 @@ const menuSections = [
                     Your trade and sale rights have been revoked based on
                     community reports. You can appeal by emailing{" "}
                     <a
-                      href="mailto:mlpekayou@gmail.com"
+                      href="mailto:mlpekayou\@gmail.com"
                       className="font-semibold underline"
                     >
-                      mlpekayou@gmail.com
+                      mlpekayou\@gmail.com
                     </a>{" "}
                     or opening a ticket in the{" "}
                     <a
@@ -864,13 +1178,13 @@ const menuSections = [
                 onClick={async () => {
                   if (editingProfile) {
                     setSavingProfile(true);
-const {
+                    const {
                       data: { session },
                     } = await supabase.auth.getSession();
                     if (session?.user) {
-const originalUsername = profile?.username || "";
-const nextUsername = usernameDraft.trim();
-const {
+                      const originalUsername = profile?.username || "";
+                      const nextUsername = usernameDraft.trim();
+                      const {
                         data: existingUsername,
                         error: usernameCheckError,
                       } = await supabase
@@ -893,7 +1207,7 @@ const {
                         setSavingProfile(false);
                         return;
                       }
-const { error: usernameError } = await supabase
+                      const { error: usernameError } = await supabase
                         .from("profiles")
                         .update({
                           username: nextUsername,
@@ -917,7 +1231,7 @@ const { error: usernameError } = await supabase
                         setSavingProfile(false);
                         return;
                       }
-const { error: authUsernameError } =
+                      const { error: authUsernameError } =
                         await supabase.auth.updateUser({
                           data: {
                             username: nextUsername,
@@ -928,7 +1242,7 @@ const { error: authUsernameError } =
                           "Failed to update username metadata:",
                           authUsernameError,
                         );
-const { error: tradingError } = tradeAccessRevoked
+                      const { error: tradingError } = tradeAccessRevoked
                         ? { error: null }
                         : await supabase.from("trading_profiles").upsert(
                             {
@@ -979,13 +1293,13 @@ const { error: tradingError } = tradeAccessRevoked
               {/* SHARE PROFILE */}
               <button
                 onClick={() => {
-const url = `https://www.mlpekayou.community/${encodeURIComponent(
+                  const url = `https://www.mlpekayou.community/${encodeURIComponent(
                     profile?.username ?? "",
                   )}`;
                   if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(url);
                   } else {
-const textArea = document.createElement("textarea");
+                    const textArea = document.createElement("textarea");
                     textArea.value = url;
                     textArea.style.position = "fixed";
                     textArea.style.left = "-999999px";
@@ -1010,6 +1324,27 @@ const textArea = document.createElement("textarea");
                 <span>{copied ? "✓ Copied" : "Share Profile"}</span>
               </button>
             </div>
+            {!pushEnabled && !editingProfile && (
+              <button
+                type="button"
+                disabled={pushBusy}
+                onClick={() => void enablePushNotifications()}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-black transition-all hover:bg-[#FFE27A] active:scale-[0.99] disabled:cursor-wait disabled:opacity-60"
+              >
+                <Bell size={17} aria-hidden="true" />
+                {pushBusy ? "Enabling..." : "Enable Notifications"}
+              </button>
+            )}
+            {pushStatusMessage && (
+              <p
+                role="status"
+                className={`mt-3 text-center text-xs leading-5 ${
+                  isLightMode ? "text-zinc-600" : "text-zinc-400"
+                }`}
+              >
+                {pushStatusMessage}
+              </p>
+            )}
             {/* BIO */}
             <p className="mt-5 border-t border-zinc-800/80 pt-4 text-sm leading-relaxed text-zinc-400">
               {profile?.bio || ""}
@@ -1283,14 +1618,24 @@ const textArea = document.createElement("textarea");
                       </div>
                     </div>
                   </div>
-                  <ChevronRight
-                    size={18}
-                    className={`shrink-0 transition-all duration-200 group-hover:translate-x-1 ${
-                      item.danger
-                        ? "text-red-500/50 group-hover:text-red-400"
-                        : "text-zinc-700 group-hover:text-[#FFD54A]"
-                    }`}
-                  />
+                  <div className="flex shrink-0 items-center gap-2.5">
+                    {"badge" in item && item.badge > 0 && (
+                      <span
+                        className="flex min-h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-[0_4px_12px_rgba(220,38,38,.35)]"
+                        aria-label={`${item.badge} unread inbox notifications`}
+                      >
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
+                    <ChevronRight
+                      size={18}
+                      className={`shrink-0 transition-all duration-200 group-hover:translate-x-1 ${
+                        item.danger
+                          ? "text-red-500/50 group-hover:text-red-400"
+                          : "text-zinc-700 group-hover:text-[#FFD54A]"
+                      }`}
+                    />
+                  </div>
                 </button>
               ))}
             </div>
@@ -1369,7 +1714,7 @@ const textArea = document.createElement("textarea");
               className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
             >
               If you need to contact the developer, you can join the MLPEKAYOU
-              Discord Server or email mlpekayou@gmail.com.
+              Discord Server or email mlpekayou\@gmail.com.
             </p>
             <p
               className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
@@ -1408,7 +1753,7 @@ const textArea = document.createElement("textarea");
               </button>
             </div>
             <a
-              href="mailto:mlpekayou@gmail.com"
+              href="mailto:mlpekayou\@gmail.com"
               className={`mt-3 block w-full rounded-xl border px-4 py-3 text-center text-sm font-semibold transition-colors ${
                 isLightMode
                   ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-50"
@@ -1446,6 +1791,58 @@ const textArea = document.createElement("textarea");
               type="button"
               onClick={() => setShowUsernameTakenModal(false)}
               className={`mt-6 w-full rounded-xl border px-4 py-3 text-sm font-semibold ${isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"}`}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+      {/* PUSH NOTIFICATIONS ENABLED MODAL */}
+      {showPushEnabledModal && (
+        <div
+          className={`fixed inset-0 z-[135] flex items-center justify-center p-4 backdrop-blur-md ${
+            isLightMode ? "bg-white/25" : "bg-black/80"
+          }`}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget)
+              setShowPushEnabledModal(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="push-enabled-title"
+            className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${
+              isLightMode
+                ? "border-[#8a6a00]/20 bg-white text-zinc-900"
+                : "border-[#FFD54A]/25 bg-[#151718] text-white"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFD54A]/15 text-[#FFD54A]">
+                <Bell size={22} aria-hidden="true" />
+              </span>
+              <h2
+                id="push-enabled-title"
+                className="text-xl font-semibold tracking-tight"
+              >
+                Notifications enabled
+              </h2>
+            </div>
+            <p
+              className={`mt-4 text-sm leading-6 ${
+                isLightMode ? "text-zinc-600" : "text-zinc-300"
+              }`}
+            >
+              MLPEKAYOU can now notify you about messages and friend requests.
+              To turn notifications off later, tap Edit Names and use the alarm
+              bell switch.
+            </p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setShowPushEnabledModal(false)}
+              className="mt-6 w-full rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-black hover:bg-[#FFE27A]"
             >
               Got it
             </button>
@@ -1517,7 +1914,10 @@ const textArea = document.createElement("textarea");
         </div>
       )}
       {canReviewLGS && showLGSReview && (
-        <LGSApproveDeny isLightMode={isLightMode} onClose={() => setShowLGSReview(false)} />
+        <LGSApproveDeny
+          isLightMode={isLightMode}
+          onClose={() => setShowLGSReview(false)}
+        />
       )}
     </div>
   );
@@ -1543,11 +1943,20 @@ function Placeholder({ title }: { title: string }) {
   );
 }
 export default MobileProfile;
-
-function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boolean }) {
-  const logo = light ? "/website-assets/mlpekayouwiki4.webp" : "/website-assets/darkmodelogo.webp";
+function ProfileLoadingScreen({
+  light,
+  failed,
+}: {
+  light: boolean;
+  failed: boolean;
+}) {
+  const logo = light
+    ? "/website-assets/mlpekayouwiki4.webp"
+    : "/website-assets/darkmodelogo.webp";
   return (
-    <div className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}>
+    <div
+      className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}
+    >
       <style>{`
         .profile-loading-screen{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:grid;place-items:center;overflow:hidden;padding:96px 24px;background:#0d0f10;color:#f4f4f5}
         .profile-loading-screen.profile-loading-light{background:#f5f5f3;color:#27272a}
@@ -1567,7 +1976,11 @@ function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boole
         @keyframes profile-loading-dots{0%,24%{clip-path:inset(0 66.66% 0 0)}25%,49%{clip-path:inset(0 33.33% 0 0)}50%,74%{clip-path:inset(0)}75%,100%{clip-path:inset(0 33.33% 0 0)}}
         @media(prefers-reduced-motion:reduce){.profile-loading-pattern,.profile-loading-dots{animation:none;will-change:auto}}
       `}</style>
-      <div className="profile-loading-pattern" style={{ backgroundImage: `url("${logo}")` }} aria-hidden="true" />
+      <div
+        className="profile-loading-pattern"
+        style={{ backgroundImage: `url("${logo}")` }}
+        aria-hidden="true"
+      />
       <div className="profile-loading-vignette" aria-hidden="true" />
       <div className="profile-loading-content">
         <div className="profile-loading-brand">
@@ -1576,31 +1989,107 @@ function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boole
         {failed ? (
           <>
             <p role="alert">We couldn’t load your profile. Please try again.</p>
-            <button type="button" className="profile-loading-retry" onClick={() => window.location.reload()}>Try again</button>
+            <button
+              type="button"
+              className="profile-loading-retry"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </button>
           </>
         ) : (
           <p role="status" aria-live="polite">
             <span className="sr-only">Loading your profile</span>
-            <span aria-hidden="true">Loading your profile<span className="profile-loading-dots">...</span></span>
+            <span aria-hidden="true">
+              Loading your profile
+              <span className="profile-loading-dots">...</span>
+            </span>
           </p>
         )}
       </div>
     </div>
   );
 }
-async function checkedProfileRequest<T extends { error?: unknown }>(request: PromiseLike<T>): Promise<T> {
+async function checkedProfileRequest<T extends { error?: unknown }>(
+  request: PromiseLike<T>,
+): Promise<T> {
   const result = await request;
   if (result.error) throw result.error;
   return result;
 }
-
 function preloadProfileAvatar(src: string | null | undefined): Promise<void> {
   if (!src) return Promise.resolve();
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const image = new Image();
     image.onload = () => resolve();
     image.onerror = () => resolve();
     image.src = src;
     if (image.complete) resolve();
   });
+}
+
+function supportsWebPush() {
+  return (
+    typeof window !== "undefined" &&
+    window.isSecureContext &&
+    "Notification" in window &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window
+  );
+}
+
+function isIosBrowser() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+}
+
+function isStandaloneApp() {
+  const standaloneNavigator = navigator as Navigator & {
+    standalone?: boolean;
+  };
+  return (
+    standaloneNavigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches
+  );
+}
+
+function getExistingPushRegistration() {
+  return navigator.serviceWorker.getRegistration(PUSH_SCOPE);
+}
+
+async function getPushRegistration() {
+  const registration = await navigator.serviceWorker.register(
+    PUSH_SERVICE_WORKER,
+    { scope: PUSH_SCOPE },
+  );
+  if (registration.active) return registration;
+
+  const worker = registration.installing ?? registration.waiting;
+  if (!worker) return registration;
+  await new Promise<void>((resolve, reject) => {
+    const timeout = window.setTimeout(
+      () => reject(new Error("Push service worker did not become active")),
+      10000,
+    );
+    const handleStateChange = () => {
+      if (worker.state === "activated") {
+        window.clearTimeout(timeout);
+        worker.removeEventListener("statechange", handleStateChange);
+        resolve();
+      } else if (worker.state === "redundant") {
+        window.clearTimeout(timeout);
+        worker.removeEventListener("statechange", handleStateChange);
+        reject(new Error("Push service worker registration failed"));
+      }
+    };
+    worker.addEventListener("statechange", handleStateChange);
+    handleStateChange();
+  });
+  return registration;
+}
+
+function urlBase64ToUint8Array(value: string) {
+  const padding = "=".repeat((4 - (value.length % 4)) % 4);
+  const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const bytes = window.atob(base64);
+  return Uint8Array.from(bytes, (character) => character.charCodeAt(0));
 }

@@ -5,32 +5,35 @@ import { useNavigate } from "react-router-dom";
 import { getProfileAssets } from "./profile-assets";
 import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import { getTradeCardImage } from "@/lib/card-images";
-
 type CardImageCard = {
   set_id: string | number;
   card_key: string;
 };
-
-const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11"]);
-
+const standardZoomSets = new Set([
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "11",
+]);
 const getCardNumber = (cardKey: string) => {
   const match = cardKey.match(/(\d+)$/);
   return match ? Number(match[1]) : null;
 };
-
 const getCardImageClassName = (
   card: CardImageCard,
   position: "block" | "absolute" = "block",
 ) => {
   const base = `${position === "absolute" ? "absolute inset-0" : "block"} h-full w-full max-w-none`;
   const setId = String(card.set_id);
-
   if (standardZoomSets.has(setId)) {
     return `${base} scale-[1.05] object-contain object-center`;
   }
-
   const cardNumber = getCardNumber(card.card_key);
-
   if (setId === "9") {
     if (cardNumber === 1) {
       return `${base} scale-[1.02] object-contain object-center`;
@@ -43,7 +46,6 @@ const getCardImageClassName = (
     }
     return `${base} scale-[1.08] object-contain object-center`;
   }
-
   if (setId === "tcgpromos") {
     if (cardNumber === 11) {
       return `${base} translate-y-[2px] scale-[1.02] object-cover object-center`;
@@ -59,7 +61,6 @@ const getCardImageClassName = (
     }
     return `${base} scale-[1.01] object-contain object-center`;
   }
-
   const contained = ["SD", "FW", "12", "14"].includes(setId);
   return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
 };
@@ -69,9 +70,11 @@ type SafeCardImageProps = {
   className: string;
 };
 const SafeCardImage = ({ src, alt, className }: SafeCardImageProps) => {
-const [failed, setFailed] = useState(false);
-const landscapeCommon =
-    /\/nightmare-night\/BP03-C(2[5-9]|3[0-9]|4[0-8])\.webp(?:[?#].*)?$/.test(src);
+  const [failed, setFailed] = useState(false);
+  const landscapeCommon =
+    /\/nightmare-night\/BP03-C(2[5-9]|3[0-9]|4[0-8])\.webp(?:[?#].*)?$/.test(
+      src,
+    );
   useEffect(() => {
     setFailed(false);
   }, [src]);
@@ -130,61 +133,63 @@ const ExploreProfile = ({
   tradingProfile,
   onClose,
 }: ExploreProfileProps) => {
-const [userStats, setuserStats] = useState({
+  const [userStats, setuserStats] = useState({
     trades: 0,
     owned: 0,
     completed: 0,
   });
-const {
+  const {
     isoCards: userIsoCards,
     wishlistCards: userWishlistCards,
     tradeCards,
   } = usePublicProfileCards(user?.id);
-// Preserve the existing public trade-card source exactly as-is.
-const userTradeCards = tradeCards.filter(
+  // Preserve the existing public trade-card source exactly as-is.
+  const userTradeCards = tradeCards.filter(
     (x: any) => (x.listing_type || "trade") === "trade",
   );
-const [saleListings, setSaleListings] = useState<any[]>([]);
-const [salesLoading, setSalesLoading] = useState(true);
-const [userProfileSettings, setuserProfileSettings] = useState({
+  const [saleListings, setSaleListings] = useState<any[]>([]);
+  const [salesLoading, setSalesLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [userProfileSettings, setuserProfileSettings] = useState({
     hide_iso: false,
     hide_wishlist: false,
     hidden_iso_sets: [] as string[],
   });
-const [userTab, setuserTab] = useState<
+  const [userTab, setuserTab] = useState<
     "trades" | "purchases" | "iso" | "wishlist"
   >("trades");
-const [collapsedSets, setCollapsedSets] = useState<Record<string, boolean>>(
+  const [collapsedSets, setCollapsedSets] = useState<Record<string, boolean>>(
     {},
   );
-const [selectedSet, setSelectedSet] = useState("");
-const [selectedSection, setSelectedSection] = useState<
+  const [selectedSet, setSelectedSet] = useState("");
+  const [selectedSection, setSelectedSection] = useState<
     "iso" | "trade" | "wishlist"
   >("iso");
-const [quickViewCard, setQuickViewCard] = useState<any>(null);
-const [currentUserId, setCurrentUserId] = useState("");
-const [sendingRequest, setSendingRequest] = useState(false);
-const [requestPending, setRequestPending] = useState(false);
-const [notAcceptingRequests, setNotAcceptingRequests] = useState(false);
-const [alreadyFriends, setAlreadyFriends] = useState(false);
-const [copied, setCopied] = useState(false);
-const [discordUsername, setDiscordUsername] = useState("");
-const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
-const [copiedDiscord, setCopiedDiscord] = useState(false);
-const [isLightMode, setIsLightMode] = useState(
+  const [quickViewCard, setQuickViewCard] = useState<any>(null);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [sendingRequest, setSendingRequest] = useState(false);
+  const [requestPending, setRequestPending] = useState(false);
+  const [notAcceptingRequests, setNotAcceptingRequests] = useState(false);
+  const [alreadyFriends, setAlreadyFriends] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [discordUsername, setDiscordUsername] = useState("");
+  const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
+  const [copiedDiscord, setCopiedDiscord] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-const navigate = useNavigate();
-const { avatar, verification: badge } = getProfileAssets(user);
+  const navigate = useNavigate();
+  const { avatar, verification: badge } = getProfileAssets(user);
   useEffect(() => {
     if (!user?.id) return;
-async function loadProfile() {
-const {
+    setProfileLoading(true);
+    async function loadProfile() {
+      const {
         data: { session },
       } = await supabase.auth.getSession();
       setCurrentUserId(session?.user?.id || "");
       if (session?.user && session.user.id !== user.id) {
-const { data: friendship } = await supabase
+        const { data: friendship } = await supabase
           .from("friends")
           .select("id")
           .eq("user_id", session.user.id)
@@ -193,7 +198,7 @@ const { data: friendship } = await supabase
         setAlreadyFriends(!!friendship);
       }
       if (session?.user && session.user.id !== user.id) {
-const { data: existingRequest } = await supabase
+        const { data: existingRequest } = await supabase
           .from("friend_requests")
           .select("id")
           .eq("sender_id", session.user.id)
@@ -202,14 +207,14 @@ const { data: existingRequest } = await supabase
           .maybeSingle();
         setRequestPending(!!existingRequest);
       }
-const { data: tradingProfileData } = await supabase
+      const { data: tradingProfileData } = await supabase
         .from("trading_profiles")
         .select("discord_username")
         .eq("user_id", user.id)
         .maybeSingle();
       setDiscordUsername(tradingProfileData?.discord_username || "");
-// Sales use the current listing table. Trades continue to use usePublicProfileCards above.
-const { data: saleRows, error: salesError } = await supabase
+      // Sales use the current listing table. Trades continue to use usePublicProfileCards above.
+      const { data: saleRows, error: salesError } = await supabase
         .from("card_market_listings")
         .select(
           "user_id, set_id, card_key, is_for_sale, asking_price, sale_quantity",
@@ -227,19 +232,19 @@ const { data: saleRows, error: salesError } = await supabase
           })),
       );
       setSalesLoading(false);
-const { data: activityData } = await supabase
+      const { data: activityData } = await supabase
         .from("user_activity")
         .select("last_activity_at")
         .eq("user_id", user.id)
         .maybeSingle();
       setLastActivityAt(activityData?.last_activity_at || null);
-const { data: profileSettings } = await supabase
+      const { data: profileSettings } = await supabase
         .from("profiles")
         .select("hide_iso, hide_wishlist, iso_hidden_sets, iso_hidden_sets")
         .eq("id", user.id)
         .single();
-const legacyHidden: string[] = profileSettings?.iso_hidden_sets || [];
-const hiddenIsoSets: string[] = [
+      const legacyHidden: string[] = profileSettings?.iso_hidden_sets || [];
+      const hiddenIsoSets: string[] = [
         ...(profileSettings?.iso_hidden_sets?.length
           ? profileSettings.iso_hidden_sets
           : legacyHidden),
@@ -252,13 +257,13 @@ const hiddenIsoSets: string[] = [
         hide_wishlist: profileSettings?.hide_wishlist ?? false,
         hidden_iso_sets: hiddenIsoSets,
       });
-const { data: wishlistRows } = await supabase
+      const { data: wishlistRows } = await supabase
         .from("wishlists")
         .select("card_key")
         .eq("user_id", user.id)
         .order("created_at", { ascending: true });
-const wishlistCards = (wishlistRows || []).map((row: any) => {
-const [set_id, card_key] = String(row.card_key).split(":");
+      const wishlistCards = (wishlistRows || []).map((row: any) => {
+        const [set_id, card_key] = String(row.card_key).split(":");
         return {
           id: row.card_key,
           set_id,
@@ -272,15 +277,15 @@ const [set_id, card_key] = String(row.card_key).split(":");
       } else {
         setuserTab("trades");
       }
-const { data: isoProgress } = await supabase
+      const { data: isoProgress } = await supabase
         .from("collection_progress")
         .select("set_id, progress")
         .eq("user_id", user.id);
-const { data: isoStatusRows } = await supabase
+      const { data: isoStatusRows } = await supabase
         .from("iso_status")
         .select("card_key, status")
         .eq("user_id", user.id);
-const inProgressCards = new Set(
+      const inProgressCards = new Set(
         (isoStatusRows || [])
           .filter(
             (row: any) =>
@@ -289,7 +294,7 @@ const inProgressCards = new Set(
           )
           .map((row: any) => String(row.card_key)),
       );
-const ownedCards: Record<string, boolean> = {};
+      const ownedCards: Record<string, boolean> = {};
       (isoProgress || []).forEach((set: any) => {
         Object.entries(set.progress || {}).forEach(([key, value]) => {
           if (value) {
@@ -297,8 +302,8 @@ const ownedCards: Record<string, boolean> = {};
           }
         });
       });
-const isoCards: any[] = [];
-const isoSets = [
+      const isoCards: any[] = [];
+      const isoSets = [
         {
           id: "1",
           rarities: {
@@ -440,7 +445,7 @@ const isoSets = [
             "PR-12",
             "PR-13",
           ].forEach((cardKey) => {
-const fullKey = `${set.id}-${cardKey}`;
+            const fullKey = `${set.id}-${cardKey}`;
             if (!ownedCards[fullKey] && !inProgressCards.has(fullKey)) {
               isoCards.push({
                 id: fullKey,
@@ -455,11 +460,11 @@ const fullKey = `${set.id}-${cardKey}`;
           return;
         }
         if (set.id === "FW") {
-const progressRow = (isoProgress || []).find(
+          const progressRow = (isoProgress || []).find(
             (row: any) => String(row.set_id) === "FW",
           );
-const progress = progressRow?.progress || {};
-const FW_STRUCTURE = [
+          const progress = progressRow?.progress || {};
+          const FW_STRUCTURE = [
             { prefix: "BP01C", count: 48 },
             { prefix: "BP01U", count: 18 },
             { prefix: "BP01ER", count: 6 },
@@ -476,16 +481,16 @@ const FW_STRUCTURE = [
           ];
           FW_STRUCTURE.forEach(({ prefix, count }) => {
             for (let i = 0; i < count; i++) {
-let num = i + 1;
+              let num = i + 1;
               if (prefix === "BP01ER") {
                 num = i + 7;
               }
               if (prefix === "BP01PSPR") {
-const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
+                const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
                 num = PSPR_NUMBERS[i];
                 if (!num) continue;
               }
-const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
+              const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
               if (progress[cardKey] !== true && !inProgressCards.has(cardKey)) {
                 isoCards.push({
                   id: `FW-${cardKey}`,
@@ -498,11 +503,11 @@ const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
           return;
         }
         if (set.id === "12") {
-const progressRow = (isoProgress || []).find(
+          const progressRow = (isoProgress || []).find(
             (row: any) => String(row.set_id) === "12",
           );
-const progress = progressRow?.progress || {};
-const DISCORD_STRUCTURE = [
+          const progress = progressRow?.progress || {};
+          const DISCORD_STRUCTURE = [
             { prefix: "BP02-C", count: 48 },
             { prefix: "BP02-U", count: 18 },
             { prefix: "BP02-ER", count: 6 },
@@ -519,10 +524,10 @@ const DISCORD_STRUCTURE = [
           ];
           DISCORD_STRUCTURE.forEach(({ prefix, count }) => {
             for (let i = 0; i < count; i++) {
-let cardKey = "";
+              let cardKey = "";
               if (prefix === "BP02-PER") {
-const num = Math.floor(i / 2) + 1;
-const side = i % 2 === 0 ? "A2" : "B2";
+                const num = Math.floor(i / 2) + 1;
+                const side = i % 2 === 0 ? "A2" : "B2";
                 cardKey = `${prefix}${String(num).padStart(2, "0")}-${side}`;
               } else if (prefix === "BP02-PSPR") {
                 cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
@@ -548,11 +553,11 @@ const side = i % 2 === 0 ? "A2" : "B2";
           return;
         }
         if (set.id === "SD") {
-const progressRow = (isoProgress || []).find(
+          const progressRow = (isoProgress || []).find(
             (row: any) => String(row.set_id) === "SD",
           );
-const progress = progressRow?.progress || {};
-const SD_STRUCTURE = [
+          const progress = progressRow?.progress || {};
+          const SD_STRUCTURE = [
             { prefix: "SD01C", count: 9 },
             { prefix: "SD01U", count: 7 },
             { prefix: "SD01SR", count: 6 },
@@ -565,17 +570,17 @@ const SD_STRUCTURE = [
           ];
           SD_STRUCTURE.forEach(({ prefix, count }) => {
             for (let i = 0; i < count; i++) {
-let num = i + 1;
+              let num = i + 1;
               if (prefix === "SD01PER") {
                 num = i + 7;
                 if (num > 18) continue;
               }
-const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
-const isOwned =
+              const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
+              const isOwned =
                 progress[cardKey] === true ||
                 progress[`BONUS-${cardKey}`] === true ||
                 progress[`STARTER-${cardKey}`] === true;
-const isInProgress =
+              const isInProgress =
                 inProgressCards.has(cardKey) ||
                 inProgressCards.has(`BONUS-${cardKey}`);
               if (!isOwned && !isInProgress) {
@@ -591,9 +596,19 @@ const isInProgress =
         }
         if (set.id === "14") {
           const nightmareNightStructure = [
-            ["C", 48], ["U", 18], ["ER", 6], ["SR", 14], ["SPR", 28],
-            ["GR", 12], ["CR", 12], ["RR", 6], ["PER", 12], ["PSPR", 11],
-            ["PGR", 5], ["PCR", 12], ["PRR", 6],
+            ["C", 48],
+            ["U", 18],
+            ["ER", 6],
+            ["SR", 14],
+            ["SPR", 28],
+            ["GR", 12],
+            ["CR", 12],
+            ["RR", 6],
+            ["PER", 12],
+            ["PSPR", 11],
+            ["PGR", 5],
+            ["PCR", 12],
+            ["PRR", 6],
           ] as const;
           nightmareNightStructure.forEach(([rarity, count]) => {
             for (let i = 1; i <= count; i++) {
@@ -609,8 +624,8 @@ const isInProgress =
         }
         if (set.id === "tcgpromos") {
           for (let i = 1; i <= 27; i++) {
-const cardKey = `RR${String(i).padStart(2, "0")}`;
-const fullKey = `tcgpromos-${cardKey}`;
+            const cardKey = `RR${String(i).padStart(2, "0")}`;
+            const fullKey = `tcgpromos-${cardKey}`;
             if (!ownedCards[fullKey] && !inProgressCards.has(fullKey)) {
               isoCards.push({
                 id: fullKey,
@@ -623,8 +638,8 @@ const fullKey = `tcgpromos-${cardKey}`;
         }
         Object.entries(set.rarities).forEach(([rarity, count]) => {
           for (let i = 1; i <= (count as number); i++) {
-const cardKey = `${rarity}-${i}`;
-const fullKey = `${set.id}-${cardKey}`;
+            const cardKey = `${rarity}-${i}`;
+            const fullKey = `${set.id}-${cardKey}`;
             if (inProgressCards.has(fullKey)) {
               continue;
             }
@@ -638,11 +653,11 @@ const fullKey = `${set.id}-${cardKey}`;
           }
         });
       });
-const { data: collection } = await supabase
+      const { data: collection } = await supabase
         .from("collection_progress_raw")
         .select("set_id, progress")
         .eq("user_id", user.id);
-let owned = 0;
+      let owned = 0;
       (collection || []).forEach((row: any) => {
         if (row.set_id === "OTHERMERCH") {
           return;
@@ -653,11 +668,11 @@ let owned = 0;
             (typeof value === "object" && value?.owned === true),
         ).length;
       });
-let completed = 0;
-const progressMap = new Map(
+      let completed = 0;
+      const progressMap = new Map(
         (isoProgress || []).map((row: any) => [String(row.set_id), row]),
       );
-const sets = [
+      const sets = [
         {
           id: "1",
           rarities: {
@@ -736,14 +751,14 @@ const sets = [
         { id: "TCG_PROMOS", name: "TCG Promos" },
       ];
       sets.forEach((set) => {
-const found = progressMap.get(set.id);
+        const found = progressMap.get(set.id);
         if (!found?.progress) return;
-let ownedInSet = 0;
-let totalInSet = 0;
+        let ownedInSet = 0;
+        let totalInSet = 0;
         Object.entries(set.rarities).forEach(([rarity, count]) => {
           totalInSet += count as number;
           for (let i = 1; i <= (count as number); i++) {
-const key = `${rarity}-${i}`;
+            const key = `${rarity}-${i}`;
             if (found.progress[key]) {
               ownedInSet++;
             }
@@ -753,8 +768,8 @@ const key = `${rarity}-${i}`;
           completed++;
         }
       });
-const nightmareNightProgress = progressMap.get("14")?.progress || {};
-const nightmareNightOwned = Object.values(nightmareNightProgress).filter(
+      const nightmareNightProgress = progressMap.get("14")?.progress || {};
+      const nightmareNightOwned = Object.values(nightmareNightProgress).filter(
         (value: any) =>
           value === true ||
           (typeof value === "object" && value?.owned === true),
@@ -762,14 +777,14 @@ const nightmareNightOwned = Object.values(nightmareNightProgress).filter(
       if (nightmareNightOwned >= 190) {
         completed++;
       }
-const { data: fwProgress } = await supabase
+      const { data: fwProgress } = await supabase
         .from("collection_progress_raw")
         .select("progress")
         .eq("user_id", user.id)
         .eq("set_id", "FW");
-const fwRow = fwProgress?.[0];
+      const fwRow = fwProgress?.[0];
       if (fwRow) {
-const STRUCTURE = [
+        const STRUCTURE = [
           { prefix: "BP01C", count: 48 },
           { prefix: "BP01U", count: 18 },
           { prefix: "BP01ER", count: 6 },
@@ -784,7 +799,7 @@ const STRUCTURE = [
           { prefix: "BP01PCR", count: 12 },
           { prefix: "BP01PRR", count: 6 },
         ];
-const validKeys = new Set(
+        const validKeys = new Set(
           STRUCTURE.flatMap(({ prefix, count }) => {
             if (prefix === "BP01ER") {
               return Array.from(
@@ -803,7 +818,7 @@ const validKeys = new Set(
             );
           }),
         );
-const ownedFW = Object.entries(fwRow.progress || {}).filter(
+        const ownedFW = Object.entries(fwRow.progress || {}).filter(
           ([key, val]) => val && validKeys.has(key),
         ).length;
         if (ownedFW === validKeys.size) {
@@ -816,11 +831,11 @@ const ownedFW = Object.entries(fwRow.progress || {}).filter(
         completed,
       });
     }
-    loadProfile();
+    loadProfile().finally(() => setProfileLoading(false));
   }, [user?.id]);
   useEffect(() => {
     if (!quickViewCard) return;
-const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setQuickViewCard(null);
       }
@@ -832,11 +847,11 @@ const handleKeyDown = (e: KeyboardEvent) => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [quickViewCard]);
-async function sendFriendRequest() {
+  async function sendFriendRequest() {
     if (!currentUserId) return;
     if (currentUserId === user.id) return;
     setSendingRequest(true);
-const { data: profile } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("allow_friend_requests")
       .eq("id", user.id)
@@ -846,7 +861,7 @@ const { data: profile } = await supabase
       setSendingRequest(false);
       return;
     }
-const { error } = await supabase.from("friend_requests").insert({
+    const { error } = await supabase.from("friend_requests").insert({
       sender_id: currentUserId,
       receiver_id: user.id,
       status: "pending",
@@ -856,14 +871,14 @@ const { error } = await supabase.from("friend_requests").insert({
     }
     setSendingRequest(false);
   }
-function isMoon3DoubleWide(card: any) {
+  function isMoon3DoubleWide(card: any) {
     if (!card) return false;
-const setId = String(card.set_id);
-const cardKey = String(card.card_key).toUpperCase();
+    const setId = String(card.set_id);
+    const cardKey = String(card.card_key).toUpperCase();
     return setId === "3" && /^SZR-0*1(?:L5)?$/.test(cardKey);
   }
-function getSetName(setId: string) {
-const names: Record<string, string> = {
+  function getSetName(setId: string) {
+    const names: Record<string, string> = {
       "1": "Moon One",
       "2": "Moon Two",
       "3": "Moon Three",
@@ -883,9 +898,9 @@ const names: Record<string, string> = {
     };
     return names[String(setId)] || `Set ${setId}`;
   }
-const visibleIsoCards = userIsoCards.filter((card) => {
-const setId = String(card.set_id);
-const hidden = userProfileSettings.hidden_iso_sets;
+  const visibleIsoCards = userIsoCards.filter((card) => {
+    const setId = String(card.set_id);
+    const hidden = userProfileSettings.hidden_iso_sets;
     if (hidden.includes(setId)) {
       return false;
     }
@@ -908,36 +923,36 @@ const hidden = userProfileSettings.hidden_iso_sets;
     }
     return true;
   });
-const ISO_SET_TABS = Array.from(
+  const ISO_SET_TABS = Array.from(
     new Set(visibleIsoCards.map((card) => String(card.set_id))),
   ).map((setId) => ({
     id: setId,
     name: getSetName(setId),
   }));
-const filteredIsoCards = visibleIsoCards.filter(
+  const filteredIsoCards = visibleIsoCards.filter(
     (card) => String(card.set_id) === selectedSet,
   );
-const allTradeCards = [
+  const allTradeCards = [
     ...userTradeCards.map((card: any) => ({
       ...card,
       type: "trade",
     })),
     ...saleListings,
   ];
-const TRADE_SET_TABS = Array.from(
+  const TRADE_SET_TABS = Array.from(
     new Set(allTradeCards.map((card) => String(card.set_id))),
   ).map((setId) => ({
     id: setId,
     name: getSetName(setId),
   }));
-const WISHLIST_SET_TABS = Array.from(
+  const WISHLIST_SET_TABS = Array.from(
     new Set(userWishlistCards.map((card) => String(card.set_id))),
   ).map((setId) => ({
     id: setId,
     name: getSetName(setId),
   }));
   useEffect(() => {
-let tabs: { id: string }[] = [];
+    let tabs: { id: string }[] = [];
     if (selectedSection === "iso") {
       tabs = ISO_SET_TABS;
     } else if (selectedSection === "trade") {
@@ -959,7 +974,7 @@ let tabs: { id: string }[] = [];
     TRADE_SET_TABS,
     WISHLIST_SET_TABS,
   ]);
-const RARITY_ORDER = [
+  const RARITY_ORDER = [
     "BASE",
     "C",
     "U",
@@ -1001,44 +1016,44 @@ const RARITY_ORDER = [
     "SC",
     "PR",
   ];
-function getRarity(cardKey: string) {
-const key = String(cardKey);
+  function getRarity(cardKey: string) {
+    const key = String(cardKey);
     if (
       key.startsWith("BP01") ||
       key.startsWith("BP02") ||
       key.startsWith("SD01")
     ) {
-const match = key.match(
+      const match = key.match(
         /(BASE|PER|PSPR|PGR|PCR|PRR|SPR|SSR|SCR|SAR|SGR|UGR|USR|TGR|MTR|LSR|SZR|ZR|XR|HR|FR|TR|ST|SR|UR|GR|CR|ER|RR|SC|BP|AR|OR|PR|R|U|C|N|SN)/,
       );
       return match?.[1] ?? "";
     }
     return key.split("-")[0];
   }
-function sortByIsoOrder(cards: any[]) {
+  function sortByIsoOrder(cards: any[]) {
     return [...cards].sort((a, b) => {
       if (String(a.set_id) !== String(b.set_id)) {
         return String(a.set_id).localeCompare(String(b.set_id), undefined, {
           numeric: true,
         });
       }
-const rarityA = getRarity(a.card_key);
-const rarityB = getRarity(b.card_key);
-const rarityDiff =
+      const rarityA = getRarity(a.card_key);
+      const rarityB = getRarity(b.card_key);
+      const rarityDiff =
         RARITY_ORDER.indexOf(rarityA) - RARITY_ORDER.indexOf(rarityB);
       if (rarityDiff !== 0) return rarityDiff;
-const numA = Number(String(a.card_key).match(/d+/)?.[0] ?? 0);
-const numB = Number(String(b.card_key).match(/d+/)?.[0] ?? 0);
+      const numA = Number(String(a.card_key).match(/d+/)?.[0] ?? 0);
+      const numB = Number(String(b.card_key).match(/d+/)?.[0] ?? 0);
       return numA - numB;
     });
   }
-const filteredTradeCards = sortByIsoOrder(
+  const filteredTradeCards = sortByIsoOrder(
     allTradeCards.filter((card) => String(card.set_id) === selectedSet),
   );
-const filteredWishlistCards = sortByIsoOrder(
+  const filteredWishlistCards = sortByIsoOrder(
     userWishlistCards.filter((card) => String(card.set_id) === selectedSet),
   );
-const activityStatus = (() => {
+  const activityStatus = (() => {
     if (!lastActivityAt) {
       return {
         label: "Inactive",
@@ -1047,7 +1062,7 @@ const activityStatus = (() => {
         dotClass: "bg-zinc-400",
       };
     }
-const age = Date.now() - new Date(lastActivityAt).getTime();
+    const age = Date.now() - new Date(lastActivityAt).getTime();
     if (age <= 24 * 60 * 60 * 1000) {
       return {
         label: "Active in the last 24 Hours",
@@ -1074,21 +1089,81 @@ const age = Date.now() - new Date(lastActivityAt).getTime();
     };
   })();
   useEffect(() => {
-const syncTheme = () => {
+    const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
     syncTheme();
-const observer = new MutationObserver(syncTheme);
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
     return () => observer.disconnect();
   }, []);
-const isJacob = user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
+  const isJacob = user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
+  if (profileLoading) {
+    return (
+      <div
+        className={`flex min-h-[70dvh] w-full items-center justify-center rounded-[30px] border px-4 py-10 [overflow-anchor:none] ${
+          isLightMode
+            ? "border-black/10 bg-white"
+            : "border-white/[0.08] bg-[#151718]"
+        }`}
+      >
+        <div
+          role="status"
+          aria-live="polite"
+          className={`flex max-w-full items-center gap-3 rounded-[24px] border px-4 py-3 shadow-sm sm:gap-4 sm:px-5 sm:py-4 ${
+            isLightMode
+              ? "border-black/10 bg-white text-zinc-800"
+              : "border-white/10 bg-[#151718] text-white"
+          }`}
+        >
+          <div className="relative shrink-0">
+            <div className="absolute -inset-1 animate-pulse rounded-[20px] bg-[#FFD54A]/25" />
+            <CardImage
+              src={avatar}
+              alt={user?.username || "User"}
+              className={`relative h-12 w-12 rounded-[17px] border object-cover sm:h-14 sm:w-14 sm:rounded-[19px] ${
+                isLightMode ? "border-black/10" : "border-white/10"
+              }`}
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="flex min-w-0 flex-wrap items-center text-sm font-semibold sm:text-base">
+              <span>Loading&nbsp;</span>
+              <span className="max-w-[180px] truncate sm:max-w-[280px]">
+                {user?.username || "user"}'s
+              </span>
+              <span>&nbsp;data</span>
+              <span
+                className="ml-0.5 inline-flex items-end gap-0.5"
+                aria-hidden="true"
+              >
+                <span className="animate-bounce [animation-delay:-0.3s]">
+                  .
+                </span>
+                <span className="animate-bounce [animation-delay:-0.15s]">
+                  .
+                </span>
+                <span className="animate-bounce">.</span>
+              </span>
+            </p>
+            <p
+              className={`mt-0.5 text-xs ${
+                isLightMode ? "text-zinc-500" : "text-zinc-400"
+              }`}
+            >
+              Gathering their collection details
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
-      className={`w-full transition-colors duration-200 ${
+      className={`w-full transition-colors duration-200 [overflow-anchor:none] ${
         isLightMode ? "text-zinc-900" : "text-white"
       }`}
     >
@@ -1232,13 +1307,13 @@ const isJacob = user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
                 <button
                   type="button"
                   onClick={() => {
-const url = `https://www.mlpekayou.community/${encodeURIComponent(
+                    const url = `https://www.mlpekayou.community/${encodeURIComponent(
                       user?.username ?? "",
                     )}`;
                     if (navigator.clipboard && window.isSecureContext) {
                       navigator.clipboard.writeText(url);
                     } else {
-const textArea = document.createElement("textarea");
+                      const textArea = document.createElement("textarea");
                       textArea.value = url;
                       textArea.style.position = "fixed";
                       textArea.style.left = "-999999px";
@@ -1293,7 +1368,7 @@ const textArea = document.createElement("textarea");
         ))}
       </section>
       <section
-        className={`mt-4 overflow-hidden rounded-[28px] border ${
+        className={`mt-4 flex h-[72dvh] min-h-[520px] max-h-[820px] flex-col overflow-hidden rounded-[28px] border [overflow-anchor:none] ${
           isLightMode
             ? "border-black/10 bg-white"
             : "border-white/[0.08] bg-[#151718]"
@@ -1330,20 +1405,77 @@ const textArea = document.createElement("textarea");
             </button>
           ))}
         </div>
-        {selectedSection === "iso" ? (
-          userProfileSettings.hide_iso ? (
-            <div
-              className={`p-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-            >
-              This Superfan has hidden their ISO.
-            </div>
-          ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]">
+          {selectedSection === "iso" ? (
+            userProfileSettings.hide_iso ? (
+              <div
+                className={`p-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
+              >
+                This Superfan has hidden their ISO.
+              </div>
+            ) : (
+              <>
+                <div
+                  className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {ISO_SET_TABS.map((set) => (
+                      <button
+                        key={set.id}
+                        type="button"
+                        onClick={() => setSelectedSet(set.id)}
+                        className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${
+                          selectedSet === set.id
+                            ? isLightMode
+                              ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
+                              : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
+                            : isLightMode
+                              ? "border-black/10 bg-zinc-50 text-zinc-600"
+                              : "border-white/10 bg-white/[0.04] text-zinc-400"
+                        }`}
+                      >
+                        {set.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-3 sm:p-5">
+                  {filteredIsoCards.length === 0 ? (
+                    <div
+                      className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
+                    >
+                      No cards to show.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+                      {filteredIsoCards.map((card) => (
+                        <button
+                          key={`${card.set_id}-${card.card_key}`}
+                          type="button"
+                          onClick={() => setQuickViewCard(card)}
+                          className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${
+                            isMoon3DoubleWide(card) ? "col-span-2" : ""
+                          }`}
+                        >
+                          <SafeCardImage
+                            src={getTradeCardImage(card)}
+                            alt={card.card_key}
+                            className={getCardImageClassName(card)}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )
+          ) : selectedSection === "trade" ? (
             <>
               <div
                 className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
               >
                 <div className="flex flex-wrap gap-2">
-                  {ISO_SET_TABS.map((set) => (
+                  {TRADE_SET_TABS.map((set) => (
                     <button
                       key={set.id}
                       type="button"
@@ -1364,15 +1496,93 @@ const textArea = document.createElement("textarea");
                 </div>
               </div>
               <div className="p-3 sm:p-5">
-                {filteredIsoCards.length === 0 ? (
+                {salesLoading ? (
                   <div
                     className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
                   >
-                    No cards to show.
+                    Loading listings…
+                  </div>
+                ) : filteredTradeCards.length === 0 ? (
+                  <div
+                    className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
+                  >
+                    No listings to show.
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
-                    {filteredIsoCards.map((card) => (
+                    {filteredTradeCards.map((card: any) => (
+                      <button
+                        key={`${card.set_id}-${card.card_key}-${card.type}`}
+                        type="button"
+                        onClick={() => setQuickViewCard(card)}
+                        className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${
+                          isMoon3DoubleWide(card) ? "col-span-2" : ""
+                        }`}
+                      >
+                        <SafeCardImage
+                          src={getTradeCardImage(card)}
+                          alt={card.card_key}
+                          className={getCardImageClassName(card)}
+                        />
+                        <span
+                          className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-[10px] font-semibold ${
+                            isLightMode
+                              ? "bg-white/90 text-zinc-700"
+                              : "bg-black/70 text-white"
+                          }`}
+                        >
+                          {card.type === "sale"
+                            ? `For Sale · $${Number(card.asking_price || 0).toFixed(2)}`
+                            : "Trade"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : userProfileSettings.hide_wishlist ? (
+            <div
+              className={`p-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
+            >
+              This Superfan has hidden their wishlist.
+            </div>
+          ) : (
+            <>
+              <div
+                className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {WISHLIST_SET_TABS.map((set) => (
+                    <button
+                      key={set.id}
+                      type="button"
+                      onClick={() => setSelectedSet(set.id)}
+                      className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${
+                        selectedSet === set.id
+                          ? isLightMode
+                            ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
+                            : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
+                          : isLightMode
+                            ? "border-black/10 bg-zinc-50 text-zinc-600"
+                            : "border-white/10 bg-white/[0.04] text-zinc-400"
+                      }`}
+                    >
+                      {set.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="p-3 sm:p-5">
+                {filteredWishlistCards.length === 0 ? (
+                  <div
+                    className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
+                  >
+                    No wishlist cards to show.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+                    {filteredWishlistCards.map((card) => (
                       <button
                         key={`${card.set_id}-${card.card_key}`}
                         type="button"
@@ -1392,141 +1602,8 @@ const textArea = document.createElement("textarea");
                 )}
               </div>
             </>
-          )
-        ) : selectedSection === "trade" ? (
-          <>
-            <div
-              className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
-            >
-              <div className="flex flex-wrap gap-2">
-                {TRADE_SET_TABS.map((set) => (
-                  <button
-                    key={set.id}
-                    type="button"
-                    onClick={() => setSelectedSet(set.id)}
-                    className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${
-                      selectedSet === set.id
-                        ? isLightMode
-                          ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                          : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
-                        : isLightMode
-                          ? "border-black/10 bg-zinc-50 text-zinc-600"
-                          : "border-white/10 bg-white/[0.04] text-zinc-400"
-                    }`}
-                  >
-                    {set.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="p-3 sm:p-5">
-              {salesLoading ? (
-                <div
-                  className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
-                >
-                  Loading listings…
-                </div>
-              ) : filteredTradeCards.length === 0 ? (
-                <div
-                  className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
-                >
-                  No listings to show.
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
-                  {filteredTradeCards.map((card: any) => (
-                    <button
-                      key={`${card.set_id}-${card.card_key}-${card.type}`}
-                      type="button"
-                      onClick={() => setQuickViewCard(card)}
-                      className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${
-                        isMoon3DoubleWide(card) ? "col-span-2" : ""
-                      }`}
-                    >
-                      <SafeCardImage
-                        src={getTradeCardImage(card)}
-                        alt={card.card_key}
-                        className={getCardImageClassName(card)}
-                      />
-                      <span
-                        className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-[10px] font-semibold ${
-                          isLightMode
-                            ? "bg-white/90 text-zinc-700"
-                            : "bg-black/70 text-white"
-                        }`}
-                      >
-                        {card.type === "sale"
-                          ? `For Sale · $${Number(card.asking_price || 0).toFixed(2)}`
-                          : "Trade"}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        ) : userProfileSettings.hide_wishlist ? (
-          <div
-            className={`p-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-          >
-            This Superfan has hidden their wishlist.
-          </div>
-        ) : (
-          <>
-            <div
-              className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
-            >
-              <div className="flex flex-wrap gap-2">
-                {WISHLIST_SET_TABS.map((set) => (
-                  <button
-                    key={set.id}
-                    type="button"
-                    onClick={() => setSelectedSet(set.id)}
-                    className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${
-                      selectedSet === set.id
-                        ? isLightMode
-                          ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                          : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
-                        : isLightMode
-                          ? "border-black/10 bg-zinc-50 text-zinc-600"
-                          : "border-white/10 bg-white/[0.04] text-zinc-400"
-                    }`}
-                  >
-                    {set.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="p-3 sm:p-5">
-              {filteredWishlistCards.length === 0 ? (
-                <div
-                  className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
-                >
-                  No wishlist cards to show.
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
-                  {filteredWishlistCards.map((card) => (
-                    <button
-                      key={`${card.set_id}-${card.card_key}`}
-                      type="button"
-                      onClick={() => setQuickViewCard(card)}
-                      className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${
-                        isMoon3DoubleWide(card) ? "col-span-2" : ""
-                      }`}
-                    >
-                      <SafeCardImage
-                        src={getTradeCardImage(card)}
-                        alt={card.card_key}
-                        className={getCardImageClassName(card)}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </section>
       {quickViewCard && (
         <div
