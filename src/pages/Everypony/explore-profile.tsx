@@ -5,6 +5,64 @@ import { useNavigate } from "react-router-dom";
 import { getProfileAssets } from "./profile-assets";
 import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import { getTradeCardImage } from "@/lib/card-images";
+
+type CardImageCard = {
+  set_id: string | number;
+  card_key: string;
+};
+
+const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11"]);
+
+const getCardNumber = (cardKey: string) => {
+  const match = cardKey.match(/(\d+)$/);
+  return match ? Number(match[1]) : null;
+};
+
+const getCardImageClassName = (
+  card: CardImageCard,
+  position: "block" | "absolute" = "block",
+) => {
+  const base = `${position === "absolute" ? "absolute inset-0" : "block"} h-full w-full max-w-none`;
+  const setId = String(card.set_id);
+
+  if (standardZoomSets.has(setId)) {
+    return `${base} scale-[1.05] object-contain object-center`;
+  }
+
+  const cardNumber = getCardNumber(card.card_key);
+
+  if (setId === "9") {
+    if (cardNumber === 1) {
+      return `${base} scale-[1.02] object-contain object-center`;
+    }
+    if (cardNumber === 7) {
+      return `${base} scale-[1.06] object-contain object-center`;
+    }
+    if (cardNumber !== null && [2, 3, 4, 5].includes(cardNumber)) {
+      return `${base} scale-[1.05] object-contain object-center`;
+    }
+    return `${base} scale-[1.08] object-contain object-center`;
+  }
+
+  if (setId === "tcgpromos") {
+    if (cardNumber === 11) {
+      return `${base} translate-y-[2px] scale-[1.02] object-cover object-center`;
+    }
+    if (cardNumber === 10) {
+      return `${base} scale-[1.02] object-cover object-center`;
+    }
+    if (cardNumber === 9) {
+      return `${base} -translate-y-px scale-[1.01] object-cover object-center`;
+    }
+    if (cardNumber === 12) {
+      return `${base} -translate-y-[2px] object-cover object-center`;
+    }
+    return `${base} scale-[1.01] object-contain object-center`;
+  }
+
+  const contained = ["SD", "FW", "12", "14"].includes(setId);
+  return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
+};
 type SafeCardImageProps = {
   src: string;
   alt: string;
@@ -42,7 +100,11 @@ const landscapeCommon =
           src={src}
           alt={alt}
           className="absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-[inherit] object-contain"
-          style={{ transform: "translate(-50%, -50%) rotate(-90deg)" }}
+          style={{
+            backgroundColor: "transparent",
+            backgroundImage: "none",
+            transform: "translate(-50%, -50%) rotate(-90deg)",
+          }}
           onError={() => setFailed(true)}
         />
       </span>
@@ -53,6 +115,7 @@ const landscapeCommon =
       src={src}
       alt={alt}
       className={className}
+      style={{ backgroundColor: "transparent", backgroundImage: "none" }}
       onError={() => setFailed(true)}
     />
   );
@@ -1081,7 +1144,7 @@ const isJacob = user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
             <CardImage
               src={avatar}
               alt={user?.username}
-              className={`h-20 w-20 rounded-[22px] border object-cover sm:h-28 sm:w-28 sm:rounded-[26px] ${
+              className={`h-20 w-20 rounded-[22px] border object-cover sm:h-28 sm:w-28 sm:rounded-[30px] ${
                 isLightMode ? "border-black/10" : "border-white/10"
               }`}
             />
@@ -1321,15 +1384,7 @@ const textArea = document.createElement("textarea");
                         <SafeCardImage
                           src={getTradeCardImage(card)}
                           alt={card.card_key}
-                          className={`block h-full w-full ${
-                            String(card.set_id) === "12" ||
-                            String(card.set_id) === "14" ||
-                            String(card.set_id) === "FW" ||
-                            String(card.set_id) === "SD" ||
-                            String(card.set_id) === "tcgpromos"
-                              ? "object-contain"
-                              : "scale-[1.05] object-cover"
-                          }`}
+                          className={getCardImageClassName(card)}
                         />
                       </button>
                     ))}
@@ -1391,15 +1446,7 @@ const textArea = document.createElement("textarea");
                       <SafeCardImage
                         src={getTradeCardImage(card)}
                         alt={card.card_key}
-                        className={`block h-full w-full ${
-                          String(card.set_id) === "12" ||
-                          String(card.set_id) === "14" ||
-                          String(card.set_id) === "FW" ||
-                          String(card.set_id) === "SD" ||
-                          String(card.set_id) === "tcgpromos"
-                            ? "object-contain"
-                            : "scale-[1.05] object-cover"
-                        }`}
+                        className={getCardImageClassName(card)}
                       />
                       <span
                         className={`absolute bottom-2 left-2 rounded-full px-2 py-1 text-[10px] font-semibold ${
@@ -1471,15 +1518,7 @@ const textArea = document.createElement("textarea");
                       <SafeCardImage
                         src={getTradeCardImage(card)}
                         alt={card.card_key}
-                        className={`block h-full w-full ${
-                          String(card.set_id) === "12" ||
-                          String(card.set_id) === "14" ||
-                          String(card.set_id) === "FW" ||
-                          String(card.set_id) === "SD" ||
-                          String(card.set_id) === "tcgpromos"
-                            ? "object-contain"
-                            : "scale-[1.05] object-cover"
-                        }`}
+                        className={getCardImageClassName(card)}
                       />
                     </button>
                   ))}
@@ -1528,12 +1567,13 @@ const textArea = document.createElement("textarea");
                 }
               >
                 <div
-                  className={`relative mx-auto w-full overflow-hidden rounded-md ${isMoon3DoubleWide(quickViewCard) ? "max-w-[440px] aspect-[10/7]" : "max-w-[150px] aspect-[5/7] sm:max-w-[280px]"}`}
+                  className={`relative mx-auto w-full overflow-hidden rounded-[12px] ${isMoon3DoubleWide(quickViewCard) ? "max-w-[440px] aspect-[10/7]" : "max-w-[150px] aspect-[5/7] sm:max-w-[280px]"}`}
+                  style={{ clipPath: "inset(0 round 12px)" }}
                 >
                   <SafeCardImage
                     src={getTradeCardImage(quickViewCard)}
                     alt={quickViewCard.card_key}
-                    className={`absolute inset-0 h-full w-full max-w-none ${String(quickViewCard.set_id) === "12" || String(quickViewCard.set_id) === "14" || String(quickViewCard.set_id) === "FW" || String(quickViewCard.set_id) === "SD" || String(quickViewCard.set_id) === "tcgpromos" ? "object-contain" : "scale-[1.05] object-cover"}`}
+                    className={`${getCardImageClassName(quickViewCard, "absolute")} rounded-[12px]`}
                   />
                 </div>
                 <div
@@ -1638,12 +1678,13 @@ const textArea = document.createElement("textarea");
               type="button"
               aria-label="Close card preview"
               onClick={(event) => event.stopPropagation()}
-              className={`relative overflow-hidden rounded-md bg-transparent ${isMoon3DoubleWide(quickViewCard) ? "w-[min(82vw,440px)] aspect-[10/7]" : "h-[min(46dvh,340px)] aspect-[5/7] sm:h-[min(55vh,420px)]"}`}
+              className={`relative overflow-hidden rounded-[12px] bg-transparent ${isMoon3DoubleWide(quickViewCard) ? "w-[min(82vw,440px)] aspect-[10/7]" : "h-[min(46dvh,340px)] aspect-[5/7] sm:h-[min(55vh,420px)]"}`}
+              style={{ clipPath: "inset(0 round 12px)" }}
             >
               <SafeCardImage
                 src={getTradeCardImage(quickViewCard)}
                 alt={quickViewCard.card_key}
-                className={`absolute inset-0 h-full w-full max-w-none ${String(quickViewCard.set_id) === "12" || String(quickViewCard.set_id) === "14" || String(quickViewCard.set_id) === "FW" || String(quickViewCard.set_id) === "SD" || String(quickViewCard.set_id) === "tcgpromos" ? "object-contain" : "scale-[1.05] object-cover"}`}
+                className={`${getCardImageClassName(quickViewCard, "absolute")} rounded-[12px]`}
               />
             </button>
           )}

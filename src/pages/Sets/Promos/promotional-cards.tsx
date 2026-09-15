@@ -1,5 +1,5 @@
 import CardImage from "@/components/CardImage";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import TiltCard from "@/components/TiltCards";
@@ -48,8 +48,6 @@ const TCG_PROMO_SOURCES: Record<string, string> = {
   RR26: "Nightmare Night Binder Set",
   RR27: "Nightmare Night Binder Set",
 };
-// Change each number independently to adjust only that CCG card's front image
-// inside its grid container. 1 = no zoom, 1.04 = 4% zoom, 0.98 = 2% smaller.
 const CCG_CARD_ZOOM: Record<string, number> = {
   "PR-1": 1.009,
   "PR-2": 1.04,
@@ -64,8 +62,7 @@ const CCG_CARD_ZOOM: Record<string, number> = {
   "PR-12": 1.04,
   "PR-13": 1.04,
 };
-// Change each number independently to adjust only that TCG card's front image
-// inside its grid container. The backs and full-screen preview are unchanged.
+
 const TCG_CARD_ZOOM: Record<string, number> = {
   RR01: 0.99,
   RR02: 0.99,
@@ -95,6 +92,34 @@ const TCG_CARD_ZOOM: Record<string, number> = {
   RR26: 0.99,
   RR27: 0.99,
 };
+
+const getPromoFrontClassName = (key: string) => {
+  const base = "absolute inset-0 h-full w-full rounded-xl object-center backface-hidden";
+  return `${base} object-cover`;
+};
+
+const getPromoFrontStyle = (key: string): CSSProperties => {
+  const transparentBackground = {
+    backgroundColor: "transparent",
+    backgroundImage: "none",
+  };
+
+  const zoom = key.startsWith("PR-")
+    ? CCG_CARD_ZOOM[key] ?? 1
+    : TCG_CARD_ZOOM[key] ?? 1;
+  return { ...transparentBackground, transform: `scale(${zoom})` };
+};
+
+const getPromoKeyFromSrc = (src: string) => {
+  const ccgMatch = src.match(/mlpepr(\d+)\.webp/i);
+  if (ccgMatch) return `PR-${Number(ccgMatch[1])}`;
+
+  const tcgMatch = src.match(/\/tcgpromos\/(RR\d+)\.webp/i);
+  return tcgMatch?.[1].toUpperCase() ?? "";
+};
+
+const CARD_BACK_CLASS_NAME =
+  "absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden";
 const PromotionalCards = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
@@ -378,15 +403,13 @@ const PromotionalCards = () => {
                             >
                               <CardImage
                                 src={`/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`}
-                                className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
-                                style={{
-                                  transform: `scale(${CCG_CARD_ZOOM[key] ?? 1})`,
-                                }}
+                                className={getPromoFrontClassName(key)}
+                                style={getPromoFrontStyle(key)}
                                 alt=""
                               />
                               <CardImage
                                 src={getCardBack(number)}
-                                className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
+                                className={CARD_BACK_CLASS_NAME}
                                 style={{
                                   transform: "rotateY(180deg) scale(1.035)",
                                 }}
@@ -455,16 +478,16 @@ const PromotionalCards = () => {
                             >
                               <CardImage
                                 src={`/tcgpromos/${key}.webp`}
-                                className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
-                                style={{
-                                  transform: `scale(${TCG_CARD_ZOOM[key] ?? 1})`,
-                                }}
+                                className={getPromoFrontClassName(key)}
+                                style={getPromoFrontStyle(key)}
                                 alt=""
                               />
                               <CardImage
                                 src="/card-backs/tcgdefaultback.webp"
-                                className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
-                                style={{ transform: "rotateY(180deg)" }}
+                                className={CARD_BACK_CLASS_NAME}
+                                style={{
+                                  transform: "rotateY(180deg) scale(1.035)",
+                                }}
                                 alt=""
                               />
                             </div>
@@ -521,12 +544,13 @@ const PromotionalCards = () => {
                 >
                   <CardImage
                     src={zoomedCard}
-                    className="absolute inset-0 h-full w-full scale-[1.04] rounded-2xl object-cover object-center backface-hidden"
+                    className={`${getPromoFrontClassName(getPromoKeyFromSrc(zoomedCard))} rounded-2xl`}
+                    style={getPromoFrontStyle(getPromoKeyFromSrc(zoomedCard))}
                     alt=""
                   />
                   <CardImage
                     src={zoomedCardBack || ""}
-                    className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
+                    className={`${CARD_BACK_CLASS_NAME} rounded-2xl`}
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
                     alt=""
                   />
