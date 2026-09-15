@@ -68,7 +68,6 @@ const MobileProfile = () => {
   const [deletionRequested, setDeletionRequested] = useState(false);
   const [showDeletionModal, setShowDeletionModal] = useState(false);
   const [submittingDeletion, setSubmittingDeletion] = useState(false);
-  const [pushSupported, setPushSupported] = useState(true);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushStatusMessage, setPushStatusMessage] = useState("");
@@ -384,7 +383,6 @@ const MobileProfile = () => {
   useEffect(() => {
     let mounted = true;
     const supported = supportsWebPush();
-    setPushSupported(supported);
     if (!profile?.id || !supported) {
       setPushEnabled(false);
       return () => {
@@ -412,7 +410,6 @@ const MobileProfile = () => {
     setPushStatusMessage("");
 
     if (!supportsWebPush()) {
-      setPushSupported(false);
       setPushStatusMessage(
         "Push notifications are not supported in this browser. On iPhone, add MLPEKAYOU to your Home Screen and open it there.",
       );
@@ -968,7 +965,7 @@ const MobileProfile = () => {
           }`}
         >
           <div className="relative z-10 p-5">
-            {isModerator && (
+            {isModerator && !editingProfile && (
               <button
                 type="button"
                 onClick={() => navigate("/leaderboard-moderation")}
@@ -984,16 +981,19 @@ const MobileProfile = () => {
               </button>
             )}
             {/* PROFILE */}
-            <div className="flex items-start gap-4 pr-10">
-              {/* AVATAR */}{" "}
-              <div className="relative shrink-0">
-                <CardImage
-                  src={avatar}
-                  alt=""
-                  className="h-24 w-24 rounded-2xl border border-white/[0.10] bg-[#191a1b] object-cover shadow-[0_8px_24px_rgba(0,0,0,.28)]"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
+            <div
+              className={editingProfile ? "" : "flex items-start gap-4 pr-10"}
+            >
+              {!editingProfile && (
+                <div className="relative shrink-0">
+                  <CardImage
+                    src={avatar}
+                    alt=""
+                    className="h-24 w-24 rounded-2xl border border-white/[0.10] bg-[#191a1b] object-cover shadow-[0_8px_24px_rgba(0,0,0,.28)]"
+                  />
+                </div>
+              )}
+              <div className={editingProfile ? "w-full" : "min-w-0 flex-1"}>
                 {/* IDENTITY */}
                 {editingProfile ? (
                   <div
@@ -1036,62 +1036,6 @@ const MobileProfile = () => {
                           }
                         />
                       </label>
-                      <div
-                        className={`flex items-center justify-between gap-4 rounded-xl border px-3 py-3 ${
-                          isLightMode
-                            ? "border-black/10 bg-white"
-                            : "border-white/[0.08] bg-[#151718]"
-                        }`}
-                      >
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                              pushEnabled
-                                ? "bg-[#FFD54A]/15 text-[#FFD54A]"
-                                : isLightMode
-                                  ? "bg-zinc-100 text-zinc-500"
-                                  : "bg-white/[0.06] text-zinc-400"
-                            }`}
-                          >
-                            <Bell size={18} aria-hidden="true" />
-                          </span>
-                          <div className="min-w-0">
-                            <div
-                              className={`text-sm font-semibold ${isLightMode ? "text-zinc-800" : "text-zinc-100"}`}
-                            >
-                              Push notifications
-                            </div>
-                            <div
-                              className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-                            >
-                              {pushEnabled
-                                ? "Messages and friend requests"
-                                : "Off on this device"}
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-label="Push notifications"
-                          aria-checked={pushEnabled}
-                          disabled={pushBusy || !pushSupported}
-                          onClick={() =>
-                            void (pushEnabled
-                              ? disablePushNotifications()
-                              : enablePushNotifications())
-                          }
-                          className={`relative flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                            pushEnabled ? "bg-[#FFD54A]" : "bg-zinc-600"
-                          }`}
-                        >
-                          <span
-                            className={`h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${
-                              pushEnabled ? "translate-x-6" : "translate-x-0"
-                            }`}
-                          />
-                        </button>
-                      </div>
                     </div>
                   </div>
                 ) : (
@@ -1324,17 +1268,31 @@ const MobileProfile = () => {
                 <span>{copied ? "✓ Copied" : "Share Profile"}</span>
               </button>
             </div>
-            {!pushEnabled && !editingProfile && (
-              <button
-                type="button"
-                disabled={pushBusy}
-                onClick={() => void enablePushNotifications()}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-black transition-all hover:bg-[#FFE27A] active:scale-[0.99] disabled:cursor-wait disabled:opacity-60"
-              >
-                <Bell size={17} aria-hidden="true" />
-                {pushBusy ? "Enabling..." : "Enable Notifications"}
-              </button>
-            )}
+            <button
+              type="button"
+              disabled={pushBusy}
+              onClick={() =>
+                void (pushEnabled
+                  ? disablePushNotifications()
+                  : enablePushNotifications())
+              }
+              className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-all active:scale-[0.99] disabled:cursor-wait disabled:opacity-60 ${
+                pushEnabled
+                  ? isLightMode
+                    ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                    : "border-red-400/25 bg-red-400/[0.08] text-red-300 hover:bg-red-400/[0.14]"
+                  : "border-[#FFD54A]/30 bg-[#FFD54A] text-black hover:bg-[#FFE27A]"
+              }`}
+            >
+              <Bell size={17} aria-hidden="true" />
+              {pushBusy
+                ? pushEnabled
+                  ? "Turning Off..."
+                  : "Turning On..."
+                : pushEnabled
+                  ? "Turn Off Notifications"
+                  : "Enable Notifications"}
+            </button>
             {pushStatusMessage && (
               <p
                 role="status"
