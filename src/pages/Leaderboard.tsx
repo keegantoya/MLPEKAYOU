@@ -49,7 +49,7 @@ const { data: ccgProfiles, error: ccgProfilesError } =
         await supabase
           .from("profiles")
           .select(
-            "id, username, avatar_url, iso_hidden_sets, collection_total, rank_worthy"
+            "id, username, avatar_url, iso_hidden_sets, collection_total"
           )
           .gte("collection_total", 1200);
       if (ccgProfilesError) {
@@ -63,7 +63,7 @@ const { data: tcgProfiles, error: tcgProfilesError } =
         await supabase
           .from("profiles")
           .select(
-            "id, username, avatar_url, iso_hidden_sets, collection_total, rank_worthy"
+            "id, username, avatar_url, iso_hidden_sets, collection_total"
           )
           .gte("collection_total", 450);
       if (tcgProfilesError) {
@@ -112,7 +112,6 @@ const excludedUserIds = new Set(
 const filterEligible = (profiles: any[]) =>
         profiles.filter(
           (profile: any) =>
-            profile.rank_worthy === true &&
             eligibleUserIds.has(profile.id) &&
             !excludedUserIds.has(profile.id)
         );
