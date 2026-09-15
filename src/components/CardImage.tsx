@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useEffect,
+  useRef,
   useState,
   type ImgHTMLAttributes,
 } from "react";
@@ -15,12 +16,6 @@ const LOADING_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURICompone
     <rect width="744" height="1040" rx="28" fill="#e5e7eb"/>
     <circle cx="372" cy="464" r="30" fill="none" stroke="#6b7280" stroke-width="8" stroke-linecap="round" stroke-dasharray="138 52"/>
     <text x="372" y="548" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="600" fill="#4b5563">Loading…</text>
-  </svg>
-`)}`;
-const UNAVAILABLE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-  <svg xmlns="http://www.w3.org/2000/svg" width="744" height="1040" viewBox="0 0 744 1040">
-    <rect width="744" height="1040" rx="28" fill="#e5e7eb"/>
-    <text x="372" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="600" fill="#4b5563">Image unavailable</text>
   </svg>
 `)}`;
 const PROTECTED_PREFIXES = [
@@ -97,6 +92,11 @@ function saveLocalCache() {
   } catch {
     // Memory caching still works if browser storage is unavailable.
   }
+}
+
+function invalidateSignedUrl(path: string) {
+  memoryCache.delete(path);
+  saveLocalCache();
 }
 
 function notify(path: string, url?: string) {
@@ -195,6 +195,9 @@ const CardImage = forwardRef<
   ImgHTMLAttributes<HTMLImageElement>
 >(function CardImage({ src, loading, ...props }, ref) {
   const protectedPath = normalizeProtectedPath(src);
+  const retryAttempt = useRef(0);
+  const previousPath = useRef(protectedPath);
+  const [retryVersion, setRetryVersion] = useState(0);
   const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(() => {
     if (!protectedPath) return src;
     loadLocalCache();
@@ -206,16 +209,46 @@ const CardImage = forwardRef<
 
   useEffect(() => {
     if (!protectedPath) {
+      retryAttempt.current = 0;
+      previousPath.current = protectedPath;
       setResolvedSrc(src);
       return;
     }
-    setResolvedSrc(LOADING_PLACEHOLDER);
-    return requestSignedUrl(protectedPath, (url) => {
-      setResolvedSrc(url ?? UNAVAILABLE_PLACEHOLDER);
-    });
-  }, [protectedPath, src]);
 
-  const { style, ...imageProps } = props;
+    if (previousPath.current !== protectedPath) {
+      retryAttempt.current = 0;
+      previousPath.current = protectedPath;
+    }
+
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+    const retryDelay =
+      retryAttempt.current === 0
+        ? 0
+        : Math.min(1000 * 2 ** (retryAttempt.current - 1), 30_000);
+
+    setResolvedSrc(LOADING_PLACEHOLDER);
+    const timer = window.setTimeout(() => {
+      unsubscribe = requestSignedUrl(protectedPath, (url) => {
+        if (cancelled) return;
+        if (url) {
+          setResolvedSrc(url);
+          return;
+        }
+
+        retryAttempt.current += 1;
+        setRetryVersion((version) => version + 1);
+      });
+    }, retryDelay);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      unsubscribe?.();
+    };
+  }, [protectedPath, retryVersion, src]);
+
+  const { onError, onLoad, style, ...imageProps } = props;
   const isWaiting = protectedPath && resolvedSrc === LOADING_PLACEHOLDER;
 
   return (
@@ -224,6 +257,23 @@ const CardImage = forwardRef<
       src={resolvedSrc}
       loading={loading ?? "lazy"}
       aria-busy={isWaiting || undefined}
+      onError={(event) => {
+        if (!protectedPath || resolvedSrc === LOADING_PLACEHOLDER) {
+          onError?.(event);
+          return;
+        }
+
+        invalidateSignedUrl(protectedPath);
+        retryAttempt.current += 1;
+        setResolvedSrc(LOADING_PLACEHOLDER);
+        setRetryVersion((version) => version + 1);
+      }}
+      onLoad={(event) => {
+        if (!protectedPath || resolvedSrc !== LOADING_PLACEHOLDER) {
+          retryAttempt.current = 0;
+          onLoad?.(event);
+        }
+      }}
       style={
         protectedPath
           ? {
