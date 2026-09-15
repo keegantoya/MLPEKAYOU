@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -1083,7 +1084,7 @@ export default function MyTradesSets() {
                         : "aspect-[5/7] max-w-[105px] md:max-w-[310px]"
                     } overflow-hidden rounded-xl md:rounded-2xl`}
                   >
-                    <img
+                    <CardImage
                       src={
                         set.id === "9"
                           ? `/promo-cards/mlpepr${String(selectedCard.number).padStart(3, "0")}.webp`
@@ -1660,7 +1661,7 @@ export default function MyTradesSets() {
                           }`}
                         >
                           <div className="relative mx-auto max-w-[150px]">
-                            <img
+                            <CardImage
                               src={deck.img}
                               alt={deck.name}
                               className="h-28 w-full object-contain sm:h-32"
@@ -1880,7 +1881,7 @@ export default function MyTradesSets() {
                                   }`}
                                 >
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
-                                    <img
+                                    <CardImage
                                       src={
                                         set.id === "9"
                                           ? `/promo-cards/mlpepr${String(card.number).padStart(3, "0")}.webp`

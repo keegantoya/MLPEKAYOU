@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -663,7 +664,7 @@ style={{
           : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08]"
       }`}
     >
-      <img
+      <CardImage
         src={isLightMode ? "/website-assets/LightMode.webp" : "/website-assets/DarkMode.webp"}
         alt=""
         aria-hidden="true"
@@ -687,7 +688,7 @@ style={{
               : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08] hover:shadow-[0_10px_28px_rgba(0,0,0,0.24)]"
         }`}
       >
-<img
+<CardImage
   src={avatarSrc || profileAvatar}
   alt="avatar"
   className={`relative z-10 h-12 w-12 rounded-2xl object-cover border transition-all duration-200 ${
@@ -721,7 +722,7 @@ style={{
           {profile?.username || "My Profile"}
         </div>
         {verification && (
-          <img
+          <CardImage
             src={verification.badge}
             alt={verification.label}
             title={verification.label}
@@ -822,7 +823,7 @@ style={{
           title="Discord"
           className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.07] hover:text-white"
         >
-          <img
+          <CardImage
             src={isLightMode ? "/website-assets/discordlightmode.webp" : "/website-assets/discordlogo.webp"}
             alt="Discord"
             className={`h-5 w-auto ${isLightMode ? "opacity-100" : "opacity-80"}`}
@@ -834,7 +835,7 @@ style={{
           title="TikTok"
           className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.07] hover:text-white"
         >
-          <img
+          <CardImage
             src={isLightMode ? "/website-assets/tiktoklightmode.webp" : "/website-assets/tiktoklogo.webp"}
             alt="TikTok"
             className={`h-5 w-auto ${isLightMode ? "opacity-100" : "opacity-80"}`}
@@ -859,7 +860,7 @@ style={{
 )}
 </div>
 {/* MOBILE CENTER LOGO */}
-<img
+<CardImage
   src={isLightMode ? "/website-assets/mlpekayouwiki4.webp" : "/website-assets/darkmodelogo.webp"}
   alt="MLP Kayou Wiki"
   className="sm:hidden absolute left-1/2 -translate-x-1/2 h-8 w-auto scale-[1.65] cursor-pointer object-contain drop-shadow-md"
@@ -964,7 +965,7 @@ style={{
         onClick={(event) => { event.preventDefault(); event.stopPropagation(); goHome(); }}
         className="group relative flex h-[54px] w-[120px] items-center justify-center overflow-visible bg-transparent transition-all duration-200"
       >
-        <img
+        <CardImage
           src={isLightMode ? "/website-assets/mlpekayouwiki4.webp" : "/website-assets/darkmodelogo.webp"}
           alt="MLP Kayou Wiki"
           className="relative z-10 h-[42px] w-auto translate-y-[1px] scale-[1.9] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:translate-y-[1px] group-hover:scale-[1.96]"
@@ -1108,7 +1109,7 @@ style={{
           : "border-white/10 bg-white/[0.045] hover:bg-white/[0.08]"
       }`}
     >
-      <img
+      <CardImage
         src={isLightMode ? "/website-assets/LightMode.webp" : "/website-assets/DarkMode.webp"}
         alt=""
         aria-hidden="true"
@@ -1400,7 +1401,7 @@ style={{
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
     <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-  <img
+  <CardImage
     src={isLightMode ? "/website-assets/mlpekayouwiki4.webp" : "/website-assets/darkmodelogo.webp"}
     className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
   />

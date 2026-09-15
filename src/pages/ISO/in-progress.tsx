@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { getTradeCardImage } from "@/lib/card-images";
@@ -33,7 +34,7 @@ const InProgressImage = ({
   }
 
   return isLandscape ? (
-    <img
+    <CardImage
       src={src}
       alt={card.card_key}
       className="absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover"
@@ -43,7 +44,7 @@ const InProgressImage = ({
       onError={() => setFailed(true)}
     />
   ) : (
-    <img
+    <CardImage
       src={src}
       alt={card.card_key}
       className={`absolute inset-0 h-full w-full rounded-xl ${contained ? "object-contain" : "object-cover"}`}

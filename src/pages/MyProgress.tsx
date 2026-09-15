@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -350,7 +351,7 @@ const renderSetCard = (set: any) => {
         isLightMode ? "bg-zinc-100" : "bg-[#0d0f10]"
       }`}>
         {image ? (
-          <img
+          <CardImage
             src={image}
             alt={set.name}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.025]"

@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -388,7 +389,7 @@ const NightmareNight = () => {
                               <div
                                 className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}
                               >
-                                <img
+                                <CardImage
                                   src={getCardFront(key)}
                                   className={
                                     landscape
@@ -405,7 +406,7 @@ const NightmareNight = () => {
                                   }
                                   alt=""
                                 />
-                                <img
+                                <CardImage
                                   src={getCardBack(key)}
                                   className={
                                     landscape
@@ -471,7 +472,7 @@ const NightmareNight = () => {
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <img
+                  <CardImage
                     src={zoomedCard}
                     className={`absolute rounded-2xl backface-hidden ${
                       zoomedCardKey && isLandscapeCommon(zoomedCardKey)
@@ -485,7 +486,7 @@ const NightmareNight = () => {
                     }
                     alt=""
                   />
-                  <img
+                  <CardImage
                     src={zoomedCardBack || ""}
                     className={`absolute h-full w-full rounded-2xl backface-hidden ${
                       zoomedCardKey && /^BP03-RR0[1-6]$/.test(zoomedCardKey)

@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -267,7 +268,7 @@ function EditorAvatar({ edit }: { edit: EventEdit }) {
   return (
     <span className="lgs-editor-avatar">
       {avatar && failed !== avatar ? (
-        <img
+        <CardImage
           src={avatar}
           alt={`${edit.editor_username}’s profile`}
           onError={() => setFailed(avatar)}
@@ -908,12 +909,12 @@ export default function LGSBoards() {
           onClick={() => navigate("/")}
           aria-label="MLPEKAYOU home"
         >
-          <img
+          <CardImage
             className="lgs-logo-light"
             src="/website-assets/mlpekayouwiki4.webp"
             alt="MLP Kayou Wiki"
           />
-          <img
+          <CardImage
             className="lgs-logo-dark"
             src="/website-assets/darkmodelogo.webp"
             alt="MLP Kayou Wiki"
@@ -1105,7 +1106,7 @@ export default function LGSBoards() {
                           aria-label={`Choose deck for ${person.player_name}`}
                         >
                           {person.deck ? (
-                            <img
+                            <CardImage
                               src={deckImage(person.deck)}
                               alt={
                                 DECKS.find((deck) => deck.id === person.deck)
@@ -1263,7 +1264,7 @@ export default function LGSBoards() {
                       ).length;
                       return (
                         <div className="lgs-deck-option" key={deck.id}>
-                          <img
+                          <CardImage
                             src={deck.image}
                             alt={deck.name}
                           />
@@ -1741,7 +1742,7 @@ export default function LGSBoards() {
                     disabled={busy}
                     onClick={() => setEntryDeck(deck.id)}
                   >
-                    <img src={deck.image} alt="" />
+                    <CardImage src={deck.image} alt="" />
                     <strong>{deck.name}</strong>
                   </button>
                 ))}
@@ -1855,7 +1856,7 @@ export default function LGSBoards() {
                   )
                 }
               >
-                <img src={deck.image} alt="" />
+                <CardImage src={deck.image} alt="" />
                 <strong>{deck.name}</strong>
               </button>
             ))}

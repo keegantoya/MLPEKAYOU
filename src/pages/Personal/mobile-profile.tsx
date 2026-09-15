@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProfileAssets } from "../Everypony/profile-assets";
@@ -728,7 +729,7 @@ const menuSections = [
             <div className="flex items-start gap-4 pr-10">
               {/* AVATAR */}{" "}
               <div className="relative shrink-0">
-                <img
+                <CardImage
                   src={avatar}
                   alt=""
                   className="h-24 w-24 rounded-2xl border border-white/[0.10] bg-[#191a1b] object-cover shadow-[0_8px_24px_rgba(0,0,0,.28)]"
@@ -786,7 +787,7 @@ const menuSections = [
                         {displayName}
                       </h2>
                       {verification && (
-                        <img
+                        <CardImage
                           src={verification.badge}
                           alt={verification.label}
                           title={verification.label}
@@ -1570,7 +1571,7 @@ function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boole
       <div className="profile-loading-vignette" aria-hidden="true" />
       <div className="profile-loading-content">
         <div className="profile-loading-brand">
-          <img src={logo} alt="MLPEKAYOU" />
+          <CardImage src={logo} alt="MLPEKAYOU" />
         </div>
         {failed ? (
           <>

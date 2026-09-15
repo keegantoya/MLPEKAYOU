@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -317,12 +318,12 @@ const isWide = card.rarity === "SZR" && card.number === 1;
                                     viewMode ? "" : owned ? "rotate-y-180" : ""
                                   }`}
                                 >
-                                  <img
+                                  <CardImage
                                     src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
                                     className="absolute inset-0 h-full w-full scale-[1.04] rounded-xl object-cover object-center backface-hidden"
                                     alt=""
                                   />
-                                  <img
+                                  <CardImage
                                     src={getCardBack(card.rarity, card.number)}
                                     className="absolute left-0 top-[-7px] h-[calc(100%+14px)] w-full rounded-xl object-cover object-center rotate-y-180 backface-hidden"
                                     alt=""
@@ -380,12 +381,12 @@ const isWide = card.rarity === "SZR" && card.number === 1;
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <img
+                  <CardImage
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     alt=""
                   />
-                  <img
+                  <CardImage
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
@@ -404,12 +405,12 @@ const isWide = card.rarity === "SZR" && card.number === 1;
                       zoomedCardFlipped ? "rotate-y-180" : ""
                     }`}
                   >
-                    <img
+                    <CardImage
                       src={zoomedCard}
                       className="absolute inset-0 h-full w-full scale-[1.04] rounded-2xl object-cover object-center backface-hidden"
                       alt=""
                     />
-                    <img
+                    <CardImage
                       src={zoomedCardBack || ""}
                       className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                       style={{ transform: "rotateY(180deg) scale(1.035)" }}

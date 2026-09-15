@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getTradeCardImage } from "@/lib/card-images";
@@ -114,7 +115,7 @@ export default function Wishlist() {
                     toggleWishlist={removeFromWishlist}
                   >
                     <div className="relative overflow-hidden rounded-xl border border-black/10 bg-zinc-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/[0.08] dark:bg-white/[0.04]">
-                      <img
+                      <CardImage
                         src={getTradeCardImage(card)}
                         alt={card.card_key}
                         className={`aspect-[5/7] w-full object-cover ${

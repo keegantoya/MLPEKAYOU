@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWishlist } from "./wishlist-in-iso";
@@ -264,7 +265,7 @@ const cardContent = (
                           : ""
                       }`}
                     >
-                      <img
+                      <CardImage
                         src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(
                           card.number
                         ).padStart(3, "0")}.webp`}

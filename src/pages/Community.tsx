@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -260,7 +261,7 @@ const active = activeCategory === category;
             : "border-white/[0.06] bg-white/[0.05]"
         }`}
       >
-        <img src={config.icon} alt="" className="h-6 w-6 object-contain" />
+        <CardImage src={config.icon} alt="" className="h-6 w-6 object-contain" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-semibold">{config.label}</span>
@@ -353,7 +354,7 @@ const isLocked = set.id === "13";
           {winner ? (
             <>
               <div className="relative">
-                <img
+                <CardImage
                   src={getProfileAssets(winner).avatar}
                   alt={winner.username}
                   className="h-16 w-16 rounded-full border-2 border-[#D8B83F] object-cover"
@@ -442,7 +443,7 @@ const assets = getProfileAssets(topCollector);
           }`}
         >
           <div className="flex items-center gap-4">
-          <img
+          <CardImage
             src={assets.avatar}
             alt="Top Collector Avatar"
             className="h-20 w-20 shrink-0 rounded-full border-2 border-[#D8B83F] object-cover"
@@ -453,7 +454,7 @@ const assets = getProfileAssets(topCollector);
                 {topCollector?.username || "Loading..."}
               </span>
               {assets.verification && (
-                <img
+                <CardImage
                   src={assets.verification.badge}
                   alt={assets.verification.label}
                   title={assets.verification.label}
@@ -562,7 +563,7 @@ return (
                   isLightMode ? "bg-[#fff3b8]" : "bg-[#FFD54A]/10"
                 }`}
               >
-                <img
+                <CardImage
                   src={activeConfig.icon}
                   alt=""
                   className="h-7 w-7 object-contain"

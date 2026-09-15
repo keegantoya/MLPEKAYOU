@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import starOneBox from "/set-pictures/staronebox.webp";
 import moonOneBox from "/set-pictures/moononebox.webp";
@@ -741,7 +742,7 @@ const tableAsset = getTableAsset(selectedProduct, tableNumber);
                           <div className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl p-2 ${
                             isLightMode ? "bg-zinc-50" : "bg-black/20"
                           }`}>
-                            <img src={tableAsset.image} alt={tableAsset.label} className="h-full w-full object-contain" draggable={false} />
+                            <CardImage src={tableAsset.image} alt={tableAsset.label} className="h-full w-full object-contain" draggable={false} />
                           </div>
                         ) : (
                           <div className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border border-dashed text-xs ${

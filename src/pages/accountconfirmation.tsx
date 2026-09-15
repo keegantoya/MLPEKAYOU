@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 const logo = "/website-assets/mlpekayouwiki3.webp";
@@ -61,7 +62,7 @@ export default function AccountConfirmation() {
                     : "border-white/10 bg-white/[0.04]"
                 }`}
               >
-                <img src={logo} alt="MLPEKAYOU" className="h-11 w-auto object-contain" />
+                <CardImage src={logo} alt="MLPEKAYOU" className="h-11 w-auto object-contain" />
               </div>
               <div className="min-w-0">
                 <div

@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -400,7 +401,7 @@ const visibleTradeCollections = activeTradeCollections.slice(
                           : "border-white/10 bg-white/[0.035] hover:bg-white/[0.07]"
                       }`}
                     >
-                      <img
+                      <CardImage
                         src={col.imageUrl}
                         alt={col.title}
                         className="h-[104px] w-[82px] shrink-0 rounded-xl object-cover"
@@ -549,7 +550,7 @@ const visibleTradeCollections = activeTradeCollections.slice(
                             : "bg-white/[0.04] hover:bg-white/[0.08]"
                         }`}
                       >
-                        <img
+                        <CardImage
                           src={col.imageUrl}
                           alt={col.title}
                           className="h-10 w-10 shrink-0 rounded-lg object-cover"

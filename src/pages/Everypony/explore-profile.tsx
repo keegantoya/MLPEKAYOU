@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +38,7 @@ const landscapeCommon =
           position: className.includes("absolute") ? "absolute" : "relative",
         }}
       >
-        <img
+        <CardImage
           src={src}
           alt={alt}
           className="absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-[inherit] object-contain"
@@ -48,7 +49,7 @@ const landscapeCommon =
     );
   }
   return (
-    <img
+    <CardImage
       src={src}
       alt={alt}
       className={className}
@@ -1077,7 +1078,7 @@ const isJacob = user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
             </div>
           </div>
           <div className="mt-3 grid grid-cols-[80px_minmax(0,1fr)] items-start gap-3 sm:mt-6 sm:flex sm:items-center sm:gap-5">
-            <img
+            <CardImage
               src={avatar}
               alt={user?.username}
               className={`h-20 w-20 rounded-[22px] border object-cover sm:h-28 sm:w-28 sm:rounded-[26px] ${
@@ -1094,7 +1095,7 @@ const isJacob = user?.id === "94a1c998-d040-4dd2-b2fb-5f606287139d";
                   {user?.username}
                 </h1>
                 {badge && (
-                  <img
+                  <CardImage
                     src={badge.badge}
                     alt={badge.label}
                     title={badge.label}
@@ -1583,7 +1584,7 @@ const textArea = document.createElement("textarea");
                     className={`mt-3 rounded-2xl border p-3 ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-white/[0.03]"}`}
                   >
                     <div className="flex items-center gap-3">
-                      <img
+                      <CardImage
                         src={avatar}
                         alt={user?.username}
                         className="h-11 w-11 rounded-xl object-cover"

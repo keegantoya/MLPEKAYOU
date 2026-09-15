@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import {
   Bell,
@@ -555,7 +556,7 @@ async function closeMessages() {
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-4">
-                        <img
+                        <CardImage
                           src={getProfileAssets(request).avatar}
                           alt={request.username}
                           className={`h-14 w-14 rounded-2xl border object-cover ${
@@ -726,7 +727,7 @@ async function closeMessages() {
                     </div>
                     <div className="flex items-start gap-4">
                       <button type="button" onClick={() => openFriendProfile(friend.username)} className="relative shrink-0 rounded-2xl text-left" aria-label={`Open ${friend.username}'s profile`}>
-                        <img
+                        <CardImage
                           src={getProfileAssets(friend.profile).avatar}
                           alt={friend.nickname || friend.username}
                           className={`h-16 w-16 rounded-2xl border object-cover ${
@@ -793,7 +794,7 @@ async function closeMessages() {
                               </button>
                               {getProfileAssets(friend.profile)
                                 .verification && (
-                                <img
+                                <CardImage
                                   src={
                                     getProfileAssets(friend.profile)
                                       .verification!.badge
@@ -920,7 +921,7 @@ async function closeMessages() {
           <div onClick={(event) => event.stopPropagation()} className={`relative h-[min(600px,78dvh)] w-[420px] max-w-[94vw] overflow-hidden rounded-[24px] border shadow-[0_20px_60px_rgba(0,0,0,.28)] sm:h-[480px] ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}>
             <div className={`flex h-16 items-center justify-between border-b px-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}>
               <div className="flex min-w-0 items-center gap-2.5">
-                <img src={getProfileAssets(messageFriend.profile).avatar} alt="" className="h-9 w-9 rounded-full object-cover" />
+                <CardImage src={getProfileAssets(messageFriend.profile).avatar} alt="" className="h-9 w-9 rounded-full object-cover" />
                 <div className="min-w-0"><div className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Messages</div><div className="truncate font-semibold">{messageFriend.nickname || messageFriend.username}</div></div>
               </div>
               <button type="button" onClick={() => void closeMessages()} className={`rounded-lg px-3 py-1.5 text-xl ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/[0.06]"}`} aria-label="Close messages">×</button>

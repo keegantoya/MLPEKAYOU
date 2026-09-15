@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -636,7 +637,7 @@ export default function PublicProfile() {
                             : "aspect-[5/7]"
                         }`}
                       >
-                        <img
+                        <CardImage
                           src={getTradeCardImage(card)}
                           style={
                             String(card.set_id) === "14" &&
@@ -770,7 +771,7 @@ export default function PublicProfile() {
                   : "mt-4 flex flex-col gap-5 sm:flex-row sm:items-center"
               }
             >
-              <img
+              <CardImage
                 src={avatar}
                 alt={profile?.username}
                 className={`${isEmbedded ? "h-16 w-16 sm:h-20 sm:w-20" : "h-24 w-24 sm:h-28 sm:w-28"} shrink-0 rounded-[24px] border object-cover ${
@@ -789,7 +790,7 @@ export default function PublicProfile() {
                     {profile?.username}
                   </h1>
                   {getProfileAssets(profile).verification && (
-                    <img
+                    <CardImage
                       src={getProfileAssets(profile).verification!.badge}
                       alt={getProfileAssets(profile).verification!.label}
                       title={getProfileAssets(profile).verification!.label}
@@ -1029,7 +1030,7 @@ export default function PublicProfile() {
                           : "aspect-[5/7]"
                       }`}
                     >
-                      <img
+                      <CardImage
                         src={getTradeCardImage(card)}
                         style={
                           String(card.set_id) === "14" &&

@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 const setButtons = [
@@ -281,7 +282,7 @@ const active = activeGroup === group;
                   isLightMode ? "bg-zinc-100" : "bg-[#0d0f10]"
                 }`}
               >
-                <img
+                <CardImage
                   src={set.image}
                   alt={set.title}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"

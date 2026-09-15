@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
@@ -256,7 +257,7 @@ const isWishlisted = wishlist.has(fullKey) || wishlist.has(`${set.id}:${card.rar
 const cardContent = (
                 <div className={searchAllCards ? "" : "cursor-pointer"}>
                   <div className={`relative aspect-[5/7] w-full overflow-hidden rounded-xl ${isWishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}>
-                    <img src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover" />
+                    <CardImage src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover" />
                   </div>
                 </div>
               );

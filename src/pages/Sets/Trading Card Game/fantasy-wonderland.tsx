@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -316,12 +317,12 @@ const user = data.session?.user;
                                     viewMode ? "" : owned ? "rotate-y-180" : ""
                                   }`}
                                 >
-                                  <img
+                                  <CardImage
                                     src={getCardFront(key)}
                                     className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                     alt=""
                                   />
-                                  <img
+                                  <CardImage
                                     src={getCardBack(key)}
                                     className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
@@ -376,12 +377,12 @@ const user = data.session?.user;
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <img
+                  <CardImage
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     alt=""
                   />
-                  <img
+                  <CardImage
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}

@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -245,7 +246,7 @@ return (
           >
             ‹
           </button>
-          <img
+          <CardImage
             src={getAvatar(currentAvatar)}
             alt="Current avatar"
             className={`h-24 w-24 rounded-3xl border object-cover sm:h-28 sm:w-28 ${
@@ -284,7 +285,7 @@ return (
                         : "border-white/[0.08] bg-[#151718] hover:-translate-y-0.5 hover:border-white/20 hover:bg-[#1a1c1d]"
                     }`}
                   >
-                    <img
+                    <CardImage
                       src={getAvatar(name)}
                       alt=""
                       className="aspect-square w-full object-cover"
@@ -328,7 +329,7 @@ return (
         }`}>
           <h2 className="text-xl font-semibold tracking-tight">Use this avatar?</h2>
           <div className="mt-5 flex items-center justify-center gap-4">
-            <img
+            <CardImage
               src={getAvatar(currentAvatar)}
               alt="Current avatar"
               className={`h-24 w-24 rounded-3xl border object-cover ${
@@ -336,7 +337,7 @@ return (
               }`}
             />
             <ChevronRight className={isLightMode ? "text-[#725700]" : "text-[#FFE27A]"} />
-            <img
+            <CardImage
               src={getAvatar(pendingAvatar)}
               alt="New avatar"
               className={`h-24 w-24 rounded-3xl border object-cover ${

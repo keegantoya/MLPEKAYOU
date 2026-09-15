@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import "@fontsource/oxanium/400.css";
 import "@fontsource/oxanium/600.css";
 import "@fontsource/oxanium/700.css";
@@ -239,7 +240,7 @@ const upcoming = [
                       ◆ CHINESE EDITION ◆
                     </div>
                   )}
-                  <img
+                  <CardImage
                     src={product.image}
                     alt={product.name}
                     className={`h-full w-full object-contain p-2 pt-11 sm:p-3 sm:pt-14 ${product.scale} transition-transform duration-300 group-hover:scale-[1.03]`}

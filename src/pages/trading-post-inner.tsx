@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -139,7 +140,7 @@ function ListingCardImage({ card }: { card: TradeCard }) {
     );
   }
   return (
-    <img
+    <CardImage
       src={src}
       alt={card.card_key}
       onError={() => setFailedSrc(src)}
@@ -738,7 +739,7 @@ export default function TradingPostInner() {
                       }`}
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <img
+                        <CardImage
                           src={assets.avatar}
                           alt={profiles[userId]?.username || userId}
                           className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
@@ -815,7 +816,7 @@ export default function TradingPostInner() {
                       isLightMode ? "border-black/10" : "border-white/[0.08]"
                     }`}
                   >
-                    <img
+                    <CardImage
                       src={assets.avatar}
                       alt={profiles[userId]?.username || userId}
                       className={`h-12 w-12 shrink-0 rounded-full border object-cover ${
@@ -836,7 +837,7 @@ export default function TradingPostInner() {
                           {profiles[userId]?.username || userId}
                         </button>
                         {assets.verification && (
-                          <img
+                          <CardImage
                             src={assets.verification.badge}
                             alt={assets.verification.label}
                             title={assets.verification.label}
@@ -1101,7 +1102,7 @@ export default function TradingPostInner() {
               </div>
               <div className="p-3.5 sm:p-4">
                 <div className="flex items-center gap-3">
-                  <img
+                  <CardImage
                     src={
                       getProfileAssets(profiles[selectedCard.user_id]).avatar
                     }

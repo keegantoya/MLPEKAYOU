@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "./Everypony/profile-assets";
@@ -346,7 +347,7 @@ const renderTopThree = (
             </div>
             <div className="mt-4 flex items-center gap-3">
               <div className="relative shrink-0">
-                <img
+                <CardImage
                   src={avatar}
                   alt=""
                   className={`h-16 w-16 rounded-full border object-cover ${
@@ -363,7 +364,7 @@ const renderTopThree = (
                 <div className="flex min-w-0 items-center gap-1.5">
                   <div className="truncate text-base font-semibold">{user.username}</div>
                   {verification && (
-                    <img
+                    <CardImage
                       src={verification.badge}
                       alt={verification.label}
                       title={verification.label}
@@ -413,7 +414,7 @@ const renderRemainingRanks = (
               >
                 {rank}
               </div>
-              <img
+              <CardImage
                 src={avatar}
                 alt=""
                 className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
@@ -424,7 +425,7 @@ const renderRemainingRanks = (
                 <div className="flex min-w-0 items-center gap-1.5">
                   <div className="truncate text-sm font-semibold">{user.username}</div>
                   {verification && (
-                    <img
+                    <CardImage
                       src={verification.badge}
                       alt={verification.label}
                       title={verification.label}

@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -375,7 +376,7 @@ const PromotionalCards = () => {
                                 viewMode ? "" : owned ? "rotate-y-180" : ""
                               }`}
                             >
-                              <img
+                              <CardImage
                                 src={`/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`}
                                 className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                 style={{
@@ -383,7 +384,7 @@ const PromotionalCards = () => {
                                 }}
                                 alt=""
                               />
-                              <img
+                              <CardImage
                                 src={getCardBack(number)}
                                 className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                 style={{
@@ -452,7 +453,7 @@ const PromotionalCards = () => {
                                 viewMode ? "" : owned ? "rotate-y-180" : ""
                               }`}
                             >
-                              <img
+                              <CardImage
                                 src={`/tcgpromos/${key}.webp`}
                                 className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                 style={{
@@ -460,7 +461,7 @@ const PromotionalCards = () => {
                                 }}
                                 alt=""
                               />
-                              <img
+                              <CardImage
                                 src="/card-backs/tcgdefaultback.webp"
                                 className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                 style={{ transform: "rotateY(180deg)" }}
@@ -518,12 +519,12 @@ const PromotionalCards = () => {
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <img
+                  <CardImage
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full scale-[1.04] rounded-2xl object-cover object-center backface-hidden"
                     alt=""
                   />
-                  <img
+                  <CardImage
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}

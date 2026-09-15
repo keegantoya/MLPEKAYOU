@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -106,7 +107,7 @@ return (
     className="group block overflow-hidden border border-black/10 bg-white shadow-[0_8px_24px_rgba(0,0,0,.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,.08)] dark:border-white/[0.08] dark:bg-[#151718] dark:shadow-none"
   >
     <div className="relative aspect-[1/1] overflow-hidden bg-zinc-100 dark:bg-[#0d0f10]">
-      <img
+      <CardImage
         src={imageUrl}
         alt={title}
         draggable={false}

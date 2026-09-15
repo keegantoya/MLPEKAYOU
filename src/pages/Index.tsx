@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import React, { useEffect, useState } from "react";
 import LGSApplications from "@/pages/Pop-Ups/LGSApplications";
 import { supabase } from "@/lib/supabase";
@@ -248,7 +249,7 @@ const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
                     : "border-white/10 bg-white/[0.04] hover:border-[#E7C84B]/40 hover:bg-white/[0.07]"
                 }`}
               >
-                <img
+                <CardImage
                   src={
                     isLightMode
                       ? "/website-assets/discordlightmode.webp"
@@ -515,7 +516,7 @@ const selected = activeTab === tab.id;
                         resource.title === "Doodle Binder" ? "p-0" : "p-5"
                       } ${isLightMode ? "bg-[#f1eee5]" : "bg-[#101010]"}`}
                     >
-                      <img
+                      <CardImage
                         src={resource.image}
                         alt={resource.title}
                         className={resource.imageClass}

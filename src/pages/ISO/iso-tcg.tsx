@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
@@ -35,10 +36,10 @@ const MissingImageCard = ({
   return (
     landscape ? (
       <div className={`${className.replace("landscape-card", "")} relative aspect-[5/7] overflow-hidden rounded-xl`}>
-        <img src={src} className={imageClass} style={imageStyle} onError={() => setFailed(true)} alt="" />
+        <CardImage src={src} className={imageClass} style={imageStyle} onError={() => setFailed(true)} alt="" />
       </div>
     ) : (
-      <img src={src} className={className} style={style} onError={() => setFailed(true)} alt="" />
+      <CardImage src={src} className={className} style={style} onError={() => setFailed(true)} alt="" />
     )
   );
 };
@@ -349,7 +350,7 @@ const deckIndex =
           <div className="hidden">
             {deck.code}
           </div>
-          <img
+          <CardImage
   src={starterDeckImages[i]}
   className="mx-auto w-full max-w-28 rounded-xl"
 />

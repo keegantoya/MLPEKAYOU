@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -665,14 +666,14 @@ const LeaderboardModeration = () => {
                 {cardReports.map((report) => (
                   <div key={`card-${report.id}`} className={`px-5 py-5 ${isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]"}`}>
                     <div className="flex items-center gap-3">
-                      <img src={report.reportedAvatar} alt="" className="h-11 w-11 rounded-full object-cover" />
+                      <CardImage src={report.reportedAvatar} alt="" className="h-11 w-11 rounded-full object-cover" />
                       <div className="min-w-0">
                         <p className="font-semibold"><span className="text-red-500">Overpriced card report</span> · {report.reportedUsername}</p>
                         <p className={`mt-0.5 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>{report.cardKey} from set {report.setId} was listed for ${report.reportedPrice.toFixed(2)}.</p>
                       </div>
                     </div>
                     <div className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 ${isLightMode ? "bg-zinc-50" : "bg-white/[0.04]"}`}>
-                      <img src={report.reporterAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+                      <CardImage src={report.reporterAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
                       <p className="min-w-0 text-sm"><span className="font-semibold">{report.reporterUsername}</span>{" "}<span className={isLightMode ? "text-zinc-600" : "text-zinc-400"}>reported {report.reportedUsername} on {new Date(report.createdAt).toLocaleString()}</span></p>
                     </div>
                   </div>
@@ -683,7 +684,7 @@ const LeaderboardModeration = () => {
                     className={`px-5 py-5 ${report.tradeAccessRevoked ? isLightMode ? "border-y border-violet-300 bg-violet-50" : "border-y border-violet-400/30 bg-violet-500/10" : report.reports.length >= 3 ? isLightMode ? "border-y-2 border-red-500 bg-red-50" : "border-y-2 border-red-500/70 bg-red-500/10" : index !== accountReports.length - 1 ? isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <img src={report.avatar} alt="" className="h-11 w-11 rounded-full object-cover" />
+                      <CardImage src={report.avatar} alt="" className="h-11 w-11 rounded-full object-cover" />
                       <div className="min-w-0 flex-1"><p className="font-semibold">{report.username} has been reported {report.reports.length} {report.reports.length === 1 ? "time" : "times"}.</p><p className={`mt-0.5 text-xs font-semibold ${report.tradeAccessRevoked ? "text-violet-500" : report.reports.length >= 3 ? "text-red-500" : "text-zinc-500"}`}>{report.tradeAccessRevoked ? "PUBLIC RIGHTS REVOKED" : report.reports.length >= 3 ? "THREE-REPORT RECOMMENDATION REACHED" : "Three reports are recommended before revocation."}</p></div>
                       {!report.tradeAccessRevoked && report.reports.length >= 3 && <div title="Three or more reports" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-500 text-3xl font-black text-white shadow-[0_0_24px_rgba(239,68,68,.45)]">!</div>}
                       {report.tradeAccessRevoked && <Shield className="h-8 w-8 shrink-0 text-violet-500" />}
@@ -693,7 +694,7 @@ const LeaderboardModeration = () => {
                         <div key={item.id} className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
                           isLightMode ? "bg-zinc-50" : "bg-white/[0.04]"
                         }`}>
-                          <img src={item.reporterAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+                          <CardImage src={item.reporterAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
                           <p className="min-w-0 flex-1 text-sm">
                             <span className="font-semibold">{item.reporterUsername}</span>{" "}
                             <span className={isLightMode ? "text-zinc-600" : "text-zinc-400"}>
@@ -745,7 +746,7 @@ const LeaderboardModeration = () => {
                 >
                   <div className={`rounded-2xl p-3 sm:hidden ${isLightMode ? "bg-zinc-50" : "bg-white/[0.04]"}`}>
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <img src={item.moderatorAvatar} alt="" className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`} />
+                      <CardImage src={item.moderatorAvatar} alt="" className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className={`break-words text-sm font-bold ${isLightMode ? "text-zinc-900" : "text-white"}`}>{item.moderatorUsername}</p>
@@ -756,14 +757,14 @@ const LeaderboardModeration = () => {
                     </div>
                     <div className={`my-3 border-l-2 pl-3 text-sm font-medium leading-relaxed ${isLightMode ? "border-[#c9a62d]/40 text-zinc-600" : "border-[#FFD54A]/30 text-zinc-300"}`}>{item.actionLabel}</div>
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <img src={item.targetAvatar} alt="" className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`} />
+                      <CardImage src={item.targetAvatar} alt="" className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`} />
                       <p className={`min-w-0 break-words text-sm font-bold ${isLightMode ? "text-zinc-900" : "text-white"}`}>{item.targetUsername}</p>
                     </div>
                     <p className={`mt-3 border-t pt-2 text-xs ${isLightMode ? "border-black/[0.07] text-zinc-500" : "border-white/[0.07] text-zinc-500"}`}>{new Date(item.createdAt).toLocaleString()}</p>
                   </div>
                   <div className="hidden flex-wrap items-center gap-2.5 sm:flex">
                     <div className="flex min-w-0 items-center gap-2">
-                      <img
+                      <CardImage
                         src={item.moderatorAvatar}
                         alt=""
                         className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
@@ -786,7 +787,7 @@ const LeaderboardModeration = () => {
                       {item.actionLabel}
                     </span>
                     <div className="flex min-w-0 items-center gap-2">
-                      <img
+                      <CardImage
                         src={item.targetAvatar}
                         alt=""
                         className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
@@ -811,7 +812,7 @@ const LeaderboardModeration = () => {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" onClick={() => !markingContacted && setSelectedReportComment(null)}>
           <div role="dialog" aria-modal="true" aria-labelledby="report-comment-title" onClick={(event) => event.stopPropagation()} className={`max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
             <div className="flex items-center gap-3">
-              <img src={selectedReportComment.reporterAvatar} alt="" className="h-11 w-11 rounded-full object-cover" />
+              <CardImage src={selectedReportComment.reporterAvatar} alt="" className="h-11 w-11 rounded-full object-cover" />
               <div className="min-w-0"><p className="truncate font-bold">{selectedReportComment.reporterUsername}</p><p className="text-xs text-zinc-500">Reported on {new Date(selectedReportComment.createdAt).toLocaleString()}</p></div>
             </div>
             <h2 id="report-comment-title" className="mt-5 text-lg font-bold">Reporter comment</h2>
@@ -823,7 +824,7 @@ const LeaderboardModeration = () => {
                 {selectedReportComment.contactedAt ? (
                   <div className="mt-3 flex items-center gap-2 text-sm">
                     <span>Contacted by</span>
-                    {selectedReportComment.contactedByAvatar && <img src={selectedReportComment.contactedByAvatar} alt="" className="h-7 w-7 rounded-full object-cover" />}
+                    {selectedReportComment.contactedByAvatar && <CardImage src={selectedReportComment.contactedByAvatar} alt="" className="h-7 w-7 rounded-full object-cover" />}
                     <span className="font-semibold">{selectedReportComment.contactedByUsername || "Moderator"}</span>
                     <span className="text-zinc-500">on {new Date(selectedReportComment.contactedAt).toLocaleString()}</span>
                   </div>
@@ -842,7 +843,7 @@ const LeaderboardModeration = () => {
             isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"
           }`}>
             <div className="flex items-center gap-3">
-              <img src={selectedAccountReport.avatar} alt="" className="h-12 w-12 rounded-full object-cover" />
+              <CardImage src={selectedAccountReport.avatar} alt="" className="h-12 w-12 rounded-full object-cover" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-500">Moderator Actions</p>
                 <h2 className="mt-1 text-xl font-bold">{selectedAccountReport.username}</h2>

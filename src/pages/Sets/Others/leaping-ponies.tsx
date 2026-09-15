@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -155,7 +156,7 @@ const remainingCount = merchItems.length - completedCount;
                           ? "border-[#FFD54A]/80"
                           : "border-black/10 dark:border-white/10"
                       }`}>
-                        <img
+                        <CardImage
                           src={item.image}
                           alt={item.title}
                           className="absolute inset-0 h-full w-full scale-[1.03] object-cover object-center"

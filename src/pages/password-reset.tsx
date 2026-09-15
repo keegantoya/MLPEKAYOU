@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -57,7 +58,7 @@ export default function PasswordReset() {
         <div className="px-6 pb-6 pt-4 sm:px-7 sm:pb-7">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-white/[0.07]">
-              <img
+              <CardImage
                 src={logo}
                 alt="MLPEKAYOU"
                 className="h-8 w-auto object-contain"

@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
@@ -236,13 +237,13 @@ const cardContent = (
                         }`}
                       >
                         {set.id === "9" ? (
-                          <img
+                          <CardImage
                             src={getImage(set.id, card.number)}
                             alt={getDisplayCardCode(set.id, card.number)}
                             className="absolute left-0 top-[-6px] h-[calc(100%+12px)] w-full object-cover"
                           />
                         ) : (
-                          <img
+                          <CardImage
                             src={getImage(set.id, card.number)}
                             alt={getDisplayCardCode(set.id, card.number)}
                             className={`h-full w-full object-cover ${

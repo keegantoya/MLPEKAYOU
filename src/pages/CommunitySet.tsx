@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -628,7 +629,7 @@ const award = finisherAward;
                         >
                           {award.icon}
                         </span>
-                        <img
+                        <CardImage
                           src={assets.avatar}
                           alt={user.username}
                           className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
@@ -641,7 +642,7 @@ const award = finisherAward;
                               {user.username}
                             </span>
                             {assets.verification && (
-                              <img
+                              <CardImage
                                 src={assets.verification.badge}
                                 alt={assets.verification.label}
                                 title={assets.verification.label}
@@ -768,7 +769,7 @@ const percentage = completionPercentage(user.owned);
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <img
+                        <CardImage
                           src={assets.avatar}
                           alt={user.username}
                           className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
@@ -781,7 +782,7 @@ const percentage = completionPercentage(user.owned);
                               {user.username}
                             </span>
                             {assets.verification && (
-                              <img
+                              <CardImage
                                 src={assets.verification.badge}
                                 alt={assets.verification.label}
                                 title={assets.verification.label}

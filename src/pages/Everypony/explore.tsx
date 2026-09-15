@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { Search, Users, ArrowUpRight, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -275,7 +276,7 @@ const q = trimmedQuery.toLowerCase();
                       : "border-white/[0.07] bg-white/[0.04] text-zinc-200"
                   }`}
                 >
-                  <img
+                  <CardImage
                     src={badge}
                     alt={label}
                     className="h-5 w-5 shrink-0 object-contain"
@@ -362,7 +363,7 @@ const { data: tradingProfile } = await supabase
                               : "border-white/[0.06] hover:bg-white/[0.04]"
                           }`}
                         >
-                          <img
+                          <CardImage
                             src={getProfileAssets(user).avatar}
                             alt={user.username}
                             className={`h-12 w-12 rounded-2xl border object-cover ${
@@ -373,7 +374,7 @@ const { data: tradingProfile } = await supabase
                             <div className="flex items-center gap-2">
                               <span className="truncate text-sm font-semibold">{user.username}</span>
                               {getProfileAssets(user).verification && (
-                                <img
+                                <CardImage
                                   src={getProfileAssets(user).verification!.badge}
                                   alt={getProfileAssets(user).verification!.label}
                                   title={getProfileAssets(user).verification!.label}

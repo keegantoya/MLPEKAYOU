@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import KeeganAvatar from "@/assets/avatars/keeganpfp3.webp";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -204,7 +205,7 @@ const filteredPricingCards =
         >
           <div className="h-1 bg-gradient-to-r from-[#FFD54A] via-[#e7c444] to-transparent" />
           <div className="flex items-center gap-4 p-4 sm:p-5">
-            <img
+            <CardImage
               src={KeeganAvatar}
               alt="Pricing Guide"
               className={`h-14 w-14 shrink-0 rounded-2xl border object-cover ${

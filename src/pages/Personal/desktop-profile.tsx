@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -21,7 +22,7 @@ const [failedSrc, setFailedSrc] = useState<string | null>(null);
       <span className="px-2 text-center text-sm font-bold">COMING SOON</span>
     </div>
   ) : (
-    <img
+    <CardImage
       src={src}
       alt={alt}
       className={className}
@@ -814,7 +815,7 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
         >
           <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
-              <img
+              <CardImage
                 src={avatar}
                 alt=""
                 className={`h-32 w-32 shrink-0 rounded-3xl border object-cover ${isLightMode ? "border-black/10 bg-zinc-100" : "border-white/[0.10] bg-[#191a1b]"}`}
@@ -866,7 +867,7 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
                         {displayName}
                       </h1>
                       {verification && (
-                        <img
+                        <CardImage
                           src={verification.badge}
                           alt={verification.label}
                           title={verification.label}
@@ -1113,7 +1114,7 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
                       className="invisible aspect-[5/7] w-full"
                       aria-hidden="true"
                     />
-                    <img
+                    <CardImage
                       src={getTradeCardImage(card)}
                       alt={card.card_key}
                       className="absolute inset-0 h-full w-full object-cover object-center"
@@ -1437,7 +1438,7 @@ function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boole
       <div className="profile-loading-vignette" aria-hidden="true" />
       <div className="profile-loading-content">
         <div className="profile-loading-brand">
-          <img src={logo} alt="MLPEKAYOU" />
+          <CardImage src={logo} alt="MLPEKAYOU" />
         </div>
         {failed ? (
           <>

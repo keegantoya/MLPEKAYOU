@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -753,7 +754,7 @@ export default function MyCollectionBinder() {
           key={cardIndex}
           className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg"
         >
-          <img
+          <CardImage
             src={card.image}
             loading="lazy"
             draggable={false}
@@ -837,7 +838,7 @@ export default function MyCollectionBinder() {
                   : "border-black/10 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03]"
               }`}
             >
-              <img
+              <CardImage
                 src={getProfileAssets(viewingProfile).avatar}
                 alt={viewingUsername}
                 className="h-10 w-10 shrink-0 rounded-full object-cover"
@@ -848,7 +849,7 @@ export default function MyCollectionBinder() {
                     {viewingUsername}
                   </div>
                   {getProfileAssets(viewingProfile).verification && (
-                    <img
+                    <CardImage
                       src={getProfileAssets(viewingProfile).verification!.badge}
                       alt={getProfileAssets(viewingProfile).verification!.label}
                       title={
@@ -937,7 +938,7 @@ export default function MyCollectionBinder() {
                         setUserSearch("");
                       }}
                     >
-                      <img
+                      <CardImage
                         src={getProfileAssets(u).avatar}
                         alt={u.username}
                         className="h-8 w-8 rounded-full object-cover"
@@ -947,7 +948,7 @@ export default function MyCollectionBinder() {
                           {u.username}
                         </span>
                         {getProfileAssets(u).verification && (
-                          <img
+                          <CardImage
                             src={getProfileAssets(u).verification!.badge}
                             alt={getProfileAssets(u).verification!.label}
                             title={getProfileAssets(u).verification!.label}

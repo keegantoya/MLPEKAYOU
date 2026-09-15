@@ -1,3 +1,4 @@
+import CardImage from "@/components/CardImage";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -442,7 +443,7 @@ const isLandscape =
                                 </div>
                               ) : (
                                 <div className="relative h-full w-full overflow-hidden rounded-[10px]">
-                                  <img
+                                  <CardImage
                                     src={getCardImage(card)}
                                     alt={card.card_key}
                                     className={isLandscape
