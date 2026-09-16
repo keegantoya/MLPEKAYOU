@@ -325,7 +325,7 @@ const KayouHeader = () => {
     }
     let active = true;
     const refreshInboxCount = async () => {
-      const [messagesResult, requestsResult] = await Promise.all([
+      const [messagesResult, requestsResult, offersResult] = await Promise.all([
         supabase
           .from("messages")
           .select("id", { count: "exact", head: true })
@@ -336,10 +336,18 @@ const KayouHeader = () => {
           .select("id", { count: "exact", head: true })
           .eq("receiver_id", user.id)
           .eq("status", "pending"),
+        supabase
+          .from("trade_offers")
+          .select("id", { count: "exact", head: true })
+          .eq("recipient_id", user.id)
+          .eq("status", "pending")
+          .gt("expires_at", new Date().toISOString()),
       ]);
       if (!active) return;
       setInboxNotificationCount(
-        (messagesResult.count ?? 0) + (requestsResult.count ?? 0),
+        (messagesResult.count ?? 0) +
+          (requestsResult.count ?? 0) +
+          (offersResult.count ?? 0),
       );
     };
     const handleMessageChange = (payload: any) => {
@@ -357,6 +365,16 @@ const KayouHeader = () => {
       if (
         payload.eventType === "INSERT" &&
         payload.new?.receiver_id === user.id &&
+        payload.new?.status === "pending"
+      ) {
+        playNotificationSound();
+      }
+    };
+    const handleTradeOfferChange = (payload: any) => {
+      void refreshInboxCount();
+      if (
+        payload.eventType === "INSERT" &&
+        payload.new?.recipient_id === user.id &&
         payload.new?.status === "pending"
       ) {
         playNotificationSound();
@@ -383,6 +401,16 @@ const KayouHeader = () => {
           filter: `receiver_id=eq.${user.id}`,
         },
         handleFriendRequestChange,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "trade_offers",
+          filter: `recipient_id=eq.${user.id}`,
+        },
+        handleTradeOfferChange,
       )
       .subscribe();
     const refresh = () => void refreshInboxCount();
@@ -722,7 +750,6 @@ const KayouHeader = () => {
   .kayou-header-light .kayou-staff-menu button{color:#312d24}
   .kayou-staff-button:focus-visible,.kayou-staff-menu button:focus-visible{outline:2px solid #e7c84b;outline-offset:3px}
   @media(min-width:640px){.kayou-staff-button span{display:none}}
-
   .kayou-header-light { color: #5f4a12; }
   .kayou-header-light [class*="bg-[#0"],
   .kayou-header-light [class*="bg-[#1"],

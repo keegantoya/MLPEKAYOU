@@ -770,6 +770,7 @@ export default function Inbox() {
         item.id === offer.id ? ({ ...item, ...data } as TradeOffer) : item,
       ),
     );
+    window.dispatchEvent(new CustomEvent("header-inbox-update"));
     setRespondingOfferId(null);
   }
   async function cancelOffer(offer: TradeOffer) {
@@ -809,6 +810,7 @@ export default function Inbox() {
         item.id === offer.id ? ({ ...item, ...data } as TradeOffer) : item,
       ),
     );
+    window.dispatchEvent(new CustomEvent("header-inbox-update"));
     setCancellingOfferId(null);
   }
   function openFriendProfile(username: string) {

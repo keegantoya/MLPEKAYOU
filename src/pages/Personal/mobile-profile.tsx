@@ -216,7 +216,7 @@ const MobileProfile = () => {
     }
     let active = true;
     const refreshInboxCount = async () => {
-      const [messagesResult, requestsResult] = await Promise.all([
+      const [messagesResult, requestsResult, offersResult] = await Promise.all([
         supabase
           .from("messages")
           .select("id", { count: "exact", head: true })
@@ -227,10 +227,18 @@ const MobileProfile = () => {
           .select("id", { count: "exact", head: true })
           .eq("receiver_id", profile.id)
           .eq("status", "pending"),
+        supabase
+          .from("trade_offers")
+          .select("id", { count: "exact", head: true })
+          .eq("recipient_id", profile.id)
+          .eq("status", "pending")
+          .gt("expires_at", new Date().toISOString()),
       ]);
       if (!active) return;
       setInboxNotificationCount(
-        (messagesResult.count ?? 0) + (requestsResult.count ?? 0),
+        (messagesResult.count ?? 0) +
+          (requestsResult.count ?? 0) +
+          (offersResult.count ?? 0),
       );
     };
     const refresh = () => void refreshInboxCount();
@@ -253,6 +261,16 @@ const MobileProfile = () => {
           schema: "public",
           table: "friend_requests",
           filter: `receiver_id=eq.${profile.id}`,
+        },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "trade_offers",
+          filter: `recipient_id=eq.${profile.id}`,
         },
         refresh,
       )
@@ -878,8 +896,8 @@ const MobileProfile = () => {
           title: "Inbox & Friends",
           subtitle:
             inboxNotificationCount > 0
-              ? "New messages or friend requests"
-              : "Messages and friends",
+              ? "New messages, friend requests, or offers"
+              : "Messages, friends, and offers",
           onClick: () => navigate("/inbox"),
           badge: inboxNotificationCount,
         },
@@ -1944,9 +1962,9 @@ const MobileProfile = () => {
                 isLightMode ? "text-zinc-600" : "text-zinc-300"
               }`}
             >
-              MLPEKAYOU can now notify you about messages and friend requests.
-              To turn notifications off later, tap Edit Names and use the alarm
-              bell switch.
+              MLPEKAYOU can now notify you about messages, friend requests, and
+              trade offers. To turn notifications off later, tap Edit Names and
+              use the alarm bell switch.
             </p>
             <button
               type="button"
