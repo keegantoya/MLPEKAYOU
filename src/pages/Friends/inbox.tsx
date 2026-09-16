@@ -64,7 +64,7 @@ interface TradeOffer {
   target_card_key: string;
   offered_cards: OfferCardRef[];
   contact: string;
-  status: "pending" | "accepted" | "declined";
+  status: "pending" | "accepted" | "declined" | "cancelled" | "expired";
   response_note: string | null;
   created_at: string;
   expires_at: string;
@@ -193,6 +193,9 @@ export default function Inbox() {
   >({});
   const [offerNotes, setOfferNotes] = useState<Record<string, string>>({});
   const [respondingOfferId, setRespondingOfferId] = useState<string | null>(
+    null,
+  );
+  const [cancellingOfferId, setCancellingOfferId] = useState<string | null>(
     null,
   );
   const [offerError, setOfferError] = useState("");
@@ -769,6 +772,45 @@ export default function Inbox() {
     );
     setRespondingOfferId(null);
   }
+  async function cancelOffer(offer: TradeOffer) {
+    if (!currentUserId || cancellingOfferId) return;
+    if (
+      offer.sender_id !== currentUserId ||
+      getOfferStatus(offer) !== "pending"
+    ) {
+      setOfferError("Only your own pending offers can be cancelled.");
+      return;
+    }
+    setCancellingOfferId(offer.id);
+    setOfferError("");
+    const cancelledAt = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("trade_offers")
+      .update({
+        status: "cancelled",
+        responded_at: cancelledAt,
+      })
+      .eq("id", offer.id)
+      .eq("sender_id", currentUserId)
+      .eq("status", "pending")
+      .gt("expires_at", cancelledAt)
+      .select(
+        "id, sender_id, recipient_id, target_set_id, target_card_key, offered_cards, contact, status, response_note, created_at, expires_at, responded_at",
+      )
+      .maybeSingle();
+    if (error || !data) {
+      console.error("Unable to cancel trade offer:", error);
+      setOfferError("This offer could not be cancelled. It may have expired.");
+      setCancellingOfferId(null);
+      return;
+    }
+    setOffers((current) =>
+      current.map((item) =>
+        item.id === offer.id ? ({ ...item, ...data } as TradeOffer) : item,
+      ),
+    );
+    setCancellingOfferId(null);
+  }
   function openFriendProfile(username: string) {
     window.location.href = `https://www.mlpekayou.community/${encodeURIComponent(
       username,
@@ -952,7 +994,7 @@ export default function Inbox() {
             }`}
           >
             <Handshake size={16} />
-            Offers
+            Offers BETA
             {pendingIncomingOffers > 0 && (
               <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                 {pendingIncomingOffers > 99 ? "99+" : pendingIncomingOffers}
@@ -1290,16 +1332,7 @@ export default function Inbox() {
                 : "border-white/[0.08] bg-[#151718]"
             }`}
           >
-            <div className="mb-4 flex items-center gap-3">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                  isLightMode
-                    ? "bg-[#c89d13]/10 text-[#725700]"
-                    : "bg-[#FFD54A]/10 text-[#FFE27A]"
-                }`}
-              >
-                <Handshake size={20} />
-              </div>
+            <div className="mb-4 flex items-center">
               <div>
                 <h2 className="text-lg font-semibold">Card Offers</h2>
                 <p
@@ -1307,7 +1340,8 @@ export default function Inbox() {
                     isLightMode ? "text-zinc-500" : "text-zinc-400"
                   }`}
                 >
-                  Incoming and sent offers stay here with their response.
+                  Incoming and sent offers stay here. Only unanswered offers
+                  that expire count as missed responses.
                 </p>
               </div>
             </div>
@@ -1354,11 +1388,15 @@ export default function Inbox() {
                       ? "bg-emerald-500/10 text-emerald-500"
                       : status === "declined"
                         ? "bg-red-500/10 text-red-500"
-                        : status === "expired"
-                          ? "bg-zinc-500/10 text-zinc-500"
-                          : isLightMode
-                            ? "bg-[#c89d13]/10 text-[#725700]"
-                            : "bg-[#FFD54A]/10 text-[#FFE27A]";
+                        : status === "cancelled"
+                          ? isLightMode
+                            ? "bg-zinc-200 text-zinc-600"
+                            : "bg-white/[0.08] text-zinc-300"
+                          : status === "expired"
+                            ? "bg-zinc-500/10 text-zinc-500"
+                            : isLightMode
+                              ? "bg-[#c89d13]/10 text-[#725700]"
+                              : "bg-[#FFD54A]/10 text-[#FFE27A]";
                   return (
                     <article
                       key={offer.id}
@@ -1429,10 +1467,10 @@ export default function Inbox() {
                             <div
                               key={`${card.set_id}-${card.card_key}-${index}`}
                             >
-                              <div className="relative aspect-[5/7] w-16 overflow-hidden rounded-lg sm:w-20">
+                              <div className="relative aspect-[5/7] w-24 overflow-hidden rounded-[6px] sm:w-28">
                                 <OfferCardThumbnail card={card} />
                               </div>
-                              <div className="mt-1 max-w-20 truncate text-center text-[10px] font-semibold">
+                              <div className="mt-1 max-w-28 truncate text-center text-[10px] font-semibold">
                                 {card.card_key}
                               </div>
                             </div>
@@ -1448,10 +1486,10 @@ export default function Inbox() {
                           for
                         </div>
                         <div className="shrink-0">
-                          <div className="relative aspect-[5/7] w-20 overflow-hidden rounded-lg border-2 border-[#FFD54A] sm:w-24">
+                          <div className="relative aspect-[5/7] w-24 overflow-hidden rounded-[6px] sm:w-28">
                             <OfferCardThumbnail card={targetCard} />
                           </div>
-                          <div className="mt-1 max-w-24 truncate text-center text-[10px] font-bold">
+                          <div className="mt-1 max-w-28 truncate text-center text-[10px] font-bold">
                             {offer.target_card_key}
                           </div>
                         </div>
@@ -1466,6 +1504,17 @@ export default function Inbox() {
                           {offer.contact}
                         </span>
                       </div>
+                      {status === "cancelled" && (
+                        <div
+                          className={`mt-3 rounded-xl border px-3 py-2.5 text-sm font-semibold ${
+                            isLightMode
+                              ? "border-zinc-300 bg-zinc-100 text-zinc-700"
+                              : "border-white/[0.08] bg-white/[0.04] text-zinc-200"
+                          }`}
+                        >
+                          This offer was cancelled.
+                        </div>
+                      )}
                       {offer.response_note && (
                         <div
                           className={`mt-3 rounded-xl border px-3 py-2.5 text-sm ${
@@ -1530,6 +1579,24 @@ export default function Inbox() {
                                 : "Accept"}
                             </button>
                           </div>
+                        </div>
+                      )}
+                      {!incoming && isPending && (
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => void cancelOffer(offer)}
+                            disabled={cancellingOfferId === offer.id}
+                            className={`rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-50 ${
+                              isLightMode
+                                ? "bg-zinc-200 text-zinc-700 hover:bg-zinc-300"
+                                : "bg-white/[0.08] text-zinc-200 hover:bg-white/[0.12]"
+                            }`}
+                          >
+                            {cancellingOfferId === offer.id
+                              ? "Cancelling..."
+                              : "Cancel offer"}
+                          </button>
                         </div>
                       )}
                     </article>

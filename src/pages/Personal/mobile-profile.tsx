@@ -17,12 +17,10 @@ import {
   LogOut,
   Pencil,
 } from "lucide-react";
-
 const PUSH_PUBLIC_KEY =
   "BMd3JmZpZQ2g4-wuBUeuUEMGJAuoaW8E2qTJkzOFWGh8G2tWg7SYca6wIACs_Nbd3JunbUFBHww91hfHQ6PM2xE";
 const PUSH_SERVICE_WORKER = "/push-sw.js";
 const PUSH_SCOPE = "/push-notifications/";
-
 const MobileProfile = () => {
   const navigate = useNavigate();
   const loadCounts = useRef<Record<string, number>>({});
@@ -59,6 +57,8 @@ const MobileProfile = () => {
   );
   const [discord, setDiscord] = useState("");
   const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
+  const [offerStrikeCount, setOfferStrikeCount] = useState(0);
+  const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [usernameDraft, setUsernameDraft] = useState("");
   const [discordDraft, setDiscordDraft] = useState("");
@@ -174,6 +174,14 @@ const MobileProfile = () => {
         );
         setDiscord(tradingProfile?.discord_username || "");
         setTradeAccessRevoked(Boolean(tradingProfile?.trade_access_revoked));
+        const { count: strikeCount } = await checkedProfileRequest(
+          supabase
+            .from("trade_offer_expiration_strikes")
+            .select("id", { count: "exact", head: true })
+            .eq("recipient_user_id", session.user.id)
+            .is("cleared_at", null),
+        );
+        setOfferStrikeCount(Math.min(strikeCount ?? 0, 3));
         setUsernameDraft(data?.username || "");
         setDiscordDraft(tradingProfile?.discord_username || "");
         const { data: leaderboardBan, error: leaderboardBanError } =
@@ -389,7 +397,6 @@ const MobileProfile = () => {
         mounted = false;
       };
     }
-
     void getExistingPushRegistration()
       .then((registration) => registration?.pushManager.getSubscription())
       .then((subscription) => {
@@ -399,16 +406,13 @@ const MobileProfile = () => {
         console.error("Unable to check push notification status:", error);
         if (mounted) setPushEnabled(false);
       });
-
     return () => {
       mounted = false;
     };
   }, [profile?.id]);
-
   async function enablePushNotifications() {
     if (pushBusy) return;
     setPushStatusMessage("");
-
     if (!supportsWebPush()) {
       setPushStatusMessage(
         "Push notifications are not supported in this browser. On iPhone, add MLPEKAYOU to your Home Screen and open it there.",
@@ -421,7 +425,6 @@ const MobileProfile = () => {
       );
       return;
     }
-
     setPushBusy(true);
     try {
       const permission = await Notification.requestPermission();
@@ -433,7 +436,6 @@ const MobileProfile = () => {
         );
         return;
       }
-
       const registration = await getPushRegistration();
       let subscription = await registration.pushManager.getSubscription();
       let createdSubscription = false;
@@ -444,7 +446,6 @@ const MobileProfile = () => {
         });
         createdSubscription = true;
       }
-
       const { error } = await supabase.functions.invoke("push-notifications", {
         body: {
           action: "subscribe",
@@ -455,7 +456,6 @@ const MobileProfile = () => {
         if (createdSubscription) await subscription.unsubscribe();
         throw error;
       }
-
       setPushEnabled(true);
       setShowPushEnabledModal(true);
     } catch (error) {
@@ -467,7 +467,6 @@ const MobileProfile = () => {
       setPushBusy(false);
     }
   }
-
   async function disablePushNotifications() {
     if (pushBusy) return;
     setPushBusy(true);
@@ -798,6 +797,14 @@ const MobileProfile = () => {
   }, []);
   const { avatar, verification } = getProfileAssets(profile);
   const displayName = profile?.username || "Twilight Sparkle";
+  const offerStrikeLabel =
+    offerStrikeCount === 0
+      ? "Clean"
+      : offerStrikeCount === 1
+        ? "Good"
+        : offerStrikeCount === 2
+          ? "Bad"
+          : "Access revoked";
   const menuSections = [
     ...(lgsAccess !== null || canReviewLGS
       ? [
@@ -1088,24 +1095,43 @@ const MobileProfile = () => {
                   <div
                     className={`mt-4 rounded-xl border px-3 py-3 text-sm leading-relaxed ${isLightMode ? "border-red-200 bg-red-50 text-red-800" : "border-red-400/20 bg-red-400/[0.08] text-red-200"}`}
                   >
-                    Your trade and sale rights have been revoked based on
-                    community reports. You can appeal by emailing{" "}
-                    <a
-                      href="mailto:mlpekayou\@gmail.com"
-                      className="font-semibold underline"
-                    >
-                      mlpekayou\@gmail.com
-                    </a>{" "}
-                    or opening a ticket in the{" "}
-                    <a
-                      href="https://discord.gg/mlpekayou"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-semibold underline"
-                    >
-                      MLPEKAYOU Discord server
-                    </a>
-                    .
+                    {offerStrikeCount >= 3 ? (
+                      <>
+                        Your Discord username and trade and sale rights were
+                        revoked after three unanswered offers expired. You must
+                        appeal in the{" "}
+                        <a
+                          href="https://discord.gg/mlpekayou"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold underline"
+                        >
+                          MLPEKAYOU Discord server
+                        </a>{" "}
+                        and prove to a moderator that your account is active.
+                      </>
+                    ) : (
+                      <>
+                        Your trade and sale rights have been revoked based on
+                        community reports. You can appeal by emailing{" "}
+                        <a
+                          href="mailto:mlpekayou@gmail.com"
+                          className="font-semibold underline"
+                        >
+                          mlpekayou@gmail.com
+                        </a>{" "}
+                        or opening a ticket in the{" "}
+                        <a
+                          href="https://discord.gg/mlpekayou"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold underline"
+                        >
+                          MLPEKAYOU Discord server
+                        </a>
+                        .
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -1310,8 +1336,74 @@ const MobileProfile = () => {
           </div>
         </div>
       </div>
+      {/* Offer Response Strikes */}
+      <div
+        className={`relative mx-5 mt-6 overflow-hidden rounded-2xl border p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)] ${
+          offerStrikeCount >= 3
+            ? isLightMode
+              ? "border-red-500/25 bg-red-50"
+              : "border-red-400/25 bg-red-500/[0.08]"
+            : offerStrikeCount === 2
+              ? isLightMode
+                ? "border-orange-500/25 bg-orange-50"
+                : "border-orange-400/25 bg-orange-500/[0.08]"
+              : isLightMode
+                ? "border-emerald-600/20 bg-emerald-50"
+                : "border-emerald-400/20 bg-emerald-400/[0.06]"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold">Offer response strikes</p>
+              <button
+                type="button"
+                aria-label="Learn about offer response strikes"
+                onClick={() => setShowOfferStrikeInfo(true)}
+                className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-black transition-colors ${
+                  isLightMode
+                    ? "border-black/15 bg-white/70 text-zinc-700 hover:bg-white"
+                    : "border-white/15 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.12] hover:text-white"
+                }`}
+              >
+                ?
+              </button>
+            </div>
+            <p className="mt-0.5 text-xs text-zinc-500">{offerStrikeLabel}</p>
+          </div>
+          <span
+            className={`text-xl font-black ${
+              offerStrikeCount >= 3
+                ? "text-red-500"
+                : offerStrikeCount === 2
+                  ? "text-orange-500"
+                  : "text-emerald-500"
+            }`}
+          >
+            {offerStrikeCount}/3
+          </span>
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {[1, 2, 3].map((strike) => (
+            <span
+              key={strike}
+              className={`h-2 rounded-full ${
+                strike <= offerStrikeCount
+                  ? offerStrikeCount >= 3
+                    ? "bg-red-500"
+                    : offerStrikeCount === 2
+                      ? "bg-orange-500"
+                      : "bg-emerald-500"
+                  : isLightMode
+                    ? "bg-black/10"
+                    : "bg-white/10"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
       {/* Quick Stats */}
-      <div className="relative mt-6 grid grid-cols-2 gap-3 px-5">
+      <div className="relative mt-3 grid grid-cols-2 gap-3 px-5">
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
           <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
             {stats.owned.toLocaleString()}
@@ -1382,6 +1474,66 @@ const MobileProfile = () => {
           )}
         </div>
       </div>
+      {showOfferStrikeInfo && (
+        <div
+          className={`fixed inset-0 z-[140] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/30" : "bg-black/80"}`}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowOfferStrikeInfo(false);
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-offer-strikes-title"
+            className={`max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border p-5 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/[0.10] bg-[#151718] text-white"}`}
+          >
+            <h2
+              id="mobile-offer-strikes-title"
+              className="text-xl font-semibold tracking-tight"
+            >
+              Offer response strikes
+            </h2>
+            <div
+              className={`mt-3 space-y-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
+            >
+              <p>
+                You gain a strike when someone sends you a trade offer and you
+                do not accept or decline it within the seven days provided.
+              </p>
+              <p>
+                At three strikes, your account is treated as inactive in the
+                Trading Post. Your Discord username and trading privileges are
+                removed from public view so active users can continue trading.
+              </p>
+              <p>
+                Reinstatement is easy. Open a ticket in the MLPEKAYOU Discord
+                server and prove to a staff member that your account is active.
+                Once reinstated, you will need to set your Discord username
+                again in your profile.
+              </p>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <a
+                href="https://discord.gg/mlpekayou"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center rounded-xl bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-black hover:bg-[#FFE27A]"
+              >
+                Open Discord
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowOfferStrikeInfo(false)}
+                className={`rounded-xl border px-4 py-3 text-sm font-semibold ${isLightMode ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"}`}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* LEADERBOARD BAN CONFIRMATION MODAL */}
       {showLeaderboardBanConfirm && (
         <div
@@ -1672,7 +1824,7 @@ const MobileProfile = () => {
               className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
             >
               If you need to contact the developer, you can join the MLPEKAYOU
-              Discord Server or email mlpekayou\@gmail.com.
+              Discord Server or email mlpekayou@gmail.com.
             </p>
             <p
               className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
@@ -1711,7 +1863,7 @@ const MobileProfile = () => {
               </button>
             </div>
             <a
-              href="mailto:mlpekayou\@gmail.com"
+              href="mailto:mlpekayou@gmail.com"
               className={`mt-3 block w-full rounded-xl border px-4 py-3 text-center text-sm font-semibold transition-colors ${
                 isLightMode
                   ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-50"
@@ -1985,7 +2137,6 @@ function preloadProfileAvatar(src: string | null | undefined): Promise<void> {
     if (image.complete) resolve();
   });
 }
-
 function supportsWebPush() {
   return (
     typeof window !== "undefined" &&
@@ -1995,11 +2146,9 @@ function supportsWebPush() {
     "PushManager" in window
   );
 }
-
 function isIosBrowser() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
 }
-
 function isStandaloneApp() {
   const standaloneNavigator = navigator as Navigator & {
     standalone?: boolean;
@@ -2009,18 +2158,15 @@ function isStandaloneApp() {
     window.matchMedia("(display-mode: standalone)").matches
   );
 }
-
 function getExistingPushRegistration() {
   return navigator.serviceWorker.getRegistration(PUSH_SCOPE);
 }
-
 async function getPushRegistration() {
   const registration = await navigator.serviceWorker.register(
     PUSH_SERVICE_WORKER,
     { scope: PUSH_SCOPE },
   );
   if (registration.active) return registration;
-
   const worker = registration.installing ?? registration.waiting;
   if (!worker) return registration;
   await new Promise<void>((resolve, reject) => {
@@ -2044,7 +2190,6 @@ async function getPushRegistration() {
   });
   return registration;
 }
-
 function urlBase64ToUint8Array(value: string) {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");

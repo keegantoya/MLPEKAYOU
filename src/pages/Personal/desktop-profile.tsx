@@ -12,7 +12,7 @@ function ShowcaseImage({
   alt: string;
   className: string;
 }) {
-const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
   return failedSrc === src ? (
     <div
       role="img"
@@ -31,60 +31,72 @@ const [failedSrc, setFailedSrc] = useState<string | null>(null);
   );
 }
 export default function DesktopProfile() {
-const navigate = useNavigate();
-const loadCounts = useRef<Record<string, number>>({});
-const [profileLoads, setProfileLoads] = useState<Record<string, boolean>>({ profile: false, stats: false, theme: false, showcase: false });
-const [profileLoadErrors, setProfileLoadErrors] = useState<Record<string, boolean>>({});
-const trackProfileLoad = useCallback(async (key: string, task: () => Promise<void>) => {
-  loadCounts.current[key] = (loadCounts.current[key] ?? 0) + 1;
-  setProfileLoads(previous => ({ ...previous, [key]: false }));
-  try {
-    await task();
-    setProfileLoadErrors(previous => ({ ...previous, [key]: false }));
-  } catch (error) {
-    console.error(`Unable to load profile ${key}:`, error);
-    setProfileLoadErrors(previous => ({ ...previous, [key]: true }));
-  } finally {
-    loadCounts.current[key] -= 1;
-    if (loadCounts.current[key] === 0) setProfileLoads(previous => ({ ...previous, [key]: true }));
-  }
-}, []);
-
-const [profile, setProfile] = useState<any>(null);
-const [isLightMode, setIsLightMode] = useState(
+  const navigate = useNavigate();
+  const loadCounts = useRef<Record<string, number>>({});
+  const [profileLoads, setProfileLoads] = useState<Record<string, boolean>>({
+    profile: false,
+    stats: false,
+    theme: false,
+    showcase: false,
+  });
+  const [profileLoadErrors, setProfileLoadErrors] = useState<
+    Record<string, boolean>
+  >({});
+  const trackProfileLoad = useCallback(
+    async (key: string, task: () => Promise<void>) => {
+      loadCounts.current[key] = (loadCounts.current[key] ?? 0) + 1;
+      setProfileLoads((previous) => ({ ...previous, [key]: false }));
+      try {
+        await task();
+        setProfileLoadErrors((previous) => ({ ...previous, [key]: false }));
+      } catch (error) {
+        console.error(`Unable to load profile ${key}:`, error);
+        setProfileLoadErrors((previous) => ({ ...previous, [key]: true }));
+      } finally {
+        loadCounts.current[key] -= 1;
+        if (loadCounts.current[key] === 0)
+          setProfileLoads((previous) => ({ ...previous, [key]: true }));
+      }
+    },
+    [],
+  );
+  const [profile, setProfile] = useState<any>(null);
+  const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-const [discord, setDiscord] = useState("");
-const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
-const [editingProfile, setEditingProfile] = useState(false);
-const [usernameDraft, setUsernameDraft] = useState("");
-const [discordDraft, setDiscordDraft] = useState("");
-const [savingProfile, setSavingProfile] = useState(false);
-const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
-const [stats, setStats] = useState({
+  const [discord, setDiscord] = useState("");
+  const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
+  const [offerStrikeCount, setOfferStrikeCount] = useState(0);
+  const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [usernameDraft, setUsernameDraft] = useState("");
+  const [discordDraft, setDiscordDraft] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [showUsernameTakenModal, setShowUsernameTakenModal] = useState(false);
+  const [stats, setStats] = useState({
     owned: 0,
     completed: 0,
     friends: 0,
   });
-const [showcaseTab, setShowcaseTab] = useState<
+  const [showcaseTab, setShowcaseTab] = useState<
     "moon" | "star" | "fun" | "rainbow" | "tcg"
   >("moon");
-const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
-const [selectedShowcaseCard, setSelectedShowcaseCard] = useState<any | null>(
+  const [showcaseCards, setShowcaseCards] = useState<any[]>([]);
+  const [selectedShowcaseCard, setSelectedShowcaseCard] = useState<any | null>(
     null,
   );
-const isMoon3SZR001 = (card: any) =>
+  const isMoon3SZR001 = (card: any) =>
     getTradeCardImage(card) === "/cards/third-edition-moon/M3SZR001.webp";
-const [copied, setCopied] = useState(false);
-const [deletionRequested, setDeletionRequested] = useState(false);
-const [showDeletionModal, setShowDeletionModal] = useState(false);
-const [submittingDeletion, setSubmittingDeletion] = useState(false);
-const [leaderboardBanned, setLeaderboardBanned] = useState(false);
-const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
-const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
-const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
+  const [copied, setCopied] = useState(false);
+  const [deletionRequested, setDeletionRequested] = useState(false);
+  const [showDeletionModal, setShowDeletionModal] = useState(false);
+  const [submittingDeletion, setSubmittingDeletion] = useState(false);
+  const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+  const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
+  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
+  const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
     useState(false);
-const tabs = [
+  const tabs = [
     { label: "Collection", path: "/binders" },
     { label: "Inventory", path: "/inventory" },
     { label: "Wishlist & ISO", path: "/iso" },
@@ -93,60 +105,61 @@ const tabs = [
     { label: "Kayou Events", path: "/kayou-news" },
   ];
   useEffect(() => {
-let mounted = true;
-let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-const syncFromDocument = () => {
+    let mounted = true;
+    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+    const syncFromDocument = () => {
       if (!mounted) return;
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-const observer = new MutationObserver(syncFromDocument);
+    const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-const loadThemePreference = async () => {
-    return trackProfileLoad("theme", async () => {
-const {
-        data: { session },
-      } = await checkedProfileRequest(supabase.auth.getSession());
-      if (!mounted) return;
-      if (!session?.user) {
-        setIsLightMode(false);
-        return;
-      }
-const { data, error } = await checkedProfileRequest(supabase
-        .from("user_light_mode_preferences")
-        .select("user_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle());
-      if (!mounted) return;
-      if (error) {
-        console.error(
-          "Unable to load desktop profile theme preference:",
-          error,
+    const loadThemePreference = async () => {
+      return trackProfileLoad("theme", async () => {
+        const {
+          data: { session },
+        } = await checkedProfileRequest(supabase.auth.getSession());
+        if (!mounted) return;
+        if (!session?.user) {
+          setIsLightMode(false);
+          return;
+        }
+        const { data, error } = await checkedProfileRequest(
+          supabase
+            .from("user_light_mode_preferences")
+            .select("user_id")
+            .eq("user_id", session.user.id)
+            .maybeSingle(),
         );
-      } else {
-        setIsLightMode(Boolean(data));
-      }
-      realtimeChannel = supabase
-        .channel(`desktop-profile-theme-${session.user.id}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "user_light_mode_preferences",
-            filter: `user_id=eq.${session.user.id}`,
-          },
-          (payload) => {
-            if (!mounted) return;
-            setIsLightMode(payload.eventType !== "DELETE");
-          },
-        )
-        .subscribe();
-    
-    });
-  };
+        if (!mounted) return;
+        if (error) {
+          console.error(
+            "Unable to load desktop profile theme preference:",
+            error,
+          );
+        } else {
+          setIsLightMode(Boolean(data));
+        }
+        realtimeChannel = supabase
+          .channel(`desktop-profile-theme-${session.user.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "user_light_mode_preferences",
+              filter: `user_id=eq.${session.user.id}`,
+            },
+            (payload) => {
+              if (!mounted) return;
+              setIsLightMode(payload.eventType !== "DELETE");
+            },
+          )
+          .subscribe();
+      });
+    };
     syncFromDocument();
     loadThemePreference();
     return () => {
@@ -158,53 +171,70 @@ const { data, error } = await checkedProfileRequest(supabase
   useEffect(() => {
     loadProfile();
     loadStats();
-const {
+    const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
-      setTimeout(() => { void loadProfile(); void loadStats(); }, 0);
+      setTimeout(() => {
+        void loadProfile();
+        void loadStats();
+      }, 0);
     });
     return () => subscription.unsubscribe();
   }, []);
-async function loadProfile() {
+  async function loadProfile() {
     return trackProfileLoad("profile", async () => {
-const {
-      data: { session },
-    } = await checkedProfileRequest(supabase.auth.getSession());
-    if (!session?.user) return;
-const { data } = await checkedProfileRequest(supabase
-      .from("profiles")
-      .select("id, username, avatar_url")
-      .eq("id", session.user.id)
-      .single());
-    if (data) {
-      await preloadProfileAvatar(getProfileAssets(data).avatar);
-      setProfile(data);
-    }
-    setUsernameDraft(data?.username || "");
-const { data: trading } = await checkedProfileRequest(supabase
-      .from("trading_profiles")
-      .select("discord_username, trade_access_revoked")
-      .eq("user_id", session.user.id)
-      .maybeSingle());
-    setDiscord(trading?.discord_username || "");
-    setDiscordDraft(trading?.discord_username || "");
-    setTradeAccessRevoked(Boolean(trading?.trade_access_revoked));
-const { data: leaderboardBan, error: leaderboardBanError } = await checkedProfileRequest(supabase
-      .from("leaderboard_exclusions")
-      .select("user_id")
-      .eq("user_id", session.user.id)
-      .maybeSingle());
-    if (leaderboardBanError) {
-      console.error("Leaderboard ban status error:", leaderboardBanError);
-    }
-    setLeaderboardBanned(!!leaderboardBan);
-    setLoadingLeaderboardBan(false);
-  
+      const {
+        data: { session },
+      } = await checkedProfileRequest(supabase.auth.getSession());
+      if (!session?.user) return;
+      const { data } = await checkedProfileRequest(
+        supabase
+          .from("profiles")
+          .select("id, username, avatar_url")
+          .eq("id", session.user.id)
+          .single(),
+      );
+      if (data) {
+        await preloadProfileAvatar(getProfileAssets(data).avatar);
+        setProfile(data);
+      }
+      setUsernameDraft(data?.username || "");
+      const { data: trading } = await checkedProfileRequest(
+        supabase
+          .from("trading_profiles")
+          .select("discord_username, trade_access_revoked")
+          .eq("user_id", session.user.id)
+          .maybeSingle(),
+      );
+      setDiscord(trading?.discord_username || "");
+      setDiscordDraft(trading?.discord_username || "");
+      setTradeAccessRevoked(Boolean(trading?.trade_access_revoked));
+      const { count: strikeCount } = await checkedProfileRequest(
+        supabase
+          .from("trade_offer_expiration_strikes")
+          .select("id", { count: "exact", head: true })
+          .eq("recipient_user_id", session.user.id)
+          .is("cleared_at", null),
+      );
+      setOfferStrikeCount(Math.min(strikeCount ?? 0, 3));
+      const { data: leaderboardBan, error: leaderboardBanError } =
+        await checkedProfileRequest(
+          supabase
+            .from("leaderboard_exclusions")
+            .select("user_id")
+            .eq("user_id", session.user.id)
+            .maybeSingle(),
+        );
+      if (leaderboardBanError) {
+        console.error("Leaderboard ban status error:", leaderboardBanError);
+      }
+      setLeaderboardBanned(!!leaderboardBan);
+      setLoadingLeaderboardBan(false);
     });
   }
-async function selfBanFromLeaderboard() {
+  async function selfBanFromLeaderboard() {
     if (leaderboardBanned) return;
-const {
+    const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session?.user) {
@@ -213,7 +243,7 @@ const {
     }
     setLeaderboardBanned(true);
     setLoadingLeaderboardBan(false);
-const { error } = await supabase.from("leaderboard_exclusions").upsert(
+    const { error } = await supabase.from("leaderboard_exclusions").upsert(
       {
         user_id: session.user.id,
         reason:
@@ -230,18 +260,18 @@ const { error } = await supabase.from("leaderboard_exclusions").upsert(
     }
     setLeaderboardBanned(true);
   }
-async function requestAccountDeletion() {
+  async function requestAccountDeletion() {
     if (deletionRequested || submittingDeletion) return;
     setSubmittingDeletion(true);
     try {
-const {
+      const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
         setShowDeletionModal(false);
         return;
       }
-const { error } = await supabase
+      const { error } = await supabase
         .from("account_deletion_requests")
         .insert({
           user_id: session.user.id,
@@ -260,303 +290,317 @@ const { error } = await supabase
       setSubmittingDeletion(false);
     }
   }
-async function loadStats() {
+  async function loadStats() {
     return trackProfileLoad("stats", async () => {
-const {
-      data: { session },
-    } = await checkedProfileRequest(supabase.auth.getSession());
-    if (!session?.user) return;
-const { data: collection } = await checkedProfileRequest(supabase
-      .from("collection_progress_raw")
-      .select("set_id, progress")
-      .eq("user_id", session.user.id));
-const filtered = (collection || []).filter(
-      (row: any) => row.set_id !== "OTHERMERCH",
-    );
-let owned = 0;
-    filtered.forEach((row: any) => {
-      owned += Object.values(row.progress || {}).filter(
-        (value: any) =>
-          value === true ||
-          (typeof value === "object" && value?.owned === true),
-      ).length;
-    });
-const { data: friends } = await checkedProfileRequest(supabase
-      .from("friend_requests")
-      .select("sender_id, receiver_id")
-      .eq("status", "accepted"));
-const friendCount = (friends ?? []).filter(
-      (friend: any) =>
-        friend.sender_id === session.user.id ||
-        friend.receiver_id === session.user.id,
-    ).length;
-const { data: progress } = await checkedProfileRequest(supabase
-      .from("collection_progress")
-      .select("set_id, progress")
-      .eq("user_id", session.user.id));
-const progressMap = new Map(
-      (progress || []).map((row: any) => [String(row.set_id), row]),
-    );
-const sets = [
-      {
-        id: "1",
-        rarities: {
-          R: 30,
-          SR: 20,
-          SSR: 54,
-          HR: 36,
-          UR: 16,
-          LSR: 15,
-          SGR: 8,
-          SC: 7,
-        },
-      },
-      {
-        id: "5",
-        rarities: {
-          R: 30,
-          SR: 15,
-          FR: 18,
-          TR: 12,
-          TGR: 8,
-          MTR: 18,
-          SSR: 15,
-          UR: 15,
-          USR: 8,
-          XR: 7,
-        },
-      },
-      {
-        id: "7",
-        rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 },
-      },
-      {
-        id: "2",
-        rarities: {
-          R: 30,
-          SR: 20,
-          SSR: 54,
-          HR: 30,
-          UR: 16,
-          LSR: 16,
-          SGR: 8,
-          ZR: 7,
-          SC: 7,
-          "SHINING ZR": 1,
-        },
-      },
-      {
-        id: "3",
-        rarities: {
-          R: 60,
-          SR: 40,
-          SSR: 40,
-          HR: 60,
-          UR: 18,
-          LSR: 32,
-          SGR: 16,
-          ZR: 14,
-          SC: 7,
-          SZR: 3,
-        },
-      },
-      {
-        id: "8",
-        rarities: {
-          N: 20,
-          SN: 20,
-          R: 35,
-          SR: 15,
-          SSR: 15,
-          UR: 10,
-          UGR: 9,
-          CR: 12,
-        },
-      },
-      {
-        id: "11",
-        rarities: {
-          N: 20,
-          SN: 20,
-          R: 35,
-          SR: 15,
-          SSR: 15,
-          UR: 10,
-          UGR: 9,
-          CR: 12,
-          SCR: 12,
-        },
-      },
-      {
-        id: "6",
-        rarities: {
-          BASE: 18,
-          R: 30,
-          SR: 14,
-          ST: 20,
-          SSR: 15,
-          FR: 18,
-          TR: 12,
-          TGR: 8,
-          UR: 19,
-          USR: 8,
-          XR: 8,
-        },
-      },
-      {
-        id: "4",
-        rarities: {
-          SSR: 20,
-          SCR: 18,
-          UR: 18,
-          USR: 15,
-          AR: 9,
-          OR: 7,
-          BP: 9,
-          SAR: 9,
-        },
-      },
-      {
-        id: "12",
-        rarities: {
-          C: 48,
-          U: 18,
-          ER: 6,
-          SR: 14,
-          SPR: 28,
-          GR: 12,
-          CR: 12,
-          RR: 6,
-          PER: 12,
-          PSPR: 11,
-          PGR: 6,
-          PCR: 12,
-          PRR: 6,
-        },
-      },
-      {
-        id: "FW",
-        rarities: {
-          C: 48,
-          U: 18,
-          ER: 6,
-          SR: 14,
-          SPR: 28,
-          GR: 12,
-          CR: 12,
-          RR: 6,
-          PER: 12,
-          PSPR: 11,
-          PGR: 6,
-          PCR: 12,
-          PRR: 6,
-        },
-      },
-      {
-        id: "SD",
-        rarities: {
-          C: 9,
-          U: 7,
-          SR: 6,
-          SPR: 10,
-          GR: 6,
-          CR: 6,
-          ER: 6,
-          PER: 12,
-          PRR: 6,
-        },
-      },
-    ];
-let completed = 0;
-    sets.forEach((set) => {
-const found = progressMap.get(set.id);
-      if (!found?.progress) return;
-let total = 0;
-let ownedCards = 0;
-      Object.entries(set.rarities).forEach(([rarity, count]) => {
-        total += count;
-        for (let i = 1; i <= count; i++) {
-          if (found.progress[`${rarity}-${i}`]) {
-            ownedCards++;
-          }
-        }
-      });
-      if (ownedCards === total) completed++;
-    });
-    setStats({
-      owned,
-      completed,
-      friends: friendCount,
-    });
-  
-    });
-  }
-const { avatar, verification } = getProfileAssets(profile);
-const displayName = profile?.username || "Twilight Sparkle";
-  useEffect(() => {
-const loadShowcaseCards = async () => {
-    return trackProfileLoad("showcase", async () => {
-const {
+      const {
         data: { session },
       } = await checkedProfileRequest(supabase.auth.getSession());
       if (!session?.user) return;
-const { data } = await checkedProfileRequest(supabase
-        .from("collection_progress_raw")
-        .select("set_id, progress")
-        .eq("user_id", session.user.id));
-const showcaseRarities = [
-        "SHINING ZR",
-        "SZR",
-        "SC",
-        "SAR",
-        "BP",
-        "SCR",
-        "CR",
-        "XR",
-        "PRR",
+      const { data: collection } = await checkedProfileRequest(
+        supabase
+          .from("collection_progress_raw")
+          .select("set_id, progress")
+          .eq("user_id", session.user.id),
+      );
+      const filtered = (collection || []).filter(
+        (row: any) => row.set_id !== "OTHERMERCH",
+      );
+      let owned = 0;
+      filtered.forEach((row: any) => {
+        owned += Object.values(row.progress || {}).filter(
+          (value: any) =>
+            value === true ||
+            (typeof value === "object" && value?.owned === true),
+        ).length;
+      });
+      const { data: friends } = await checkedProfileRequest(
+        supabase
+          .from("friend_requests")
+          .select("sender_id, receiver_id")
+          .eq("status", "accepted"),
+      );
+      const friendCount = (friends ?? []).filter(
+        (friend: any) =>
+          friend.sender_id === session.user.id ||
+          friend.receiver_id === session.user.id,
+      ).length;
+      const { data: progress } = await checkedProfileRequest(
+        supabase
+          .from("collection_progress")
+          .select("set_id, progress")
+          .eq("user_id", session.user.id),
+      );
+      const progressMap = new Map(
+        (progress || []).map((row: any) => [String(row.set_id), row]),
+      );
+      const sets = [
+        {
+          id: "1",
+          rarities: {
+            R: 30,
+            SR: 20,
+            SSR: 54,
+            HR: 36,
+            UR: 16,
+            LSR: 15,
+            SGR: 8,
+            SC: 7,
+          },
+        },
+        {
+          id: "5",
+          rarities: {
+            R: 30,
+            SR: 15,
+            FR: 18,
+            TR: 12,
+            TGR: 8,
+            MTR: 18,
+            SSR: 15,
+            UR: 15,
+            USR: 8,
+            XR: 7,
+          },
+        },
+        {
+          id: "7",
+          rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 },
+        },
+        {
+          id: "2",
+          rarities: {
+            R: 30,
+            SR: 20,
+            SSR: 54,
+            HR: 30,
+            UR: 16,
+            LSR: 16,
+            SGR: 8,
+            ZR: 7,
+            SC: 7,
+            "SHINING ZR": 1,
+          },
+        },
+        {
+          id: "3",
+          rarities: {
+            R: 60,
+            SR: 40,
+            SSR: 40,
+            HR: 60,
+            UR: 18,
+            LSR: 32,
+            SGR: 16,
+            ZR: 14,
+            SC: 7,
+            SZR: 3,
+          },
+        },
+        {
+          id: "8",
+          rarities: {
+            N: 20,
+            SN: 20,
+            R: 35,
+            SR: 15,
+            SSR: 15,
+            UR: 10,
+            UGR: 9,
+            CR: 12,
+          },
+        },
+        {
+          id: "11",
+          rarities: {
+            N: 20,
+            SN: 20,
+            R: 35,
+            SR: 15,
+            SSR: 15,
+            UR: 10,
+            UGR: 9,
+            CR: 12,
+            SCR: 12,
+          },
+        },
+        {
+          id: "6",
+          rarities: {
+            BASE: 18,
+            R: 30,
+            SR: 14,
+            ST: 20,
+            SSR: 15,
+            FR: 18,
+            TR: 12,
+            TGR: 8,
+            UR: 19,
+            USR: 8,
+            XR: 8,
+          },
+        },
+        {
+          id: "4",
+          rarities: {
+            SSR: 20,
+            SCR: 18,
+            UR: 18,
+            USR: 15,
+            AR: 9,
+            OR: 7,
+            BP: 9,
+            SAR: 9,
+          },
+        },
+        {
+          id: "12",
+          rarities: {
+            C: 48,
+            U: 18,
+            ER: 6,
+            SR: 14,
+            SPR: 28,
+            GR: 12,
+            CR: 12,
+            RR: 6,
+            PER: 12,
+            PSPR: 11,
+            PGR: 6,
+            PCR: 12,
+            PRR: 6,
+          },
+        },
+        {
+          id: "FW",
+          rarities: {
+            C: 48,
+            U: 18,
+            ER: 6,
+            SR: 14,
+            SPR: 28,
+            GR: 12,
+            CR: 12,
+            RR: 6,
+            PER: 12,
+            PSPR: 11,
+            PGR: 6,
+            PCR: 12,
+            PRR: 6,
+          },
+        },
+        {
+          id: "SD",
+          rarities: {
+            C: 9,
+            U: 7,
+            SR: 6,
+            SPR: 10,
+            GR: 6,
+            CR: 6,
+            ER: 6,
+            PER: 12,
+            PRR: 6,
+          },
+        },
       ];
-const cards: any[] = [];
-      (data || []).forEach((row: any) => {
-        Object.entries(row.progress || {}).forEach(([card_key, owned]) => {
-          if (String(row.set_id) === "14") {
-const isOwned =
-              owned === true ||
-              (typeof owned === "object" &&
-                owned !== null &&
-                "owned" in owned &&
-                owned.owned === true);
-            if (isOwned && /^PBP03-RR0[1-6]$/.test(card_key)) {
-              cards.push({ set_id: "14", card_key });
+      let completed = 0;
+      sets.forEach((set) => {
+        const found = progressMap.get(set.id);
+        if (!found?.progress) return;
+        let total = 0;
+        let ownedCards = 0;
+        Object.entries(set.rarities).forEach(([rarity, count]) => {
+          total += count;
+          for (let i = 1; i <= count; i++) {
+            if (found.progress[`${rarity}-${i}`]) {
+              ownedCards++;
             }
-            return;
           }
-          if (!owned) return;
-const rarity =
-            String(row.set_id) === "FW" ||
-            String(row.set_id) === "SD" ||
-            String(row.set_id) === "12" ||
-            String(row.set_id) === "tcgpromos"
-              ? card_key.includes("PRR")
-                ? "PRR"
-                : ""
-              : String(card_key).split("-")[0];
-          if (!showcaseRarities.includes(rarity)) return;
-          cards.push({
-            set_id: String(row.set_id),
-            card_key,
+        });
+        if (ownedCards === total) completed++;
+      });
+      setStats({
+        owned,
+        completed,
+        friends: friendCount,
+      });
+    });
+  }
+  const { avatar, verification } = getProfileAssets(profile);
+  const displayName = profile?.username || "Twilight Sparkle";
+  const offerStrikeLabel =
+    offerStrikeCount === 0
+      ? "Clean"
+      : offerStrikeCount === 1
+        ? "Good"
+        : offerStrikeCount === 2
+          ? "Bad"
+          : "Access revoked";
+  useEffect(() => {
+    const loadShowcaseCards = async () => {
+      return trackProfileLoad("showcase", async () => {
+        const {
+          data: { session },
+        } = await checkedProfileRequest(supabase.auth.getSession());
+        if (!session?.user) return;
+        const { data } = await checkedProfileRequest(
+          supabase
+            .from("collection_progress_raw")
+            .select("set_id, progress")
+            .eq("user_id", session.user.id),
+        );
+        const showcaseRarities = [
+          "SHINING ZR",
+          "SZR",
+          "SC",
+          "SAR",
+          "BP",
+          "SCR",
+          "CR",
+          "XR",
+          "PRR",
+        ];
+        const cards: any[] = [];
+        (data || []).forEach((row: any) => {
+          Object.entries(row.progress || {}).forEach(([card_key, owned]) => {
+            if (String(row.set_id) === "14") {
+              const isOwned =
+                owned === true ||
+                (typeof owned === "object" &&
+                  owned !== null &&
+                  "owned" in owned &&
+                  owned.owned === true);
+              if (isOwned && /^PBP03-RR0[1-6]$/.test(card_key)) {
+                cards.push({ set_id: "14", card_key });
+              }
+              return;
+            }
+            if (!owned) return;
+            const rarity =
+              String(row.set_id) === "FW" ||
+              String(row.set_id) === "SD" ||
+              String(row.set_id) === "12" ||
+              String(row.set_id) === "tcgpromos"
+                ? card_key.includes("PRR")
+                  ? "PRR"
+                  : ""
+                : String(card_key).split("-")[0];
+            if (!showcaseRarities.includes(rarity)) return;
+            cards.push({
+              set_id: String(row.set_id),
+              card_key,
+            });
           });
         });
+        setShowcaseCards(cards);
       });
-      setShowcaseCards(cards);
-    
-    });
-  };
+    };
     loadShowcaseCards();
   }, []);
-const getTradeCardImage = (card: any) => {
+  const getTradeCardImage = (card: any) => {
     if (!card) return "";
     if (card.set_id === "friendshipsbegin" || card.set_id === "SD") {
-const cleanKey = String(card.card_key)
+      const cleanKey = String(card.card_key)
         .replace(/^BONUS-/, "")
         .replace(/^STARTER-/, "");
       return `/friendships-begin/${cleanKey}.webp`;
@@ -573,9 +617,9 @@ const cleanKey = String(card.card_key)
     if (card.set_id === "tcgpromos") {
       return `/tcgpromos/${card.card_key}.webp`;
     }
-const [rarityRaw, number] = String(card.card_key).split("-");
-const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
-const config: Record<string, { folder: string; prefix: string }> = {
+    const [rarityRaw, number] = String(card.card_key).split("-");
+    const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
+    const config: Record<string, { folder: string; prefix: string }> = {
       "1": { folder: "first-edition-moon", prefix: "M1" },
       "2": { folder: "second-edition-moon", prefix: "M2" },
       "3": { folder: "third-edition-moon", prefix: "M3" },
@@ -586,23 +630,23 @@ const config: Record<string, { folder: string; prefix: string }> = {
       "8": { folder: "fun-moments-two", prefix: "FM2" },
       "11": { folder: "fun-moments-three", prefix: "FM3" },
     };
-const c = config[String(card.set_id)];
+    const c = config[String(card.set_id)];
     if (!c) return "";
     return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(
       3,
       "0",
     )}.webp`;
   };
-async function handleProfileEdit() {
+  async function handleProfileEdit() {
     if (editingProfile) {
       setSavingProfile(true);
-const {
+      const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.user) {
-const originalUsername = profile?.username || "";
-const nextUsername = usernameDraft.trim();
-const { data: existingUsername, error: usernameCheckError } =
+        const originalUsername = profile?.username || "";
+        const nextUsername = usernameDraft.trim();
+        const { data: existingUsername, error: usernameCheckError } =
           await supabase
             .from("profiles")
             .select("id")
@@ -623,7 +667,7 @@ const { data: existingUsername, error: usernameCheckError } =
           setSavingProfile(false);
           return;
         }
-const { error: usernameError } = await supabase
+        const { error: usernameError } = await supabase
           .from("profiles")
           .update({ username: nextUsername })
           .eq("id", session.user.id);
@@ -640,7 +684,7 @@ const { error: usernameError } = await supabase
           setSavingProfile(false);
           return;
         }
-const { error: authUsernameError } = await supabase.auth.updateUser({
+        const { error: authUsernameError } = await supabase.auth.updateUser({
           data: { username: nextUsername },
         });
         if (authUsernameError)
@@ -648,17 +692,15 @@ const { error: authUsernameError } = await supabase.auth.updateUser({
             "Failed to update username metadata:",
             authUsernameError,
           );
-const { error: tradingError } = tradeAccessRevoked
+        const { error: tradingError } = tradeAccessRevoked
           ? { error: null }
-          : await supabase
-              .from("trading_profiles")
-              .upsert(
-                {
-                  user_id: session.user.id,
-                  discord_username: discordDraft.trim(),
-                },
-                { onConflict: "user_id" },
-              );
+          : await supabase.from("trading_profiles").upsert(
+              {
+                user_id: session.user.id,
+                discord_username: discordDraft.trim(),
+              },
+              { onConflict: "user_id" },
+            );
         if (tradingError) {
           console.error("Failed to save Discord username:", tradingError);
           setSavingProfile(false);
@@ -672,12 +714,12 @@ const { error: tradingError } = tradeAccessRevoked
     }
     setEditingProfile(!editingProfile);
   }
-function handleShareProfile() {
-const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
+  function handleShareProfile() {
+    const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url);
     } else {
-const textArea = document.createElement("textarea");
+      const textArea = document.createElement("textarea");
       textArea.value = url;
       textArea.style.position = "fixed";
       textArea.style.left = "-999999px";
@@ -693,7 +735,7 @@ const textArea = document.createElement("textarea");
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   }
-const showcaseTabs: Array<
+  const showcaseTabs: Array<
     ["moon" | "star" | "fun" | "rainbow" | "tcg", string]
   > = [
     ["moon", "Moon"],
@@ -702,7 +744,7 @@ const showcaseTabs: Array<
     ["rainbow", "Rainbow"],
     ["tcg", "TCG"],
   ];
-const visibleShowcaseCards = showcaseCards
+  const visibleShowcaseCards = showcaseCards
     .filter((card) => {
       switch (showcaseTab) {
         case "moon":
@@ -743,7 +785,7 @@ const visibleShowcaseCards = showcaseCards
       }
     })
     .sort((a, b) => {
-const setOrder: Record<string, number> = {
+      const setOrder: Record<string, number> = {
         "7": 1,
         "8": 2,
         "11": 3,
@@ -760,7 +802,7 @@ const setOrder: Record<string, number> = {
         tcgpromos: 14,
         "14": 15,
       };
-const rarityOrder: Record<string, number> = {
+      const rarityOrder: Record<string, number> = {
         SC: 1,
         "SHINING ZR": 2,
         SZR: 3,
@@ -771,14 +813,14 @@ const rarityOrder: Record<string, number> = {
         XR: 1,
         PRR: 1,
       };
-const setDiff =
+      const setDiff =
         (setOrder[String(a.set_id)] ?? 999) -
         (setOrder[String(b.set_id)] ?? 999);
       if (setDiff !== 0) return setDiff;
       if (String(a.set_id) === "14") {
         return String(a.card_key).localeCompare(String(b.card_key));
       }
-const rarityA = [
+      const rarityA = [
         "12",
         "FW",
         "SD",
@@ -787,7 +829,7 @@ const rarityA = [
       ].includes(String(a.set_id))
         ? "PRR"
         : String(a.card_key).split("-")[0];
-const rarityB = [
+      const rarityB = [
         "12",
         "FW",
         "SD",
@@ -796,15 +838,17 @@ const rarityB = [
       ].includes(String(b.set_id))
         ? "PRR"
         : String(b.card_key).split("-")[0];
-const rarityDiff =
+      const rarityDiff =
         (rarityOrder[rarityA] ?? 999) - (rarityOrder[rarityB] ?? 999);
       if (rarityDiff !== 0) return rarityDiff;
-const numA = parseInt(String(a.card_key).match(/\d+/)?.[0] ?? "0", 10);
-const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
+      const numA = parseInt(String(a.card_key).match(/\d+/)?.[0] ?? "0", 10);
+      const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
       return numA - numB;
     });
-  if (!Object.values(profileLoads).every(Boolean)) return <ProfileLoadingScreen light={isLightMode} failed={false} />;
-  if (Object.values(profileLoadErrors).some(Boolean) || !profile) return <ProfileLoadingScreen light={isLightMode} failed />;
+  if (!Object.values(profileLoads).every(Boolean))
+    return <ProfileLoadingScreen light={isLightMode} failed={false} />;
+  if (Object.values(profileLoadErrors).some(Boolean) || !profile)
+    return <ProfileLoadingScreen light={isLightMode} failed />;
   return (
     <div
       className={`min-h-screen transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}
@@ -899,6 +943,77 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
                     </span>
                   </div>
                 )}
+                {!editingProfile && (
+                  <div
+                    className={`mt-4 max-w-md rounded-2xl border px-4 py-3 ${
+                      offerStrikeCount >= 3
+                        ? isLightMode
+                          ? "border-red-500/25 bg-red-50"
+                          : "border-red-400/25 bg-red-500/[0.08]"
+                        : offerStrikeCount === 2
+                          ? isLightMode
+                            ? "border-orange-500/25 bg-orange-50"
+                            : "border-orange-400/25 bg-orange-500/[0.08]"
+                          : isLightMode
+                            ? "border-emerald-600/20 bg-emerald-50"
+                            : "border-emerald-400/20 bg-emerald-400/[0.06]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold">
+                            Offer response strikes
+                          </p>
+                          <button
+                            type="button"
+                            aria-label="Learn about offer response strikes"
+                            onClick={() => setShowOfferStrikeInfo(true)}
+                            className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-black transition-colors ${
+                              isLightMode
+                                ? "border-black/15 bg-white/70 text-zinc-700 hover:bg-white"
+                                : "border-white/15 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.12] hover:text-white"
+                            }`}
+                          >
+                            ?
+                          </button>
+                        </div>
+                        <p className="mt-0.5 text-xs text-zinc-500">
+                          {offerStrikeLabel}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-lg font-black ${
+                          offerStrikeCount >= 3
+                            ? "text-red-500"
+                            : offerStrikeCount === 2
+                              ? "text-orange-500"
+                              : "text-emerald-500"
+                        }`}
+                      >
+                        {offerStrikeCount}/3
+                      </span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      {[1, 2, 3].map((strike) => (
+                        <span
+                          key={strike}
+                          className={`h-2 rounded-full ${
+                            strike <= offerStrikeCount
+                              ? offerStrikeCount >= 3
+                                ? "bg-red-500"
+                                : offerStrikeCount === 2
+                                  ? "bg-orange-500"
+                                  : "bg-emerald-500"
+                              : isLightMode
+                                ? "bg-black/10"
+                                : "bg-white/10"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {tradeAccessRevoked && (
                   <div
                     className={`mt-4 rounded-2xl border px-4 py-3 text-sm leading-relaxed ${
@@ -907,24 +1022,43 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
                         : "border-red-400/20 bg-red-500/10 text-red-300"
                     }`}
                   >
-                    Your trade and sale rights have been revoked based on
-                    community reports. You can appeal by emailing{" "}
-                    <a
-                      className="font-bold underline"
-                      href="mailto:mlpekayou@gmail.com"
-                    >
-                      mlpekayou@gmail.com
-                    </a>{" "}
-                    or opening a ticket in the{" "}
-                    <a
-                      className="font-bold underline"
-                      href="https://discord.gg/mlpekayou"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      MLPEKAYOU Discord server
-                    </a>
-                    .
+                    {offerStrikeCount >= 3 ? (
+                      <>
+                        Your Discord username and trade and sale rights were
+                        revoked after three unanswered offers expired. You must
+                        appeal in the{" "}
+                        <a
+                          className="font-bold underline"
+                          href="https://discord.gg/mlpekayou"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          MLPEKAYOU Discord server
+                        </a>{" "}
+                        and prove to a moderator that your account is active.
+                      </>
+                    ) : (
+                      <>
+                        Your trade and sale rights have been revoked based on
+                        community reports. You can appeal by emailing{" "}
+                        <a
+                          className="font-bold underline"
+                          href="mailto:mlpekayou@gmail.com"
+                        >
+                          mlpekayou@gmail.com
+                        </a>{" "}
+                        or opening a ticket in the{" "}
+                        <a
+                          className="font-bold underline"
+                          href="https://discord.gg/mlpekayou"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          MLPEKAYOU Discord server
+                        </a>
+                        .
+                      </>
+                    )}
                   </div>
                 )}
                 {profile?.bio && (
@@ -1175,6 +1309,66 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
           </button>
         </div>
       </div>
+      {showOfferStrikeInfo && (
+        <div
+          className={`fixed inset-0 z-[140] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/30" : "bg-black/80"}`}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowOfferStrikeInfo(false);
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="desktop-offer-strikes-title"
+            className={`max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/[0.10] bg-[#151718] text-white"}`}
+          >
+            <h2
+              id="desktop-offer-strikes-title"
+              className="text-xl font-semibold tracking-tight"
+            >
+              Offer response strikes
+            </h2>
+            <div
+              className={`mt-3 space-y-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
+            >
+              <p>
+                You gain a strike when someone sends you a trade offer and you
+                do not accept or decline it within the seven days provided.
+              </p>
+              <p>
+                At three strikes, your account is treated as inactive in the
+                Trading Post. Your Discord username and trading privileges are
+                removed from public view so active users can continue trading.
+              </p>
+              <p>
+                Reinstatement is easy. Open a ticket in the MLPEKAYOU Discord
+                server and prove to a staff member that your account is active.
+                Once reinstated, you will need to set your Discord username
+                again in your profile.
+              </p>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <a
+                href="https://discord.gg/mlpekayou"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center rounded-xl bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-black hover:bg-[#FFE27A]"
+              >
+                Open Discord
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowOfferStrikeInfo(false)}
+                className={`rounded-xl border px-4 py-3 text-sm font-semibold ${isLightMode ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"}`}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showLeaderboardBanConfirm && (
         <div
           className={`fixed inset-0 z-[115] flex items-center justify-center p-4 backdrop-blur-md ${
@@ -1410,11 +1604,20 @@ const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
     </div>
   );
 }
-
-function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boolean }) {
-  const logo = light ? "/website-assets/mlpekayouwiki4.webp" : "/website-assets/darkmodelogo.webp";
+function ProfileLoadingScreen({
+  light,
+  failed,
+}: {
+  light: boolean;
+  failed: boolean;
+}) {
+  const logo = light
+    ? "/website-assets/mlpekayouwiki4.webp"
+    : "/website-assets/darkmodelogo.webp";
   return (
-    <div className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}>
+    <div
+      className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}
+    >
       <style>{`
         .profile-loading-screen{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:grid;place-items:center;overflow:hidden;padding:96px 24px;background:#0d0f10;color:#f4f4f5}
         .profile-loading-screen.profile-loading-light{background:#f5f5f3;color:#27272a}
@@ -1434,7 +1637,11 @@ function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boole
         @keyframes profile-loading-dots{0%,24%{clip-path:inset(0 66.66% 0 0)}25%,49%{clip-path:inset(0 33.33% 0 0)}50%,74%{clip-path:inset(0)}75%,100%{clip-path:inset(0 33.33% 0 0)}}
         @media(prefers-reduced-motion:reduce){.profile-loading-pattern,.profile-loading-dots{animation:none;will-change:auto}}
       `}</style>
-      <div className="profile-loading-pattern" style={{ backgroundImage: `url("${logo}")` }} aria-hidden="true" />
+      <div
+        className="profile-loading-pattern"
+        style={{ backgroundImage: `url("${logo}")` }}
+        aria-hidden="true"
+      />
       <div className="profile-loading-vignette" aria-hidden="true" />
       <div className="profile-loading-content">
         <div className="profile-loading-brand">
@@ -1443,27 +1650,37 @@ function ProfileLoadingScreen({ light, failed }: { light: boolean; failed: boole
         {failed ? (
           <>
             <p role="alert">We couldn’t load your profile. Please try again.</p>
-            <button type="button" className="profile-loading-retry" onClick={() => window.location.reload()}>Try again</button>
+            <button
+              type="button"
+              className="profile-loading-retry"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </button>
           </>
         ) : (
           <p role="status" aria-live="polite">
             <span className="sr-only">Loading your profile</span>
-            <span aria-hidden="true">Loading your profile<span className="profile-loading-dots">...</span></span>
+            <span aria-hidden="true">
+              Loading your profile
+              <span className="profile-loading-dots">...</span>
+            </span>
           </p>
         )}
       </div>
     </div>
   );
 }
-async function checkedProfileRequest<T extends { error?: unknown }>(request: PromiseLike<T>): Promise<T> {
+async function checkedProfileRequest<T extends { error?: unknown }>(
+  request: PromiseLike<T>,
+): Promise<T> {
   const result = await request;
   if (result.error) throw result.error;
   return result;
 }
-
 function preloadProfileAvatar(src: string | null | undefined): Promise<void> {
   if (!src) return Promise.resolve();
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const image = new Image();
     image.onload = () => resolve();
     image.onerror = () => resolve();
