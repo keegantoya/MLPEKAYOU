@@ -337,17 +337,6 @@ const selected = activeTab === tab.id;
                         multiple new platforms to keep MLPEKAYOU running reliably.
                       </p>
                     </div>
-                    <p>
-                      This is not cheap. MLPEKAYOU burns a hole in my wallet every month despite
-                      every mitigation and precaution I take. I do not run ads, put up paywalls,
-                      or accept donations.
-                    </p>
-                    <p>
-                      However, it costs you nothing extra to support MLPEKAYOU when buying your
-                      products. We are expanding, bringing back older products, and purchasing
-                      every variation of new products moving forward so that we can offer a much
-                      larger variety.
-                    </p>
                     <div
                       className={`rounded-2xl border-2 p-4 sm:p-5 ${
                         isLightMode
@@ -359,10 +348,12 @@ const selected = activeTab === tab.id;
                         Please consider buying through StonesTradingCo.
                       </p>
                       <p className="mt-2 text-sm leading-6">
-                        I make commission from your purchase, at no additional cost to you. I also
-                        livestream card rips, primarily in the MLPEKAYOU Discord server and on the
-                        StonesTradingCo TikTok. I carry other IPs too, including Naruto, Demon
-                        Slayer, KPOP, and Winx, so do not limit yourself to My Little Pony!
+                        I earn a significant commission from every purchase credited to MLPEKAYOU,
+                        at no additional cost to you. I personally pack and ship your products, or
+                        you can choose to have them opened live on the StonesTradingCo TikTok or
+                        during a livestream in the MLPEKAYOU Discord server. I carry other IPs too,
+                        including Naruto, Demon Slayer, KPOP, and Winx, so do not limit yourself to
+                        My Little Pony!
                       </p>
                       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                         <a
@@ -385,6 +376,120 @@ const selected = activeTab === tab.id;
                         >
                           Join the Discord ↗
                         </a>
+                      </div>
+                    </div>
+                    <div
+                      className={`relative overflow-hidden rounded-2xl border p-4 sm:p-5 ${
+                        isLightMode
+                          ? "border-[#D3AE18]/45 bg-gradient-to-br from-white to-[#fff9dc] text-zinc-950"
+                          : "border-[#E7C84B]/35 bg-gradient-to-br from-white/[0.06] to-[#E7C84B]/[0.08] text-white"
+                      }`}
+                    >
+                      <style>{`
+                        @keyframes checkoutMenu {
+                          0%, 12%, 78%, 100% { opacity: 0; transform: translateY(-6px); visibility: hidden; }
+                          18%, 70% { opacity: 1; transform: translateY(0); visibility: visible; }
+                        }
+                        @keyframes checkoutCursor {
+                          0%, 20% { opacity: 0; transform: translate(24px, -8px); }
+                          26% { opacity: 1; transform: translate(24px, -8px); }
+                          50%, 62% { opacity: 1; transform: translate(0, 78px); }
+                          70%, 100% { opacity: 0; transform: translate(0, 78px); }
+                        }
+                        @keyframes checkoutOption {
+                          0%, 46% { background-color: transparent; }
+                          53%, 100% { background-color: rgba(231, 200, 75, 0.34); }
+                        }
+                        @keyframes checkoutPlaceholder {
+                          0%, 68% { opacity: 1; }
+                          74%, 100% { opacity: 0; }
+                        }
+                        @keyframes checkoutSelected {
+                          0%, 68% { opacity: 0; }
+                          76%, 100% { opacity: 1; }
+                        }
+                        @keyframes checkoutConfirmation {
+                          0%, 74% { opacity: 0; transform: translateY(6px); }
+                          82%, 96% { opacity: 1; transform: translateY(0); }
+                          100% { opacity: 0; transform: translateY(0); }
+                        }
+                        @keyframes checkoutChevron {
+                          0%, 12%, 78%, 100% { transform: rotate(45deg); }
+                          18%, 70% { transform: rotate(225deg); }
+                        }
+                        .checkout-menu { animation: checkoutMenu 6s ease-in-out infinite; }
+                        .checkout-cursor { animation: checkoutCursor 6s ease-in-out infinite; }
+                        .checkout-option { animation: checkoutOption 6s ease-in-out infinite; }
+                        .checkout-placeholder { animation: checkoutPlaceholder 6s ease-in-out infinite; }
+                        .checkout-selected { animation: checkoutSelected 6s ease-in-out infinite; }
+                        .checkout-confirmation { animation: checkoutConfirmation 6s ease-in-out infinite; }
+                        .checkout-chevron { animation: checkoutChevron 6s ease-in-out infinite; }
+                        @media (prefers-reduced-motion: reduce) {
+                          .checkout-menu, .checkout-cursor, .checkout-placeholder { display: none; animation: none; }
+                          .checkout-option, .checkout-selected, .checkout-confirmation { animation: none; opacity: 1; transform: none; }
+                          .checkout-chevron { animation: none; transform: rotate(45deg); }
+                        }
+                      `}</style>
+                      <div className="flex flex-col items-center text-center">
+                        <span className="rounded-full bg-[#E7C84B] px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-[#111111]">
+                          At checkout
+                        </span>
+                        <h3 className="mt-3 text-xl font-black sm:text-2xl">
+                          Select MLPEKAYOU so your order counts
+                        </h3>
+                        <p className={`mt-2 max-w-2xl text-sm leading-6 ${bodyText}`}>
+                          Your order is only credited to me when <strong>MLPEKAYOU</strong> is chosen
+                          under “Where did you hear about us?”
+                        </p>
+                      </div>
+                      <div className={`mx-auto mt-5 max-w-lg rounded-2xl border p-4 ${
+                        isLightMode
+                          ? "border-black/10 bg-white shadow-sm"
+                          : "border-white/10 bg-black/25"
+                      }`}>
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-bold uppercase tracking-wide">
+                            Where did you hear about us?
+                          </p>
+                          <span className={`text-[10px] font-bold uppercase tracking-wide ${muted}`}>
+                            Required
+                          </span>
+                        </div>
+                        <div className="relative mt-3 h-44">
+                          <div className={`relative flex min-h-14 items-center justify-between rounded-xl border-2 border-[#E7C84B] px-4 ${
+                            isLightMode ? "bg-[#fffdf3]" : "bg-[#17160f]"
+                          }`}>
+                            <span className={`checkout-placeholder absolute left-4 text-sm font-semibold ${muted}`}>
+                              Select an option
+                            </span>
+                            <span className="checkout-selected absolute left-4 text-base font-black tracking-wide">
+                              MLPEKAYOU
+                            </span>
+                            <span aria-hidden="true" className="checkout-chevron ml-auto h-2.5 w-2.5 border-b-2 border-r-2 border-current" />
+                          </div>
+                          <div className={`checkout-menu pointer-events-none absolute left-0 right-0 top-16 z-10 overflow-hidden rounded-xl border shadow-xl ${
+                            isLightMode
+                              ? "border-zinc-200 bg-white"
+                              : "border-white/15 bg-[#171717]"
+                          }`}>
+                            <div className={`px-4 py-2 text-sm font-semibold ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                              TikTok
+                            </div>
+                            <div className={`border-t px-4 py-2 text-sm font-semibold ${isLightMode ? "border-zinc-200" : "border-white/10"}`}>
+                              Discord
+                            </div>
+                            <div className={`checkout-option border-t px-4 py-2.5 text-sm font-black ${isLightMode ? "border-zinc-200" : "border-white/10"}`}>
+                              MLPEKAYOU
+                            </div>
+                            <span aria-hidden="true" className="checkout-cursor absolute right-6 top-2 h-6 w-4 bg-[#E7C84B] shadow-md [clip-path:polygon(0_0,0_100%,28%_73%,45%_100%,58%_93%,42%_67%,74%_67%)]" />
+                          </div>
+                          <div className="checkout-confirmation absolute inset-x-0 top-20 rounded-xl border border-[#E7C84B]/50 bg-[#E7C84B]/10 px-4 py-3 text-center text-xs font-black uppercase tracking-[0.12em]">
+                            MLPEKAYOU selected — your order now supports the website! Thank you for helping me pay for all of the costs associated with MLPEKAYOU!
+                          </div>
+                        </div>
+                        <p className={`mt-3 text-center text-xs font-semibold leading-5 ${muted}`}>
+                          Choosing TikTok, Discord, Google, or any other option does not credit the sale to MLPEKAYOU.
+                        </p>
                       </div>
                     </div>
                     <p className={`rounded-xl px-4 py-3 text-center font-bold ${
