@@ -14,12 +14,12 @@ const MissingImageCard = ({
   className: string;
   style?: CSSProperties;
 }) => {
-  const [failed, setFailed] = useState(false);
-  const landscape = className.includes("landscape-card");
-  const imageClass = landscape
+const [failed, setFailed] = useState(false);
+const landscape = className.includes("landscape-card");
+const imageClass = landscape
     ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover"
     : className;
-  const imageStyle = landscape
+const imageStyle = landscape
     ? { transform: "translate(-50%, -50%) rotate(-90deg)" }
     : style;
   if (failed) {
@@ -402,7 +402,8 @@ const cards = Object.entries(set.rarities).flatMap(
           ["AA", "BB", "CC"].map((variant) => ({
             rarity,
             key: `BP03-ER${number}-${variant}`,
-            characters: [],
+            characters:
+              TCGCharacterMap[`BP03-ER${number}-${variant}`] ?? [],
           })),
         );
       }
@@ -411,7 +412,8 @@ const cards = Object.entries(set.rarities).flatMap(
           ["A", "A2", "B", "B2", "C", "C2"].map((variant) => ({
             rarity,
             key: `PBP03-ER${number}-${variant}`,
-            characters: [],
+            characters:
+              TCGCharacterMap[`PBP03-ER${number}-${variant}`] ?? [],
           })),
         );
       }
@@ -419,37 +421,47 @@ const cards = Object.entries(set.rarities).flatMap(
         return ["07", "08", "09", "11", "12"].map((number) => ({
           rarity,
           key: `PBP03-GR${number}`,
-          characters: [],
+          characters:
+            TCGCharacterMap[`PBP03-GR${number}`] ?? [],
         }));
       }
       if (rarity === "PSPR") {
         return ["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map((number) => ({
           rarity,
           key: `PBP03-SPR${number}`,
-          characters: [],
+          characters:
+            TCGCharacterMap[`PBP03-SPR${number}`] ?? [],
         }));
       }
       if (rarity === "PCR") {
         return Array.from({ length: 12 }, (_, i) => ({
           rarity,
           key: `PBP03-CR${String(i + 1).padStart(2, "0")}`,
-          characters: [],
+          characters:
+            TCGCharacterMap[
+              `PBP03-CR${String(i + 1).padStart(2, "0")}`
+            ] ?? [],
         }));
       }
       if (rarity === "PRR") {
         return Array.from({ length: 6 }, (_, i) => ({
           rarity,
           key: `PBP03-RR${String(i + 1).padStart(2, "0")}`,
-          characters: [],
+          characters:
+            TCGCharacterMap[
+              `PBP03-RR${String(i + 1).padStart(2, "0")}`
+            ] ?? [],
         }));
       }
       return Array.from({ length: count as number }, (_, i) => ({
         rarity,
         key: `BP03-${rarity}${String(i + 1).padStart(2, "0")}`,
-        characters: [],
+        characters:
+          TCGCharacterMap[
+            `BP03-${rarity}${String(i + 1).padStart(2, "0")}`
+          ] ?? [],
       }));
     }
-
     if (set.id === "12") {
       if (rarity === "PER") {
         return Array.from({ length: 6 }, (_, i) => [
@@ -516,7 +528,7 @@ const displayNum = Math.ceil((num - 6) / 2) + 6;
     }
   } else if (set.id === "14") {
     if (card.rarity === "PER") {
-      const match = card.key.match(/PBP03-ER(\d{2})/);
+const match = card.key.match(/PBP03-ER(\d{2})/);
       displayCode = match ? `※BP03-ER${match[1]}` : card.key;
     } else if (card.rarity === "PSPR") {
       displayCode = `※BP03-SPR${card.key.slice(-2)}`;
@@ -527,7 +539,7 @@ const displayNum = Math.ceil((num - 6) / 2) + 6;
     } else if (card.rarity === "PRR") {
       displayCode = `※BP03-RR${card.key.slice(-2)}`;
     } else {
-      displayCode = card.key.replace(/^BP03/, "BP03-");
+      displayCode = card.key;
     }
   } else if (set.id === "12") {
     if (card.rarity === "PER") {
