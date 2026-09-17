@@ -74,7 +74,7 @@ const resources = [
   },
 ];
 export default function Index() {
-  const [showLGSApplication, setShowLGSApplication] = useState(false);
+const [showLGSApplication, setShowLGSApplication] = useState(false);
 const [activeTab, setActiveTab] = useState<HomeTab>("updates");
 const [showUpdateNotice, setShowUpdateNotice] = useState(false);
 const [isLightMode, setIsLightMode] = useState(
@@ -297,6 +297,106 @@ const selected = activeTab === tab.id;
         <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
           {activeTab === "updates" && (
             <div className="space-y-4">
+              <article
+                className={`relative overflow-hidden rounded-3xl border-2 border-[#E7C84B] p-5 shadow-[0_0_0_1px_rgba(231,200,75,0.18),0_18px_60px_rgba(231,200,75,0.16)] sm:p-7 ${
+                  isLightMode
+                    ? "bg-gradient-to-br from-[#fffdf5] via-white to-[#fff4bd] text-zinc-900"
+                    : "bg-gradient-to-br from-[#25200d] via-[#181818] to-[#111111] text-white"
+                }`}
+              >
+                <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-[#E7C84B]/20 blur-3xl" />
+                <div className="relative">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className="inline-flex items-center rounded-full bg-[#E7C84B] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-[#111111] shadow-sm">
+                      Please read
+                    </span>
+                    <time className={`text-xs font-medium ${muted}`}>September 17, 2026</time>
+                  </div>
+                  <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
+                    Help keep MLPEKAYOU online
+                  </h2>
+                  <div className={`mt-4 space-y-4 text-[15px] leading-7 ${bodyText}`}>
+                    <p>
+                      MLPEKAYOU was scraped by OpenAI and Meta AI until my wallet could no
+                      longer handle the cost. I have spent the last several nights working
+                      between 1:00 and 4:00 AM to move the database around while keeping
+                      downtime restricted to the hours when the fewest of you would be active.
+                    </p>
+                    <div
+                      className={`rounded-2xl border p-4 sm:p-5 ${
+                        isLightMode
+                          ? "border-[#D3AE18]/40 bg-white/80 text-zinc-800"
+                          : "border-[#E7C84B]/30 bg-black/20 text-zinc-200"
+                      }`}
+                    >
+                      <p className={`font-bold ${isLightMode ? "text-zinc-950" : "text-white"}`}>
+                        The website should now be extremely fast, and AI scraping has been blocked.
+                      </p>
+                      <p className="mt-2 text-sm leading-6">
+                        Every part of the database has been reorganized and distributed across
+                        multiple new platforms to keep MLPEKAYOU running reliably.
+                      </p>
+                    </div>
+                    <p>
+                      This is not cheap. MLPEKAYOU burns a hole in my wallet every month despite
+                      every mitigation and precaution I take. I do not run ads, put up paywalls,
+                      or accept donations.
+                    </p>
+                    <p>
+                      However, it costs you nothing extra to support MLPEKAYOU when buying your
+                      products. We are expanding, bringing back older products, and purchasing
+                      every variation of new products moving forward so that we can offer a much
+                      larger variety.
+                    </p>
+                    <div
+                      className={`rounded-2xl border-2 p-4 sm:p-5 ${
+                        isLightMode
+                          ? "border-[#E7C84B] bg-[#E7C84B]/15"
+                          : "border-[#E7C84B]/70 bg-[#E7C84B]/10"
+                      }`}
+                    >
+                      <p className={`text-lg font-bold ${accentText}`}>
+                        Please consider buying through StonesTradingCo.
+                      </p>
+                      <p className="mt-2 text-sm leading-6">
+                        I make commission from your purchase, at no additional cost to you. I also
+                        livestream card rips, primarily in the MLPEKAYOU Discord server and on the
+                        StonesTradingCo TikTok. I carry other IPs too, including Naruto, Demon
+                        Slayer, KPOP, and Winx, so do not limit yourself to My Little Pony!
+                      </p>
+                      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                        <a
+                          href="https://stonestradingco.com/collections/my-little-pony"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-[#E7C84B] px-4 py-3 text-center text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477]"
+                        >
+                          Shop StonesTradingCo ↗
+                        </a>
+                        <a
+                          href="https://discord.gg/mlpekayou"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border px-4 py-3 text-center text-sm font-bold transition-colors ${
+                            isLightMode
+                              ? "border-black/15 bg-white text-zinc-900 hover:bg-zinc-50"
+                              : "border-white/15 bg-white/[0.06] text-white hover:bg-white/[0.1]"
+                          }`}
+                        >
+                          Join the Discord ↗
+                        </a>
+                      </div>
+                    </div>
+                    <p className={`rounded-xl px-4 py-3 text-center font-bold ${
+                      isLightMode
+                        ? "bg-zinc-950 text-white"
+                        : "bg-white text-zinc-950"
+                    }`}>
+                      Do not forget to ask for posters!
+                    </p>
+                  </div>
+                </div>
+              </article>
               <article
                 className={`rounded-2xl border border-[#E7C84B]/30 p-5 sm:p-6 ${surface}`}
               >
