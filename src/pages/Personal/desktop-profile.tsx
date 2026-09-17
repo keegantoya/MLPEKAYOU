@@ -1,3 +1,5 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +9,9 @@ function ShowcaseImage({
   src,
   alt,
   className,
+  imageSize,
 }: {
+  imageSize?: "grid" | "original";
   src: string;
   alt: string;
   className: string;
@@ -22,7 +26,7 @@ function ShowcaseImage({
       <span className="px-2 text-center text-sm font-bold">COMING SOON</span>
     </div>
   ) : (
-    <CardImage
+    <CardImage imageSize={imageSize}
       src={src}
       alt={alt}
       className={className}
@@ -86,7 +90,7 @@ export default function DesktopProfile() {
     null,
   );
   const isMoon3SZR001 = (card: any) =>
-    getTradeCardImage(card) === "/cards/third-edition-moon/M3SZR001.webp";
+    getTradeCardImage(card) === cardImagePaths.fixed.cardsThirdEditionMoonM3SZR001;
   const [copied, setCopied] = useState(false);
   const [deletionRequested, setDeletionRequested] = useState(false);
   const [showDeletionModal, setShowDeletionModal] = useState(false);
@@ -173,7 +177,7 @@ export default function DesktopProfile() {
     loadStats();
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
+    } = onAuthIdentityChange(() => {
       setTimeout(() => {
         void loadProfile();
         void loadStats();
@@ -603,19 +607,19 @@ export default function DesktopProfile() {
       const cleanKey = String(card.card_key)
         .replace(/^BONUS-/, "")
         .replace(/^STARTER-/, "");
-      return `/friendships-begin/${cleanKey}.webp`;
+      return cardImagePaths.friendshipsBegin(cleanKey);
     }
     if (card.set_id === "FW") {
-      return `/fantasy-wonderland/${card.card_key}.webp`;
+      return cardImagePaths.fantasyWonderland(card.card_key);
     }
     if (String(card.set_id) === "14") {
-      return `/cards/nightmare-night/${card.card_key}.webp`;
+      return cardImagePaths.nightmareNight(card.card_key);
     }
     if (card.set_id === "12") {
-      return `/cards/discord/${card.card_key}.webp`;
+      return cardImagePaths.discord(card.card_key);
     }
     if (card.set_id === "tcgpromos") {
-      return `/tcgpromos/${card.card_key}.webp`;
+      return cardImagePaths.tcgPromo(card.card_key);
     }
     const [rarityRaw, number] = String(card.card_key).split("-");
     const rarity = rarityRaw === "SHINING ZR" ? "SZR" : rarityRaw;
@@ -632,10 +636,10 @@ export default function DesktopProfile() {
     };
     const c = config[String(card.set_id)];
     if (!c) return "";
-    return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(
+    return cardImagePaths.ccg(c.folder, c.prefix, rarity, String(number).padStart(
       3,
       "0",
-    )}.webp`;
+    ));
   };
   async function handleProfileEdit() {
     if (editingProfile) {
@@ -1593,7 +1597,7 @@ export default function DesktopProfile() {
             }
             onClick={(e) => e.stopPropagation()}
           >
-            <ShowcaseImage
+            <ShowcaseImage imageSize="original"
               src={getTradeCardImage(selectedShowcaseCard)}
               alt="Selected card"
               className={`h-full w-full ${isMoon3SZR001(selectedShowcaseCard) ? "object-cover object-center" : ["FW", "SD", "friendshipsbegin", "14"].includes(String(selectedShowcaseCard.set_id)) ? "object-contain" : ["1", "2", "3", "4", "5", "6", "7", "8", "11"].includes(String(selectedShowcaseCard.set_id)) ? "scale-[1.015] object-cover object-center" : "object-cover"}`}

@@ -1,4 +1,3 @@
-import { onAuthIdentityChange } from "@/lib/auth-identity";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -66,7 +65,7 @@ import PublicProfile from "@/pages/Everypony/PublicProfile";
 import LGSBoards from "./pages/Personal/LGSBoards";
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false, refetchInterval: false } },
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
 
 const PUBLIC_AUTH_PATHS = new Set([
@@ -97,7 +96,7 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = onAuthIdentityChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setAuthState(session?.user ? "authenticated" : "anonymous");
       if (session?.user) setShowLoginRequired(false);
@@ -261,7 +260,7 @@ function RequireLGSStaff({ children }: { children: ReactNode }) {
     };
     const {
       data: { subscription },
-    } = onAuthIdentityChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       if ((session?.user.id ?? null) !== accessUserId) {
         setAccess(session?.user ? "checking" : "denied");
@@ -270,11 +269,13 @@ function RequireLGSStaff({ children }: { children: ReactNode }) {
       scheduleCheck();
     });
     void checkAccess();
+    window.addEventListener("focus", scheduleCheck);
     return () => {
       mounted = false;
       ++request;
       clearTimeout(timer);
       subscription.unsubscribe();
+      window.removeEventListener("focus", scheduleCheck);
     };
   }, []);
   if (access === "checking") {
@@ -297,7 +298,7 @@ const AppRoutes = () => {
     let lastUserId: string | null = null;
     const {
       data: { subscription },
-    } = onAuthIdentityChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUserId = session?.user?.id ?? null;
       if (currentUserId !== lastUserId) lastUserId = currentUserId;
     });

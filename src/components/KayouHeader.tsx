@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -164,11 +165,9 @@ const KayouHeader = () => {
     setShowHeaderLgs(false);
     setShowLGSReview(false);
     void refresh();
-    window.addEventListener("focus", refresh);
     return () => {
       active = false;
       ++request;
-      window.removeEventListener("focus", refresh);
     };
   }, [user?.id]);
   useEffect(() => {
@@ -260,7 +259,7 @@ const KayouHeader = () => {
     getSession();
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = onAuthIdentityChange((_event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       if (currentUser) {
@@ -415,12 +414,10 @@ const KayouHeader = () => {
       .subscribe();
     const refresh = () => void refreshInboxCount();
     void refreshInboxCount();
-    window.addEventListener("focus", refresh);
     window.addEventListener("header-message-update", refresh);
     window.addEventListener("header-inbox-update", refresh);
     return () => {
       active = false;
-      window.removeEventListener("focus", refresh);
       window.removeEventListener("header-message-update", refresh);
       window.removeEventListener("header-inbox-update", refresh);
       void supabase.removeChannel(channel);
@@ -663,7 +660,7 @@ const KayouHeader = () => {
     setThemeSaving(false);
   };
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     setUser(null);
     setIsLightMode(false);
     applyTheme(false);

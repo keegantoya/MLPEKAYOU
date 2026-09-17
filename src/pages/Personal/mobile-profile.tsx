@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -98,7 +99,7 @@ const MobileProfile = () => {
     };
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = onAuthIdentityChange((_event, session) => {
       authVersion++;
       applyReviewAccess(session?.user?.id);
     });
@@ -202,7 +203,7 @@ const MobileProfile = () => {
     loadProfile();
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
+    } = onAuthIdentityChange(() => {
       setTimeout(() => {
         void loadProfile();
       }, 0);
@@ -276,12 +277,10 @@ const MobileProfile = () => {
       )
       .subscribe();
     void refreshInboxCount();
-    window.addEventListener("focus", refresh);
     window.addEventListener("header-message-update", refresh);
     window.addEventListener("header-inbox-update", refresh);
     return () => {
       active = false;
-      window.removeEventListener("focus", refresh);
       window.removeEventListener("header-message-update", refresh);
       window.removeEventListener("header-inbox-update", refresh);
       void supabase.removeChannel(channel);
@@ -1809,7 +1808,7 @@ const MobileProfile = () => {
         <button
           className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/[0.06] py-3.5 text-sm font-semibold text-red-400 transition-all duration-200 hover:border-red-500/40 hover:bg-red-500/10"
           onClick={async () => {
-            await supabase.auth.signOut();
+            await supabase.auth.signOut({ scope: "local" });
             navigate("/");
           }}
         >

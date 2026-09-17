@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -78,7 +79,7 @@ const activeTrades = [
     loadData();
 const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = onAuthIdentityChange((_event, session) => {
       loadData(session?.user);
     });
     return () => subscription.unsubscribe();

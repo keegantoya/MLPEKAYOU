@@ -1,0 +1,48 @@
+// Run from your project folder: node --input-type=commonjs < Stop_Tab_Refresh.txt
+// Applies only tab-return refresh fixes, preserving your other source changes.
+const fs = require('node:fs');
+const path = require('node:path');
+const root = process.cwd();
+if (!fs.existsSync(path.join(root, 'src/App.tsx')) || !fs.existsSync(path.join(root, 'package.json'))) {
+  throw new Error('Open a terminal in your MLPEKAYOU project folder first.');
+}
+const changes = [];
+function walk(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) { if (!['test', '__tests__'].includes(entry.name)) walk(file); continue; }
+    if (!file.endsWith('.tsx') || entry.name === 'password-reset.tsx') continue;
+    const original = fs.readFileSync(file, 'utf8');
+    let updated = original;
+    if (/\b(?:supabase|db)\.auth\.onAuthStateChange\(/.test(updated)) {
+      updated = updated.replace(/\b(?:supabase|db)\.auth\.onAuthStateChange\(/g, 'onAuthIdentityChange(');
+      if (!updated.includes('import { onAuthIdentityChange }')) updated = 'import { onAuthIdentityChange } from "@/lib/auth-identity";\n' + updated;
+    }
+    updated = updated.split('\n').filter(line => !/window\.(?:add|remove)EventListener\("focus",/.test(line)).join('\n');
+    if (entry.name === 'App.tsx') {
+      updated = updated.replace('queries: { refetchOnWindowFocus: false }', 'queries: { refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false, refetchInterval: false }');
+    }
+    if (updated !== original) changes.push({file, original, updated});
+  }
+}
+walk(path.join(root, 'src'));
+const helperFile = path.join(root, 'src/lib/auth-identity.ts');
+const helper = "import type { AuthChangeEvent, Session } from \"@supabase/supabase-js\";\nimport { supabase } from \"./supabase\";\n\n// Pages load their initial session themselves. Supabase can emit SIGNED_IN again\n// on tab focus; that is not a new login and must not reset page/image state.\nexport function onAuthIdentityChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {\n  let identity: string | null | undefined;\n  let active = true;\n  const timers = new Set<ReturnType<typeof setTimeout>>();\n  const result = supabase.auth.onAuthStateChange((event, session) => {\n    const next = session?.user.id ?? null;\n    if (event === \"INITIAL_SESSION\") {\n      if (identity === undefined) identity = next;\n      return;\n    }\n    const changed = next !== identity;\n    identity = next;\n    if (!changed && event !== \"USER_UPDATED\" && event !== \"PASSWORD_RECOVERY\") return;\n    // Never run page queries while Supabase holds its auth lock.\n    const timer = setTimeout(() => {\n      timers.delete(timer);\n      if (active) callback(event, session);\n    }, 0);\n    timers.add(timer);\n  });\n  return { data: { subscription: {\n    unsubscribe() {\n      active = false;\n      for (const timer of timers) clearTimeout(timer);\n      timers.clear();\n      result.data.subscription.unsubscribe();\n    },\n  } } };\n}\n";
+const previousHelper = fs.existsSync(helperFile) ? fs.readFileSync(helperFile, 'utf8') : null;
+if (previousHelper !== helper) changes.push({file:helperFile, original:previousHelper, updated:helper});
+if (!changes.length) { console.log('Tab-refresh fixes are already applied.'); process.exit(0); }
+const backup = path.join(root, 'tab-refresh-backup-' + Date.now());
+for (const change of changes) {
+  if (change.original !== null) {
+    const target = path.join(backup, path.relative(root, change.file));
+    fs.mkdirSync(path.dirname(target), {recursive:true});
+    fs.writeFileSync(target, change.original);
+  }
+}
+for (const change of changes) {
+  fs.mkdirSync(path.dirname(change.file), {recursive:true});
+  fs.writeFileSync(change.file, change.updated);
+  console.log('Updated ' + path.relative(root, change.file));
+}
+console.log(`Applied ${changes.length} file changes. Backup: ${path.basename(backup)}`);
+console.log('Next: npm run build, then deploy using your normal workflow.');

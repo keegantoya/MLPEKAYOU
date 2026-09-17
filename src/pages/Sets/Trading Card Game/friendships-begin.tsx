@@ -1,3 +1,6 @@
+import { getFriendshipsBeginBack as getCardBack, getFriendshipsBeginFront as getCardFront } from "@/lib/card-images";
+import { cardImagePaths } from "@/lib/card-images";
+import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +12,7 @@ const FriendshipsBegin = () => {
 const navigate = useNavigate();
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+const [loadingFailed, setLoadingFailed] = useState(false);
 const [lastSavedProgress, setLastSavedProgress] = useState("");
 const [viewMode, setViewMode] = useState(false);
 const [selectedRarity, setSelectedRarity] = useState("C");
@@ -105,21 +109,8 @@ const displayNumber = Math.ceil(sourceNumber / 2);
   }
   return `SD01-${rarity}${number}`;
 };
-const getCardBack = (key: string) => {
-// Emerald Rares and Shining Emeralds use the scene back
-  if (key.startsWith("SD01ER") || key.startsWith("SD01PER")) {
-    return "/tcg-card-backs/SCENECARDBACK.webp";
-  }
-// Shining Ruby Rares have unique backs
-  if (key.startsWith("SD01PRR")) {
-    return `/tcg-card-backs/PRR${key.slice(-2)}BACK.webp`;
-  }
-// Everything else uses the standard TCG back
-  return "/card-backs/tcgdefaultback.webp";
-};
-const getCardFront = (key: string) => {
-  return `/friendships-begin/${key}.webp`;
-};
+
+
 const toggleFlip = (key: string) => {
   if (viewMode) {
     setZoomedCard(getCardFront(key));
@@ -169,7 +160,7 @@ const { data: saved } = await supabase
     }
     setLoaded(true);
   };
-  loadProgress();
+  void loadProgress().catch(() => setLoadingFailed(true));
 }, []);
 useEffect(() => {
   if (!loaded) return;
@@ -192,6 +183,7 @@ const user = data.session?.user;
 const collectedCount = Object.values(flipped).filter(Boolean).length;
 const displayRarity = (rarity: string) =>
     rarity === "PER" ? "※ER" : rarity === "PRR" ? "※RR" : rarity;
+  if (!loaded) return <CollectionLoading failed={loadingFailed} />;
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 text-zinc-900 transition-colors dark:bg-[#101112] dark:text-white sm:pb-8">
       <style>{`
@@ -268,13 +260,13 @@ const displayRarity = (rarity: string) =>
                   {getDeckCards(starterDeckGroups[activeDeck].code).map((key) => {
 const stateKey = `STARTER-${key}`;
 const owned = flipped[stateKey];
-const back = key.includes("C06") || key.includes("C07") || key.includes("C08") || key.includes("C09") ? `/tcg-card-backs/${key}BACK.webp` : key.startsWith("SD01RR") ? `/tcg-card-backs/SDRR${key.slice(-2)}BACK.webp` : key.includes("ER") && !key.includes("PER") ? "/tcg-card-backs/SCENECARDBACK.webp" : "/card-backs/tcgdefaultback.webp";
+const back = key.includes("C06") || key.includes("C07") || key.includes("C08") || key.includes("C09") ? cardImagePaths.tcgBack(key) : key.startsWith("SD01RR") ? cardImagePaths.starterRubyBack(key.slice(-2)) : key.includes("ER") && !key.includes("PER") ? cardImagePaths.fixed.tcgCardBacksSCENECARDBACK : cardImagePaths.fixed.cardBacksTcgdefaultback;
                     return (
                       <div key={key} className="group relative aspect-[5/7] cursor-pointer rounded-xl transition-transform duration-200 ease-out md:hover:z-20 md:hover:scale-[1.035]" onClick={() => toggleFlip(viewMode ? key : stateKey)}>
                         <div className="relative h-full w-full overflow-hidden rounded-xl border border-black/10 bg-zinc-100 shadow-sm transition-shadow duration-200 group-hover:shadow-lg dark:border-white/10 dark:bg-white/[0.04]">
                           <div className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}>
-                            <CardImage src={`/friendships-begin/${key}.webp`} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt="" />
-                            <CardImage src={back} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
+                            <CardImage visible={loaded && (viewMode || !owned)} src={cardImagePaths.friendshipsBegin(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt="" />
+                            <CardImage visible={loaded && !viewMode && !!owned} src={back} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
                           </div>
                           {owned && !viewMode && <div className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-sm">✓</div>}
                         </div>
@@ -285,7 +277,7 @@ const back = key.includes("C06") || key.includes("C07") || key.includes("C08") |
               </section>
             )}
             <div className="space-y-4">
-              {Object.entries(set.rarities).filter(([rarity]) => window.innerWidth >= 768 || rarity === selectedRarity).map(([rarity, count]) => (
+              {Object.entries(set.rarities).filter(([rarity]) => rarity === selectedRarity).map(([rarity, count]) => (
                 <section key={rarity} id={`rarity-${rarity}`} className="scroll-mt-4 rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#1c1c1e] sm:p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div className="min-w-0">
@@ -303,8 +295,8 @@ const owned = flipped[stateKey];
                         <div key={key} className="group relative aspect-[5/7] cursor-pointer rounded-xl transition-transform duration-200 ease-out md:hover:z-20 md:hover:scale-[1.035]" onClick={() => toggleFlip(viewMode ? key : stateKey)}>
                           <div className="relative h-full w-full overflow-hidden rounded-xl border border-black/10 bg-zinc-100 shadow-sm transition-shadow duration-200 group-hover:shadow-lg dark:border-white/10 dark:bg-white/[0.04]">
                             <div className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}>
-                              <CardImage src={getCardFront(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt="" />
-                              <CardImage src={getCardBack(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
+                              <CardImage visible={loaded && (viewMode || !owned)} src={getCardFront(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" alt="" />
+                              <CardImage visible={loaded && !viewMode && !!owned} src={getCardBack(key)} className="absolute inset-0 h-full w-full rounded-xl object-cover backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
                             </div>
                             {owned && !viewMode && <div className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white shadow-sm">✓</div>}
                           </div>
@@ -328,8 +320,8 @@ const owned = flipped[stateKey];
             <TiltCard>
               <div className="relative aspect-[5/7] w-full cursor-pointer overflow-hidden rounded-2xl bg-zinc-900 shadow-2xl" onClick={() => setZoomedCardFlipped(!zoomedCardFlipped)}>
                 <div className={`absolute inset-0 transform-style-preserve-3d transition-transform duration-500 ${zoomedCardFlipped ? "rotate-y-180" : ""}`}>
-                  <CardImage src={zoomedCard} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" alt="" />
-                  <CardImage src={zoomedCardBack || ""} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
+                  <CardImage imageSize="original" visible={!zoomedCardFlipped} src={zoomedCard} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" alt="" />
+                  <CardImage imageSize="original" visible={zoomedCardFlipped} src={zoomedCardBack || ""} className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden" style={{ transform: "rotateY(180deg) scale(1.035)" }} alt="" />
                 </div>
               </div>
             </TiltCard>

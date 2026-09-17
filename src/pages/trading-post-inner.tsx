@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -160,31 +161,31 @@ const rarityMap: Record<string, string[]> = {
 const getCardImage = (card: TradeCard) => {
   const [rarity, number] = card.card_key.split("-");
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
-    return `/friendships-begin/${card.card_key}.webp`;
+    return cardImagePaths.friendshipsBegin(card.card_key);
   }
   if (card.set_id === "FW") {
     const num = card.card_key.slice(-2);
     if (card.card_key.startsWith("BP01ER")) {
-      return `/fantasy-wonderland/SD01ER${num}.webp`;
+      return cardImagePaths.fantasyEmerald(num);
     }
     if (card.card_key.startsWith("BP01PER")) {
-      return `/fantasy-wonderland/SD01PER${num}.webp`;
+      return cardImagePaths.fantasyParallelEmerald(num);
     }
-    return `/fantasy-wonderland/${card.card_key}.webp`;
+    return cardImagePaths.fantasyWonderland(card.card_key);
   }
   if (String(card.set_id) === "14") {
     const erMatch = card.card_key.match(/^BP03-ER(0[12])-([ABC])$/);
     const imageKey = erMatch ? `${card.card_key}${erMatch[2]}` : card.card_key;
-    return `/cards/nightmare-night/${imageKey}.webp`;
+    return cardImagePaths.nightmareNight(imageKey);
   }
   if (card.set_id === "12") {
-    return `/cards/discord/${card.card_key}.webp`;
+    return cardImagePaths.discord(card.card_key);
   }
   if (card.set_id === "9") {
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
+    return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
   }
   if (card.set_id === "tcgpromos") {
-    return `/tcgpromos/${card.card_key}.webp`;
+    return cardImagePaths.tcgPromo(card.card_key);
   }
   const config: any = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
@@ -203,11 +204,9 @@ const getCardImage = (card: TradeCard) => {
   };
   const c = config[card.set_id];
   if (!c) return "";
-  return `/cards/${c.folder}/${c.prefix}${getRarityCode(rarity)}${String(number).padStart(3, "0")}${
-    card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
+  return cardImagePaths.ccgWithExtension(c.folder, c.prefix, getRarityCode(rarity), String(number).padStart(3, "0"), card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
       ? ".webp"
-      : ".webp"
-  }`;
+      : ".webp");
 };
 const standardOfferZoomSets = new Set([
   "1",
@@ -266,9 +265,11 @@ const getOfferImageClassName = (card: { set_id: string; card_key: string }) => {
 function ListingCardImage({
   card,
   offerMode = false,
+  imageSize,
 }: {
   card: TradeCard;
   offerMode?: boolean;
+  imageSize?: "grid" | "original";
 }) {
   const src = getCardImage(card);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -283,7 +284,7 @@ function ListingCardImage({
     );
   }
   return (
-    <CardImage
+    <CardImage imageSize={imageSize}
       src={src}
       alt={card.card_key}
       onError={() => setFailedSrc(src)}
@@ -315,9 +316,11 @@ function ListingCardImage({
 function InventoryCardImage({
   card,
   offerMode = false,
+  imageSize,
 }: {
   card: InventoryCard;
   offerMode?: boolean;
+  imageSize?: "grid" | "original";
 }) {
   return (
     <ListingCardImage
@@ -1633,7 +1636,7 @@ export default function TradingPostInner() {
                         : "5 / 7",
                   }}
                 >
-                  <ListingCardImage card={selectedCard} />
+                  <ListingCardImage imageSize="original" card={selectedCard} />
                 </div>
               </div>
               <div className="p-3.5 sm:p-4">

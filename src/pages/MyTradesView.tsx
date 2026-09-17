@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -76,30 +77,30 @@ const getRarityCode = (rarity: string) => {
   };
 const getCardImage = (card: TradeCard) => {
     if (card.set_id === "friendshipsbegin") {
-      return `/friendships-begin/${card.card_key}.webp`;
+      return cardImagePaths.friendshipsBegin(card.card_key);
     }
     if (card.set_id === "FW") {
 const num = card.card_key.slice(-2);
       if (card.card_key.startsWith("BP01ER")) {
-        return `/fantasy-wonderland/SD01ER${num}.webp`;
+        return cardImagePaths.fantasyEmerald(num);
       }
       if (card.card_key.startsWith("BP01PER")) {
-        return `/fantasy-wonderland/SD01PER${num}.webp`;
+        return cardImagePaths.fantasyParallelEmerald(num);
       }
-      return `/fantasy-wonderland/${card.card_key}.webp`;
+      return cardImagePaths.fantasyWonderland(card.card_key);
     }
     if (String(card.set_id) === "14") {
-      return `/cards/nightmare-night/${card.card_key}.webp`;
+      return cardImagePaths.nightmareNight(card.card_key);
     }
     if (card.set_id === "12") {
-      return `/cards/discord/${card.card_key}.webp`;
+      return cardImagePaths.discord(card.card_key);
     }
     if (card.set_id === "9") {
 const number = card.card_key.split("-")[1];
-      return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
+      return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
     }
     if (card.set_id === "tcgpromos") {
-      return `/tcgpromos/${card.card_key}.webp`;
+      return cardImagePaths.tcgPromo(card.card_key);
     }
 const [rarityRaw, number] = card.card_key.split("-");
 const rarity = getRarityCode(rarityRaw);
@@ -116,11 +117,9 @@ const config: any = {
     };
 const c = config[card.set_id];
     if (!c) return "";
-    return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}${
-      card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
+    return cardImagePaths.ccgWithExtension(c.folder, c.prefix, rarity, String(number).padStart(3, "0"), card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
         ? ".webp"
-        : ".webp"
-    }`;
+        : ".webp");
   };
   return (
     <div

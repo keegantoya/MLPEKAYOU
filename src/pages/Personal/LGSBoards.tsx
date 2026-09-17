@@ -1,3 +1,5 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
@@ -16,12 +18,12 @@ import {
 // New tables may not be in your generated Supabase types yet.
 const db = supabase as unknown as SupabaseClient;
 const DECKS = [
-  { id: "TWILIGHTSPARKLE", name: "Twilight", image: "/tcg-card-backs/PRR01BACK.webp" },
-  { id: "FLUTTERSHY", name: "Fluttershy", image: "/tcg-card-backs/PRR02BACK.webp" },
-  { id: "PINKIEPIE", name: "Pinkie Pie", image: "/tcg-card-backs/PRR03BACK.webp" },
-  { id: "APPLEJACK", name: "Applejack", image: "/tcg-card-backs/PRR04BACK.webp" },
-  { id: "RAINBOWDASH", name: "Rainbow Dash", image: "/tcg-card-backs/PRR05BACK.webp" },
-  { id: "RARITY", name: "Rarity", image: "/tcg-card-backs/PRR06BACK.webp" },
+  { id: "TWILIGHTSPARKLE", name: "Twilight", image: cardImagePaths.fixed.tcgCardBacksPRR01BACK },
+  { id: "FLUTTERSHY", name: "Fluttershy", image: cardImagePaths.fixed.tcgCardBacksPRR02BACK },
+  { id: "PINKIEPIE", name: "Pinkie Pie", image: cardImagePaths.fixed.tcgCardBacksPRR03BACK },
+  { id: "APPLEJACK", name: "Applejack", image: cardImagePaths.fixed.tcgCardBacksPRR04BACK },
+  { id: "RAINBOWDASH", name: "Rainbow Dash", image: cardImagePaths.fixed.tcgCardBacksPRR05BACK },
+  { id: "RARITY", name: "Rarity", image: cardImagePaths.fixed.tcgCardBacksPRR06BACK },
 ] as const;
 type DeckId = (typeof DECKS)[number]["id"];
 type Staff = {
@@ -540,7 +542,7 @@ export default function LGSBoards() {
     let authChanged = false;
     const {
       data: { subscription },
-    } = db.auth.onAuthStateChange((_type, session) => {
+    } = onAuthIdentityChange((_type, session) => {
       authChanged = true;
       if (mounted) setUserId(session?.user.id ?? null);
     });

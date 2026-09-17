@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import { useState, useEffect } from "react";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import CollectionCard from "@/components/CollectionCard";
@@ -324,7 +325,7 @@ const Collections = () => {
     load();
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = onAuthIdentityChange((_event, session) => {
       load(session?.user);
     });
     return () => {

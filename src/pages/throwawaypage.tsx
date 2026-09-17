@@ -1,10 +1,11 @@
+import { cardImagePaths } from "@/lib/card-images";
 import React from "react";
 
 const prizes = [
 
   {
 
-    src: "/tcgpromos/RR07.webp",
+    src: cardImagePaths.fixed.tcgpromosRR07,
 
     title: "",
 
@@ -18,7 +19,7 @@ const prizes = [
 
   {
 
-    src: "/tcgpromos/RR09.webp",
+    src: cardImagePaths.fixed.tcgpromosRR09,
 
     title: "",
 

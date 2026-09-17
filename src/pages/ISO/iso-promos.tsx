@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
@@ -60,9 +61,9 @@ const getImage = (
   number: number
 ) => {
   if (setId === "9") {
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
+    return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
   }
-  return `/tcgpromos/RR${String(number).padStart(2, "0")}.webp`;
+  return cardImagePaths.tcgRubyPromo(String(number).padStart(2, "0"));
 };
 const sets = [
   {

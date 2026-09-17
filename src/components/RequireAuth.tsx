@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -29,7 +30,7 @@ export default function RequireAuth({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = onAuthIdentityChange((_event, session) => {
       if (mounted) {
         setUser(session?.user ?? null);
       }

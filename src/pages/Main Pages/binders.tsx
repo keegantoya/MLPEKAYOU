@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -425,7 +426,7 @@ export default function MyCollectionBinder() {
           return {
             rarity: "ER",
             key: `BP01ER${num}`,
-            image: `/fantasy-wonderland/SD01ER${num}.webp`,
+            image: cardImagePaths.fantasyEmerald(num),
           };
         });
       }
@@ -435,7 +436,7 @@ export default function MyCollectionBinder() {
           return {
             rarity: "PER",
             key: `BP01PER${num}`,
-            image: `/fantasy-wonderland/SD01PER${num}.webp`,
+            image: cardImagePaths.fantasyParallelEmerald(num),
           };
         });
       }
@@ -444,7 +445,7 @@ export default function MyCollectionBinder() {
         return numbers.map((n) => ({
           rarity: "PSPR",
           key: `BP01PSPR${String(n).padStart(2, "0")}`,
-          image: `/fantasy-wonderland/BP01PSPR${String(n).padStart(2, "0")}.webp`,
+          image: cardImagePaths.fantasyParallelSapphire(String(n).padStart(2, "0")),
         }));
       }
       return Array.from({ length: count }, (_, i) => {
@@ -452,7 +453,7 @@ export default function MyCollectionBinder() {
         return {
           rarity: prefix.replace("BP01", ""),
           key: `${prefix}${num}`,
-          image: `/fantasy-wonderland/${prefix}${num}.webp`,
+          image: cardImagePaths.fantasyByPrefix(prefix, num),
         };
       });
     });
@@ -478,12 +479,12 @@ export default function MyCollectionBinder() {
           {
             rarity: "PER",
             key: `BP02-PER${String(i + 1).padStart(2, "0")}-A2`,
-            image: `/cards/discord/BP02-PER${String(i + 1).padStart(2, "0")}-A2.webp`,
+            image: cardImagePaths.discordParallelEmeraldA(String(i + 1).padStart(2, "0")),
           },
           {
             rarity: "PER",
             key: `BP02-PER${String(i + 1).padStart(2, "0")}-B2`,
-            image: `/cards/discord/BP02-PER${String(i + 1).padStart(2, "0")}-B2.webp`,
+            image: cardImagePaths.discordParallelEmeraldB(String(i + 1).padStart(2, "0")),
           },
         ]).flat();
       }
@@ -493,7 +494,7 @@ export default function MyCollectionBinder() {
         return {
           rarity,
           key: `BP02-${rarity}${num}`,
-          image: `/cards/discord/BP02-${rarity}${num}.webp`,
+          image: cardImagePaths.discordByRarity(rarity, num),
         };
       });
     });
@@ -556,7 +557,7 @@ export default function MyCollectionBinder() {
           : "",
         number: Number(key.match(/^P?BP03-[A-Z]+(\d{2})/)?.[1] || 0),
         key,
-        image: `/cards/nightmare-night/${imageKey}.webp`,
+        image: cardImagePaths.nightmareNight(imageKey),
       };
     });
   } else if (selectedSet.id === "friendshipsbegin") {
@@ -583,7 +584,7 @@ export default function MyCollectionBinder() {
         return {
           rarity: prefix.replace("SD01", ""),
           key: `BONUS-${key}`,
-          image: `/friendships-begin/${key}.webp`,
+          image: cardImagePaths.friendshipsBegin(key),
         };
       }),
     );
@@ -592,7 +593,7 @@ export default function MyCollectionBinder() {
       rarity: "PR",
       number: i + 1,
       key: `RR${String(i + 1).padStart(2, "0")}`,
-      image: `/tcgpromos/RR${String(i + 1).padStart(2, "0")}.webp`,
+      image: cardImagePaths.tcgRubyPromo(String(i + 1).padStart(2, "0")),
     }));
   } else {
     cards =
@@ -604,7 +605,7 @@ export default function MyCollectionBinder() {
             image:
               number === 6
                 ? "" // No PR006 image exists
-                : `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`,
+                : cardImagePaths.ccgPromo(String(number).padStart(3, "0")),
           }))
         : Object.entries(selectedSet.rarities).flatMap(([rarity, count]) =>
             Array.from({ length: count as number }, (_, i) => {
@@ -615,10 +616,10 @@ export default function MyCollectionBinder() {
                 key: `${rarity}-${i + 1}`,
                 image:
                   selectedSet.id === "3" && rarity === "SZR" && i === 0
-                    ? "/card-backs/third-moon-edition-backs/M3SZRBINDERVER.webp"
-                    : `/cards/${selectedSet.folder}/${selectedSet.prefix}${fileRarity}${String(
+                    ? cardImagePaths.fixed.cardBacksThirdMoonEditionBacksM3SZRBINDERVER
+                    : cardImagePaths.ccg(selectedSet.folder, selectedSet.prefix, fileRarity, String(
                         i + 1,
-                      ).padStart(3, "0")}.webp`,
+                      ).padStart(3, "0")),
               };
             }),
           );
@@ -640,10 +641,10 @@ export default function MyCollectionBinder() {
             setId: set.id,
             image:
               set.id === "3" && rarity === "SZR" && i === 0
-                ? "/card-backs/third-moon-edition-backs/M3SZRBINDERVER.webp"
-                : `/cards/${set.folder}/${set.prefix}${fileRarity}${String(
+                ? cardImagePaths.fixed.cardBacksThirdMoonEditionBacksM3SZRBINDERVER
+                : cardImagePaths.ccg(set.folder, set.prefix, fileRarity, String(
                     i + 1,
-                  ).padStart(3, "0")}.webp`,
+                  ).padStart(3, "0")),
           };
         }),
       );

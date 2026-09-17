@@ -126,11 +126,12 @@ const getCardImageClassName = (
   return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
 };
 type SafeCardImageProps = {
+  imageSize?: "grid" | "original";
   src: string;
   alt: string;
   className: string;
 };
-const SafeCardImage = ({ src, alt, className }: SafeCardImageProps) => {
+const SafeCardImage = ({ src, alt, className, imageSize }: SafeCardImageProps) => {
   const [failed, setFailed] = useState(false);
   const landscapeCommon =
     /\/nightmare-night\/BP03-C(2[5-9]|3[0-9]|4[0-8])\.webp(?:[?#].*)?$/.test(
@@ -160,7 +161,7 @@ const SafeCardImage = ({ src, alt, className }: SafeCardImageProps) => {
           position: className.includes("absolute") ? "absolute" : "relative",
         }}
       >
-        <CardImage
+        <CardImage imageSize={imageSize}
           src={src}
           alt={alt}
           className="absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-[inherit] object-contain"
@@ -175,7 +176,7 @@ const SafeCardImage = ({ src, alt, className }: SafeCardImageProps) => {
     );
   }
   return (
-    <CardImage
+    <CardImage imageSize={imageSize}
       src={src}
       alt={alt}
       className={className}
@@ -1993,7 +1994,7 @@ const ExploreProfile = ({
                   className={`relative mx-auto w-full overflow-hidden rounded-[12px] ${isMoon3DoubleWide(quickViewCard) ? "max-w-[440px] aspect-[10/7]" : "max-w-[150px] aspect-[5/7] sm:max-w-[280px]"}`}
                   style={{ clipPath: "inset(0 round 12px)" }}
                 >
-                  <SafeCardImage
+                  <SafeCardImage imageSize="original"
                     src={getTradeCardImage(quickViewCard)}
                     alt={quickViewCard.card_key}
                     className={`${getCardImageClassName(quickViewCard, "absolute")} rounded-[12px]`}
@@ -2122,7 +2123,7 @@ const ExploreProfile = ({
               className={`relative overflow-hidden rounded-[12px] bg-transparent ${isMoon3DoubleWide(quickViewCard) ? "w-[min(82vw,440px)] aspect-[10/7]" : "h-[min(46dvh,340px)] aspect-[5/7] sm:h-[min(55vh,420px)]"}`}
               style={{ clipPath: "inset(0 round 12px)" }}
             >
-              <SafeCardImage
+              <SafeCardImage imageSize="original"
                 src={getTradeCardImage(quickViewCard)}
                 alt={quickViewCard.card_key}
                 className={`${getCardImageClassName(quickViewCard, "absolute")} rounded-[12px]`}

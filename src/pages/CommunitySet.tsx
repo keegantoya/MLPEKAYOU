@@ -249,9 +249,23 @@ const manualPlacements: Record<string, string[]> = {
   "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"],
   "8": ["Mari", "Keegan", "Jacob"],
 };
+type CommunityQueryResult = { data: any[] | null; error: { message: string } | null };
+async function readCommunityPages(query: (from: number, to: number) => PromiseLike<CommunityQueryResult>) {
+  const rows: any[] = [];
+  const pageSize = 500;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await query(from, from + pageSize - 1);
+    if (error) throw new Error(error.message);
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) return rows;
+  }
+}
 const CommunitySet = () => {
 const { id } = useParams();
 const navigate = useNavigate();
+const [isLoading, setIsLoading] = useState(true);
+const [loadError, setLoadError] = useState<string | null>(null);
+const [reloadVersion, setReloadVersion] = useState(0);
 const [collectors, setCollectors] = useState<any[]>([]);
 const [completed, setCompleted] = useState<any[]>([]);
 const [showAllFinishers, setShowAllFinishers] = useState(false);
@@ -284,36 +298,40 @@ const observer = new MutationObserver(syncTheme);
 const set = id ? sets[id] : undefined;
   useEffect(() => {
     if (!id || !set) return;
+let cancelled = false;
+setIsLoading(true);
+setLoadError(null);
+setCollectors([]);
+setCompleted([]);
 const load = async () => {
-const { data: progress } = await supabase
-        .from("collection_progress_raw")
-        .select("user_id, progress, updated_at")
-        .eq(
-          "set_id",
-          id === "friendshipsbegin"
-            ? "SD"
-            : id === "fantasywonderland"
-              ? "FW"
-              : id === "discord"
-                ? "12"
-                : id
-        );
-const progressUserIds = Array.from(
-        new Set((progress || []).map((row: any) => row.user_id)),
-      );
-      if (progressUserIds.length === 0) {
-        setCollectors([]);
-        setCompleted([]);
-        return;
-      }
-const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url")
-        .in("id", progressUserIds);
-const { data: tradingProfiles } = await supabase
-        .from("trading_profiles")
-        .select("user_id, discord_username")
-        .in("user_id", progressUserIds);
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw new Error(sessionError.message);
+  if (!session?.user) throw new Error("Please log in to view community collections.");
+  const databaseSetId = id === "friendshipsbegin" ? "SD" : id === "fantasywonderland" ? "FW" : id === "discord" ? "12" : id;
+  const progress = await readCommunityPages((from, to) => supabase
+    .from("collection_progress_raw")
+    .select("user_id, progress, updated_at")
+    .eq("set_id", databaseSetId)
+    .order("user_id")
+    .range(from, to));
+  if (cancelled) return;
+  const progressUserIds: string[] = Array.from(new Set(progress.map(row => String(row.user_id))));
+  if (progressUserIds.length === 0) return;
+  const profiles: any[] = [];
+  const tradingProfiles: any[] = [];
+  // Keep GET URLs small instead of sending thousands of UUIDs in one request.
+  for (let offset = 0; offset < progressUserIds.length; offset += 100) {
+    if (cancelled) return;
+    const ids = progressUserIds.slice(offset, offset + 100);
+    const [profileResult, tradingResult] = await Promise.all([
+      supabase.from("profiles").select("id, username, avatar_url").in("id", ids),
+      supabase.from("trading_profiles").select("user_id, discord_username").in("user_id", ids),
+    ]);
+    if (profileResult.error) throw new Error(profileResult.error.message);
+    if (tradingResult.error) throw new Error(tradingResult.error.message);
+    profiles.push(...(profileResult.data || []));
+    tradingProfiles.push(...(tradingResult.data || []));
+  }
 const eligibleUserIds = new Set(
         (tradingProfiles || [])
           .filter(
@@ -324,17 +342,9 @@ const eligibleUserIds = new Set(
           .map((p: any) => p.user_id)
       );
 // Use the centralized leaderboard exclusion list.
-const { data: excludedUsers, error: exclusionsError } =
-        await supabase
-          .from("leaderboard_exclusions")
-          .select("user_id");
-      if (exclusionsError) {
-        console.error(
-          "Community exclusions error:",
-          exclusionsError
-        );
-        return;
-      }
+const excludedUsers = await readCommunityPages((from, to) => supabase
+  .from("leaderboard_exclusions").select("user_id").order("user_id").range(from, to));
+if (cancelled) return;
 const excludedUserIds = new Set(
         (excludedUsers || []).map(
           (user: any) => user.user_id
@@ -504,15 +514,22 @@ const bIndex = manualOrder.indexOf(
       } else {
         finished.sort(
           (a, b) =>
-            new Date(a.completed_at).getTime() -
-            new Date(b.completed_at).getTime()
+            new Date(a.updated).getTime() -
+            new Date(b.updated).getTime()
         );
       }
+      if (cancelled) return;
       setCollectors(active.slice(0, 10));
       setCompleted(finished.slice(0, 10));
     };
-    load();
-  }, [id, set]);
+    void load().catch((error: unknown) => {
+      if (!cancelled) {
+        console.error("Community collection loading failed:", error);
+        setLoadError(error instanceof Error ? error.message : "Unable to load this community collection.");
+      }
+    }).finally(() => { if (!cancelled) setIsLoading(false); });
+    return () => { cancelled = true; };
+  }, [id, set, reloadVersion]);
   if (!set) return null;
 const completionPercentage = (owned: number) =>
   Math.min(100, (owned / set.total) * 100);
@@ -572,6 +589,13 @@ return (
           </div>
         </div>
       </section>
+      {(isLoading || loadError) && (
+        <div role={loadError ? "alert" : "status"} className="mb-4 rounded-2xl border border-zinc-400/20 p-6 text-center">
+          <p>{loadError || "Loading community collections…"}</p>
+          {loadError && <button type="button" onClick={() => setReloadVersion(value => value + 1)} className="mt-3 rounded-full bg-[#FFD54A] px-5 py-2 font-semibold text-zinc-900">Try again</button>}
+        </div>
+      )}
+      <div hidden={isLoading || !!loadError}>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
         <section
           className={`overflow-hidden rounded-[26px] border ${
@@ -867,6 +891,7 @@ const percentage = completionPercentage(user.owned);
             )}
           </div>
         </section>
+      </div>
       </div>
     </div>
   </div>

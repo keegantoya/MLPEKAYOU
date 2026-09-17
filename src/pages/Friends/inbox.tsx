@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import {
@@ -95,31 +96,31 @@ const OFFER_SET_NAMES: Record<string, string> = {
 const getOfferCardImage = (card: OfferCardRef) => {
   const [rarity, number] = card.card_key.split("-");
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
-    return `/friendships-begin/${card.card_key}.webp`;
+    return cardImagePaths.friendshipsBegin(card.card_key);
   }
   if (card.set_id === "FW") {
     const num = card.card_key.slice(-2);
     if (card.card_key.startsWith("BP01ER")) {
-      return `/fantasy-wonderland/SD01ER${num}.webp`;
+      return cardImagePaths.fantasyEmerald(num);
     }
     if (card.card_key.startsWith("BP01PER")) {
-      return `/fantasy-wonderland/SD01PER${num}.webp`;
+      return cardImagePaths.fantasyParallelEmerald(num);
     }
-    return `/fantasy-wonderland/${card.card_key}.webp`;
+    return cardImagePaths.fantasyWonderland(card.card_key);
   }
   if (card.set_id === "14") {
     const erMatch = card.card_key.match(/^BP03-ER(0[12])-([ABC])$/);
     const imageKey = erMatch ? `${card.card_key}${erMatch[2]}` : card.card_key;
-    return `/cards/nightmare-night/${imageKey}.webp`;
+    return cardImagePaths.nightmareNight(imageKey);
   }
   if (card.set_id === "12") {
-    return `/cards/discord/${card.card_key}.webp`;
+    return cardImagePaths.discord(card.card_key);
   }
   if (card.set_id === "9") {
-    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
+    return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
   }
   if (card.set_id === "tcgpromos") {
-    return `/tcgpromos/${card.card_key}.webp`;
+    return cardImagePaths.tcgPromo(card.card_key);
   }
   const config: Record<string, { folder: string; prefix: string }> = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
@@ -135,7 +136,7 @@ const getOfferCardImage = (card: OfferCardRef) => {
   const item = config[card.set_id];
   if (!item) return "";
   const rarityCode = rarity === "SHINING ZR" ? "SZR" : rarity;
-  return `/cards/${item.folder}/${item.prefix}${rarityCode}${String(number).padStart(3, "0")}.webp`;
+  return cardImagePaths.ccg(item.folder, item.prefix, rarityCode, String(number).padStart(3, "0"));
 };
 function OfferCardThumbnail({ card }: { card: OfferCardRef }) {
   const src = getOfferCardImage(card);

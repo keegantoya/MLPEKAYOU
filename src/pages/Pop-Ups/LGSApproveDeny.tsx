@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createPortal } from "react-dom";
@@ -76,7 +77,7 @@ const applyUser = (id?: string) => {
         setApplications([]); setHistory([]); setDecision(null); setMessage(""); setError("");
       }
     };
-const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+const { data: { subscription } } = onAuthIdentityChange((_event, session) => {
       authVersion++; applyUser(session?.user?.id);
     });
 const initialVersion = authVersion;

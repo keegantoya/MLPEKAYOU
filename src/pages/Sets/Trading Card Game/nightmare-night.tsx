@@ -1,3 +1,6 @@
+import { getNightmareNightBack as getCardBack, getNightmareNightFront as getCardFront } from "@/lib/card-images";
+import { cardImagePaths } from "@/lib/card-images";
+import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +11,7 @@ const NightmareNight = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
+const [loadingFailed, setLoadingFailed] = useState(false);
   const [lastSavedProgress, setLastSavedProgress] = useState("");
   const [viewMode, setViewMode] = useState(false);
   const [selectedRarity, setSelectedRarity] = useState("C");
@@ -134,33 +138,8 @@ const NightmareNight = () => {
     if (rarity === "PRR") return `\u203BBP03-RR${number}${variant}`;
     return `BP03-${rarity}${number}${variant}`;
   };
-  const getCardBack = (key: string) => {
-    if (key.startsWith("BP03-ER") || key.startsWith("PBP03-ER")) {
-      return "/tcg-card-backs/SCENECARDBACK.webp";
-    }
-    // C25-C48 have unique backs
-    if (key.startsWith("BP03-C")) {
-      const num = Number(key.replace("BP03-C", ""));
-      if (num >= 25 && num <= 48) {
-        return `/card-backs/nightmare-night/${key}.webp`;
-      }
-    }
-    // RR01-RR06 have unique backs
-    const rrMatch = key.match(/^BP03-RR(0[1-6])$/);
-    if (rrMatch) {
-      return `/tcg-card-backs/BP02-RR${rrMatch[1]}.webp`;
-    }
-    const prrMatch = key.match(/^PBP03-RR(0[1-6])$/);
-    if (prrMatch) {
-      return `/tcg-card-backs/PRR${prrMatch[1]}BACK.webp`;
-    }
-    return `/card-backs/tcgdefaultback.webp`;
-  };
-  const getCardFront = (key: string) => {
-    const erMatch = key.match(/^BP03-ER(0[12])-([ABC])$/);
-    const imageKey = erMatch ? `${key}${erMatch[2]}` : key;
-    return `/cards/nightmare-night/${imageKey}.webp`;
-  };
+  
+  
   const isLandscapeCommon = (key: string) => {
     const match = key.match(/^BP03-C(\d{2})$/);
     const number = match ? Number(match[1]) : 0;
@@ -199,7 +178,7 @@ const NightmareNight = () => {
       }
       setLoaded(true);
     };
-    loadProgress();
+    void loadProgress().catch(() => setLoadingFailed(true));
   }, []);
   useEffect(() => {
     if (!loaded) return;
@@ -232,6 +211,7 @@ const NightmareNight = () => {
             : rarity === "PRR"
               ? "\u203BRR"
               : getRarityCode(rarity);
+  if (!loaded) return <CollectionLoading failed={loadingFailed} />;
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 text-zinc-900 dark:bg-[#0b0b0c] dark:text-white sm:pb-8">
       <div className="mx-auto max-w-[1800px] px-3 py-3 sm:px-5 sm:py-5">
@@ -337,7 +317,7 @@ const NightmareNight = () => {
               {Object.entries(set.rarities)
                 .filter(
                   ([rarity]) =>
-                    window.innerWidth >= 768 || rarity === selectedRarity,
+                    rarity === selectedRarity,
                 )
                 .map(([rarity, count]) => {
                   const rarityCards = cards.filter(
@@ -386,7 +366,7 @@ const NightmareNight = () => {
                               <div
                                 className={`relative h-full w-full transform-style-preserve-3d transition-transform duration-500 ${owned && !viewMode ? "rotate-y-180" : ""}`}
                               >
-                                <CardImage
+                                <CardImage visible={loaded && (viewMode || !owned)}
                                   src={getCardFront(key)}
                                   className={
                                     landscape
@@ -403,7 +383,7 @@ const NightmareNight = () => {
                                   }
                                   alt=""
                                 />
-                                <CardImage
+                                <CardImage visible={loaded && !viewMode && !!owned}
                                   src={getCardBack(key)}
                                   className={
                                     landscape
@@ -469,7 +449,7 @@ const NightmareNight = () => {
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <CardImage
+                  <CardImage imageSize="original" visible={!zoomedCardFlipped}
                     src={zoomedCard}
                     className={`absolute rounded-2xl backface-hidden ${
                       zoomedCardKey && isLandscapeCommon(zoomedCardKey)
@@ -483,7 +463,7 @@ const NightmareNight = () => {
                     }
                     alt=""
                   />
-                  <CardImage
+                  <CardImage imageSize="original" visible={zoomedCardFlipped}
                     src={zoomedCardBack || ""}
                     className={`absolute h-full w-full rounded-2xl backface-hidden ${
                       zoomedCardKey && /^BP03-RR0[1-6]$/.test(zoomedCardKey)

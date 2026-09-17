@@ -1,3 +1,6 @@
+import { getPromotionalCardsBack as getCardBack } from "@/lib/card-images";
+import { cardImagePaths } from "@/lib/card-images";
+import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
@@ -125,6 +128,7 @@ const PromotionalCards = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
+const [loadingFailed, setLoadingFailed] = useState(false);
   const [lastSavedProgress, setLastSavedProgress] = useState("");
   const [viewMode, setViewMode] = useState(false);
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
@@ -135,23 +139,18 @@ const PromotionalCards = () => {
   const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
   const ccgHidden = hiddenSets.includes("9");
   const tcgHidden = hiddenSets.includes("tcgpromos");
-  const getCardBack = (number?: number) => {
-    if (number && number >= 8) {
-      return "/card-backs/promos/sdccboombacks.webp";
-    }
-    return "/card-backs/M1R-SR-SGR-SCBACK.webp";
-  };
+  
   const toggleFlip = (key: string) => {
     if (viewMode) {
       if (key.startsWith("PR-")) {
         const number = Number(key.split("-")[1]);
         setZoomedCard(
-          `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`,
+          cardImagePaths.ccgPromo(String(number).padStart(3, "0")),
         );
         setZoomedCardBack(getCardBack(number));
       } else {
-        setZoomedCard(`/tcgpromos/${key}.webp`);
-        setZoomedCardBack("/card-backs/tcgdefaultback.webp");
+        setZoomedCard(cardImagePaths.tcgPromo(key));
+        setZoomedCardBack(cardImagePaths.fixed.cardBacksTcgdefaultback);
       }
       setZoomedCardFlipped(false);
       return;
@@ -205,7 +204,7 @@ const PromotionalCards = () => {
       setLastSavedProgress(JSON.stringify(merged));
       setLoaded(true);
     };
-    loadProgress();
+    void loadProgress().catch(() => setLoadingFailed(true));
   }, []);
   useEffect(() => {
     if (!loaded) return;
@@ -238,6 +237,7 @@ const PromotionalCards = () => {
     const saveTimer = window.setTimeout(saveProgress, 400);
     return () => window.clearTimeout(saveTimer);
   }, [flipped, loaded, lastSavedProgress]);
+  if (!loaded) return <CollectionLoading failed={loadingFailed} />;
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 text-zinc-900 transition-colors dark:bg-[#101112] dark:text-white sm:pb-8">
       <div className="mx-auto max-w-[1800px] px-3 py-3 sm:px-6 sm:py-6">
@@ -390,13 +390,13 @@ const PromotionalCards = () => {
                                 viewMode ? "" : owned ? "rotate-y-180" : ""
                               }`}
                             >
-                              <CardImage
-                                src={`/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`}
+                              <CardImage visible={loaded && (viewMode || !owned)}
+                                src={cardImagePaths.ccgPromo(String(number).padStart(3, "0"))}
                                 className={getPromoFrontClassName(key)}
                                 style={getPromoFrontStyle(key)}
                                 alt=""
                               />
-                              <CardImage
+                              <CardImage visible={loaded && !viewMode && !!owned}
                                 src={getCardBack(number)}
                                 className={CARD_BACK_CLASS_NAME}
                                 style={{
@@ -465,14 +465,14 @@ const PromotionalCards = () => {
                                 viewMode ? "" : owned ? "rotate-y-180" : ""
                               }`}
                             >
-                              <CardImage
-                                src={`/tcgpromos/${key}.webp`}
+                              <CardImage visible={loaded && (viewMode || !owned)}
+                                src={cardImagePaths.tcgPromo(key)}
                                 className={getPromoFrontClassName(key)}
                                 style={getPromoFrontStyle(key)}
                                 alt=""
                               />
-                              <CardImage
-                                src="/card-backs/tcgdefaultback.webp"
+                              <CardImage visible={loaded && !viewMode && !!owned}
+                                src={cardImagePaths.fixed.cardBacksTcgdefaultback}
                                 className={CARD_BACK_CLASS_NAME}
                                 style={{
                                   transform: "rotateY(180deg) scale(1.035)",
@@ -531,13 +531,13 @@ const PromotionalCards = () => {
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <CardImage
+                  <CardImage imageSize="original" visible={!zoomedCardFlipped}
                     src={zoomedCard}
                     className={`${getPromoFrontClassName(getPromoKeyFromSrc(zoomedCard))} rounded-2xl`}
                     style={getPromoFrontStyle(getPromoKeyFromSrc(zoomedCard))}
                     alt=""
                   />
-                  <CardImage
+                  <CardImage imageSize="original" visible={zoomedCardFlipped}
                     src={zoomedCardBack || ""}
                     className={`${CARD_BACK_CLASS_NAME} rounded-2xl`}
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}

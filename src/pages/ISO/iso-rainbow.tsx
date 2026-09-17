@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
@@ -220,7 +221,7 @@ const isWishlisted = wishlist.has(fullKey) || wishlist.has(`${set.id}:${card.rar
 const cardContent = (
 <div className={searchAllCards ? "" : "cursor-pointer"}>
                   <div className={`relative aspect-[5/7] w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${isWishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}>
-                    <CardImage src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="h-full w-full scale-[1.05] object-contain object-center" />
+                    <CardImage src={cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(card.number).padStart(3, "0"))} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="h-full w-full scale-[1.05] object-contain object-center" />
 </div>
 </div>
 );

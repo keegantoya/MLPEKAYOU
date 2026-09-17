@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -753,14 +754,14 @@ const index = parseInt(card.key.slice(-2), 10) - 1;
     <MissingImageCard
       src={
         set.id === "12"
-          ? `/cards/discord/${card.key}.webp`
+          ? cardImagePaths.discord(card.key)
           : set.id === "14"
-          ? `/cards/nightmare-night/${card.key}.webp`
+          ? cardImagePaths.nightmareNight(card.key)
           : card.key.startsWith("BP01ER")
-          ? `/fantasy-wonderland/SD01ER${card.key.slice(-2)}.webp`
+          ? cardImagePaths.fantasyEmerald(card.key.slice(-2))
           : card.key.startsWith("BP01PER")
-          ? `/fantasy-wonderland/SD01PER${card.key.slice(-2)}.webp`
-          : `/${set.folder}/${card.key}.webp`
+          ? cardImagePaths.fantasyParallelEmerald(card.key.slice(-2))
+          : cardImagePaths.byFolder(set.folder, card.key)
       }
       className={`${landscape ? "landscape-card" : "aspect-[5/7] w-full"} rounded-xl object-cover ${
 isWishlisted

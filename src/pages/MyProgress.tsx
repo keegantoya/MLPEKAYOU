@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -251,7 +252,7 @@ let owned = 0;
     loadProgress();
 const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = onAuthIdentityChange((_event, session) => {
       loadProgress(session?.user);
     });
     return () => subscription.unsubscribe();

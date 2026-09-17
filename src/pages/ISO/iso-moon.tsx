@@ -1,3 +1,4 @@
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -266,9 +267,9 @@ const cardContent = (
                       }`}
                     >
                       <CardImage
-                        src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(
+                        src={cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(
                           card.number
-                        ).padStart(3, "0")}.webp`}
+                        ).padStart(3, "0"))}
                         alt={getDisplayCardCode(set.id, card.rarity, card.number)}
                         className="h-full w-full scale-[1.05] object-contain object-center"
                       />

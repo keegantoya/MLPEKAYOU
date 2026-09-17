@@ -1,3 +1,6 @@
+import { getMoonThreeBack as getCardBack } from "@/lib/card-images";
+import { cardImagePaths } from "@/lib/card-images";
+import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +11,7 @@ const MoonThree = () => {
 const navigate = useNavigate();
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+const [loadingFailed, setLoadingFailed] = useState(false);
 const [lastSavedProgress, setLastSavedProgress] = useState("");
 const [viewMode, setViewMode] = useState(false);
 const [selectedRarity, setSelectedRarity] = useState("R");
@@ -62,63 +66,16 @@ const getDisplayRarityCode = (rarity: string) => {
   if (rarity === "SHINING ZR" || rarity === "SZR") return "◇ZR";
   return rarity;
 };
-const getCardBack = (rarity: string, number: number) => {
-  if (rarity === "SZR" && number === 1) {
-    return `/card-backs/third-moon-edition-backs/M3SZR001BACK.webp`;
-  }
-  if (rarity === "SZR" && number >= 2 && number <= 3) {
-    return `/card-backs/third-moon-edition-backs/moon3zrback2.webp`;
-  }
-  if (rarity === "SC") {
-    return `/card-backs/third-moon-edition-backs/m3scback.webp`;
-  }
-  if (rarity === "ZR" && number === 14) {
-    return `/card-backs/third-moon-edition-backs/moon3sdzrback2.webp`;
-  }
-  if (rarity === "ZR" && number >= 8 && number <= 13) {
-    return `/card-backs/third-moon-edition-backs/moon3zrback2.webp`;
-  }
-  if (rarity === "ZR" && number >= 1 && number <= 7) {
-    return `/card-backs/third-moon-edition-backs/m3zrback1.webp`;
-  }
-  if (rarity === "UR" && number >= 15 && number <= 18) {
-    return `/card-backs/third-moon-edition-backs/moon3sdurback.webp`;
-  }
-  if (rarity === "UR" && number >= 1 && number <= 14) {
-    return `/card-backs/third-moon-edition-backs/moon3urback.webp`;
-  }
-  if (rarity === "SGR" && number >= 1 && number <= 8) {
-    return `/card-backs/third-moon-edition-backs/moon3sgrback1.webp`;
-  }
-  if (rarity === "SGR" && number >= 9 && number <= 16) {
-    return `/card-backs/third-moon-edition-backs/moon3sgrback2.webp`;
-  }
-  if (
-    rarity === "HR" &&
-    (
-      (number >= 1 && number <= 22) ||
-      (number >= 31 && number <= 52)
-    )
-  ) {
-    return `/card-backs/third-moon-edition-backs/moon3sdhrback.webp`;
-  }
-  if (rarity === "SR") {
-    return `/card-backs/third-moon-edition-backs/moon3srback.webp`;
-  }
-  if (rarity === "SSR") {
-    return `/card-backs/third-moon-edition-backs/moon3ssrback.webp`;
-  }
-  return `/card-backs/third-moon-edition-backs/moon3defaultback.webp`;
-};
+
 const toggleFlip = (key: string) => {
   if (viewMode) {
 const [rarity, numberStr] = key.split("-");
 const number = Number(numberStr);
     setZoomedCard(
-      `/cards/${set.folder}/${set.prefix}${rarity}${String(number).padStart(
+      cardImagePaths.ccg(set.folder, set.prefix, rarity, String(number).padStart(
         3,
         "0"
-      )}.webp`
+      ))
     );
     setZoomedCardBack(getCardBack(rarity, number));
     setZoomedCardFlipped(false);
@@ -149,7 +106,7 @@ const { data: saved } = await supabase
     }
     setLoaded(true);
   };
-  loadProgress();
+  void loadProgress().catch(() => setLoadingFailed(true));
 }, []);
 useEffect(() => {
   if (!loaded) return;
@@ -169,6 +126,7 @@ const user = data.session?.user;
   const saveTimer = window.setTimeout(saveProgress, 400);
   return () => window.clearTimeout(saveTimer);
 }, [flipped, loaded, lastSavedProgress]);
+  if (!loaded) return <CollectionLoading failed={loadingFailed} />;
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 text-zinc-900 transition-colors dark:bg-[#101112] dark:text-white sm:pb-8">
       <div className="mx-auto max-w-[1800px] px-3 py-3 sm:px-6 sm:py-6">
@@ -269,7 +227,7 @@ const user = data.session?.user;
           <main className="min-w-0">
             <div className="space-y-4">
               {Object.entries(set.rarities)
-                .filter(([rarity]) => window.innerWidth >= 768 || rarity === selectedRarity)
+                .filter(([rarity]) => rarity === selectedRarity)
                 .map(([rarity, count]) => (
                   <section
                     key={rarity}
@@ -313,12 +271,12 @@ const isWide = card.rarity === "SZR" && card.number === 1;
                                     viewMode ? "" : owned ? "rotate-y-180" : ""
                                   }`}
                                 >
-                                  <CardImage
-                                    src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`}
+                                  <CardImage visible={loaded && (viewMode || !owned)}
+                                    src={cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(card.number).padStart(3, "0"))}
                                     className="absolute inset-0 h-full w-full scale-[1.04] rounded-xl object-cover object-center backface-hidden"
                                     alt=""
                                   />
-                                  <CardImage
+                                  <CardImage visible={loaded && !viewMode && !!owned}
                                     src={getCardBack(card.rarity, card.number)}
                                     className="absolute left-0 top-[-7px] h-[calc(100%+14px)] w-full rounded-xl object-cover object-center rotate-y-180 backface-hidden"
                                     alt=""
@@ -376,12 +334,12 @@ const isWide = card.rarity === "SZR" && card.number === 1;
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <CardImage
+                  <CardImage imageSize="original" visible={!zoomedCardFlipped}
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     alt=""
                   />
-                  <CardImage
+                  <CardImage imageSize="original" visible={zoomedCardFlipped}
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
@@ -400,12 +358,12 @@ const isWide = card.rarity === "SZR" && card.number === 1;
                       zoomedCardFlipped ? "rotate-y-180" : ""
                     }`}
                   >
-                    <CardImage
+                    <CardImage imageSize="original" visible={!zoomedCardFlipped}
                       src={zoomedCard}
                       className="absolute inset-0 h-full w-full scale-[1.04] rounded-2xl object-cover object-center backface-hidden"
                       alt=""
                     />
-                    <CardImage
+                    <CardImage imageSize="original" visible={zoomedCardFlipped}
                       src={zoomedCardBack || ""}
                       className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                       style={{ transform: "rotateY(180deg) scale(1.035)" }}

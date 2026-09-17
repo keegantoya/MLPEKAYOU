@@ -1,3 +1,4 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
 import React, { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
@@ -65,7 +66,7 @@ export default function LGSApplications({ onClose, isLightMode: suppliedTheme }:
         if (mounted && generation === current) setLoading(false);
       }
     };
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = onAuthIdentityChange((_event, session) => {
       if (mounted) void load(session?.user ?? null);
     });
     const initialGeneration = generation;

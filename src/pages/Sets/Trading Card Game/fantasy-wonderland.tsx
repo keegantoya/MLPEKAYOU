@@ -1,3 +1,6 @@
+import { getFantasyWonderlandBack as getCardBack, getFantasyWonderlandFront as getCardFront } from "@/lib/card-images";
+import { cardImagePaths } from "@/lib/card-images";
+import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +11,7 @@ const FantasyWonderland = () => {
 const navigate = useNavigate();
 const [flipped, setFlipped] = useState<Record<string, boolean>>({});
 const [loaded, setLoaded] = useState(false);
+const [loadingFailed, setLoadingFailed] = useState(false);
 const [lastSavedProgress, setLastSavedProgress] = useState("");
 const [viewMode, setViewMode] = useState(false);
 const [selectedRarity, setSelectedRarity] = useState("C");
@@ -99,27 +103,8 @@ const displayNumber = String(Math.ceil(Number(number) / 2)).padStart(2, "0");
   }
   return `※${prefix}-${getDisplayRarityCode(rarity).replace("※", "")}${number}`;
 };
-const getCardBack = (key: string) => {
-  if (key.startsWith("BP01PRR")) {
-    return `/tcg-card-backs/PRR${key.slice(-2)}BACK.webp`;
-  }
-  if (key.startsWith("BP01RR")) {
-    return `/tcg-card-backs/SDRR${key.slice(-2)}BACK.webp`;
-  }
-  if (key.startsWith("BP01ER") || key.startsWith("BP01PER")) {
-    return `/tcg-card-backs/SCENECARDBACK.webp`;
-  }
-  return `/card-backs/tcgdefaultback.webp`;
-};
-const getCardFront = (key: string) => {
-  if (key.startsWith("BP01ER")) {
-    return `/fantasy-wonderland/SD01ER${key.slice(-2)}.webp`;
-  }
-  if (key.startsWith("BP01PER")) {
-    return `/fantasy-wonderland/SD01PER${key.slice(-2)}.webp`;
-  }
-  return `/fantasy-wonderland/${key}.webp`;
-};
+
+
 const toggleFlip = (key: string) => {
   if (viewMode) {
     setZoomedCard(getCardFront(key));
@@ -152,7 +137,7 @@ const { data: saved } = await supabase
     }
     setLoaded(true);
   };
-  loadProgress();
+  void loadProgress().catch(() => setLoadingFailed(true));
 }, []);
 useEffect(() => {
   if (!loaded) return;
@@ -173,6 +158,7 @@ const user = data.session?.user;
   return () => window.clearTimeout(saveTimer);
 }, [flipped, loaded, lastSavedProgress]);
   const collectedCount = cards.filter((card) => flipped[card.key]).length;
+  if (!loaded) return <CollectionLoading failed={loadingFailed} />;
   return (
     <div className="min-h-screen bg-[#f5f5f7] pb-24 text-zinc-900 transition-colors dark:bg-[#101112] dark:text-white sm:pb-8">
       <div className="mx-auto max-w-[1800px] px-3 py-3 sm:px-6 sm:py-6">
@@ -269,7 +255,7 @@ const user = data.session?.user;
           <main className="min-w-0">
             <div className="space-y-4">
               {Object.entries(set.rarities)
-                .filter(([rarity]) => window.innerWidth >= 768 || rarity === selectedRarity)
+                .filter(([rarity]) => rarity === selectedRarity)
                 .map(([rarity, count]) => (
                   <section
                     key={rarity}
@@ -312,12 +298,12 @@ const user = data.session?.user;
                                     viewMode ? "" : owned ? "rotate-y-180" : ""
                                   }`}
                                 >
-                                  <CardImage
+                                  <CardImage visible={loaded && (viewMode || !owned)}
                                     src={getCardFront(key)}
                                     className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                     alt=""
                                   />
-                                  <CardImage
+                                  <CardImage visible={loaded && !viewMode && !!owned}
                                     src={getCardBack(key)}
                                     className="absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden"
                                     style={{ transform: "rotateY(180deg) scale(1.035)" }}
@@ -372,12 +358,12 @@ const user = data.session?.user;
                     zoomedCardFlipped ? "rotate-y-180" : ""
                   }`}
                 >
-                  <CardImage
+                  <CardImage imageSize="original" visible={!zoomedCardFlipped}
                     src={zoomedCard}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     alt=""
                   />
-                  <CardImage
+                  <CardImage imageSize="original" visible={zoomedCardFlipped}
                     src={zoomedCardBack || ""}
                     className="absolute inset-0 h-full w-full rounded-2xl object-cover object-center backface-hidden"
                     style={{ transform: "rotateY(180deg) scale(1.035)" }}

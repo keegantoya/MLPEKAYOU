@@ -1,3 +1,5 @@
+import { onAuthIdentityChange } from "@/lib/auth-identity";
+import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -459,7 +461,7 @@ export default function MyTradesSets() {
     load();
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
+    } = onAuthIdentityChange((event) => {
       if (event === "SIGNED_OUT") {
         setProgressMap({});
         setMarketListings({});
@@ -831,7 +833,7 @@ export default function MyTradesSets() {
         const num = String(actualIndex).padStart(2, "0");
         cards.push({
           key: `${prefix}${num}`,
-          image: `/friendships-begin/${prefix}${num}.webp`,
+          image: cardImagePaths.friendshipsByPrefix(prefix, num),
         });
       }
     });
@@ -857,7 +859,7 @@ export default function MyTradesSets() {
           const num = String(i + 7).padStart(2, "0");
           cards.push({
             key: `BP01ER${num}`,
-            image: `/fantasy-wonderland/SD01ER${num}.webp`,
+            image: cardImagePaths.fantasyEmerald(num),
           });
         }
         return;
@@ -868,7 +870,7 @@ export default function MyTradesSets() {
           const num = String(n).padStart(2, "0");
           cards.push({
             key: `BP01PSPR${num}`,
-            image: `/fantasy-wonderland/BP01PSPR${num}.webp`,
+            image: cardImagePaths.fantasyParallelSapphire(num),
           });
         });
         return;
@@ -879,8 +881,8 @@ export default function MyTradesSets() {
           key: `${prefix}${num}`,
           image:
             prefix === "BP01PER"
-              ? `/fantasy-wonderland/SD01PER${num}.webp`
-              : `/fantasy-wonderland/${prefix}${num}.webp`,
+              ? cardImagePaths.fantasyParallelEmerald(num)
+              : cardImagePaths.fantasyByPrefix(prefix, num),
         });
       }
     });
@@ -924,7 +926,7 @@ export default function MyTradesSets() {
         key,
         rarity: nightmareRarity(key),
         number: Number(key.match(/(\d{2})(?=-|$)/)?.[1] || 0),
-        image: `/cards/nightmare-night/${imageKey}.webp`,
+        image: cardImagePaths.nightmareNight(imageKey),
       };
     });
   } else if (set.id === "12") {
@@ -949,11 +951,11 @@ export default function MyTradesSets() {
           const num = String(i + 1).padStart(2, "0");
           cards.push({
             key: `BP02-PER${num}-A2`,
-            image: `/cards/discord/BP02-PER${num}-A2.webp`,
+            image: cardImagePaths.discordParallelEmeraldA(num),
           });
           cards.push({
             key: `BP02-PER${num}-B2`,
-            image: `/cards/discord/BP02-PER${num}-B2.webp`,
+            image: cardImagePaths.discordParallelEmeraldB(num),
           });
         }
         return;
@@ -962,7 +964,7 @@ export default function MyTradesSets() {
         const num = String(i).padStart(2, "0");
         cards.push({
           key: `${prefix}${num}`,
-          image: `/cards/discord/${prefix}${num}.webp`,
+          image: cardImagePaths.discordByPrefix(prefix, num),
         });
       }
     });
@@ -971,7 +973,7 @@ export default function MyTradesSets() {
       const num = String(i).padStart(2, "0");
       cards.push({
         key: `RR${num}`,
-        image: `/tcgpromos/RR${num}.webp`,
+        image: cardImagePaths.tcgRubyPromo(num),
       });
     }
   } else if (set.id === "9") {
@@ -1084,14 +1086,14 @@ export default function MyTradesSets() {
                         : "aspect-[5/7] max-w-[105px] md:max-w-[310px]"
                     } overflow-hidden rounded-xl md:rounded-2xl`}
                   >
-                    <CardImage
+                    <CardImage imageSize="original"
                       src={
                         set.id === "9"
-                          ? `/promo-cards/mlpepr${String(selectedCard.number).padStart(3, "0")}.webp`
+                          ? cardImagePaths.ccgPromo(String(selectedCard.number).padStart(3, "0"))
                           : set.id === "tcgpromos"
-                            ? `/tcgpromos/${selectedCard.key}.webp`
+                            ? cardImagePaths.tcgPromo(selectedCard.key)
                             : selectedCard.image ||
-                              `/cards/${set.folder}/${set.prefix}${getRarityCode(selectedCard.rarity)}${String(selectedCard.number).padStart(3, "0")}.webp`
+                              cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(selectedCard.rarity), String(selectedCard.number).padStart(3, "0"))
                       }
                       alt={getDisplayCode(selectedCard, set.id)}
                       className={`h-full w-full ${
@@ -1884,11 +1886,11 @@ export default function MyTradesSets() {
                                     <CardImage
                                       src={
                                         set.id === "9"
-                                          ? `/promo-cards/mlpepr${String(card.number).padStart(3, "0")}.webp`
+                                          ? cardImagePaths.ccgPromo(String(card.number).padStart(3, "0"))
                                           : set.id === "tcgpromos"
-                                            ? `/tcgpromos/${card.key}.webp`
+                                            ? cardImagePaths.tcgPromo(card.key)
                                             : card.image ||
-                                              `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`
+                                              cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(card.number).padStart(3, "0"))
                                       }
                                       alt={key}
                                       className={`h-full w-full ${
