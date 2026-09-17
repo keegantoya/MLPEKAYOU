@@ -1,5 +1,6 @@
 import { CARD_IMAGE_BYTES_CACHE, CARD_IMAGE_BYTES_TTL_MS, getCardImageRevision } from "@/lib/card-images";
-type ImageData = { blob: Blob } | { url: string } | undefined;
+type ImageData = { blob: Blob } | undefined;
+type ImageLoader = (signal: AbortSignal) => Promise<Response | undefined>;
 const inFlight = new Map<string, Promise<ImageData>>();
 let epoch = 0;
 function cacheKey(path: string, userId: string) {
@@ -22,7 +23,7 @@ export function clearCardImageBytes() {
   // Explicit cache removal only. Normal sign-out preserves account-scoped files.
   if (typeof caches !== "undefined") void caches.delete(CARD_IMAGE_BYTES_CACHE).catch(() => {});
 }
-async function readOrDownload(key: string, sign: () => Promise<string | undefined>, bypass: boolean): Promise<ImageData> {
+async function readOrDownload(key: string, load: ImageLoader, bypass: boolean): Promise<ImageData> {
   const started = epoch;
   const disk = await openImageCache();
   if (disk) {
@@ -39,19 +40,12 @@ async function readOrDownload(key: string, sign: () => Promise<string | undefine
     } catch { /* A storage failure must not prevent display. */ }
   }
   if (epoch !== started) return undefined;
-  const signedUrl = await sign();
-  if (!signedUrl || epoch !== started) return undefined;
-  const revision = new URL(key).searchParams.get("revision");
-  const versionedUrl = new URL(signedUrl);
-  if (revision !== "1") versionedUrl.searchParams.set("cacheNonce", revision ?? "1");
-  const url = versionedUrl.href;
-  // Without persistent storage, retain the original browser image-loading path.
-  if (!disk || typeof URL.createObjectURL !== "function") return { url };
+  if (typeof URL.createObjectURL !== "function") return undefined;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20_000);
   try {
-    const response = await fetch(url, { signal: controller.signal, credentials: "omit", cache: "default" });
-    if (!response.ok || !response.headers.get("Content-Type")?.startsWith("image/")) return epoch === started ? { url } : undefined;
+    const response = await load(controller.signal);
+    if (!response?.ok || !response.headers.get("Content-Type")?.startsWith("image/")) return undefined;
     const blob = await response.blob();
     if (epoch !== started || !blob.size) return undefined;
     try {
@@ -62,30 +56,28 @@ async function readOrDownload(key: string, sign: () => Promise<string | undefine
       if (epoch !== started) { await disk.delete(key); return undefined; }
     } catch { /* Quota full: display the downloaded image without storing it. */ }
     return epoch === started ? { blob } : undefined;
-  } catch { return epoch === started ? { url } : undefined; }
+  } catch { return undefined; }
   finally { clearTimeout(timer); }
 }
 export async function getCachedCardImage(
   path: string,
   userId: string,
-  sign: () => Promise<string | undefined>,
+  load: ImageLoader,
   bypass = false,
 ): Promise<{ url: string; release: () => void } | undefined> {
   const key = cacheKey(path, userId);
   let pending = inFlight.get(key);
   if (!pending) {
-    pending = readOrDownload(key, sign, bypass);
+    pending = readOrDownload(key, load, bypass);
     inFlight.set(key, pending);
     void pending.finally(() => { if (inFlight.get(key) === pending) inFlight.delete(key); }).catch(() => {});
   }
   const data = await pending;
   if (!data) return undefined;
-  if ("url" in data) return { url: data.url, release: () => {} };
   try {
     const url = URL.createObjectURL(data.blob);
     return { url, release: () => URL.revokeObjectURL(url) };
   } catch {
-    const url = await sign();
-    return url ? { url, release: () => {} } : undefined;
+    return undefined;
   }
 }

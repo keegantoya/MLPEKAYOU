@@ -607,11 +607,8 @@ export const getNightmareNightFront = (key: string) => {
     return cardImagePaths.nightmareNight(imageKey);
   };
 
-// Shared private-storage configuration and source recognition.
-export const CARD_IMAGE_BUCKET = "card-images";
-export const CARD_IMAGE_URL_LIFETIME_SECONDS = 7 * 24 * 60 * 60;
-export const CARD_IMAGE_CACHE_LIFETIME_MS = (7 * 24 - 1) * 60 * 60 * 1000;
-export const CARD_IMAGE_LOCAL_CACHE_KEY = "mlpekayou:signed-card-images:v3";
+// Shared protected-image configuration and source recognition.
+export const CARD_IMAGE_WORKER_URL = "https://mlpekayou-images.keegan-586.workers.dev";
 export const CARD_IMAGE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="744" height="1040"><rect width="744" height="1040" rx="28" fill="#e5e7eb"/></svg>')}`;
 const PROTECTED_PREFIXES = ["cards/", "card-backs/", "fantasy-wonderland/", "friendships-begin/", "fun-moments-one-backs/", "fun-moments-two-backs/", "fun-moments-three-backs/", "moon-1-other-backs/", "moon-2-other-backs/", "promo-cards/", "rainbow-1-backs/", "tcg-card-backs/", "tcgpromos/"];
 export function getProtectedCardPath(src?: string) {
@@ -626,7 +623,7 @@ export function getProtectedCardPath(src?: string) {
 // Actual image bytes are reusable for 365 days, independently of signed URLs.
 export const CARD_IMAGE_BYTES_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 export const CARD_IMAGE_BYTES_CACHE = "mlpekayou:card-image-bytes:v1";
-// Increment only an affected image's revision after replacing it in Supabase.
+// Increment only an affected image's revision after replacing it in R2.
 export const CARD_IMAGE_REVISIONS: Record<string, string> = {};
 export function getCardImageRevision(path: string) {
   return CARD_IMAGE_REVISIONS[path] ?? "1";
