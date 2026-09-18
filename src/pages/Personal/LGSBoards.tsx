@@ -1097,12 +1097,15 @@ export default function LGSBoards() {
                     </p>
                   </div>
                 ) : (
-                  <div className="lgs-player-list">
+                  <div className="lgs-player-list lgs-attendance-list">
                     {pageAttendees.map((person) => (
-                      <div key={person.player_id} className="lgs-person">
+                      <div
+                        key={person.player_id}
+                        className={`lgs-person${person.deck ? " has-deck" : ""}`}
+                      >
                         <button
                           type="button"
-                          className="lgs-deck-thumb"
+                          className={`lgs-deck-thumb${person.deck ? " has-deck" : ""}`}
                           disabled={!editable || busy}
                           onClick={() => setDeckPlayer(person)}
                           aria-label={`Choose deck for ${person.player_name}`}
@@ -1114,6 +1117,7 @@ export default function LGSBoards() {
                                 DECKS.find((deck) => deck.id === person.deck)
                                   ?.name ?? "Deck"
                               }
+                              className="lgs-deck-back-image lgs-deck-image-thumb"
                             />
                           ) : (
                             <span>
@@ -1266,10 +1270,13 @@ export default function LGSBoards() {
                       ).length;
                       return (
                         <div className="lgs-deck-option" key={deck.id}>
-                          <CardImage
-                            src={deck.image}
-                            alt={deck.name}
-                          />
+                          <span className="lgs-deck-image-frame">
+                            <CardImage
+                              src={deck.image}
+                              alt={deck.name}
+                              className="lgs-deck-back-image"
+                            />
+                          </span>
                           <strong>{deck.name}</strong>
                           <span>
                             {count} ·{" "}
@@ -1744,7 +1751,13 @@ export default function LGSBoards() {
                     disabled={busy}
                     onClick={() => setEntryDeck(deck.id)}
                   >
-                    <CardImage src={deck.image} alt="" />
+                    <span className="lgs-deck-image-frame">
+                      <CardImage
+                        src={deck.image}
+                        alt=""
+                        className="lgs-deck-back-image"
+                      />
+                    </span>
                     <strong>{deck.name}</strong>
                   </button>
                 ))}
@@ -1858,7 +1871,13 @@ export default function LGSBoards() {
                   )
                 }
               >
-                <CardImage src={deck.image} alt="" />
+                <span className="lgs-deck-image-frame">
+                  <CardImage
+                    src={deck.image}
+                    alt=""
+                    className="lgs-deck-back-image"
+                  />
+                </span>
                 <strong>{deck.name}</strong>
               </button>
             ))}
@@ -2242,5 +2261,26 @@ const STYLES = `
 @media(max-width:420px){
   .lgs-history .lgs-event-copy{grid-template-columns:minmax(0,1fr)}
   .lgs-history .lgs-event-link{grid-column:1;grid-row:3;margin-top:5px}
+}
+
+/* Crop the white canvas baked around the six PRR deck-back images. */
+.lgs-deck-image-frame{position:relative;display:block;width:78px;height:110px;margin:0 auto 8px;overflow:hidden;border-radius:6px;background:transparent}
+.lgs-deck-image-frame .lgs-deck-back-image{position:absolute;top:50%;left:50%;display:block;width:auto!important;max-width:none;height:114px!important;object-fit:contain;transform:translate(-50%,-50%)}
+.lgs-deck-thumb{overflow:hidden;border-radius:5px}
+.lgs-person.has-deck{grid-template-columns:68px minmax(0,1fr) minmax(130px,.6fr) 44px}
+.lgs-deck-thumb.has-deck{position:relative;width:68px;min-height:96px!important;height:96px;padding:0;background:transparent;border-radius:6px;overflow:hidden}
+.lgs-person .lgs-deck-thumb.has-deck .lgs-deck-image-thumb{position:absolute;top:50%;left:50%;display:block;width:auto!important;max-width:none;height:100px!important;margin:0;border-radius:0;object-fit:contain;transform:translate(-50%,-50%)}
+.lgs-entry-decks .lgs-deck-image-frame{width:67px;height:94px;border-radius:5px}
+.lgs-entry-decks .lgs-deck-image-frame .lgs-deck-back-image{height:98px!important}
+
+/* Attendance uses two compact entrant cards per row on desktop only. */
+.lgs-attendance-list{grid-template-columns:minmax(0,1fr)!important}
+@media(min-width:1000px){
+  .lgs-panel .lgs-attendance-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:650px){
+  .lgs-person.has-deck{grid-template-columns:68px minmax(0,1fr) 44px}
+  .lgs-entry-decks .lgs-deck-image-frame{width:55px;height:78px;border-radius:4px}
+  .lgs-entry-decks .lgs-deck-image-frame .lgs-deck-back-image{height:82px!important}
 }
 `;
