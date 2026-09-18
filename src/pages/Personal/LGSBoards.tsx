@@ -334,7 +334,8 @@ function deckImage(id: DeckId) {
 function eventPhotoUrl(path: string) {
   return db.storage.from("lgs-event-gallery").getPublicUrl(path).data.publicUrl;
 }
-const EVENT_PHOTO_MAX_BYTES = 2097152;
+const EVENT_PHOTO_TARGET_BYTES = 2097152;
+const EVENT_PHOTO_MAX_BYTES = 15728640;
 function eventPhotoExtension(type: string, sourceName: string) {
   const extensions: Record<string, string> = {
     "image/avif": "avif",
@@ -355,12 +356,30 @@ function eventPhotoExtension(type: string, sourceName: string) {
     .replace(/[^a-z0-9]/g, "");
   return extensions[type] || sourceExtension || "image";
 }
+function eventPhotoSourceType(file: File) {
+  if (file.type.startsWith("image/")) return file.type.toLocaleLowerCase();
+  const extension = file.name.split(".").pop()?.toLocaleLowerCase();
+  const types: Record<string, string> = {
+    avif: "image/avif",
+    bmp: "image/bmp",
+    gif: "image/gif",
+    heic: "image/heic",
+    heif: "image/heif",
+    jpeg: "image/jpeg",
+    jpg: "image/jpeg",
+    png: "image/png",
+    tif: "image/tiff",
+    tiff: "image/tiff",
+    webp: "image/webp",
+  };
+  return extension ? types[extension] || "" : "";
+}
 function eventPhotoFormat(path: string) {
   const extension = path.split(".").pop()?.toLocaleUpperCase();
   return extension || "IMAGE";
 }
 async function convertEventPhoto(file: File) {
-  if (!file.type.startsWith("image/"))
+  if (!eventPhotoSourceType(file))
     throw new Error(`${file.name} is not an image.`);
   const objectUrl = URL.createObjectURL(file);
   try {
@@ -375,7 +394,7 @@ async function convertEventPhoto(file: File) {
     } catch {
       if (file.size > EVENT_PHOTO_MAX_BYTES)
         throw new Error(
-          `${file.name} cannot be resized by this browser and is larger than 2 MB.`,
+          `${file.name} cannot be resized by this browser and is larger than 15 MB.`,
         );
       return { blob: file as Blob, width: 0, height: 0 };
     }
@@ -408,18 +427,18 @@ async function convertEventPhoto(file: File) {
         if (file.size <= EVENT_PHOTO_MAX_BYTES)
           return { blob: file as Blob, width: sourceWidth, height: sourceHeight };
         throw new Error(
-          `${file.name} cannot be resized by this browser and is larger than 2 MB.`,
+          `${file.name} cannot be resized by this browser and is larger than 15 MB.`,
         );
       }
       lastBlob = blob;
       lastWidth = width;
       lastHeight = height;
-      if (blob.size <= 1900000)
+      if (blob.size <= EVENT_PHOTO_TARGET_BYTES)
         return { blob, width, height };
       longestEdge = Math.max(720, Math.round(longestEdge * 0.82));
     }
     if (!lastBlob || lastBlob.size > EVENT_PHOTO_MAX_BYTES)
-      throw new Error(`${file.name} could not be reduced below 2 MB.`);
+      throw new Error(`${file.name} could not be reduced below 15 MB.`);
     return { blob: lastBlob, width: lastWidth, height: lastHeight };
   } finally {
     URL.revokeObjectURL(objectUrl);
@@ -976,7 +995,7 @@ export default function LGSBoards() {
       const added: EventPhoto[] = [];
       for (const file of selected) {
         const converted = await convertEventPhoto(file);
-        const contentType = converted.blob.type || file.type;
+        const contentType = converted.blob.type || eventPhotoSourceType(file);
         if (!contentType.startsWith("image/"))
           throw new Error(`${file.name} does not provide a supported image type.`);
         const extension = eventPhotoExtension(contentType, file.name);
@@ -1739,7 +1758,7 @@ export default function LGSBoards() {
                       ref={photoInputRef}
                       className="lgs-gallery-input"
                       type="file"
-                      accept="image/*"
+                      accept="image/*,.heic,.heif"
                       multiple
                       tabIndex={-1}
                       aria-hidden="true"
