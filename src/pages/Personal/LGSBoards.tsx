@@ -14,6 +14,9 @@ import {
   ArrowUpRight,
   History,
   Store as StoreIcon,
+  ImagePlus,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 // New tables may not be in your generated Supabase types yet.
 const db = supabase as unknown as SupabaseClient;
@@ -70,13 +73,31 @@ type Raffle = {
   winner_name: string;
   drawn_at: string;
 };
+type EventPhoto = {
+  id: string;
+  event_id: string;
+  store_id: string;
+  storage_path: string;
+  uploaded_by: string | null;
+  width: number;
+  height: number;
+  file_size: number;
+  created_at: string;
+};
 type Total = {
   player_id: string;
   player_name: string;
   events_attended: number;
   weeks_attended: number;
 };
-type Dialog = "new" | "players" | "finish" | "edits" | "player_id" | null;
+type Dialog =
+  | "new"
+  | "players"
+  | "finish"
+  | "edits"
+  | "player_id"
+  | "totals"
+  | null;
 type EventEdit = {
   id: string;
   editor_user_id: string | null;
@@ -309,6 +330,61 @@ function deckImage(id: DeckId) {
   const deck = DECKS.find((item) => item.id === id);
   return deck?.image ?? "";
 }
+function eventPhotoUrl(path: string) {
+  return db.storage.from("lgs-event-gallery").getPublicUrl(path).data.publicUrl;
+}
+async function convertEventPhoto(file: File) {
+  if (!file.type.startsWith("image/"))
+    throw new Error(`${file.name} is not an image.`);
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error(`${file.name} could not be read.`));
+      element.src = objectUrl;
+    });
+    const sourceWidth = image.naturalWidth;
+    const sourceHeight = image.naturalHeight;
+    if (!sourceWidth || !sourceHeight)
+      throw new Error(`${file.name} has invalid dimensions.`);
+    let longestEdge = Math.min(1600, Math.max(sourceWidth, sourceHeight));
+    let lastBlob: Blob | null = null;
+    let lastWidth = 0;
+    let lastHeight = 0;
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const scale = Math.min(
+        1,
+        longestEdge / Math.max(sourceWidth, sourceHeight),
+      );
+      const width = Math.max(1, Math.round(sourceWidth * scale));
+      const height = Math.max(1, Math.round(sourceHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("This browser cannot prepare event photos.");
+      context.drawImage(image, 0, 0, width, height);
+      const quality = Math.max(0.58, 0.78 - attempt * 0.04);
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/webp", quality),
+      );
+      if (!blob)
+        throw new Error("This browser could not convert the photo to WebP.");
+      lastBlob = blob;
+      lastWidth = width;
+      lastHeight = height;
+      if (blob.size <= 1900000)
+        return { blob, width, height };
+      longestEdge = Math.max(720, Math.round(longestEdge * 0.82));
+    }
+    if (!lastBlob || lastBlob.size > 2097152)
+      throw new Error(`${file.name} could not be reduced below 2 MB.`);
+    return { blob: lastBlob, width: lastWidth, height: lastHeight };
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
 // Explicit pagination keeps rosters and attendance from silently stopping at 1,000 rows.
 async function fetchAll<T>(
   table: string,
@@ -442,6 +518,9 @@ function Modal({
 export default function LGSBoards() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
+  const [isLightMode, setIsLightMode] = useState(
+    () => document.documentElement.dataset.theme === "light",
+  );
   const [staff, setStaff] = useState<Staff | null>(null);
   const [stores, setStores] = useState<Store[]>([]);
   const [storeFilter, setStoreFilter] = useState("");
@@ -459,6 +538,9 @@ export default function LGSBoards() {
   const eventRef = useRef<string | null>(null);
   const [attendees, setAttendees] = useState<Attendance[]>([]);
   const [raffles, setRaffles] = useState<Raffle[]>([]);
+  const [eventPhotos, setEventPhotos] = useState<EventPhoto[]>([]);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [roster, setRoster] = useState<Player[]>([]);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [eventEdits, setEventEdits] = useState<EventEdit[]>([]);
@@ -564,6 +646,53 @@ export default function LGSBoards() {
       subscription.unsubscribe();
     };
   }, []);
+  useEffect(() => {
+    let mounted = true;
+    let themeChannel: ReturnType<typeof supabase.channel> | null = null;
+    const syncFromDocument = () => {
+      if (mounted)
+        setIsLightMode(document.documentElement.dataset.theme === "light");
+    };
+    const observer = new MutationObserver(syncFromDocument);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+    if (userId === null) {
+      setIsLightMode(false);
+    } else if (userId) {
+      db.from("user_light_mode_preferences")
+        .select("user_id")
+        .eq("user_id", userId)
+        .maybeSingle()
+        .then(({ data, error: themeError }) => {
+          if (!mounted) return;
+          if (themeError)
+            console.error("Unable to load LGS Boards theme preference:", themeError);
+          else setIsLightMode(Boolean(data));
+        });
+      themeChannel = supabase
+        .channel(`lgs-boards-theme-${userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "user_light_mode_preferences",
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            if (mounted) setIsLightMode(payload.eventType !== "DELETE");
+          },
+        )
+        .subscribe();
+    }
+    return () => {
+      mounted = false;
+      observer.disconnect();
+      if (themeChannel) supabase.removeChannel(themeChannel);
+    };
+  }, [userId]);
   const loadBoard = useCallback(async () => {
     const ticket = ++requestId.current;
     if (!userId) {
@@ -577,6 +706,7 @@ export default function LGSBoards() {
       setDeckPlayer(null);
       setAttendees([]);
       setRaffles([]);
+      setEventPhotos([]);
       setRoster([]);
       setLoading(userId === undefined);
       return;
@@ -602,6 +732,7 @@ export default function LGSBoards() {
         setHistory([]);
         setAttendees([]);
         setRaffles([]);
+        setEventPhotos([]);
         setRoster([]);
         return;
       }
@@ -637,6 +768,7 @@ export default function LGSBoards() {
     setDeckPlayer(null);
     setAttendees([]);
     setRaffles([]);
+    setEventPhotos([]);
     setRoster([]);
     setTotals(null);
     setEventEdits([]);
@@ -662,23 +794,27 @@ export default function LGSBoards() {
       eventRef.current = null;
       setDialog(null);
       setDeckPlayer(null);
+      setEventPhotos([]);
       throw new Error("This event is no longer available to your account.");
     }
     const current = result.data as LGSEvent;
-    const [people, winners, savedPlayers] = await Promise.all([
+    const [people, winners, savedPlayers, photos] = await Promise.all([
       fetchAll<Attendance>("lgs_attendance", "checked_in_at", { event_id: id }),
       fetchAll<Raffle>("lgs_raffles", "drawn_at", { event_id: id }),
       fetchAll<Player>("lgs_players", "name", { store_id: current.store_id }),
+      fetchAll<EventPhoto>("lgs_event_photos", "created_at", { event_id: id }),
     ]);
     if (eventRef.current !== id) return;
     setEvent(current);
     setAttendees(people);
     setRaffles(winners);
+    setEventPhotos(photos);
     setRoster(savedPlayers);
     if (resetNotes) {
       setNotes(current.notes);
       setTotals(null);
       setParticipantPage(1);
+      setPhotoIndex(0);
     }
   };
   const run = async (work: () => Promise<void>) => {
@@ -767,7 +903,8 @@ export default function LGSBoards() {
       await loadBoard();
       if (eventRef.current) await loadEvent(eventRef.current);
     });
-  const showTotals = () =>
+  const showTotals = () => {
+    setDialog("totals");
     void run(async () => {
       if (!event) return;
       const { data, error: totalError } = await db.rpc(
@@ -782,6 +919,55 @@ export default function LGSBoards() {
       setTotals((data ?? []) as Total[]);
       setTotalsPage(1);
     });
+  };
+  const uploadEventPhotos = (files: File[]) => {
+    if (!files.length) return;
+    void run(async () => {
+      if (!event || !canManage || !userId)
+        throw new Error("You do not have permission to add event photos.");
+      const remaining = 24 - eventPhotos.length;
+      if (remaining <= 0)
+        throw new Error("This event gallery already has its maximum of 24 photos.");
+      const selected = files.slice(0, remaining);
+      const added: EventPhoto[] = [];
+      for (const file of selected) {
+        const converted = await convertEventPhoto(file);
+        const path = `${event.id}/${crypto.randomUUID()}.webp`;
+        const upload = await db.storage
+          .from("lgs-event-gallery")
+          .upload(path, converted.blob, {
+            cacheControl: "31536000",
+            contentType: "image/webp",
+            upsert: false,
+          });
+        if (upload.error) throw upload.error;
+        const created = await db
+          .from("lgs_event_photos")
+          .insert({
+            event_id: event.id,
+            store_id: event.store_id,
+            storage_path: path,
+            uploaded_by: userId,
+            width: converted.width,
+            height: converted.height,
+            file_size: converted.blob.size,
+          })
+          .select("*")
+          .single();
+        if (created.error) {
+          await db.storage.from("lgs-event-gallery").remove([path]);
+          throw created.error;
+        }
+        added.push(created.data as EventPhoto);
+      }
+      setPhotoIndex(eventPhotos.length);
+      setEventPhotos((previous) => [...previous, ...added]);
+      const skipped = files.length - selected.length;
+      setNotice(
+        `${added.length} ${added.length === 1 ? "photo" : "photos"} added${skipped > 0 ? ` · ${skipped} skipped because the gallery is full` : ""}.`,
+      );
+    });
+  };
   const messages = (
     <>
       {error && (
@@ -900,8 +1086,13 @@ export default function LGSBoards() {
       )}
     </article>
   );
+  const safePhotoIndex = Math.min(
+    photoIndex,
+    Math.max(0, eventPhotos.length - 1),
+  );
+  const activePhoto = eventPhotos[safePhotoIndex] ?? null;
   return (
-    <main className="lgs-ui lgs-page">
+    <main className={`lgs-ui lgs-page${isLightMode ? "" : " dark"}`}>
       <style>{STYLES}</style>
       <header className="lgs-logo-header" aria-label="MLPEKAYOU">
         <span className="lgs-logo-rail" aria-hidden="true" />
@@ -1242,7 +1433,7 @@ export default function LGSBoards() {
                 {raffles.length === 0 ? (
                   <p className="lgs-empty">No winners drawn yet.</p>
                 ) : (
-                  <div className="lgs-player-list">
+                  <div className="lgs-raffle-results">
                     {raffles.map((raffle) => (
                       <div className="lgs-raffle" key={raffle.id}>
                         <span className="lgs-muted">{raffle.label}</span>
@@ -1258,7 +1449,7 @@ export default function LGSBoards() {
             )}
             {tab === "overview" && (
               <div className="lgs-overview">
-                <section className="lgs-panel">
+                <section className="lgs-panel lgs-overview-decks">
                   <h2>Deck breakdown</h2>
                   <p className="lgs-muted">
                     Percentage of all {attendees.length} checked-in players.
@@ -1294,7 +1485,7 @@ export default function LGSBoards() {
                     {attendees.filter((person) => !person.deck).length}
                   </p>
                 </section>
-                <section className="lgs-panel">
+                <section className="lgs-panel lgs-overview-totals">
                   <h2>Attendance totals</h2>
                   <p className="lgs-muted">
                     {dateLabel(event.league_start)} –{" "}
@@ -1306,92 +1497,57 @@ export default function LGSBoards() {
                   </p>
                   <button
                     type="button"
-                    className="lgs-secondary"
+                    className="lgs-secondary lgs-totals-button"
                     disabled={busy}
                     onClick={showTotals}
                   >
-                    {totals ? "Refresh totals" : "Show totals"}
+                    View attendance totals
                   </button>
-                  {totals && (
-                    <div className="lgs-table-wrap">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Player</th>
-                            <th>Events</th>
-                            <th>Weeks</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {totals
-                            .slice(
-                              (safeTotalsPage - 1) * 10,
-                              safeTotalsPage * 10,
-                            )
-                            .map((total) => (
-                              <tr key={total.player_id}>
-                                <td>{total.player_name}</td>
-                                <td>{total.events_attended}</td>
-                                <td>{total.weeks_attended}</td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                      <Pagination
-                        count={totals.length}
-                        page={safeTotalsPage}
-                        onPage={setTotalsPage}
-                        disabled={busy}
-                        label="Attendance totals"
-                      />
-                      {totals.length === 0 && (
-                        <p>No attendance in this period.</p>
-                      )}
-                    </div>
-                  )}
                 </section>
-                <section className="lgs-panel">
+                <section className="lgs-panel lgs-overview-placements">
                   <h2>Final placements</h2>
                   <p className="lgs-muted">
                     Choose a finishing place for each of the {attendees.length}{" "}
                     players.
                   </p>
-                  {pageAttendees.map((person) => (
-                    <label className="lgs-placement" key={person.player_id}>
-                      <span>{person.player_name}</span>
-                      <select
-                        aria-label={`Placement for ${person.player_name}`}
-                        value={person.placement ?? ""}
-                        disabled={!editable || busy}
-                        onChange={(change) =>
-                          mutate(
-                            "set_placement",
-                            {
-                              player_id: person.player_id,
-                              placement: change.target.value,
-                            },
-                            "Placement saved.",
-                          )
-                        }
-                      >
-                        <option value="">Not placed</option>
-                        {person.placement !== null &&
-                          person.placement > attendees.length && (
-                            <option value={person.placement} disabled>
-                              Review saved place {person.placement}
-                            </option>
+                  <div className="lgs-placement-grid">
+                    {pageAttendees.map((person) => (
+                      <label className="lgs-placement" key={person.player_id}>
+                        <span>{person.player_name}</span>
+                        <select
+                          aria-label={`Placement for ${person.player_name}`}
+                          value={person.placement ?? ""}
+                          disabled={!editable || busy}
+                          onChange={(change) =>
+                            mutate(
+                              "set_placement",
+                              {
+                                player_id: person.player_id,
+                                placement: change.target.value,
+                              },
+                              "Placement saved.",
+                            )
+                          }
+                        >
+                          <option value="">Not placed</option>
+                          {person.placement !== null &&
+                            person.placement > attendees.length && (
+                              <option value={person.placement} disabled>
+                                Review saved place {person.placement}
+                              </option>
+                            )}
+                          {Array.from(
+                            { length: attendees.length },
+                            (_, index) => (
+                              <option key={index + 1} value={index + 1}>
+                                Place {index + 1}
+                              </option>
+                            ),
                           )}
-                        {Array.from(
-                          { length: attendees.length },
-                          (_, index) => (
-                            <option key={index + 1} value={index + 1}>
-                              Place {index + 1}
-                            </option>
-                          ),
-                        )}
-                      </select>
-                    </label>
-                  ))}
+                        </select>
+                      </label>
+                    ))}
+                  </div>
                   <Pagination
                     count={attendees.length}
                     page={safeParticipantPage}
@@ -1400,7 +1556,7 @@ export default function LGSBoards() {
                     label="Placements"
                   />
                 </section>
-                <section className="lgs-panel">
+                <section className="lgs-panel lgs-overview-notes">
                   <h2>Event notes</h2>
                   <form
                     className="lgs-form"
@@ -1433,6 +1589,113 @@ export default function LGSBoards() {
                       ? "You have unsaved notes."
                       : "Notes saved."}
                   </p>
+                </section>
+                <section className="lgs-panel lgs-overview-gallery">
+                  <div className="lgs-gallery-heading">
+                    <div>
+                      <h2>Event gallery</h2>
+                      <p className="lgs-muted">
+                        Photos are resized and converted to WebP before upload.
+                      </p>
+                    </div>
+                    {canManage && (
+                      <button
+                        type="button"
+                        className="lgs-secondary lgs-gallery-add"
+                        disabled={busy || eventPhotos.length >= 24}
+                        onClick={() => photoInputRef.current?.click()}
+                      >
+                        <ImagePlus size={18} aria-hidden="true" />
+                        {eventPhotos.length >= 24 ? "Gallery full" : "Add photos"}
+                      </button>
+                    )}
+                    <input
+                      ref={photoInputRef}
+                      className="lgs-gallery-input"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      tabIndex={-1}
+                      aria-hidden="true"
+                      onChange={(change) => {
+                        const files = Array.from(change.target.files ?? []);
+                        change.target.value = "";
+                        uploadEventPhotos(files);
+                      }}
+                    />
+                  </div>
+                  {activePhoto ? (
+                    <>
+                      <div className="lgs-gallery-stage">
+                        <img
+                          src={eventPhotoUrl(activePhoto.storage_path)}
+                          alt={`Event photo ${safePhotoIndex + 1}`}
+                        />
+                        {eventPhotos.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              className="lgs-gallery-arrow lgs-gallery-previous"
+                              onClick={() =>
+                                setPhotoIndex(
+                                  (safePhotoIndex - 1 + eventPhotos.length) %
+                                    eventPhotos.length,
+                                )
+                              }
+                              aria-label="Previous event photo"
+                            >
+                              <ChevronLeft size={24} aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              className="lgs-gallery-arrow lgs-gallery-next"
+                              onClick={() =>
+                                setPhotoIndex(
+                                  (safePhotoIndex + 1) % eventPhotos.length,
+                                )
+                              }
+                              aria-label="Next event photo"
+                            >
+                              <ChevronRight size={24} aria-hidden="true" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      <div className="lgs-gallery-meta">
+                        <span>
+                          {safePhotoIndex + 1} of {eventPhotos.length}
+                        </span>
+                        <span>
+                          {activePhoto.width} × {activePhoto.height} WebP ·{" "}
+                          {Math.max(1, Math.round(activePhoto.file_size / 1024))} KB
+                        </span>
+                      </div>
+                      {eventPhotos.length > 1 && (
+                        <div className="lgs-gallery-thumbnails" aria-label="Event photos">
+                          {eventPhotos.map((photo, index) => (
+                            <button
+                              type="button"
+                              key={photo.id}
+                              className={index === safePhotoIndex ? "selected" : ""}
+                              onClick={() => setPhotoIndex(index)}
+                              aria-label={`Show event photo ${index + 1}`}
+                              aria-current={index === safePhotoIndex ? "true" : undefined}
+                            >
+                              <img src={eventPhotoUrl(photo.storage_path)} alt="" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="lgs-gallery-empty">
+                      <ImagePlus size={30} aria-hidden="true" />
+                      <strong>No event photos yet</strong>
+                      <span>
+                        Add up to 24 photos. They appear here immediately with no approval step.
+                      </span>
+                    </div>
+                  )}
                 </section>
               </div>
             )}
@@ -1846,6 +2109,73 @@ export default function LGSBoards() {
               </p>
             )}
           </div>
+        </Modal>
+      )}
+      {staff && event && dialog === "totals" && (
+        <Modal
+          title="Attendance totals"
+          close={closeDialog}
+          busy={busy}
+          className="lgs-totals-dialog"
+        >
+          {messages}
+          <p className="lgs-muted">
+            {dateLabel(event.league_start)} – {dateLabel(event.league_end)}
+          </p>
+          <p className="lgs-muted">
+            All store events in this period. Weeks are seven-day blocks from
+            the start date.
+          </p>
+          {busy && !totals && (
+            <p className="lgs-empty" role="status">
+              Loading attendance totals…
+            </p>
+          )}
+          {totals && (
+            <div className="lgs-table-wrap lgs-totals-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Events</th>
+                    <th>Weeks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {totals
+                    .slice(
+                      (safeTotalsPage - 1) * 10,
+                      safeTotalsPage * 10,
+                    )
+                    .map((total) => (
+                      <tr key={total.player_id}>
+                        <td>{total.player_name}</td>
+                        <td>{total.events_attended}</td>
+                        <td>{total.weeks_attended}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+              <Pagination
+                count={totals.length}
+                page={safeTotalsPage}
+                onPage={setTotalsPage}
+                disabled={busy}
+                label="Attendance totals"
+              />
+              {totals.length === 0 && (
+                <p className="lgs-empty">No attendance in this period.</p>
+              )}
+            </div>
+          )}
+          <button
+            type="button"
+            className="lgs-secondary lgs-refresh-totals"
+            disabled={busy}
+            onClick={showTotals}
+          >
+            Refresh totals
+          </button>
         </Modal>
       )}
       {staff && editable && deckPlayer && (
@@ -2282,5 +2612,64 @@ const STYLES = `
   .lgs-person.has-deck{grid-template-columns:68px minmax(0,1fr) 44px}
   .lgs-entry-decks .lgs-deck-image-frame{width:55px;height:78px;border-radius:4px}
   .lgs-entry-decks .lgs-deck-image-frame .lgs-deck-back-image{height:82px!important}
+}
+
+/* Keep the overview compact and stable as participant counts grow. */
+.lgs-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"decks notes totals" "gallery gallery gallery" "placements placements placements";gap:18px;align-items:stretch}
+.lgs-overview>.lgs-panel{align-self:stretch;height:auto;min-width:0}
+.lgs-overview-decks{grid-area:decks}
+.lgs-overview-notes{grid-area:notes}
+.lgs-overview-placements{grid-area:placements}
+.lgs-overview-totals{grid-area:totals}
+.lgs-overview-gallery{grid-area:gallery;display:flex;flex-direction:column;align-self:stretch!important;height:auto!important;min-height:300px}
+.lgs-gallery-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.lgs-gallery-heading>div{min-width:0}
+.lgs-ui .lgs-gallery-add{display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;margin:0}
+.lgs-ui input.lgs-gallery-input{display:none!important}
+.lgs-gallery-stage{position:relative;flex:1;min-height:220px;margin-top:18px;overflow:hidden;border-radius:14px;background:var(--lgs-soft)}
+.lgs-gallery-stage>img{display:block;width:100%;height:100%;min-height:220px;max-height:420px;object-fit:contain}
+.lgs-gallery-arrow{position:absolute;top:50%;display:flex;align-items:center;justify-content:center;width:44px;min-height:44px!important;padding:0;border-radius:999px;background:rgba(20,22,23,.78);color:#fff;transform:translateY(-50%);backdrop-filter:blur(8px)}
+.lgs-gallery-previous{left:12px}.lgs-gallery-next{right:12px}
+.lgs-gallery-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;color:var(--lgs-muted);font-size:12px}
+.lgs-gallery-thumbnails{display:flex;gap:8px;margin-top:10px;padding-bottom:2px;overflow-x:auto;scrollbar-width:thin}
+.lgs-gallery-thumbnails button{width:66px;height:50px;min-height:50px;flex:0 0 66px;padding:0;overflow:hidden;border-radius:8px;background:var(--lgs-soft);opacity:.62}
+.lgs-gallery-thumbnails button.selected{opacity:1;box-shadow:inset 0 0 0 2px var(--lgs-accent)}
+.lgs-gallery-thumbnails img{display:block;width:100%;height:100%;object-fit:cover}
+.lgs-gallery-empty{display:flex;flex:1;min-height:220px;margin-top:18px;padding:24px;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px dashed color-mix(in srgb,var(--lgs-muted) 38%,transparent);border-radius:14px;background:var(--lgs-soft);color:var(--lgs-muted)}
+.lgs-gallery-empty strong{margin-top:12px;color:var(--lgs-text);font-size:17px}
+.lgs-gallery-empty span{max-width:440px;margin-top:5px;font-size:14px;line-height:1.5}
+.lgs-placement-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:10px;margin-top:16px}
+.lgs-overview .lgs-placement{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,160px);align-items:center;gap:12px;min-height:0;margin:0;padding:12px 14px;background:var(--lgs-soft);border-radius:12px}
+.lgs-overview .lgs-placement>span{font-weight:650;line-height:1.35}
+.lgs-overview .lgs-placement select{width:100%;max-width:none;min-height:44px;margin:0;padding:9px 10px;background:var(--lgs-panel)}
+.lgs-overview .lgs-pagination{margin-top:16px}
+.lgs-ui .lgs-totals-button{display:block;width:auto;margin:18px 0 0}
+.lgs-overview-notes .lgs-form{margin-top:14px;gap:12px}
+.lgs-overview-notes textarea{margin-top:0}
+.lgs-ui .lgs-modal.lgs-totals-dialog{width:min(100%,720px);max-width:720px}
+.lgs-totals-dialog .lgs-totals-table{margin-top:20px}
+.lgs-ui .lgs-refresh-totals{width:100%;margin-top:18px}
+
+/* Saved raffle draws stay readable without becoming oversized cards. */
+.lgs-raffle-results{display:grid;gap:8px;margin-top:18px}
+.lgs-raffle-results .lgs-raffle{display:grid;grid-template-columns:minmax(120px,1fr) minmax(150px,1.2fr) auto;align-items:center;gap:12px;padding:11px 14px;border-radius:12px}
+.lgs-raffle-results .lgs-raffle strong{font-size:16px;line-height:1.35}
+.lgs-raffle-results .lgs-raffle span{margin:0;font-size:13px}
+.lgs-raffle-results .lgs-raffle span:last-child{text-align:right;white-space:nowrap}
+@media(max-width:1100px){
+  .lgs-overview{grid-template-columns:minmax(0,1fr);grid-template-areas:"decks" "notes" "totals" "gallery" "placements";gap:14px;align-items:start}
+  .lgs-overview>.lgs-panel{align-self:start;width:100%;height:auto}
+  .lgs-ui .lgs-totals-button{width:100%}
+}
+@media(max-width:600px){
+  .lgs-placement-grid{grid-template-columns:minmax(0,1fr)}
+  .lgs-overview .lgs-placement{grid-template-columns:minmax(0,1fr) minmax(120px,145px);padding:11px 12px}
+  .lgs-raffle-results .lgs-raffle{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+  .lgs-raffle-results .lgs-raffle span:last-child{grid-column:1/-1;text-align:left;white-space:normal}
+  .lgs-gallery-heading{display:block}
+  .lgs-ui .lgs-gallery-add{width:100%;margin-top:14px}
+  .lgs-gallery-stage{min-height:0;aspect-ratio:4/3}
+  .lgs-gallery-stage>img{min-height:0;max-height:none}
+  .lgs-gallery-meta{align-items:flex-start;flex-direction:column;gap:2px}
 }
 `;
