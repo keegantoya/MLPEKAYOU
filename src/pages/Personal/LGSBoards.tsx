@@ -334,17 +334,51 @@ function deckImage(id: DeckId) {
 function eventPhotoUrl(path: string) {
   return db.storage.from("lgs-event-gallery").getPublicUrl(path).data.publicUrl;
 }
+const EVENT_PHOTO_MAX_BYTES = 2097152;
+function eventPhotoExtension(type: string, sourceName: string) {
+  const extensions: Record<string, string> = {
+    "image/avif": "avif",
+    "image/bmp": "bmp",
+    "image/gif": "gif",
+    "image/heic": "heic",
+    "image/heif": "heif",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/tiff": "tiff",
+    "image/webp": "webp",
+    "image/svg+xml": "svg",
+  };
+  const sourceExtension = sourceName
+    .split(".")
+    .pop()
+    ?.toLocaleLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+  return extensions[type] || sourceExtension || "image";
+}
+function eventPhotoFormat(path: string) {
+  const extension = path.split(".").pop()?.toLocaleUpperCase();
+  return extension || "IMAGE";
+}
 async function convertEventPhoto(file: File) {
   if (!file.type.startsWith("image/"))
     throw new Error(`${file.name} is not an image.`);
   const objectUrl = URL.createObjectURL(file);
   try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const element = new Image();
-      element.onload = () => resolve(element);
-      element.onerror = () => reject(new Error(`${file.name} could not be read.`));
-      element.src = objectUrl;
-    });
+    let image: HTMLImageElement;
+    try {
+      image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const element = new Image();
+        element.onload = () => resolve(element);
+        element.onerror = () => reject(new Error(`${file.name} could not be read.`));
+        element.src = objectUrl;
+      });
+    } catch {
+      if (file.size > EVENT_PHOTO_MAX_BYTES)
+        throw new Error(
+          `${file.name} cannot be resized by this browser and is larger than 2 MB.`,
+        );
+      return { blob: file as Blob, width: 0, height: 0 };
+    }
     const sourceWidth = image.naturalWidth;
     const sourceHeight = image.naturalHeight;
     if (!sourceWidth || !sourceHeight)
@@ -370,8 +404,13 @@ async function convertEventPhoto(file: File) {
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, "image/webp", quality),
       );
-      if (!blob)
-        throw new Error("This browser could not convert the photo to WebP.");
+      if (!blob) {
+        if (file.size <= EVENT_PHOTO_MAX_BYTES)
+          return { blob: file as Blob, width: sourceWidth, height: sourceHeight };
+        throw new Error(
+          `${file.name} cannot be resized by this browser and is larger than 2 MB.`,
+        );
+      }
       lastBlob = blob;
       lastWidth = width;
       lastHeight = height;
@@ -379,7 +418,7 @@ async function convertEventPhoto(file: File) {
         return { blob, width, height };
       longestEdge = Math.max(720, Math.round(longestEdge * 0.82));
     }
-    if (!lastBlob || lastBlob.size > 2097152)
+    if (!lastBlob || lastBlob.size > EVENT_PHOTO_MAX_BYTES)
       throw new Error(`${file.name} could not be reduced below 2 MB.`);
     return { blob: lastBlob, width: lastWidth, height: lastHeight };
   } finally {
@@ -937,12 +976,16 @@ export default function LGSBoards() {
       const added: EventPhoto[] = [];
       for (const file of selected) {
         const converted = await convertEventPhoto(file);
-        const path = `${event.id}/${crypto.randomUUID()}.webp`;
+        const contentType = converted.blob.type || file.type;
+        if (!contentType.startsWith("image/"))
+          throw new Error(`${file.name} does not provide a supported image type.`);
+        const extension = eventPhotoExtension(contentType, file.name);
+        const path = `${event.id}/${crypto.randomUUID()}.${extension}`;
         const upload = await db.storage
           .from("lgs-event-gallery")
           .upload(path, converted.blob, {
             cacheControl: "31536000",
-            contentType: "image/webp",
+            contentType,
             upsert: false,
           });
         if (upload.error) throw upload.error;
@@ -1678,7 +1721,7 @@ export default function LGSBoards() {
                     <div>
                       <h2>Event gallery</h2>
                       <p className="lgs-muted">
-                        Photos are resized and converted to WebP before upload.
+                        Photos are optimized before upload when your browser supports it.
                       </p>
                     </div>
                     {canManage && (
@@ -1760,7 +1803,10 @@ export default function LGSBoards() {
                           {safePhotoIndex + 1} of {eventPhotos.length}
                         </span>
                         <span>
-                          {activePhoto.width} × {activePhoto.height} WebP ·{" "}
+                          {activePhoto.width > 0 && activePhoto.height > 0
+                            ? `${activePhoto.width} × ${activePhoto.height} `
+                            : ""}
+                          {eventPhotoFormat(activePhoto.storage_path)} ·{" "}
                           {Math.max(1, Math.round(activePhoto.file_size / 1024))} KB
                         </span>
                       </div>
