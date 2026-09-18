@@ -7,16 +7,20 @@ import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
 import { supabase } from "@/lib/supabase";
 import {
   ChevronRight,
-  User,
   Bell,
-  Heart,
-  Package,
-  BookOpen,
   Trophy,
-  Settings,
   Shield,
   LogOut,
   Pencil,
+  Inbox,
+  Store,
+  HandHeart,
+  Bug,
+  LibraryBig,
+  Boxes,
+  Search,
+  Images,
+  Newspaper,
 } from "lucide-react";
 const PUSH_PUBLIC_KEY =
   "BMd3JmZpZQ2g4-wuBUeuUEMGJAuoaW8E2qTJkzOFWGh8G2tWg7SYca6wIACs_Nbd3JunbUFBHww91hfHQ6PM2xE";
@@ -823,36 +827,6 @@ const MobileProfile = () => {
           ? "Bad"
           : "Access revoked";
   const menuSections = [
-    ...(lgsAccess !== null || canReviewLGS
-      ? [
-          {
-            title: "LGS",
-            items: [
-              ...(lgsAccess !== null
-                ? [
-                    {
-                      title: "LGS Boards",
-                      subtitle:
-                        lgsAccess === "ALLGS"
-                          ? "All stores · View-only access"
-                          : "Your store’s events and attendance",
-                      onClick: () => navigate("/lgs-boards"),
-                    },
-                  ]
-                : []),
-              ...(canReviewLGS
-                ? [
-                    {
-                      title: "LGS Applications",
-                      subtitle: "Review applications and decision history",
-                      onClick: () => setShowLGSReview(true),
-                    },
-                  ]
-                : []),
-            ],
-          },
-        ]
-      : []),
     {
       title: "Collection",
       items: [
@@ -860,63 +834,48 @@ const MobileProfile = () => {
           title: "CCG Progress",
           subtitle: "Track your CCG collection",
           onClick: () => navigate("/my-progress"),
+          icon: <LibraryBig size={17} />,
         },
         {
           title: "TCG Progress",
           subtitle: "Track your TCG collection",
           onClick: () => navigate("/progress-tcg"),
+          icon: <Trophy size={17} />,
         },
         {
           title: "Inventory",
           subtitle: "Set your inventory and trades/sales",
           onClick: () => navigate("/inventory"),
+          icon: <Boxes size={17} />,
         },
         {
           title: "Wishlist & ISO",
           subtitle: "Missing cards & wishlisted cards",
           onClick: () => navigate("/iso"),
+          icon: <Search size={17} />,
         },
         {
           title: "Binders",
           subtitle: "Browse your binders",
           onClick: () => navigate("/binders"),
-        },
-        {
-          title: "Kayou US News",
-          subtitle: "Official News from Kayou US",
-          onClick: () => navigate("/kayou-news"),
-        },
-      ],
-    },
-    {
-      title: "Community",
-      items: [
-        {
-          title: "Inbox & Friends",
-          subtitle:
-            inboxNotificationCount > 0
-              ? "New messages, friend requests, or offers"
-              : "Messages, friends, and offers",
-          onClick: () => navigate("/inbox"),
-          badge: inboxNotificationCount,
-        },
-        {
-          title: "Support MLPEKAYOU",
-          subtitle: "Purchase through Keegan to help fund MLPEKAYOU",
-          onClick: () => navigate("/support-mlpekayou"),
+          icon: <Images size={17} />,
         },
         {
           title: "Report a Bug",
-          subtitle: "Report website issues to the developer",
+          subtitle: "Tell us when something isn’t working",
           onClick: () => setShowBugReport(true),
           danger: true,
+          icon: <Bug size={17} />,
         },
       ],
     },
   ];
-  if (!Object.values(profileLoads).every(Boolean))
+  const essentialProfileLoaded = profileLoads.profile && profileLoads.theme;
+  const essentialProfileFailed =
+    profileLoadErrors.profile || profileLoadErrors.theme;
+  if (!essentialProfileLoaded)
     return <ProfileLoadingScreen light={isLightMode} failed={false} />;
-  if (Object.values(profileLoadErrors).some(Boolean) || !profile)
+  if (essentialProfileFailed || !profile)
     return <ProfileLoadingScreen light={isLightMode} failed />;
   return (
     <div
@@ -989,24 +948,56 @@ const MobileProfile = () => {
           }`}
         >
           <div className="relative z-10 p-5">
-            {isModerator && !editingProfile && (
-              <button
-                type="button"
-                onClick={() => navigate("/leaderboard-moderation")}
-                aria-label="Open leaderboard moderation"
-                title="Leaderboard Moderation"
-                className={`absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
-                  isLightMode
-                    ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/25"
-                    : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/60 hover:bg-[#FFD54A]/20"
-                }`}
-              >
-                <Shield size={18} />
-              </button>
+            {!editingProfile && (
+              <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate("/inbox")}
+                  aria-label={
+                    inboxNotificationCount > 0
+                      ? `Open inbox, ${inboxNotificationCount} unread`
+                      : "Open inbox"
+                  }
+                  title="Inbox & Friends"
+                  className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
+                    isLightMode
+                      ? "border-black/10 bg-black/[0.03] text-zinc-700 hover:bg-black/[0.07]"
+                      : "border-white/[0.10] bg-white/[0.05] text-zinc-200 hover:border-white/20 hover:bg-white/[0.10]"
+                  }`}
+                >
+                  <Inbox size={18} />
+                  {inboxNotificationCount > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#151718]">
+                      {inboxNotificationCount > 9
+                        ? "9+"
+                        : inboxNotificationCount}
+                    </span>
+                  )}
+                </button>
+                {isModerator && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/leaderboard-moderation")}
+                    aria-label="Open leaderboard moderation"
+                    title="Leaderboard Moderation"
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
+                      isLightMode
+                        ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/25"
+                        : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/60 hover:bg-[#FFD54A]/20"
+                    }`}
+                  >
+                    <Shield size={18} />
+                  </button>
+                )}
+              </div>
             )}
             {/* PROFILE */}
             <div
-              className={editingProfile ? "" : "flex items-start gap-4 pr-10"}
+              className={
+                editingProfile
+                  ? ""
+                  : `flex items-start gap-4 ${isModerator ? "pr-20" : "pr-10"}`
+              }
             >
               {!editingProfile && (
                 <div className="relative shrink-0">
@@ -1353,9 +1344,127 @@ const MobileProfile = () => {
           </div>
         </div>
       </div>
+      {/* QUICK ACCESS */}
+      <div className="mx-5 mt-4">
+        <div className="mb-2.5 flex items-center justify-between px-1">
+          <h3 className="text-sm font-semibold text-zinc-300">Quick Access</h3>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+            Important
+          </span>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] shadow-[0_10px_28px_rgba(0,0,0,.18)]">
+          <button
+            type="button"
+            onClick={() => navigate("/support-mlpekayou")}
+            className={`group flex w-full items-center gap-3.5 px-4 py-4 text-left transition-all active:bg-[#202122] ${
+              isLightMode
+                ? "bg-gradient-to-r from-[#fff7cf] to-white"
+                : "bg-gradient-to-r from-[#27210e] to-[#151718]"
+            } border-b border-zinc-800`}
+          >
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
+                isLightMode
+                  ? "border-[#8a6a00]/20 bg-[#c89d13]/15 text-[#725700]"
+                  : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A]"
+              }`}
+            >
+              <HandHeart size={21} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold text-white">
+                Support MLPEKAYOU
+              </span>
+              <span className="mt-1 block text-sm leading-5 text-zinc-300">
+                Shop through StonesTradingCo to help keep the site running and
+                free.
+              </span>
+            </span>
+            <ChevronRight
+              size={18}
+              className="shrink-0 text-[#FFD54A] transition-transform group-hover:translate-x-1"
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/kayou-news")}
+            className={`group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-all hover:bg-[#191a1b] ${
+              lgsAccess !== null || canReviewLGS
+                ? "border-b border-zinc-800"
+                : ""
+            }`}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.035] text-[#FFD54A] transition-colors group-hover:border-[#FFD54A]/40">
+              <Newspaper size={19} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold text-white">
+                Kayou Previews
+              </span>
+              <span className="mt-0.5 block truncate text-sm text-zinc-300">
+                Upcoming cards and reveals
+              </span>
+            </span>
+            <ChevronRight
+              size={18}
+              className="shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-[#FFD54A]"
+            />
+          </button>
+          {lgsAccess !== null && (
+            <button
+              type="button"
+              onClick={() => navigate("/lgs-boards")}
+              className={`group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-all hover:bg-[#191a1b] ${
+                canReviewLGS ? "border-b border-zinc-800" : ""
+              }`}
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD54A]/25 bg-[#FFD54A]/[0.07] text-[#FFD54A]">
+                <Store size={19} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold text-white">
+                  LGS Boards
+                </span>
+                <span className="mt-0.5 block truncate text-sm text-zinc-300">
+                  {lgsAccess === "ALLGS"
+                    ? "All stores · View-only access"
+                    : "Your store’s events and attendance"}
+                </span>
+              </span>
+              <ChevronRight
+                size={18}
+                className="shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-[#FFD54A]"
+              />
+            </button>
+          )}
+          {canReviewLGS && (
+            <button
+              type="button"
+              onClick={() => setShowLGSReview(true)}
+              className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-all hover:bg-[#191a1b]"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD54A]/25 bg-[#FFD54A]/[0.07] text-[#FFD54A]">
+                <Shield size={19} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold text-white">
+                  LGS Applications
+                </span>
+                <span className="mt-0.5 block truncate text-sm text-zinc-300">
+                  Review applications and decision history
+                </span>
+              </span>
+              <ChevronRight
+                size={18}
+                className="shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-[#FFD54A]"
+              />
+            </button>
+          )}
+        </div>
+      </div>
       {/* Offer Response Strikes */}
       <div
-        className={`relative mx-5 mt-6 overflow-hidden rounded-2xl border p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)] ${
+        className={`relative mx-5 mt-4 overflow-hidden rounded-2xl border p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)] ${
           offerStrikeCount >= 3
             ? isLightMode
               ? "border-red-500/25 bg-red-50"
@@ -1423,7 +1532,7 @@ const MobileProfile = () => {
       <div className="relative mt-3 grid grid-cols-2 gap-3 px-5">
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
           <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {stats.owned.toLocaleString()}
+            {profileLoads.stats ? stats.owned.toLocaleString() : "—"}
           </div>
           <div className="mt-1 text-xs font-medium text-zinc-400">
             Cards Owned
@@ -1431,7 +1540,7 @@ const MobileProfile = () => {
         </div>
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
           <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {stats.completed}
+            {profileLoads.stats ? stats.completed : "—"}
           </div>
           <div className="mt-1 text-xs font-medium text-zinc-400">
             Sets Mastered
@@ -1673,30 +1782,49 @@ const MobileProfile = () => {
         </div>
       )}
       {/* Menu Sections */}
-      <div className="mt-7 space-y-6 px-5">
+      <div className="mt-4 space-y-4 px-5">
         {menuSections.map((section) => (
           <div key={section.title}>
-            <div className="mb-2 px-1">
+            <div className="mb-2.5 flex items-center justify-between px-1">
               <h3 className="text-sm font-semibold text-zinc-300">
-                {section.title}
+                Your Personal Pages
               </h3>
+              {section.title === "Collection" && (
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                </span>
+              )}
             </div>
-            <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] shadow-[0_10px_28px_rgba(0,0,0,.18)]">
+            <div
+              className={
+                section.title === "Collection"
+                  ? "grid grid-cols-2 gap-2"
+                  : "overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] shadow-[0_10px_28px_rgba(0,0,0,.18)]"
+              }
+            >
               {section.items.map((item, index) => (
                 <button
                   key={item.title}
                   onClick={item.onClick}
-                  className={`group flex w-full items-center justify-between px-3.5 py-3.5 text-left transition-all duration-200 ${
-                    item.danger
+                  className={`group w-full text-left transition-all duration-200 active:scale-[0.98] ${
+                    section.title === "Collection"
+                      ? "flex min-h-[112px] flex-col items-start rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_8px_22px_rgba(0,0,0,.14)] hover:border-[#FFD54A]/25 hover:bg-[#191a1b]"
+                      : `flex items-center justify-between px-3.5 py-3.5 ${item.danger
                       ? "bg-red-500/[0.035] hover:bg-red-500/[0.07]"
                       : "hover:bg-[#191a1b]"
-                  } ${
-                    index !== section.items.length - 1
-                      ? "border-b border-zinc-800"
-                      : ""
+                    } ${
+                      index !== section.items.length - 1
+                        ? "border-b border-zinc-800"
+                        : ""
+                    }`
                   }`}
                 >
-                  <div className="flex min-w-0 items-center gap-3">
+                  <div
+                    className={
+                      section.title === "Collection"
+                        ? "flex min-w-0 flex-1 flex-col items-start"
+                        : "flex min-w-0 items-center gap-3"
+                    }
+                  >
                     <div
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-white/[0.035] transition-colors ${
                         item.danger
@@ -1704,23 +1832,15 @@ const MobileProfile = () => {
                           : "border-white/[0.08] text-[#FFD54A] group-hover:border-[#FFD54A]/40"
                       }`}
                     >
-                      {item.danger ? (
-                        <span className="text-sm font-black text-red-400">
-                          !
-                        </span>
-                      ) : index === 0 ? (
-                        <BookOpen size={16} />
-                      ) : index === 1 ? (
-                        <Trophy size={16} />
-                      ) : index === 2 ? (
-                        <Package size={16} />
-                      ) : index === 3 ? (
-                        <Heart size={16} />
-                      ) : (
-                        <User size={16} />
-                      )}
+                      {item.icon}
                     </div>
-                    <div className="min-w-0">
+                    <div
+                      className={
+                        section.title === "Collection"
+                          ? "mt-3 min-w-0"
+                          : "min-w-0"
+                      }
+                    >
                       <div
                         className={`font-semibold ${
                           item.danger
@@ -1733,7 +1853,7 @@ const MobileProfile = () => {
                         {item.title}
                       </div>
                       <div
-                        className={`mt-1 truncate text-sm ${
+                        className={`mt-1 text-sm leading-5 ${
                           item.danger
                             ? isLightMode
                               ? "text-red-600"
@@ -1745,24 +1865,18 @@ const MobileProfile = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2.5">
-                    {"badge" in item && item.badge > 0 && (
-                      <span
-                        className="flex min-h-6 min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-[0_4px_12px_rgba(220,38,38,.35)]"
-                        aria-label={`${item.badge} unread inbox notifications`}
-                      >
-                        {item.badge > 99 ? "99+" : item.badge}
-                      </span>
-                    )}
-                    <ChevronRight
-                      size={18}
-                      className={`shrink-0 transition-all duration-200 group-hover:translate-x-1 ${
-                        item.danger
-                          ? "text-red-500/50 group-hover:text-red-400"
-                          : "text-zinc-700 group-hover:text-[#FFD54A]"
-                      }`}
-                    />
-                  </div>
+                  {section.title !== "Collection" && (
+                    <div className="flex shrink-0 items-center gap-2.5">
+                      <ChevronRight
+                        size={18}
+                        className={`shrink-0 transition-all duration-200 group-hover:translate-x-1 ${
+                          item.danger
+                            ? "text-red-500/50 group-hover:text-red-400"
+                            : "text-zinc-700 group-hover:text-[#FFD54A]"
+                        }`}
+                      />
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -2085,37 +2199,33 @@ function ProfileLoadingScreen({
       className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}
     >
       <style>{`
-        .profile-loading-screen{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:grid;place-items:center;overflow:hidden;padding:96px 24px;background:#0d0f10;color:#f4f4f5}
+        .profile-loading-screen{position:relative;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:32px 24px;background:#0d0f10;color:#f4f4f5}
         .profile-loading-screen.profile-loading-light{background:#f5f5f3;color:#27272a}
-        .profile-loading-pattern{position:absolute;inset:-160px -260px;z-index:-2;pointer-events:none;background-repeat:repeat;background-size:240px 140px;opacity:.065;animation:profile-logo-drift 36s linear infinite;will-change:transform}
-        .profile-loading-light .profile-loading-pattern{opacity:.075}
-        .profile-loading-vignette{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,rgba(13,15,16,.96) 0%,rgba(13,15,16,.72) 28%,rgba(13,15,16,.12) 75%)}
-        .profile-loading-light .profile-loading-vignette{background:radial-gradient(ellipse at center,rgba(245,245,243,.96) 0%,rgba(245,245,243,.72) 28%,rgba(245,245,243,.12) 75%)}
-        .profile-loading-content{width:100%;max-width:400px;text-align:center}
-        .profile-loading-brand{position:relative;display:flex;align-items:center;justify-content:center;width:240px;max-width:80%;height:120px;margin:0 auto 20px}
-        .profile-loading-brand::before{content:"";position:absolute;inset:20px 28px;border-radius:50%;background:rgba(255,218,75,.12);filter:blur(30px)}
-        .profile-loading-brand img{position:relative;width:100%;max-height:120px;object-fit:contain;filter:drop-shadow(0 5px 18px rgba(0,0,0,.15))}
-        .profile-loading-content p{margin:0;font-size:18px;font-weight:600;line-height:1.6}
-        .profile-loading-dots{display:inline-block;width:1.2em;text-align:left;animation:profile-loading-dots 1.4s steps(1,end) infinite}
+        .profile-loading-content{width:100%;max-width:320px;text-align:center;transform:translateY(clamp(-110px,-12dvh,-72px))}
+        .profile-loading-brand{display:flex;align-items:center;justify-content:center;width:210px;height:92px;margin:0 auto 24px}
+        .profile-loading-brand img{width:100%;max-height:92px;object-fit:contain;filter:drop-shadow(0 5px 16px rgba(0,0,0,.12));animation:profile-logo-breathe 1.8s ease-in-out infinite}
+        .profile-loading-title{margin:0;font-size:17px;font-weight:700;line-height:1.4}
+        .profile-loading-subtitle{margin:6px 0 0;font-size:13px;line-height:1.5;color:#a1a1aa}
+        .profile-loading-light .profile-loading-subtitle{color:#71717a}
+        .profile-loading-bar{position:relative;width:150px;height:3px;margin:22px auto 0;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.10)}
+        .profile-loading-light .profile-loading-bar{background:rgba(24,24,27,.10)}
+        .profile-loading-bar::after{content:"";position:absolute;inset:0;width:45%;border-radius:inherit;background:#ffda4b;animation:profile-loading-bar 1.1s ease-in-out infinite}
         .profile-loading-retry{margin-top:20px;min-height:44px;padding:10px 22px;border:0;border-radius:12px;background:#ffda4b;color:#252728;font-size:16px;font-weight:600;cursor:pointer}
         .profile-loading-retry:focus-visible{outline:3px solid #90bfff;outline-offset:4px}
-        @keyframes profile-logo-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(240px,140px,0)}}
-        @keyframes profile-loading-dots{0%,24%{clip-path:inset(0 66.66% 0 0)}25%,49%{clip-path:inset(0 33.33% 0 0)}50%,74%{clip-path:inset(0)}75%,100%{clip-path:inset(0 33.33% 0 0)}}
-        @media(prefers-reduced-motion:reduce){.profile-loading-pattern,.profile-loading-dots{animation:none;will-change:auto}}
+        @keyframes profile-logo-breathe{0%,100%{opacity:.76;transform:scale(.985)}50%{opacity:1;transform:scale(1)}}
+        @keyframes profile-loading-bar{0%{transform:translateX(-115%)}50%{transform:translateX(120%)}100%{transform:translateX(245%)}}
+        @media(prefers-reduced-motion:reduce){.profile-loading-brand img,.profile-loading-bar::after{animation:none}}
       `}</style>
-      <div
-        className="profile-loading-pattern"
-        style={{ backgroundImage: `url("${logo}")` }}
-        aria-hidden="true"
-      />
-      <div className="profile-loading-vignette" aria-hidden="true" />
       <div className="profile-loading-content">
         <div className="profile-loading-brand">
           <CardImage src={logo} alt="MLPEKAYOU" />
         </div>
         {failed ? (
           <>
-            <p role="alert">We couldn’t load your profile. Please try again.</p>
+            <p className="profile-loading-title" role="alert">
+              We couldn’t load your profile
+            </p>
+            <p className="profile-loading-subtitle">Please try again.</p>
             <button
               type="button"
               className="profile-loading-retry"
@@ -2125,13 +2235,16 @@ function ProfileLoadingScreen({
             </button>
           </>
         ) : (
-          <p role="status" aria-live="polite">
+          <div role="status" aria-live="polite">
             <span className="sr-only">Loading your profile</span>
-            <span aria-hidden="true">
-              Loading your profile
-              <span className="profile-loading-dots">...</span>
-            </span>
-          </p>
+            <p className="profile-loading-title" aria-hidden="true">
+              Getting your profile ready
+            </p>
+            <p className="profile-loading-subtitle" aria-hidden="true">
+              Loading your account and preferences
+            </p>
+            <div className="profile-loading-bar" aria-hidden="true" />
+          </div>
         )}
       </div>
     </div>
