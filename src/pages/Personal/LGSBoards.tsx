@@ -17,6 +17,7 @@ import {
   ImagePlus,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 // New tables may not be in your generated Supabase types yet.
 const db = supabase as unknown as SupabaseClient;
@@ -540,6 +541,7 @@ export default function LGSBoards() {
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [eventPhotos, setEventPhotos] = useState<EventPhoto[]>([]);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [photoToDelete, setPhotoToDelete] = useState<EventPhoto | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [roster, setRoster] = useState<Player[]>([]);
   const [dialog, setDialog] = useState<Dialog>(null);
@@ -619,6 +621,9 @@ export default function LGSBoards() {
     const timer = setTimeout(() => setNotice(""), 3500);
     return () => clearTimeout(timer);
   }, [notice]);
+  useEffect(() => {
+    setPhotoToDelete(null);
+  }, [event?.id]);
   useEffect(() => {
     let mounted = true;
     let authChanged = false;
@@ -966,6 +971,36 @@ export default function LGSBoards() {
       setNotice(
         `${added.length} ${added.length === 1 ? "photo" : "photos"} added${skipped > 0 ? ` · ${skipped} skipped because the gallery is full` : ""}.`,
       );
+    });
+  };
+  const deleteEventPhoto = () => {
+    if (!photoToDelete) return;
+    void run(async () => {
+      if (!event || !canManage)
+        throw new Error("You do not have permission to delete event photos.");
+      const target = photoToDelete;
+      const storageDelete = await db.storage
+        .from("lgs-event-gallery")
+        .remove([target.storage_path]);
+      if (storageDelete.error) throw storageDelete.error;
+      const rowDelete = await db
+        .from("lgs_event_photos")
+        .delete()
+        .eq("id", target.id)
+        .eq("event_id", event.id)
+        .eq("store_id", event.store_id)
+        .select("id")
+        .single();
+      if (rowDelete.error) throw rowDelete.error;
+      const remainingPhotos = eventPhotos.filter(
+        (photo) => photo.id !== target.id,
+      );
+      setEventPhotos(remainingPhotos);
+      setPhotoIndex(
+        Math.min(photoIndex, Math.max(0, remainingPhotos.length - 1)),
+      );
+      setPhotoToDelete(null);
+      setNotice("Photo deleted.");
     });
   };
   const messages = (
@@ -1385,66 +1420,100 @@ export default function LGSBoards() {
               </section>
             )}
             {tab === "raffles" && (
-              <section className="lgs-panel">
-                <h2>Event raffles</h2>
-                <p className="lgs-muted">
-                  Each attendee gets one chance per draw. Winners are excluded
-                  from later draws in this event and eligible again next event.
-                </p>
-                {editable && (
-                  <form
-                    className="lgs-form"
-                    onSubmit={(form) => {
-                      form.preventDefault();
-                      mutate(
-                        "draw",
-                        {
-                          label:
-                            raffleLabel.trim() ||
-                            `Raffle ${raffles.length + 1}`,
-                        },
-                        "Raffle winner saved.",
-                      );
-                      setRaffleLabel("");
-                    }}
-                  >
-                    <label>
-                      Raffle label <span className="lgs-muted">(optional)</span>
-                      <input
-                        value={raffleLabel}
-                        onChange={(change) =>
-                          setRaffleLabel(change.target.value)
-                        }
-                        maxLength={100}
-                        placeholder={`Raffle ${raffles.length + 1}`}
-                        disabled={busy}
-                      />
-                    </label>
-                    <button
-                      className="lgs-primary"
-                      type="submit"
-                      disabled={busy || attendees.length <= raffles.length}
-                    >
-                      Draw winner ·{" "}
-                      {Math.max(0, attendees.length - raffles.length)} eligible
-                    </button>
-                  </form>
-                )}
-                {raffles.length === 0 ? (
-                  <p className="lgs-empty">No winners drawn yet.</p>
-                ) : (
-                  <div className="lgs-raffle-results">
-                    {raffles.map((raffle) => (
-                      <div className="lgs-raffle" key={raffle.id}>
-                        <span className="lgs-muted">{raffle.label}</span>
-                        <strong>{raffle.winner_name}</strong>
-                        <span className="lgs-muted">
-                          {new Date(raffle.drawn_at).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
+              <section className="lgs-panel lgs-prizes-panel">
+                <div className="lgs-prizes-heading">
+                  <div>
+                    <h2>Event prizes</h2>
+                    <p className="lgs-muted">
+                      Every attendee gets one chance per drawing. Winners sit
+                      out the remaining drawings for this event.
+                    </p>
                   </div>
-                )}
+                  <span className="lgs-pill">
+                    {raffles.length} of {attendees.length} awarded
+                  </span>
+                </div>
+                <div className="lgs-prizes-layout">
+                  <div className="lgs-prize-draw">
+                    <span className="lgs-prize-kicker">Next drawing</span>
+                    <strong>
+                      {Math.max(0, attendees.length - raffles.length)} eligible
+                      players
+                    </strong>
+                    <p className="lgs-muted">
+                      Name the prize, then draw one eligible player at random.
+                    </p>
+                    {editable ? (
+                      <form
+                        className="lgs-prize-form"
+                        onSubmit={(form) => {
+                          form.preventDefault();
+                          mutate(
+                            "draw",
+                            {
+                              label:
+                                raffleLabel.trim() ||
+                                `Prize ${raffles.length + 1}`,
+                            },
+                            "Raffle winner saved.",
+                          );
+                          setRaffleLabel("");
+                        }}
+                      >
+                        <label>
+                          Prize name <span className="lgs-muted">(optional)</span>
+                          <input
+                            value={raffleLabel}
+                            onChange={(change) =>
+                              setRaffleLabel(change.target.value)
+                            }
+                            maxLength={100}
+                            placeholder={`Prize ${raffles.length + 1}`}
+                            disabled={busy}
+                          />
+                        </label>
+                        <button
+                          className="lgs-primary"
+                          type="submit"
+                          disabled={busy || attendees.length <= raffles.length}
+                        >
+                          Draw a winner
+                        </button>
+                      </form>
+                    ) : (
+                      <p className="lgs-prize-readonly">
+                        Drawings are available while this event is open.
+                      </p>
+                    )}
+                  </div>
+                  <div className="lgs-prize-history">
+                    <div className="lgs-prize-history-heading">
+                      <h3>Prize history</h3>
+                      <span>{raffles.length}</span>
+                    </div>
+                    {raffles.length === 0 ? (
+                      <div className="lgs-prize-empty">
+                        <strong>No prizes awarded yet</strong>
+                        <span>The first winner will appear here.</span>
+                      </div>
+                    ) : (
+                      <div className="lgs-raffle-results">
+                        {raffles.map((raffle, index) => (
+                          <div className="lgs-raffle" key={raffle.id}>
+                            <span className="lgs-raffle-number">{index + 1}</span>
+                            <span className="lgs-raffle-copy">
+                              <span>{raffle.label}</span>
+                              <strong>{raffle.winner_name}</strong>
+                            </span>
+                            <time dateTime={raffle.drawn_at}>
+                              {new Date(raffle.drawn_at).toLocaleString()}
+                            </time>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </section>
             )}
             {tab === "overview" && (
@@ -1503,6 +1572,20 @@ export default function LGSBoards() {
                   >
                     View attendance totals
                   </button>
+                  <div className="lgs-prize-log">
+                    <h3>Prizes given out</h3>
+                    {raffles.length === 0 ? (
+                      <p className="lgs-muted">No prizes have been given out yet.</p>
+                    ) : (
+                      <ul>
+                        {raffles.map((raffle) => (
+                          <li key={raffle.id}>
+                            <strong>{raffle.label}</strong> given out!
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </section>
                 <section className="lgs-panel lgs-overview-placements">
                   <h2>Final placements</h2>
@@ -1631,6 +1714,17 @@ export default function LGSBoards() {
                           src={eventPhotoUrl(activePhoto.storage_path)}
                           alt={`Event photo ${safePhotoIndex + 1}`}
                         />
+                        {canManage && (
+                          <button
+                            type="button"
+                            className="lgs-gallery-delete"
+                            disabled={busy}
+                            onClick={() => setPhotoToDelete(activePhoto)}
+                            aria-label={`Delete event photo ${safePhotoIndex + 1}`}
+                          >
+                            <X size={20} aria-hidden="true" />
+                          </button>
+                        )}
                         {eventPhotos.length > 1 && (
                           <>
                             <button
@@ -2178,6 +2272,43 @@ export default function LGSBoards() {
           </button>
         </Modal>
       )}
+      {staff && event && photoToDelete && (
+        <Modal
+          title="Are you sure you wanna delete this photo?"
+          close={() => setPhotoToDelete(null)}
+          busy={busy}
+          className="lgs-delete-photo-dialog"
+        >
+          {messages}
+          <img
+            src={eventPhotoUrl(photoToDelete.storage_path)}
+            alt="Event photo selected for deletion"
+            className="lgs-delete-photo-preview"
+          />
+          <p className="lgs-muted">
+            This permanently removes the photo from the event gallery. It
+            cannot be recovered.
+          </p>
+          <div className="lgs-finish-actions">
+            <button
+              type="button"
+              className="lgs-secondary"
+              disabled={busy}
+              onClick={() => setPhotoToDelete(null)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="lgs-delete-confirm"
+              disabled={busy}
+              onClick={deleteEventPhoto}
+            >
+              {busy ? "Deleting…" : "Delete photo"}
+            </button>
+          </div>
+        </Modal>
+      )}
       {staff && editable && deckPlayer && (
         <Modal
           title={`${deckPlayer.player_name}’s deck`}
@@ -2618,9 +2749,9 @@ const STYLES = `
 .lgs-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"decks notes totals" "gallery gallery gallery" "placements placements placements";gap:18px;align-items:stretch}
 .lgs-overview>.lgs-panel{align-self:stretch;height:auto;min-width:0}
 .lgs-overview-decks{grid-area:decks}
-.lgs-overview-notes{grid-area:notes}
+.lgs-overview-notes{grid-area:notes;display:flex;flex-direction:column}
 .lgs-overview-placements{grid-area:placements}
-.lgs-overview-totals{grid-area:totals}
+.lgs-overview-totals{grid-area:totals;display:flex;flex-direction:column}
 .lgs-overview-gallery{grid-area:gallery;display:flex;flex-direction:column;align-self:stretch!important;height:auto!important;min-height:300px}
 .lgs-gallery-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .lgs-gallery-heading>div{min-width:0}
@@ -2628,6 +2759,8 @@ const STYLES = `
 .lgs-ui input.lgs-gallery-input{display:none!important}
 .lgs-gallery-stage{position:relative;flex:1;min-height:220px;margin-top:18px;overflow:hidden;border-radius:14px;background:var(--lgs-soft)}
 .lgs-gallery-stage>img{display:block;width:100%;height:100%;min-height:220px;max-height:420px;object-fit:contain}
+.lgs-gallery-delete{position:absolute;top:12px;right:12px;z-index:2;display:flex;align-items:center;justify-content:center;width:44px;min-height:44px!important;padding:0;border-radius:999px;background:rgba(20,22,23,.82);color:#fff;box-shadow:0 3px 14px rgba(0,0,0,.24);backdrop-filter:blur(8px)}
+.lgs-gallery-delete:hover:not(:disabled){background:#a62b27}
 .lgs-gallery-arrow{position:absolute;top:50%;display:flex;align-items:center;justify-content:center;width:44px;min-height:44px!important;padding:0;border-radius:999px;background:rgba(20,22,23,.78);color:#fff;transform:translateY(-50%);backdrop-filter:blur(8px)}
 .lgs-gallery-previous{left:12px}.lgs-gallery-next{right:12px}
 .lgs-gallery-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;color:var(--lgs-muted);font-size:12px}
@@ -2644,32 +2777,80 @@ const STYLES = `
 .lgs-overview .lgs-placement select{width:100%;max-width:none;min-height:44px;margin:0;padding:9px 10px;background:var(--lgs-panel)}
 .lgs-overview .lgs-pagination{margin-top:16px}
 .lgs-ui .lgs-totals-button{display:block;width:auto;margin:18px 0 0}
-.lgs-overview-notes .lgs-form{margin-top:14px;gap:12px}
-.lgs-overview-notes textarea{margin-top:0}
+.lgs-overview-notes .lgs-form{display:flex;flex:1;min-height:0;margin-top:14px;gap:12px;flex-direction:column}
+.lgs-overview-notes textarea{flex:1;min-height:260px;margin-top:0}
+.lgs-prize-log{display:flex;flex:1;min-height:0;margin-top:24px;padding:16px;flex-direction:column;overflow:hidden;border-radius:12px;background:var(--lgs-soft)}
+.lgs-prize-log h3{font-size:15px}
+.lgs-prize-log>p{margin-top:8px}
+.lgs-prize-log ul{flex:1;min-height:0;margin:10px -6px 0 0;padding:0 8px 0 20px;overflow-y:auto;scrollbar-width:thin}
+.lgs-prize-log li{padding:8px 0;line-height:1.4}
+.lgs-prize-log li+li{border-top:1px solid color-mix(in srgb,var(--lgs-muted) 20%,transparent)}
 .lgs-ui .lgs-modal.lgs-totals-dialog{width:min(100%,720px);max-width:720px}
 .lgs-totals-dialog .lgs-totals-table{margin-top:20px}
 .lgs-ui .lgs-refresh-totals{width:100%;margin-top:18px}
+.lgs-ui .lgs-modal.lgs-delete-photo-dialog{width:min(100%,520px);max-width:520px}
+.lgs-delete-photo-preview{display:block;width:100%;max-height:300px;margin-top:18px;object-fit:contain;border-radius:14px;background:var(--lgs-soft)}
+.lgs-ui .lgs-delete-photo-dialog>p{margin-top:16px;line-height:1.6}
+.lgs-ui .lgs-delete-confirm{width:100%;min-height:48px;margin:0;padding:12px 16px;border-radius:13px;background:#b42318;color:#fff;font-weight:700}
+.lgs-ui.dark .lgs-delete-confirm{background:#d84d47;color:#fff}
+.lgs-ui .lgs-delete-confirm:hover:not(:disabled){background:#921f19}
 
-/* Saved raffle draws stay readable without becoming oversized cards. */
-.lgs-raffle-results{display:grid;gap:8px;margin-top:18px}
-.lgs-raffle-results .lgs-raffle{display:grid;grid-template-columns:minmax(120px,1fr) minmax(150px,1.2fr) auto;align-items:center;gap:12px;padding:11px 14px;border-radius:12px}
-.lgs-raffle-results .lgs-raffle strong{font-size:16px;line-height:1.35}
-.lgs-raffle-results .lgs-raffle span{margin:0;font-size:13px}
-.lgs-raffle-results .lgs-raffle span:last-child{text-align:right;white-space:nowrap}
+/* Give the prize screen a clear drawing area and a compact winner history. */
+.lgs-prizes-panel{padding:0;overflow:hidden}
+.lgs-prizes-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:24px 26px;border-bottom:1px solid color-mix(in srgb,var(--lgs-muted) 16%,transparent)}
+.lgs-prizes-heading>div{min-width:0;max-width:720px}
+.lgs-prizes-heading .lgs-pill{flex-shrink:0}
+.lgs-prizes-layout{display:grid;grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr);min-height:360px}
+.lgs-prize-draw{display:flex;padding:26px;flex-direction:column;background:color-mix(in srgb,var(--lgs-soft) 62%,var(--lgs-panel))}
+.lgs-prize-kicker{color:var(--lgs-accent);font-size:12px;font-weight:750;letter-spacing:.09em;text-transform:uppercase}
+.lgs-prize-draw>strong{margin-top:8px;font-size:25px;line-height:1.2}
+.lgs-prize-draw>p{margin-top:8px;line-height:1.55}
+.lgs-prize-form{display:flex;flex:1;margin-top:24px;flex-direction:column;justify-content:flex-end;gap:14px}
+.lgs-prize-form label{font-size:14px}
+.lgs-prize-form input{background:var(--lgs-panel)}
+.lgs-prize-form .lgs-primary{width:100%;min-height:50px}
+.lgs-prize-readonly{margin-top:auto!important;padding:14px;border-radius:12px;background:var(--lgs-panel);color:var(--lgs-muted)}
+.lgs-prize-history{min-width:0;padding:24px 26px}
+.lgs-prize-history-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lgs-prize-history-heading h3{font-size:17px}
+.lgs-prize-history-heading>span{display:flex;align-items:center;justify-content:center;min-width:28px;height:28px;padding:0 8px;border-radius:999px;background:var(--lgs-soft);color:var(--lgs-muted);font-size:13px;font-weight:700}
+.lgs-prize-empty{display:flex;min-height:250px;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:var(--lgs-muted)}
+.lgs-prize-empty strong{color:var(--lgs-text);font-size:17px}
+.lgs-prize-empty span{margin-top:4px;font-size:14px}
+.lgs-raffle-results{display:grid;gap:8px;max-height:330px;margin-top:16px;padding-right:4px;overflow-y:auto;scrollbar-width:thin}
+.lgs-raffle-results .lgs-raffle{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--lgs-soft)}
+.lgs-raffle-number{display:flex!important;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--lgs-panel);color:var(--lgs-accent);font-size:14px!important;font-weight:750}
+.lgs-raffle-copy{min-width:0}
+.lgs-raffle-copy>span,.lgs-raffle-copy>strong{display:block;overflow-wrap:anywhere}
+.lgs-raffle-copy>span{color:var(--lgs-muted);font-size:12px}
+.lgs-raffle-copy>strong{margin-top:2px;font-size:16px;line-height:1.3}
+.lgs-raffle-results time{color:var(--lgs-muted);font-size:12px;text-align:right;white-space:nowrap}
 @media(max-width:1100px){
   .lgs-overview{grid-template-columns:minmax(0,1fr);grid-template-areas:"decks" "notes" "totals" "gallery" "placements";gap:14px;align-items:start}
   .lgs-overview>.lgs-panel{align-self:start;width:100%;height:auto}
   .lgs-ui .lgs-totals-button{width:100%}
+  .lgs-overview-notes textarea{min-height:260px}
+  .lgs-prize-log{flex:none;max-height:280px}
 }
 @media(max-width:600px){
   .lgs-placement-grid{grid-template-columns:minmax(0,1fr)}
   .lgs-overview .lgs-placement{grid-template-columns:minmax(0,1fr) minmax(120px,145px);padding:11px 12px}
-  .lgs-raffle-results .lgs-raffle{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
-  .lgs-raffle-results .lgs-raffle span:last-child{grid-column:1/-1;text-align:left;white-space:normal}
+  .lgs-prizes-heading{display:block;padding:20px}
+  .lgs-prizes-heading .lgs-pill{margin-top:14px}
+  .lgs-prizes-layout{grid-template-columns:minmax(0,1fr)}
+  .lgs-prize-draw,.lgs-prize-history{padding:20px}
+  .lgs-prize-history{border-top:1px solid color-mix(in srgb,var(--lgs-muted) 16%,transparent)}
+  .lgs-prize-draw>strong{font-size:22px}
+  .lgs-prize-form{margin-top:20px}
+  .lgs-raffle-results{max-height:360px}
+  .lgs-raffle-results .lgs-raffle{grid-template-columns:34px minmax(0,1fr);gap:10px}
+  .lgs-raffle-number{width:34px;height:34px}
+  .lgs-raffle-results time{grid-column:2;text-align:left;white-space:normal}
   .lgs-gallery-heading{display:block}
   .lgs-ui .lgs-gallery-add{width:100%;margin-top:14px}
   .lgs-gallery-stage{min-height:0;aspect-ratio:4/3}
   .lgs-gallery-stage>img{min-height:0;max-height:none}
+  .lgs-gallery-delete{top:8px;right:8px}
   .lgs-gallery-meta{align-items:flex-start;flex-direction:column;gap:2px}
 }
 `;
