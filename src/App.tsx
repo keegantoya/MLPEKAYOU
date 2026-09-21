@@ -1,4 +1,3 @@
-import { onAuthIdentityChange } from "@/lib/auth-identity";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -64,51 +63,44 @@ import ChangeAvatar from "./pages/Personal/change-avatar";
 import LeaderboardModeration from "./pages/Personal/LeaderboardModeration";
 import PublicProfile from "@/pages/Everypony/PublicProfile";
 import LGSBoards from "./pages/Personal/LGSBoards";
-
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false, refetchInterval: false } },
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
-
 const PUBLIC_AUTH_PATHS = new Set([
   "/",
   "/password-reset",
   "/account-confirmation",
+  "/links",
 ]);
-
 function SiteAccessGate({ children }: { children: ReactNode }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [authState, setAuthState] = useState<
+const location = useLocation();
+const navigate = useNavigate();
+const [authState, setAuthState] = useState<
     "checking" | "authenticated" | "anonymous"
   >("checking");
-  const [showLoginRequired, setShowLoginRequired] = useState(false);
-  const normalizedPath =
+const [showLoginRequired, setShowLoginRequired] = useState(false);
+const normalizedPath =
     location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
-  const isBlockedRoute =
+const isBlockedRoute =
     authState === "anonymous" && !PUBLIC_AUTH_PATHS.has(normalizedPath);
-
   useEffect(() => {
-    let mounted = true;
-
+let mounted = true;
     void supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       setAuthState(session?.user ? "authenticated" : "anonymous");
     });
-
-    const {
+const {
       data: { subscription },
-    } = onAuthIdentityChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setAuthState(session?.user ? "authenticated" : "anonymous");
       if (session?.user) setShowLoginRequired(false);
     });
-
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
   }, []);
-
   useEffect(() => {
     if (
       authState !== "anonymous" ||
@@ -116,20 +108,17 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
     ) {
       return;
     }
-
     setShowLoginRequired(true);
     navigate("/", { replace: true });
   }, [authState, navigate, normalizedPath]);
-
   useEffect(() => {
     if (!showLoginRequired) return;
-    const previousOverflow = document.body.style.overflow;
+const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [showLoginRequired]);
-
   if (authState === "checking" && !PUBLIC_AUTH_PATHS.has(normalizedPath)) {
     return (
       <div className="fixed inset-0 z-[30000] flex items-center justify-center bg-[#111111] px-4 text-white">
@@ -140,7 +129,6 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
       </div>
     );
   }
-
   return (
     <>
       {!isBlockedRoute && children}
@@ -170,7 +158,6 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
                 </h1>
               </div>
             </div>
-
             <div
               id="site-login-required-message"
               className="mt-5 max-h-[52vh] space-y-3 overflow-y-auto rounded-2xl border border-white/[0.07] bg-black/20 px-4 py-4 text-sm leading-6 text-zinc-300 sm:max-h-none sm:px-5"
@@ -197,7 +184,6 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
                 AI scraping. I do hope you understand.
               </p>
             </div>
-
             <button
               type="button"
               onClick={() => setShowLoginRequired(false)}
@@ -211,20 +197,19 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
     </>
   );
 }
-
 function RequireLGSStaff({ children }: { children: ReactNode }) {
-  const [access, setAccess] = useState<"checking" | "allowed" | "denied">(
+const [access, setAccess] = useState<"checking" | "allowed" | "denied">(
     "checking",
   );
   useEffect(() => {
-    let mounted = true;
-    let request = 0;
-    let accessUserId: string | null = null;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const checkAccess = async () => {
-      const ticket = ++request;
+let mounted = true;
+let request = 0;
+let accessUserId: string | null = null;
+let timer: ReturnType<typeof setTimeout> | undefined;
+const checkAccess = async () => {
+const ticket = ++request;
       try {
-        const {
+const {
           data: { session },
           error: sessionError,
         } = await supabase.auth.getSession();
@@ -236,14 +221,14 @@ function RequireLGSStaff({ children }: { children: ReactNode }) {
         }
         if (accessUserId !== session.user.id) setAccess("checking");
         accessUserId = session.user.id;
-        const { data, error } = await (supabase as unknown as SupabaseClient)
+const { data, error } = await (supabase as unknown as SupabaseClient)
           .from("lgs_staff")
           .select("role, store_id")
           .eq("user_id", session.user.id)
           .eq("active", true)
           .maybeSingle();
         if (!mounted || ticket !== request) return;
-        const qualifies =
+const qualifies =
           !error &&
           data &&
           (data.role === "ALLGS" || (data.role === "STAFF" && data.store_id));
@@ -252,29 +237,30 @@ function RequireLGSStaff({ children }: { children: ReactNode }) {
         if (mounted && ticket === request) setAccess("denied");
       }
     };
-    const scheduleCheck = () => {
+const scheduleCheck = () => {
       ++request;
       clearTimeout(timer);
       timer = setTimeout(() => {
         if (mounted) void checkAccess();
       }, 0);
     };
-    const {
+const {
       data: { subscription },
-    } = onAuthIdentityChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       if ((session?.user.id ?? null) !== accessUserId) {
         setAccess(session?.user ? "checking" : "denied");
       }
-      // Avoid calling Supabase again inside its auth callback.
       scheduleCheck();
     });
     void checkAccess();
+    window.addEventListener("focus", scheduleCheck);
     return () => {
       mounted = false;
       ++request;
       clearTimeout(timer);
       subscription.unsubscribe();
+      window.removeEventListener("focus", scheduleCheck);
     };
   }, []);
   if (access === "checking") {
@@ -291,21 +277,20 @@ function RequireLGSStaff({ children }: { children: ReactNode }) {
   if (access === "denied") return <Navigate to="/" replace />;
   return <>{children}</>;
 }
-
 const AppRoutes = () => {
   useEffect(() => {
-    let lastUserId: string | null = null;
-    const {
+let lastUserId: string | null = null;
+const {
       data: { subscription },
-    } = onAuthIdentityChange((_event, session) => {
-      const currentUserId = session?.user?.id ?? null;
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+const currentUserId = session?.user?.id ?? null;
       if (currentUserId !== lastUserId) lastUserId = currentUserId;
     });
-    const handleRightClick = (event: MouseEvent) => {
+const handleRightClick = (event: MouseEvent) => {
       if (event.target instanceof HTMLElement && event.target.tagName === "IMG")
         event.preventDefault();
     };
-    const preventDrag = (event: DragEvent) => event.preventDefault();
+const preventDrag = (event: DragEvent) => event.preventDefault();
     document.addEventListener("contextmenu", handleRightClick);
     document.addEventListener("dragstart", preventDrag);
     return () => {
@@ -554,15 +539,14 @@ const AppRoutes = () => {
     </Routes>
   );
 };
-
 function AppLayout() {
-  const { pathname, search } = useLocation();
-  const normalizedPath = pathname.replace(/\/+$/, "").toLowerCase() || "/";
-  const hideNavigation =
+const { pathname, search } = useLocation();
+const normalizedPath = pathname.replace(/\/+$/, "").toLowerCase() || "/";
+const hideNavigation =
     normalizedPath === "/links" ||
     normalizedPath === "/lgs-boards" ||
     new URLSearchParams(search).has("embed");
-  const standalone = window.matchMedia("(display-mode: standalone)").matches;
+const standalone = window.matchMedia("(display-mode: standalone)").matches;
   return (
     <>
       <ScrollToTop />
@@ -581,7 +565,6 @@ function AppLayout() {
     </>
   );
 }
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -593,5 +576,4 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
-
 export default App;

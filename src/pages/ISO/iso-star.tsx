@@ -1,3 +1,5 @@
+import { starCatalog } from "@/lib/iso-card-catalog";
+const { sets, getDisplayCardCode, getRarityCode } = starCatalog;
 import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -5,40 +7,6 @@ import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
 import { starCharacterMap } from "./Card Characters/card-characters-star";
-const getRarityCode = (rarity: string) => {
-  return rarity;
-};
-const getDisplayCardCode = (
-  setId: string,
-  rarity: string,
-  number: number
-) => {
-const rarityCode = getRarityCode(rarity);
-const cardNumber = String(number).padStart(3, "0");
-  if (setId === "4" && rarity === "SAR") {
-    return `MLPSE01-◇AR-${cardNumber}`;
-  }
-const baseCode = "MLPSE01";
-  return `${baseCode}-${rarity === "SAR" ? "◇AR" : rarityCode}-${cardNumber}`;
-};
-const sets = [
-  {
-    id: "4",
-    name: "Star First Edition",
-    folder: "star-one",
-    prefix: "S1",
-    rarities: {
-      SSR: 20,
-      SCR: 18,
-      UR: 18,
-      USR: 15,
-      AR: 9,
-      OR: 7,
-      BP: 9,
-      SAR: 9,
-    },
-  },
-];
 interface ISOSTARProps {
   cardCodeSearch: string;
   characterSearch: string;

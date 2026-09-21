@@ -1,174 +1,159 @@
+import { useEffect, useState } from "react";
+
+const supporters = [
+  "Mari",
+  "Badger",
+  "Violet",
+  "Vy",
+  "Brea",
+  "Panda",
+  "Hyve",
+  "Rain",
+  "Kotoshi",
+  "Zen",
+];
+
+const productImages = [
+  {
+    src: "/set-pictures/nightmarenightbox.webp",
+    alt: "Nightmare Night standard box",
+  },
+  {
+    src: "/set-pictures/nightmarenightgiftbox.webp",
+    alt: "Nightmare Night gift box",
+  },
+];
+
+function formatElapsed(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
+}
+
 export default function LinksPage() {
-  const supporters = [
-    "Mari",
-    "Badger",
-    "Violet",
-    "Vy",
-    "Brea",
-    "Panda",
-    "Hyve",
-    "Rain",
-    "Kotoshi",
-    "Zen",
-  ];
+  const [clock, setClock] = useState(() => new Date());
+  const [elapsed, setElapsed] = useState(0);
+  const [featuredSupporter, setFeaturedSupporter] = useState(0);
+  const [productIndex, setProductIndex] = useState(0);
+
+  useEffect(() => {
+    const clockTimer = window.setInterval(() => {
+      setClock(new Date());
+      setElapsed((current) => current + 1);
+    }, 1000);
+    const supporterTimer = window.setInterval(() => {
+      setFeaturedSupporter((current) => (current + 1) % supporters.length);
+    }, 2600);
+    const productTimer = window.setInterval(() => {
+      setProductIndex((current) => (current + 1) % productImages.length);
+    }, 6000);
+    return () => {
+      window.clearInterval(clockTimer);
+      window.clearInterval(supporterTimer);
+      window.clearInterval(productTimer);
+    };
+  }, []);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#120d18] font-['Oxanium'] text-[#f2d9a7]">
-      <div className="relative h-full w-full overflow-hidden bg-[#1b1223]">
-        {/* BACKGROUND */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_10%,#41234f_0%,transparent_28%),radial-gradient(circle_at_88%_15%,#35182b_0%,transparent_30%),radial-gradient(circle_at_55%_100%,#2c1b17_0%,transparent_40%)]" />
+    <div className="h-screen w-screen overflow-hidden bg-[#0c0d0e] font-['Oxanium'] text-[#f5f2e9]">
+      <style>{`
+        @keyframes livePulse {
+          0%, 100% { opacity: .65; transform: scale(.82); }
+          50% { opacity: 1; transform: scale(1.18); }
+        }
+        @keyframes scanLine {
+          0% { transform: translateX(-130%); }
+          100% { transform: translateX(430%); }
+        }
+        @keyframes stoneDrift {
+          0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: .12; }
+          50% { transform: translate3d(16px, -18px, 0) rotate(12deg); opacity: .3; }
+        }
+        @keyframes productSwap {
+          0% { opacity: 0; transform: translateY(12px) scale(.97); }
+          12%, 88% { opacity: 1; transform: translateY(0) scale(1); }
+          100% { opacity: 0; transform: translateY(-8px) scale(.985); }
+        }
+        .live-dot { animation: livePulse 1.45s ease-in-out infinite; }
+        .product-image { animation: productSwap 6s ease-in-out infinite; }
+        .scan-line { animation: scanLine 6.5s linear infinite; }
+        .stone-mark { animation: stoneDrift 7s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .live-dot, .product-image, .scan-line, .stone-mark { animation: none; }
+        }
+      `}</style>
 
-        {/* ANIMATED BACKGROUND SPARKLES */}
-        <style>{`
-          @keyframes sparkleDrift {
-            0% {
-              transform: translate3d(0, 18px, 0) scale(.65) rotate(0deg);
-              opacity: 0;
-            }
-            15% {
-              opacity: .35;
-            }
-            50% {
-              transform: translate3d(24px, -12px, 0) scale(1.15) rotate(45deg);
-              opacity: .8;
-            }
-            85% {
-              opacity: .35;
-            }
-            100% {
-              transform: translate3d(-18px, -42px, 0) scale(.6) rotate(90deg);
-              opacity: 0;
-            }
-          }
-
-          @keyframes eeriePulse {
-            0%, 100% {
-              opacity: .55;
-              filter: drop-shadow(0 0 3px rgba(238, 126, 43, .35));
-            }
-            50% {
-              opacity: 1;
-              filter: drop-shadow(0 0 9px rgba(238, 126, 43, .75));
-            }
-          }
-
-          .mlp-sparkle {
-            position: absolute;
-            pointer-events: none;
-            z-index: 1;
-            color: #ee7e2b;
-            font-size: 16px;
-            line-height: 1;
-            animation: sparkleDrift 4.5s ease-in-out infinite;
-            will-change: transform, opacity;
-          }
-
-          .halloween-glow {
-            animation: eeriePulse 2.8s ease-in-out infinite;
-          }
-        `}</style>
-
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <span className="mlp-sparkle left-[3%] top-[18%]" style={{ animationDelay: "0s" }}>✦</span>
-          <span className="mlp-sparkle left-[8%] top-[42%]" style={{ animationDelay: "1.2s" }}>✧</span>
-          <span className="mlp-sparkle left-[13%] top-[68%]" style={{ animationDelay: "2.4s" }}>✦</span>
-          <span className="mlp-sparkle left-[18%] top-[28%]" style={{ animationDelay: "3.6s" }}>✧</span>
-          <span className="mlp-sparkle left-[23%] top-[76%]" style={{ animationDelay: "4.8s" }}>✦</span>
-          <span className="mlp-sparkle left-[28%] top-[12%]" style={{ animationDelay: "1.8s" }}>✧</span>
-          <span className="mlp-sparkle left-[33%] top-[54%]" style={{ animationDelay: "3.1s" }}>✦</span>
-          <span className="mlp-sparkle left-[38%] top-[82%]" style={{ animationDelay: "4.2s" }}>✧</span>
-          <span className="mlp-sparkle left-[43%] top-[22%]" style={{ animationDelay: "0.7s" }}>✦</span>
-          <span className="mlp-sparkle left-[48%] top-[64%]" style={{ animationDelay: "2.9s" }}>✧</span>
-          <span className="mlp-sparkle left-[53%] top-[8%]" style={{ animationDelay: "4.4s" }}>✦</span>
-          <span className="mlp-sparkle left-[58%] top-[45%]" style={{ animationDelay: "1.5s" }}>✧</span>
-          <span className="mlp-sparkle left-[63%] top-[73%]" style={{ animationDelay: "3.8s" }}>✦</span>
-          <span className="mlp-sparkle left-[68%] top-[17%]" style={{ animationDelay: "5.1s" }}>✧</span>
-          <span className="mlp-sparkle left-[73%] top-[58%]" style={{ animationDelay: "2.1s" }}>✦</span>
-          <span className="mlp-sparkle left-[78%] top-[31%]" style={{ animationDelay: "3.3s" }}>✧</span>
-          <span className="mlp-sparkle left-[83%] top-[79%]" style={{ animationDelay: "4.7s" }}>✦</span>
-          <span className="mlp-sparkle left-[88%] top-[14%]" style={{ animationDelay: "0.9s" }}>✧</span>
-          <span className="mlp-sparkle left-[93%] top-[47%]" style={{ animationDelay: "2.7s" }}>✦</span>
-          <span className="mlp-sparkle left-[97%] top-[70%]" style={{ animationDelay: "5.4s" }}>✧</span>
-          <span className="mlp-sparkle left-[6%] top-[86%] text-[10px]" style={{ animationDelay: "2.2s" }}>✦</span>
-          <span className="mlp-sparkle left-[16%] top-[52%] text-[11px]" style={{ animationDelay: "4.1s" }}>✧</span>
-          <span className="mlp-sparkle left-[26%] top-[36%] text-[12px]" style={{ animationDelay: "1.1s" }}>✦</span>
-          <span className="mlp-sparkle left-[36%] top-[70%] text-[11px]" style={{ animationDelay: "3.7s" }}>✧</span>
-          <span className="mlp-sparkle left-[46%] top-[30%] text-[10px]" style={{ animationDelay: "5.2s" }}>✦</span>
-          <span className="mlp-sparkle left-[56%] top-[88%] text-[12px]" style={{ animationDelay: "1.9s" }}>✧</span>
-          <span className="mlp-sparkle left-[66%] top-[38%] text-[10px]" style={{ animationDelay: "4.5s" }}>✦</span>
-          <span className="mlp-sparkle left-[76%] top-[88%] text-[11px]" style={{ animationDelay: "2.6s" }}>✧</span>
-          <span className="mlp-sparkle left-[86%] top-[63%] text-[12px]" style={{ animationDelay: "0.4s" }}>✦</span>
+      <div className="relative h-full w-full overflow-hidden bg-[radial-gradient(circle_at_10%_0%,rgba(231,200,75,.13),transparent_25%),radial-gradient(circle_at_91%_13%,rgba(255,255,255,.07),transparent_22%),linear-gradient(145deg,#141618_0%,#090a0b_58%,#17140c_100%)]">
+        <div className="pointer-events-none absolute inset-0 opacity-[.16] [background-image:linear-gradient(rgba(255,255,255,.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.055)_1px,transparent_1px)] [background-size:42px_42px]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] overflow-hidden bg-[#e7c84b]/20">
+          <span className="scan-line absolute h-full w-[30%] bg-gradient-to-r from-transparent via-[#ffe772] to-transparent" />
         </div>
 
-        {/* DECORATIONS */}
-        <div className="halloween-glow pointer-events-none absolute left-[2.8%] top-[3.2%] text-[38px] text-[#ee7e2b]/70">
-          ☾
-        </div>
+        <div className="stone-mark pointer-events-none absolute left-[2.5%] top-[16%] h-10 w-10 rotate-12 rounded-[12px] border border-[#e7c84b]/40" />
+        <div className="stone-mark pointer-events-none absolute bottom-[17%] right-[2.7%] h-7 w-7 -rotate-12 rounded-[9px] border border-white/20" style={{ animationDelay: "2.2s" }} />
 
-        <div className="halloween-glow pointer-events-none absolute right-[3%] top-[3.2%] text-[42px] text-[#b383d1]/70">
-          🦇
-        </div>
-
-        <div className="halloween-glow pointer-events-none absolute bottom-[3%] right-[3%] text-[40px] text-[#ee7e2b]/60">
-          ☠
-        </div>
-
-        {/* HEADER */}
-        <header className="absolute left-[4.5%] right-[4.5%] top-[2.5%] h-[8%]">
-          <div className="relative flex h-full items-center justify-center">
-            <div className="text-[clamp(38px,4.1vw,72px)] font-black uppercase leading-none tracking-[0.075em] text-[#d0a1e8] drop-shadow-[0_3px_0_#452351]">
-              MLP
-              <span className="mx-[0.08em] inline-block text-[1.16em] text-[#ee7e2b] drop-shadow-[0_0_10px_rgba(238,126,43,.45)]">
-                E
-              </span>
-              KAYOU
+        <header className="absolute left-[3.5%] right-[3.5%] top-[2.5%] h-[8%]">
+          <div className="flex h-full items-center justify-between gap-6">
+            <div className="min-w-0">
+              <div className="min-w-0">
+                <div className="truncate text-[clamp(25px,3vw,54px)] font-black uppercase leading-none tracking-[0.055em] text-white">
+                  Stones<span className="text-[#e7c84b]">TradingCo</span>
+                </div>
+                <div className="mt-1 text-[clamp(10px,.75vw,14px)] font-bold uppercase tracking-[0.3em] text-zinc-400">
+                  Live breaks with Keegan
+                </div>
+              </div>
             </div>
 
-            <div className="absolute right-0 flex items-center gap-4 rounded-full border-2 border-[#6e4a7d] bg-[#25172e] px-7 py-3 shadow-[0_8px_20px_rgba(0,0,0,.35)]">
-              <span className="h-4 w-4 rounded-full bg-[#ee7e2b] shadow-[0_0_10px_rgba(238,126,43,.9)]" />
-              <span className="text-[clamp(16px,1.15vw,23px)] font-black uppercase tracking-[0.16em] text-[#e8cbee]">
-                LIVE
-              </span>
+            <div className="flex shrink-0 items-center gap-3">
+              <div className="hidden rounded-2xl border border-white/10 bg-white/[.045] px-5 py-3 text-right lg:block">
+                <div className="text-[10px] font-bold uppercase tracking-[.22em] text-zinc-500">Stream time</div>
+                <div className="mt-0.5 text-[clamp(15px,1vw,19px)] font-black tabular-nums text-zinc-200">{formatElapsed(elapsed)}</div>
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-[#e7c84b]/45 bg-[#1b1c1d] px-5 py-3 shadow-[0_0_24px_rgba(231,200,75,.12)]">
+                <span className="live-dot h-3 w-3 rounded-full bg-[#e7c84b] shadow-[0_0_12px_rgba(231,200,75,.9)]" />
+                <div>
+                  <div className="text-[clamp(13px,.95vw,18px)] font-black uppercase leading-none tracking-[.18em] text-[#fff0a5]">Live</div>
+                  <div className="mt-1 text-[10px] font-bold uppercase tracking-[.16em] text-zinc-500">
+                    {clock.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </header>
 
-        {/* MAIN CAM AREA */}
-        <main className="absolute left-[4.5%] right-[4.5%] top-[13%] bottom-[21%] flex min-h-0 gap-[1.6%]">
-          {/* HAND CAM */}
-          <section className="min-h-0 w-[69%] shrink-0">
-            <div className="relative h-full min-h-0 overflow-hidden rounded-[18px]" />
-          </section>
-
-          {/* RIGHT COLUMN */}
-          <aside className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
-            {/* FACE CAM */}
-            <section className="relative min-h-0 flex-[1] overflow-hidden rounded-[18px]" />
-          </aside>
+        <main className="pointer-events-none absolute bottom-[22%] left-[3.5%] right-[3.5%] top-[12%]">
+          <div className="absolute bottom-0 right-0 flex h-[38%] w-[22%] items-center justify-center">
+            <img
+              key={productIndex}
+              src={productImages[productIndex].src}
+              alt={productImages[productIndex].alt}
+              className="product-image h-full max-h-full w-full max-w-full object-contain object-center drop-shadow-[0_22px_30px_rgba(0,0,0,.6)]"
+            />
+          </div>
         </main>
 
-        {/* TOP SUPPORTERS — FULL WIDTH BOTTOM BAR */}
-        <section className="absolute bottom-[6%] left-[2%] right-[2%] h-[15%]">
-          <div className="flex h-full min-h-0 flex-col rounded-[22px] border-[5px] border-[#4e315c] bg-[#25172e] px-5 py-4 shadow-[0_16px_34px_rgba(0,0,0,.38)]">
-            <div className="relative mb-3 flex shrink-0 items-center justify-center">
-              <div className="text-[clamp(20px,1.45vw,29px)] font-black uppercase leading-none tracking-[0.02em] text-[#f1d4a3]">
-                Top Supporters
+        <section className="absolute bottom-[5.5%] left-[3.5%] right-[3.5%] h-[14.5%]">
+          <div className="flex h-full min-h-0 flex-col rounded-[24px] border border-white/10 bg-[#151718]/95 px-[clamp(16px,1.4vw,26px)] py-[clamp(12px,1.1vw,18px)] shadow-[0_18px_50px_rgba(0,0,0,.42)]">
+            <div className="mb-3 flex shrink-0 items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="h-2 w-2 rotate-45 bg-[#e7c84b]" />
+                <span className="text-[clamp(13px,1vw,19px)] font-black uppercase tracking-[.16em] text-white">Top supporters</span>
               </div>
-
-              <span className="halloween-glow absolute right-0 text-[30px] text-[#ee7e2b]">
-                🎃
-              </span>
+              <span className="text-[9px] font-bold uppercase tracking-[.22em] text-zinc-500">Stones crew roll call</span>
             </div>
-
-            {/* PILL-SHAPED SUPPORTER ITEMS */}
             <div className="grid min-h-0 flex-1 grid-cols-5 grid-rows-2 gap-2">
               {supporters.map((supporter, index) => (
                 <div
                   key={supporter}
-                  className={`flex min-h-0 items-center justify-center rounded-full px-4 text-center text-[clamp(14px,.85vw,18px)] font-black uppercase leading-none ${
-                    index === 0
-                      ? "bg-[#ee7e2b] text-[#25140c] shadow-[0_0_12px_rgba(238,126,43,.35)]"
-                      : "bg-[#3b2547] text-[#e6c9ed]"
+                  className={`flex min-h-0 items-center justify-center rounded-xl border px-3 text-center text-[clamp(11px,.78vw,16px)] font-black uppercase leading-none tracking-[.06em] transition-all duration-500 ${
+                    index === featuredSupporter
+                      ? "scale-[1.025] border-[#e7c84b] bg-[#e7c84b] text-[#111315] shadow-[0_0_18px_rgba(231,200,75,.25)]"
+                      : "border-white/[.06] bg-white/[.045] text-zinc-300"
                   }`}
                 >
                   {supporter}
@@ -178,19 +163,10 @@ export default function LinksPage() {
           </div>
         </section>
 
-        {/* FOOTER */}
-        <footer className="absolute bottom-[1.5%] left-[4.5%] right-[4.5%]">
-          <div className="flex items-center">
-            <div className="flex items-center gap-3">
-              <span className="text-[28px] text-[#ee7e2b]">
-                🦇
-              </span>
-
-              <span className="text-[clamp(15px,.95vw,21px)] font-black uppercase tracking-[0.18em] text-[#c9a8d4]">
-                PAKRACARDS
-              </span>
-            </div>
-          </div>
+        <footer className="absolute bottom-[1.4%] left-[3.5%] right-[3.5%] flex items-center justify-between text-[clamp(9px,.68vw,13px)] font-bold uppercase tracking-[.24em] text-zinc-500">
+          <span>StonesTradingCo</span>
+          <span className="text-[#e7c84b]/80">Cards. Community. Live with Keegan.</span>
+          <span>MLPEKAYOU</span>
         </footer>
       </div>
     </div>

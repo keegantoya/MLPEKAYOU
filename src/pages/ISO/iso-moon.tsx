@@ -1,3 +1,5 @@
+import { moonCatalog } from "@/lib/iso-card-catalog";
+const { sets, getDisplayCardCode, getRarityCode } = moonCatalog;
 import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -5,90 +7,6 @@ import { supabase } from "@/lib/supabase";
 import { useWishlist } from "./wishlist-in-iso";
 import ISOChecking from "./iso-checking";
 import { moonCharacterMap } from "./Card Characters/card-characters-moon";
-const getRarityCode = (rarity: string) => {
-  if (rarity === "SHINING ZR") return "SZR";
-  return rarity;
-};
-const getDisplayCardCode = (
-  setId: string,
-  rarity: string,
-  number: number
-) => {
-const rarityCode = getRarityCode(rarity);
-const cardNumber = String(number).padStart(3, "0");
-  if (setId === "2" && rarity === "HR") {
-    return `INT03-HR-${cardNumber}`;
-  }
-  if (
-    setId === "2" &&
-    (rarity === "SHINING ZR" || rarity === "SZR")
-  ) {
-    return `MLPME02-◇ZR-${cardNumber}`;
-  }
-  if (setId === "3" && rarity === "SZR") {
-    return `MLPME03-◇ZR-${cardNumber}`;
-  }
-const setCodeMap: Record<string, string> = {
-    "1": "MLPME01",
-    "2": "MLPME02",
-    "3": "MLPME03",
-  };
-  return `${setCodeMap[setId]}-${rarityCode}-${cardNumber}`;
-};
-const sets = [
-  {
-    id: "1",
-    name: "Moon First Edition",
-    folder: "first-edition-moon",
-    prefix: "M1",
-    rarities: {
-      R: 30,
-      SR: 20,
-      SSR: 54,
-      HR: 36,
-      UR: 16,
-      LSR: 15,
-      SGR: 8,
-      SC: 7,
-    },
-  },
-  {
-    id: "2",
-    name: "Moon Second Edition",
-    folder: "second-edition-moon",
-    prefix: "M2",
-    rarities: {
-      R: 30,
-      SR: 20,
-      SSR: 54,
-      HR: 30,
-      UR: 16,
-      LSR: 16,
-      SGR: 8,
-      ZR: 7,
-      SC: 7,
-      "SHINING ZR": 1,
-    },
-  },
-  {
-    id: "3",
-    name: "Moon Third Edition",
-    folder: "third-edition-moon",
-    prefix: "M3",
-    rarities: {
-      R: 60,
-      SR: 40,
-      SSR: 40,
-      HR: 60,
-      LSR: 32,
-      UR: 18,
-      SGR: 16,
-      ZR: 14,
-      SC: 7,
-      SZR: 3,
-    },
-  },
-]
 interface ISOMOONProps {
   userId?: string;
   cardCodeSearch: string;

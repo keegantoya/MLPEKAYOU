@@ -1,8 +1,13 @@
+import { cardImagePaths } from "@/lib/card-images";
+import { getISOSetId, funCatalog, moonCatalog, rainbowCatalog, starCatalog, tcgCatalog } from "@/lib/iso-card-catalog";
+import { getISOSetName as getModerationSetName, getISOCardCode as getModerationCardCode } from "@/lib/iso-card-catalog";
 import CardImage from "@/components/CardImage";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   History,
   Loader2,
   MessageCircle,
@@ -69,20 +74,77 @@ type CardPriceReport = {
   reporterUsername: string;
   reporterAvatar: string;
 };
+const getHistoryActionTitle = (item: ModerationHistoryItem) => {
+  const labels: Record<string, string> = {
+    leaderboard_user_unbanned: "Leaderboard ban lifted",
+    leaderboard_ban_lifted: "Leaderboard ban lifted",
+    trading_report_contacted: "Report author contacted",
+    trading_access_revoked: "Trading access revoked",
+    trading_access_restored: "Trading access restored",
+    trading_access_restored_reports_cleared: "Access restored · Reports cleared",
+  };
+  return labels[item.action] || item.actionLabel;
+};
+const getReportedCardImage = (setId: string, cardKey: string): string => {
+  const id = getISOSetId(setId);
+  let key = cardKey;
+  for (const prefix of [`${setId}:`, `${id}:`, `${setId}-`, `${id}-`]) {
+    if (key.startsWith(prefix)) { key = key.slice(prefix.length); break; }
+  }
+  key = key.replace(/^BONUS-/, "");
+  if (id === "9" || id === "tcgpromos") {
+    const match = key.match(id === "9" ? /^PR-?(\d+)$/ : /^RR-?(\d+)$/);
+    if (!match) return "";
+    return id === "9" ? cardImagePaths.ccgPromo(match[1].padStart(3, "0"))
+      : cardImagePaths.tcgRubyPromo(match[1].padStart(2, "0"));
+  }
+  for (const group of [funCatalog, moonCatalog, rainbowCatalog, starCatalog]) {
+    const set = group.sets.find((entry) => entry.id === id);
+    if (!set) continue;
+    const match = key.match(/^([A-Z ]+)-(\d+)$/);
+    return match ? cardImagePaths.ccg(set.folder, set.prefix, group.getRarityCode(match[1]), match[2].padStart(3, "0")) : "";
+  }
+  const set = tcgCatalog.sets.find((entry) => entry.id === id);
+  if (!set) return "";
+  if (id === "14") {
+    key = key.replace(/^(BP03-ER\d{2})-([ABC])$/, "$1-$2$2");
+    return cardImagePaths.nightmareNight(key);
+  }
+  if (id === "12") return cardImagePaths.discord(key);
+  if (key.startsWith("BP01ER")) return cardImagePaths.fantasyEmerald(key.slice(-2));
+  if (key.startsWith("BP01PER")) return cardImagePaths.fantasyParallelEmerald(key.slice(-2));
+  return cardImagePaths.byFolder(set.folder, key);
+};
+const ReportedCardThumbnail = ({ setId, cardKey }: { setId: string; cardKey: string }) => {
+  const src = getReportedCardImage(setId, cardKey);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  const zoom = /\.png(?:[?#]|$)/i.test(src) ? 1 : 1.05;
+  return (
+    <div className="moderation-card-preview" aria-label={getModerationCardCode(setId, cardKey)}>
+      {src && !failed ? (
+        <div className="moderation-card-preview-crop">
+          <CardImage src={src} alt={getModerationCardCode(setId, cardKey)} onError={() => setFailed(true)}
+            className="h-full w-full object-cover object-center" style={{ transform: `scale(${zoom})` }} />
+        </div>
+      ) : <span className="text-center text-xs text-zinc-500">Image unavailable</span>}
+    </div>
+  );
+};
 const LeaderboardModeration = () => {
-  const navigate = useNavigate();
-  const [isLightMode, setIsLightMode] = useState(
+const navigate = useNavigate();
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const [bans, setBans] = useState<LeaderboardBan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedBan, setSelectedBan] = useState<LeaderboardBan | null>(null);
-  const [unbanning, setUnbanning] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentView, setCurrentView] = useState<
+const [authorized, setAuthorized] = useState<boolean | null>(null);
+const [bans, setBans] = useState<LeaderboardBan[]>([]);
+const [loading, setLoading] = useState(true);
+const [selectedBan, setSelectedBan] = useState<LeaderboardBan | null>(null);
+const [unbanning, setUnbanning] = useState(false);
+const [errorMessage, setErrorMessage] = useState("");
+const [successMessage, setSuccessMessage] = useState("");
+const [searchQuery, setSearchQuery] = useState("");
+const [currentView, setCurrentView] = useState<
     "active" | "account_reports" | "history"
   >(() =>
     new URLSearchParams(window.location.search).get("view") ===
@@ -90,27 +152,34 @@ const LeaderboardModeration = () => {
       ? "account_reports"
       : "active",
   );
-  const [historyItems, setHistoryItems] = useState<ModerationHistoryItem[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [accountReports, setAccountReports] = useState<AccountReportGroup[]>(
+const [historyItems, setHistoryItems] = useState<ModerationHistoryItem[]>([]);
+const [historyLoading, setHistoryLoading] = useState(false);
+const [historyLoaded, setHistoryLoaded] = useState(false);
+const [accountReports, setAccountReports] = useState<AccountReportGroup[]>(
     [],
   );
-  const [cardReports, setCardReports] = useState<CardPriceReport[]>([]);
-  const [reportsLoading, setReportsLoading] = useState(false);
-  const [revokingUserId, setRevokingUserId] = useState<string | null>(null);
-  const [selectedAccountReport, setSelectedAccountReport] =
+const [cardReports, setCardReports] = useState<CardPriceReport[]>([]);
+const [reportsLoading, setReportsLoading] = useState(false);
+const [revokingUserId, setRevokingUserId] = useState<string | null>(null);
+const [selectedAccountReport, setSelectedAccountReport] =
     useState<AccountReportGroup | null>(null);
-  const [selectedReportComment, setSelectedReportComment] = useState<
+const [selectedReportComment, setSelectedReportComment] = useState<
     AccountReportGroup["reports"][number] | null
   >(null);
-  const [markingContacted, setMarkingContacted] = useState(false);
-  const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
+const [markingContacted, setMarkingContacted] = useState(false);
+const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
+  const hasOpenDialog = Boolean(selectedBan || selectedAccountReport || selectedReportComment || showOfferStrikeInfo);
   useEffect(() => {
-    const syncTheme = () => {
+    if (!hasOpenDialog || !window.matchMedia("(max-width: 1023px)").matches) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [hasOpenDialog]);
+  useEffect(() => {
+const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -120,9 +189,9 @@ const LeaderboardModeration = () => {
   }, []);
   useEffect(() => {
     if (!authorized) return;
-    const loadAccountReports = async () => {
+const loadAccountReports = async () => {
       setReportsLoading(true);
-      const [accountResult, cardResult, expirationResult] = await Promise.all([
+const [accountResult, cardResult, expirationResult] = await Promise.all([
         supabase
           .from("trading_post_user_reports")
           .select(
@@ -154,10 +223,10 @@ const LeaderboardModeration = () => {
         setReportsLoading(false);
         return;
       }
-      const accountRows = accountResult.data || [];
-      const cardRows = cardResult.data || [];
-      const expirationRows = expirationResult.data || [];
-      const profileIds = Array.from(
+const accountRows = accountResult.data || [];
+const cardRows = cardResult.data || [];
+const expirationRows = expirationResult.data || [];
+const profileIds = Array.from(
         new Set(
           [
             ...accountRows.flatMap((row) => [
@@ -176,38 +245,38 @@ const LeaderboardModeration = () => {
           ].filter(Boolean),
         ),
       );
-      const { data: profileRows } = profileIds.length
+const { data: profileRows } = profileIds.length
         ? await supabase
             .from("profiles")
             .select("id, username, avatar_url")
             .in("id", profileIds)
         : { data: [] };
-      const profileMap = new Map(
+const profileMap = new Map(
         (profileRows || []).map((profile) => [profile.id, profile]),
       );
-      const targetIds = Array.from(
+const targetIds = Array.from(
         new Set([
           ...accountRows.map((row) => row.reported_user_id),
           ...expirationRows.map((row) => row.recipient_user_id),
         ]),
       );
-      const { data: tradingRows } = targetIds.length
+const { data: tradingRows } = targetIds.length
         ? await supabase
             .from("trading_profiles")
             .select("user_id, trade_access_revoked")
             .in("user_id", targetIds)
         : { data: [] };
-      const revokedByUser = new Map(
+const revokedByUser = new Map(
         (tradingRows || []).map((row) => [
           row.user_id,
           Boolean(row.trade_access_revoked),
         ]),
       );
-      const grouped = new Map<string, AccountReportGroup>();
+const grouped = new Map<string, AccountReportGroup>();
       accountRows.forEach((row) => {
-        const target = profileMap.get(row.reported_user_id);
-        const reporter = profileMap.get(row.reporter_user_id);
-        const contactModerator = row.contacted_by
+const target = profileMap.get(row.reported_user_id);
+const reporter = profileMap.get(row.reporter_user_id);
+const contactModerator = row.contacted_by
           ? profileMap.get(row.contacted_by)
           : null;
         if (!grouped.has(row.reported_user_id)) {
@@ -239,8 +308,8 @@ const LeaderboardModeration = () => {
         });
       });
       expirationRows.forEach((row) => {
-        const target = profileMap.get(row.recipient_user_id);
-        const sender = profileMap.get(row.sender_user_id);
+const target = profileMap.get(row.recipient_user_id);
+const sender = profileMap.get(row.sender_user_id);
         if (!grouped.has(row.recipient_user_id)) {
           grouped.set(row.recipient_user_id, {
             userId: row.recipient_user_id,
@@ -263,7 +332,7 @@ const LeaderboardModeration = () => {
       });
       setAccountReports(
         Array.from(grouped.values()).sort((a, b) => {
-          const latest = (group: AccountReportGroup) =>
+const latest = (group: AccountReportGroup) =>
             Math.max(
               0,
               ...group.reports.map((report) =>
@@ -278,8 +347,8 @@ const LeaderboardModeration = () => {
       );
       setCardReports(
         cardRows.map((row) => {
-          const target = profileMap.get(row.reported_user_id);
-          const reporter = profileMap.get(row.reporter_user_id);
+const target = profileMap.get(row.reported_user_id);
+const reporter = profileMap.get(row.reporter_user_id);
           return {
             id: row.id,
             setId: row.set_id,
@@ -297,7 +366,7 @@ const LeaderboardModeration = () => {
       setReportsLoading(false);
     };
     loadAccountReports();
-    const reportChannel = supabase
+const reportChannel = supabase
       .channel("moderation-account-reports")
       .on(
         "postgres_changes",
@@ -328,11 +397,11 @@ const LeaderboardModeration = () => {
       supabase.removeChannel(reportChannel);
     };
   }, [authorized]);
-  const revokeTradingAccess = async (report: AccountReportGroup) => {
+const revokeTradingAccess = async (report: AccountReportGroup) => {
     if (revokingUserId) return;
     setRevokingUserId(report.userId);
     setErrorMessage("");
-    const { error } = await supabase.rpc("revoke_trading_access", {
+const { error } = await supabase.rpc("revoke_trading_access", {
       target_user_id: report.userId,
     });
     if (error) {
@@ -354,11 +423,11 @@ const LeaderboardModeration = () => {
     setRevokingUserId(null);
     setHistoryLoaded(false);
   };
-  const restoreTradingAccess = async (report: AccountReportGroup) => {
+const restoreTradingAccess = async (report: AccountReportGroup) => {
     if (revokingUserId) return;
     setRevokingUserId(report.userId);
     setErrorMessage("");
-    const { error } = await supabase.rpc("restore_trading_access", {
+const { error } = await supabase.rpc("restore_trading_access", {
       target_user_id: report.userId,
       new_discord_username: "",
     });
@@ -377,7 +446,7 @@ const LeaderboardModeration = () => {
     setRevokingUserId(null);
     setHistoryLoaded(false);
   };
-  const markReporterContacted = async () => {
+const markReporterContacted = async () => {
     if (
       !selectedReportComment?.wantsStaffContact ||
       selectedReportComment.contactedAt ||
@@ -386,7 +455,7 @@ const LeaderboardModeration = () => {
       return;
     setMarkingContacted(true);
     setErrorMessage("");
-    const { error } = await supabase.rpc("mark_trading_report_contacted", {
+const { error } = await supabase.rpc("mark_trading_report_contacted", {
       report_id: selectedReportComment.id,
     });
     if (error) {
@@ -396,17 +465,17 @@ const LeaderboardModeration = () => {
       setMarkingContacted(false);
       return;
     }
-    const {
+const {
       data: { session },
     } = await supabase.auth.getSession();
-    const { data: moderatorProfile } = session?.user
+const { data: moderatorProfile } = session?.user
       ? await supabase
           .from("profiles")
           .select("username, avatar_url")
           .eq("id", session.user.id)
           .maybeSingle()
       : { data: null };
-    const updated = {
+const updated = {
       ...selectedReportComment,
       contactedAt: new Date().toISOString(),
       contactedBy: session?.user.id || null,
@@ -426,11 +495,11 @@ const LeaderboardModeration = () => {
     setMarkingContacted(false);
   };
   useEffect(() => {
-    let active = true;
-    const loadModerationPage = async () => {
+let active = true;
+const loadModerationPage = async () => {
       setLoading(true);
       setErrorMessage("");
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -440,7 +509,7 @@ const LeaderboardModeration = () => {
         }
         return;
       }
-      const { data: moderator, error: moderatorError } = await supabase
+const { data: moderator, error: moderatorError } = await supabase
         .from("leaderboard_moderators")
         .select("user_id")
         .eq("user_id", session.user.id)
@@ -453,7 +522,7 @@ const LeaderboardModeration = () => {
         return;
       }
       if (active) setAuthorized(true);
-      const { data: exclusionRows, error: exclusionsError } = await supabase
+const { data: exclusionRows, error: exclusionsError } = await supabase
         .from("leaderboard_exclusions")
         .select("user_id, created_at")
         .order("created_at", { ascending: false });
@@ -464,7 +533,7 @@ const LeaderboardModeration = () => {
         }
         return;
       }
-      const userIds = (exclusionRows || []).map((row) => row.user_id);
+const userIds = (exclusionRows || []).map((row) => row.user_id);
       if (userIds.length === 0) {
         if (active) {
           setBans([]);
@@ -472,7 +541,7 @@ const LeaderboardModeration = () => {
         }
         return;
       }
-      const { data: profileRows, error: profilesError } = await supabase
+const { data: profileRows, error: profilesError } = await supabase
         .from("profiles")
         .select("id, username")
         .in("id", userIds);
@@ -483,10 +552,10 @@ const LeaderboardModeration = () => {
         }
         return;
       }
-      const usernameById = new Map(
+const usernameById = new Map(
         (profileRows || []).map((profile) => [profile.id, profile.username]),
       );
-      const combinedBans = (exclusionRows || []).map((row) => ({
+const combinedBans = (exclusionRows || []).map((row) => ({
         userId: row.user_id,
         username: usernameById.get(row.user_id) || "Deleted User",
         createdAt: row.created_at,
@@ -501,12 +570,12 @@ const LeaderboardModeration = () => {
       active = false;
     };
   }, []);
-  const unbanUser = async () => {
+const unbanUser = async () => {
     if (!selectedBan || unbanning) return;
     setUnbanning(true);
     setErrorMessage("");
     setSuccessMessage("");
-    const { error } = await supabase.rpc("lift_leaderboard_ban", {
+const { error } = await supabase.rpc("lift_leaderboard_ban", {
       target_user_id: selectedBan.userId,
     });
     if (error) {
@@ -525,11 +594,11 @@ const LeaderboardModeration = () => {
     setUnbanning(false);
     setHistoryLoaded(false);
   };
-  const loadHistory = async () => {
+const loadHistory = async () => {
     if (historyLoaded || historyLoading) return;
     setHistoryLoading(true);
     setErrorMessage("");
-    const { data: logRows, error: logError } = await supabase
+const { data: logRows, error: logError } = await supabase
       .from("moderation_logs")
       .select(
         "id, moderator_user_id, moderator_username, target_user_id, target_username, action, created_at",
@@ -549,7 +618,7 @@ const LeaderboardModeration = () => {
       setHistoryLoading(false);
       return;
     }
-    const profileIds = Array.from(
+const profileIds = Array.from(
       new Set(
         (logRows || []).flatMap((row) => [
           row.moderator_user_id,
@@ -557,9 +626,9 @@ const LeaderboardModeration = () => {
         ]),
       ),
     );
-    let profileById = new Map<string, any>();
+let profileById = new Map<string, any>();
     if (profileIds.length > 0) {
-      const { data: profileRows, error: profileError } = await supabase
+const { data: profileRows, error: profileError } = await supabase
         .from("profiles")
         .select("id, username, avatar_url")
         .in("id", profileIds);
@@ -578,11 +647,11 @@ const LeaderboardModeration = () => {
         (profileRows || []).map((profile) => [profile.id, profile]),
       );
     }
-    const fallbackAvatar = getProfileAssets(null).avatar;
-    const nextHistoryItems = (logRows || []).map((row) => {
-      const moderatorProfile = profileById.get(row.moderator_user_id);
-      const targetProfile = profileById.get(row.target_user_id);
-      const actionLabels: Record<string, string> = {
+const fallbackAvatar = getProfileAssets(null).avatar;
+const nextHistoryItems = (logRows || []).map((row) => {
+const moderatorProfile = profileById.get(row.moderator_user_id);
+const targetProfile = profileById.get(row.target_user_id);
+const actionLabels: Record<string, string> = {
         leaderboard_user_unbanned: "unbanned",
         leaderboard_ban_lifted: "unbanned",
         trading_report_contacted: "contacted report author",
@@ -610,15 +679,43 @@ const LeaderboardModeration = () => {
     setHistoryLoaded(true);
     setHistoryLoading(false);
   };
-  const openHistory = async () => {
+const openHistory = async () => {
     setCurrentView("history");
     setSearchQuery("");
     await loadHistory();
   };
-  const normalizedSearch = searchQuery.trim().toLowerCase();
-  const filteredBans = bans.filter((ban) =>
+const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, history: 1 });
+const listPanelRef = useRef<HTMLDivElement>(null);
+const pageSize = 10;
+const normalizedSearch = searchQuery.trim().toLowerCase();
+const filteredBans = bans.filter((ban) =>
     ban.username.toLowerCase().includes(normalizedSearch),
   );
+const totalItems = currentView === "active" ? filteredBans.length
+  : currentView === "account_reports" ? cardReports.length + accountReports.length
+  : historyItems.length;
+const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+const currentPage = Math.min(pageByView[currentView], totalPages);
+const pageStart = (currentPage - 1) * pageSize;
+const pageEnd = pageStart + pageSize;
+const pagedBans = filteredBans.slice(pageStart, pageEnd);
+// Card cases and account cases share one ten-entry page, preserving their existing order.
+const pagedCardReports = cardReports.slice(pageStart, pageEnd);
+const pagedAccountReports = accountReports.slice(
+  Math.max(0, pageStart - cardReports.length),
+  Math.max(0, pageEnd - cardReports.length),
+);
+const pagedHistoryItems = historyItems.slice(pageStart, pageEnd);
+const pageLoading = currentView === "active" ? loading
+  : currentView === "account_reports" ? reportsLoading : historyLoading;
+useEffect(() => {
+  setPageByView((pages) => pages[currentView] > totalPages
+    ? { ...pages, [currentView]: totalPages } : pages);
+}, [currentView, totalPages]);
+const changePage = (nextPage: number) => {
+  setPageByView((pages) => ({ ...pages, [currentView]: Math.max(1, Math.min(nextPage, totalPages)) }));
+  listPanelRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+};
   if (authorized === false) {
     return (
       <div
@@ -659,12 +756,100 @@ const LeaderboardModeration = () => {
   }
   return (
     <div
-      className={`min-h-screen pb-12 ${
+      data-mobile-theme={isLightMode ? "light" : "dark"}
+      className={`moderation-page min-h-screen pb-12 ${
         isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
       }`}
     >
-      <div className="mx-auto w-full max-w-3xl px-4 pt-5 sm:px-6">
-        <div className="flex items-center gap-3">
+      <style>{`
+        .moderation-page p, .moderation-page h2 { overflow-wrap: anywhere; }
+        .moderation-page button { min-height: 44px; }
+        .moderation-price-card { position: relative; min-height: 226px; }
+        .moderation-price-card > .moderation-price-header,
+        .moderation-price-card > .moderation-price-header + div { margin-right: 132px; }
+        .moderation-card-preview { position: absolute; top: 50%; right: 16px; transform: translateY(-50%); width: 116px; height: 163px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 9px; }
+        .moderation-card-preview-crop { width: 100%; height: 100%; overflow: hidden; border-radius: 9px; }
+        @media (max-width: 639px) {
+          .moderation-price-card { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 96px; align-items: center; gap: 12px; }
+          .moderation-price-card > .moderation-price-header { grid-column: 1; grid-row: 1; margin: 0; padding: 0; flex-direction: row; align-items: flex-start; gap: 8px; }
+          .moderation-price-card > .moderation-price-header > img { display: none; }
+          .moderation-price-card > .moderation-price-header + div { grid-column: 1 / -1; grid-row: 2; margin: 0; }
+          .moderation-price-card > .moderation-card-preview { position: static; grid-column: 2; grid-row: 1; align-self: center; transform: none; width: 96px; height: 135px; }
+        }
+        .moderation-panel { scroll-margin-top: 96px; }
+        .moderation-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; }
+        .moderation-pagination-controls { display: flex; align-items: center; gap: 10px; }
+        @media (max-width: 639px) {
+          .moderation-pagination { padding: 16px 0; margin-top: 12px; }
+          .moderation-pagination-summary { width: 100%; text-align: center; }
+          .moderation-pagination-controls { width: 100%; justify-content: space-between; }
+        }
+        .moderation-history-desktop { display: none; }
+        .moderation-history-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .moderation-history-table th { padding: 12px 20px; font-size: 12px; font-weight: 600; }
+        .moderation-history-table td { padding: 16px 20px; vertical-align: middle; overflow-wrap: anywhere; }
+        .moderation-history-person { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .moderation-history-avatar { width: 32px; height: 32px; flex: 0 0 32px; overflow: hidden; border-radius: 50%; }
+        .moderation-history-action { display: inline-block; padding: 6px 10px; border-radius: 8px; font-size: 12px; line-height: 18px; font-weight: 500; }
+        @media (min-width: 1024px) {
+          .moderation-history-desktop { display: block; }
+          .moderation-history-mobile { display: none; }
+        }
+        @media (max-width: 1023px) {
+          .moderation-page { --moderation-card-bg: #151718; --moderation-line: rgba(255,255,255,.10); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+          .moderation-page[data-mobile-theme="light"] { --moderation-card-bg: #fff; --moderation-line: rgba(0,0,0,.10); }
+          .moderation-shell { padding: 28px 12px 0; }
+          .moderation-heading { align-items: center; gap: 12px; }
+          .moderation-heading > button { width: 44px; height: 44px; flex: 0 0 44px; }
+          .moderation-heading-emblem { display: none; }
+          .moderation-heading h1 { font-size: 20px; line-height: 26px; }
+          .moderation-heading p { margin-top: 4px; line-height: 18px; }
+          .moderation-panel { margin-top: 20px; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+          .moderation-toolbar { display: flex; flex-direction: column; align-items: stretch; padding: 0; border: 0; gap: 16px; }
+          .moderation-tabs { order: -1; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; padding: 5px; border: 1px solid var(--moderation-line); border-radius: 16px; background: var(--moderation-card-bg); }
+          .moderation-tabs button { padding: 10px 6px; border-radius: 11px; font-size: 14px; line-height: 20px; }
+          .moderation-toolbar > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 2px 12px; }
+          .moderation-toolbar h2 { font-size: 15px; line-height: 21px; }
+          .moderation-toolbar p { margin: 0; flex-shrink: 0; font-size: 12px; }
+          .moderation-search { padding: 0 0 12px; border: 0; }
+          .moderation-search input { font-size: 16px; min-height: 46px; }
+          .moderation-ban-list { display: grid; gap: 10px; }
+          .moderation-ban-row { display: grid; grid-template-columns: minmax(0,1fr); gap: 12px; padding: 14px; background: var(--moderation-card-bg); border: 1px solid var(--moderation-line); border-radius: 16px; }
+          .moderation-ban-row p:first-child { white-space: normal; overflow-wrap: anywhere; font-size: 15px; }
+          .moderation-ban-row > button { width: 100%; font-size: 14px; min-height: 44px; }
+          .moderation-report-list { display: grid; grid-template-columns: minmax(0,1fr); gap: 12px; padding: 0; }
+          .moderation-report-card { padding: 14px; border-radius: 16px; background-color: var(--moderation-card-bg); }
+          .moderation-price-header { align-items: flex-start; gap: 12px; }
+          .moderation-price-header > div { flex: 1; min-width: 0; }
+          .moderation-price-header p { line-height: 22px; }
+          .moderation-price-header p + p { margin-top: 8px; }
+          .moderation-account-header { display: grid; grid-template-columns: 40px minmax(0,1fr); align-items: start; gap: 10px 12px; }
+          .moderation-account-status { margin-top: 8px; font-size: 12px; line-height: 18px; font-weight: 500; }
+          .moderation-report-alert, .moderation-revoked-icon { display: none; }
+          .moderation-strike-badge { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 12px; }
+          .moderation-strike-badge > div:first-child { gap: 10px; }
+          .moderation-strike-badge button { width: 44px; height: 44px; }
+          .moderation-report-details { margin-top: 14px; }
+          .moderation-detail-row { align-items: flex-start; gap: 10px; padding: 12px 10px; }
+          .moderation-detail-row p { font-size: 13px; line-height: 20px; }
+          .moderation-detail-row > p > span:first-child { display: block; margin-bottom: 3px; }
+          .moderation-history-mobile { display: grid; gap: 10px; }
+          .moderation-history-entry { border: 1px solid var(--moderation-line); border-radius: 16px; background: var(--moderation-card-bg); padding: 14px; }
+          .moderation-history-entry > div:last-child { padding-top: 10px; border-top: 1px solid var(--moderation-line); }
+          .moderation-history-entry time { display: block; width: 100%; margin-left: 21px; }
+          .moderation-modal-overlay { z-index: 2147483646; align-items: flex-end; padding: max(12px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+          .moderation-modal-panel { display: flex; flex-direction: column; width: 100%; max-width: 600px; min-height: 0; max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border-radius: 20px; overflow: hidden; }
+          .moderation-modal-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px 16px; -webkit-overflow-scrolling: touch; }
+          .moderation-modal-body h2 { font-size: 18px; line-height: 25px; }
+          .moderation-modal-body p { line-height: 22px; overflow-wrap: anywhere; }
+          .moderation-modal-body .flex > div { min-width: 0; }
+          .moderation-modal-body img, .moderation-modal-body button[aria-label] { flex-shrink: 0; }
+          .moderation-modal-footer { flex-shrink: 0; padding: 12px 16px; border-top: 1px solid var(--moderation-line); display: grid; gap: 8px; }
+          .moderation-modal-footer > button { margin-top: 0; min-height: 46px; font-size: 14px; line-height: 20px; }
+        }
+      `}</style>
+      <div className={`moderation-shell mx-auto w-full px-3 pt-4 sm:px-6 lg:pt-6 ${currentView === "account_reports" ? "max-w-[1240px]" : "max-w-[1080px]"}`}>
+        <div className="moderation-heading flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -678,7 +863,7 @@ const LeaderboardModeration = () => {
             <ArrowLeft size={19} />
           </button>
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
+            className={`moderation-heading-emblem flex h-10 w-10 items-center justify-center rounded-xl border ${
               isLightMode
                 ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
                 : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A]"
@@ -686,12 +871,12 @@ const LeaderboardModeration = () => {
           >
             <Shield size={20} />
           </div>
-          <div>
-            <h1 className="text-xl font-bold">Leaderboard Moderation</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-bold leading-tight sm:text-2xl"><span className="lg:hidden">Moderation</span><span className="hidden lg:inline">Leaderboard Moderation</span></h1>
             <p
               className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
             >
-              Manage active leaderboard bans
+              <span className="lg:hidden">Reports, bans, and activity</span><span className="hidden lg:inline">Review reports, expired offers, bans, and moderator activity</span>
             </p>
           </div>
         </div>
@@ -718,19 +903,20 @@ const LeaderboardModeration = () => {
           </div>
         )}
         <div
-          className={`mt-6 overflow-hidden rounded-3xl border ${
+          ref={listPanelRef}
+          className={`moderation-panel mt-6 overflow-hidden rounded-3xl border ${
             isLightMode
               ? "border-black/[0.08] bg-white shadow-[0_12px_36px_rgba(0,0,0,.08)]"
               : "border-white/[0.08] bg-[#151718] shadow-[0_12px_36px_rgba(0,0,0,.22)]"
           }`}
         >
           <div
-            className={`flex items-center justify-between border-b px-5 py-4 ${
+            className={`moderation-toolbar flex flex-col gap-3 border-b px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4 ${
               isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"
             }`}
           >
             <div>
-              <h2 className="font-semibold">
+              <h2 className="break-words font-semibold">
                 {currentView === "active"
                   ? "Active Bans"
                   : currentView === "account_reports"
@@ -749,7 +935,7 @@ const LeaderboardModeration = () => {
                     : `${historyItems.length} ${historyItems.length === 1 ? "action" : "actions"}`}
               </p>
             </div>
-            <div className="flex gap-1.5">
+            <div className="moderation-tabs grid grid-cols-3 gap-2 sm:flex" aria-label="Moderation sections">
               {(
                 [
                   ["active", "Bans"],
@@ -759,11 +945,12 @@ const LeaderboardModeration = () => {
               ).map(([view, label]) => (
                 <button
                   key={view}
+                  aria-pressed={currentView === view}
                   type="button"
                   onClick={() =>
                     view === "history" ? openHistory() : setCurrentView(view)
                   }
-                  className={`rounded-xl px-2.5 py-2 text-xs font-bold ${
+                  className={`min-h-11 rounded-xl px-4 py-2 text-sm font-bold ${
                     currentView === view
                       ? "bg-[#FFD54A] text-black"
                       : isLightMode
@@ -779,9 +966,9 @@ const LeaderboardModeration = () => {
           {currentView === "active" ? (
             <>
               <div
-                className={`border-b px-5 py-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"}`}
+                className={`moderation-search border-b px-5 py-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"}`}
               >
-                <label className="relative block">
+                <label className="relative block lg:max-w-lg">
                   <Search
                     size={17}
                     className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
@@ -789,7 +976,11 @@ const LeaderboardModeration = () => {
                   <input
                     type="search"
                     value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
+                    onChange={(event) => {
+                      setSearchQuery(event.target.value);
+                      setPageByView((pages) => ({ ...pages, active: 1 }));
+                    }}
+                    aria-label="Search banned users"
                     placeholder="Search by username..."
                     autoComplete="off"
                     className={`w-full rounded-xl border py-3 pl-10 pr-4 text-base outline-none transition-colors ${
@@ -833,12 +1024,12 @@ const LeaderboardModeration = () => {
                   </p>
                 </div>
               ) : (
-                <div>
-                  {filteredBans.map((ban, index) => (
+                <div className="moderation-ban-list">
+                  {pagedBans.map((ban, index) => (
                     <div
                       key={ban.userId}
-                      className={`flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${
-                        index !== filteredBans.length - 1
+                      className={`moderation-ban-row flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${
+                        index !== pagedBans.length - 1
                           ? isLightMode
                             ? "border-b border-black/[0.07]"
                             : "border-b border-white/[0.07]"
@@ -868,7 +1059,7 @@ const LeaderboardModeration = () => {
                         }`}
                       >
                         <MoreVertical size={15} />
-                        MODERATOR ACTIONS
+                        <span className="lg:hidden">Review ban</span><span className="hidden lg:inline">MODERATOR ACTIONS</span>
                       </button>
                     </div>
                   ))}
@@ -895,30 +1086,32 @@ const LeaderboardModeration = () => {
                 </p>
               </div>
             ) : (
-              <div>
-                {cardReports.map((report) => (
+              <div className="moderation-report-list grid items-start gap-3 p-3 lg:grid-cols-2 lg:gap-5 lg:p-5">
+                {pagedCardReports.map((report) => (
                   <div
                     key={`card-${report.id}`}
-                    className={`px-5 py-5 ${isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]"}`}
+                    className={`moderation-report-card moderation-price-card min-w-0 rounded-2xl border p-3 sm:p-5 ${isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]"}`}
                   >
-                    <div className="flex items-center gap-3">
+                    <ReportedCardThumbnail setId={report.setId} cardKey={report.cardKey} />
+                    <div className="moderation-price-header flex items-center gap-3">
                       <CardImage
                         src={report.reportedAvatar}
                         alt=""
-                        className="h-11 w-11 rounded-full object-cover"
+                        className="h-10 w-10 shrink-0 rounded-full object-cover"
                       />
                       <div className="min-w-0">
-                        <p className="font-semibold">
-                          <span className="text-red-500">
+                        <p className="break-words font-semibold">
+                          <span className="text-red-500 block lg:inline">
                             Overpriced card report
                           </span>{" "}
-                          · {report.reportedUsername}
+                          <span className="hidden lg:inline">· </span>{report.reportedUsername}
                         </p>
                         <p
                           className={`mt-0.5 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
                         >
-                          {report.cardKey} from set {report.setId} was listed
-                          for ${report.reportedPrice.toFixed(2)}.
+                          <span className="block font-semibold break-words">{getModerationSetName(report.setId)}</span>
+                          <span className="block font-mono break-all">{getModerationCardCode(report.setId, report.cardKey)}</span>
+                          <span className="mt-2 inline-block rounded-lg bg-red-500/10 px-2.5 py-1 font-semibold text-red-500">Listed for ${report.reportedPrice.toFixed(2)}</span>
                         </p>
                       </div>
                     </div>
@@ -928,10 +1121,10 @@ const LeaderboardModeration = () => {
                       <CardImage
                         src={report.reporterAvatar}
                         alt=""
-                        className="h-8 w-8 rounded-full object-cover"
+                        className="h-8 w-8 shrink-0 rounded-full object-cover"
                       />
-                      <p className="min-w-0 text-sm">
-                        <span className="font-semibold">
+                      <p className="min-w-0 break-words text-sm leading-relaxed">
+                        <span className="break-words font-semibold">
                           {report.reporterUsername}
                         </span>{" "}
                         <span
@@ -946,25 +1139,29 @@ const LeaderboardModeration = () => {
                     </div>
                   </div>
                 ))}
-                {accountReports.map((report, index) => (
+                {pagedAccountReports.map((report, index) => (
                   <div
                     key={report.userId}
-                    className={`px-5 py-5 ${report.tradeAccessRevoked ? (isLightMode ? "border-y border-violet-300 bg-violet-50" : "border-y border-violet-400/30 bg-violet-500/10") : report.reports.length >= 3 ? (isLightMode ? "border-y-2 border-red-500 bg-red-50" : "border-y-2 border-red-500/70 bg-red-500/10") : index !== accountReports.length - 1 ? (isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]") : ""}`}
+                    className={`moderation-report-card min-w-0 rounded-2xl border p-3 sm:p-5 ${report.tradeAccessRevoked ? (isLightMode ? "border-y border-violet-300 bg-violet-50" : "border-y border-violet-400/30 bg-violet-500/10") : report.reports.length >= 3 ? (isLightMode ? "border-y-2 border-red-500 bg-red-50" : "border-y-2 border-red-500/70 bg-red-500/10") : index !== pagedAccountReports.length - 1 ? (isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]") : ""}`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="moderation-account-header flex items-center gap-3">
                       <CardImage
                         src={report.avatar}
                         alt=""
-                        className="h-11 w-11 rounded-full object-cover"
+                        className="h-10 w-10 shrink-0 rounded-full object-cover"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold">
-                          {report.expiredOffers.length > 0
+                        <p className="break-words font-semibold">
+                          <span className="lg:hidden">{report.username}</span>
+                          <span className="hidden lg:inline">{report.expiredOffers.length > 0
                             ? `${report.username} let ${report.expiredOffers.length} trade ${report.expiredOffers.length === 1 ? "offer" : "offers"} expire.`
-                            : `${report.username} has been reported ${report.reports.length} ${report.reports.length === 1 ? "time" : "times"}.`}
+                            : `${report.username} has been reported ${report.reports.length} ${report.reports.length === 1 ? "time" : "times"}.`}</span>
+                          <span className="mt-1 block text-xs font-normal leading-5 lg:hidden">
+                            {report.reports.length} {report.reports.length === 1 ? "report" : "reports"} · {report.expiredOffers.length} expired {report.expiredOffers.length === 1 ? "offer" : "offers"}
+                          </span>
                         </p>
                         <p
-                          className={`mt-0.5 text-xs font-semibold ${report.tradeAccessRevoked ? "text-violet-500" : report.reports.length >= 3 || report.expiredOffers.length >= 3 ? "text-red-500" : "text-zinc-500"}`}
+                          className={`moderation-account-status mt-0.5 text-xs font-semibold ${report.tradeAccessRevoked ? "text-violet-500" : report.reports.length >= 3 || report.expiredOffers.length >= 3 ? "text-red-500" : "text-zinc-500"}`}
                         >
                           {report.tradeAccessRevoked
                             ? "DISCORD USERNAME AND PUBLIC RIGHTS REVOKED"
@@ -979,14 +1176,14 @@ const LeaderboardModeration = () => {
                         report.reports.length >= 3 && (
                           <div
                             title="Three or more reports"
-                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-500 text-3xl font-black text-white shadow-[0_0_24px_rgba(239,68,68,.45)]"
+                            className="moderation-report-alert flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-500 text-3xl font-black text-white shadow-[0_0_24px_rgba(239,68,68,.45)]"
                           >
                             !
                           </div>
                         )}
                       {report.expiredOffers.length > 0 && (
                         <div
-                          className={`shrink-0 rounded-xl border px-3 py-2 text-center ${
+                          className={`moderation-strike-badge shrink-0 rounded-xl border px-3 py-2 text-center ${
                             report.expiredOffers.length >= 3
                               ? "border-red-500/30 bg-red-500/10 text-red-500"
                               : report.expiredOffers.length === 2
@@ -1002,7 +1199,7 @@ const LeaderboardModeration = () => {
                               type="button"
                               aria-label="Learn about offer response strikes"
                               onClick={() => setShowOfferStrikeInfo(true)}
-                              className="flex h-5 w-5 items-center justify-center rounded-full border border-current/30 text-[10px] font-black transition-colors hover:bg-current/10"
+                              className="flex h-8 w-8 items-center justify-center rounded-full border border-current/30 text-[10px] font-black transition-colors hover:bg-current/10"
                             >
                               ?
                             </button>
@@ -1017,22 +1214,22 @@ const LeaderboardModeration = () => {
                         </div>
                       )}
                       {report.tradeAccessRevoked && (
-                        <Shield className="h-8 w-8 shrink-0 text-violet-500" />
+                        <Shield className="moderation-revoked-icon h-8 w-8 shrink-0 text-violet-500" />
                       )}
                     </div>
-                    <div className="mt-4 space-y-2">
+                    <div className="moderation-report-details mt-4 space-y-2 lg:max-h-[420px] lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
                       {report.expiredOffers.map((offer) => (
                         <div
                           key={`expired-${offer.id}`}
-                          className={`flex items-center gap-2 rounded-xl px-3 py-2 ${isLightMode ? "bg-amber-50" : "bg-amber-500/[0.08]"}`}
+                          className={`moderation-detail-row flex items-center gap-2 rounded-xl px-3 py-2 ${isLightMode ? "bg-amber-50" : "bg-amber-500/[0.08]"}`}
                         >
                           <CardImage
                             src={offer.senderAvatar}
                             alt=""
-                            className="h-8 w-8 rounded-full object-cover"
+                            className="h-8 w-8 shrink-0 rounded-full object-cover"
                           />
-                          <p className="min-w-0 flex-1 text-sm">
-                            <span className="font-semibold">
+                          <p className="min-w-0 flex-1 break-words text-sm leading-relaxed">
+                            <span className="break-words font-semibold">
                               Offer from {offer.senderUsername}
                             </span>{" "}
                             <span
@@ -1040,8 +1237,9 @@ const LeaderboardModeration = () => {
                                 isLightMode ? "text-zinc-600" : "text-zinc-400"
                               }
                             >
-                              for {offer.targetCardKey} expired unanswered on{" "}
-                              {new Date(offer.expiredAt).toLocaleString()}
+                              <span className="mt-1 block">{getModerationSetName(offer.targetSetId)}</span>
+                              <span className="block break-all font-mono">{getModerationCardCode(offer.targetSetId, offer.targetCardKey)}</span>
+                              <span className="mt-1 block text-xs">Expired unanswered · {new Date(offer.expiredAt).toLocaleString()}</span>
                             </span>
                           </p>
                         </div>
@@ -1049,17 +1247,17 @@ const LeaderboardModeration = () => {
                       {report.reports.map((item) => (
                         <div
                           key={item.id}
-                          className={`flex items-center gap-2 rounded-xl px-3 py-2 ${
+                          className={`moderation-detail-row flex items-center gap-2 rounded-xl px-3 py-2 ${
                             isLightMode ? "bg-zinc-50" : "bg-white/[0.04]"
                           }`}
                         >
                           <CardImage
                             src={item.reporterAvatar}
                             alt=""
-                            className="h-8 w-8 rounded-full object-cover"
+                            className="h-8 w-8 shrink-0 rounded-full object-cover"
                           />
-                          <p className="min-w-0 flex-1 text-sm">
-                            <span className="font-semibold">
+                          <p className="min-w-0 flex-1 break-words text-sm leading-relaxed">
+                            <span className="break-words font-semibold">
                               {item.reporterUsername}
                             </span>{" "}
                             <span
@@ -1076,7 +1274,7 @@ const LeaderboardModeration = () => {
                             onClick={() => setSelectedReportComment(item)}
                             aria-label="View report comment"
                             title="View report comment"
-                            className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${isLightMode ? "bg-zinc-200 text-zinc-700" : "bg-white/[0.08] text-zinc-200"}`}
+                            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${isLightMode ? "bg-zinc-200 text-zinc-700" : "bg-white/[0.08] text-zinc-200"}`}
                           >
                             <MessageCircle size={17} />
                             {(item.comment || item.wantsStaffContact) && (
@@ -1093,7 +1291,7 @@ const LeaderboardModeration = () => {
                         onClick={() => setSelectedAccountReport(report)}
                         className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold ${report.tradeAccessRevoked ? "bg-violet-500 text-white" : report.reports.length >= 3 ? "bg-red-500 text-white" : "bg-red-500/10 text-red-500"}`}
                       >
-                        MODERATION ACTIONS
+                        <span className="lg:hidden">{report.tradeAccessRevoked ? "Review reinstatement" : "Review account"}</span><span className="hidden lg:inline">MODERATION ACTIONS</span>
                       </button>
                     )}
                   </div>
@@ -1120,115 +1318,116 @@ const LeaderboardModeration = () => {
             </div>
           ) : (
             <div>
-              {historyItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  className={`px-5 py-4 ${
-                    index !== historyItems.length - 1
-                      ? isLightMode
-                        ? "border-b border-black/[0.07]"
-                        : "border-b border-white/[0.07]"
-                      : ""
-                  }`}
-                >
-                  <div
-                    className={`rounded-2xl p-3 sm:hidden ${isLightMode ? "bg-zinc-50" : "bg-white/[0.04]"}`}
-                  >
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <CardImage
-                        src={item.moderatorAvatar}
-                        alt=""
-                        className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
-                      />
+              <div className="moderation-history-desktop">
+                <table className="moderation-history-table">
+                  <caption className="sr-only">Moderation history, most recent first</caption>
+                  <colgroup>
+                    <col style={{ width: "25%" }} />
+                    <col style={{ width: "29%" }} />
+                    <col style={{ width: "25%" }} />
+                    <col style={{ width: "21%" }} />
+                  </colgroup>
+                  <thead className={isLightMode ? "bg-zinc-50 text-zinc-600" : "bg-white/[0.025] text-zinc-400"}>
+                    <tr>
+                      <th scope="col">User</th>
+                      <th scope="col">Action</th>
+                      <th scope="col">Moderator</th>
+                      <th scope="col">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedHistoryItems.map((item) => (
+                      <tr key={item.id} className={isLightMode ? "border-t border-black/[0.07]" : "border-t border-white/[0.07]"}>
+                        <td>
+                          <div className="moderation-history-person">
+                            <div className="moderation-history-avatar">
+                              <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                            </div>
+                            <span className="min-w-0 break-words font-semibold">{item.targetUsername}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`moderation-history-action ${item.action === "trading_access_revoked" ? (isLightMode ? "bg-red-50 text-red-700" : "bg-red-500/10 text-red-300") : (isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300")}`}>
+                            {getHistoryActionTitle(item)}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="moderation-history-person">
+                            <div className="moderation-history-avatar">
+                              <CardImage src={item.moderatorAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                            </div>
+                            <span className="min-w-0 break-words font-medium">{item.moderatorUsername}</span>
+                            <Shield size={14} className={`shrink-0 ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`} aria-label="Moderator" />
+                          </div>
+                        </td>
+                        <td>
+                          <time dateTime={item.createdAt} className="block text-xs leading-5 tabular-nums">
+                            <span className="block">{new Date(item.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
+                            <span className={`block ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>{new Date(item.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span>
+                          </time>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="moderation-history-mobile">
+                {pagedHistoryItems.map((item) => (
+                  <article key={item.id} className={`moderation-history-entry px-4 py-4 ${isLightMode ? "border-t border-black/[0.07]" : "border-t border-white/[0.07]"}`}>
+                    <div className="moderation-history-person">
+                      <div className="moderation-history-avatar">
+                        <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <p
-                            className={`break-words text-sm font-bold ${isLightMode ? "text-zinc-900" : "text-white"}`}
-                          >
-                            {item.moderatorUsername}
-                          </p>
-                          <Shield
-                            size={14}
-                            className={`shrink-0 ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`}
-                          />
-                        </div>
-                        <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-                          Moderator
-                        </p>
+                        <p className="text-sm font-semibold">{item.targetUsername}</p>
+                        <p className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>{getHistoryActionTitle(item)}</p>
                       </div>
                     </div>
-                    <div
-                      className={`my-3 border-l-2 pl-3 text-sm font-medium leading-relaxed ${isLightMode ? "border-[#c9a62d]/40 text-zinc-600" : "border-[#FFD54A]/30 text-zinc-300"}`}
-                    >
-                      {item.actionLabel}
+                    <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-5">
+                      <Shield size={13} className={isLightMode ? "text-[#725700]" : "text-[#FFD54A]"} />
+                      <span className="min-w-0 break-words">By {item.moderatorUsername}</span>
+                      <time dateTime={item.createdAt} className={`w-full sm:ml-auto sm:w-auto ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                        {new Date(item.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
+                      </time>
                     </div>
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <CardImage
-                        src={item.targetAvatar}
-                        alt=""
-                        className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
-                      />
-                      <p
-                        className={`min-w-0 break-words text-sm font-bold ${isLightMode ? "text-zinc-900" : "text-white"}`}
-                      >
-                        {item.targetUsername}
-                      </p>
-                    </div>
-                    <p
-                      className={`mt-3 border-t pt-2 text-xs ${isLightMode ? "border-black/[0.07] text-zinc-500" : "border-white/[0.07] text-zinc-500"}`}
-                    >
-                      {new Date(item.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="hidden flex-wrap items-center gap-2.5 sm:flex">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <CardImage
-                        src={item.moderatorAvatar}
-                        alt=""
-                        className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
-                      />
-                      <span
-                        className={`flex min-w-0 items-center gap-1.5 font-semibold ${isLightMode ? "text-zinc-900" : "text-white"}`}
-                      >
-                        <span className="truncate">
-                          {item.moderatorUsername}
-                        </span>
-                        <Shield
-                          size={15}
-                          className={`shrink-0 ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`}
-                        />
-                      </span>
-                    </div>
-                    <span
-                      className={`text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
-                    >
-                      {item.actionLabel}
-                    </span>
-                    <div className="flex min-w-0 items-center gap-2">
-                      <CardImage
-                        src={item.targetAvatar}
-                        alt=""
-                        className={`h-10 w-10 shrink-0 rounded-full border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}
-                      />
-                      <span
-                        className={`truncate font-semibold ${isLightMode ? "text-zinc-900" : "text-white"}`}
-                      >
-                        {item.targetUsername}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="mt-2 hidden pl-12 text-xs text-zinc-500 sm:block">
-                    {new Date(item.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+                  </article>
+                ))}
+              </div>
             </div>
+          )}
+          {!pageLoading && totalItems > 0 && (
+            <nav aria-label="List pagination" className={`moderation-pagination border-t ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+              <p aria-live="polite" className={`moderation-pagination-summary text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                Showing {pageStart + 1}–{Math.min(pageEnd, totalItems)} of {totalItems}
+              </p>
+              <div className="moderation-pagination-controls">
+                <button
+                  type="button"
+                  onClick={() => changePage(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  aria-label="Previous page"
+                  className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-200"}`}
+                >
+                  <ChevronLeft size={16} aria-hidden="true" /> Previous
+                </button>
+                <span className="whitespace-nowrap text-xs tabular-nums">Page {currentPage} of {totalPages}</span>
+                <button
+                  type="button"
+                  onClick={() => changePage(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  aria-label="Next page"
+                  className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-200"}`}
+                >
+                  Next <ChevronRight size={16} aria-hidden="true" />
+                </button>
+              </div>
+            </nav>
           )}
         </div>
       </div>
       {selectedReportComment && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+          className="moderation-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
           onClick={() => !markingContacted && setSelectedReportComment(null)}
         >
           <div
@@ -1236,13 +1435,14 @@ const LeaderboardModeration = () => {
             aria-modal="true"
             aria-labelledby="report-comment-title"
             onClick={(event) => event.stopPropagation()}
-            className={`max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
+            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
           >
+            <div className="moderation-modal-body">
             <div className="flex items-center gap-3">
               <CardImage
                 src={selectedReportComment.reporterAvatar}
                 alt=""
-                className="h-11 w-11 rounded-full object-cover"
+                className="h-10 w-10 shrink-0 rounded-full object-cover"
               />
               <div className="min-w-0">
                 <p className="truncate font-bold">
@@ -1258,7 +1458,7 @@ const LeaderboardModeration = () => {
               Reporter comment
             </h2>
             <div
-              className={`mt-2 whitespace-pre-wrap rounded-xl px-4 py-3 text-sm leading-relaxed ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.05] text-zinc-300"}`}
+              className={`mt-2 whitespace-pre-wrap break-words rounded-xl px-4 py-3 text-sm leading-relaxed ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.05] text-zinc-300"}`}
             >
               {selectedReportComment.comment ||
                 "No comment was included with this report."}
@@ -1274,7 +1474,7 @@ const LeaderboardModeration = () => {
                   {selectedReportComment.contactDiscordUsername}
                 </p>
                 {selectedReportComment.contactedAt ? (
-                  <div className="mt-3 flex items-center gap-2 text-sm">
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
                     <span>Contacted by</span>
                     {selectedReportComment.contactedByAvatar && (
                       <CardImage
@@ -1283,7 +1483,7 @@ const LeaderboardModeration = () => {
                         className="h-7 w-7 rounded-full object-cover"
                       />
                     )}
-                    <span className="font-semibold">
+                    <span className="break-words font-semibold">
                       {selectedReportComment.contactedByUsername || "Moderator"}
                     </span>
                     <span className="text-zinc-500">
@@ -1308,6 +1508,8 @@ const LeaderboardModeration = () => {
                 )}
               </div>
             )}
+            </div>
+            <div className="moderation-modal-footer">
             <button
               type="button"
               onClick={() => setSelectedReportComment(null)}
@@ -1316,18 +1518,23 @@ const LeaderboardModeration = () => {
             >
               Close
             </button>
+            </div>
           </div>
         </div>
       )}
       {selectedAccountReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+        <div className="moderation-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div
-            className={`w-full max-w-sm rounded-3xl border p-5 shadow-2xl ${
+            role="dialog"
+            aria-modal="true"
+            aria-label="Account moderation actions"
+            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${
               isLightMode
                 ? "border-black/10 bg-white"
                 : "border-white/10 bg-[#151718]"
             }`}
           >
+            <div className="moderation-modal-body">
             <div className="flex items-center gap-3">
               <CardImage
                 src={selectedAccountReport.avatar}
@@ -1350,6 +1557,8 @@ const LeaderboardModeration = () => {
                 ? "Reinstating this user restores their ability to trade and sell, unlocks their Discord username, clears their account reports and expired-offer strikes, and removes them from this page."
                 : "Three reports are recommended, but moderators may act earlier when the report details justify it. Revoking removes their Discord username, removes them from all public views, and prevents them from editing their Discord username until a moderator restores access."}
             </p>
+            </div>
+            <div className="moderation-modal-footer">
             <button
               type="button"
               onClick={async () => {
@@ -1384,12 +1593,13 @@ const LeaderboardModeration = () => {
             >
               Cancel
             </button>
+            </div>
           </div>
         </div>
       )}
       {showOfferStrikeInfo && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+          className="moderation-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setShowOfferStrikeInfo(false);
@@ -1400,8 +1610,9 @@ const LeaderboardModeration = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="moderation-offer-strikes-title"
-            className={`max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
+            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
           >
+            <div className="moderation-modal-body">
             <div className="flex items-start justify-between gap-4">
               <h2
                 id="moderation-offer-strikes-title"
@@ -1413,7 +1624,7 @@ const LeaderboardModeration = () => {
                 type="button"
                 onClick={() => setShowOfferStrikeInfo(false)}
                 aria-label="Close offer strike explanation"
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${isLightMode ? "border-black/10 text-zinc-600 hover:bg-zinc-100" : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"}`}
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${isLightMode ? "border-black/10 text-zinc-600 hover:bg-zinc-100" : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"}`}
               >
                 <X size={18} />
               </button>
@@ -1437,6 +1648,8 @@ const LeaderboardModeration = () => {
                 username again in their profile.
               </p>
             </div>
+            </div>
+            <div className="moderation-modal-footer">
             <button
               type="button"
               onClick={() => setShowOfferStrikeInfo(false)}
@@ -1444,25 +1657,27 @@ const LeaderboardModeration = () => {
             >
               Done
             </button>
+            </div>
           </div>
         </div>
       )}
       {selectedBan && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+          className="moderation-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
           onClick={() => !unbanning && setSelectedBan(null)}
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="moderator-actions-title"
-            className={`w-full max-w-sm rounded-3xl border p-5 shadow-2xl ${
+            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${
               isLightMode
                 ? "border-black/10 bg-white"
                 : "border-white/10 bg-[#151718]"
             }`}
             onClick={(event) => event.stopPropagation()}
           >
+            <div className="moderation-modal-body">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p
@@ -1482,7 +1697,7 @@ const LeaderboardModeration = () => {
                 onClick={() => setSelectedBan(null)}
                 disabled={unbanning}
                 aria-label="Close moderator actions"
-                className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
+                className={`flex h-11 w-11 items-center justify-center rounded-xl border ${
                   isLightMode
                     ? "border-black/10 text-zinc-600 hover:bg-zinc-100"
                     : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"
@@ -1491,6 +1706,8 @@ const LeaderboardModeration = () => {
                 <X size={18} />
               </button>
             </div>
+            </div>
+            <div className="moderation-modal-footer">
             <button
               type="button"
               onClick={unbanUser}
@@ -1508,6 +1725,7 @@ const LeaderboardModeration = () => {
               )}
               UNBAN USER
             </button>
+            </div>
           </div>
         </div>
       )}

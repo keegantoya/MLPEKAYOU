@@ -1398,13 +1398,13 @@ export default function MyCollectionBinder() {
         </section>
       </main>
       {showCustomization && (
-        <div className="fixed inset-0 z-[2147483647] flex items-center justify-center p-3 sm:p-6">
+        <div className="fixed inset-0 z-[2147483647] flex items-center justify-center p-2 sm:p-6">
           <div
             className={`absolute inset-0 backdrop-blur-sm ${isLightMode ? "bg-white/60" : "bg-black/75"}`}
             onClick={() => setShowCustomization(false)}
           />
           <div
-            className={`relative z-10 flex max-h-[calc(100dvh-24px)] w-full max-w-[760px] flex-col overflow-hidden rounded-[24px] border ${
+            className={`relative z-10 flex min-h-0 max-h-[calc(100dvh-32px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full max-w-[760px] flex-col overflow-hidden rounded-[24px] border ${
               isLightMode
                 ? "border-black/10 bg-white"
                 : "border-white/10 bg-[#101212]"
@@ -1431,24 +1431,26 @@ export default function MyCollectionBinder() {
               </div>
               <button
                 onClick={() => setShowCustomization(false)}
-                className="rounded-xl flex h-8 w-8 items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] font-mono text-xs text-zinc-600 dark:text-white/50 transition hover:border-[#FFD400]/50 hover:text-[#725700] dark:text-[#FFD400]"
+                aria-label="Close customization"
+                className="rounded-xl flex h-11 w-11 shrink-0 items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] font-mono text-xs text-zinc-600 dark:text-white/50 transition hover:border-[#FFD400]/50 hover:text-[#725700] dark:text-[#FFD400]"
               >
                 ✕
               </button>
             </div>
-            <div className="min-h-0 overflow-y-auto">
-              <div className="p-4 sm:p-5">
-                <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-600 dark:text-white/50">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+              <div className="p-3 sm:p-5">
+                <p className="mb-3 text-sm text-zinc-500 dark:text-zinc-600 dark:text-white/50">
                   Choose a layout, starting slot, and rarity order.
                 </p>
-                <div
-                  className={`mb-5 rounded-[18px] border p-3 ${
+                <details open={!isMobile}
+                  className={`mb-3 rounded-[18px] border p-3 ${
                     isLightMode
                       ? "border-black/10 bg-zinc-50"
                       : "border-white/10 bg-[#080909]"
                   }`}
                 >
-                  <div className="mb-3 flex items-center justify-between gap-3">
+                  <summary className="cursor-pointer text-sm font-semibold">Rarity order</summary>
+                  <div className="my-3 flex items-center justify-between gap-3">
                     <div>
                       <div
                         className={`text-sm font-semibold ${
@@ -1458,7 +1460,7 @@ export default function MyCollectionBinder() {
                         Rarity order
                       </div>
                       <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                        Drag rarities into the order you want to see them.
+                        Drag the handles to reorder. Swipe labels to scroll.
                       </div>
                     </div>
                     <button
@@ -1478,9 +1480,19 @@ export default function MyCollectionBinder() {
                       <div
                         key={rarity}
                         data-rarity={rarity}
+                        className={`flex select-none items-center gap-1 rounded-xl border px-1.5 py-0.5 text-sm font-semibold transition-opacity active:cursor-grabbing ${
+                          isLightMode
+                            ? "border-black/10 bg-white text-zinc-700"
+                            : "border-white/10 bg-[#151717] text-zinc-200"
+                        } ${rarityDrag?.rarity === rarity ? "opacity-25" : "opacity-100"}`}
+                      >
+                        <button
+                          type="button"
+                          aria-label={`Drag ${rarity} to reorder`}
+                          className="flex h-9 w-8 shrink-0 touch-none items-center justify-center cursor-grab active:cursor-grabbing"
                         onPointerDown={(event) => {
                           const bounds =
-                            event.currentTarget.getBoundingClientRect();
+                            event.currentTarget.parentElement!.getBoundingClientRect();
                           event.currentTarget.setPointerCapture(
                             event.pointerId,
                           );
@@ -1527,16 +1539,9 @@ export default function MyCollectionBinder() {
                           lastRarityTarget.current = null;
                           setRarityDrag(null);
                         }}
-                        className={`flex touch-none select-none cursor-grab items-center gap-2 rounded-xl border px-2.5 py-2 text-sm font-semibold transition-opacity active:cursor-grabbing ${
-                          isLightMode
-                            ? "border-black/10 bg-white text-zinc-700"
-                            : "border-white/10 bg-[#151717] text-zinc-200"
-                        } ${rarityDrag?.rarity === rarity ? "opacity-25" : "opacity-100"}`}
-                      >
-                        <GripVertical
-                          className="h-4 w-4 shrink-0 text-zinc-400"
-                          aria-hidden="true"
-                        />
+                        >
+                          <GripVertical className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+                        </button>
                         <span className="min-w-0 flex-1 truncate">
                           {rarity}
                         </span>
@@ -1546,7 +1551,7 @@ export default function MyCollectionBinder() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </details>
                 {rarityDrag && (
                   <div
                     className={`pointer-events-none fixed z-[2147483647] flex items-center gap-2 rounded-xl border px-2.5 py-2 text-sm font-semibold shadow-2xl ring-2 ring-[#FFD400]/70 ${
@@ -1568,7 +1573,7 @@ export default function MyCollectionBinder() {
                     </span>
                   </div>
                 )}
-                <div className="mb-5 flex flex-wrap justify-center gap-2">
+                <div className="mb-3 grid grid-cols-5 gap-1.5 sm:flex sm:justify-center sm:gap-2">
                   {(["3x3", "4x3", "4x4", "2x2", "6x6"] as const).map(
                     (value) => (
                       <button
@@ -1579,7 +1584,7 @@ export default function MyCollectionBinder() {
                           setStartSlot(0);
                           setSpread(1);
                         }}
-                        className={`rounded-xl min-w-[58px] border px-3 py-2 text-sm font-semibold transition ${
+                        className={`rounded-xl min-w-0 border px-2 py-2.5 sm:min-w-[58px] sm:px-3 text-sm font-semibold transition ${
                           layout === value
                             ? "border-[#FFD400]/70 bg-[#FFD400] text-[#0b0b0b]"
                             : "border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] text-zinc-700 dark:text-white/55 hover:border-[#FFD400]/35 hover:text-[#725700] dark:text-[#FFD400]"
@@ -1599,14 +1604,14 @@ export default function MyCollectionBinder() {
                   style={{
                     height: isMobile
                       ? previewLayout === "6x6"
-                        ? "390px"
+                        ? "260px"
                         : previewLayout === "4x4"
-                          ? "300px"
+                          ? "250px"
                           : previewLayout === "4x3"
                             ? "235px"
                             : previewLayout === "3x3"
-                              ? "250px"
-                              : "220px"
+                              ? "245px"
+                              : "190px"
                       : "auto",
                   }}
                 >
@@ -1618,13 +1623,13 @@ export default function MyCollectionBinder() {
                       top: isMobile ? "50%" : undefined,
                       transform: isMobile
                         ? previewLayout === "6x6"
-                          ? "translate(-50%, -50%) scale(.56)"
+                          ? "translate(-50%, -50%) scale(.48)"
                           : previewLayout === "4x4"
                             ? "translate(-50%, -50%) scale(.68)"
                             : previewLayout === "4x3"
                               ? "translate(-50%, -50%) scale(.68)"
                               : previewLayout === "3x3"
-                                ? "translate(-50%, -50%) scale(1)"
+                                ? "translate(-50%, -50%) scale(.78)"
                                 : "translate(-50%, -50%) scale(1)"
                         : "none",
                       transformOrigin: "center center",
@@ -1737,7 +1742,7 @@ export default function MyCollectionBinder() {
               </span>
               <button
                 onClick={() => setShowCustomization(false)}
-                className="rounded-xl border border-[#FFD400]/25 bg-zinc-100 dark:bg-[#151717] px-3 py-1.5 font-mono text-[6px] font-bold uppercase tracking-[0.12em] text-[#725700] dark:text-[#725700] dark:text-[#FFD400]/75 hover:border-[#FFD400]/55 hover:text-[#725700] dark:text-[#FFD400]"
+                className="rounded-xl border border-[#FFD400]/25 bg-zinc-100 dark:bg-[#151717] min-h-11 min-w-20 px-4 py-2 font-mono text-sm font-bold uppercase tracking-[0.12em] text-[#725700] dark:text-[#725700] dark:text-[#FFD400]/75 hover:border-[#FFD400]/55 hover:text-[#725700] dark:text-[#FFD400]"
               >
                 Done
               </button>

@@ -1,3 +1,5 @@
+import { promosCatalog } from "@/lib/iso-card-catalog";
+const { sets, getDisplayCardCode, getCardKey } = promosCatalog;
 import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -5,57 +7,6 @@ import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
 import { supabase } from "@/lib/supabase";
 import { promoCharacterMap } from "./Card Characters/card-characters-promos";
-const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
-const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
-const getDisplayCardCode = (
-  setId: string,
-  number: number
-) => {
-  if (setId === "9") {
-// Standard CCG Promos
-    if (number <= 7) {
-      return `MLPE-PR-${String(number).padStart(3, "0")}`;
-    }
-// SDCC Promos
-    return `SDCC-${String(number - 7).padStart(3, "0")}`;
-  }
-  if (setId === "tcgpromos") {
-// RR-01 through RR-06
-    if (number <= 6) {
-      return `RR-${String(number).padStart(2, "0")}`;
-    }
-// BP01 CR-07 through CR-12
-    if (number <= 12) {
-      return `BP01-CR-${String(number).padStart(2, "0")}`;
-    }
-// BP02 CR-01 through CR-06
-    if (number <= 18) {
-      return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
-    }
-const newPromoNames: Record<number, string> = {
-      19: "TK-01",
-      20: "※TK-01",
-      21: "※TK-01",
-      22: "※BP03-CR-01",
-      23: "※BP03-CR-02",
-      24: "※BP03-CR-03",
-      25: "※BP01-CR-04",
-      26: "※BP01-CR-05",
-      27: "※BP01-CR-06",
-    };
-    return newPromoNames[number] || `RR-${String(number).padStart(2, "0")}`;
-  }
-  return `RR-${String(number).padStart(2, "0")}`;
-};
-const getCardKey = (
-  setId: string,
-  number: number
-) => {
-  if (setId === "9") {
-    return `PR-${number}`;
-  }
-  return `RR${String(number).padStart(2, "0")}`;
-};
 const getImage = (
   setId: string,
   number: number
@@ -65,18 +16,6 @@ const getImage = (
   }
   return cardImagePaths.tcgRubyPromo(String(number).padStart(2, "0"));
 };
-const sets = [
-  {
-    id: "9",
-    name: "CCG Promos",
-    cards: ccgCards,
-  },
-  {
-    id: "tcgpromos",
-    name: "TCG Promos",
-    cards: tcgCards,
-  },
-];
 interface ISOPROMOSProps {
   cardCodeSearch: string;
   characterSearch: string;
