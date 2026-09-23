@@ -72,6 +72,20 @@ const PUBLIC_AUTH_PATHS = new Set([
   "/account-confirmation",
   "/links",
 ]);
+// One-segment URLs may be public profile links. Keep every named app route gated.
+const RESERVED_PATHS = new Set([
+  "/collections", "/moon-one", "/moon-two", "/moon-three",
+  "/rainbow-one", "/rainbow-two", "/fun-moments-one",
+  "/fun-moments-two", "/fun-moments-three", "/star-one",
+  "/fantasy-wonderland", "/friendships-begin", "/discord",
+  "/nightmare-night", "/promotional-cards", "/leaping-ponies",
+  "/explore", "/my-progress", "/inventory", "/iso",
+  "/community", "/leaderboard", "/selling", "/trading-post",
+  "/faq", "/kayou-news", "/support-mlpekayou", "/binders",
+  "/throwawaypage", "/mobile-profile", "/desktop-profile",
+  "/inbox", "/progress-tcg", "/leaderboard-moderation",
+  "/lgs-boards",
+]);
 function SiteAccessGate({ children }: { children: ReactNode }) {
 const location = useLocation();
 const navigate = useNavigate();
@@ -81,8 +95,10 @@ const [authState, setAuthState] = useState<
 const [showLoginRequired, setShowLoginRequired] = useState(false);
 const normalizedPath =
     location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
-const isBlockedRoute =
-    authState === "anonymous" && !PUBLIC_AUTH_PATHS.has(normalizedPath);
+const isPublicProfilePath =
+    /^\/[^/]+$/.test(normalizedPath) && !RESERVED_PATHS.has(normalizedPath);
+const isPublicPath = PUBLIC_AUTH_PATHS.has(normalizedPath) || isPublicProfilePath;
+const isBlockedRoute = authState === "anonymous" && !isPublicPath;
   useEffect(() => {
 let mounted = true;
     void supabase.auth.getSession().then(({ data: { session } }) => {
@@ -104,13 +120,16 @@ const {
   useEffect(() => {
     if (
       authState !== "anonymous" ||
-      PUBLIC_AUTH_PATHS.has(normalizedPath)
+      isPublicPath
     ) {
       return;
     }
     setShowLoginRequired(true);
     navigate("/", { replace: true });
-  }, [authState, navigate, normalizedPath]);
+  }, [authState, navigate, isPublicPath]);
+  useEffect(() => {
+    if (isPublicProfilePath) setShowLoginRequired(false);
+  }, [isPublicProfilePath]);
   useEffect(() => {
     if (!showLoginRequired) return;
 const previousOverflow = document.body.style.overflow;
@@ -119,7 +138,7 @@ const previousOverflow = document.body.style.overflow;
       document.body.style.overflow = previousOverflow;
     };
   }, [showLoginRequired]);
-  if (authState === "checking" && !PUBLIC_AUTH_PATHS.has(normalizedPath)) {
+  if (authState === "checking" && !isPublicPath) {
     return (
       <div className="fixed inset-0 z-[30000] flex items-center justify-center bg-[#111111] px-4 text-white">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#181818] px-5 py-4 shadow-xl">

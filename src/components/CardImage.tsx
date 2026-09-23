@@ -14,24 +14,25 @@ const unavailableThumbnails = new Set<string>();
 const authListeners = new Set<() => void>();
 let generation = 0;
 
-function imageUrl(path: string) {
+function imageUrl(path: string, publicProfile = false) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
   const url = new URL(encodedPath, `${CARD_IMAGE_WORKER_URL}/`);
   const revision = getCardImageRevision(path);
   if (revision !== "1") url.searchParams.set("v", revision);
+  if (publicProfile) url.searchParams.set("publicProfile", "1");
   return url.href;
 }
 
-async function fetchImage(path: string, accessToken: string, signal: AbortSignal) {
-  const request = (token: string) => fetch(imageUrl(path), {
+async function fetchImage(path: string, accessToken: string | null, signal: AbortSignal, publicProfile: boolean) {
+  const request = (token: string | null) => fetch(imageUrl(path, !token && publicProfile), {
     signal,
     credentials: "omit",
     cache: "default",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
   let response = await request(accessToken);
-  if (response.status !== 401 || signal.aborted) return response;
+  if (!accessToken || response.status !== 401 || signal.aborted) return response;
 
   const { data, error } = await supabase.auth.refreshSession();
   if (error || !data.session?.access_token || signal.aborted) return response;
@@ -52,10 +53,11 @@ onAuthIdentityChange(event => {
 type CardImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   visible?: boolean;
   imageSize?: CardImageSize;
+  publicProfile?: boolean;
 };
 
 const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImage(
-  { src, imageSize = "grid", visible = true, loading = "lazy", onError, onLoad, style, ...props },
+  { src, imageSize = "grid", publicProfile = false, visible = true, loading = "lazy", onError, onLoad, style, ...props },
   forwardedRef,
 ) {
   const originalPath = protectedPath(src);
@@ -111,12 +113,12 @@ const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImag
 
     void (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user || !session.access_token || cancelled || started !== generation) return;
+      if ((!session?.user && !publicProfile) || cancelled || started !== generation) return;
 
       const source = await getCachedCardImage(
         path,
-        session.user.id,
-        signal => fetchImage(path, session.access_token, signal),
+        session?.user?.id ?? "public-profile",
+        signal => fetchImage(path, session?.access_token ?? null, signal, publicProfile),
         retries.current > 0,
       );
 
@@ -137,7 +139,7 @@ const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImag
       cancelled = true;
       release?.();
     };
-  }, [path, originalPath, active, nearby, loading, retry, authVersion]);
+  }, [path, originalPath, active, nearby, loading, retry, authVersion, publicProfile]);
 
   const resolved = path ? (image?.path === path ? image.url : PLACEHOLDER) : (active ? src : undefined);
   const waiting = !!path && resolved === PLACEHOLDER;
