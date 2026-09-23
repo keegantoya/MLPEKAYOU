@@ -200,11 +200,9 @@ const ExploreProfile = ({
     owned: 0,
     completed: 0,
   });
-  const {
-    isoCards: userIsoCards,
-    wishlistCards: userWishlistCards,
-    tradeCards,
-  } = usePublicProfileCards(user?.id);
+  const { wishlistCards: userWishlistCards, tradeCards } =
+    usePublicProfileCards(user?.id);
+  const [userIsoCards, setUserIsoCards] = useState<any[]>([]);
   // Preserve the existing public trade-card source exactly as-is.
   const userTradeCards = tradeCards.filter(
     (x: any) => (x.listing_type || "trade") === "trade",
@@ -353,18 +351,10 @@ const ExploreProfile = ({
       setLastActivityAt(activityData?.last_activity_at || null);
       const { data: profileSettings } = await supabase
         .from("profiles")
-        .select("hide_iso, hide_wishlist, iso_hidden_sets, iso_hidden_sets")
+        .select("hide_iso, hide_wishlist, iso_hidden_sets")
         .eq("id", user.id)
         .single();
-      const legacyHidden: string[] = profileSettings?.iso_hidden_sets || [];
-      const hiddenIsoSets: string[] = [
-        ...(profileSettings?.iso_hidden_sets?.length
-          ? profileSettings.iso_hidden_sets
-          : legacyHidden),
-        ...(profileSettings?.iso_hidden_sets?.length
-          ? profileSettings.iso_hidden_sets
-          : legacyHidden),
-      ];
+      const hiddenIsoSets: string[] = profileSettings?.iso_hidden_sets || [];
       setuserProfileSettings({
         hide_iso: profileSettings?.hide_iso ?? false,
         hide_wishlist: profileSettings?.hide_wishlist ?? false,
@@ -766,6 +756,7 @@ const ExploreProfile = ({
           }
         });
       });
+      setUserIsoCards(isoCards);
       const { data: collection } = await supabase
         .from("collection_progress_raw")
         .select("set_id, progress")
