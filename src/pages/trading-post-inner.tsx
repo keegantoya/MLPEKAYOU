@@ -356,6 +356,7 @@ export default function TradingPostInner() {
   const [openProfile, setOpenProfile] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<TradeCard | null>(null);
   const [reportTarget, setReportTarget] = useState<string | null>(null);
+  const [confirmReport, setConfirmReport] = useState<"user" | "card" | null>(null);
   const [reportedUsers, setReportedUsers] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isReporting, setIsReporting] = useState(false);
@@ -706,6 +707,7 @@ export default function TradingPostInner() {
     if (error) {
       if (error.code === "23505") {
         setReportedUsers((current) => new Set(current).add(reportTarget));
+        setConfirmReport(null);
         setReportTarget(null);
         setReportComment("");
         setWantsStaffContact(false);
@@ -713,11 +715,13 @@ export default function TradingPostInner() {
       } else {
         console.error("Failed to report trading-post user:", error);
         setReportError("Your report could not be submitted. Please try again.");
+        setConfirmReport(null);
       }
       setIsReporting(false);
       return;
     }
     setReportedUsers((current) => new Set(current).add(reportTarget));
+    setConfirmReport(null);
     setReportTarget(null);
     setReportComment("");
     setWantsStaffContact(false);
@@ -748,10 +752,12 @@ export default function TradingPostInner() {
       setCardReportError(
         "This card report could not be submitted. Please try again.",
       );
+      setConfirmReport(null);
       setIsReportingCard(false);
       return;
     }
     setReportedCardKeys((current) => new Set(current).add(reportKey));
+    setConfirmReport(null);
     setIsReportingCard(false);
   };
   const getOfferAction = (card: TradeCard) => {
@@ -1747,7 +1753,8 @@ export default function TradingPostInner() {
                               setShowUnsetPriceNotice(true);
                               return;
                             }
-                            void submitCardReport();
+                            setCardReportError("");
+                            setConfirmReport("card");
                           }}
                           disabled={alreadyReported || isReportingCard}
                           className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${
@@ -2401,11 +2408,83 @@ export default function TradingPostInner() {
               </button>
               <button
                 type="button"
-                onClick={submitReport}
+                onClick={() => {
+                  if (wantsStaffContact && !reporterDiscord.trim()) {
+                    setReportError(
+                      "Enter your Discord username so a staff member can contact you.",
+                    );
+                    return;
+                  }
+                  setReportError("");
+                  setConfirmReport("user");
+                }}
                 disabled={isReporting}
                 className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
               >
                 {isReporting ? "Reporting..." : "Report user"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {confirmReport && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 p-3 backdrop-blur-sm">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="confirm-report-title"
+            aria-describedby="confirm-report-description"
+            className={`w-full max-w-sm rounded-[20px] p-5 shadow-2xl ${
+              isLightMode ? "bg-white text-zinc-900" : "bg-[#17191a] text-white"
+            }`}
+          >
+            <h2 id="confirm-report-title" className="text-lg font-bold">
+              Are you sure?
+            </h2>
+            <p
+              id="confirm-report-description"
+              className={`mt-2 text-sm leading-relaxed ${
+                isLightMode ? "text-zinc-600" : "text-zinc-300"
+              }`}
+            >
+              {confirmReport === "card"
+                ? "You are about to submit a formal report about this card's price. Please review general pricing on "
+                : "You are about to submit a report about this user. You can only report this user once."}
+              {confirmReport === "card" && (
+                <>
+                  <a
+                    href="/selling"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[#b88a00] underline underline-offset-2"
+                  >
+                    /selling
+                  </a>
+                  {" before submitting."}
+                </>
+              )}
+            </p>
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmReport(null)}
+                disabled={isReporting || isReportingCard}
+                className={`rounded-xl px-4 py-2.5 text-sm font-semibold ${
+                  isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.07] text-zinc-200"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirmReport === "card") void submitCardReport();
+                  else void submitReport();
+                }}
+                disabled={isReporting || isReportingCard}
+                className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {isReporting || isReportingCard ? "Reporting..." : "Submit report"}
               </button>
             </div>
           </div>
