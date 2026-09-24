@@ -2,6 +2,7 @@ import { cardImagePaths } from "@/lib/card-images";
 import { getISOSetId, funCatalog, moonCatalog, rainbowCatalog, starCatalog, tcgCatalog } from "@/lib/iso-card-catalog";
 import { getISOSetName as getModerationSetName, getISOCardCode as getModerationCardCode } from "@/lib/iso-card-catalog";
 import CardImage from "@/components/CardImage";
+import rylandGraceAvatar from "@/assets/avatars/rylandgrace.webp";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -82,6 +83,8 @@ const getHistoryActionTitle = (item: ModerationHistoryItem) => {
     trading_access_revoked: "Trading access revoked",
     trading_access_restored: "Trading access restored",
     trading_access_restored_reports_cleared: "Access restored · Reports cleared",
+    trading_profile_report_dismissed: "Profile report dismissed",
+    trading_card_report_dismissed: "Card report dismissed",
   };
   return labels[item.action] || item.actionLabel;
 };
@@ -145,12 +148,12 @@ const [errorMessage, setErrorMessage] = useState("");
 const [successMessage, setSuccessMessage] = useState("");
 const [searchQuery, setSearchQuery] = useState("");
 const [currentView, setCurrentView] = useState<
-    "active" | "account_reports" | "history"
+    "active" | "account_reports" | "strikes" | "history"
   >(() =>
     new URLSearchParams(window.location.search).get("view") ===
     "account_reports"
       ? "account_reports"
-      : "active",
+      : new URLSearchParams(window.location.search).get("view") === "strikes" ? "strikes" : "active",
   );
 const [historyItems, setHistoryItems] = useState<ModerationHistoryItem[]>([]);
 const [historyLoading, setHistoryLoading] = useState(false);
@@ -168,7 +171,9 @@ const [selectedReportComment, setSelectedReportComment] = useState<
   >(null);
 const [markingContacted, setMarkingContacted] = useState(false);
 const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
-  const hasOpenDialog = Boolean(selectedBan || selectedAccountReport || selectedReportComment || showOfferStrikeInfo);
+const [dismissTarget, setDismissTarget] = useState<{ kind: "profile" | "card"; id: number; username: string } | null>(null);
+const [dismissing, setDismissing] = useState(false);
+  const hasOpenDialog = Boolean(selectedBan || selectedAccountReport || selectedReportComment || showOfferStrikeInfo || dismissTarget);
   useEffect(() => {
     if (!hasOpenDialog || !window.matchMedia("(max-width: 1023px)").matches) return;
     const previousOverflow = document.body.style.overflow;
@@ -397,6 +402,32 @@ const reportChannel = supabase
       supabase.removeChannel(reportChannel);
     };
   }, [authorized]);
+const dismissReport = async () => {
+    if (!dismissTarget || dismissing) return;
+    setDismissing(true);
+    setErrorMessage("");
+    const { error } = await supabase.rpc("dismiss_moderation_report", {
+      p_report_type: dismissTarget.kind,
+      p_report_id: dismissTarget.id,
+    });
+    if (error) {
+      setErrorMessage(error.message || "Unable to dismiss the report.");
+      setDismissing(false);
+      return;
+    }
+    if (dismissTarget.kind === "card") {
+      setCardReports((current) => current.filter((item) => item.id !== dismissTarget.id));
+    } else {
+      setAccountReports((current) => current.map((group) => ({
+        ...group,
+        reports: group.reports.filter((item) => item.id !== dismissTarget.id),
+      })).filter((group) => group.reports.length > 0 || group.expiredOffers.length > 0));
+    }
+    setSuccessMessage(`${dismissTarget.username}'s report was dismissed.`);
+    setDismissTarget(null);
+    setHistoryLoaded(false);
+    setDismissing(false);
+  };
 const revokeTradingAccess = async (report: AccountReportGroup) => {
     if (revokingUserId) return;
     setRevokingUserId(report.userId);
@@ -610,10 +641,16 @@ const { data: logRows, error: logError } = await supabase
         "trading_access_revoked",
         "trading_access_restored",
         "trading_access_restored_reports_cleared",
+        "trading_profile_report_dismissed",
+        "trading_card_report_dismissed",
       ])
       .order("created_at", { ascending: false });
-    if (logError) {
-      console.error("Unable to load moderation history:", logError);
+const { data: strikeRows, error: strikeError } = await supabase
+      .from("trade_offer_expiration_strikes")
+      .select("id, recipient_user_id, expired_at")
+      .order("expired_at", { ascending: false });
+    if (logError || strikeError) {
+      console.error("Unable to load moderation history:", logError || strikeError);
       setErrorMessage("Unable to load moderation history.");
       setHistoryLoading(false);
       return;
@@ -623,7 +660,7 @@ const profileIds = Array.from(
         (logRows || []).flatMap((row) => [
           row.moderator_user_id,
           row.target_user_id,
-        ]),
+        ]).concat((strikeRows || []).map((row) => row.recipient_user_id)).filter(Boolean),
       ),
     );
 let profileById = new Map<string, any>();
@@ -659,13 +696,15 @@ const actionLabels: Record<string, string> = {
         trading_access_restored: "reinstated trade and sale rights for",
         trading_access_restored_reports_cleared:
           "reinstated rights and cleared reports for",
+        trading_profile_report_dismissed: "dismissed a profile report for",
+        trading_card_report_dismissed: "dismissed a card report for",
       };
       return {
         id: row.id,
         moderatorUsername: row.moderator_username,
-        moderatorAvatar: moderatorProfile
-          ? getProfileAssets(moderatorProfile).avatar
-          : fallbackAvatar,
+        moderatorAvatar: row.moderator_username?.toLowerCase() === "system"
+          ? rylandGraceAvatar
+          : moderatorProfile ? getProfileAssets(moderatorProfile).avatar : fallbackAvatar,
         targetUsername: row.target_username,
         targetAvatar: targetProfile
           ? getProfileAssets(targetProfile).avatar
@@ -675,7 +714,21 @@ const actionLabels: Record<string, string> = {
         createdAt: row.created_at,
       };
     });
-    setHistoryItems(nextHistoryItems);
+    const strikeHistoryItems: ModerationHistoryItem[] = (strikeRows || []).map((row) => {
+      const targetProfile = profileById.get(row.recipient_user_id);
+      return {
+        id: -row.id,
+        moderatorUsername: "System",
+        moderatorAvatar: rylandGraceAvatar,
+        targetUsername: targetProfile?.username || "Deleted User",
+        targetAvatar: targetProfile ? getProfileAssets(targetProfile).avatar : fallbackAvatar,
+        action: "trade_offer_expiration_strike",
+        actionLabel: "received an expired-offer strike",
+        createdAt: row.expired_at,
+      };
+    });
+    setHistoryItems([...nextHistoryItems, ...strikeHistoryItems].sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     setHistoryLoaded(true);
     setHistoryLoading(false);
   };
@@ -684,15 +737,18 @@ const openHistory = async () => {
     setSearchQuery("");
     await loadHistory();
   };
-const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, history: 1 });
+const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, strikes: 1, history: 1 });
 const listPanelRef = useRef<HTMLDivElement>(null);
 const pageSize = 10;
 const normalizedSearch = searchQuery.trim().toLowerCase();
 const filteredBans = bans.filter((ban) =>
     ban.username.toLowerCase().includes(normalizedSearch),
   );
+const reportedAccounts = accountReports.filter((group) => group.reports.length > 0);
+const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0);
 const totalItems = currentView === "active" ? filteredBans.length
-  : currentView === "account_reports" ? cardReports.length + accountReports.length
+  : currentView === "account_reports" ? cardReports.length + reportedAccounts.length
+  : currentView === "strikes" ? struckAccounts.length
   : historyItems.length;
 const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 const currentPage = Math.min(pageByView[currentView], totalPages);
@@ -701,13 +757,11 @@ const pageEnd = pageStart + pageSize;
 const pagedBans = filteredBans.slice(pageStart, pageEnd);
 // Card cases and account cases share one ten-entry page, preserving their existing order.
 const pagedCardReports = cardReports.slice(pageStart, pageEnd);
-const pagedAccountReports = accountReports.slice(
-  Math.max(0, pageStart - cardReports.length),
-  Math.max(0, pageEnd - cardReports.length),
-);
+const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
+  : reportedAccounts.slice(Math.max(0, pageStart - cardReports.length), Math.max(0, pageEnd - cardReports.length));
 const pagedHistoryItems = historyItems.slice(pageStart, pageEnd);
 const pageLoading = currentView === "active" ? loading
-  : currentView === "account_reports" ? reportsLoading : historyLoading;
+  : currentView === "account_reports" || currentView === "strikes" ? reportsLoading : historyLoading;
 useEffect(() => {
   setPageByView((pages) => pages[currentView] > totalPages
     ? { ...pages, [currentView]: totalPages } : pages);
@@ -764,17 +818,18 @@ const changePage = (nextPage: number) => {
       <style>{`
         .moderation-page p, .moderation-page h2 { overflow-wrap: anywhere; }
         .moderation-page button { min-height: 44px; }
-        .moderation-price-card { position: relative; min-height: 226px; }
-        .moderation-price-card > .moderation-price-header,
-        .moderation-price-card > .moderation-price-header + div { margin-right: 132px; }
-        .moderation-card-preview { position: absolute; top: 50%; right: 16px; transform: translateY(-50%); width: 116px; height: 163px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 9px; }
+        .moderation-price-card { display: grid; grid-template-columns: minmax(0, 1fr) 116px; grid-template-areas: "header preview" "reporter preview" "dismiss preview"; align-content: center; align-items: center; column-gap: 16px; min-height: 226px; }
+        .moderation-price-card > .moderation-price-header { grid-area: header; min-width: 0; }
+        .moderation-price-card > .moderation-price-header + div { grid-area: reporter; min-width: 0; }
+        .moderation-price-card > button { grid-area: dismiss; width: 100%; }
+        .moderation-card-preview { grid-area: preview; width: 116px; height: 163px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 9px; }
         .moderation-card-preview-crop { width: 100%; height: 100%; overflow: hidden; border-radius: 9px; }
         @media (max-width: 639px) {
-          .moderation-price-card { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 96px; align-items: center; gap: 12px; }
-          .moderation-price-card > .moderation-price-header { grid-column: 1; grid-row: 1; margin: 0; padding: 0; flex-direction: row; align-items: flex-start; gap: 8px; }
+          .moderation-price-card { min-height: 0; grid-template-columns: minmax(0, 1fr) 96px; grid-template-areas: "header preview" "reporter reporter" "dismiss dismiss"; gap: 12px; }
+          .moderation-price-card > .moderation-price-header { padding: 0; flex-direction: row; align-items: flex-start; gap: 8px; }
           .moderation-price-card > .moderation-price-header > img { display: none; }
-          .moderation-price-card > .moderation-price-header + div { grid-column: 1 / -1; grid-row: 2; margin: 0; }
-          .moderation-price-card > .moderation-card-preview { position: static; grid-column: 2; grid-row: 1; align-self: center; transform: none; width: 96px; height: 135px; }
+          .moderation-price-card > .moderation-card-preview { width: 96px; height: 135px; }
+          .moderation-price-card > button { margin-top: 0; }
         }
         .moderation-panel { scroll-margin-top: 96px; }
         .moderation-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; }
@@ -806,7 +861,7 @@ const changePage = (nextPage: number) => {
           .moderation-heading p { margin-top: 4px; line-height: 18px; }
           .moderation-panel { margin-top: 20px; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
           .moderation-toolbar { display: flex; flex-direction: column; align-items: stretch; padding: 0; border: 0; gap: 16px; }
-          .moderation-tabs { order: -1; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; padding: 5px; border: 1px solid var(--moderation-line); border-radius: 16px; background: var(--moderation-card-bg); }
+          .moderation-tabs { order: -1; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; padding: 5px; border: 1px solid var(--moderation-line); border-radius: 16px; background: var(--moderation-card-bg); }
           .moderation-tabs button { padding: 10px 6px; border-radius: 11px; font-size: 14px; line-height: 20px; }
           .moderation-toolbar > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 2px 12px; }
           .moderation-toolbar h2 { font-size: 15px; line-height: 21px; }
@@ -848,7 +903,7 @@ const changePage = (nextPage: number) => {
           .moderation-modal-footer > button { margin-top: 0; min-height: 46px; font-size: 14px; line-height: 20px; }
         }
       `}</style>
-      <div className={`moderation-shell mx-auto w-full px-3 pt-4 sm:px-6 lg:pt-6 ${currentView === "account_reports" ? "max-w-[1240px]" : "max-w-[1080px]"}`}>
+      <div className={`moderation-shell mx-auto w-full px-3 pt-4 sm:px-6 lg:pt-6 ${currentView === "account_reports" || currentView === "strikes" ? "max-w-[1240px]" : "max-w-[1080px]"}`}>
         <div className="moderation-heading flex items-center gap-3">
           <button
             type="button"
@@ -876,7 +931,7 @@ const changePage = (nextPage: number) => {
             <p
               className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
             >
-              <span className="lg:hidden">Reports, bans, and activity</span><span className="hidden lg:inline">Review reports, expired offers, bans, and moderator activity</span>
+              <span className="lg:hidden">Reports, strikes, bans, and activity</span><span className="hidden lg:inline">Review reports, strikes, bans, and moderator activity</span>
             </p>
           </div>
         </div>
@@ -920,7 +975,8 @@ const changePage = (nextPage: number) => {
                 {currentView === "active"
                   ? "Active Bans"
                   : currentView === "account_reports"
-                    ? "Account Reports"
+                    ? "Reports"
+                    : currentView === "strikes" ? "Strikes"
                     : "Moderation History"}
               </h2>
               <p
@@ -931,15 +987,17 @@ const changePage = (nextPage: number) => {
                     ? `${filteredBans.length} of ${bans.length} users`
                     : `${bans.length} ${bans.length === 1 ? "user" : "users"}`
                   : currentView === "account_reports"
-                    ? `${accountReports.length + cardReports.length} ${accountReports.length + cardReports.length === 1 ? "case" : "cases"}`
+                    ? `${reportedAccounts.length + cardReports.length} ${reportedAccounts.length + cardReports.length === 1 ? "case" : "cases"}`
+                    : currentView === "strikes" ? `${struckAccounts.length} ${struckAccounts.length === 1 ? "account" : "accounts"}`
                     : `${historyItems.length} ${historyItems.length === 1 ? "action" : "actions"}`}
               </p>
             </div>
-            <div className="moderation-tabs grid grid-cols-3 gap-2 sm:flex" aria-label="Moderation sections">
+            <div className="moderation-tabs grid grid-cols-2 gap-2 sm:flex" aria-label="Moderation sections">
               {(
                 [
                   ["active", "Bans"],
                   ["account_reports", "Reports"],
+                  ["strikes", "Strikes"],
                   ["history", "History"],
                 ] as const
               ).map(([view, label]) => (
@@ -1066,15 +1124,15 @@ const changePage = (nextPage: number) => {
                 </div>
               )}
             </>
-          ) : currentView === "account_reports" ? (
+          ) : currentView === "account_reports" || currentView === "strikes" ? (
             reportsLoading ? (
               <div
                 className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
               >
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading reports and expired offers...
+                Loading {currentView === "strikes" ? "strikes" : "reports"}...
               </div>
-            ) : accountReports.length === 0 && cardReports.length === 0 ? (
+            ) : (currentView === "strikes" ? struckAccounts.length === 0 : reportedAccounts.length === 0 && cardReports.length === 0) ? (
               <div className="px-5 py-14 text-center">
                 <Shield
                   className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}
@@ -1082,12 +1140,12 @@ const changePage = (nextPage: number) => {
                 <p
                   className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}
                 >
-                  No unresolved reports or expired offers
+                  {currentView === "strikes" ? "No active strikes" : "No unresolved reports"}
                 </p>
               </div>
             ) : (
               <div className="moderation-report-list grid items-start gap-3 p-3 lg:grid-cols-2 lg:gap-5 lg:p-5">
-                {pagedCardReports.map((report) => (
+                {currentView === "account_reports" && pagedCardReports.map((report) => (
                   <div
                     key={`card-${report.id}`}
                     className={`moderation-report-card moderation-price-card min-w-0 rounded-2xl border p-3 sm:p-5 ${isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]"}`}
@@ -1137,6 +1195,10 @@ const changePage = (nextPage: number) => {
                         </span>
                       </p>
                     </div>
+                    <button type="button" onClick={() => setDismissTarget({ kind: "card", id: report.id, username: report.reportedUsername })}
+                      className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold ${isLightMode ? "bg-zinc-100 text-zinc-800" : "bg-white/[0.08] text-white"}`}>
+                      Dismiss
+                    </button>
                   </div>
                 ))}
                 {pagedAccountReports.map((report, index) => (
@@ -1153,11 +1215,11 @@ const changePage = (nextPage: number) => {
                       <div className="min-w-0 flex-1">
                         <p className="break-words font-semibold">
                           <span className="lg:hidden">{report.username}</span>
-                          <span className="hidden lg:inline">{report.expiredOffers.length > 0
+                          <span className="hidden lg:inline">{currentView === "strikes"
                             ? `${report.username} let ${report.expiredOffers.length} trade ${report.expiredOffers.length === 1 ? "offer" : "offers"} expire.`
                             : `${report.username} has been reported ${report.reports.length} ${report.reports.length === 1 ? "time" : "times"}.`}</span>
                           <span className="mt-1 block text-xs font-normal leading-5 lg:hidden">
-                            {report.reports.length} {report.reports.length === 1 ? "report" : "reports"} · {report.expiredOffers.length} expired {report.expiredOffers.length === 1 ? "offer" : "offers"}
+                            {currentView === "strikes" ? `${report.expiredOffers.length} expired ${report.expiredOffers.length === 1 ? "offer" : "offers"}` : `${report.reports.length} ${report.reports.length === 1 ? "report" : "reports"}`}
                           </span>
                         </p>
                         <p
@@ -1165,7 +1227,7 @@ const changePage = (nextPage: number) => {
                         >
                           {report.tradeAccessRevoked
                             ? "DISCORD USERNAME AND PUBLIC RIGHTS REVOKED"
-                            : report.expiredOffers.length > 0
+                            : currentView === "strikes"
                               ? `${Math.max(0, 3 - report.expiredOffers.length)} ${Math.max(0, 3 - report.expiredOffers.length) === 1 ? "expiration" : "expirations"} remaining before automatic revocation.`
                               : report.reports.length >= 3
                                 ? "THREE-REPORT RECOMMENDATION REACHED"
@@ -1181,7 +1243,7 @@ const changePage = (nextPage: number) => {
                             !
                           </div>
                         )}
-                      {report.expiredOffers.length > 0 && (
+                      {currentView === "strikes" && report.expiredOffers.length > 0 && (
                         <div
                           className={`moderation-strike-badge shrink-0 rounded-xl border px-3 py-2 text-center ${
                             report.expiredOffers.length >= 3
@@ -1218,7 +1280,7 @@ const changePage = (nextPage: number) => {
                       )}
                     </div>
                     <div className="moderation-report-details mt-4 space-y-2 lg:max-h-[420px] lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
-                      {report.expiredOffers.map((offer) => (
+                      {currentView === "strikes" && report.expiredOffers.map((offer) => (
                         <div
                           key={`expired-${offer.id}`}
                           className={`moderation-detail-row flex items-center gap-2 rounded-xl px-3 py-2 ${isLightMode ? "bg-amber-50" : "bg-amber-500/[0.08]"}`}
@@ -1244,7 +1306,7 @@ const changePage = (nextPage: number) => {
                           </p>
                         </div>
                       ))}
-                      {report.reports.map((item) => (
+                      {currentView === "account_reports" && report.reports.map((item) => (
                         <div
                           key={item.id}
                           className={`moderation-detail-row flex items-center gap-2 rounded-xl px-3 py-2 ${
@@ -1281,11 +1343,14 @@ const changePage = (nextPage: number) => {
                               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
                             )}
                           </button>
+                          <button type="button" onClick={() => setDismissTarget({ kind: "profile", id: item.id, username: report.username })}
+                            className={`min-h-11 shrink-0 rounded-xl px-3 text-xs font-bold ${isLightMode ? "bg-zinc-200 text-zinc-800" : "bg-white/[0.08] text-white"}`}>
+                            Dismiss
+                          </button>
                         </div>
                       ))}
                     </div>
-                    {(report.reports.length > 0 ||
-                      report.tradeAccessRevoked) && (
+                      {(currentView === "account_reports" || report.tradeAccessRevoked) && (
                       <button
                         type="button"
                         onClick={() => setSelectedAccountReport(report)}
@@ -1554,7 +1619,7 @@ const changePage = (nextPage: number) => {
               className={`mt-4 text-sm leading-relaxed ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
             >
               {selectedAccountReport.tradeAccessRevoked
-                ? "Reinstating this user restores their ability to trade and sell, unlocks their Discord username, clears their account reports and expired-offer strikes, and removes them from this page."
+                ? "Reinstating this user restores trading and sale access, unlocks their Discord username, and clears account reports and expired-offer strikes."
                 : "Three reports are recommended, but moderators may act earlier when the report details justify it. Revoking removes their Discord username, removes them from all public views, and prevents them from editing their Discord username until a moderator restores access."}
             </p>
             </div>
@@ -1593,6 +1658,25 @@ const changePage = (nextPage: number) => {
             >
               Cancel
             </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {dismissTarget && (
+        <div className="moderation-modal-overlay fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="dismiss-report-title"
+            className={`moderation-modal-panel w-full max-w-md rounded-2xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}>
+            <h2 id="dismiss-report-title" className="text-xl font-bold">Are you sure you want to dismiss this?</h2>
+            <p className={`mt-3 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
+              This {dismissTarget.kind === "profile" ? "profile" : "card"} report for {dismissTarget.username} will leave the active reports list. The dismissal will appear in History.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button type="button" disabled={dismissing} onClick={() => setDismissTarget(null)}
+                className={`min-h-11 flex-1 rounded-xl px-4 font-semibold ${isLightMode ? "bg-zinc-100 text-zinc-800" : "bg-white/[0.08] text-white"}`}>Cancel</button>
+              <button type="button" disabled={dismissing} onClick={dismissReport}
+                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-500 px-4 font-bold text-white disabled:opacity-60">
+                {dismissing && <Loader2 className="h-4 w-4 animate-spin" />}Dismiss
+              </button>
             </div>
           </div>
         </div>
