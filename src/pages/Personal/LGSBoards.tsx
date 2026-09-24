@@ -374,10 +374,6 @@ function eventPhotoSourceType(file: File) {
   };
   return extension ? types[extension] || "" : "";
 }
-function eventPhotoFormat(path: string) {
-  const extension = path.split(".").pop()?.toLocaleUpperCase();
-  return extension || "IMAGE";
-}
 async function convertEventPhoto(file: File) {
   if (!eventPhotoSourceType(file))
     throw new Error(`${file.name} is not an image.`);
@@ -599,6 +595,7 @@ export default function LGSBoards() {
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [eventPhotos, setEventPhotos] = useState<EventPhoto[]>([]);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
   const [photoToDelete, setPhotoToDelete] = useState<EventPhoto | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [roster, setRoster] = useState<Player[]>([]);
@@ -644,6 +641,7 @@ export default function LGSBoards() {
     setDialog(null);
     setDeckPlayer(null);
   }, []);
+  const closePhotoPreview = useCallback(() => setPhotoPreviewOpen(false), []);
   const ownStore = stores.find((store) => store.id === staff?.store_id);
   const canCreate = !!staff?.active && staff.role === "STAFF" && !!staff.store_id;
   const canManage =
@@ -898,6 +896,7 @@ export default function LGSBoards() {
   const openEvent = (id: string) =>
     void run(async () => {
       eventRef.current = id;
+      setPhotoPreviewOpen(false);
       setParticipantPage(1);
       setTab("attendance");
       setPlayerSearch("");
@@ -1738,10 +1737,7 @@ export default function LGSBoards() {
                 <section className="lgs-panel lgs-overview-gallery">
                   <div className="lgs-gallery-heading">
                     <div>
-                      <h2>Event gallery</h2>
-                      <p className="lgs-muted">
-                        Photos are optimized before upload when your browser supports it.
-                      </p>
+                      <h2>Event gallery{eventPhotos.length > 0 ? ` (${eventPhotos.length})` : ""}</h2>
                     </div>
                     {canManage && (
                       <button
@@ -1769,92 +1765,25 @@ export default function LGSBoards() {
                       }}
                     />
                   </div>
-                  {activePhoto ? (
-                    <>
-                      <div className="lgs-gallery-stage">
-                        <img
-                          src={eventPhotoUrl(activePhoto.storage_path)}
-                          alt={`Event photo ${safePhotoIndex + 1}`}
-                        />
-                        {canManage && (
-                          <button
-                            type="button"
-                            className="lgs-gallery-delete"
-                            disabled={busy}
-                            onClick={() => setPhotoToDelete(activePhoto)}
-                            aria-label={`Delete event photo ${safePhotoIndex + 1}`}
-                          >
-                            <X size={20} aria-hidden="true" />
-                          </button>
-                        )}
-                        {eventPhotos.length > 1 && (
-                          <>
-                            <button
-                              type="button"
-                              className="lgs-gallery-arrow lgs-gallery-previous"
-                              onClick={() =>
-                                setPhotoIndex(
-                                  (safePhotoIndex - 1 + eventPhotos.length) %
-                                    eventPhotos.length,
-                                )
-                              }
-                              aria-label="Previous event photo"
-                            >
-                              <ChevronLeft size={24} aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              className="lgs-gallery-arrow lgs-gallery-next"
-                              onClick={() =>
-                                setPhotoIndex(
-                                  (safePhotoIndex + 1) % eventPhotos.length,
-                                )
-                              }
-                              aria-label="Next event photo"
-                            >
-                              <ChevronRight size={24} aria-hidden="true" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                      <div className="lgs-gallery-meta">
-                        <span>
-                          {safePhotoIndex + 1} of {eventPhotos.length}
-                        </span>
-                        <span>
-                          {activePhoto.width > 0 && activePhoto.height > 0
-                            ? `${activePhoto.width} × ${activePhoto.height} `
-                            : ""}
-                          {eventPhotoFormat(activePhoto.storage_path)} ·{" "}
-                          {Math.max(1, Math.round(activePhoto.file_size / 1024))} KB
-                        </span>
-                      </div>
-                      {eventPhotos.length > 1 && (
-                        <div className="lgs-gallery-thumbnails" aria-label="Event photos">
-                          {eventPhotos.map((photo, index) => (
-                            <button
-                              type="button"
-                              key={photo.id}
-                              className={index === safePhotoIndex ? "selected" : ""}
-                              onClick={() => setPhotoIndex(index)}
-                              aria-label={`Show event photo ${index + 1}`}
-                              aria-current={index === safePhotoIndex ? "true" : undefined}
-                            >
-                              <img src={eventPhotoUrl(photo.storage_path)} alt="" />
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="lgs-gallery-empty">
-                      <ImagePlus size={30} aria-hidden="true" />
-                      <strong>No event photos yet</strong>
-                      <span>
-                        Add up to 24 photos. They appear here immediately with no approval step.
-                      </span>
-                    </div>
-                  )}
+                  <div className="lgs-gallery-previews" aria-label="Event photos">
+                    {eventPhotos.map((photo, index) => (
+                      <button
+                        type="button"
+                        key={photo.id}
+                        className="lgs-gallery-slot"
+                        onClick={() => {
+                          setPhotoIndex(index);
+                          setPhotoPreviewOpen(true);
+                        }}
+                        aria-label={`Open event photo ${index + 1} of ${eventPhotos.length}`}
+                      >
+                        <img src={eventPhotoUrl(photo.storage_path)} alt="" loading="lazy" />
+                      </button>
+                    ))}
+                    {Array.from({ length: Math.max(0, 10 - eventPhotos.length) }, (_, index) => (
+                      <div key={`empty-${index}`} className="lgs-gallery-slot empty" aria-hidden="true" />
+                    ))}
+                  </div>
                 </section>
               </div>
             )}
@@ -2337,6 +2266,52 @@ export default function LGSBoards() {
           </button>
         </Modal>
       )}
+      {staff && event && photoPreviewOpen && activePhoto && (
+        <Modal
+          title={`Photo ${safePhotoIndex + 1} of ${eventPhotos.length}`}
+          close={closePhotoPreview}
+          className="lgs-photo-preview-dialog"
+        >
+          <div className="lgs-photo-preview-stage">
+            <img
+              src={eventPhotoUrl(activePhoto.storage_path)}
+              alt={`Event photo ${safePhotoIndex + 1}`}
+            />
+            {eventPhotos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="lgs-gallery-arrow lgs-gallery-previous"
+                  onClick={() => setPhotoIndex((safePhotoIndex - 1 + eventPhotos.length) % eventPhotos.length)}
+                  aria-label="Previous event photo"
+                >
+                  <ChevronLeft size={24} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="lgs-gallery-arrow lgs-gallery-next"
+                  onClick={() => setPhotoIndex((safePhotoIndex + 1) % eventPhotos.length)}
+                  aria-label="Next event photo"
+                >
+                  <ChevronRight size={24} aria-hidden="true" />
+                </button>
+              </>
+            )}
+          </div>
+          {canManage && (
+            <button
+              type="button"
+              className="lgs-gallery-preview-delete"
+              onClick={() => {
+                setPhotoPreviewOpen(false);
+                setPhotoToDelete(activePhoto);
+              }}
+            >
+              <X size={16} aria-hidden="true" /> Delete photo
+            </button>
+          )}
+        </Modal>
+      )}
       {staff && event && photoToDelete && (
         <Modal
           title="Are you sure you wanna delete this photo?"
@@ -2817,25 +2792,23 @@ const STYLES = `
 .lgs-overview-notes{grid-area:notes;display:flex;flex-direction:column}
 .lgs-overview-placements{grid-area:placements}
 .lgs-overview-totals{grid-area:totals;display:flex;flex-direction:column}
-.lgs-overview-gallery{grid-area:gallery;display:flex;flex-direction:column;align-self:stretch!important;height:auto!important;min-height:300px}
-.lgs-gallery-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.lgs-overview>.lgs-panel.lgs-overview-gallery{grid-area:gallery;display:flex;flex-direction:column;justify-self:stretch;align-self:start!important;width:100%;max-width:none;height:auto!important;min-height:0;padding:18px 26px}
+.lgs-gallery-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;margin:0}
 .lgs-gallery-heading>div{min-width:0}
 .lgs-ui .lgs-gallery-add{display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;margin:0}
 .lgs-ui input.lgs-gallery-input{display:none!important}
-.lgs-gallery-stage{position:relative;flex:1;min-height:220px;margin-top:18px;overflow:hidden;border-radius:14px;background:var(--lgs-soft)}
-.lgs-gallery-stage>img{display:block;width:100%;height:100%;min-height:220px;max-height:420px;object-fit:contain}
-.lgs-gallery-delete{position:absolute;top:12px;right:12px;z-index:2;display:flex;align-items:center;justify-content:center;width:44px;min-height:44px!important;padding:0;border-radius:999px;background:rgba(20,22,23,.82);color:#fff;box-shadow:0 3px 14px rgba(0,0,0,.24);backdrop-filter:blur(8px)}
-.lgs-gallery-delete:hover:not(:disabled){background:#a62b27}
-.lgs-gallery-arrow{position:absolute;top:50%;display:flex;align-items:center;justify-content:center;width:44px;min-height:44px!important;padding:0;border-radius:999px;background:rgba(20,22,23,.78);color:#fff;transform:translateY(-50%);backdrop-filter:blur(8px)}
+.lgs-gallery-previews{display:flex;gap:8px;width:100%;min-width:0;margin:12px 0 0;padding:2px 2px 6px;overflow-x:auto;scrollbar-width:thin}
+.lgs-gallery-slot{display:block;flex:0 0 calc(10% - 7.2px);min-width:0;aspect-ratio:1;overflow:hidden;border-radius:10px;background:var(--lgs-soft)}
+.lgs-ui button.lgs-gallery-slot{min-height:0!important;padding:0;border:3px solid transparent}
+.lgs-gallery-slot.empty{border:1px dashed color-mix(in srgb,var(--lgs-muted) 34%,transparent);background:color-mix(in srgb,var(--lgs-soft) 65%,var(--lgs-panel))}
+.lgs-ui button.lgs-gallery-slot:hover,.lgs-ui button.lgs-gallery-slot:focus-visible{border-color:var(--lgs-accent);outline:none}
+.lgs-gallery-previews img{display:block;width:100%;height:100%;object-fit:cover}
+.lgs-ui .lgs-modal.lgs-photo-preview-dialog{width:min(100%,900px);max-width:900px}
+.lgs-photo-preview-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:0;margin-top:16px;overflow:hidden;border-radius:12px;background:#1f2225}
+.lgs-photo-preview-stage>img{display:block;width:auto;max-width:100%;height:auto;max-height:calc(100dvh - 190px);object-fit:contain}
+.lgs-gallery-arrow{position:absolute;top:50%;z-index:1;display:flex;align-items:center;justify-content:center;width:44px;min-height:44px!important;padding:0;border-radius:999px;background:rgba(20,22,23,.78);color:#fff;transform:translateY(-50%);backdrop-filter:blur(8px)}
 .lgs-gallery-previous{left:12px}.lgs-gallery-next{right:12px}
-.lgs-gallery-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;color:var(--lgs-muted);font-size:12px}
-.lgs-gallery-thumbnails{display:flex;gap:8px;margin-top:10px;padding-bottom:2px;overflow-x:auto;scrollbar-width:thin}
-.lgs-gallery-thumbnails button{width:66px;height:50px;min-height:50px;flex:0 0 66px;padding:0;overflow:hidden;border-radius:8px;background:var(--lgs-soft);opacity:.62}
-.lgs-gallery-thumbnails button.selected{opacity:1;box-shadow:inset 0 0 0 2px var(--lgs-accent)}
-.lgs-gallery-thumbnails img{display:block;width:100%;height:100%;object-fit:cover}
-.lgs-gallery-empty{display:flex;flex:1;min-height:220px;margin-top:18px;padding:24px;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px dashed color-mix(in srgb,var(--lgs-muted) 38%,transparent);border-radius:14px;background:var(--lgs-soft);color:var(--lgs-muted)}
-.lgs-gallery-empty strong{margin-top:12px;color:var(--lgs-text);font-size:17px}
-.lgs-gallery-empty span{max-width:440px;margin-top:5px;font-size:14px;line-height:1.5}
+.lgs-ui .lgs-gallery-preview-delete{display:flex;align-items:center;gap:7px;min-height:40px;margin:10px 0 0 auto;padding:6px 0;background:transparent;color:#c84a43;font-size:14px}
 .lgs-placement-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:10px;margin-top:16px}
 .lgs-overview .lgs-placement{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,160px);align-items:center;gap:12px;min-height:0;margin:0;padding:12px 14px;background:var(--lgs-soft);border-radius:12px}
 .lgs-overview .lgs-placement>span{font-weight:650;line-height:1.35}
@@ -2893,6 +2866,9 @@ const STYLES = `
 @media(max-width:1100px){
   .lgs-overview{grid-template-columns:minmax(0,1fr);grid-template-areas:"decks" "notes" "totals" "gallery" "placements";gap:14px;align-items:start}
   .lgs-overview>.lgs-panel{align-self:start;width:100%;height:auto}
+  .lgs-overview>.lgs-panel.lgs-overview-gallery{width:100%;max-width:100%}
+  .lgs-gallery-slot{flex-basis:calc(16.6667% - 6.6667px)}
+  .lgs-gallery-slot.empty:nth-child(n+7){display:none}
   .lgs-ui .lgs-totals-button{width:100%}
   .lgs-overview-notes textarea{min-height:260px}
   .lgs-prize-log{flex:none;max-height:280px}
@@ -2913,9 +2889,11 @@ const STYLES = `
   .lgs-raffle-results time{grid-column:2;text-align:left;white-space:normal}
   .lgs-gallery-heading{display:block}
   .lgs-ui .lgs-gallery-add{width:100%;margin-top:14px}
-  .lgs-gallery-stage{min-height:0;aspect-ratio:4/3}
-  .lgs-gallery-stage>img{min-height:0;max-height:none}
-  .lgs-gallery-delete{top:8px;right:8px}
-  .lgs-gallery-meta{align-items:flex-start;flex-direction:column;gap:2px}
+  .lgs-overview>.lgs-panel.lgs-overview-gallery{padding:16px}
+  .lgs-gallery-slot{flex-basis:calc(25% - 6px)}
+  .lgs-gallery-slot.empty:nth-child(n+5){display:none}
+  .lgs-photo-preview-stage>img{max-height:calc(100dvh - 170px)}
+  .lgs-gallery-arrow{width:38px;min-height:38px!important}
+  .lgs-gallery-previous{left:8px}.lgs-gallery-next{right:8px}
 }
 `;
