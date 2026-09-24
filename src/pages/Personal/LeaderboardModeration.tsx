@@ -891,7 +891,7 @@ const changePage = (nextPage: number) => {
           .moderation-history-mobile { display: grid; gap: 10px; }
           .moderation-history-entry { border: 1px solid var(--moderation-line); border-radius: 16px; background: var(--moderation-card-bg); padding: 14px; }
           .moderation-history-entry > div:last-child { padding-top: 10px; border-top: 1px solid var(--moderation-line); }
-          .moderation-history-entry time { display: block; width: 100%; margin-left: 21px; }
+          .moderation-history-entry time { display: block; width: auto; margin-left: auto; }
           .moderation-modal-overlay { z-index: 2147483646; align-items: flex-end; padding: max(12px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
           .moderation-modal-panel { display: flex; flex-direction: column; width: 100%; max-width: 600px; min-height: 0; max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border-radius: 20px; overflow: hidden; }
           .moderation-modal-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px 16px; -webkit-overflow-scrolling: touch; }
@@ -1441,18 +1441,24 @@ const changePage = (nextPage: number) => {
                   <article key={item.id} className={`moderation-history-entry px-4 py-4 ${isLightMode ? "border-t border-black/[0.07]" : "border-t border-white/[0.07]"}`}>
                     <div className="moderation-history-person">
                       <div className="moderation-history-avatar">
-                        <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                        <CardImage src={item.moderatorAvatar} alt="" className="h-full w-full rounded-full object-cover" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold">{item.targetUsername}</p>
+                        <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
+                          <span className="break-words">{item.moderatorUsername}</span>
+                          <Shield size={14} className={isLightMode ? "text-[#725700]" : "text-[#FFD54A]"} aria-label="Moderator" />
+                        </p>
                         <p className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>{getHistoryActionTitle(item)}</p>
                       </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-5">
-                      <Shield size={13} className={isLightMode ? "text-[#725700]" : "text-[#FFD54A]"} />
-                      <span className="min-w-0 break-words">By {item.moderatorUsername}</span>
-                      <time dateTime={item.createdAt} className={`w-full sm:ml-auto sm:w-auto ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                        {new Date(item.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
+                    <div className="mt-3 flex items-center gap-2 text-xs leading-5">
+                      <div className="moderation-history-avatar">
+                        <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                      </div>
+                      <span className="min-w-0 flex-1 break-words font-semibold">{item.targetUsername}</span>
+                      <time dateTime={item.createdAt} className={`shrink-0 text-right ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                        {new Date(item.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        <span className="block">{new Date(item.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span>
                       </time>
                     </div>
                   </article>
@@ -1817,3 +1823,4 @@ const changePage = (nextPage: number) => {
   );
 };
 export default LeaderboardModeration;
+
