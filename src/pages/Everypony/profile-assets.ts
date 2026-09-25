@@ -53,7 +53,6 @@ import TerriAvatar from "@/assets/avatars/terrypfp.webp";
 import Jacobpfp from "@/assets/avatars/jacobpfp.webp";
 
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
-import blueVerifiedBadge from "/website-assets/blueverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 import ownerBadge from "/website-assets/OwnerBadge.webp";
 
@@ -206,7 +205,11 @@ export const VERIFIED_USERS: Record<
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
-        "81a1f57f-cc99-4322-a765-9ee102cfa2b9": {
+    "81a1f57f-cc99-4322-a765-9ee102cfa2b9": {
+    badge: elementOfLaughter,
+    label: "ELEMENT OF LAUGHTER",
+  },
+    "0634af21-958f-4922-b812-6ab3b53f7260": {
     badge: elementOfLaughter,
     label: "ELEMENT OF LAUGHTER",
   },
