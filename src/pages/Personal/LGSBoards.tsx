@@ -19,7 +19,6 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-// New tables may not be in your generated Supabase types yet.
 const db = supabase as unknown as SupabaseClient;
 const DECKS = [
   { id: "TWILIGHTSPARKLE", name: "Twilight", image: cardImagePaths.fixed.tcgCardBacksPRR01BACK },
@@ -96,7 +95,7 @@ type Dialog =
   | "players"
   | "finish"
   | "edits"
-  | "player_id"
+  | "player_details"
   | "totals"
   | null;
 type EventEdit = {
@@ -610,6 +609,7 @@ export default function LGSBoards() {
   const [totalsPage, setTotalsPage] = useState(1);
   const [rosterPage, setRosterPage] = useState(1);
   const [idPlayer, setIdPlayer] = useState<Attendance | null>(null);
+  const [nameDraft, setNameDraft] = useState("");
   const [idDraft, setIdDraft] = useState("");
   const [deckPlayer, setDeckPlayer] = useState<Attendance | null>(null);
   const [playerSearch, setPlayerSearch] = useState("");
@@ -934,6 +934,23 @@ export default function LGSBoards() {
       if (action === "check_in" || action === "remove_player") setTotals(null);
       setNotice(message);
     });
+  const correctPlayer = (form: FormEvent) => {
+    form.preventDefault();
+    if (!event || !idPlayer || !canManage) return;
+    void run(async () => {
+      const { error: correctionError } = await db.rpc("lgs_correct_player", {
+        p_event_id: event.id,
+        p_player_id: idPlayer.player_id,
+        p_name: nameDraft.trim(),
+        p_external_id: idDraft.trim(),
+      });
+      if (correctionError) throw correctionError;
+      closeDialog();
+      await Promise.all([loadEvent(event.id), loadBoard()]);
+      setTotals(null);
+      setNotice("Player details updated across this store’s events.");
+    });
+  };
   const createEvent = (form: FormEvent) => {
     form.preventDefault();
     void run(async () => {
@@ -1416,6 +1433,22 @@ export default function LGSBoards() {
                         </button>
                         <div className="lgs-person-name">
                           <strong>{person.player_name}</strong>
+                          {canManage && (
+                            <button
+                              type="button"
+                              className="lgs-id-edit"
+                              disabled={busy}
+                              aria-label={`Edit player details for ${person.player_name}`}
+                              onClick={() => {
+                                setIdPlayer(person);
+                                setNameDraft(person.player_name);
+                                setIdDraft(person.player_external_id ?? "");
+                                setDialog("player_details");
+                              }}
+                            >
+                              Edit player
+                            </button>
+                          )}
                           <span className="lgs-muted">
                             {DECKS.find((deck) => deck.id === person.deck)
                               ?.name ?? "No deck selected"}
@@ -1431,21 +1464,6 @@ export default function LGSBoards() {
                         <div className="lgs-player-id">
                           <span>Player ID</span>
                           <strong>{person.player_external_id || "—"}</strong>
-                          {editable && (
-                            <button
-                              type="button"
-                              className="lgs-id-edit"
-                              disabled={busy}
-                              aria-label={`Edit Player ID for ${person.player_name}`}
-                              onClick={() => {
-                                setIdPlayer(person);
-                                setIdDraft(person.player_external_id ?? "");
-                                setDialog("player_id");
-                              }}
-                            >
-                              {person.player_external_id ? "Edit ID" : "Add ID"}
-                            </button>
-                          )}
                         </div>
                         {editable &&
                           !raffles.some(
@@ -2399,25 +2417,25 @@ export default function LGSBoards() {
           </button>
         </Modal>
       )}
-      {staff && editable && dialog === "player_id" && idPlayer && (
+      {staff && canManage && dialog === "player_details" && idPlayer && (
         <Modal
-          title={`Player ID · ${idPlayer.player_name}`}
+          title={`Edit player · ${idPlayer.player_name}`}
           close={closeDialog}
           busy={busy}
           className="lgs-id-dialog"
         >
           {messages}
-          <form
-            className="lgs-form"
-            onSubmit={(form) => {
-              form.preventDefault();
-              mutate(
-                "set_player_id",
-                { player_id: idPlayer.player_id, external_id: idDraft.trim() },
-                "Player ID saved.",
-              );
-            }}
-          >
+          <form className="lgs-form" onSubmit={correctPlayer}>
+            <label>
+              Player name
+              <input
+                required
+                value={nameDraft}
+                onChange={(change) => setNameDraft(change.target.value)}
+                maxLength={80}
+                disabled={busy}
+              />
+            </label>
             <label>
               Player ID
               <input
@@ -2432,8 +2450,9 @@ export default function LGSBoards() {
               />
             </label>
             <p className="lgs-muted">
-              Saved for this event and future check-ins. Leave blank to clear
-              the ID.
+              Corrections update this player’s saved roster entry, past and
+              current attendance, and raffle winner names. Leave the ID blank
+              to clear it.
             </p>
             <div className="lgs-finish-actions">
               <button
@@ -2444,8 +2463,8 @@ export default function LGSBoards() {
               >
                 Cancel
               </button>
-              <button type="submit" className="lgs-primary" disabled={busy}>
-                Save Player ID
+              <button type="submit" className="lgs-primary" disabled={busy || !nameDraft.trim()}>
+                Save player
               </button>
             </div>
           </form>

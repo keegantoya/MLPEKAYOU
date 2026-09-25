@@ -772,163 +772,88 @@ const ExploreProfile = ({
             (typeof value === "object" && value?.owned === true),
         ).length;
       });
-      let completed = 0;
-      const progressMap = new Map(
-        (isoProgress || []).map((row: any) => [String(row.set_id), row]),
+      const rawProgress = new Map<string, Record<string, any>>(
+        (collection || []).map((row: any) => [String(row.set_id), row.progress || {}]),
       );
-      const sets = [
-        {
-          id: "1",
-          rarities: {
-            R: 30,
-            SR: 20,
-            SSR: 54,
-            HR: 36,
-            UR: 16,
-            LSR: 15,
-            SGR: 8,
-            SC: 7,
-          },
-        },
-        {
-          id: "5",
-          rarities: {
-            R: 30,
-            SR: 15,
-            FR: 18,
-            TR: 12,
-            TGR: 8,
-            MTR: 18,
-            SSR: 15,
-            UR: 15,
-            USR: 8,
-            XR: 7,
-          },
-        },
-        {
-          id: "7",
-          rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 },
-        },
-        {
-          id: "2",
-          rarities: {
-            R: 30,
-            SR: 20,
-            SSR: 54,
-            HR: 30,
-            UR: 16,
-            LSR: 16,
-            SGR: 8,
-            ZR: 7,
-            SC: 7,
-            "SHINING ZR": 1,
-          },
-        },
-        {
-          id: "3",
-          rarities: {
-            R: 60,
-            SR: 40,
-            SSR: 40,
-            HR: 60,
-            UR: 18,
-            LSR: 32,
-            SGR: 16,
-            ZR: 14,
-            SC: 7,
-            SZR: 3,
-          },
-        },
-        {
-          id: "8",
-          rarities: {
-            N: 20,
-            SN: 20,
-            R: 35,
-            SR: 15,
-            SSR: 15,
-            UR: 10,
-            UGR: 9,
-            CR: 12,
-          },
-        },
-        { id: "TCG_PROMOS", name: "TCG Promos" },
-      ];
-      sets.forEach((set) => {
-        const found = progressMap.get(set.id);
-        if (!found?.progress) return;
-        let ownedInSet = 0;
-        let totalInSet = 0;
-        Object.entries(set.rarities).forEach(([rarity, count]) => {
-          totalInSet += count as number;
-          for (let i = 1; i <= (count as number); i++) {
-            const key = `${rarity}-${i}`;
-            if (found.progress[key]) {
-              ownedInSet++;
-            }
-          }
-        });
-        if (totalInSet > 0 && ownedInSet === totalInSet) {
-          completed++;
-        }
-      });
-      const nightmareNightProgress = progressMap.get("14")?.progress || {};
-      const nightmareNightOwned = Object.values(nightmareNightProgress).filter(
-        (value: any) =>
-          value === true ||
-          (typeof value === "object" && value?.owned === true),
-      ).length;
-      if (nightmareNightOwned >= 190) {
-        completed++;
-      }
-      const { data: fwProgress } = await supabase
-        .from("collection_progress_raw")
-        .select("progress")
-        .eq("user_id", user.id)
-        .eq("set_id", "FW");
-      const fwRow = fwProgress?.[0];
-      if (fwRow) {
-        const STRUCTURE = [
-          { prefix: "BP01C", count: 48 },
-          { prefix: "BP01U", count: 18 },
-          { prefix: "BP01ER", count: 6 },
-          { prefix: "BP01SR", count: 14 },
-          { prefix: "BP01SPR", count: 28 },
-          { prefix: "BP01GR", count: 12 },
-          { prefix: "BP01CR", count: 12 },
-          { prefix: "BP01RR", count: 6 },
-          { prefix: "BP01PER", count: 12 },
-          { prefix: "BP01PSPR", count: 11 },
-          { prefix: "BP01PGR", count: 6 },
-          { prefix: "BP01PCR", count: 12 },
-          { prefix: "BP01PRR", count: 6 },
-        ];
-        const validKeys = new Set(
-          STRUCTURE.flatMap(({ prefix, count }) => {
-            if (prefix === "BP01ER") {
-              return Array.from(
-                { length: 6 },
-                (_, i) => `BP01ER${String(i + 7).padStart(2, "0")}`,
-              );
-            }
-            if (prefix === "BP01PSPR") {
-              return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
-                (n) => `BP01PSPR${String(n).padStart(2, "0")}`,
-              );
-            }
-            return Array.from(
-              { length: count },
-              (_, i) => `${prefix}${String(i + 1).padStart(2, "0")}`,
-            );
-          }),
+      const isOwned = (value: any) =>
+        value === true || (typeof value === "object" && value?.owned === true);
+      const complete = (setId: string, keys: string[]) => {
+        const progress = rawProgress.get(setId);
+        return Boolean(progress && keys.length && keys.every((key) => isOwned(progress[key])));
+      };
+      const numbered = (prefix: string, count: number, start = 1) =>
+        Array.from({ length: count }, (_, i) => `${prefix}${String(start + i).padStart(2, "0")}`);
+
+      let completed = 0;
+      // Count completed card sets only. CCG and TCG promos remain visible in
+      // the ISO, but neither counts toward Sets Completed.
+      isoSets.forEach((set) => {
+        if (["9", "SD", "FW", "12", "14", "tcgpromos"].includes(set.id)) return;
+        const keys = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+          Array.from({ length: count }, (_, i) => `${rarity}-${i + 1}`),
         );
-        const ownedFW = Object.entries(fwRow.progress || {}).filter(
-          ([key, val]) => val && validKeys.has(key),
-        ).length;
-        if (ownedFW === validKeys.size) {
-          completed++;
-        }
-      }
+        if (complete(set.id, keys)) completed++;
+      });
+
+      const fwStructure = [
+        ["BP01C", 48], ["BP01U", 18], ["BP01SR", 14],
+        ["BP01SPR", 28], ["BP01GR", 12], ["BP01CR", 12],
+        ["BP01RR", 6], ["BP01PER", 12], ["BP01PGR", 6],
+        ["BP01PCR", 12], ["BP01PRR", 6],
+      ] as const;
+      const fwKeys = [
+        ...fwStructure.flatMap(([prefix, count]) => numbered(prefix, count)),
+        ...numbered("BP01ER", 6, 7),
+        ...[1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map((n) => `BP01PSPR${String(n).padStart(2, "0")}`),
+      ];
+      if (complete("FW", fwKeys)) completed++;
+
+      const bp02Structure = [
+        ["BP02-C", 48], ["BP02-U", 18], ["BP02-ER", 6],
+        ["BP02-SR", 14], ["BP02-SPR", 28], ["BP02-GR", 12],
+        ["BP02-CR", 12], ["BP02-RR", 6], ["BP02-PSPR", 11],
+        ["BP02-PGR", 6], ["BP02-PCR", 12], ["BP02-PRR", 6],
+      ] as const;
+      const bp02Keys = [
+        ...bp02Structure.flatMap(([prefix, count]) => numbered(prefix, count)),
+        ...Array.from({ length: 6 }, (_, i) => ["A2", "B2"].map((side) => `BP02-PER${String(i + 1).padStart(2, "0")}-${side}`)).flat(),
+      ];
+      if (complete("12", bp02Keys)) completed++;
+
+      const sdStructure = [
+        ["SD01C", 9], ["SD01U", 7], ["SD01SR", 6],
+        ["SD01SPR", 10], ["SD01GR", 6], ["SD01CR", 6],
+        ["SD01ER", 6], ["SD01PRR", 6],
+      ] as const;
+      const sdKeys = [
+        ...sdStructure.flatMap(([prefix, count]) => numbered(prefix, count)),
+        ...numbered("SD01PER", 12, 7),
+      ];
+      const sdProgress = rawProgress.get("SD");
+      if (sdProgress && sdKeys.every((key) =>
+        [key, `BONUS-${key}`, `STARTER-${key}`].some((alias) => isOwned(sdProgress[alias])),
+      )) completed++;
+
+      // Nightmare Night's catalog contains 190 cards. Count only owned BP03
+      // keys so unrelated or stale progress entries cannot complete it.
+      const bp03Counts: Record<string, number> = {
+        C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12,
+        CR: 12, RR: 6, PER: 12, PSPR: 11, PGR: 5, PCR: 12, PRR: 6,
+      };
+      const bp03Owned: Record<string, number> = {};
+      Object.entries(rawProgress.get("14") || {}).forEach(([key, value]) => {
+        if (!isOwned(value)) return;
+        const match = key.match(/^BP03-(PSPR|PER|PGR|PCR|PRR|SPR|ER|SR|GR|CR|RR|C|U)(\d{2})(?:-(AA|BB|CC))?$/);
+        if (!match) return;
+        const [, rarity, number] = match;
+        const validPsprNumbers = [3, 4, 6, 8, 11, 16, 17, 19, 20, 23, 25];
+        if (rarity === "PSPR" ? !validPsprNumbers.includes(Number(number)) :
+          Number(number) < 1 || Number(number) > (rarity === "ER" ? 2 : bp03Counts[rarity] || 0)) return;
+        bp03Owned[rarity] = (bp03Owned[rarity] || 0) + 1;
+      });
+      if (rawProgress.has("14") && Object.entries(bp03Counts).every(
+        ([rarity, count]) => bp03Owned[rarity] === count,
+      )) completed++;
       setuserStats({
         trades: (tradeCards || []).length,
         owned,
