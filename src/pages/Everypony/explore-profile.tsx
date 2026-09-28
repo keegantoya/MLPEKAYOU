@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { getProfileAssets } from "./profile-assets";
 import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import { getTradeCardImage } from "@/lib/card-images";
+import { tcgCatalog } from "@/lib/iso-card-catalog";
 type CardImageCard = {
   set_id: string | number;
   card_key: string;
@@ -698,31 +699,15 @@ const ExploreProfile = ({
           return;
         }
         if (set.id === "14") {
-          const nightmareNightStructure = [
-            ["C", 48],
-            ["U", 18],
-            ["ER", 6],
-            ["SR", 14],
-            ["SPR", 28],
-            ["GR", 12],
-            ["CR", 12],
-            ["RR", 6],
-            ["PER", 12],
-            ["PSPR", 11],
-            ["PGR", 5],
-            ["PCR", 12],
-            ["PRR", 6],
-          ] as const;
-          nightmareNightStructure.forEach(([rarity, count]) => {
-            for (let i = 1; i <= count; i++) {
-              const number = String(i).padStart(2, "0");
-              const cardKey = `BP03-${rarity}${number}`;
+          const nightmareSet = tcgCatalog.sets.find((catalogSet) => catalogSet.id === "14");
+          if (nightmareSet) {
+            tcgCatalog.getCards(nightmareSet).forEach(({ key: cardKey }) => {
               const fullKey = `14-${cardKey}`;
               if (!ownedCards[fullKey] && !inProgressCards.has(fullKey)) {
                 isoCards.push({ id: fullKey, set_id: "14", card_key: cardKey });
               }
-            }
-          });
+            });
+          }
           return;
         }
         if (set.id === "tcgpromos") {
@@ -834,26 +819,10 @@ const ExploreProfile = ({
         [key, `BONUS-${key}`, `STARTER-${key}`].some((alias) => isOwned(sdProgress[alias])),
       )) completed++;
 
-      // Nightmare Night's catalog contains 190 cards. Count only owned BP03
-      // keys so unrelated or stale progress entries cannot complete it.
-      const bp03Counts: Record<string, number> = {
-        C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12,
-        CR: 12, RR: 6, PER: 12, PSPR: 11, PGR: 5, PCR: 12, PRR: 6,
-      };
-      const bp03Owned: Record<string, number> = {};
-      Object.entries(rawProgress.get("14") || {}).forEach(([key, value]) => {
-        if (!isOwned(value)) return;
-        const match = key.match(/^BP03-(PSPR|PER|PGR|PCR|PRR|SPR|ER|SR|GR|CR|RR|C|U)(\d{2})(?:-(AA|BB|CC))?$/);
-        if (!match) return;
-        const [, rarity, number] = match;
-        const validPsprNumbers = [3, 4, 6, 8, 11, 16, 17, 19, 20, 23, 25];
-        if (rarity === "PSPR" ? !validPsprNumbers.includes(Number(number)) :
-          Number(number) < 1 || Number(number) > (rarity === "ER" ? 2 : bp03Counts[rarity] || 0)) return;
-        bp03Owned[rarity] = (bp03Owned[rarity] || 0) + 1;
-      });
-      if (rawProgress.has("14") && Object.entries(bp03Counts).every(
-        ([rarity, count]) => bp03Owned[rarity] === count,
-      )) completed++;
+      const nightmareSet = tcgCatalog.sets.find((set) => set.id === "14");
+      if (nightmareSet && complete("14", tcgCatalog.getCards(nightmareSet).map((card) => card.key))) {
+        completed++;
+      }
       setuserStats({
         trades: (tradeCards || []).length,
         owned,
