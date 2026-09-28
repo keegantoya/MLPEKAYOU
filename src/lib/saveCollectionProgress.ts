@@ -9,5 +9,11 @@ export async function saveCollectionProgress(
     p_progress: progress,
   });
 
+  if (!error) {
+    window.dispatchEvent(new CustomEvent("collection-progress-saved", {
+      detail: { setId, progress },
+    }));
+  }
+
   return error;
 }

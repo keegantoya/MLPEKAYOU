@@ -565,7 +565,6 @@ const hideNavigation =
     normalizedPath === "/links" ||
     normalizedPath === "/lgs-boards" ||
     new URLSearchParams(search).has("embed");
-const standalone = window.matchMedia("(display-mode: standalone)").matches;
   return (
     <>
       <ScrollToTop />
@@ -574,7 +573,7 @@ const standalone = window.matchMedia("(display-mode: standalone)").matches;
         className={
           hideNavigation
             ? "min-h-screen"
-            : `min-h-screen sm:pt-[64px] sm:pb-0 ${standalone ? "pt-[88px]" : "pt-[52px]"}`
+            : "app-content-shell min-h-screen"
         }
       >
         <SiteAccessGate>

@@ -796,11 +796,7 @@ const KayouHeader = () => {
 `}{" "}
       </style>
       <header
-        className={`fixed left-0 right-0 z-[20000] text-[#E7C84B] ${
-          !window.matchMedia("(display-mode: standalone)").matches
-            ? "top-0"
-            : "top-0"
-        }`}
+        className="fixed left-0 right-0 top-0 z-[20000] text-[#E7C84B]"
         style={{
           background: isLightMode
             ? "linear-gradient(180deg, #ffffff 0%, #fffdf7 72%, #fffaf0 100%)"
@@ -830,20 +826,7 @@ const KayouHeader = () => {
         <div className="pointer-events-none absolute left-0 top-0 hidden h-3 w-24 border-l border-t border-yellow-400/20 sm:block" />
         <div className="pointer-events-none absolute right-0 top-0 hidden h-3 w-24 border-r border-t border-yellow-400/20 sm:block" />
         <div
-          className="w-full flex sm:h-16 items-center px-2 sm:px-4 relative justify-between"
-          style={{
-            height:
-              window.innerWidth < 640
-                ? window.matchMedia("(display-mode: standalone)").matches
-                  ? `calc(44px + env(safe-area-inset-top))`
-                  : `52px`
-                : `64px`,
-            paddingTop:
-              window.innerWidth < 640 &&
-              window.matchMedia("(display-mode: standalone)").matches
-                ? `env(safe-area-inset-top)`
-                : `0px`,
-          }}
+          className="kayou-header-row relative flex w-full items-center justify-between px-2 sm:px-4"
         >
           {/* LEFT SIDE */}
           <div className="flex items-center gap-3 min-w-[70px]">
@@ -862,13 +845,7 @@ const KayouHeader = () => {
             )}
             {/* MOBILE PROFILE / LOGIN */}
             <div
-              className="sm:hidden absolute left-3 flex items-center gap-1.5"
-              style={{
-                top: window.matchMedia("(display-mode: standalone)").matches
-                  ? "calc(50% + env(safe-area-inset-top) / 2)"
-                  : "50%",
-                transform: "translateY(-50%)",
-              }}
+              className="kayou-header-mobile-actions absolute left-3 flex -translate-y-1/2 items-center gap-1.5 sm:hidden"
             >
               {!user ? (
                 <Button
@@ -1410,13 +1387,7 @@ const KayouHeader = () => {
         </div>
         {/* MOBILE FAQ + SELLING BUTTONS */}
         <div
-          className="sm:hidden absolute right-3 flex items-center gap-1.5"
-          style={{
-            top: window.matchMedia("(display-mode: standalone)").matches
-              ? "calc(50% + env(safe-area-inset-top) / 2)"
-              : "50%",
-            transform: "translateY(-50%)",
-          }}
+          className="kayou-header-mobile-actions absolute right-3 flex -translate-y-1/2 items-center gap-1.5 sm:hidden"
         >
           {user && (
             <button
@@ -2218,7 +2189,8 @@ const KayouHeader = () => {
       {/* MOBILE BOTTOM NAV */}
       <div
         className={`
-    sm:hidden fixed bottom-5 z-[99999]
+    sm:hidden fixed z-[99999]
+    kayou-mobile-nav
     grid place-items-center overflow-hidden
     rounded-[24px] border
     backdrop-blur-xl

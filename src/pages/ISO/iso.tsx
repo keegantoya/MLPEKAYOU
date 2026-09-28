@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { funCatalog, moonCatalog, promosCatalog, rainbowCatalog, starCatalog, tcgCatalog } from "@/lib/iso-card-catalog";
 import ISOMOON from "./iso-moon";
 import ISOFUN from "./iso-fun";
 import ISORAINBOW from "./iso-rainbow";
@@ -25,34 +26,57 @@ const sections = [
   {
     id: "moon",
     label: "Moon",
-    setIds: ["1", "2", "3"],
+    setIds: moonCatalog.sets.map((set) => set.id),
   },
   {
     id: "fun",
     label: "Fun Moments",
-    setIds: ["7", "8", "11"],
+    setIds: funCatalog.sets.map((set) => set.id),
   },
   {
     id: "rainbow",
     label: "Rainbow",
-    setIds: ["5", "6"],
+    setIds: rainbowCatalog.sets.map((set) => set.id),
   },
   {
     id: "star",
     label: "Star",
-    setIds: ["4"],
+    setIds: starCatalog.sets.map((set) => set.id),
   },
   {
     id: "tcg",
     label: "TCG",
-    setIds: ["FW", "SD", "12", "14"],
+    setIds: tcgCatalog.sets.map((set) => set.id),
   },
   {
     id: "promos",
     label: "Promos",
-    setIds: ["9", "tcgpromos"],
+    setIds: promosCatalog.sets.map((set) => set.id),
   },
 ] as const;
+const ccgSets = [...moonCatalog.sets, ...funCatalog.sets, ...rainbowCatalog.sets, ...starCatalog.sets];
+function isOwned(value: unknown) {
+  return value === true || (typeof value === "object" && value !== null && "owned" in value && value.owned === true);
+}
+function isComplete(setId: string, progress: Record<string, unknown>) {
+  const ccgSet = ccgSets.find((set) => set.id === setId);
+  if (ccgSet) {
+    return Object.entries(ccgSet.rarities).every(([rarity, count]) =>
+      Array.from({ length: count }, (_, index) => `${rarity}-${index + 1}`).every((key) => isOwned(progress[key]))
+    );
+  }
+  const promoSet = promosCatalog.sets.find((set) => set.id === setId);
+  if (promoSet) {
+    return promoSet.cards.every((number) => isOwned(progress[promosCatalog.getCardKey(setId, number)]));
+  }
+  const tcgSet = tcgCatalog.sets.find((set) => set.id === setId);
+  if (tcgSet) {
+    return tcgCatalog.getCards(tcgSet).every((card) =>
+      isOwned(progress[card.key]) || (setId === "SD" && isOwned(progress[`BONUS-${card.key}`]))
+    );
+  }
+  return false;
+}
 export default function ISO() {
 const [selectedSection, setSelectedSection] =
     useState<Section>("moon");
@@ -63,6 +87,7 @@ const [searchAllCards, setSearchAllCards] = useState(false);
 const [wishlistMode, setWishlistMode] = useState(false);
 const [hiddenSets, setHiddenSets] = useState<string[]>([]);
 const [completedSets, setCompletedSets] = useState<string[]>([]);
+const [sidebarLoaded, setSidebarLoaded] = useState(false);
 const [hasInProgress, setHasInProgress] = useState(false);
 const [userId, setUserId] = useState<string | null>(null);
 const [hideISO, setHideISO] = useState(false);
@@ -72,6 +97,16 @@ const root = document.documentElement;
   return root.dataset.theme === "light" || root.classList.contains("light") || !root.classList.contains("dark");
 });
 const { wishlist, toggleWishlist } = useWishlist();
+useEffect(() => {
+  const updateCompletion = (event: Event) => {
+    const { setId, progress } = (event as CustomEvent<{ setId: string; progress: Record<string, unknown> }>).detail;
+    setCompletedSets((previous) => isComplete(String(setId), progress)
+      ? [...new Set([...previous, String(setId)])]
+      : previous.filter((id) => id !== String(setId)));
+  };
+  window.addEventListener("collection-progress-saved", updateCompletion);
+  return () => window.removeEventListener("collection-progress-saved", updateCompletion);
+}, []);
 useEffect(() => {
 const syncTheme = () => {
 const root = document.documentElement;
@@ -116,15 +151,7 @@ const hidden = (p?.iso_hidden_sets || []).map(String);
 const completed: string[] = [];
     (progress || []).forEach((row: any) => {
 const setId = String(row.set_id);
-const owned = Object.values(row.progress || {}).filter(
-        (value) => value === true
-      ).length;
-const totalCards: Record<string, number> = {
-  "9": 12,
-  tcgpromos: 27,
-};
-const total = totalCards[setId];
-if (total && owned >= total) {
+if (isComplete(setId, row.progress || {})) {
   completed.push(setId);
 }
     });
@@ -137,6 +164,7 @@ setHasInProgress(inProgressExists);
 setHiddenSets(hidden);
 setCompletedSets(completed);
 setHideISO(p?.hide_iso ?? false);
+setSidebarLoaded(true);
   };
   load();
 }, []);
@@ -187,6 +215,12 @@ const visibleSections = sections.filter((section) => {
       !completedSets.includes(setId)
   );
 });
+useEffect(() => {
+  if (!sidebarLoaded || wishlistMode || searchAllCards) return;
+  if (selectedSection !== "wishlist" && visibleSections.some((section) => section.id === selectedSection)) return;
+  const next = visibleSections.find((section) => section.id !== "wishlist");
+  if (next || selectedSection !== "wishlist") setSelectedSection((next?.id ?? "wishlist") as Section);
+}, [sidebarLoaded, wishlistMode, searchAllCards, hiddenSets, completedSets, hasInProgress, selectedSection]);
 const selectSection = (section: Section) => {
     setCardCodeSearch("");
     setCharacterSearch("");
@@ -370,7 +404,10 @@ const active = selectedSection === item.id;
                 />
               </div>
             )}
-            {wishlistMode ? sectionContent : isSearching ? allSearchContent : sectionContent}
+            {wishlistMode ? sectionContent : isSearching ? allSearchContent :
+              sidebarLoaded && !visibleSections.some((section) => section.id !== "wishlist")
+                ? <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">No missing cards in your visible sets.</div>
+                : sectionContent}
           </main>
         </div>
       </div>

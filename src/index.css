@@ -29,6 +29,40 @@ body {
 #root {
   min-height: 100vh;
 }
+.app-content-shell {
+  padding-top: 52px;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+.kayou-header-row {
+  height: 52px;
+}
+.kayou-header-mobile-actions {
+  top: 50%;
+}
+.kayou-mobile-nav {
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+@media (display-mode: standalone) and (max-width: 639px) {
+  .app-content-shell {
+    padding-top: calc(44px + env(safe-area-inset-top, 0px));
+  }
+  .kayou-header-row {
+    height: calc(44px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .kayou-header-mobile-actions {
+    top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+  }
+}
+@media (min-width: 640px) {
+  .app-content-shell {
+    padding-top: 64px;
+    padding-bottom: 0;
+  }
+  .kayou-header-row {
+    height: 64px;
+  }
+}
 html,
 body,
 #root {

@@ -6,6 +6,71 @@ import { useWishlist } from "./wishlist-in-iso";
 type Status =
   | "purchase_in_progress"
   | "trade_in_progress";
+type UserStatuses = {
+  statuses: Map<string, Status>;
+  listeners: Set<() => void>;
+  loaded: boolean;
+  pending?: Promise<void>;
+  changes: Map<string, Status | null>;
+};
+const statusCache = new Map<string, UserStatuses>();
+function getUserStatuses(userId: string) {
+  let entry = statusCache.get(userId);
+  if (!entry) {
+    entry = {
+      statuses: new Map(),
+      listeners: new Set(),
+      loaded: false,
+      changes: new Map(),
+    };
+    statusCache.set(userId, entry);
+  }
+  return entry;
+}
+function notifyStatuses(entry: UserStatuses) {
+  entry.listeners.forEach((listener) => listener());
+}
+function loadUserStatuses(userId: string) {
+  const entry = getUserStatuses(userId);
+  if (entry.loaded || entry.pending) return;
+  entry.pending = (async () => {
+    const statuses = new Map<string, Status>();
+    let offset = 0;
+    while (true) {
+      const { data, error } = await supabase
+        .from("iso_status")
+        .select("card_key, status")
+        .eq("user_id", userId)
+        .in("status", ["purchase_in_progress", "trade_in_progress"])
+        .range(offset, offset + 999);
+      if (error) throw error;
+      for (const row of data ?? []) {
+        statuses.set(String(row.card_key), row.status as Status);
+      }
+      if (!data || data.length < 1000) break;
+      offset += 1000;
+    }
+    entry.changes.forEach((status, key) => {
+      if (status) statuses.set(key, status);
+      else statuses.delete(key);
+    });
+    entry.statuses = statuses;
+    entry.loaded = true;
+    entry.changes.clear();
+    notifyStatuses(entry);
+  })().catch((error) => {
+    console.error("Failed to load ISO statuses", error);
+  }).finally(() => {
+    entry.pending = undefined;
+  });
+}
+function updateUserStatus(userId: string, key: string, status: Status | null) {
+  const entry = getUserStatuses(userId);
+  if (!entry.loaded) entry.changes.set(key, status);
+  if (status) entry.statuses.set(key, status);
+  else entry.statuses.delete(key);
+  notifyStatuses(entry);
+}
 interface ISOCheckingProps {
   className?: string;
   contentClassName?: string;
@@ -68,25 +133,19 @@ const target = e.target as Node;
     };
   }, []);
   useEffect(() => {
-async function loadStatus() {
-      if (!userId) return;
-const { data } = await supabase
-        .from("iso_status")
-        .select("status")
-        .eq("user_id", userId)
-        .eq("card_key", isoCardKey)
-        .maybeSingle();
-      if (
-        data?.status === "purchase_in_progress" ||
-        data?.status === "trade_in_progress"
-      ) {
-        setStatus(data.status);
-      } else {
-        setStatus(null);
-      }
+    if (!userId) {
+      setStatus(null);
+      return;
     }
-    loadStatus();
-  }, [userId, cardKey, isoCardKey]);
+    const entry = getUserStatuses(userId);
+    const sync = () => setStatus(entry.statuses.get(isoCardKey) ?? null);
+    entry.listeners.add(sync);
+    sync();
+    loadUserStatuses(userId);
+    return () => {
+      entry.listeners.delete(sync);
+    };
+  }, [userId, isoCardKey]);
 async function saveStatus(newStatus: Status) {
     if (loading) return;
     setLoading(true);
@@ -102,6 +161,7 @@ const { error } = await supabase
         return;
       }
       setStatus(null);
+      updateUserStatus(userId, isoCardKey, null);
       setOpen(false);
       onStatusChange?.(null);
       return;
@@ -124,6 +184,7 @@ const { error } = await supabase
       return;
     }
     setStatus(newStatus);
+    updateUserStatus(userId, isoCardKey, newStatus);
     setOpen(false);
     onStatusChange?.(newStatus);
   }
@@ -151,6 +212,7 @@ const error = await saveCollectionProgress(setId, progress);
       return;
     }
     setStatus(null);
+    updateUserStatus(userId, isoCardKey, null);
     setOpen(false);
     onStatusChange?.(null);
     onComplete?.();
@@ -169,6 +231,7 @@ const { error } = await supabase
       return;
     }
     setStatus(null);
+    updateUserStatus(userId, isoCardKey, null);
     setOpen(false);
     onStatusChange?.(null);
   }

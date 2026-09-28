@@ -879,7 +879,7 @@ const MobileProfile = () => {
     return <ProfileLoadingScreen light={isLightMode} failed />;
   return (
     <div
-      className={`mobile-profile-scope relative min-h-screen overflow-hidden pb-24 transition-colors duration-200 ${
+      className={`mobile-profile-scope relative overflow-hidden transition-colors duration-200 ${
         isLightMode
           ? "mobile-profile-light bg-[#f5f5f3] text-zinc-900"
           : "bg-[#0d0f10] text-white"
@@ -1073,32 +1073,6 @@ const MobileProfile = () => {
                     </p>
                   </>
                 )}
-                {/* STATUS / ACCESS */}
-                {!editingProfile && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${
-                        isLightMode
-                          ? "border-emerald-600/20 bg-emerald-600/[0.08] text-emerald-700"
-                          : "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${isLightMode ? "bg-emerald-600" : "bg-emerald-400"}`}
-                      />
-                      Active
-                    </span>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                        isLightMode
-                          ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                          : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.08] text-[#FFE27A]"
-                      }`}
-                    >
-                      SuperFan
-                    </span>
-                  </div>
-                )}
                 {tradeAccessRevoked && (
                   <div
                     className={`mt-4 rounded-xl border px-3 py-3 text-sm leading-relaxed ${isLightMode ? "border-red-200 bg-red-50 text-red-800" : "border-red-400/20 bg-red-400/[0.08] text-red-200"}`}
@@ -1144,6 +1118,31 @@ const MobileProfile = () => {
                 )}
               </div>
             </div>
+            {!editingProfile && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${
+                    isLightMode
+                      ? "border-emerald-600/20 bg-emerald-600/[0.08] text-emerald-700"
+                      : "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${isLightMode ? "bg-emerald-600" : "bg-emerald-400"}`}
+                  />
+                  Active
+                </span>
+                <span
+                  className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                    isLightMode
+                      ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
+                      : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.08] text-[#FFE27A]"
+                  }`}
+                >
+                  SuperFan
+                </span>
+              </div>
+            )}
             {/* PROFILE ACTIONS */}
             <div className="mt-4 grid grid-cols-3 gap-2">
               {/* EDIT PROFILE */}
@@ -1338,9 +1337,11 @@ const MobileProfile = () => {
               </p>
             )}
             {/* BIO */}
-            <p className="mt-5 border-t border-zinc-800/80 pt-4 text-sm leading-relaxed text-zinc-400">
-              {profile?.bio || ""}
-            </p>
+            {profile?.bio && (
+              <p className="mt-5 border-t border-zinc-800/80 pt-4 text-sm leading-relaxed text-zinc-400">
+                {profile.bio}
+              </p>
+            )}
           </div>
         </div>
       </div>
