@@ -87,6 +87,7 @@ const MobileProfile = () => {
   const [lgsAccess, setLgsAccess] = useState<string | null>(null);
   //  Leaderboard self-ban
   const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+  const [manuallyBannedFromLeaderboard, setManuallyBannedFromLeaderboard] = useState(false);
   const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
   const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
   const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
@@ -199,7 +200,7 @@ const MobileProfile = () => {
           await checkedProfileRequest(
             supabase
               .from("leaderboard_exclusions")
-              .select("user_id")
+              .select("user_id, reason")
               .eq("user_id", session.user.id)
               .maybeSingle(),
           );
@@ -207,6 +208,10 @@ const MobileProfile = () => {
           console.error("Leaderboard ban status error:", leaderboardBanError);
         }
         setLeaderboardBanned(!!leaderboardBan);
+        setManuallyBannedFromLeaderboard(
+          leaderboardBan?.reason === "Excluded from leaderboard" ||
+            leaderboardBan?.reason === "Excluded from leaderboard and community set pages",
+        );
         setLoadingLeaderboardBan(false);
       });
     };
@@ -369,6 +374,7 @@ const MobileProfile = () => {
       return;
     }
     setLeaderboardBanned(true);
+    setManuallyBannedFromLeaderboard(false);
     setLoadingLeaderboardBan(false);
     const { error } = await supabase.from("leaderboard_exclusions").upsert(
       {
@@ -1096,6 +1102,29 @@ const MobileProfile = () => {
                     <p className="mt-1 text-sm text-zinc-300">
                       @{discord || "No Discord username set"}
                     </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-medium ${
+                          isLightMode
+                            ? "border-emerald-600/20 bg-emerald-600/[0.08] text-emerald-700"
+                            : "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${isLightMode ? "bg-emerald-600" : "bg-emerald-400"}`}
+                        />
+                        Active
+                      </span>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2 py-1 text-[11px] font-semibold ${
+                          isLightMode
+                            ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
+                            : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.08] text-[#FFE27A]"
+                        }`}
+                      >
+                        SuperFan
+                      </span>
+                    </div>
                   </>
                 )}
                 {tradeAccessRevoked && (
@@ -1143,31 +1172,6 @@ const MobileProfile = () => {
                 )}
               </div>
             </div>
-            {!editingProfile && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${
-                    isLightMode
-                      ? "border-emerald-600/20 bg-emerald-600/[0.08] text-emerald-700"
-                      : "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"
-                  }`}
-                >
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${isLightMode ? "bg-emerald-600" : "bg-emerald-400"}`}
-                  />
-                  Active
-                </span>
-                <span
-                  className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                    isLightMode
-                      ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                      : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.08] text-[#FFE27A]"
-                  }`}
-                >
-                  SuperFan
-                </span>
-              </div>
-            )}
             {/* PROFILE ACTIONS */}
             <div className="mt-4 grid grid-cols-3 gap-2">
               {/* EDIT PROFILE */}
@@ -1383,6 +1387,72 @@ const MobileProfile = () => {
           </div>
         </div>
       </div>
+      {/* Offer Response Strikes */}
+      <div
+        className={`relative mx-5 mt-4 overflow-hidden rounded-2xl border p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)] ${
+          offerStrikeCount >= 3
+            ? isLightMode
+              ? "border-red-500/25 bg-red-50"
+              : "border-red-400/25 bg-red-500/[0.08]"
+            : offerStrikeCount === 2
+              ? isLightMode
+                ? "border-orange-500/25 bg-orange-50"
+                : "border-orange-400/25 bg-orange-500/[0.08]"
+              : isLightMode
+                ? "border-emerald-600/20 bg-emerald-50"
+                : "border-emerald-400/20 bg-emerald-400/[0.06]"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold">Offer response strikes</p>
+              <button
+                type="button"
+                aria-label="Learn about offer response strikes"
+                onClick={() => setShowOfferStrikeInfo(true)}
+                className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-black transition-colors ${
+                  isLightMode
+                    ? "border-black/15 bg-white/70 text-zinc-700 hover:bg-white"
+                    : "border-white/15 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.12] hover:text-white"
+                }`}
+              >
+                ?
+              </button>
+            </div>
+            <p className="mt-0.5 text-xs text-zinc-500">{offerStrikeLabel}</p>
+          </div>
+          <span
+            className={`text-xl font-black ${
+              offerStrikeCount >= 3
+                ? "text-red-500"
+                : offerStrikeCount === 2
+                  ? "text-orange-500"
+                  : "text-emerald-500"
+            }`}
+          >
+            {offerStrikeCount}/3
+          </span>
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {[1, 2, 3].map((strike) => (
+            <span
+              key={strike}
+              className={`h-2 rounded-full ${
+                strike <= offerStrikeCount
+                  ? offerStrikeCount >= 3
+                    ? "bg-red-500"
+                    : offerStrikeCount === 2
+                      ? "bg-orange-500"
+                      : "bg-emerald-500"
+                  : isLightMode
+                    ? "bg-black/10"
+                    : "bg-white/10"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
       {/* QUICK ACCESS */}
       <div className="mx-5 mt-4">
         <div className="mb-2.5 flex items-center justify-between px-1">
@@ -1501,72 +1571,6 @@ const MobileProfile = () => {
           )}
         </div>
       </div>
-      {/* Offer Response Strikes */}
-      <div
-        className={`relative mx-5 mt-4 overflow-hidden rounded-2xl border p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)] ${
-          offerStrikeCount >= 3
-            ? isLightMode
-              ? "border-red-500/25 bg-red-50"
-              : "border-red-400/25 bg-red-500/[0.08]"
-            : offerStrikeCount === 2
-              ? isLightMode
-                ? "border-orange-500/25 bg-orange-50"
-                : "border-orange-400/25 bg-orange-500/[0.08]"
-              : isLightMode
-                ? "border-emerald-600/20 bg-emerald-50"
-                : "border-emerald-400/20 bg-emerald-400/[0.06]"
-        }`}
-      >
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-bold">Offer response strikes</p>
-              <button
-                type="button"
-                aria-label="Learn about offer response strikes"
-                onClick={() => setShowOfferStrikeInfo(true)}
-                className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-black transition-colors ${
-                  isLightMode
-                    ? "border-black/15 bg-white/70 text-zinc-700 hover:bg-white"
-                    : "border-white/15 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.12] hover:text-white"
-                }`}
-              >
-                ?
-              </button>
-            </div>
-            <p className="mt-0.5 text-xs text-zinc-500">{offerStrikeLabel}</p>
-          </div>
-          <span
-            className={`text-xl font-black ${
-              offerStrikeCount >= 3
-                ? "text-red-500"
-                : offerStrikeCount === 2
-                  ? "text-orange-500"
-                  : "text-emerald-500"
-            }`}
-          >
-            {offerStrikeCount}/3
-          </span>
-        </div>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {[1, 2, 3].map((strike) => (
-            <span
-              key={strike}
-              className={`h-2 rounded-full ${
-                strike <= offerStrikeCount
-                  ? offerStrikeCount >= 3
-                    ? "bg-red-500"
-                    : offerStrikeCount === 2
-                      ? "bg-orange-500"
-                      : "bg-emerald-500"
-                  : isLightMode
-                    ? "bg-black/10"
-                    : "bg-white/10"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
       {/* Quick Stats */}
       <div className="relative mt-3 grid grid-cols-2 gap-3 px-5">
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
@@ -1586,7 +1590,11 @@ const MobileProfile = () => {
           </div>
         </div>
       </div>
-      {/* LEADERBOARD ELIGIBILITY */}
+      {loadingLeaderboardBan ? null : manuallyBannedFromLeaderboard ? (
+        <div role="status" className={`mx-5 mt-4 rounded-2xl border p-5 text-sm font-semibold leading-6 shadow-[0_10px_28px_rgba(0,0,0,.20)] sm:mx-auto sm:max-w-xl ${isLightMode ? "border-red-300 bg-red-50 text-red-800" : "border-red-500/40 bg-red-500/10 text-red-200"}`}>
+          You have been banned from the leaderboard. This is likely due to your conduct on or off website.
+        </div>
+      ) : (
       <div className="relative mx-5 mt-4 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-5 shadow-[0_10px_28px_rgba(0,0,0,.20)] sm:mx-auto sm:max-w-xl sm:p-6">
         <div className="flex items-start justify-between gap-5">
           <div className="min-w-0">
@@ -1639,6 +1647,7 @@ const MobileProfile = () => {
           )}
         </div>
       </div>
+      )}
       {showOfferStrikeInfo && (
         <div
           className={`fixed inset-0 z-[140] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/30" : "bg-black/80"}`}

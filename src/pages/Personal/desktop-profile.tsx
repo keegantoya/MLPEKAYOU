@@ -100,6 +100,7 @@ export default function DesktopProfile() {
   const [vacationLoaded, setVacationLoaded] = useState(false);
   const [vacationError, setVacationError] = useState("");
   const [leaderboardBanned, setLeaderboardBanned] = useState(false);
+  const [manuallyBannedFromLeaderboard, setManuallyBannedFromLeaderboard] = useState(false);
   const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
   const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
   const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
@@ -231,7 +232,7 @@ export default function DesktopProfile() {
         await checkedProfileRequest(
           supabase
             .from("leaderboard_exclusions")
-            .select("user_id")
+            .select("user_id, reason")
             .eq("user_id", session.user.id)
             .maybeSingle(),
         );
@@ -239,6 +240,10 @@ export default function DesktopProfile() {
         console.error("Leaderboard ban status error:", leaderboardBanError);
       }
       setLeaderboardBanned(!!leaderboardBan);
+      setManuallyBannedFromLeaderboard(
+        leaderboardBan?.reason === "Excluded from leaderboard" ||
+          leaderboardBan?.reason === "Excluded from leaderboard and community set pages",
+      );
       setLoadingLeaderboardBan(false);
     });
   }
@@ -252,6 +257,7 @@ export default function DesktopProfile() {
       return;
     }
     setLeaderboardBanned(true);
+    setManuallyBannedFromLeaderboard(false);
     setLoadingLeaderboardBan(false);
     const { error } = await supabase.from("leaderboard_exclusions").upsert(
       {
@@ -1170,6 +1176,11 @@ export default function DesktopProfile() {
           </div>
           {vacationError && <p role="alert" className="mt-2 text-xs text-red-400">{vacationError}</p>}
         </div>
+        {loadingLeaderboardBan ? null : manuallyBannedFromLeaderboard ? (
+          <div role="status" className={`mt-5 w-full rounded-2xl border p-5 text-sm font-semibold leading-6 sm:p-6 ${isLightMode ? "border-red-300 bg-red-50 text-red-800" : "border-red-500/40 bg-red-500/10 text-red-200"}`}>
+            You have been banned from the leaderboard. This is likely due to your conduct on or off website.
+          </div>
+        ) : (
         <div
           className={`mt-5 w-full overflow-hidden rounded-2xl border p-5 sm:p-6 ${
             isLightMode
@@ -1236,6 +1247,7 @@ export default function DesktopProfile() {
             )}
           </div>
         </div>
+        )}
         <div
           className={`mt-6 flex flex-wrap gap-2 rounded-2xl border p-2 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}
         >
