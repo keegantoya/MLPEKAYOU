@@ -95,6 +95,10 @@ export default function DesktopProfile() {
   const [deletionRequested, setDeletionRequested] = useState(false);
   const [showDeletionModal, setShowDeletionModal] = useState(false);
   const [submittingDeletion, setSubmittingDeletion] = useState(false);
+  const [vacationMode, setVacationMode] = useState(false);
+  const [vacationBusy, setVacationBusy] = useState(false);
+  const [vacationLoaded, setVacationLoaded] = useState(false);
+  const [vacationError, setVacationError] = useState("");
   const [leaderboardBanned, setLeaderboardBanned] = useState(false);
   const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
   const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
@@ -194,10 +198,12 @@ export default function DesktopProfile() {
       const { data } = await checkedProfileRequest(
         supabase
           .from("profiles")
-          .select("id, username, avatar_url")
+          .select("id, username, avatar_url, vacation_mode")
           .eq("id", session.user.id)
           .single(),
       );
+      setVacationMode(Boolean(data?.vacation_mode));
+      setVacationLoaded(Boolean(data));
       if (data) {
         await preloadProfileAvatar(getProfileAssets(data).avatar);
         setProfile(data);
@@ -263,6 +269,25 @@ export default function DesktopProfile() {
       return;
     }
     setLeaderboardBanned(true);
+  }
+  async function toggleVacationMode() {
+    if (!profile?.id || !vacationLoaded || vacationBusy) return;
+    setVacationBusy(true);
+    setVacationError("");
+    const nextValue = !vacationMode;
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ vacation_mode: nextValue })
+      .eq("id", profile.id)
+      .select("vacation_mode")
+      .single();
+    if (error || !data) {
+      console.error("Unable to update vacation mode:", error);
+      setVacationError("Could not update Vacation Mode. Please try again.");
+    } else {
+      setVacationMode(Boolean(data.vacation_mode));
+    }
+    setVacationBusy(false);
   }
   async function requestAccountDeletion() {
     if (deletionRequested || submittingDeletion) return;
@@ -1122,6 +1147,28 @@ export default function DesktopProfile() {
               </div>
             </div>
           ))}
+        </div>
+        <div className={`mt-4 rounded-2xl border p-5 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold">Vacation Mode</h3>
+              <p className={`mt-1 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                {vacationMode ? "Your trade and sale cards are hidden until you turn this off." : "Hide your trade and sale cards until you return."}
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-label="Vacation Mode"
+              aria-checked={vacationMode}
+              disabled={!vacationLoaded || vacationBusy}
+              onClick={() => void toggleVacationMode()}
+              className={`relative flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition-colors disabled:opacity-50 ${vacationMode ? "bg-[#FFD54A]" : isLightMode ? "bg-zinc-300" : "bg-zinc-700"}`}
+            >
+              <span className={`h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${vacationMode ? "translate-x-6" : "translate-x-0"}`} />
+            </button>
+          </div>
+          {vacationError && <p role="alert" className="mt-2 text-xs text-red-400">{vacationError}</p>}
         </div>
         <div
           className={`mt-5 w-full overflow-hidden rounded-2xl border p-5 sm:p-6 ${

@@ -1,5 +1,6 @@
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import { cardImagePaths } from "@/lib/card-images";
+import { getISOCardCode } from "@/lib/iso-card-catalog";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -364,6 +365,15 @@ export default function MyTradesSets() {
   const [savedQuantities, setSavedQuantities] = useState<
     Record<string, number>
   >({});
+  type BulkRow = { personal: string; trade: string; sale: string; price: string };
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkCards, setBulkCards] = useState<any[]>([]);
+  const [bulkRows, setBulkRows] = useState<Record<string, BulkRow>>({});
+  const [bulkOriginalRows, setBulkOriginalRows] = useState<Record<string, BulkRow>>({});
+  const [bulkSearch, setBulkSearch] = useState("");
+  const [bulkListedOnly, setBulkListedOnly] = useState(false);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkError, setBulkError] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [inventoryDirty, setInventoryDirty] = useState(false);
   const [showIntroPopup, setShowIntroPopup] = useState(false);
@@ -467,6 +477,10 @@ export default function MyTradesSets() {
         setMarketListings({});
         setQuantities({});
         setSavedQuantities({});
+        setBulkOpen(false);
+        setBulkCards([]);
+        setBulkRows({});
+        setBulkOriginalRows({});
         setInventoryDirty(false);
         inventoryDirtyRef.current = false;
       }
@@ -565,6 +579,12 @@ export default function MyTradesSets() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [inventoryDirty]);
   useEffect(() => {
+    if (!bulkOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [bulkOpen]);
+  useEffect(() => {
     if (!selectedCard) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -584,6 +604,14 @@ export default function MyTradesSets() {
     setInventoryDirty(dirty);
     inventoryDirtyRef.current = dirty;
   }, [listingDraft, savedListingDraft]);
+  useEffect(() => {
+    if (!bulkOpen) return;
+    const dirty = Object.keys(bulkRows).some((key) =>
+      JSON.stringify(bulkRows[key]) !== JSON.stringify(bulkOriginalRows[key]),
+    );
+    setInventoryDirty(dirty);
+    inventoryDirtyRef.current = dirty;
+  }, [bulkOpen, bulkRows, bulkOriginalRows]);
   const changeQuantity = (cardKey: string, value: number) => {
     const next = Math.max(1, value);
     setQuantities((prev) => {
@@ -811,6 +839,7 @@ export default function MyTradesSets() {
       </div>
     );
   }
+  const getBulkCardCode = (card: any) => getISOCardCode(set.id, String(card.key));
   let cards: any[] = [];
   if (set.id === "friendshipsbegin") {
     const BONUS_STRUCTURE = [
@@ -1004,6 +1033,126 @@ export default function MyTradesSets() {
   const ownedBonusCards = cards.filter(
     (card) => progress[card.key] || progress[`BONUS-${card.key}`],
   );
+  const bulkChangedKeys = Object.keys(bulkRows).filter(
+    (key) => JSON.stringify(bulkRows[key]) !== JSON.stringify(bulkOriginalRows[key]),
+  );
+  const visibleBulkCards = bulkCards.filter((card) => {
+    if (bulkListedOnly && !marketListings[card.key]?.is_for_trade && !marketListings[card.key]?.is_for_sale) return false;
+    return getBulkCardCode(card).toLowerCase().includes(bulkSearch.trim().toLowerCase());
+  });
+  const openBulkEditor = () => {
+    if (inventoryDirty || !ownedBonusCards.length) return;
+    const rows: Record<string, BulkRow> = {};
+    ownedBonusCards.forEach((card) => {
+      const listing = marketListings[card.key] || emptyListing;
+      rows[card.key] = {
+        personal: String(quantities[card.key] || 1),
+        trade: String(listing.is_for_trade ? listing.trade_quantity || 1 : 0),
+        sale: String(listing.is_for_sale ? listing.sale_quantity || 1 : 0),
+        price: listing.asking_price === null ? "" : String(listing.asking_price),
+      };
+    });
+    setBulkCards([...ownedBonusCards].sort((a, b) =>
+      Number(Boolean(marketListings[b.key]?.is_for_trade || marketListings[b.key]?.is_for_sale)) -
+      Number(Boolean(marketListings[a.key]?.is_for_trade || marketListings[a.key]?.is_for_sale)),
+    ));
+    setBulkRows(rows);
+    setBulkOriginalRows(Object.fromEntries(Object.entries(rows).map(([key, row]) => [key, { ...row }])));
+    setBulkSearch("");
+    setBulkListedOnly(false);
+    setBulkError("");
+    setBulkOpen(true);
+  };
+  const updateBulkRow = (key: string, changes: Partial<BulkRow>) => {
+    setBulkRows((current) => ({ ...current, [key]: { ...current[key], ...changes } }));
+  };
+  const closeBulkEditor = () => {
+    if (bulkSaving) return;
+    setBulkOpen(false);
+    setBulkRows({});
+    setBulkOriginalRows({});
+    setInventoryDirty(false);
+    inventoryDirtyRef.current = false;
+  };
+  const saveBulkEditor = async () => {
+    if (bulkSaving) return;
+    if (!bulkChangedKeys.length) { closeBulkEditor(); return; }
+    setBulkError("");
+    for (const key of bulkChangedKeys) {
+      const row = bulkRows[key];
+      if (!/^[1-9]\d*$/.test(row.personal) || !/^\d+$/.test(row.trade) || !/^\d+$/.test(row.sale) ||
+          Number(row.personal) > 99999 || Number(row.trade) > 99999 || Number(row.sale) > 99999) {
+        setBulkError("Enter whole quantities: Personal must be at least 1; Trade and Sale can be 0.");
+        return;
+      }
+      if (Number(row.sale) > 0 && (!/^\d+(?:\.\d{1,2})?$/.test(row.price) || Number(row.price) < 0)) {
+        setBulkError(`Enter a valid sale price for ${key} before listing it for sale.`);
+        return;
+      }
+    }
+    setBulkSaving(true);
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) throw sessionError || new Error("Please sign in again.");
+      const userId = session.user.id;
+      const quantityUpdates = bulkChangedKeys.filter((key) => bulkRows[key].personal !== bulkOriginalRows[key].personal)
+        .map((key) => ({ user_id: userId, set_id: resolvedSetId, card_key: key, quantity: Number(bulkRows[key].personal) }));
+      const listingKeys = bulkChangedKeys.filter((key) =>
+        bulkRows[key].trade !== bulkOriginalRows[key].trade ||
+        bulkRows[key].sale !== bulkOriginalRows[key].sale ||
+        (Number(bulkRows[key].sale) > 0 && bulkRows[key].price !== bulkOriginalRows[key].price),
+      );
+      const listingUpdates = listingKeys.filter((key) => Number(bulkRows[key].trade) > 0 || Number(bulkRows[key].sale) > 0)
+        .map((key) => ({
+          user_id: userId, set_id: resolvedSetId, card_key: key,
+          is_for_trade: Number(bulkRows[key].trade) > 0,
+          is_for_sale: Number(bulkRows[key].sale) > 0,
+          trade_quantity: Number(bulkRows[key].trade),
+          sale_quantity: Number(bulkRows[key].sale),
+          asking_price: Number(bulkRows[key].sale) > 0 ? Number(bulkRows[key].price) : null,
+        }));
+      const listingDeletes = listingKeys.filter((key) => Number(bulkRows[key].trade) === 0 && Number(bulkRows[key].sale) === 0 && Boolean(marketListings[key]));
+      for (let i = 0; i < quantityUpdates.length; i += 100) {
+        const { error } = await supabase.from("card_quantity").upsert(quantityUpdates.slice(i, i + 100), { onConflict: "user_id,set_id,card_key" });
+        if (error) throw error;
+      }
+      for (let i = 0; i < listingUpdates.length; i += 100) {
+        const { error } = await supabase.from("card_market_listings").upsert(listingUpdates.slice(i, i + 100), { onConflict: "user_id,set_id,card_key" });
+        if (error) throw error;
+      }
+      for (let i = 0; i < listingDeletes.length; i += 100) {
+        const { error } = await supabase.from("card_market_listings").delete()
+          .eq("user_id", userId).eq("set_id", resolvedSetId).in("card_key", listingDeletes.slice(i, i + 100));
+        if (error) throw error;
+      }
+      const nextQuantities = { ...quantities };
+      quantityUpdates.forEach((row) => { nextQuantities[row.card_key] = row.quantity; });
+      setQuantities(nextQuantities);
+      setSavedQuantities(nextQuantities);
+      setMarketListings((current) => {
+        const next = { ...current };
+        listingUpdates.forEach((row) => {
+          next[row.card_key] = {
+            is_for_trade: row.is_for_trade, is_for_sale: row.is_for_sale,
+            trade_quantity: row.trade_quantity, sale_quantity: row.sale_quantity,
+            asking_price: row.asking_price,
+          };
+        });
+        listingDeletes.forEach((key) => { delete next[key]; });
+        return next;
+      });
+      setBulkOpen(false);
+      setBulkRows({});
+      setBulkOriginalRows({});
+      setInventoryDirty(false);
+      inventoryDirtyRef.current = false;
+    } catch (error) {
+      console.error("Failed to save bulk inventory changes:", error);
+      setBulkError("Some changes could not be saved. Keep this window open and try Save again.");
+    } finally {
+      setBulkSaving(false);
+    }
+  };
   const hasStarterDeck =
     set.id === "friendshipsbegin" &&
     ["SD01A", "SD01B", "SD01C", "SD01D", "SD01E", "SD01F"].some((deck) =>
@@ -1055,6 +1204,92 @@ export default function MyTradesSets() {
       }`}
     >
       <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
+        {bulkOpen && (
+          <div className="fixed inset-0 z-[20100] flex items-start justify-center bg-black/70 px-2 pb-3 pt-[calc(76px+env(safe-area-inset-top))] backdrop-blur-sm sm:pt-20" role="dialog" aria-modal="true" aria-labelledby="bulk-editor-title">
+            <div className={`flex max-h-[min(68dvh,620px)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl sm:max-h-[min(76dvh,680px)] ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#17191a] text-white"}`}>
+              <div className={`shrink-0 border-b p-4 sm:px-6 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 id="bulk-editor-title" className="text-lg font-semibold">Bulk edit · {set.name}</h2>
+                    <p className={`mt-1 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                      Set Trade or Sale to 0 to remove a listing. Save when finished.
+                    </p>
+                  </div>
+                  <button type="button" onClick={closeBulkEditor} disabled={bulkSaving} aria-label="Close bulk editor" className={`rounded-lg px-3 py-1 text-xl disabled:opacity-50 ${isLightMode ? "hover:bg-zinc-100" : "hover:bg-white/10"}`}>×</button>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <input
+                    type="search"
+                    value={bulkSearch}
+                    onChange={(event) => setBulkSearch(event.target.value)}
+                    placeholder="Search card code"
+                    aria-label="Search owned cards"
+                    className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-base outline-none sm:text-sm ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-[#101213]"}`}
+                  />
+                  <label className="flex items-center gap-1.5 whitespace-nowrap text-xs">
+                    <input type="checkbox" checked={bulkListedOnly} onChange={(event) => setBulkListedOnly(event.target.checked)} /> Listed only
+                  </label>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button type="button" disabled={bulkSaving} onClick={() => setBulkRows((current) => Object.fromEntries(Object.entries(current).map(([key, row]) => [key, { ...row, trade: "0" }]))) } className={`rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${isLightMode ? "border-black/10 hover:bg-zinc-100" : "border-white/10 hover:bg-white/10"}`}>Remove all from trade</button>
+                  <button type="button" disabled={bulkSaving} onClick={() => setBulkRows((current) => Object.fromEntries(Object.entries(current).map(([key, row]) => [key, { ...row, sale: "0" }]))) } className={`rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${isLightMode ? "border-black/10 hover:bg-zinc-100" : "border-white/10 hover:bg-white/10"}`}>Remove all from sale</button>
+                </div>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 sm:px-6">
+                <div className={`sticky top-0 z-20 grid grid-cols-[minmax(110px,1fr)_repeat(3,66px)] gap-1 border-b px-2 py-2 text-[10px] font-semibold uppercase tracking-wide sm:grid-cols-[minmax(180px,1fr)_repeat(3,96px)] sm:gap-3 ${isLightMode ? "border-black/10 bg-white text-zinc-600" : "border-white/10 bg-[#17191a] text-zinc-400"}`}>
+                  <span>Card</span><span className="text-center">Personal</span><span className="text-center">Trade</span><span className="text-center">Sale</span>
+                </div>
+                {visibleBulkCards.map((card) => {
+                  const row = bulkRows[card.key];
+                  if (!row) return null;
+                  const changed = JSON.stringify(row) !== JSON.stringify(bulkOriginalRows[card.key]);
+                  return (
+                    <div key={card.key} className={`grid grid-cols-[minmax(110px,1fr)_repeat(3,66px)] items-center gap-1 border-b px-2 py-2 last:border-0 sm:grid-cols-[minmax(180px,1fr)_repeat(3,96px)] sm:gap-3 ${isLightMode ? "border-black/[0.06]" : "border-white/[0.06]"} ${changed ? isLightMode ? "bg-amber-50" : "bg-[#FFD54A]/[0.06]" : ""}`}>
+                      <div className="min-w-0">
+                        <div className="truncate text-xs font-semibold sm:text-sm" title={getBulkCardCode(card)}>{getBulkCardCode(card)}</div>
+                        {(marketListings[card.key]?.is_for_trade || marketListings[card.key]?.is_for_sale) && <div className={`mt-0.5 text-[10px] ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Currently listed</div>}
+                      </div>
+                      {(["personal", "trade", "sale"] as const).map((field) => (
+                        <div key={field} className="relative">
+                          <input
+                            aria-label={`${getBulkCardCode(card)} ${field} quantity`}
+                            type="text"
+                            inputMode="numeric"
+                            value={row[field]}
+                            disabled={bulkSaving}
+                            onFocus={(event) => event.target.select()}
+                            onChange={(event) => { if (/^\d{0,5}$/.test(event.target.value)) updateBulkRow(card.key, { [field]: event.target.value }); }}
+                            className={`h-9 w-full rounded-lg border px-2 text-center text-base font-semibold outline-none disabled:opacity-60 ${isLightMode ? "border-black/10 bg-white focus:border-amber-500" : "border-white/10 bg-[#101213] focus:border-[#FFD54A]"}`}
+                          />
+                          {field !== "personal" && Number(row[field]) > 0 && (
+                            <button type="button" disabled={bulkSaving} aria-label={`Remove ${getBulkCardCode(card)} from ${field}`} onClick={() => updateBulkRow(card.key, { [field]: "0" })} className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold disabled:opacity-50 ${isLightMode ? "bg-zinc-300 text-zinc-900" : "bg-zinc-600 text-white"}`}>×</button>
+                          )}
+                        </div>
+                      ))}
+                      {Number(row.sale) > 0 && (
+                        <label className={`col-span-4 flex items-center justify-end gap-2 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                          Sale price $
+                          <input type="text" inputMode="decimal" value={row.price} disabled={bulkSaving} onChange={(event) => { if (/^\d*(?:\.\d{0,2})?$/.test(event.target.value)) updateBulkRow(card.key, { price: event.target.value }); }} aria-label={`${getBulkCardCode(card)} sale price`} className={`h-8 w-20 rounded-lg border px-2 text-base outline-none disabled:opacity-60 ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#101213]"}`} />
+                        </label>
+                      )}
+                    </div>
+                  );
+                })}
+                {visibleBulkCards.length === 0 && <p className="py-10 text-center text-sm">No owned cards match this filter.</p>}
+              </div>
+              <div className={`shrink-0 border-t p-3 sm:px-6 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+                {bulkError && <p role="alert" className="mb-2 text-sm text-red-500">{bulkError}</p>}
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>{bulkChangedKeys.length} card{bulkChangedKeys.length === 1 ? "" : "s"} changed</span>
+                  <div className="flex gap-2">
+                    <button type="button" disabled={bulkSaving} onClick={closeBulkEditor} className={`rounded-lg border px-3 py-2 text-sm disabled:opacity-50 ${isLightMode ? "border-black/10" : "border-white/10"}`}>Cancel</button>
+                    <button type="button" disabled={bulkSaving || !bulkChangedKeys.length} onClick={() => void saveBulkEditor()} className="rounded-lg bg-[#FFD54A] px-4 py-2 text-sm font-bold text-black disabled:opacity-50">{bulkSaving ? "Saving..." : "Save changes"}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {selectedCard && listingDraft && (
           <div
             className="fixed inset-0 z-[150] flex items-center justify-center bg-black/65 p-2 backdrop-blur-md sm:p-5"
@@ -1480,22 +1715,21 @@ export default function MyTradesSets() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
-              <div
-                className={`rounded-2xl border px-3 py-3 text-center ${
+              <button
+                type="button"
+                onClick={openBulkEditor}
+                disabled={!ownedBonusCards.length || inventoryDirty}
+                className={`rounded-2xl border px-3 py-3 text-center transition disabled:cursor-not-allowed disabled:opacity-50 ${
                   isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/10 bg-white/[0.03]"
+                    ? "border-[#b89000]/30 bg-[#FFD54A]/15 hover:bg-[#FFD54A]/25"
+                    : "border-[#FFD54A]/30 bg-[#FFD54A]/10 hover:bg-[#FFD54A]/20"
                 }`}
               >
-                <div className="text-sm font-semibold">Tap any card</div>
-                <div
-                  className={`mt-1 text-xs ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
-                  Edit its details
+                <div className="text-sm font-semibold">Bulk edit</div>
+                <div className={`mt-1 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                  Personal, trade &amp; sale
                 </div>
-              </div>
+              </button>
               <button
                 type="button"
                 onClick={handleEditToggle}

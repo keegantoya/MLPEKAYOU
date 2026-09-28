@@ -157,7 +157,7 @@ let owned = profile.collection_total ?? 0;
           "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity, updated_at",
         )
         .eq("user_id", profile.id);
-const activeListings = (listings || []).filter(
+const activeListings = (profile.vacation_mode ? [] : listings || []).filter(
         (card: any) =>
           (card.is_for_trade && Number(card.trade_quantity) > 0) ||
           (card.is_for_sale && Number(card.sale_quantity) > 0),

@@ -73,6 +73,10 @@ const MobileProfile = () => {
   const [deletionRequested, setDeletionRequested] = useState(false);
   const [showDeletionModal, setShowDeletionModal] = useState(false);
   const [submittingDeletion, setSubmittingDeletion] = useState(false);
+  const [vacationMode, setVacationMode] = useState(false);
+  const [vacationBusy, setVacationBusy] = useState(false);
+  const [vacationLoaded, setVacationLoaded] = useState(false);
+  const [vacationError, setVacationError] = useState("");
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushStatusMessage, setPushStatusMessage] = useState("");
@@ -139,10 +143,12 @@ const MobileProfile = () => {
         const { data } = await checkedProfileRequest(
           supabase
             .from("profiles")
-            .select("id, username, avatar_url")
+            .select("id, username, avatar_url, vacation_mode")
             .eq("id", session.user.id)
             .single(),
         );
+        setVacationMode(Boolean(data?.vacation_mode));
+        setVacationLoaded(Boolean(data));
         if (data) {
           await preloadProfileAvatar(getProfileAssets(data).avatar);
           setProfile(data);
@@ -378,6 +384,25 @@ const MobileProfile = () => {
       return;
     }
     setLeaderboardBanned(true);
+  }
+  async function toggleVacationMode() {
+    if (!profile?.id || !vacationLoaded || vacationBusy) return;
+    setVacationBusy(true);
+    setVacationError("");
+    const nextValue = !vacationMode;
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ vacation_mode: nextValue })
+      .eq("id", profile.id)
+      .select("vacation_mode")
+      .single();
+    if (error || !data) {
+      console.error("Unable to update vacation mode:", error);
+      setVacationError("Could not update Vacation Mode. Please try again.");
+    } else {
+      setVacationMode(Boolean(data.vacation_mode));
+    }
+    setVacationBusy(false);
   }
   async function requestAccountDeletion() {
     if (deletionRequested || submittingDeletion) return;
@@ -1336,6 +1361,19 @@ const MobileProfile = () => {
                 {pushStatusMessage}
               </p>
             )}
+            <button
+              type="button"
+              onClick={() => void toggleVacationMode()}
+              disabled={!vacationLoaded || vacationBusy}
+              aria-pressed={vacationMode}
+              className={`mt-3 flex w-full items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition-colors disabled:cursor-wait disabled:opacity-60 ${isLightMode ? "border-black/10 bg-white text-zinc-900 hover:bg-zinc-100" : "border-white/10 bg-[#191a1b] text-white hover:bg-[#202122]"}`}
+            >
+              {vacationBusy ? "Saving..." : vacationMode ? "Turn Off Vacation Mode" : "Turn On Vacation Mode"}
+            </button>
+            <p className={`mt-2 text-center text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+              {vacationMode ? "Your trade and sale cards are hidden. Turn this off to show them again." : "Hide your trade and sale cards until you return."}
+            </p>
+            {vacationError && <p role="alert" className="mt-2 text-center text-xs text-red-400">{vacationError}</p>}
             {/* BIO */}
             {profile?.bio && (
               <p className="mt-5 border-t border-zinc-800/80 pt-4 text-sm leading-relaxed text-zinc-400">

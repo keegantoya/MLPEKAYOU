@@ -205,7 +205,7 @@ const ExploreProfile = ({
     usePublicProfileCards(user?.id);
   const [userIsoCards, setUserIsoCards] = useState<any[]>([]);
   // Preserve the existing public trade-card source exactly as-is.
-  const userTradeCards = tradeCards.filter(
+  const userTradeCards = (user?.vacation_mode ? [] : tradeCards).filter(
     (x: any) => (x.listing_type || "trade") === "trade",
   );
   const [saleListings, setSaleListings] = useState<any[]>([]);
@@ -335,7 +335,7 @@ const ExploreProfile = ({
       if (salesError)
         console.error("Failed to load sale listings:", salesError);
       setSaleListings(
-        (saleRows || [])
+        (user?.vacation_mode ? [] : saleRows || [])
           .filter((row: any) => Boolean(row.is_for_sale))
           .map((row: any) => ({
             ...row,

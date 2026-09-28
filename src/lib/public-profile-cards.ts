@@ -159,7 +159,7 @@ export function usePublicProfileCards(userId?: string) {
       });
       const { data: profile } = await supabase
         .from("profiles")
-        .select("hide_iso, iso_hidden_sets")
+        .select("hide_iso, iso_hidden_sets, vacation_mode")
         .eq("id", userId)
         .maybeSingle();
       if (profile?.hide_iso) {
@@ -179,7 +179,7 @@ export function usePublicProfileCards(userId?: string) {
         setIsoCards([]);
         setWishlistCards(wishlistCards);
         setTradeCards(
-          (trades ?? []).map((trade: any) => ({
+          (profile?.vacation_mode ? [] : trades ?? []).map((trade: any) => ({
             ...trade,
             listing_type: "trade" as const,
           })),
@@ -487,7 +487,7 @@ export function usePublicProfileCards(userId?: string) {
       );
       setWishlistCards(wishlistCards);
       setTradeCards(
-        (trades ?? []).map((trade: any) => ({
+        (profile?.vacation_mode ? [] : trades ?? []).map((trade: any) => ({
           ...trade,
           listing_type: "trade" as const,
         })),

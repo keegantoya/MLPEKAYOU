@@ -103,7 +103,7 @@ const Explore = () => {
         setSearchingUsers(true);
         const { data: profileMatches, error: profileError } = await supabase
             .from("profiles")
-            .select("id, username, avatar_url")
+            .select("id, username, avatar_url, vacation_mode")
             .ilike("username", `${trimmedQuery}%`)
             .limit(100);
         if (profileError) {
