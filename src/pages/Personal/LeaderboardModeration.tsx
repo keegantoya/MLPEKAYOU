@@ -1,4 +1,4 @@
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getNightmareNightFront } from "@/lib/card-images";
 import { getISOSetId, funCatalog, moonCatalog, rainbowCatalog, starCatalog, tcgCatalog } from "@/lib/iso-card-catalog";
 import { getISOSetName as getModerationSetName, getISOCardCode as getModerationCardCode } from "@/lib/iso-card-catalog";
 import CardImage from "@/components/CardImage";
@@ -110,8 +110,8 @@ const getReportedCardImage = (setId: string, cardKey: string): string => {
   const set = tcgCatalog.sets.find((entry) => entry.id === id);
   if (!set) return "";
   if (id === "14") {
-    key = key.replace(/^(BP03-ER\d{2})-([ABC])$/, "$1-$2$2");
-    return cardImagePaths.nightmareNight(key);
+    key = key.replace(/^(BP03-ER0[12])-([ABC])\2$/, "$1-$2");
+    return getNightmareNightFront(key);
   }
   if (id === "12") return cardImagePaths.discord(key);
   if (key.startsWith("BP01ER")) return cardImagePaths.fantasyEmerald(key.slice(-2));
@@ -1823,4 +1823,3 @@ const changePage = (nextPage: number) => {
   );
 };
 export default LeaderboardModeration;
-

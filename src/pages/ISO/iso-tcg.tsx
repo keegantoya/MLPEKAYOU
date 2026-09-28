@@ -1,6 +1,6 @@
 import { tcgCatalog } from "@/lib/iso-card-catalog";
 const { sets, getCards, getDisplayCardCode, getDisplayRarity } = tcgCatalog;
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getNightmareNightFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -365,7 +365,7 @@ const cardContent = (
         set.id === "12"
           ? cardImagePaths.discord(card.key)
           : set.id === "14"
-          ? cardImagePaths.nightmareNight(card.key)
+        ? getNightmareNightFront(card.key)
           : card.key.startsWith("BP01ER")
           ? cardImagePaths.fantasyEmerald(card.key.slice(-2))
           : card.key.startsWith("BP01PER")

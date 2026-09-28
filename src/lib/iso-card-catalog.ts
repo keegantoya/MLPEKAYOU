@@ -545,7 +545,7 @@ return Object.entries(set.rarities).flatMap(
     if (set.id === "14") {
       if (rarity === "ER") {
         return ["01", "02"].flatMap((number) =>
-          ["AA", "BB", "CC"].map((variant) => ({
+          ["A", "B", "C"].map((variant) => ({
             rarity,
             key: `BP03-ER${number}-${variant}`,
             characters:
@@ -770,8 +770,7 @@ export const getISOCardCode = (setId: string, cardKey: string) => {
   }
   const tcgSet = tcgCatalog.sets.find((set) => set.id === id);
   if (tcgSet) {
-    // Stored BP03 base emerald keys sometimes use A/B/C instead of AA/BB/CC.
-    if (id === "14") key = key.replace(/^(BP03-ER\d{2})-([ABC])$/, "$1-$2$2");
+    if (id === "14") key = key.replace(/^(BP03-ER0[12])-([ABC])\2$/, "$1-$2");
     const card = tcgCatalog.getCards(tcgSet).find((entry) => entry.key === key);
     if (card) return tcgCatalog.getDisplayCardCode(id, card);
   }
