@@ -4,12 +4,22 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { getProfileAssets } from "./profile-assets";
 import { usePublicProfileCards } from "@/lib/public-profile-cards";
-import { getTradeCardImage } from "@/lib/card-images";
+import {
+  getTradeCardImage as getDefaultTradeCardImage,
+  getNightmareNightFront,
+} from "@/lib/card-images";
 import { tcgCatalog } from "@/lib/iso-card-catalog";
 type CardImageCard = {
   set_id: string | number;
   card_key: string;
 };
+const getTradeCardImage = (card: CardImageCard) =>
+  String(card.set_id) === "14"
+    ? getNightmareNightFront(card.card_key)
+    : getDefaultTradeCardImage({
+        set_id: String(card.set_id),
+        card_key: card.card_key,
+      });
 type InventoryCard = {
   id: string;
   set_id: string;
@@ -204,8 +214,7 @@ const ExploreProfile = ({
   const { wishlistCards: userWishlistCards, tradeCards } =
     usePublicProfileCards(user?.id);
   const [userIsoCards, setUserIsoCards] = useState<any[]>([]);
-  // Preserve the existing public trade-card source exactly as-is.
-  const userTradeCards = (user?.vacation_mode ? [] : tradeCards).filter(
+  const userTradeCards = tradeCards.filter(
     (x: any) => (x.listing_type || "trade") === "trade",
   );
   const [saleListings, setSaleListings] = useState<any[]>([]);
@@ -325,7 +334,6 @@ const ExploreProfile = ({
         .eq("user_id", user.id)
         .maybeSingle();
       setDiscordUsername(tradingProfileData?.discord_username || "");
-      // Sales use the current listing table. Trades continue to use usePublicProfileCards above.
       const { data: saleRows, error: salesError } = await supabase
         .from("card_market_listings")
         .select(
@@ -335,7 +343,7 @@ const ExploreProfile = ({
       if (salesError)
         console.error("Failed to load sale listings:", salesError);
       setSaleListings(
-        (user?.vacation_mode ? [] : saleRows || [])
+        (saleRows || [])
           .filter((row: any) => Boolean(row.is_for_sale))
           .map((row: any) => ({
             ...row,
@@ -770,8 +778,6 @@ const ExploreProfile = ({
         Array.from({ length: count }, (_, i) => `${prefix}${String(start + i).padStart(2, "0")}`);
 
       let completed = 0;
-      // Count completed card sets only. CCG and TCG promos remain visible in
-      // the ISO, but neither counts toward Sets Completed.
       isoSets.forEach((set) => {
         if (["9", "SD", "FW", "12", "14", "tcgpromos"].includes(set.id)) return;
         const keys = Object.entries(set.rarities).flatMap(([rarity, count]) =>
@@ -1182,17 +1188,21 @@ const ExploreProfile = ({
   ];
   function getRarity(cardKey: string) {
     const key = String(cardKey);
-    if (
-      key.startsWith("BP01") ||
-      key.startsWith("BP02") ||
-      key.startsWith("SD01")
-    ) {
-      const match = key.match(
-        /(BASE|PER|PSPR|PGR|PCR|PRR|SPR|SSR|SCR|SAR|SGR|UGR|USR|TGR|MTR|LSR|SZR|ZR|XR|HR|FR|TR|ST|SR|UR|GR|CR|ER|RR|SC|BP|AR|OR|PR|R|U|C|N|SN)/,
-      );
-      return match?.[1] ?? "";
+    const nightmareParallel = key.match(/^PBP03-(ER|SPR|GR|CR|RR)\d{2}(?:-(?:A2?|B2?|C2?))?$/);
+    if (nightmareParallel) {
+      const rarities: Record<string, string> = {
+        ER: "PER",
+        SPR: "PSPR",
+        GR: "PGR",
+        CR: "PCR",
+        RR: "PRR",
+      };
+      return rarities[nightmareParallel[1]];
     }
-    return key.split("-")[0];
+    const tcgMatch = key.match(
+      /^(?:BP01|BP02|BP03|SD01)-?(BASE|PSPR|PGR|PCR|PRR|PER|SPR|SSR|SCR|SAR|SGR|UGR|USR|TGR|MTR|LSR|SZR|ZR|XR|HR|FR|TR|ST|SR|UR|GR|CR|ER|RR|SC|BP|AR|OR|PR|SN|R|U|C|N)\d/,
+    );
+    return tcgMatch?.[1] ?? key.split("-")[0];
   }
   function getOfferRarity(card: InventoryCard) {
     return card.set_id === "tcgpromos" ? "PR" : getRarity(card.card_key);
@@ -1223,20 +1233,32 @@ const ExploreProfile = ({
     return parallelLabels[rarity] || rarity;
   }
   function sortByIsoOrder(cards: any[]) {
+    const nightmareRarityOrder = [
+      "C", "U", "ER", "SR", "SPR", "GR", "CR", "RR",
+      "PER", "PGR", "PSPR", "PCR", "PRR",
+    ];
+    const rank = (order: string[], rarity: string) => {
+      const index = order.indexOf(rarity);
+      return index < 0 ? order.length : index;
+    };
     return [...cards].sort((a, b) => {
-      if (String(a.set_id) !== String(b.set_id)) {
-        return String(a.set_id).localeCompare(String(b.set_id), undefined, {
-          numeric: true,
-        });
+      const setA = String(a.set_id);
+      const setB = String(b.set_id);
+      if (setA !== setB) {
+        return setA.localeCompare(setB, undefined, { numeric: true });
       }
-      const rarityA = getRarity(a.card_key);
-      const rarityB = getRarity(b.card_key);
-      const rarityDiff =
-        RARITY_ORDER.indexOf(rarityA) - RARITY_ORDER.indexOf(rarityB);
-      if (rarityDiff !== 0) return rarityDiff;
-      const numA = Number(String(a.card_key).match(/d+/)?.[0] ?? 0);
-      const numB = Number(String(b.card_key).match(/d+/)?.[0] ?? 0);
-      return numA - numB;
+      const order = setA === "14" ? nightmareRarityOrder : RARITY_ORDER;
+      const rarityDifference =
+        rank(order, getRarity(a.card_key)) -
+        rank(order, getRarity(b.card_key));
+      if (rarityDifference !== 0) return rarityDifference;
+      const cardDifference = String(a.card_key).localeCompare(
+        String(b.card_key),
+        undefined,
+        { numeric: true },
+      );
+      if (cardDifference !== 0) return cardDifference;
+      return String(a.type ?? "").localeCompare(String(b.type ?? ""));
     });
   }
   const filteredTradeCards = sortByIsoOrder(
