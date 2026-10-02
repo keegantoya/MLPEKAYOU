@@ -44,7 +44,10 @@ import avatar043 from "@/assets/avatars/avatar043.webp";
 import avatar044 from "@/assets/avatars/avatar044.webp";
 import avatar045 from "@/assets/avatars/avatar045.webp";
 import avatar046 from "@/assets/avatars/avatar046.webp";
-
+import avatar047 from "@/assets/avatars/avatar047.webp";
+import avatar048 from "@/assets/avatars/avatar048.webp";
+import avatar049 from "@/assets/avatars/avatar049.webp";
+import avatar050 from "@/assets/avatars/avatar050.webp";
 
 import KeeganAvatar from "@/assets/avatars/keeganpfp3.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
@@ -103,6 +106,10 @@ const avatarMap: Record<string, string> = {
   avatar044,
   avatar045,
   avatar046,
+  avatar047,
+  avatar048,
+  avatar049,
+  avatar050,
 
   heimantouavatar: heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,
