@@ -382,8 +382,7 @@ const remaining = leaders.slice(3, 11);
             isLightMode ? "text-zinc-500" : "text-zinc-400"
           }`}
         >
-          The chase Â· Ranks 4â€“7
-        </div>
+          The chase · Ranks 4-11        </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {remaining.map((user, index) => {
 const rank = index + 4;
@@ -651,7 +650,7 @@ const renderLeaderboardSection = (
                         : "border-white/10 bg-white/[0.05] text-zinc-300"
                     }`}
                   >
-                    Top 7 CCG Â· Top 7 TCG
+                    Top 7 CCG · Top 7 TCG
                   </div>
                 </div>
               </div>
@@ -688,7 +687,7 @@ const renderLeaderboardSection = (
                   isLightMode ? "text-zinc-500" : "text-zinc-400"
                 }`}
               >
-                Loading leaderboardâ€¦
+                Loading leaderboard
               </div>
             </div>
           ) : (
