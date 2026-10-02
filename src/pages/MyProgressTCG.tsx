@@ -49,7 +49,7 @@ const sets = [
   {
   id: "tcgpromos",
   name: "TCG Promos",
-  total: 27,
+  total: 28,
   rarities: null,
   isNew: false,
 },
@@ -156,7 +156,6 @@ const found =
   set.id === "friendshipsbegin_decks"
     ? progressMap.get("SD")
     : progressMap.get(set.id);
-// BONUS
         if (set.id === "friendshipsbegin_bonus") {
 const progressData = found?.progress || {};
 const BONUS_STRUCTURE = [
@@ -175,7 +174,7 @@ BONUS_STRUCTURE.forEach(({ prefix, count }) => {
   for (let i = 1; i <= count; i++) {
 let actualIndex = i;
     if (prefix === "SD01PER") {
-      actualIndex = i + 6; // match your real PER numbering (07–16)
+      actualIndex = i + 6;
     }
 const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
 const stateKey = `BONUS-${key}`;
@@ -185,7 +184,6 @@ const stateKey = `BONUS-${key}`;
   newProgress[set.id] = owned;
   return;
 }
-// STARTER DECKS
         if (set.id === "friendshipsbegin_decks") {
 const progressData = found?.progress || {};
 const decks = [
@@ -224,13 +222,14 @@ const complete = cards.every(
           newProgress[set.id] = completed;
           return;
         }
-// TCG PROMOS
 if (set.id === "tcgpromos") {
-const owned = Object.values(tcgPromosProgress).filter(Boolean).length;
+const owned = Array.from({ length: 28 }, (_, i) => `RR${String(i + 1).padStart(2, "0")}`).filter((key) => {
+  const value = tcgPromosProgress[key];
+  return value === true || (value !== null && typeof value === "object" && value?.owned === true);
+}).length;
   newProgress[set.id] = owned;
   return;
 }
-// DISCORD
 if (set.id === "discord" || set.id === "14") {
 const progressData = progressMap.get(set.id === "14" ? "14" : "12")?.progress || {};
 const owned = Object.values(progressData).filter(
@@ -243,7 +242,6 @@ const owned = Object.values(progressData).filter(
   newProgress[set.id] = owned;
   return;
 }
-// FANTASY WONDERLAND
 const STRUCTURE = [
   { prefix: "BP01C", count: 48 },
   { prefix: "BP01U", count: 18 },
@@ -286,11 +284,6 @@ newProgress[set.id] = owned;
     };
     loadProgress();
   }, []);
-// =========================================================
-// TCG UI DATA
-// Same presentation structure as CCG Progress.
-// All TCG progress logic above remains unchanged.
-// =========================================================
 const mainSets = sets.filter((set) =>
     [
       "friendshipsbegin_bonus",

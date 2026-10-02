@@ -1,8 +1,7 @@
-
 type ImagePathPart = string | number;
 export const cardImagePaths = {
   ccg: (folder: ImagePathPart, prefix: ImagePathPart, rarity: ImagePathPart, number: ImagePathPart) => `/cards/${folder}/${prefix}${rarity}${number}.webp`,
-  ccgPromo: (number: ImagePathPart) => `/promo-cards/mlpepr${number}.webp`,
+  ccgPromo: (number: ImagePathPart) => `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`,
   tcgPromo: (key: ImagePathPart) => `/tcgpromos/${key}.webp`,
   friendshipsBegin: (key: ImagePathPart) => `/friendships-begin/${key}.webp`,
   fantasyEmerald: (number: ImagePathPart) => `/fantasy-wonderland/SD01ER${number}.webp`,
@@ -58,6 +57,7 @@ export const cardImagePaths = {
     cardBacksM2SZRBACK: "/card-backs/M2SZRBACK.webp",
     cardBacksM2ZRBACK: "/card-backs/M2ZRBACK.webp",
     cardBacksPromosSdccboombacks: "/card-backs/promos/sdccboombacks.webp",
+    cardBacksPromosPr009back: "/card-backs/promos/pr009back.webp",
     cardBacksR1FRBACK: "/card-backs/R1FRBACK.webp",
     cardBacksRainbowTwoR2BASEBACKS: "/card-backs/rainbow-two/R2BASEBACKS.webp",
     cardBacksRainbowTwoR2FRBACK: "/card-backs/rainbow-two/R2FRBACK.webp",
@@ -393,11 +393,14 @@ const padded = String(number).padStart(3, "0");
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
 export const getPromotionalCardsBack = (number?: number) => {
-    if (number && number >= 8) {
-      return cardImagePaths.fixed.cardBacksPromosSdccboombacks;
-    }
-    return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
-  };
+  if (number === 14) {
+    return cardImagePaths.fixed.cardBacksPromosPr009back;
+  }
+  if (number && number >= 8) {
+    return cardImagePaths.fixed.cardBacksPromosSdccboombacks;
+  }
+  return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
+};
 export const getRainbowOneBack = (rarity: string, number: number) => {
 const padded = String(number).padStart(3, "0");
   if (rarity === "R") {
@@ -572,7 +575,10 @@ const path = decodeURIComponent(pathname.split(/[?#]/)[0].replace(/^\/+/, ""));
 }
 export const CARD_IMAGE_BYTES_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 export const CARD_IMAGE_BYTES_CACHE = "mlpekayou:card-image-bytes:v1";
-export const CARD_IMAGE_REVISIONS: Record<string, string> = {};
+export const CARD_IMAGE_REVISIONS: Record<string, string> = {
+  "promo-cards/mlpepr014.webp": "20261002-promos-3",
+  "tcgpromos/RR28.webp": "20261002-promos-3",
+};
 export function getCardImageRevision(path: string) {
   return CARD_IMAGE_REVISIONS[path] ?? "1";
 }

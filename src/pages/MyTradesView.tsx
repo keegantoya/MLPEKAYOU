@@ -411,6 +411,15 @@ const currentOrder =
                   <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4 sm:gap-2.5">
                     {rarityCards
                       .sort((a, b) => {
+                        if (String(setId) === "9") {
+                          const order = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((number) => `PR-${number}`);
+                          const indexA = order.indexOf(a.card_key);
+                          const indexB = order.indexOf(b.card_key);
+                          return (indexA < 0 ? order.length : indexA) - (indexB < 0 ? order.length : indexB);
+                        }
+                        if (String(setId) === "tcgpromos") {
+                          return Number(a.card_key.replace(/^RR/, "")) - Number(b.card_key.replace(/^RR/, ""));
+                        }
 const numA = parseInt(a.card_key.split("-")[1]);
 const numB = parseInt(b.card_key.split("-")[1]);
                         return numA - numB;
@@ -444,6 +453,7 @@ const isLandscape =
                               ) : (
                                 <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                   <CardImage
+                                    imageSize={(String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28") ? "original" : undefined}
                                     src={getCardImage(card)}
                                     alt={card.card_key}
                                     className={isLandscape

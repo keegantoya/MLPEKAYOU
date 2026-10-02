@@ -48,6 +48,7 @@ const OFFER_SET_ORDER = [
   "9",
   "tcgpromos",
 ];
+const CCG_PROMO_ORDER = ["PR-1", "PR-2", "PR-3", "PR-4", "PR-5", "PR-7", "PR-14", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13"];
 const canonicalOfferSetId = (setId: string | number) =>
   String(setId) === "SD" ? "friendshipsbegin" : String(setId);
 const offerKeyFor = (
@@ -149,6 +150,7 @@ type SafeCardImageProps = {
 };
 const SafeCardImage = ({ src, alt, className, imageSize }: SafeCardImageProps) => {
   const [failed, setFailed] = useState(false);
+  const resolvedImageSize = imageSize ?? (/\/(?:promo-cards\/mlpepr014|tcgpromos\/RR28)\.webp(?:[?#].*)?$/.test(src) ? "original" : "grid");
   const landscapeCommon =
     /\/nightmare-night\/BP03-C(2[5-9]|3[0-9]|4[0-8])\.webp(?:[?#].*)?$/.test(
       src,
@@ -177,7 +179,7 @@ const SafeCardImage = ({ src, alt, className, imageSize }: SafeCardImageProps) =
           position: className.includes("absolute") ? "absolute" : "relative",
         }}
       >
-        <CardImage imageSize={imageSize}
+        <CardImage imageSize={resolvedImageSize}
           src={src}
           alt={alt}
           className="absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-[inherit] object-contain"
@@ -192,7 +194,7 @@ const SafeCardImage = ({ src, alt, className, imageSize }: SafeCardImageProps) =
     );
   }
   return (
-    <CardImage imageSize={imageSize}
+    <CardImage imageSize={resolvedImageSize}
       src={src}
       alt={alt}
       className={className}
@@ -543,29 +545,16 @@ const ExploreProfile = ({
             SCR: 12,
           },
         },
-        { id: "9", rarities: { PR: 12 } },
+        { id: "9", rarities: { PR: 13 } },
         { id: "SD", rarities: {} },
         { id: "FW", rarities: {} },
         { id: "12", rarities: {} },
         { id: "14", rarities: {} },
-        { id: "tcgpromos", rarities: { RR: 27 } },
+        { id: "tcgpromos", rarities: { RR: 28 } },
       ];
       isoSets.forEach((set) => {
         if (set.id === "9") {
-          [
-            "PR-1",
-            "PR-2",
-            "PR-3",
-            "PR-4",
-            "PR-5",
-            "PR-7",
-            "PR-8",
-            "PR-9",
-            "PR-10",
-            "PR-11",
-            "PR-12",
-            "PR-13",
-          ].forEach((cardKey) => {
+          CCG_PROMO_ORDER.forEach((cardKey) => {
             const fullKey = `${set.id}-${cardKey}`;
             if (!ownedCards[fullKey] && !inProgressCards.has(fullKey)) {
               isoCards.push({
@@ -728,7 +717,7 @@ const ExploreProfile = ({
           return;
         }
         if (set.id === "tcgpromos") {
-          for (let i = 1; i <= 27; i++) {
+          for (let i = 1; i <= 28; i++) {
             const cardKey = `RR${String(i).padStart(2, "0")}`;
             const fullKey = `tcgpromos-${cardKey}`;
             if (!ownedCards[fullKey] && !inProgressCards.has(fullKey)) {
@@ -1269,6 +1258,10 @@ const ExploreProfile = ({
       if (setA !== setB) {
         return setA.localeCompare(setB, undefined, { numeric: true });
       }
+      if (setA === "9") {
+        const promoDifference = CCG_PROMO_ORDER.indexOf(a.card_key) - CCG_PROMO_ORDER.indexOf(b.card_key);
+        if (promoDifference !== 0) return promoDifference;
+      }
       const order = setA === "14" ? nightmareRarityOrder : RARITY_ORDER;
       const rarityDifference =
         rank(order, getRarity(a.card_key)) -
@@ -1323,6 +1316,10 @@ const ExploreProfile = ({
           getOfferRarityRank(offerSet, getOfferRarity(b)) -
           getOfferRarityRank(offerSet, getOfferRarity(a));
         if (rarityDifference !== 0) return rarityDifference;
+      }
+      if (a.set_id === "9") {
+        const promoDifference = CCG_PROMO_ORDER.indexOf(a.card_key) - CCG_PROMO_ORDER.indexOf(b.card_key);
+        if (promoDifference !== 0) return promoDifference;
       }
       return a.card_key.localeCompare(b.card_key, undefined, {
         numeric: true,

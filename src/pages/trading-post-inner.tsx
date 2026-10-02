@@ -161,6 +161,12 @@ const rarityMap: Record<string, string[]> = {
     "PRR",
   ],
 };
+const CCG_PROMO_ORDER = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((number) => `PR-${number}`);
+const comparePromoCards = (a: { card_key: string }, b: { card_key: string }) => {
+  const indexA = CCG_PROMO_ORDER.indexOf(a.card_key);
+  const indexB = CCG_PROMO_ORDER.indexOf(b.card_key);
+  return (indexA < 0 ? CCG_PROMO_ORDER.length : indexA) - (indexB < 0 ? CCG_PROMO_ORDER.length : indexB);
+};
 const getCardImage = (card: TradeCard) => {
   if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
   const [rarity, number] = card.card_key.split("-");
@@ -289,7 +295,7 @@ function ListingCardImage({
     );
   }
   return (
-    <CardImage imageSize={imageSize}
+    <CardImage imageSize={imageSize ?? (((String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28")) ? "original" : undefined)}
       src={src}
       alt={card.card_key}
       onError={() => setFailedSrc(src)}
@@ -831,7 +837,7 @@ export default function TradingPostInner() {
     ownedCards.sort(
       (a: InventoryCard, b: InventoryCard) =>
         OFFER_SET_ORDER.indexOf(a.set_id) - OFFER_SET_ORDER.indexOf(b.set_id) ||
-        a.card_key.localeCompare(b.card_key, undefined, { numeric: true }),
+        (a.set_id === "9" ? comparePromoCards(a, b) : a.card_key.localeCompare(b.card_key, undefined, { numeric: true })),
     );
     setInventoryCards(ownedCards);
     setOfferSet(ownedCards[0]?.set_id || "");
@@ -1079,6 +1085,7 @@ export default function TradingPostInner() {
       );
     })
     .sort((a, b) => {
+      if (offerSet === "9") return comparePromoCards(a, b);
       if (offerRarity === "ALL") {
         const rarityDifference =
           getOfferRarityRank(offerSet, getOfferRarity(b)) -
@@ -1477,6 +1484,7 @@ export default function TradingPostInner() {
                     <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 [grid-auto-flow:dense]">
                       {filteredCards
                         .sort((a, b) => {
+                          if (setId === "9") return comparePromoCards(a, b);
                           if (setId === "friendshipsbegin" || setId === "14") {
                             return a.card_key.localeCompare(
                               b.card_key,

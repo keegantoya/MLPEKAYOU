@@ -252,13 +252,14 @@ const sets = [
 return { sets, getDisplayCardCode, getRarityCode };
 })();
 export const promosCatalog = (() => {
-const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
-const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
+const ccgCards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13];
+const tcgCards = Array.from({ length: 28 }, (_, i) => i + 1);
 const getDisplayCardCode = (
   setId: string,
   number: number
 ) => {
   if (setId === "9") {
+    if (number === 14) return "MLPE-PR-009";
     if (number <= 7) {
       return `MLPE-PR-${String(number).padStart(3, "0")}`;
     }

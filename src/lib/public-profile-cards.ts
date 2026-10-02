@@ -248,6 +248,7 @@ export function usePublicProfileCards(userId?: string) {
         "PR-4",
         "PR-5",
         "PR-7",
+        "PR-14",
         "PR-8",
         "PR-9",
         "PR-10",
@@ -266,7 +267,7 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       }
-      for (let i = 1; i <= 27; i++) {
+      for (let i = 1; i <= 28; i++) {
         const cardKey = `RR${String(i).padStart(2, "0")}`;
         const value = progressMap["tcgpromos"]?.[cardKey];
         const owned =

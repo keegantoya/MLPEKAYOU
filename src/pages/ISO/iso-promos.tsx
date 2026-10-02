@@ -177,6 +177,7 @@ const cardContent = (
                         }`}
                       >
                         <CardImage
+                          imageSize={(set.id === "9" && card.number === 14) || (set.id === "tcgpromos" && card.number === 28) ? "original" : "grid"}
                           src={getImage(set.id, card.number)}
                           alt={getDisplayCardCode(set.id, card.number)}
                           className={

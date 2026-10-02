@@ -164,7 +164,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 12 },
+    rarities: { PR: 13 },
   },
   {
     id: "FW",
@@ -199,7 +199,7 @@ const sets = [
     name: "TCG Promos",
     folder: "tcgpromos",
     prefix: "RR",
-    rarities: { PR: 27 },
+    rarities: { PR: 28 },
   },
 ];
 const binders = [
@@ -609,7 +609,7 @@ export default function MyCollectionBinder() {
       }),
     );
   } else if (selectedSet.id === "tcgpromos") {
-    cards = Array.from({ length: 27 }, (_, i) => ({
+    cards = Array.from({ length: 28 }, (_, i) => ({
       rarity: "PR",
       number: i + 1,
       key: `RR${String(i + 1).padStart(2, "0")}`,
@@ -618,12 +618,12 @@ export default function MyCollectionBinder() {
   } else {
     cards =
       selectedSet.id === "9"
-        ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((number) => ({
+        ? [1, 2, 3, 4, 5, 6, 7, null, 14, 8, 9, 10, 11, 12, 13].map((number) => ({
             rarity: "PR",
             number,
-            key: `PR-${number}`,
+            key: number === null ? "UNRELEASED-SLOT-8" : `PR-${number}`,
             image:
-              number === 6
+              number === 6 || number === null
                 ? ""
                 : cardImagePaths.ccgPromo(String(number).padStart(3, "0")),
           }))
@@ -798,7 +798,7 @@ export default function MyCollectionBinder() {
         );
       }
       const card = cards[cardIndex];
-      if (selectedSet.id === "9" && card.number === 6) {
+      if (selectedSet.id === "9" && (card.number === 6 || card.number === null)) {
         return (
           <div
             key={cardIndex}
@@ -848,6 +848,7 @@ export default function MyCollectionBinder() {
           className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg"
         >
           <CardImage
+            imageSize={(selectedSet.id === "9" && card.number === 14) || (selectedSet.id === "tcgpromos" && card.number === 28) ? "original" : "grid"}
             src={card.image}
             loading="lazy"
             draggable={false}

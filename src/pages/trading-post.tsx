@@ -74,7 +74,7 @@ const setButtons = [
   },
   {
     title: "Promo Cards",
-    subtitle: "12 Cards",
+    subtitle: "13 Cards",
     group: "Promos",
     to: "/trading-post/9",
     image: "/thumbnails/promossetimage.webp",
@@ -109,7 +109,7 @@ const setButtons = [
   },
   {
     title: "TCG Promos",
-    subtitle: "27 Cards",
+    subtitle: "28 Cards",
     group: "Promos",
     to: "/trading-post/tcgpromos",
     image: "/thumbnails/tcgpromossetimage.webp",
@@ -323,7 +323,7 @@ const active = activeGroup === group;
                         : "bg-white/[0.05] text-[#E8CA55]"
                     }`}
                   >
-                    →
+                    &rarr;
                   </span>
                 </div>
                 <div

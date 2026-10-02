@@ -165,7 +165,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 12 },
+    rarities: { PR: 13 },
   },
   {
     id: "FW",
@@ -200,13 +200,14 @@ const sets = [
     name: "TCG Promos",
     folder: "tcgpromos",
     prefix: "RR",
-    rarities: { PR: 27 },
+    rarities: { PR: 28 },
   },
 ];
 const getDisplayCode = (card: any, currentSetId: string) => {
   const key = String(card.key || "");
   if (currentSetId === "9") {
     const num = Number(card.number);
+    if (num === 14) return "MLPE-PR-009";
     if (num >= 8 && num <= 13) {
       return `SDCC-${String(num - 7).padStart(2, "0")}`;
     }
@@ -235,6 +236,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
         25: "\u203BBP01-CR04",
         26: "\u203BBP01-CR05",
         27: "\u203BBP01-CR06",
+        28: "RR-28",
       };
       if (newPromoNames[num]) return newPromoNames[num];
     }
@@ -864,7 +866,7 @@ export default function MyTradesSets() {
       for (let i = 1; i <= count; i++) {
         let actualIndex = i;
         if (prefix === "SD01PER") {
-          actualIndex = i + 6; //  shift to 07-18
+          actualIndex = i + 6;
         }
         const num = String(actualIndex).padStart(2, "0");
         cards.push({
@@ -1005,7 +1007,7 @@ export default function MyTradesSets() {
       }
     });
   } else if (set.id === "tcgpromos") {
-    for (let i = 1; i <= 27; i++) {
+    for (let i = 1; i <= 28; i++) {
       const num = String(i).padStart(2, "0");
       cards.push({
         key: `RR${num}`,
@@ -1013,7 +1015,7 @@ export default function MyTradesSets() {
       });
     }
   } else if (set.id === "9") {
-    cards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13].map((num) => ({
+    cards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((num) => ({
       rarity: "PR",
       number: num,
       key: `PR-${num}`,
@@ -2120,6 +2122,7 @@ export default function MyTradesSets() {
                                 >
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                     <CardImage
+                                      imageSize={(set.id === "9" && card.key === "PR-14") || (set.id === "tcgpromos" && card.key === "RR28") ? "original" : undefined}
                                       src={
                                         set.id === "9"
                                           ? cardImagePaths.ccgPromo(String(card.number).padStart(3, "0"))

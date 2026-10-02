@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import TiltCard from "@/components/TiltCards";
-// Edit only the quoted text to change the source shown under each CCG promo.
 const CCG_PROMO_SOURCES: Record<string, string> = {
   "PR-1": "Thailand Exclusive",
   "PR-2": "Moon One 24-Pack Box",
@@ -15,6 +14,7 @@ const CCG_PROMO_SOURCES: Record<string, string> = {
   "PR-4": "Fun Moments One Box",
   "PR-5": "Moon Two 12-Pack Box",
   "PR-7": "Rainbow Two Box",
+  "PR-14": "Moon Three 12-Pack Box",
   "PR-8": "San Diego Comic-Con 2026",
   "PR-9": "San Diego Comic-Con 2026",
   "PR-10": "San Diego Comic-Con 2026",
@@ -22,7 +22,6 @@ const CCG_PROMO_SOURCES: Record<string, string> = {
   "PR-12": "San Diego Comic-Con 2026",
   "PR-13": "San Diego Comic-Con 2026",
 };
-// Edit only the quoted text to change the source shown under each TCG promo.
 const TCG_PROMO_SOURCES: Record<string, string> = {
   RR01: "Tournament Prize",
   RR02: "Tournament Prize",
@@ -51,6 +50,7 @@ const TCG_PROMO_SOURCES: Record<string, string> = {
   RR25: "Nightmare Night Binder Set",
   RR26: "Nightmare Night Binder Set",
   RR27: "Nightmare Night Binder Set",
+  RR28: "NYCC 2026",
 };
 const CCG_CARD_ZOOM: Record<string, number> = {
   "PR-1": 1.009,
@@ -59,6 +59,7 @@ const CCG_CARD_ZOOM: Record<string, number> = {
   "PR-4": 1.035,
   "PR-5": 1.033,
   "PR-7": 1.035,
+  "PR-14": 1.035,
   "PR-8": 1.04,
   "PR-9": 1.04,
   "PR-10": 1.04,
@@ -66,7 +67,6 @@ const CCG_CARD_ZOOM: Record<string, number> = {
   "PR-12": 1.04,
   "PR-13": 1.04,
 };
-
 const TCG_CARD_ZOOM: Record<string, number> = {
   RR01: 0.99,
   RR02: 0.99,
@@ -95,51 +95,45 @@ const TCG_CARD_ZOOM: Record<string, number> = {
   RR25: 0.99,
   RR26: 0.99,
   RR27: 0.99,
+  RR28: 0.99,
 };
-
 const getPromoFrontClassName = (key: string) => {
   const base = "absolute inset-0 h-full w-full rounded-xl object-center backface-hidden";
   return `${base} object-cover`;
 };
-
 const getPromoFrontStyle = (key: string): CSSProperties => {
   const transparentBackground = {
     backgroundColor: "transparent",
     backgroundImage: "none",
   };
-
   const zoom = key.startsWith("PR-")
     ? CCG_CARD_ZOOM[key] ?? 1
     : TCG_CARD_ZOOM[key] ?? 1;
   return { ...transparentBackground, transform: `scale(${zoom})` };
 };
-
 const getPromoKeyFromSrc = (src: string) => {
   const ccgMatch = src.match(/mlpepr(\d+)\.webp/i);
   if (ccgMatch) return `PR-${Number(ccgMatch[1])}`;
-
   const tcgMatch = src.match(/\/tcgpromos\/(RR\d+)\.webp/i);
   return tcgMatch?.[1].toUpperCase() ?? "";
 };
-
 const CARD_BACK_CLASS_NAME =
   "absolute inset-0 h-full w-full rounded-xl object-cover object-center backface-hidden";
 const PromotionalCards = () => {
   const navigate = useNavigate();
   const [flipped, setFlipped] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
-const [loadingFailed, setLoadingFailed] = useState(false);
+  const [loadingFailed, setLoadingFailed] = useState(false);
   const [lastSavedProgress, setLastSavedProgress] = useState("");
   const [viewMode, setViewMode] = useState(false);
   const [hiddenSets, setHiddenSets] = useState<string[]>([]);
   const [zoomedCard, setZoomedCard] = useState<string | null>(null);
   const [zoomedCardBack, setZoomedCardBack] = useState<string | null>(null);
   const [zoomedCardFlipped, setZoomedCardFlipped] = useState(false);
-  const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
-  const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
+  const ccgCards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13];
+  const tcgCards = Array.from({ length: 28 }, (_, i) => i + 1);
   const ccgHidden = hiddenSets.includes("9");
   const tcgHidden = hiddenSets.includes("tcgpromos");
-  
   const toggleFlip = (key: string) => {
     if (viewMode) {
       if (key.startsWith("PR-")) {
@@ -377,8 +371,8 @@ const [loadingFailed, setLoadingFailed] = useState(false);
                   </div>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {ccgCards.map((number) => {
-                      const key = `PR-${number}`;
-                      const owned = flipped[key];
+                    const key = `PR-${number}`;
+                    const owned = flipped[key];
                       return (
                         <div key={key} className="group min-w-0">
                           <div
@@ -390,7 +384,7 @@ const [loadingFailed, setLoadingFailed] = useState(false);
                                 viewMode ? "" : owned ? "rotate-y-180" : ""
                               }`}
                             >
-                              <CardImage visible={loaded && (viewMode || !owned)}
+                              <CardImage imageSize={number === 14 ? "original" : "grid"} visible={loaded && (viewMode || !owned)}
                                 src={cardImagePaths.ccgPromo(String(number).padStart(3, "0"))}
                                 className={getPromoFrontClassName(key)}
                                 style={getPromoFrontStyle(key)}
@@ -452,8 +446,8 @@ const [loadingFailed, setLoadingFailed] = useState(false);
                   </div>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {tcgCards.map((number) => {
-                      const key = `RR${String(number).padStart(2, "0")}`;
-                      const owned = flipped[key];
+                    const key = `RR${String(number).padStart(2, "0")}`;
+                    const owned = flipped[key];
                       return (
                         <div key={key} className="group min-w-0">
                           <div
@@ -465,7 +459,7 @@ const [loadingFailed, setLoadingFailed] = useState(false);
                                 viewMode ? "" : owned ? "rotate-y-180" : ""
                               }`}
                             >
-                              <CardImage visible={loaded && (viewMode || !owned)}
+                              <CardImage imageSize={number === 28 ? "original" : "grid"} visible={loaded && (viewMode || !owned)}
                                 src={cardImagePaths.tcgPromo(key)}
                                 className={getPromoFrontClassName(key)}
                                 style={getPromoFrontStyle(key)}

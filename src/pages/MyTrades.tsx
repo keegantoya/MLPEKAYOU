@@ -202,7 +202,7 @@ const collections = [
       title: "Promotional",
       setName: "Cards",
       imageUrl: "/thumbnails/promossetimage.webp",
-      totalCards: 12,
+      totalCards: 13,
       category: "promo-cards",
     },
     {
@@ -210,7 +210,7 @@ const collections = [
       title: "TCG",
       setName: "Promos",
       imageUrl: "/thumbnails/tcgpromossetimage.webp",
-      totalCards: 27,
+      totalCards: 28,
       category: "tcgpromos",
     },
   ];

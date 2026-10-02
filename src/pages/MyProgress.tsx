@@ -20,8 +20,8 @@ const sets = [
   {
     id: "9",
     name: "Promotional Cards",
-    total: 12,
-    rarities: { PR: 12 },
+    total: 13,
+    rarities: { PR: 13 },
   },
   {
     id: "1",
@@ -260,6 +260,13 @@ const found = progressMap.get(set.id);
           newProgress[set.id] = 0;
           return;
         }
+        if (set.id === "9") {
+          newProgress[set.id] = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].filter((number) => {
+            const value = found.progress[`PR-${number}`];
+            return value === true || (value !== null && typeof value === "object" && value?.owned === true);
+          }).length;
+          return;
+        }
 let owned = 0;
         Object.entries(found.progress).forEach(([key, value]) => {
           if (value) owned++;
@@ -315,7 +322,6 @@ const activeSets = sets.filter(
         "7",
         "8",
         "11",
-        "9",
       ].includes(set.id) &&
       releasedRoutes[set.id] &&
       !hiddenSets.includes(set.id) &&

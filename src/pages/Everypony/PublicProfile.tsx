@@ -261,10 +261,10 @@ const modalCards = useMemo(() => {
     }
   }, [collectionMode, visibleIsoCards, wishlistCards, tradeCards, saleCards]);
 const modalTabs = useMemo(() => {
-    const order = ["1", "2", "3", "13", "4", "5", "6", "7", "8", "11", "9", "SD", "friendshipsbegin", "FW", "12", "14", "tcgpromos"];
+const order = ["1", "2", "3", "13", "4", "5", "6", "7", "8", "11", "9", "SD", "friendshipsbegin", "FW", "12", "14", "tcgpromos"];
     return Array.from(new Set(modalCards.map((c: any) => String(c.set_id)))).sort((a, b) => {
-      const aIndex = order.indexOf(a);
-      const bIndex = order.indexOf(b);
+const aIndex = order.indexOf(a);
+const bIndex = order.indexOf(b);
       return (aIndex < 0 ? order.length : aIndex) - (bIndex < 0 ? order.length : bIndex) || a.localeCompare(b);
     });
   }, [modalCards]);
@@ -412,19 +412,19 @@ const rarityOrder: Record<string, string[]> = {
                         ],
                       };
 const getRarity = (card: any): string => {
-  const setId = String(card.set_id);
-  const key = ["SD", "friendshipsbegin"].includes(setId)
+const setId = String(card.set_id);
+const key = ["SD", "friendshipsbegin"].includes(setId)
     ? String(card.card_key).replace(/^(?:BONUS-|STARTER-)+/, "")
     : String(card.card_key);
   if (["FW", "12", "14", "SD", "friendshipsbegin"].includes(setId)) {
-    const parallel = key.match(/^PBP\d+-?(ER|SPR|GR|CR|RR)\d+/);
+const parallel = key.match(/^PBP\d+-?(ER|SPR|GR|CR|RR)\d+/);
     if (parallel) return `P${parallel[1]}`;
     return key.match(/^(?:BP\d+|SD\d+)-?([A-Z]+)\d+/)?.[1] ?? key.split("-")[0];
   }
   if (setId === "tcgpromos") return "PR";
   return key.split("-")[0];
 };
-  function getRarityLabel(setId: string, rarity: string) {
+function getRarityLabel(setId: string, rarity: string) {
     if (rarity === "ALL") {
       return ["7", "8", "11"].includes(setId) ? "All" : "All rarities";
     }
@@ -433,7 +433,7 @@ const getRarity = (card: any): string => {
     if (rarity === "SAR") return "\u25C7AR";
     if (["7", "8", "11"].includes(setId) && rarity === "SN") return "\u25C7N";
     if (["7", "8", "11"].includes(setId) && rarity === "SCR") return "\u25C7CR";
-    const parallelLabels: Record<string, string> = {
+const parallelLabels: Record<string, string> = {
       PER: "\u203BER",
       PSPR: "\u203BSPR",
       PGR: "\u203BGR",
@@ -444,9 +444,9 @@ const getRarity = (card: any): string => {
   }
 const rarityContext = `${profile?.id ?? ""}:${collectionMode}:${selectedSet}`;
 const rarityTabs = Array.from(new Set(setCards.map(getRarity))).sort((a, b) => {
-  const order = rarityOrder[selectedSet === "SD" ? "friendshipsbegin" : selectedSet] ?? [];
-  const aIndex = order.indexOf(a);
-  const bIndex = order.indexOf(b);
+const order = rarityOrder[selectedSet === "SD" ? "friendshipsbegin" : selectedSet] ?? [];
+const aIndex = order.indexOf(a);
+const bIndex = order.indexOf(b);
   return (aIndex < 0 ? order.length : aIndex) - (bIndex < 0 ? order.length : bIndex) || a.localeCompare(b);
 });
 const activeRarity = raritySelection.context === rarityContext && rarityTabs.includes(raritySelection.rarity)
@@ -467,6 +467,11 @@ const renderRarityButtons = () => rarityTabs.length > 0 ? (
   </div>
 ) : null;
 const compareCards = (a: any, b: any) => {
+  if (String(a.set_id) === "9" && String(b.set_id) === "9") {
+    const order = ["PR-1", "PR-2", "PR-3", "PR-4", "PR-5", "PR-7", "PR-14", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13"];
+    const difference = order.indexOf(a.card_key) - order.indexOf(b.card_key);
+    if (difference !== 0) return difference;
+  }
 const getNumber = (card: any) => {
 const match = card.card_key.match(/(\d+)$/);
                         return match ? parseInt(match[1], 10) : 0;
@@ -489,6 +494,7 @@ const renderCard = (card: any) => (
                         }`}
                       >
                         <CardImage
+                          imageSize={(String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28") ? "original" : "grid"}
                           src={getTradeCardImage(card)}
                           publicProfile
                           style={
@@ -525,7 +531,7 @@ const renderCard = (card: any) => (
                           <div className="absolute left-1.5 top-1.5 flex gap-1">
                             {card.is_for_trade && (
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">
-                                &#8644;
+                                ⇄
                               </span>
                             )}
                             {card.is_for_sale && (
@@ -676,7 +682,7 @@ const modeLabel =
                     : "text-zinc-400 hover:bg-white/[0.06]"
                 }`}
               >
-                &times;
+                ×
               </button>
             </div>
             <div className="flex min-w-0 flex-nowrap gap-2 overflow-x-auto p-3 sm:block sm:flex-1 sm:space-y-1 sm:overflow-x-hidden sm:overflow-y-auto">
@@ -728,7 +734,7 @@ const modeLabel =
                     : "text-zinc-400 hover:bg-white/[0.06]"
                 }`}
               >
-                &times;
+                ×
               </button>
             </div>
             <div className="p-3 sm:p-6">
