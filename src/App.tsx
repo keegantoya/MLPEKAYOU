@@ -41,6 +41,7 @@ import ThrowawayPage from "./pages/throwawaypage";
 import MoonOne from "./pages/Sets/Moon Editions/moon-one";
 import MoonTwo from "./pages/Sets/Moon Editions/moon-two";
 import MoonThree from "./pages/Sets/Moon Editions/moon-three";
+import MoonFour from "./pages/Sets/Moon Editions/moon-four";
 import RainbowOne from "./pages/Sets/Rainbow Editions/rainbow-one";
 import RainbowTwo from "./pages/Sets/Rainbow Editions/rainbow-two";
 import FunMomentsOne from "./pages/Sets/Fun Moments Editions/fun-moments-one";
@@ -72,9 +73,9 @@ const PUBLIC_AUTH_PATHS = new Set([
   "/account-confirmation",
   "/links",
 ]);
-// One-segment URLs may be public profile links. Keep every named app route gated.
+
 const RESERVED_PATHS = new Set([
-  "/collections", "/moon-one", "/moon-two", "/moon-three",
+  "/collections", "/moon-one", "/moon-two", "/moon-three", "/moon-four",
   "/rainbow-one", "/rainbow-two", "/fun-moments-one",
   "/fun-moments-two", "/fun-moments-three", "/star-one",
   "/fantasy-wonderland", "/friendships-begin", "/discord",
@@ -346,6 +347,14 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
           </RequireAuth>
         }
       />
+    <Route
+      path="/moon-four"
+      element={
+        <RequireAuth>
+          <MoonFour />
+        </RequireAuth>
+      }
+    />
       <Route
         path="/rainbow-one"
         element={

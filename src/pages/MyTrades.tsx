@@ -126,6 +126,14 @@ const collections = [
       category: "eternal-moon",
     },
     {
+      id: "13",
+      title: "Eternal Moon",
+      setName: "Four",
+      imageUrl: "/thumbnails/moonfoursetimage.webp",
+      totalCards: 162,
+      category: "eternal-moon",
+    },
+    {
       id: "8",
       title: "Fun Moments",
       setName: "Two",
@@ -217,7 +225,7 @@ const filteredCollections = collections.filter((col) => {
     if (normalizedHiddenSets.has(normalizeSetId(col.id))) return false;
     if (!normalizedOwnedSets.has(normalizeSetId(col.id))) return false;
     if (activeFilter === "moon") {
-      return col.id === "1" || col.id === "2" || col.id === "3";
+      return col.id === "1" || col.id === "2" || col.id === "3" || col.id === "13";
     }
     if (activeFilter === "star") {
       return col.id === "4";
@@ -250,6 +258,7 @@ const slugMap: Record<string, string> = {
     "1": "moon-one",
     "2": "moon-two",
     "3": "moon-three",
+    "13": "moon-four",
     "4": "star-one",
     "5": "rainbow-one",
     "6": "rainbow-two",

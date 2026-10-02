@@ -1,4 +1,3 @@
-// Save as src/lib/iso-card-catalog.ts. Shared source for ISO and moderation.
 export const funCatalog = (() => {
 const getRarityCode = (rarity: string) => {
   return rarity;
@@ -163,6 +162,9 @@ const cardNumber = String(number).padStart(3, "0");
   ) {
     return `MLPME02-◇ZR-${cardNumber}`;
   }
+  if (setId === "13" && (rarity === "SZR" || rarity === "SHINING ZR")) {
+    return `MLPME04-\u25C7ZR-${cardNumber}`;
+  }
   if (setId === "3" && rarity === "SZR") {
     return `MLPME03-◇ZR-${cardNumber}`;
   }
@@ -170,6 +172,7 @@ const setCodeMap: Record<string, string> = {
     "1": "MLPME01",
     "2": "MLPME02",
     "3": "MLPME03",
+    "13": "MLPME04",
   };
   return `${setCodeMap[setId]}-${rarityCode}-${cardNumber}`;
 };
@@ -226,6 +229,25 @@ const sets = [
       SZR: 3,
     },
   },
+  {
+    id: "13",
+    name: "Moon Fourth Edition",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 26,
+      HR: 30,
+      UR: 16,
+      LSR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      SZR: 2,
+    },
+  },
+
 ]
 return { sets, getDisplayCardCode, getRarityCode };
 })();
@@ -237,23 +259,18 @@ const getDisplayCardCode = (
   number: number
 ) => {
   if (setId === "9") {
-// Standard CCG Promos
     if (number <= 7) {
       return `MLPE-PR-${String(number).padStart(3, "0")}`;
     }
-// SDCC Promos
     return `SDCC-${String(number - 7).padStart(3, "0")}`;
   }
   if (setId === "tcgpromos") {
-// RR-01 through RR-06
     if (number <= 6) {
       return `RR-${String(number).padStart(2, "0")}`;
     }
-// BP01 CR-07 through CR-12
     if (number <= 12) {
       return `BP01-CR-${String(number).padStart(2, "0")}`;
     }
-// BP02 CR-01 through CR-06
     if (number <= 18) {
       return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
     }
@@ -736,44 +753,42 @@ return displayCode;
 const getDisplayRarity = (rarity: string) => rarity.startsWith("P") ? `※${rarity.slice(1)}` : rarity;
 return { sets, getCards, getDisplayCardCode, getDisplayRarity };
 })();
-
 const catalogGroups = [funCatalog, moonCatalog, promosCatalog, rainbowCatalog, starCatalog, tcgCatalog];
 export const getISOSetId = (setId: string) => ({
   discord: "12", friendshipsbegin: "SD", "friendships-begin": "SD",
   "fantasy-wonderland": "FW", "nightmare-night": "14",
 } as Record<string, string>)[String(setId)] || String(setId);
 export const getISOSetName = (setId: string) => {
-  const id = getISOSetId(setId);
+const id = getISOSetId(setId);
   for (const group of catalogGroups) {
-    const set = group.sets.find((entry) => entry.id === id);
+const set = group.sets.find((entry) => entry.id === id);
     if (set) return set.name;
   }
   return "Unknown collection";
 };
 export const getISOCardCode = (setId: string, cardKey: string) => {
-  const id = getISOSetId(setId);
-  const original = String(cardKey || "");
-  let key = original;
+const id = getISOSetId(setId);
+const original = String(cardKey || "");
+let key = original;
   for (const prefix of [`${setId}:`, `${id}:`, `${setId}-`, `${id}-`]) {
     if (key.startsWith(prefix)) { key = key.slice(prefix.length); break; }
   }
   key = key.replace(/^BONUS-/, "");
   if (promosCatalog.sets.some((set) => set.id === id)) {
-    const match = key.match(id === "9" ? /^PR-?(\d+)$/ : /^RR-?(\d+)$/);
+const match = key.match(id === "9" ? /^PR-?(\d+)$/ : /^RR-?(\d+)$/);
     return match ? promosCatalog.getDisplayCardCode(id, Number(match[1])) : original;
   }
   for (const group of [funCatalog, moonCatalog, rainbowCatalog, starCatalog]) {
     if (!group.sets.some((set) => set.id === id)) continue;
-    const match = key.match(/^(.+)-(\d+)$/);
+const match = key.match(/^(.+)-(\d+)$/);
     if (!match || !/^[A-Z ]+$/.test(match[1])) return original;
     return group.getDisplayCardCode(id, match[1], Number(match[2]));
   }
-  const tcgSet = tcgCatalog.sets.find((set) => set.id === id);
+const tcgSet = tcgCatalog.sets.find((set) => set.id === id);
   if (tcgSet) {
     if (id === "14") key = key.replace(/^(BP03-ER0[12])-([ABC])\2$/, "$1-$2");
-    const card = tcgCatalog.getCards(tcgSet).find((entry) => entry.key === key);
+const card = tcgCatalog.getCards(tcgSet).find((entry) => entry.key === key);
     if (card) return tcgCatalog.getDisplayCardCode(id, card);
   }
-  // Keep unrecognized or already-formatted identifiers intact.
   return original;
 };

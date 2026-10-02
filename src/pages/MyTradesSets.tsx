@@ -1,5 +1,5 @@
 import { onAuthIdentityChange } from "@/lib/auth-identity";
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import { getISOCardCode } from "@/lib/iso-card-catalog";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
@@ -127,6 +127,24 @@ const sets = [
     },
   },
   {
+    id: "13",
+    name: "Eternal Moon: Fourth Edition",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 26,
+      HR: 30,
+      UR: 16,
+      LSR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      SZR: 2,
+    },
+  },
+  {
     id: "4",
     name: "Star: First Edition",
     folder: "star-one",
@@ -187,7 +205,6 @@ const sets = [
 ];
 const getDisplayCode = (card: any, currentSetId: string) => {
   const key = String(card.key || "");
-  //  Promotional Cards: the six SDCC cards are PR-8 through PR-13.
   if (currentSetId === "9") {
     const num = Number(card.number);
     if (num >= 8 && num <= 13) {
@@ -234,7 +251,6 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${isReferenceRarity ? "\u203B" : ""}SD01-${displayRarity}${number}`;
     }
   }
-  //  Fantasy Wonderland / BP01.
   if (currentSetId === "FW") {
     const match = key.match(
       /^BP01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)$/,
@@ -259,7 +275,6 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${reference}BP01-${displayRarity}${number}`;
     }
   }
-  //  Discord / BP02. A2/B2 are image variants of the same displayed card code.
   if (currentSetId === "12") {
     const match = key.match(
       /^BP02-(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)(?:-(?:A2|B2))?$/,
@@ -287,16 +302,13 @@ const getDisplayCode = (card: any, currentSetId: string) => {
   if (currentSetId === "14" && key.startsWith("PBP03-")) {
     return `※${key.slice(1)}`;
   }
-  //  All SN cards display the S rarity as a diamond.// The normal set keys are "SN-1", "SN-2", etc.
   if (key.startsWith("SN-")) {
     return `\u25C7N-${key.slice(3)}`;
   }
-  //  Also handle compact SN keys if one is supplied by a special set.
   const compactSnMatch = key.match(/^(.*?)(?:SN)(\d+)$/);
   if (compactSnMatch) {
     return `${compactSnMatch[1]}\u25C7N${compactSnMatch[2]}`;
   }
-  //  SCR uses the diamond form ONLY in Fun Moments.// The normal keys are "SCR-1", "SCR-2", etc.
   if (["7", "8", "11"].includes(currentSetId)) {
     if (key.startsWith("SCR-")) {
       return `\u25C7CR-${key.slice(4)}`;
@@ -306,7 +318,6 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${compactScrMatch[1]}\u25C7CR${compactScrMatch[2]}`;
     }
   }
-  //  Both SHINING ZR and SZR display as \u25C7ZR.
   const zrMatch = key.match(/^(?:SHINING ZR|SZR)-?(\d+)$/);
   if (zrMatch) {
     return `\u25C7ZR-${zrMatch[1]}`;
@@ -416,14 +427,12 @@ export default function MyTradesSets() {
         const { data } = await supabase.auth.getSession();
         user = data.session?.user;
       }
-      //  handle logged-out case
       if (!user) {
         setProgressMap({});
         setMarketListings({});
         setQuantities({});
         return;
       }
-      //  [LOAD] LOAD PROGRESS
       const { data: progress } = await supabase
         .from("collection_progress")
         .select("set_id, progress")
@@ -432,7 +441,6 @@ export default function MyTradesSets() {
       progress?.forEach((row: any) => {
         map[row.set_id] = row.progress || {};
       });
-      // Load the richer trade and sale details without changing the existing tables.
       const { data: listings } = await supabase
         .from("card_market_listings")
         .select(
@@ -452,7 +460,6 @@ export default function MyTradesSets() {
         };
       });
       setMarketListings(listingMap);
-      //  [LOAD] LOAD QUANTITIES
       const { data: qtyData } = await supabase
         .from("card_quantity")
         .select("card_key, quantity")
@@ -467,7 +474,6 @@ export default function MyTradesSets() {
       setProgressMap(map);
       setInventoryDirty(false);
     };
-    //  initial load
     load();
     const {
       data: { subscription },
@@ -809,6 +815,7 @@ export default function MyTradesSets() {
     "moon-one": "1",
     "moon-two": "2",
     "moon-three": "3",
+    "moon-four": "13",
     "star-one": "4",
     "rainbow-one": "5",
     "rainbow-two": "6",
@@ -839,7 +846,7 @@ export default function MyTradesSets() {
       </div>
     );
   }
-  const getBulkCardCode = (card: any) => getISOCardCode(set.id, String(card.key));
+  const getBulkCardCode = (card: any) => set.id === "13" ? `M4${card.rarity}${String(card.number).padStart(card.rarity === "SZR" ? 3 : 2, "0")}` : getISOCardCode(set.id, String(card.key));
   let cards: any[] = [];
   if (set.id === "friendshipsbegin") {
     const BONUS_STRUCTURE = [
@@ -1017,6 +1024,7 @@ export default function MyTradesSets() {
         rarity,
         number: i + 1,
         key: `${rarity}-${i + 1}`,
+        ...(set.id === "13" ? { image: getMoonFourFront(`${rarity}-${i + 1}`) } : {}),
       })),
     );
   }
@@ -1159,19 +1167,15 @@ export default function MyTradesSets() {
       Array.from({ length: 21 }).some((_, i) => progress[`${deck}-${i + 1}`]),
     );
   const rarityOrders: Record<string, string[]> = {
-    //  Star
     "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
-    //  Eternal Moon
     "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
     "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
     "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
-    //  Rainbow
+    "13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
     "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
     "6": ["BASE", "R", "SR", "ST", "TR", "TGR", "SSR", "FR", "UR", "USR", "XR"],
-    //  Fun Moments
     "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
     "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
-    //  Fantasy Wonderland
     FW: [
       "C",
       "U",
@@ -1187,10 +1191,8 @@ export default function MyTradesSets() {
       "\u203BCR",
       "\u203BRR",
     ],
-    //  Friendships Begin
     friendshipsbegin: ["C", "U", "SR", "SPR", "GR", "CR", "ER", "\u203BER", "\u203BRR"],
     "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
-    //  Promos
     "9": ["PR"],
     tcgpromos: ["PR"],
   };

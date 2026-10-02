@@ -1,4 +1,4 @@
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -39,6 +39,7 @@ const OFFER_SET_ORDER = [
   "1",
   "2",
   "3",
+  "13",
   "4",
   "5",
   "6",
@@ -93,7 +94,7 @@ const OFFER_RARITY_ORDER = [
 const offerKeyFor = (recipientId: string, setId: string, cardKey: string) =>
   [recipientId, setId, cardKey].join("-");
 const inventoryRarity = (cardKey: string) => {
-  const key = cardKey.toUpperCase().replace(/※/g, "");
+  const key = cardKey.toUpperCase().replace(/\u203B/g, "");
   const prefixed = key.match(
     /(?:BP|SD)\d{2}-?(PER|PSPR|PGR|PCR|PRR|SPR|SSR|SCR|SAR|SGR|UGR|USR|TGR|MTR|LSR|SZR|ZR|XR|HR|FR|TR|ST|SR|UR|GR|CR|ER|RR|SC|BP|AR|OR|PR|R|U|C|N|SN)/,
   );
@@ -104,6 +105,7 @@ const rarityMap: Record<string, string[]> = {
   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
   "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
   "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+  "13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
   "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
   "5": ["R", "FR", "SR", "SSR", "TR", "TGR", "MTR", "UR", "USR", "XR"],
   "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
@@ -160,6 +162,7 @@ const rarityMap: Record<string, string[]> = {
   ],
 };
 const getCardImage = (card: TradeCard) => {
+  if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
   const [rarity, number] = card.card_key.split("-");
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
     return cardImagePaths.friendshipsBegin(card.card_key);
@@ -227,6 +230,7 @@ const getOfferCardNumber = (cardKey: string) => {
 const getOfferImageClassName = (card: { set_id: string; card_key: string }) => {
   const base = "absolute inset-0 h-full w-full max-w-none";
   const offerSetId = String(card.set_id);
+  if (offerSetId === "13") return `${base} scale-[1.035] object-contain object-center`;
   if (standardOfferZoomSets.has(offerSetId)) {
     return `${base} scale-[1.05] object-contain object-center`;
   }
@@ -438,6 +442,7 @@ export default function TradingPostInner() {
     "2": "Eternal Moon: Second Edition",
     "8": "Fun Moments: Second Edition",
     "3": "Eternal Moon: Third Edition",
+    "13": "Eternal Moon: Fourth Edition",
     "11": "Fun Moments: Third Edition",
     "4": "Star: First Edition",
     "6": "Rainbow: Second Edition",
@@ -453,6 +458,7 @@ export default function TradingPostInner() {
       "1": "Moon One",
       "2": "Moon Two",
       "3": "Moon Three",
+      "13": "Moon Four",
       "4": "Star One",
       "5": "Rainbow One",
       "6": "Rainbow Two",
@@ -1030,17 +1036,17 @@ export default function TradingPostInner() {
     if (rarity === "ALL") {
       return ["7", "8", "11"].includes(offerSetId) ? "All" : "All rarities";
     }
-    if (rarity === "SHINING ZR") return "◇ ZR";
-    if (rarity === "SZR") return "◇ZR";
-    if (rarity === "SAR") return "◇AR";
-    if (["7", "8", "11"].includes(offerSetId) && rarity === "SN") return "◇N";
-    if (["7", "8", "11"].includes(offerSetId) && rarity === "SCR") return "◇CR";
+    if (rarity === "SHINING ZR") return "\u25C7 ZR";
+    if (rarity === "SZR") return "\u25C7ZR";
+    if (rarity === "SAR") return "\u25C7AR";
+    if (["7", "8", "11"].includes(offerSetId) && rarity === "SN") return "\u25C7N";
+    if (["7", "8", "11"].includes(offerSetId) && rarity === "SCR") return "\u25C7CR";
     const parallelLabels: Record<string, string> = {
-      PER: "※ER",
-      PSPR: "※SPR",
-      PGR: "※GR",
-      PCR: "※CR",
-      PRR: "※RR",
+      PER: "\u203BER",
+      PSPR: "\u203BSPR",
+      PGR: "\u203BGR",
+      PCR: "\u203BCR",
+      PRR: "\u203BRR",
     };
     return parallelLabels[rarity] || rarity;
   };
@@ -1957,7 +1963,7 @@ export default function TradingPostInner() {
                                 : "bg-white/[0.07] text-zinc-200"
                             }`}
                           >
-                            ‹
+                            &lsaquo;
                           </button>
                           <div className="min-w-0 text-center">
                             <div className="truncate text-sm font-semibold text-[#b88a00] dark:text-[#FFE27A]">
@@ -1981,7 +1987,7 @@ export default function TradingPostInner() {
                                 : "bg-white/[0.07] text-zinc-200"
                             }`}
                           >
-                            ›
+                            &rsaquo;
                           </button>
                         </div>
                       )}
@@ -2220,7 +2226,7 @@ export default function TradingPostInner() {
               <>
                 <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto p-6 text-center">
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-3xl font-black text-emerald-500">
-                    ✓
+                    &#10003;
                   </div>
                   <h3 className="mt-3 text-xl font-bold">
                     Your offer was sent

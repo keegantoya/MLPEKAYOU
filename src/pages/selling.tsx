@@ -1,20 +1,13 @@
 import CardImage from "@/components/CardImage";
 import KeeganAvatar from "@/assets/avatars/keeganpfp3.webp";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 export default function Selling() {
-const stats = [];
-const lowerTier = [
-    ["Moon Editions", "R, SR, HR, SSR, UR, LSR"],
-    ["Rainbow Editions", "BASE, ST, R, SR, FR, TR, TGR"],
-    ["Fun Moments Editions", "N, ◇N, R, SR, SSR, UR"],
-    ["Star Editions", "SSR, SCR, UR"],
-  ];
 const higherTier = [
-    ["Moon Editions", "SGR, ZR, SC, ◇ZR"],
+    ["Moon Editions", "SGR, ZR, SC, \u25C7ZR"],
     ["Rainbow Editions", "USR, XR"],
-    ["Fun Moments Editions", "UGR, CR, ◇CR"],
-    ["Star Editions", "AR, OR, BP, ◇AR"],
+    ["Fun Moments Editions", "UGR, CR, \u25C7CR"],
+    ["Star Editions", "AR, OR, BP, \u25C7AR"],
   ];
 const pricingCards = [
   {
@@ -26,7 +19,7 @@ const pricingCards = [
       ["AR", "$25"],
       ["OR", "$40"],
       ["BP", "$65"],
-      ["◇AR", "$150+"],
+      ["\u25C7AR", "$150+"],
     ],
   },
   {
@@ -51,7 +44,7 @@ const pricingCards = [
       ["HIDDEN ZR", "$145"],
       ["SC", "$45"],
       ["HIDDEN SC", "$150"],
-      ["◇ZR", "$275"],
+      ["\u25C7ZR", "$275"],
     ],
   },
   {
@@ -66,8 +59,20 @@ const pricingCards = [
       ["HIDDEN ZR", "$85"],
       ["SC", "$65"],
       ["HIDDEN SC", "$250"],
-      ["CHILDHOOD ◇ZR", "$200"],
-      ["CRYSTAL ◇ZR", "$250"],
+      ["CHILDHOOD \u25C7ZR", "$200"],
+      ["CRYSTAL \u25C7ZR", "$250"],
+    ],
+  },
+  {
+    title: "Moon Edition Four",
+    subtitle: "MOON EDITION",
+    to: "/moon-four",
+    gradient: "",
+    rows: [
+      ["SGR", "$8"],
+      ["ZR", "$20"],
+      ["SC", "$65"],
+      ["\u25C7ZR", "$200"],
     ],
   },
   {
@@ -121,21 +126,39 @@ const pricingCards = [
       ["UGR", "$8"],
       ["CR", "$20"],
       ["HIDDEN CR", "$30"],
-      ["◇CR", "$35"],
+      ["\u25C7CR", "$35"],
     ],
     note:
       "",
   },
 ];
 const [selectedFilter, setSelectedFilter] = useState("All Sets");
+const pricingGridRef = useRef<HTMLDivElement>(null);
+const [columnCount, setColumnCount] = useState(1);
+useEffect(() => {
+  const element = pricingGridRef.current;
+  if (!element) return;
+  const updateColumns = () => {
+    const width = element.getBoundingClientRect().width;
+    setColumnCount(Math.max(1, Math.min(3, Math.floor((width + 16) / 366))));
+  };
+  updateColumns();
+  if (typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(updateColumns);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }
+  window.addEventListener("resize", updateColumns);
+  return () => window.removeEventListener("resize", updateColumns);
+}, []);
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
-  const root = document.documentElement;
+const root = document.documentElement;
   return root.dataset.theme === "light" || root.classList.contains("light") || !root.classList.contains("dark");
 });
 useEffect(() => {
-  const syncTheme = () => {
-    const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
     setIsLightMode(
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
@@ -143,7 +166,7 @@ useEffect(() => {
     );
   };
   syncTheme();
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
@@ -159,6 +182,7 @@ const setHeaderImages: Record<string, string> = {
     "Moon Edition One": "/thumbnails/moononesetimage.webp",
     "Moon Edition Two": "/thumbnails/moontwosetimage.webp",
     "Moon Edition Three": "/thumbnails/moonthreesetimage.webp",
+    "Moon Edition Four": "/thumbnails/moonfoursetimage.webp",
     "Rainbow Edition One": "/thumbnails/rainbowonesetimage.webp",
     "Rainbow Edition Two": "/thumbnails/rainbowtwosetimage.webp",
     "Fun Moments Edition One": "/thumbnails/funonesetimage.webp",
@@ -184,245 +208,69 @@ const filteredPricingCards =
           return true;
         });
   return (
-    <div
-      className={`min-h-screen pb-24 font-['Oxanium'] transition-colors sm:pb-10 ${
-        isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-zinc-100"
-      }`}
-    >
-      <div
-        className="pointer-events-none fixed inset-x-0 top-0 h-56"
-        style={{
-          background: isLightMode
-            ? "radial-gradient(circle at 50% 0%, rgba(255,213,74,.11), transparent 65%)"
-            : "radial-gradient(circle at 50% 0%, rgba(255,213,74,.06), transparent 65%)",
-        }}
-      />
-      <main className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <header
-          className={`mb-5 overflow-hidden rounded-[26px] border ${
-            isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#17191a]"
-          }`}
-        >
-          <div className="h-1 bg-gradient-to-r from-[#FFD54A] via-[#e7c444] to-transparent" />
-          <div className="flex items-center gap-4 p-4 sm:p-5">
-            <CardImage
-              src={KeeganAvatar}
-              alt="Pricing Guide"
-              className={`h-14 w-14 shrink-0 rounded-2xl border object-cover ${
-                isLightMode ? "border-black/10" : "border-white/10"
-              }`}
-            />
-            <div className="min-w-0">
-              <div className={`text-sm font-medium ${isLightMode ? "text-[#806100]" : "text-[#E8CA55]"}`}>
-                Community pricing guide
-              </div>
-              <h1 className="mt-0.5 text-2xl font-semibold sm:text-3xl">Guide to Selling</h1>
-              <p className={`mt-1 max-w-2xl text-sm leading-relaxed ${
-                isLightMode ? "text-zinc-600" : "text-zinc-400"
-              }`}>
-                Fair-value estimates based on rarity, availability, pull rates, and collector demand.
-              </p>
-            </div>
+    <div className={`min-h-screen pb-24 font-['Oxanium'] sm:pb-10 ${isLightMode ? "bg-[#f6f5f1] text-zinc-900" : "bg-[#0e1011] text-zinc-100"}`}>
+      <main className="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8 2xl:px-10">
+        <header className={`mb-6 flex flex-col justify-between gap-4 border-b pb-5 sm:flex-row sm:items-end ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+          <div>
+            <p className={`mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${isLightMode ? "text-[#8a6b1b]" : "text-[#D9BC68]"}`}>Community pricing guide</p>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Guide to <span className={isLightMode ? "text-[#8a6b1b]" : "text-[#E6CD86]"}>Selling</span></h1>
+            <p className={`mt-2 max-w-2xl text-sm leading-6 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Fair-value estimates based on rarity, availability, pull rates, and collector demand.</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <CardImage src={KeeganAvatar} alt="Keegan" className="h-10 w-10 rounded-full object-cover ring-2 ring-[#D9BC68]/20" />
+            <div><div className="text-xs font-semibold">MLPEKAYOU / KEEGAN</div><div className={`mt-0.5 text-[11px] ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>Collector pricing reference</div></div>
           </div>
         </header>
-        <section
-          className={`mb-5 rounded-[24px] border p-4 sm:p-5 ${
-            isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#17191a]"
-          }`}
-        >
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div>
-              <h2 className="text-lg font-semibold">How prices are determined</h2>
-              <p className={`mt-2 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                Prices are established by experienced collectors and reflect rarity, pull rates, product availability, and long-term collector demand rather than inflated resale listings or speculative pricing. The goal is to keep the hobby accessible across different budgets.
-              </p>
+        <div className="grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_280px] 2xl:grid-cols-[minmax(0,1fr)_300px]">
+          <section aria-labelledby="set-prices-title" className="min-w-0">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+              <div><h2 id="set-prices-title" className="text-lg font-semibold">Pricing by set</h2><p className={`mt-1 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Select a collection to narrow the guide.</p></div>
+              <div role="group" aria-label="Filter pricing by collection" className="flex max-w-full flex-wrap gap-1.5">
+                {["All Sets", "Moon", "Rainbow", "Fun Moments", "Star"].map((filter) => (
+                  <button key={filter} type="button" aria-pressed={selectedFilter === filter} onClick={() => setSelectedFilter(filter)} className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold transition ${selectedFilter === filter ? isLightMode ? "border-[#c9ac59] bg-[#efe4c5] text-[#70551a]" : "border-[#D9BC68]/30 bg-[#D9BC68]/10 text-[#E6CD86]" : isLightMode ? "border-black/[0.08] text-zinc-500 hover:bg-white" : "border-white/[0.08] text-zinc-400 hover:bg-white/[0.04]"}`}>{filter}</button>
+                ))}
+              </div>
             </div>
-            <div
-              className={`rounded-[20px] border p-4 ${
-                isLightMode ? "border-[#d8bd55]/35 bg-[#fff9df]" : "border-[#FFD54A]/15 bg-[#FFD54A]/[0.05]"
-              }`}
-            >
-              <h3 className={`text-sm font-semibold ${isLightMode ? "text-[#725800]" : "text-[#E8CA55]"}`}>
-                What about TCG?
-              </h3>
-              <p className={`mt-2 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                TCG values are less predictable because playability can outweigh rarity. For current TCG pricing estimates, ask in the TCG chat in the Discord server.
-              </p>
-            </div>
-          </div>
-        </section>
-        <section className="mb-6">
-          <div className="mb-3">
-            <div className={`text-sm font-medium ${isLightMode ? "text-[#806100]" : "text-[#E8CA55]"}`}>
-              Higher-tier rarities
-            </div>
-            <h2 className="mt-0.5 text-xl font-semibold">Cards With Value</h2>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {higherTier.map(([name, rarities]) => (
-              <div
-                key={name}
-                className={`rounded-[20px] border p-4 ${
-                  isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#17191a]"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold">{name}</h3>
-                    <p className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                      {rarities}
-                    </p>
+            <div ref={pricingGridRef} className="grid items-start gap-4" style={{gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`}}>
+              {Array.from({length: columnCount}, (_, column) => (
+                <div key={column} className="flex min-w-0 flex-col gap-4">
+                  {filteredPricingCards.filter((_, index) => index % columnCount === column).map((card) => (
+                <article key={card.title} className={`group w-full overflow-hidden rounded-xl border transition duration-200 ${isLightMode ? "border-black/[0.07] bg-white shadow-[0_3px_16px_rgba(0,0,0,0.025)] hover:border-[#bca04e]/40" : "border-white/[0.07] bg-[#17191b] shadow-[0_3px_16px_rgba(0,0,0,0.12)] hover:border-[#D9BC68]/30"}`}>
+                  <Link to={card.to} className={`flex items-center gap-3 border-b p-4 transition ${isLightMode ? "border-black/[0.06] hover:bg-[#fbf9f3]" : "border-white/[0.06] hover:bg-white/[0.02]"}`}>
+                    <CardImage src={setHeaderImages[card.title]} alt={card.title} className="h-16 w-16 shrink-0 rounded-lg object-cover" />
+                    <div className="min-w-0 flex-1"><p className={`text-[9px] font-semibold uppercase tracking-[0.12em] ${isLightMode ? "text-[#91752f]" : "text-[#bfa865]"}`}>{card.subtitle}</p><h3 className="mt-1 text-sm font-semibold leading-5 sm:text-base">{card.title}</h3></div>
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={`shrink-0 transition-transform group-hover:translate-x-0.5 ${isLightMode ? "text-zinc-400" : "text-zinc-500"}`}><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                  </Link>
+                  <div className="px-4 pb-2 pt-3">
+                    <div className={`mb-1 flex justify-between text-[10px] font-medium uppercase tracking-wider ${isLightMode ? "text-zinc-400" : "text-zinc-500"}`}><span>Rarity</span><span>Est. value</span></div>
+                    <dl>{card.rows.map(([rarity, price], index) => (
+                      <div key={`${card.title}-${rarity}`} className={`flex items-center justify-between gap-3 py-3 ${index !== card.rows.length - 1 ? isLightMode ? "border-b border-black/[0.04]" : "border-b border-white/[0.04]" : ""}`}>
+                        <dt className={`text-xs font-medium sm:text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>{rarity}</dt>
+                        <dd className={`shrink-0 text-sm font-semibold tabular-nums ${price === "UNK" || price === "UNKNOWN" ? "text-zinc-500" : isLightMode ? "text-[#80621c]" : "text-[#E6CD86]"}`}>{price === "UNK" || price === "UNKNOWN" ? "Unknown" : price}</dd>
+                      </div>
+                    ))}</dl>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      isLightMode ? "bg-[#fff1ad] text-[#725800]" : "bg-[#FFD54A]/10 text-[#E8CA55]"
-                    }`}
-                  >
-                    High value
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="mb-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold">Pricing by set</h2>
-              <p className={`mt-1 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                Select a collection to narrow the guide.
-              </p>
-            </div>
-            <span
-              className={`hidden rounded-full px-3 py-1.5 text-sm sm:block ${
-                isLightMode ? "bg-white text-zinc-600" : "bg-white/[0.05] text-zinc-300"
-              }`}
-            >
-              {selectedFilter}
-            </span>
-          </div>
-          <div
-            className={`flex gap-2 overflow-x-auto rounded-[20px] border p-1.5 ${
-              isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#17191a]"
-            }`}
-          >
-            {["All Sets", "Moon", "Rainbow", "Fun Moments", "Star"].map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => setSelectedFilter(filter)}
-                className={`shrink-0 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition ${
-                  selectedFilter === filter
-                    ? "bg-[#FFD54A] text-zinc-900"
-                    : isLightMode
-                    ? "text-zinc-600 hover:bg-zinc-100"
-                    : "text-zinc-300 hover:bg-white/[0.06]"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-        </section>
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredPricingCards.map((card) => (
-            <Link
-              key={card.title}
-              to={card.to}
-              className={`group overflow-hidden rounded-[24px] border transition hover:-translate-y-0.5 ${
-                isLightMode
-                  ? "border-black/10 bg-white hover:border-[#c8a62d]/45 hover:shadow-[0_12px_30px_rgba(73,55,0,.08)]"
-                  : "border-white/[0.08] bg-[#17191a] hover:border-[#FFD54A]/30 hover:shadow-[0_12px_30px_rgba(0,0,0,.25)]"
-              }`}
-            >
-              <div
-                className="relative h-32 overflow-hidden"
-                style={{
-                  backgroundImage: `url(${setHeaderImages[card.title] || "/thumbnails/moon-fe.webp"})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                <div className={`absolute inset-0 ${
-                  isLightMode
-                    ? "bg-gradient-to-t from-black/65 via-black/15 to-black/10"
-                    : "bg-gradient-to-t from-black/75 via-black/20 to-black/10"
-                }`} />
-                <div className="absolute bottom-3 left-4 right-4">
-                  <div className="text-lg font-semibold text-white drop-shadow-md">{card.title}</div>
-                  <div className="mt-1 text-xs font-medium text-[#FFE27A]">{card.subtitle}</div>
-                </div>
-              </div>
-              <div className="p-4">
-                <div
-                  className={`mb-2 flex items-center justify-between border-b pb-2 text-sm font-medium ${
-                    isLightMode ? "border-black/[0.06] text-zinc-500" : "border-white/[0.06] text-zinc-400"
-                  }`}
-                >
-                  <span>Rarity</span>
-                  <span>Est. value</span>
-                </div>
-                <div>
-                  {card.rows.map(([rarity, price], rowIndex) => (
-                    <div
-                      key={`${card.title}-${rarity}`}
-                      className={`flex items-center justify-between gap-3 py-2.5 ${
-                        rowIndex !== card.rows.length - 1
-                          ? isLightMode
-                            ? "border-b border-black/[0.05]"
-                            : "border-b border-white/[0.05]"
-                          : ""
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{rarity}</span>
-                      {price === "UNK" || price === "UNKNOWN" ? (
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs ${
-                            isLightMode ? "bg-zinc-100 text-zinc-500" : "bg-white/[0.05] text-zinc-400"
-                          }`}
-                        >
-                          Unknown
-                        </span>
-                      ) : (
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-sm font-semibold ${
-                            isLightMode ? "bg-[#fff1ad] text-[#725800]" : "bg-[#FFD54A]/10 text-[#E8CA55]"
-                          }`}
-                        >
-                          {price}
-                        </span>
-                      )}
-                    </div>
+                  {card.note && <p className={`mx-4 mb-4 border-l-2 border-[#D9BC68]/40 pl-3 text-xs leading-5 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{card.note}</p>}
+                </article>
                   ))}
                 </div>
-                {card.note && (
-                  <div
-                    className={`mt-3 rounded-2xl border p-3 text-sm leading-5 ${
-                      isLightMode
-                        ? "border-[#d8bd55]/30 bg-[#fff9df] text-zinc-600"
-                        : "border-[#FFD54A]/15 bg-[#FFD54A]/[0.04] text-zinc-400"
-                    }`}
-                  >
-                    <span className={`font-semibold ${isLightMode ? "text-[#725800]" : "text-[#E8CA55]"}`}>
-                      Note:
-                    </span>{" "}
-                    {card.note}
-                  </div>
-                )}
-              </div>
-            </Link>
-          ))}
-        </section>
-        <section
-          className={`mt-6 rounded-[22px] border p-4 sm:p-5 ${
-            isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#17191a]"
-          }`}
-        >
-          <h3 className="text-sm font-semibold">Pricing disclaimer</h3>
-          <p className={`mt-2 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-            Prices change as products age and become harder to obtain. Community demand also affects value, so lower pull rates do not always mean higher demand. TCG prices fluctuate independently and should be compared with recently completed sales.
-          </p>
-        </section>
+              ))}
+            </div>
+          </section>
+          <aside className="min-w-0 space-y-5 xl:sticky xl:top-6">
+            <section className={`rounded-xl border p-4 ${isLightMode ? "border-[#bca04e]/20 bg-[#f0eadb]/60" : "border-[#D9BC68]/15 bg-[#D9BC68]/[0.035]"}`}>
+              <div className={`mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider ${isLightMode ? "text-[#80621c]" : "text-[#D9BC68]"}`}><span className="h-1.5 w-1.5 rounded-full bg-[#D9BC68]" />Higher-tier rarities</div>
+              <h2 className="mb-3 text-base font-semibold">Cards With Value</h2>
+              <dl className="space-y-3">{higherTier.map(([name, rarities]) => <div key={name}><dt className="text-xs font-semibold">{name}</dt><dd className={`mt-1 text-xs leading-5 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{rarities}</dd></div>)}</dl>
+            </section>
+            <details className={`group border-b pb-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">How prices are determined<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="shrink-0 transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6" /></svg></summary>
+              <p className={`mt-2 text-xs leading-6 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Prices are established by experienced collectors and reflect rarity, pull rates, product availability, and long-term collector demand rather than inflated resale listings or speculative pricing. The goal is to keep the hobby accessible across different budgets.</p>
+            </details>
+            <section><h2 className="text-sm font-semibold">What about TCG?</h2><p className={`mt-2 text-xs leading-6 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>TCG values are less predictable because playability can outweigh rarity. For current TCG pricing estimates, ask in the TCG chat in the Discord server.</p></section>
+            <section className={`border-t pt-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}><h2 className={`text-[11px] font-semibold uppercase tracking-wider ${isLightMode ? "text-zinc-400" : "text-zinc-500"}`}>Pricing disclaimer</h2><p className={`mt-2 text-xs leading-6 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Prices change as products age and become harder to obtain. Community demand also affects value, so lower pull rates do not always mean higher demand. TCG prices fluctuate independently and should be compared with recently completed sales.</p></section>
+          </aside>
+        </div>
       </main>
     </div>
   );

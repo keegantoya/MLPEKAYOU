@@ -291,24 +291,14 @@ const active = activeCategory === category;
 };
 const LeaderboardCard = ({ set }: { set: (typeof sets)[number] }) => {
 const winner = firstFinishers[String(set.id)];
-const isLocked = set.id === "13";
   return (
     <button
       type="button"
-      disabled={isLocked}
-      onClick={() => {
-        if (!isLocked) navigate(`/community/${set.id}`);
-      }}
-      className={`group relative min-h-[190px] overflow-hidden rounded-[24px] border p-5 text-left transition ${
-        isLocked ? "cursor-not-allowed" : "hover:-translate-y-0.5"
-      } ${
+      onClick={() => navigate(`/community/${set.id}`)}
+      className={`group relative min-h-[190px] overflow-hidden rounded-[24px] border p-5 text-left transition hover:-translate-y-0.5 ${
         isLightMode
-          ? isLocked
-            ? "border-black/10 bg-white"
-            : "border-black/10 bg-white hover:border-[#c9a62d]/45 hover:shadow-lg"
-          : isLocked
-            ? "border-white/[0.08] bg-[#17191a]"
-            : "border-white/[0.08] bg-[#17191a] hover:border-[#FFD54A]/35 hover:bg-[#1b1d1e]"
+          ? "border-black/10 bg-white hover:border-[#c9a62d]/45 hover:shadow-lg"
+          : "border-white/[0.08] bg-[#17191a] hover:border-[#FFD54A]/35 hover:bg-[#1b1d1e]"
       }`}
     >
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#FFD54A] via-[#E8C54A] to-transparent" />
@@ -397,19 +387,6 @@ const isLocked = set.id === "13";
           )}
         </div>
       </div>
-      {isLocked && (
-        <div className={`absolute inset-0 z-30 flex items-center justify-center backdrop-blur-[1px] ${
-          isLightMode ? "bg-white/55" : "bg-black/60"
-        }`}>
-          <div className={`rounded-xl border px-4 py-2 text-center text-sm font-bold tracking-wide shadow-lg sm:text-base ${
-            isLightMode
-              ? "border-[#8a6a00]/30 bg-white/95 text-[#725700]"
-              : "border-[#FFD54A]/40 bg-black/90 text-[#FFE27A]"
-          }`}>
-            UNLOCKS OCT. 16
-          </div>
-        </div>
-      )}
     </button>
   );
 };
@@ -595,7 +572,7 @@ return (
           </section>
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
             {visibleSets.map((set) => (
-              <LeaderboardCard key={set.id} set={set} />
+              <LeaderboardCard key={set.id} set={set} /> 
             ))}
           </div>
         </main>

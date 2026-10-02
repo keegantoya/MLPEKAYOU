@@ -1,5 +1,4 @@
-// All card-front and card-back asset paths live here.
-// Inputs retain each caller's existing card-key formatting; filenames are not normalized.
+
 type ImagePathPart = string | number;
 export const cardImagePaths = {
   ccg: (folder: ImagePathPart, prefix: ImagePathPart, rarity: ImagePathPart, number: ImagePathPart) => `/cards/${folder}/${prefix}${rarity}${number}.webp`,
@@ -10,6 +9,7 @@ export const cardImagePaths = {
   fantasyParallelEmerald: (number: ImagePathPart) => `/fantasy-wonderland/SD01PER${number}.webp`,
   fantasyWonderland: (key: ImagePathPart) => `/fantasy-wonderland/${key}.webp`,
   discord: (key: ImagePathPart) => `/cards/discord/${key}.webp`,
+  moonFour: (key: ImagePathPart) => getMoonFourImagePath(String(key)),
   nightmareNight: (key: ImagePathPart) => `/cards/nightmare-night/${key}.webp`,
   tcgRubyPromo: (number: ImagePathPart) => `/tcgpromos/RR${number}.webp`,
   fantasyParallelSapphire: (number: ImagePathPart) => `/fantasy-wonderland/BP01PSPR${number}.webp`,
@@ -112,12 +112,22 @@ export const cardImagePaths = {
     tcgpromosRR09: "/tcgpromos/RR09.webp",
   },
 } as const;
+function getMoonFourImagePath(key: string) {
+  const normalized = key.trim().toUpperCase().replace(/^M4/, "").replace(/^SHINING[ _-]*ZR/, "SZR");
+  const match = normalized.match(/^(SZR|SSR|SGR|LSR|HR|SR|UR|ZR|SC|R)[ _-]*(\d+)$/);
+  if (!match) return "/placeholder-card.webp";
+  const number = Number(match[2]);
+  const counts: Record<string, number> = { R: 30, SR: 20, HR: 30, SSR: 26, UR: 16, SGR: 8, SC: 7, ZR: 7, SZR: 2, LSR: 16 };
+  if (number < 1 || number > counts[match[1]]) return "/placeholder-card.webp";
+  const padded = String(number).padStart(match[1] === "SZR" ? 3 : 2, "0");
+  return `/cards/fourth-edition-moon/M4${match[1]}${padded}.webp`;
+}
+export const getMoonFourFront = (key: string) => cardImagePaths.moonFour(key);
 
 type Card = {
   set_id: string;
   card_key: string;
 };
-
 const sets: Record<
   string,
   {
@@ -128,92 +138,59 @@ const sets: Record<
   "1": { folder: "first-edition-moon", prefix: "M1" },
   "2": { folder: "second-edition-moon", prefix: "M2" },
   "3": { folder: "third-edition-moon", prefix: "M3" },
-
   "4": { folder: "star-one", prefix: "S1" },
-
   "5": { folder: "rainbow-one", prefix: "R1" },
   "6": { folder: "rainbow-two", prefix: "R2" },
-
   "7": { folder: "fun-moments-one", prefix: "FM1" },
   "8": { folder: "fun-moments-two", prefix: "FM2" },
   "11": { folder: "fun-moments-three", prefix: "FM3" },
+  "13": { folder: "fourth-edition-moon", prefix: "M4" },
 };
-
 function getRarityCode(rarity: string) {
   if (rarity === "SHINING ZR") return "SZR";
   return rarity;
 }
-
 export function getTradeCardImage(card: Card) {
-  const setId = String(card.set_id);
-
-  //
-  // Moon / Star / Rainbow / Fun
-  //
-  const set = sets[setId];
-
+const setId = String(card.set_id);
+  if (setId === "13") {
+    return cardImagePaths.moonFour(card.card_key);
+  }
+const set = sets[setId];
   if (set) {
-    const [rarity, number] = String(card.card_key).split("-");
-
+const [rarity, number] = String(card.card_key).split("-");
     return cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(
       rarity
     ), String(number).padStart(3, "0"));
   }
-
-  //
-  // CCG Promos
-  //
   if (setId === "9") {
-    const number = String(card.card_key).replace("PR-", "");
-
+const number = String(card.card_key).replace("PR-", "");
     return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
   }
-
-  //
-  // TCG Promos
-  //
   if (setId === "tcgpromos") {
     return cardImagePaths.tcgPromo(card.card_key);
   }
-
-  //
-  // Friendships Begin
-  //
   if (setId === "SD" || setId === "friendshipsbegin") {
-    const key = String(card.card_key)
+const key = String(card.card_key)
       .replace(/^BONUS-/, "")
       .replace(/^STARTER-/, "");
-
     return cardImagePaths.friendshipsBegin(key);
   }
-
-  //
-  // Fantasy Wonderland
-  //
   if (setId === "FW") {
-    const key = String(card.card_key);
-
+const key = String(card.card_key);
     return key.startsWith("BP01ER")
       ? cardImagePaths.fantasyEmerald(key.slice(-2))
       : key.startsWith("BP01PER")
       ? cardImagePaths.fantasyParallelEmerald(key.slice(-2))
       : cardImagePaths.fantasyWonderland(key);
   }
-
-  //
-  // Discord
-  //
   if (setId === "12") {
     return cardImagePaths.discord(card.card_key);
   }
-
     if (setId === "14") {
     return cardImagePaths.nightmareNight(card.card_key);
   }
-
   return "/placeholder-card.webp";
 }
-// Set-specific front and back selection rules.
 export const getFunMomentsOneBack = (rarity: string, number: number) => {
   if (rarity === "N" || rarity === "SN") {
     return cardImagePaths.funOneNormalBack(String(number).padStart(3, "0"));
@@ -235,7 +212,6 @@ export const getFunMomentsOneBack = (rarity: string, number: number) => {
   }
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
-
 export const getFunMomentsThreeBack = (rarity: string, number: number) => {
   if (rarity === "CR") {
     if (number <= 9) {
@@ -266,7 +242,6 @@ export const getFunMomentsThreeBack = (rarity: string, number: number) => {
   }
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
-
 export const getFunMomentsTwoBack = (rarity: string, number: number) => {
   if (rarity === "CR") {
     if (number <= 9) {
@@ -291,7 +266,6 @@ export const getFunMomentsTwoBack = (rarity: string, number: number) => {
   }
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
-
 export const getMoonOneBack = (rarity: string, number: number) => {
 const padded = String(number).padStart(3, "0");
   if (rarity === "R") {
@@ -330,7 +304,6 @@ const sideways = [8, 9, 10, 18, 19, 21, 23, 27, 32, 34, 36];
   }
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
-
 export const getMoonThreeBack = (rarity: string, number: number) => {
   if (rarity === "SZR" && number === 1) {
     return cardImagePaths.fixed.cardBacksThirdMoonEditionBacksM3SZR001BACK;
@@ -379,7 +352,6 @@ export const getMoonThreeBack = (rarity: string, number: number) => {
   }
   return cardImagePaths.fixed.cardBacksThirdMoonEditionBacksMoon3defaultback;
 };
-
 export const getMoonTwoBack = (rarity: string, number: number) => {
 const padded = String(number).padStart(3, "0");
   if (rarity === "R") {
@@ -420,14 +392,12 @@ const padded = String(number).padStart(3, "0");
   }
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
-
 export const getPromotionalCardsBack = (number?: number) => {
     if (number && number >= 8) {
       return cardImagePaths.fixed.cardBacksPromosSdccboombacks;
     }
     return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
   };
-
 export const getRainbowOneBack = (rarity: string, number: number) => {
 const padded = String(number).padStart(3, "0");
   if (rarity === "R") {
@@ -447,7 +417,6 @@ const padded = String(number).padStart(3, "0");
   }
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
-
 export const getRainbowTwoBack = (rarity: string, number: number) => {
   if (rarity === "BASE") {
     return cardImagePaths.fixed.cardBacksRainbowTwoR2BASEBACKS;
@@ -483,7 +452,6 @@ if (rarity === "R") {
   }
   return cardImagePaths.fixed.cardBacksRainbowTwoR2SRBACK;
 };
-
 export const getStarOneBack = (rarity: string, number?: number) => {
   if (rarity === "SAR") {
     return cardImagePaths.fixed.cardBacksStarOneS1SARBACK;
@@ -515,16 +483,13 @@ const specialBack2 = [1, 3, 6, 13, 14];
   }
   return cardImagePaths.fixed.cardBacksStarOneS1SSRBACK;
 };
-
 export const getDiscordBack = (key: string) => {
-// C25-C48 have unique backs
   if (key.startsWith("BP02-C")) {
 const num = Number(key.replace("BP02-C", ""));
     if (num >= 25 && num <= 48) {
       return cardImagePaths.discordBack(key);
     }
   }
-// RR01-RR06 have unique backs
   if (key.startsWith("BP02-RR")) {
     return cardImagePaths.discordBack(key);
   }
@@ -533,11 +498,9 @@ const num = Number(key.replace("BP02-C", ""));
   }
   return cardImagePaths.fixed.cardBacksTcgdefaultback;
 };
-
 export const getDiscordFront = (key: string) => {
   return cardImagePaths.discord(key);
 };
-
 export const getFantasyWonderlandBack = (key: string) => {
   if (key.startsWith("BP01PRR")) {
     return cardImagePaths.parallelRubyBack(key.slice(-2));
@@ -550,7 +513,6 @@ export const getFantasyWonderlandBack = (key: string) => {
   }
   return cardImagePaths.fixed.cardBacksTcgdefaultback;
 };
-
 export const getFantasyWonderlandFront = (key: string) => {
   if (key.startsWith("BP01ER")) {
     return cardImagePaths.fantasyEmerald(key.slice(-2));
@@ -560,70 +522,56 @@ export const getFantasyWonderlandFront = (key: string) => {
   }
   return cardImagePaths.fantasyWonderland(key);
 };
-
 export const getFriendshipsBeginBack = (key: string) => {
-// Emerald Rares and Shining Emeralds use the scene back
   if (key.startsWith("SD01ER") || key.startsWith("SD01PER")) {
     return cardImagePaths.fixed.tcgCardBacksSCENECARDBACK;
   }
-// Shining Ruby Rares have unique backs
   if (key.startsWith("SD01PRR")) {
     return cardImagePaths.parallelRubyBack(key.slice(-2));
   }
-// Everything else uses the standard TCG back
   return cardImagePaths.fixed.cardBacksTcgdefaultback;
 };
-
 export const getFriendshipsBeginFront = (key: string) => {
   return cardImagePaths.friendshipsBegin(key);
 };
-
 export const getNightmareNightBack = (key: string) => {
     if (key.startsWith("BP03-ER") || key.startsWith("PBP03-ER")) {
       return cardImagePaths.fixed.tcgCardBacksSCENECARDBACK;
     }
-    // C25-C48 have unique backs
     if (key.startsWith("BP03-C")) {
-      const num = Number(key.replace("BP03-C", ""));
+const num = Number(key.replace("BP03-C", ""));
       if (num >= 25 && num <= 48) {
         return cardImagePaths.nightmareBack(key);
       }
     }
-    // RR01-RR06 have unique backs
-    const rrMatch = key.match(/^BP03-RR(0[1-6])$/);
+const rrMatch = key.match(/^BP03-RR(0[1-6])$/);
     if (rrMatch) {
       return cardImagePaths.discordRubyBack(rrMatch[1]);
     }
-    const prrMatch = key.match(/^PBP03-RR(0[1-6])$/);
+const prrMatch = key.match(/^PBP03-RR(0[1-6])$/);
     if (prrMatch) {
       return cardImagePaths.parallelRubyBack(prrMatch[1]);
     }
     return cardImagePaths.fixed.cardBacksTcgdefaultback;
   };
-
 export const getNightmareNightFront = (key: string) => {
-    const erMatch = key.match(/^BP03-ER(0[12])-([ABC])$/);
-    const imageKey = erMatch ? `${key}${erMatch[2]}` : key;
+const erMatch = key.match(/^BP03-ER(0[12])-([ABC])$/);
+const imageKey = erMatch ? `${key}${erMatch[2]}` : key;
     return cardImagePaths.nightmareNight(imageKey);
   };
-
-// Shared protected-image configuration and source recognition.
 export const CARD_IMAGE_WORKER_URL = "https://mlpekayou-images.keegan-586.workers.dev";
 export const CARD_IMAGE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="744" height="1040"><rect width="744" height="1040" rx="28" fill="#e5e7eb"/></svg>')}`;
 const PROTECTED_PREFIXES = ["cards/", "card-backs/", "fantasy-wonderland/", "friendships-begin/", "fun-moments-one-backs/", "fun-moments-two-backs/", "fun-moments-three-backs/", "moon-1-other-backs/", "moon-2-other-backs/", "promo-cards/", "rainbow-1-backs/", "tcg-card-backs/", "tcgpromos/"];
 export function getProtectedCardPath(src?: string) {
   if (!src || /^(data:|blob:)/i.test(src)) return null;
   try {
-    const pathname = /^https?:\/\//i.test(src) ? new URL(src).pathname : src;
-    const path = decodeURIComponent(pathname.split(/[?#]/)[0].replace(/^\/+/, ""));
+const pathname = /^https?:\/\//i.test(src) ? new URL(src).pathname : src;
+const path = decodeURIComponent(pathname.split(/[?#]/)[0].replace(/^\/+/, ""));
     return PROTECTED_PREFIXES.some(prefix => path.startsWith(prefix)) ? path : null;
   } catch { return null; }
 }
-
-// Actual image bytes are reusable for 365 days, independently of signed URLs.
 export const CARD_IMAGE_BYTES_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 export const CARD_IMAGE_BYTES_CACHE = "mlpekayou:card-image-bytes:v1";
-// Increment only an affected image's revision after replacing it in R2.
 export const CARD_IMAGE_REVISIONS: Record<string, string> = {};
 export function getCardImageRevision(path: string) {
   return CARD_IMAGE_REVISIONS[path] ?? "1";

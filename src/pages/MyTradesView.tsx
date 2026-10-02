@@ -1,4 +1,4 @@
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -60,7 +60,6 @@ const { data: trades } = await supabase
         .eq("user_id", user.id);
 const filtered = (trades || []).filter((card) => {
         if (!card.is_for_trade && !card.is_for_sale) return false;
-//  Friendships Begin (bonus + starters all live under same set_id)
         if (setId === "SD_BONUS" || setId === "SD_STARTERS") {
           return card.set_id === "friendshipsbegin";
         }
@@ -76,6 +75,7 @@ const getRarityCode = (rarity: string) => {
     return rarity;
   };
 const getCardImage = (card: TradeCard) => {
+    if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
     if (card.set_id === "friendshipsbegin") {
       return cardImagePaths.friendshipsBegin(card.card_key);
     }
@@ -156,7 +156,7 @@ const c = config[card.set_id];
                   isLightMode ? "text-zinc-500" : "text-zinc-400"
                 }`}
               >
-                Trade &amp; sale listings
+                Trade & sale listings
               </div>
               <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
                 My Trades
@@ -243,7 +243,7 @@ const c = config[card.set_id];
                 cards.reduce((acc: Record<string, TradeCard[]>, card) => {
 let rarity = card.card_key.split("-")[0];
                   if (String(card.set_id) === "14") {
-                    const match = card.card_key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
+const match = card.card_key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
                     rarity = match ? `${match[1] ? "※" : ""}${match[2]}` : "OTHER";
                   } else if (card.set_id === "tcgpromos") {
                     rarity = "PR";
@@ -295,6 +295,7 @@ const rarityOrders: Record<string, string[]> = {
                     "SC",
                     "SZR",
                   ],
+                  "13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
                   "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
                   "5": [
                     "R",

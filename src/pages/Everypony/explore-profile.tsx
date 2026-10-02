@@ -7,6 +7,7 @@ import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import {
   getTradeCardImage as getDefaultTradeCardImage,
   getNightmareNightFront,
+  getMoonFourFront,
 } from "@/lib/card-images";
 import { tcgCatalog } from "@/lib/iso-card-catalog";
 type CardImageCard = {
@@ -14,7 +15,9 @@ type CardImageCard = {
   card_key: string;
 };
 const getTradeCardImage = (card: CardImageCard) =>
-  String(card.set_id) === "14"
+  String(card.set_id) === "13"
+    ? getMoonFourFront(card.card_key)
+    : String(card.set_id) === "14"
     ? getNightmareNightFront(card.card_key)
     : getDefaultTradeCardImage({
         set_id: String(card.set_id),
@@ -35,6 +38,7 @@ const OFFER_SET_ORDER = [
   "1",
   "2",
   "3",
+  "13",
   "4",
   "5",
   "6",
@@ -85,6 +89,7 @@ const standardZoomSets = new Set([
   "1",
   "2",
   "3",
+  "13",
   "4",
   "5",
   "6",
@@ -458,6 +463,10 @@ const ExploreProfile = ({
             SC: 7,
             SZR: 3,
           },
+        },
+        {
+          id: "13",
+          rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
         },
         {
           id: "4",
@@ -1052,6 +1061,7 @@ const ExploreProfile = ({
       "1": "Moon One",
       "2": "Moon Two",
       "3": "Moon Three",
+      "13": "Moon Four",
       "4": "Star One",
       "5": "Rainbow One",
       "6": "Rainbow Two",
@@ -1144,6 +1154,18 @@ const ExploreProfile = ({
     TRADE_SET_TABS,
     WISHLIST_SET_TABS,
   ]);
+  const profileSetOrder = ["1", "2", "3", "13", "4", "5", "6", "7", "8", "11", "9", "SD", "friendshipsbegin", "FW", "12", "14", "tcgpromos"];
+  const sectionCards = selectedSection === "iso" ? visibleIsoCards : selectedSection === "trade" ? allTradeCards : userWishlistCards;
+  const sectionHidden = selectedSection === "iso" ? userProfileSettings.hide_iso : selectedSection === "wishlist" ? userProfileSettings.hide_wishlist : false;
+  const sectionTabs = (sectionHidden ? [] : selectedSection === "iso" ? ISO_SET_TABS : selectedSection === "trade" ? TRADE_SET_TABS : WISHLIST_SET_TABS).slice().sort((a, b) => {
+    const rank = (id: string) => { const index = profileSetOrder.indexOf(id); return index < 0 ? profileSetOrder.length : index; };
+    return rank(a.id) - rank(b.id);
+  });
+  const sectionCounts = new Map<string, number>();
+  if (!sectionHidden) for (const card of sectionCards) {
+    const id = String(card.set_id);
+    sectionCounts.set(id, (sectionCounts.get(id) || 0) + 1);
+  }
   const RARITY_ORDER = [
     "BASE",
     "C",
@@ -1218,17 +1240,17 @@ const ExploreProfile = ({
     if (rarity === "ALL") {
       return ["7", "8", "11"].includes(setId) ? "All" : "All rarities";
     }
-    if (rarity === "SHINING ZR") return "◇ ZR";
-    if (rarity === "SZR") return "◇ZR";
-    if (rarity === "SAR") return "◇AR";
-    if (["7", "8", "11"].includes(setId) && rarity === "SN") return "◇N";
-    if (["7", "8", "11"].includes(setId) && rarity === "SCR") return "◇CR";
+    if (rarity === "SHINING ZR") return "\u25C7 ZR";
+    if (rarity === "SZR") return "\u25C7ZR";
+    if (rarity === "SAR") return "\u25C7AR";
+    if (["7", "8", "11"].includes(setId) && rarity === "SN") return "\u25C7N";
+    if (["7", "8", "11"].includes(setId) && rarity === "SCR") return "\u25C7CR";
     const parallelLabels: Record<string, string> = {
-      PER: "※ER",
-      PSPR: "※SPR",
-      PGR: "※GR",
-      PCR: "※CR",
-      PRR: "※RR",
+      PER: "\u203BER",
+      PSPR: "\u203BSPR",
+      PGR: "\u203BGR",
+      PCR: "\u203BCR",
+      PRR: "\u203BRR",
     };
     return parallelLabels[rarity] || rarity;
   }
@@ -1422,7 +1444,7 @@ const ExploreProfile = ({
       }`}
     >
       <section
-        className={`relative overflow-hidden rounded-[30px] border ${
+        className={`relative overflow-hidden rounded-[22px] border ${
           isLightMode
             ? "border-black/10 bg-white shadow-[0_14px_36px_rgba(0,0,0,.05)]"
             : "border-white/[0.08] bg-[#151718]"
@@ -1443,7 +1465,7 @@ const ExploreProfile = ({
               : "bg-gradient-to-r from-[#151718] via-[#151718]/95 to-[#151718]/80"
           }`}
         />
-        <div className="relative p-5 sm:p-7">
+        <div className="relative p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
@@ -1454,7 +1476,7 @@ const ExploreProfile = ({
                   : "border-white/10 bg-black/20 text-zinc-300 hover:bg-white/[0.06]"
               }`}
             >
-              ← Back
+              Back
             </button>
             <div
               className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
@@ -1469,18 +1491,18 @@ const ExploreProfile = ({
               {activityStatus.label}
             </div>
           </div>
-          <div className="mt-3 grid grid-cols-[80px_minmax(0,1fr)] items-start gap-3 sm:mt-6 sm:flex sm:items-center sm:gap-5">
+          <div className="mt-4 grid grid-cols-[64px_minmax(0,1fr)] items-start gap-3 sm:flex sm:items-center sm:gap-4">
             <CardImage
               src={avatar}
               alt={user?.username}
-              className={`h-20 w-20 rounded-[22px] border object-cover sm:h-28 sm:w-28 sm:rounded-[30px] ${
+              className={`h-16 w-16 shrink-0 rounded-2xl border object-cover sm:h-20 sm:w-20 ${
                 isLightMode ? "border-black/10" : "border-white/10"
               }`}
             />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1
-                  className={`min-w-0 break-words text-2xl font-semibold leading-tight tracking-tight sm:text-4xl ${
+                  className={`min-w-0 break-words text-2xl font-semibold leading-tight tracking-tight sm:text-3xl ${
                     isLightMode ? "text-zinc-950" : "text-white"
                   }`}
                 >
@@ -1513,7 +1535,7 @@ const ExploreProfile = ({
                   </span>
                 </div>
               )}
-              <div className="mt-2 flex flex-wrap gap-2 sm:mt-4">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {currentUserId !== user.id && (
                   <button
                     type="button"
@@ -1595,8 +1617,7 @@ const ExploreProfile = ({
             </div>
           </div>
         </div>
-      </section>
-      <section className="mt-4 grid grid-cols-3 gap-3">
+      <div className={`relative mx-4 grid grid-cols-3 gap-3 border-t py-3 sm:mx-5 ${isLightMode ? "border-black/10" : "border-white/[0.08]"}`}>
         {[
           ["Cards Owned", userStats.owned.toLocaleString()],
           ["Sets Completed", userStats.completed],
@@ -1604,25 +1625,22 @@ const ExploreProfile = ({
         ].map(([label, value]) => (
           <div
             key={label}
-            className={`rounded-2xl border p-4 sm:p-5 ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
-            }`}
+            className="flex flex-wrap items-baseline gap-x-2 gap-y-1"
           >
             <div
               className={`text-xs font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
             >
               {label}
             </div>
-            <div className="mt-1 text-2xl font-semibold sm:text-3xl">
+            <div className="text-lg font-semibold sm:text-xl">
               {value}
             </div>
           </div>
         ))}
+      </div>
       </section>
       <section
-        className={`mt-4 flex h-[72dvh] min-h-[520px] max-h-[820px] flex-col overflow-hidden rounded-[28px] border [overflow-anchor:none] ${
+        className={`mt-4 flex flex-col overflow-hidden rounded-[22px] border [overflow-anchor:none] ${
           isLightMode
             ? "border-black/10 bg-white"
             : "border-white/[0.08] bg-[#151718]"
@@ -1659,7 +1677,30 @@ const ExploreProfile = ({
             </button>
           ))}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-anchor:none]">
+        <div className="grid min-h-0 lg:grid-cols-[210px_minmax(0,1fr)]">
+          <aside aria-label="Collection sets" className={`hidden max-h-[620px] overflow-y-auto border-r p-3 lg:block ${isLightMode ? "border-black/[0.08] bg-zinc-50/60" : "border-white/[0.07] bg-black/10"}`}>
+            <p className={`mb-3 px-2 text-xs font-semibold uppercase tracking-wide ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>Sets</p>
+            <div className="space-y-1">
+              {sectionTabs.map(set => (
+                <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} aria-pressed={selectedSet === set.id} className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${selectedSet === set.id ? isLightMode ? "bg-[#c89d13]/15 font-semibold text-[#725700]" : "bg-[#FFD54A]/10 font-semibold text-[#FFE27A]" : isLightMode ? "text-zinc-600 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/[0.05]"}`}>
+                  <span>{set.name}</span>
+                  <span className="shrink-0 text-xs tabular-nums opacity-70">{sectionCounts.get(set.id) || 0}</span>
+                </button>
+              ))}
+              {sectionTabs.length === 0 && <p className="px-2 text-sm text-zinc-500">No sets to show.</p>}
+            </div>
+          </aside>
+          <div className="min-w-0 lg:max-h-[620px] lg:overflow-y-auto lg:overscroll-contain [overflow-anchor:none]">
+            <div className={`flex flex-wrap items-center justify-between gap-3 border-b px-3 py-3 sm:px-5 lg:sticky lg:top-0 lg:z-10 ${isLightMode ? "border-black/[0.08] bg-white" : "border-white/[0.07] bg-[#151718]"}`}>
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold">{sectionHidden ? selectedSection === "iso" ? "ISO hidden" : "Wishlist hidden" : selectedSet ? getSetName(selectedSet) : "Collection"}</h2>
+                {!sectionHidden && <p className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{sectionCounts.get(selectedSet) || 0} {selectedSection === "trade" ? "listings" : "cards"}</p>}
+              </div>
+              {sectionTabs.length > 0 && <select aria-label="Choose a set" value={selectedSet} onChange={event => setSelectedSet(event.target.value)} className={`max-w-full rounded-xl border px-3 py-2 text-base lg:hidden ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-700" : "border-white/10 bg-[#202223] text-zinc-200"}`}>
+                {!selectedSet && <option value="">Choose a set</option>}
+                {sectionTabs.map(set => <option key={set.id} value={set.id}>{set.name} ({sectionCounts.get(set.id) || 0})</option>)}
+              </select>}
+            </div>
           {selectedSection === "iso" ? (
             userProfileSettings.hide_iso ? (
               <div
@@ -1669,30 +1710,6 @@ const ExploreProfile = ({
               </div>
             ) : (
               <>
-                <div
-                  className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
-                >
-                  <div className="flex flex-wrap gap-2">
-                    {ISO_SET_TABS.map((set) => (
-                      <button
-                        key={set.id}
-                        type="button"
-                        onClick={() => setSelectedSet(set.id)}
-                        className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${
-                          selectedSet === set.id
-                            ? isLightMode
-                              ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                              : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
-                            : isLightMode
-                              ? "border-black/10 bg-zinc-50 text-zinc-600"
-                              : "border-white/10 bg-white/[0.04] text-zinc-400"
-                        }`}
-                      >
-                        {set.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
                 <div className="p-3 sm:p-5">
                   {filteredIsoCards.length === 0 ? (
                     <div
@@ -1701,7 +1718,7 @@ const ExploreProfile = ({
                       No cards to show.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 xl:grid-cols-5 2xl:grid-cols-6">
                       {filteredIsoCards.map((card) => (
                         <button
                           key={`${card.set_id}-${card.card_key}`}
@@ -1725,36 +1742,12 @@ const ExploreProfile = ({
             )
           ) : selectedSection === "trade" ? (
             <>
-              <div
-                className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
-              >
-                <div className="flex flex-wrap gap-2">
-                  {TRADE_SET_TABS.map((set) => (
-                    <button
-                      key={set.id}
-                      type="button"
-                      onClick={() => setSelectedSet(set.id)}
-                      className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${
-                        selectedSet === set.id
-                          ? isLightMode
-                            ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                            : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
-                          : isLightMode
-                            ? "border-black/10 bg-zinc-50 text-zinc-600"
-                            : "border-white/10 bg-white/[0.04] text-zinc-400"
-                      }`}
-                    >
-                      {set.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
               <div className="p-3 sm:p-5">
                 {salesLoading ? (
                   <div
                     className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}
                   >
-                    Loading listings…
+                    Loading listings...
                   </div>
                 ) : filteredTradeCards.length === 0 ? (
                   <div
@@ -1763,7 +1756,7 @@ const ExploreProfile = ({
                     No listings to show.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 xl:grid-cols-5 2xl:grid-cols-6">
                     {filteredTradeCards.map((card: any) => (
                       <button
                         key={`${card.set_id}-${card.card_key}-${card.type}`}
@@ -1786,7 +1779,7 @@ const ExploreProfile = ({
                           }`}
                         >
                           {card.type === "sale"
-                            ? `For Sale · $${Number(card.asking_price || 0).toFixed(2)}`
+                            ? `For Sale - $${Number(card.asking_price || 0).toFixed(2)}`
                             : "Trade"}
                         </span>
                       </button>
@@ -1803,30 +1796,6 @@ const ExploreProfile = ({
             </div>
           ) : (
             <>
-              <div
-                className={`border-b p-3 sm:p-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
-              >
-                <div className="flex flex-wrap gap-2">
-                  {WISHLIST_SET_TABS.map((set) => (
-                    <button
-                      key={set.id}
-                      type="button"
-                      onClick={() => setSelectedSet(set.id)}
-                      className={`shrink-0 rounded-full border px-3 py-2 text-xs font-semibold ${
-                        selectedSet === set.id
-                          ? isLightMode
-                            ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                            : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
-                          : isLightMode
-                            ? "border-black/10 bg-zinc-50 text-zinc-600"
-                            : "border-white/10 bg-white/[0.04] text-zinc-400"
-                      }`}
-                    >
-                      {set.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
               <div className="p-3 sm:p-5">
                 {filteredWishlistCards.length === 0 ? (
                   <div
@@ -1835,7 +1804,7 @@ const ExploreProfile = ({
                     No wishlist cards to show.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-7">
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 xl:grid-cols-5 2xl:grid-cols-6">
                     {filteredWishlistCards.map((card) => (
                       <button
                         key={`${card.set_id}-${card.card_key}`}
@@ -1857,6 +1826,7 @@ const ExploreProfile = ({
               </div>
             </>
           )}
+        </div>
         </div>
       </section>
       {quickViewCard && (
@@ -1888,7 +1858,7 @@ const ExploreProfile = ({
                     : "bg-black/70 text-white"
                 }`}
               >
-                ×
+                &times;
               </button>
               <div
                 className={
@@ -2094,7 +2064,7 @@ const ExploreProfile = ({
                   (isLightMode ? "bg-zinc-100" : "bg-white/[0.07]")
                 }
               >
-                ×
+                &times;
               </button>
             </div>
             {offerStep === "compose" && (
@@ -2207,7 +2177,7 @@ const ExploreProfile = ({
                                 : "bg-white/[0.07] text-zinc-200")
                             }
                           >
-                            ‹
+                            &lsaquo;
                           </button>
                           <div className="min-w-0 text-center">
                             <div className="truncate text-sm font-semibold text-[#b88a00] dark:text-[#FFE27A]">
@@ -2232,7 +2202,7 @@ const ExploreProfile = ({
                                 : "bg-white/[0.07] text-zinc-200")
                             }
                           >
-                            ›
+                            &rsaquo;
                           </button>
                         </div>
                       )}
@@ -2305,7 +2275,7 @@ const ExploreProfile = ({
                                 </span>
                                 {selected && (
                                   <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-black text-zinc-900 shadow-lg">
-                                    ✓
+                                    &#10003;
                                   </span>
                                 )}
                               </button>
@@ -2345,7 +2315,7 @@ const ExploreProfile = ({
                               )}
                             />
                             <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/75 text-xs text-white">
-                              ×
+                              &times;
                             </span>
                           </button>
                         ))}
@@ -2509,7 +2479,7 @@ const ExploreProfile = ({
               <>
                 <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto p-6 text-center">
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-3xl font-black text-emerald-500">
-                    ✓
+                    &#10003;
                   </div>
                   <h3 className="mt-3 text-xl font-bold">
                     Your offer was sent

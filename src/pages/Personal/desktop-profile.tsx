@@ -1,7 +1,7 @@
 import { onAuthIdentityChange } from "@/lib/auth-identity";
-import { cardImagePaths } from "@/lib/card-images";
+import { getMoonFourFront, cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
@@ -10,8 +10,10 @@ function ShowcaseImage({
   alt,
   className,
   imageSize,
+  style,
 }: {
   imageSize?: "grid" | "original";
+  style?: CSSProperties;
   src: string;
   alt: string;
   className: string;
@@ -30,6 +32,7 @@ function ShowcaseImage({
       src={src}
       alt={alt}
       className={className}
+      style={style}
       onError={() => setFailedSrc(src)}
     />
   );
@@ -105,6 +108,13 @@ export default function DesktopProfile() {
   const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
   const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
     useState(false);
+  useEffect(() => {
+    const open = !!selectedShowcaseCard || showDeletionModal || showOfferStrikeInfo || showLeaderboardBanConfirm || showLeaderboardBanInfo || showUsernameTakenModal;
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [selectedShowcaseCard, showDeletionModal, showOfferStrikeInfo, showLeaderboardBanConfirm, showLeaderboardBanInfo, showUsernameTakenModal]);
   const tabs = [
     { label: "Collection", path: "/binders" },
     { label: "Inventory", path: "/inventory" },
@@ -370,6 +380,10 @@ export default function DesktopProfile() {
       );
       const sets = [
         {
+          id: "13",
+          rarities: { R: 30, SR: 20, SSR: 26, HR: 30, LSR: 16, UR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
+        },
+        {
           id: "1",
           rarities: {
             R: 30,
@@ -610,7 +624,18 @@ export default function DesktopProfile() {
               }
               return;
             }
-            if (!owned) return;
+            const isOwned = owned === true || (
+              typeof owned === "object" && owned !== null && "owned" in owned && owned.owned === true
+            );
+            if (!isOwned) return;
+            if (String(row.set_id) === "13") {
+              const match = card_key.match(/^(ZR|SC|SZR|SHINING ZR)-(\d+)$/);
+              const count = match?.[1] === "SZR" || match?.[1] === "SHINING ZR" ? 2 : 7;
+              if (match && Number(match[2]) >= 1 && Number(match[2]) <= count) {
+                cards.push({ set_id: "13", card_key });
+              }
+              return;
+            }
             const rarity =
               String(row.set_id) === "FW" ||
               String(row.set_id) === "SD" ||
@@ -634,6 +659,7 @@ export default function DesktopProfile() {
   }, []);
   const getTradeCardImage = (card: any) => {
     if (!card) return "";
+    if (String(card.set_id) === "13") return getMoonFourFront(String(card.card_key));
     if (card.set_id === "friendshipsbegin" || card.set_id === "SD") {
       const cleanKey = String(card.card_key)
         .replace(/^BONUS-/, "")
@@ -672,6 +698,11 @@ export default function DesktopProfile() {
       "0",
     ));
   };
+  const getShowcaseImageClass = (_card: any) => "absolute inset-0 h-full w-full object-cover object-center";
+  const getShowcaseImageStyle = (card: any): CSSProperties => ({
+    transform: `scale(${["1", "2", "3", "4", "5", "6", "7", "8", "11", "13"].includes(String(card?.set_id ?? "")) ? 1.055 : 1})`,
+    transformOrigin: "center",
+  });
   async function handleProfileEdit() {
     if (editingProfile) {
       setSavingProfile(true);
@@ -784,8 +815,9 @@ export default function DesktopProfile() {
       switch (showcaseTab) {
         case "moon":
           return (
-            ["1", "2", "3"].includes(String(card.set_id)) &&
-            (String(card.card_key).startsWith("SC-") ||
+            ["1", "2", "3", "13"].includes(String(card.set_id)) &&
+            ((String(card.set_id) === "13" && String(card.card_key).startsWith("ZR-")) ||
+              String(card.card_key).startsWith("SC-") ||
               String(card.card_key).startsWith("SZR-") ||
               String(card.card_key).startsWith("SHINING ZR-"))
           );
@@ -827,6 +859,7 @@ export default function DesktopProfile() {
         "1": 4,
         "2": 5,
         "3": 6,
+        "13": 6.5,
         "5": 7,
         "6": 8,
         "4": 9,
@@ -838,6 +871,7 @@ export default function DesktopProfile() {
         "14": 15,
       };
       const rarityOrder: Record<string, number> = {
+        ZR: 0,
         SC: 1,
         "SHINING ZR": 2,
         SZR: 3,
@@ -880,24 +914,26 @@ export default function DesktopProfile() {
       const numB = parseInt(String(b.card_key).match(/\d+/)?.[0] ?? "0", 10);
       return numA - numB;
     });
-  if (!Object.values(profileLoads).every(Boolean))
+  const essentialProfileLoaded = profileLoads.profile && profileLoads.theme;
+  const essentialProfileFailed = profileLoadErrors.profile || profileLoadErrors.theme;
+  if (!essentialProfileLoaded)
     return <ProfileLoadingScreen light={isLightMode} failed={false} />;
-  if (Object.values(profileLoadErrors).some(Boolean) || !profile)
+  if (essentialProfileFailed || !profile)
     return <ProfileLoadingScreen light={isLightMode} failed />;
   return (
     <div
       className={`min-h-screen transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}
     >
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
         <div
-          className={`relative rounded-3xl border p-6 sm:p-8 ${isLightMode ? "border-black/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,.08)]" : "border-white/[0.08] bg-[#151718] shadow-[0_14px_36px_rgba(0,0,0,.24)]"}`}
+          className={`relative rounded-2xl border p-4 sm:p-5 ${isLightMode ? "border-black/10 bg-white shadow-[0_12px_32px_rgba(0,0,0,.08)]" : "border-white/[0.08] bg-[#151718] shadow-[0_14px_36px_rgba(0,0,0,.24)]"}`}
         >
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-4">
               <CardImage
                 src={avatar}
                 alt=""
-                className={`h-32 w-32 shrink-0 rounded-3xl border object-cover ${isLightMode ? "border-black/10 bg-zinc-100" : "border-white/[0.10] bg-[#191a1b]"}`}
+                className={`h-16 w-16 shrink-0 rounded-xl sm:h-20 sm:w-20 border object-cover ${isLightMode ? "border-black/10 bg-zinc-100" : "border-white/[0.10] bg-[#191a1b]"}`}
               />
               <div className="min-w-0 flex-1">
                 {editingProfile ? (
@@ -941,7 +977,7 @@ export default function DesktopProfile() {
                   <>
                     <div className="flex items-center gap-3">
                       <h1
-                        className={`truncate text-3xl font-semibold tracking-tight sm:text-4xl ${isLightMode ? "text-zinc-950" : "text-white"}`}
+                        className={`truncate text-2xl font-semibold tracking-tight sm:text-3xl ${isLightMode ? "text-zinc-950" : "text-white"}`}
                       >
                         {displayName}
                       </h1>
@@ -955,14 +991,14 @@ export default function DesktopProfile() {
                       )}
                     </div>
                     <p
-                      className={`mt-2 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
+                      className={`mt-1 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
                     >
                       @{discord || "No Discord username set"}
                     </p>
                   </>
                 )}
                 {!editingProfile && (
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${isLightMode ? "border-emerald-600/20 bg-emerald-600/[0.08] text-emerald-700" : "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"}`}
                     >
@@ -976,77 +1012,24 @@ export default function DesktopProfile() {
                     >
                       SuperFan
                     </span>
-                  </div>
-                )}
-                {!editingProfile && (
-                  <div
-                    className={`mt-4 max-w-md rounded-2xl border px-4 py-3 ${
-                      offerStrikeCount >= 3
-                        ? isLightMode
-                          ? "border-red-500/25 bg-red-50"
-                          : "border-red-400/25 bg-red-500/[0.08]"
-                        : offerStrikeCount === 2
-                          ? isLightMode
-                            ? "border-orange-500/25 bg-orange-50"
-                            : "border-orange-400/25 bg-orange-500/[0.08]"
-                          : isLightMode
-                            ? "border-emerald-600/20 bg-emerald-50"
-                            : "border-emerald-400/20 bg-emerald-400/[0.06]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold">
-                            Offer response strikes
-                          </p>
-                          <button
-                            type="button"
-                            aria-label="Learn about offer response strikes"
-                            onClick={() => setShowOfferStrikeInfo(true)}
-                            className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-black transition-colors ${
-                              isLightMode
-                                ? "border-black/15 bg-white/70 text-zinc-700 hover:bg-white"
-                                : "border-white/15 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.12] hover:text-white"
-                            }`}
-                          >
-                            ?
-                          </button>
-                        </div>
-                        <p className="mt-0.5 text-xs text-zinc-500">
-                          {offerStrikeLabel}
-                        </p>
-                      </div>
-                      <span
-                        className={`text-lg font-black ${
-                          offerStrikeCount >= 3
-                            ? "text-red-500"
-                            : offerStrikeCount === 2
-                              ? "text-orange-500"
-                              : "text-emerald-500"
-                        }`}
-                      >
-                        {offerStrikeCount}/3
-                      </span>
-                    </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      {[1, 2, 3].map((strike) => (
-                        <span
-                          key={strike}
-                          className={`h-2 rounded-full ${
-                            strike <= offerStrikeCount
-                              ? offerStrikeCount >= 3
-                                ? "bg-red-500"
-                                : offerStrikeCount === 2
-                                  ? "bg-orange-500"
-                                  : "bg-emerald-500"
-                              : isLightMode
-                                ? "bg-black/10"
-                                : "bg-white/10"
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowOfferStrikeInfo(true)}
+                      aria-label="Learn about offer response strikes"
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                        offerStrikeCount >= 3
+                          ? "border-red-500/25 bg-red-500/10 text-red-500"
+                          : offerStrikeCount === 2
+                            ? "border-orange-500/25 bg-orange-500/10 text-orange-500"
+                            : isLightMode
+                              ? "border-black/10 bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+                              : "border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
+                      }`}
+                    >
+                      Offer strikes
+                      <span className="font-bold">{offerStrikeCount}/3</span>
+                      <span className="opacity-60">· {offerStrikeLabel}</span>
+                    </button>
                   </div>
                 )}
                 {tradeAccessRevoked && (
@@ -1105,7 +1088,7 @@ export default function DesktopProfile() {
                 )}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 xl:max-w-sm xl:justify-end">
+            <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
               <button
                 onClick={() => navigate("/Personal/change-avatar")}
                 className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${isLightMode ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"}`}
@@ -1130,31 +1113,46 @@ export default function DesktopProfile() {
               </button>
             </div>
           </div>
-        </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className={`mt-4 grid grid-cols-3 gap-3 border-t pt-4 ${isLightMode ? "border-black/10" : "border-white/[0.08]"}`}>
           {[
-            [stats.owned.toLocaleString(), "Cards Owned"],
-            [stats.completed.toLocaleString(), "Sets Mastered"],
-            [stats.friends.toLocaleString(), "Friends"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.owned.toLocaleString() : "—", "Cards Owned"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.completed.toLocaleString() : "—", "Sets Mastered"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.friends.toLocaleString() : "—", "Friends"],
           ].map(([value, label]) => (
             <div
               key={label}
-              className={`rounded-2xl border p-5 ${isLightMode ? "border-black/10 bg-white shadow-[0_8px_24px_rgba(0,0,0,.06)]" : "border-white/[0.08] bg-[#151718] shadow-[0_8px_24px_rgba(0,0,0,.18)]"}`}
+              className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5"
             >
               <div
-                className={`text-3xl font-bold tracking-tight ${isLightMode ? "text-[#8a6a00]" : "text-[#FFD54A]"}`}
+                className={`text-xl font-bold tracking-tight sm:text-2xl ${isLightMode ? "text-[#8a6a00]" : "text-[#FFD54A]"}`}
               >
                 {value}
               </div>
               <div
-                className={`mt-1 text-sm font-medium ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
+                className={`text-xs font-medium sm:text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
               >
                 {label}
               </div>
             </div>
           ))}
         </div>
-        <div className={`mt-4 rounded-2xl border p-5 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
+        </div>
+        <div className="mt-4 grid items-start gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
+          <aside className="min-w-0 space-y-4">
+        <div
+          className={`grid grid-cols-2 gap-2 rounded-2xl border p-2 xl:grid-cols-1 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.label}
+              onClick={() => navigate(tab.path)}
+              className={`rounded-xl px-4 py-3 text-left text-sm font-semibold transition-colors ${isLightMode ? "text-zinc-700 hover:bg-zinc-100" : "text-zinc-300 hover:bg-white/[0.06] hover:text-white"}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className={`rounded-2xl border p-5 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
           <div className="flex items-center justify-between gap-4">
             <div>
               <h3 className="text-sm font-semibold">Vacation Mode</h3>
@@ -1177,12 +1175,12 @@ export default function DesktopProfile() {
           {vacationError && <p role="alert" className="mt-2 text-xs text-red-400">{vacationError}</p>}
         </div>
         {loadingLeaderboardBan ? null : manuallyBannedFromLeaderboard ? (
-          <div role="status" className={`mt-5 w-full rounded-2xl border p-5 text-sm font-semibold leading-6 sm:p-6 ${isLightMode ? "border-red-300 bg-red-50 text-red-800" : "border-red-500/40 bg-red-500/10 text-red-200"}`}>
+          <div role="status" className={`mt-4 w-full rounded-2xl border p-5 text-sm font-semibold leading-6 sm:p-6 ${isLightMode ? "border-red-300 bg-red-50 text-red-800" : "border-red-500/40 bg-red-500/10 text-red-200"}`}>
             You have been banned from the leaderboard. This is likely due to your conduct on or off website.
           </div>
         ) : (
         <div
-          className={`mt-5 w-full overflow-hidden rounded-2xl border p-5 sm:p-6 ${
+          className={`mt-4 w-full overflow-hidden rounded-2xl border p-5 sm:p-6 ${
             isLightMode
               ? "border-black/10 bg-white"
               : "border-white/[0.08] bg-[#151718]"
@@ -1249,35 +1247,49 @@ export default function DesktopProfile() {
         </div>
         )}
         <div
-          className={`mt-6 flex flex-wrap gap-2 rounded-2xl border p-2 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}
+          className={`rounded-2xl border p-5 ${isLightMode ? "border-red-900/10 bg-white" : "border-red-500/20 bg-[#151718]"}`}
         >
-          {tabs.map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => navigate(tab.path)}
-              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${isLightMode ? "text-zinc-700 hover:bg-zinc-100" : "text-zinc-300 hover:bg-white/[0.06] hover:text-white"}`}
+          <div>
+            <h3
+              className={`text-sm font-semibold ${isLightMode ? "text-red-700" : "text-white"}`}
             >
-              {tab.label}
-            </button>
-          ))}
+              Account Deletion
+            </h3>
+            <p
+              className={`mt-2 max-w-3xl text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
+            >
+              Request permanent deletion of your MLPEKAYOU account. Your account
+              stays active until the request is manually reviewed and completed.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowDeletionModal(true)}
+            disabled={deletionRequested}
+            className={`mt-4 w-full rounded-xl border px-5 py-3 text-sm font-semibold ${deletionRequested ? "cursor-default border-zinc-400/20 bg-zinc-500/10 text-zinc-500" : isLightMode ? "border-red-700/25 bg-red-700/[0.04] text-red-700 hover:bg-red-700/[0.08]" : "border-red-500/30 bg-red-500/[0.08] text-red-400 hover:bg-red-500/[0.12]"}`}
+          >
+            {deletionRequested ? "Request Pending" : "Request Account Deletion"}
+          </button>
         </div>
+          </aside>
+          <main className="min-w-0">
         <div
-          className={`mt-6 rounded-3xl border p-5 sm:p-6 ${isLightMode ? "border-black/10 bg-white shadow-[0_10px_30px_rgba(0,0,0,.06)]" : "border-white/[0.08] bg-[#151718] shadow-[0_10px_30px_rgba(0,0,0,.18)]"}`}
+          className={`rounded-3xl border p-5 sm:p-6 ${isLightMode ? "border-black/10 bg-white shadow-[0_10px_30px_rgba(0,0,0,.06)]" : "border-white/[0.08] bg-[#151718] shadow-[0_10px_30px_rgba(0,0,0,.18)]"}`}
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2
                 className={`text-2xl font-semibold tracking-tight ${isLightMode ? "text-zinc-950" : "text-white"}`}
               >
-                Rarest Owned Cards
+                Top Collected Hits
               </h2>
               <p
                 className={`mt-1 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
               >
-                A showcase of the rare cards currently in your collection.
+                Your rarest collected cards, grouped by collection.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex max-w-full flex-wrap gap-2">
               {showcaseTabs.map(([key, label]) => (
                 <button
                   key={key}
@@ -1289,7 +1301,10 @@ export default function DesktopProfile() {
               ))}
             </div>
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          {!profileLoads.showcase && <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading your collected hits…</p>}
+          {profileLoadErrors.showcase && <p role="alert" className="py-8 text-center text-sm text-zinc-500">Your collected hits could not be loaded. Refresh to try again.</p>}
+          {profileLoads.showcase && !profileLoadErrors.showcase && visibleShowcaseCards.length === 0 && <p className="py-10 text-center text-sm text-zinc-500">Your collected hits will appear here.</p>}
+          <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
             {visibleShowcaseCards.map((card, index) => (
               <button
                 type="button"
@@ -1314,62 +1329,23 @@ export default function DesktopProfile() {
                     <CardImage
                       src={getTradeCardImage(card)}
                       alt={card.card_key}
-                      className="absolute inset-0 h-full w-full object-cover object-center"
+                      className={getShowcaseImageClass(card)}
+                      style={getShowcaseImageStyle(card)}
                     />
                   </>
                 ) : (
                   <ShowcaseImage
                     src={getTradeCardImage(card)}
                     alt={card.card_key}
-                    className={`h-full w-full transition-transform duration-300 ${
-                      ["FW", "SD", "friendshipsbegin", "14"].includes(
-                        String(card.set_id),
-                      )
-                        ? "object-contain p-1 group-hover:scale-[1.035]"
-                        : [
-                              "1",
-                              "2",
-                              "3",
-                              "4",
-                              "5",
-                              "6",
-                              "7",
-                              "8",
-                              "11",
-                            ].includes(String(card.set_id))
-                          ? "scale-[1.035] object-cover group-hover:scale-[1.055]"
-                          : "object-cover group-hover:scale-[1.035]"
-                    }`}
+                    className={getShowcaseImageClass(card)}
+                      style={getShowcaseImageStyle(card)}
                   />
                 )}
               </button>
             ))}
           </div>
         </div>
-        <div
-          className={`mt-6 rounded-2xl border p-5 sm:flex sm:items-center sm:justify-between sm:gap-6 ${isLightMode ? "border-red-900/10 bg-white" : "border-red-500/20 bg-[#151718]"}`}
-        >
-          <div>
-            <h3
-              className={`text-lg font-semibold ${isLightMode ? "text-red-700" : "text-white"}`}
-            >
-              Account Deletion
-            </h3>
-            <p
-              className={`mt-2 max-w-3xl text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
-            >
-              Request permanent deletion of your MLPEKAYOU account. Your account
-              stays active until the request is manually reviewed and completed.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowDeletionModal(true)}
-            disabled={deletionRequested}
-            className={`mt-4 shrink-0 rounded-xl border px-5 py-3 text-sm font-semibold sm:mt-0 ${deletionRequested ? "cursor-default border-zinc-400/20 bg-zinc-500/10 text-zinc-500" : isLightMode ? "border-red-700/25 bg-red-700/[0.04] text-red-700 hover:bg-red-700/[0.08]" : "border-red-500/30 bg-red-500/[0.08] text-red-400 hover:bg-red-500/[0.12]"}`}
-          >
-            {deletionRequested ? "Request Pending" : "Request Account Deletion"}
-          </button>
+          </main>
         </div>
       </div>
       {showOfferStrikeInfo && (
@@ -1636,30 +1612,24 @@ export default function DesktopProfile() {
       )}
       {selectedShowcaseCard && (
         <div
-          className={`fixed inset-0 z-[120] flex items-center justify-center px-6 pb-6 pt-20 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`}
+          className={`fixed inset-0 z-[120] flex items-center justify-center p-6 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`}
           onClick={() => setSelectedShowcaseCard(null)}
         >
+          <button type="button" aria-label="Close card preview" onClick={() => setSelectedShowcaseCard(null)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-2xl text-white shadow-lg">×</button>
           <button
             type="button"
-            className={`relative translate-y-4 overflow-hidden rounded-[26px] ${
+            className={`relative overflow-hidden rounded-2xl shadow-2xl ${
               isMoon3SZR001(selectedShowcaseCard)
-                ? "w-[min(92vw,850px)] h-[min(78vh,607.75px)]"
-                : "aspect-[5/7.15] w-[61vw] max-w-[425px] max-h-[78vh]"
+                ? "aspect-[10/7] w-[min(92vw,850px,calc(78dvh*10/7))]"
+                : "aspect-[5/7] w-[min(78vw,425px,calc(78dvh*5/7))]"
             }`}
-            style={
-              isMoon3SZR001(selectedShowcaseCard)
-                ? {
-                    width: "min(92vw, 850px)",
-                    height: "min(78vh, 608px)",
-                  }
-                : undefined
-            }
             onClick={(e) => e.stopPropagation()}
           >
             <ShowcaseImage imageSize="original"
               src={getTradeCardImage(selectedShowcaseCard)}
               alt="Selected card"
-              className={`h-full w-full ${isMoon3SZR001(selectedShowcaseCard) ? "object-cover object-center" : ["FW", "SD", "friendshipsbegin", "14"].includes(String(selectedShowcaseCard.set_id)) ? "object-contain" : ["1", "2", "3", "4", "5", "6", "7", "8", "11"].includes(String(selectedShowcaseCard.set_id)) ? "scale-[1.015] object-cover object-center" : "object-cover"}`}
+              className={getShowcaseImageClass(selectedShowcaseCard)}
+              style={getShowcaseImageStyle(selectedShowcaseCard)}
             />
           </button>
         </div>
@@ -1682,37 +1652,33 @@ function ProfileLoadingScreen({
       className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}
     >
       <style>{`
-        .profile-loading-screen{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;display:grid;place-items:center;overflow:hidden;padding:96px 24px;background:#0d0f10;color:#f4f4f5}
+        .profile-loading-screen{position:relative;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:32px 24px;background:#0d0f10;color:#f4f4f5}
         .profile-loading-screen.profile-loading-light{background:#f5f5f3;color:#27272a}
-        .profile-loading-pattern{position:absolute;inset:-160px -260px;z-index:-2;pointer-events:none;background-repeat:repeat;background-size:240px 140px;opacity:.065;animation:profile-logo-drift 36s linear infinite;will-change:transform}
-        .profile-loading-light .profile-loading-pattern{opacity:.075}
-        .profile-loading-vignette{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,rgba(13,15,16,.96) 0%,rgba(13,15,16,.72) 28%,rgba(13,15,16,.12) 75%)}
-        .profile-loading-light .profile-loading-vignette{background:radial-gradient(ellipse at center,rgba(245,245,243,.96) 0%,rgba(245,245,243,.72) 28%,rgba(245,245,243,.12) 75%)}
-        .profile-loading-content{width:100%;max-width:400px;text-align:center}
-        .profile-loading-brand{position:relative;display:flex;align-items:center;justify-content:center;width:240px;max-width:80%;height:120px;margin:0 auto 20px}
-        .profile-loading-brand::before{content:"";position:absolute;inset:20px 28px;border-radius:50%;background:rgba(255,218,75,.12);filter:blur(30px)}
-        .profile-loading-brand img{position:relative;width:100%;max-height:120px;object-fit:contain;filter:drop-shadow(0 5px 18px rgba(0,0,0,.15))}
-        .profile-loading-content p{margin:0;font-size:18px;font-weight:600;line-height:1.6}
-        .profile-loading-dots{display:inline-block;width:1.2em;text-align:left;animation:profile-loading-dots 1.4s steps(1,end) infinite}
+        .profile-loading-content{width:100%;max-width:320px;text-align:center;transform:translateY(clamp(-110px,-12dvh,-72px))}
+        .profile-loading-brand{display:flex;align-items:center;justify-content:center;width:210px;height:92px;margin:0 auto 24px}
+        .profile-loading-brand img{width:100%;max-height:92px;object-fit:contain;filter:drop-shadow(0 5px 16px rgba(0,0,0,.12));animation:profile-logo-breathe 1.8s ease-in-out infinite}
+        .profile-loading-title{margin:0;font-size:17px;font-weight:700;line-height:1.4}
+        .profile-loading-subtitle{margin:6px 0 0;font-size:13px;line-height:1.5;color:#a1a1aa}
+        .profile-loading-light .profile-loading-subtitle{color:#71717a}
+        .profile-loading-bar{position:relative;width:150px;height:3px;margin:22px auto 0;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.10)}
+        .profile-loading-light .profile-loading-bar{background:rgba(24,24,27,.10)}
+        .profile-loading-bar::after{content:"";position:absolute;inset:0;width:45%;border-radius:inherit;background:#ffda4b;animation:profile-loading-bar 1.1s ease-in-out infinite}
         .profile-loading-retry{margin-top:20px;min-height:44px;padding:10px 22px;border:0;border-radius:12px;background:#ffda4b;color:#252728;font-size:16px;font-weight:600;cursor:pointer}
         .profile-loading-retry:focus-visible{outline:3px solid #90bfff;outline-offset:4px}
-        @keyframes profile-logo-drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(240px,140px,0)}}
-        @keyframes profile-loading-dots{0%,24%{clip-path:inset(0 66.66% 0 0)}25%,49%{clip-path:inset(0 33.33% 0 0)}50%,74%{clip-path:inset(0)}75%,100%{clip-path:inset(0 33.33% 0 0)}}
-        @media(prefers-reduced-motion:reduce){.profile-loading-pattern,.profile-loading-dots{animation:none;will-change:auto}}
+        @keyframes profile-logo-breathe{0%,100%{opacity:.76;transform:scale(.985)}50%{opacity:1;transform:scale(1)}}
+        @keyframes profile-loading-bar{0%{transform:translateX(-115%)}50%{transform:translateX(120%)}100%{transform:translateX(245%)}}
+        @media(prefers-reduced-motion:reduce){.profile-loading-brand img,.profile-loading-bar::after{animation:none}}
       `}</style>
-      <div
-        className="profile-loading-pattern"
-        style={{ backgroundImage: `url("${logo}")` }}
-        aria-hidden="true"
-      />
-      <div className="profile-loading-vignette" aria-hidden="true" />
       <div className="profile-loading-content">
         <div className="profile-loading-brand">
           <CardImage src={logo} alt="MLPEKAYOU" />
         </div>
         {failed ? (
           <>
-            <p role="alert">We couldn’t load your profile. Please try again.</p>
+            <p className="profile-loading-title" role="alert">
+              We couldn’t load your profile
+            </p>
+            <p className="profile-loading-subtitle">Please try again.</p>
             <button
               type="button"
               className="profile-loading-retry"
@@ -1722,13 +1688,16 @@ function ProfileLoadingScreen({
             </button>
           </>
         ) : (
-          <p role="status" aria-live="polite">
+          <div role="status" aria-live="polite">
             <span className="sr-only">Loading your profile</span>
-            <span aria-hidden="true">
-              Loading your profile
-              <span className="profile-loading-dots">...</span>
-            </span>
-          </p>
+            <p className="profile-loading-title" aria-hidden="true">
+              Getting your profile ready
+            </p>
+            <p className="profile-loading-subtitle" aria-hidden="true">
+              Loading your account and preferences
+            </p>
+            <div className="profile-loading-bar" aria-hidden="true" />
+          </div>
         )}
       </div>
     </div>

@@ -1,76 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
-import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
-import { useWishlist } from "./wishlist-in-iso";
+import { getISOCardCode, getISOSetName } from "@/lib/iso-card-catalog";
 type Status =
   | "purchase_in_progress"
   | "trade_in_progress";
-type UserStatuses = {
-  statuses: Map<string, Status>;
-  listeners: Set<() => void>;
-  loaded: boolean;
-  pending?: Promise<void>;
-  changes: Map<string, Status | null>;
-};
-const statusCache = new Map<string, UserStatuses>();
-function getUserStatuses(userId: string) {
-  let entry = statusCache.get(userId);
-  if (!entry) {
-    entry = {
-      statuses: new Map(),
-      listeners: new Set(),
-      loaded: false,
-      changes: new Map(),
-    };
-    statusCache.set(userId, entry);
-  }
-  return entry;
-}
-function notifyStatuses(entry: UserStatuses) {
-  entry.listeners.forEach((listener) => listener());
-}
-function loadUserStatuses(userId: string) {
-  const entry = getUserStatuses(userId);
-  if (entry.loaded || entry.pending) return;
-  entry.pending = (async () => {
-    const statuses = new Map<string, Status>();
-    let offset = 0;
-    while (true) {
-      const { data, error } = await supabase
-        .from("iso_status")
-        .select("card_key, status")
-        .eq("user_id", userId)
-        .in("status", ["purchase_in_progress", "trade_in_progress"])
-        .range(offset, offset + 999);
-      if (error) throw error;
-      for (const row of data ?? []) {
-        statuses.set(String(row.card_key), row.status as Status);
-      }
-      if (!data || data.length < 1000) break;
-      offset += 1000;
-    }
-    entry.changes.forEach((status, key) => {
-      if (status) statuses.set(key, status);
-      else statuses.delete(key);
-    });
-    entry.statuses = statuses;
-    entry.loaded = true;
-    entry.changes.clear();
-    notifyStatuses(entry);
-  })().catch((error) => {
-    console.error("Failed to load ISO statuses", error);
-  }).finally(() => {
-    entry.pending = undefined;
-  });
-}
-function updateUserStatus(userId: string, key: string, status: Status | null) {
-  const entry = getUserStatuses(userId);
-  if (!entry.loaded) entry.changes.set(key, status);
-  if (status) entry.statuses.set(key, status);
-  else entry.statuses.delete(key);
-  notifyStatuses(entry);
-}
 interface ISOCheckingProps {
   className?: string;
   contentClassName?: string;
@@ -102,50 +36,67 @@ export default function ISOChecking({
 const [open, setOpen] = useState(false);
 const [loading, setLoading] = useState(false);
 const [status, setStatus] = useState<Status | null>(null);
-const [openAbove, setOpenAbove] = useState(false);
+
 const isoCardKey =
     setId === "FW" || setId === "SD"
       ? cardKey
       : `${setId}-${cardKey}`;
-const [menuPosition, setMenuPosition] = useState<
-    "left" | "center" | "right"
-  >("center");
-const [menuCoords, setMenuCoords] = useState({
-    top: 0,
-    left: 0,
-  });
 const menuRef = useRef<HTMLDivElement>(null);
 const menuPanelRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-function handleClick(e: MouseEvent) {
-const target = e.target as Node;
-      if (
-        menuRef.current?.contains(target) ||
-        menuPanelRef.current?.contains(target)
-      ) {
-        return;
-      }
-      setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-    };
-  }, []);
-  useEffect(() => {
-    if (!userId) {
-      setStatus(null);
+const cardCode = getISOCardCode(setId, cardKey);
+const setName = getISOSetName(setId);
+useEffect(() => {
+  if (!open) return;
+  const previouslyFocused = document.activeElement as HTMLElement | null;
+  const previousOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+  menuPanelRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape" && !loading) setOpen(false);
+    if (event.key !== "Tab") return;
+    const controls = Array.from(menuPanelRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled), [href], input:not(:disabled), [tabindex='0']") ?? []);
+    if (!controls.length) {
+      event.preventDefault();
+      menuPanelRef.current?.focus();
       return;
     }
-    const entry = getUserStatuses(userId);
-    const sync = () => setStatus(entry.statuses.get(isoCardKey) ?? null);
-    entry.listeners.add(sync);
-    sync();
-    loadUserStatuses(userId);
-    return () => {
-      entry.listeners.delete(sync);
-    };
-  }, [userId, isoCardKey]);
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === menuPanelRef.current)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown);
+  return () => {
+    document.body.style.overflow = previousOverflow;
+    document.removeEventListener("keydown", handleKeyDown);
+    previouslyFocused?.focus();
+  };
+}, [open, loading]);
+  useEffect(() => {
+async function loadStatus() {
+      if (!userId) return;
+const { data } = await supabase
+        .from("iso_status")
+        .select("status")
+        .eq("user_id", userId)
+        .eq("card_key", isoCardKey)
+        .maybeSingle();
+      if (
+        data?.status === "purchase_in_progress" ||
+        data?.status === "trade_in_progress"
+      ) {
+        setStatus(data.status);
+      } else {
+        setStatus(null);
+      }
+    }
+    loadStatus();
+  }, [userId, cardKey, isoCardKey]);
 async function saveStatus(newStatus: Status) {
     if (loading) return;
     setLoading(true);
@@ -161,7 +112,6 @@ const { error } = await supabase
         return;
       }
       setStatus(null);
-      updateUserStatus(userId, isoCardKey, null);
       setOpen(false);
       onStatusChange?.(null);
       return;
@@ -184,7 +134,6 @@ const { error } = await supabase
       return;
     }
     setStatus(newStatus);
-    updateUserStatus(userId, isoCardKey, newStatus);
     setOpen(false);
     onStatusChange?.(newStatus);
   }
@@ -205,14 +154,24 @@ const { data } = await supabase
 const progress = data?.progress || {};
 const progressKey = cardKey;
     progress[progressKey] = true;
-const error = await saveCollectionProgress(setId, progress);
+const { error } = await supabase
+      .from("collection_progress_raw")
+      .upsert(
+        {
+          user_id: userId,
+          set_id: setId,
+          progress,
+        },
+        {
+          onConflict: "user_id,set_id",
+        }
+      );
     setLoading(false);
     if (error) {
       console.error(error);
       return;
     }
     setStatus(null);
-    updateUserStatus(userId, isoCardKey, null);
     setOpen(false);
     onStatusChange?.(null);
     onComplete?.();
@@ -231,7 +190,6 @@ const { error } = await supabase
       return;
     }
     setStatus(null);
-    updateUserStatus(userId, isoCardKey, null);
     setOpen(false);
     onStatusChange?.(null);
   }
@@ -243,31 +201,17 @@ const { error } = await supabase
       <div
         className={`relative cursor-pointer overflow-hidden rounded-[6px] transition sm:rounded-xl ${contentClassName ?? ""} ${open ? "ring-2 ring-[#FFD54A]/50 shadow-lg" : ""}`}
         style={contentStyle}
-        onClick={(e) => {
-const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-const menuHeight = wishlistMode ? 170 : toggleWishlist ? 380 : 300;
-const menuWidth = 300;
-const gap = 10;
-const padding = 12;
-const shouldOpenAbove = rect.bottom + menuHeight + gap > window.innerHeight;
-const top = shouldOpenAbove
-            ? Math.max(padding, rect.top - menuHeight - gap)
-            : Math.min(window.innerHeight - menuHeight - padding, rect.bottom + gap);
-const centerX = rect.left + rect.width / 2;
-let left: number;
-          if (centerX < menuWidth / 2 + padding) {
-            left = padding;
-            setMenuPosition("left");
-          } else if (centerX > window.innerWidth - menuWidth / 2 - padding) {
-            left = window.innerWidth - menuWidth - padding;
-            setMenuPosition("right");
-          } else {
-            left = centerX - menuWidth / 2;
-            setMenuPosition("center");
+        role="button"
+        tabIndex={0}
+        aria-label={`Update ${cardCode}`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setOpen(true);
           }
-          setOpenAbove(shouldOpenAbove);
-          setMenuCoords({ top, left });
-          setOpen((v) => !v);
         }}
       >
         {children}
@@ -289,129 +233,64 @@ let left: number;
           </div>
         )}
       </div>
-      {open &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[999990] bg-black/25 backdrop-blur-[1px]"
-            onMouseDown={() => setOpen(false)}
-          />,
-          document.body
-        )}
-      {open &&
-        createPortal(
+      {open && createPortal(
+        <div
+          className="fixed inset-0 z-[999999] flex items-center justify-center overflow-y-auto bg-zinc-950/65 p-3 backdrop-blur-sm sm:p-6"
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !loading) setOpen(false);
+          }}
+        >
           <div
             ref={menuPanelRef}
-            className="fixed z-[999999] w-[300px] overflow-hidden rounded-[22px] border border-black/10 bg-[#f5f5f7] p-2 text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white"
-            style={{
-              top: `${menuCoords.top}px`,
-              left: `${menuCoords.left}px`,
-            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${wishlistMode ? "Wishlist" : "Card status"}: ${cardCode}`}
+            aria-busy={loading}
+            tabIndex={-1}
+            className="relative max-h-[calc(100dvh-24px)] w-full max-w-[640px] overflow-y-auto overscroll-contain rounded-3xl border border-black/10 bg-white text-zinc-900 shadow-2xl outline-none dark:border-white/10 dark:bg-[#17191a] dark:text-zinc-100 sm:max-h-[calc(100dvh-48px)]"
           >
-            {wishlistMode ? (
-              <>
-                <div className="px-3 pb-2 pt-2">
-                  <div className="text-[15px] font-semibold">Wishlist</div>
-                  <div className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    {isWishlisted ? "This card is on your wishlist." : "Add this card to your wishlist."}
-                  </div>
+            <div className="flex items-start justify-between gap-3 border-b border-black/[0.06] px-4 py-3 dark:border-white/[0.08] sm:px-5 sm:py-4">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{setName}</p>
+                <h2 className="mt-1 break-words text-base font-semibold sm:text-lg">{cardCode}</h2>
+              </div>
+              <button type="button" aria-label="Close card popup" disabled={loading} onClick={() => setOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xl text-zinc-600 transition hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD54A] disabled:opacity-50 dark:bg-white/[0.07] dark:text-zinc-300 dark:hover:bg-white/[0.12]">&times;</button>
+            </div>
+            <div className="grid items-start gap-3 p-3 sm:grid-cols-[220px_minmax(0,1fr)] sm:gap-5 sm:p-5">
+              <div className="flex min-w-0 items-start justify-center self-start">
+                <div className={`pointer-events-none w-[min(180px,24dvh)] overflow-hidden rounded-md shadow-lg [&>*]:w-full sm:w-full ${contentClassName ?? ""}`} style={contentStyle} aria-hidden="true">
+                  {children}
                 </div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (toggleWishlist) {
-                      await toggleWishlist(setId, cardKey);
-                    }
-                    setOpen(false);
-                  }}
-                  className="flex w-full items-center justify-between rounded-2xl bg-white px-3.5 py-3 text-left text-[15px] font-semibold shadow-sm transition hover:bg-zinc-50 dark:bg-white/[0.07] dark:hover:bg-white/[0.1]"
-                >
-                  <span>{isWishlisted ? "Remove from wishlist" : "Add to wishlist"}</span>
-                  <span className={`flex h-8 w-8 items-center justify-center rounded-full ${isWishlisted ? "bg-pink-50 text-pink-500 dark:bg-pink-400/10" : "bg-zinc-100 text-zinc-500 dark:bg-white/[0.08] dark:text-zinc-300"}`}>
-                    <svg viewBox="0 0 24 24" aria-hidden="true" className={`block h-[18px] w-[18px] ${isWishlisted ? "fill-current" : "fill-none stroke-current"}`}>
-                      <path d="M12 21s-7.2-4.35-9.55-8.42C.58 9.34 2.08 5.25 5.85 4.38 8.02 3.88 10.08 4.7 12 6.8c1.92-2.1 3.98-2.92 6.15-2.42 3.77.87 5.27 4.96 3.4 8.2C19.2 16.65 12 21 12 21Z" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </span>
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="px-3 pb-2 pt-2">
-                  <div className="text-[15px] font-semibold">Card status</div>
-                  <div className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-                    Update what is happening with this card.
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <button
-                    type="button"
-                    onClick={() => saveStatus("purchase_in_progress")}
-                    disabled={loading}
-                    className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-3 text-left transition ${
-                      status === "purchase_in_progress"
-                        ? "bg-red-50 text-red-700 dark:bg-red-400/10 dark:text-red-300"
-                        : "bg-white text-zinc-700 hover:bg-zinc-50 dark:bg-white/[0.07] dark:text-zinc-200 dark:hover:bg-white/[0.1]"
-                    }`}
-                  >
-                    <div>
-                      <div className="text-[15px] font-semibold">Buying</div>
-                      <div className="mt-0.5 text-sm opacity-70">{status === "purchase_in_progress" ? "Tap again to clear" : "Purchase in progress"}</div>
-                    </div>
-                    <span className="text-lg">›</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => saveStatus("trade_in_progress")}
-                    disabled={loading}
-                    className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-3 text-left transition ${
-                      status === "trade_in_progress"
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300"
-                        : "bg-white text-zinc-700 hover:bg-zinc-50 dark:bg-white/[0.07] dark:text-zinc-200 dark:hover:bg-white/[0.1]"
-                    }`}
-                  >
-                    <div>
-                      <div className="text-[15px] font-semibold">Trading</div>
-                      <div className="mt-0.5 text-sm opacity-70">{status === "trade_in_progress" ? "Tap again to clear" : "Trade in progress"}</div>
-                    </div>
-                    <span className="text-lg">›</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={markComplete}
-                    disabled={loading}
-                    className="flex w-full items-center justify-between rounded-2xl bg-[#FFD54A] px-3.5 py-3 text-left text-zinc-900 transition hover:brightness-95"
-                  >
-                    <div>
-                      <div className="text-[15px] font-semibold">Mark complete</div>
-                      <div className="mt-0.5 text-sm text-zinc-700">Move this card into your collection</div>
-                    </div>
-                    <span className="text-lg">✓</span>
-                  </button>
-                  {toggleWishlist && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await toggleWishlist(setId, cardKey);
-                        setOpen(false);
-                      }}
-                      className={`flex w-full items-center justify-between rounded-2xl px-3.5 py-3 text-left transition ${isWishlisted ? "bg-pink-50 text-pink-700 hover:bg-pink-100 dark:bg-pink-400/10 dark:text-pink-300 dark:hover:bg-pink-400/15" : "bg-white text-zinc-700 hover:bg-zinc-50 dark:bg-white/[0.07] dark:text-zinc-200 dark:hover:bg-white/[0.1]"}`}
-                    >
-                      <div>
-                        <div className="text-[15px] font-semibold">{isWishlisted ? "Remove from wishlist" : "Add to wishlist"}</div>
-                        <div className="mt-0.5 text-sm opacity-70">{isWishlisted ? "Take this card off your wishlist" : "Save this card to your wishlist"}</div>
-                      </div>
-                      <span className={`flex h-8 w-8 items-center justify-center rounded-full ${isWishlisted ? "bg-white/70 text-pink-500 dark:bg-white/[0.08]" : "bg-zinc-100 text-zinc-500 dark:bg-white/[0.08] dark:text-zinc-300"}`}>
-                        <svg viewBox="0 0 24 24" aria-hidden="true" className={`block h-[18px] w-[18px] ${isWishlisted ? "fill-current" : "fill-none stroke-current"}`}>
-                          <path d="M12 21s-7.2-4.35-9.55-8.42C.58 9.34 2.08 5.25 5.85 4.38 8.02 3.88 10.08 4.7 12 6.8c1.92-2.1 3.98-2.92 6.15-2.42 3.77.87 5.27 4.96 3.4 8.2C19.2 16.65 12 21 12 21Z" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </button>
+              </div>
+              <div className="flex min-w-0 flex-col">
+                <h3 className="mb-2 text-sm font-semibold sm:mb-0">{wishlistMode ? "Wishlist" : "Update card status"}</h3>
+                <p className="mb-3 mt-1 hidden text-xs leading-5 sm:block text-zinc-500 dark:text-zinc-400">
+                  {wishlistMode ? "Keep track of the cards you want." : status === "purchase_in_progress" ? "Purchase in progress" : status === "trade_in_progress" ? "Trade in progress" : "Choose how you are getting this card."}
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
+                  {!wishlistMode && (
+                    <>
+                      {(["purchase_in_progress", "trade_in_progress"] as const).map((option) => (
+                        <button key={option} type="button" onClick={() => saveStatus(option)} disabled={loading} aria-pressed={status === option} className={`flex min-h-12 min-w-0 w-full items-center gap-2 rounded-xl border px-2.5 py-2.5 sm:min-h-14 sm:gap-3 sm:px-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD54A] disabled:cursor-wait disabled:opacity-50 ${status === option ? "border-[#FFD54A]/70 bg-[#FFD54A]/15 dark:bg-[#FFD54A]/10" : "border-black/[0.08] bg-white hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07]"}`}>
+                          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${option === "purchase_in_progress" ? "bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-blue-300" : "bg-emerald-50 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-300"}`}>
+                            {option === "purchase_in_progress" ? <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 7h12l2 14H4L6 7Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg> : <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4" /></svg>}
+                          </span>
+                          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{option === "purchase_in_progress" ? "Buying" : "Trading"}</span><span className="mt-0.5 hidden text-xs text-zinc-500 dark:text-zinc-400 sm:block">{status === option ? "Selected - tap to clear" : option === "purchase_in_progress" ? "Purchase in progress" : "Trade in progress"}</span></span>
+                          {status === option && <span className="text-sm" aria-hidden="true">&#10003;</span>}
+                        </button>
+                      ))}
+                      <button type="button" onClick={markComplete} disabled={loading} className="col-span-2 flex min-h-11 w-full items-center justify-between gap-2 sm:col-span-1 sm:min-h-12 rounded-xl bg-[#FFD54A] px-3 py-3 text-sm font-semibold text-zinc-900 transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-50"><span>Mark complete</span><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg></button>
+                    </>
                   )}
+                  {toggleWishlist && <button type="button" disabled={loading} onClick={async () => { if (loading) return; setLoading(true); try { await toggleWishlist(setId, cardKey); setOpen(false); } finally { setLoading(false); } }} className="col-span-2 flex min-h-11 w-full items-center justify-center gap-2 sm:col-span-1 rounded-xl border border-black/[0.08] px-3 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-pink-50 hover:text-pink-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 disabled:cursor-wait disabled:opacity-50 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-pink-400/10 dark:hover:text-pink-300"><svg className={`h-4 w-4 ${isWishlisted ? "fill-pink-500 stroke-pink-500" : "fill-none stroke-current"}`} viewBox="0 0 24 24" strokeWidth="1.8" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" /></svg>{isWishlisted ? "Remove from wishlist" : "Add to wishlist"}</button>}
+                  {!wishlistMode && status && <button type="button" disabled={loading} onClick={removeStatus} className="col-span-2 min-h-10 w-full rounded-lg sm:col-span-1 text-xs font-medium text-zinc-500 transition hover:text-zinc-900 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-white">Clear in-progress status</button>}
                 </div>
-              </>
-            )}
-          </div>,
-          document.body
-        )}
+                {loading && <p role="status" className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"><span className="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700 motion-reduce:animate-none dark:border-zinc-600 dark:border-t-zinc-200" aria-hidden="true" />Saving...</p>}
+              </div>
+            </div>
+          </div>
+        </div>, document.body
+      )}
     </div>
   );
 }

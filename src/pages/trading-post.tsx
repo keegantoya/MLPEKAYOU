@@ -24,6 +24,13 @@ const setButtons = [
     image: "/thumbnails/moonthreesetimage.webp",
   },
   {
+    title: "Eternal Moon IV",
+    subtitle: "162 Cards",
+    group: "Moon",
+    to: "/trading-post/13",
+    image: "/thumbnails/moonfoursetimage.webp",
+  },
+  {
     title: "Star I",
     subtitle: "105 Cards",
     group: "Star",

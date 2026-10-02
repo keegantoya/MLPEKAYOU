@@ -10,6 +10,7 @@ const setImages: Record<string, string> = {
   "2": "/thumbnails/moontwosetimage.webp",
   "8": "/thumbnails/funtwosetimage.webp",
   "3": "/thumbnails/moonthreesetimage.webp",
+  "13": "/thumbnails/moonfoursetimage.webp",
   "11": "/thumbnails/funthreesetimage.webp",
   "4": "/thumbnails/staronesetimage.webp",
   "6": "/thumbnails/rainbowtwosetimage.webp",
@@ -118,6 +119,23 @@ const sets = [
     },
   },
   {
+    id: "13",
+    name: "Moon Fourth Edition",
+    total: 162,
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 26,
+      HR: 30,
+      LSR: 16,
+      UR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      SZR: 2,
+    },
+  },
+  {
     id: "11",
     name: "Fun Moments Three",
     total: 148,
@@ -172,6 +190,7 @@ const releasedRoutes: Record<string, string> = {
   "2": "/moon-two",
   "5": "/rainbow-one",
   "3": "/moon-three",
+  "13": "/moon-four",
   "7": "/fun-moments-one",
   "11": "/fun-moments-three",
   "9": "/promotional-cards",
@@ -182,12 +201,12 @@ const releasedRoutes: Record<string, string> = {
 const MyProgress = () => {
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
-  const root = document.documentElement;
+const root = document.documentElement;
   return root.dataset.theme === "light" || root.classList.contains("light");
 });
 useEffect(() => {
-  const syncTheme = () => {
-    const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
     setIsLightMode(
       root.dataset.theme === "light" ||
       root.classList.contains("light") ||
@@ -195,7 +214,7 @@ useEffect(() => {
     );
   };
   syncTheme();
-  const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class", "data-theme"],
@@ -258,7 +277,7 @@ const {
     return () => subscription.unsubscribe();
   }, []);
 const mainSets = sets.filter((s) =>
-    ["1", "5", "7", "2", "3", "8", "11"].includes(s.id)
+    ["1", "5", "7", "2", "3", "13", "8", "11"].includes(s.id)
   );
 const promoSets = sets.filter((s) => ["9"].includes(s.id));
 const visibleSets = sets.filter(
@@ -289,6 +308,7 @@ const activeSets = sets.filter(
         "1",
         "2",
         "3",
+        "13",
         "4",
         "5",
         "6",
@@ -328,14 +348,14 @@ const renderSectionHeader = (title: string, count?: number) => (
   </div>
 );
 const renderSetCard = (set: any) => {
-  const owned = progress[set.id] || 0;
-  const percent =
+const owned = progress[set.id] || 0;
+const percent =
     set.total > 0
       ? Math.min(100, Math.round((owned / set.total) * 100))
       : 0;
-  const isMastered = percent === 100;
-  const route = releasedRoutes[set.id];
-  const image = setImages[set.id];
+const isMastered = percent === 100;
+const route = releasedRoutes[set.id];
+const image = setImages[set.id];
   return (
     <button
       key={set.id}

@@ -1,6 +1,6 @@
 import { moonCatalog } from "@/lib/iso-card-catalog";
 const { sets, getDisplayCardCode, getRarityCode } = moonCatalog;
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -78,7 +78,7 @@ return (
 <div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">
 {selectableSets.map((set) => (
 <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${selectedSet === set.id ? "bg-[#FFD54A] text-zinc-900" : "bg-zinc-100 text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300"}`}>
-{set.id === "1" ? "Moon 1" : set.id === "2" ? "Moon 2" : "Moon 3"}
+{set.id === "1" ? "Moon 1" : set.id === "2" ? "Moon 2" : set.id === "13" ? "Moon 4" : "Moon 3"}
 </button>
 ))}
 </div>
@@ -156,7 +156,7 @@ const visibleCards =
                 <option value="all">All rarities</option>
                 {availableRarities.map((rarity) => (
                   <option key={rarity} value={rarity}>
-                    {rarity === "SHINING ZR" || rarity === "SZR" ? "◇ZR" : rarity}
+                    {rarity === "SHINING ZR" || rarity === "SZR" ? "\u25C7ZR" : rarity}
                   </option>
                 ))}
               </select>
@@ -185,11 +185,11 @@ const cardContent = (
                       }`}
                     >
                       <CardImage
-                        src={cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(
+                        src={set.id === "13" ? getMoonFourFront(`${card.rarity}-${card.number}`) : cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(
                           card.number
                         ).padStart(3, "0"))}
                         alt={getDisplayCardCode(set.id, card.rarity, card.number)}
-                        className="h-full w-full scale-[1.05] object-contain object-center"
+                        className={`h-full w-full ${set.id === "13" ? "scale-[1.055]" : "scale-[1.05]"} object-contain object-center`}
                       />
                     </div>
                   </div>

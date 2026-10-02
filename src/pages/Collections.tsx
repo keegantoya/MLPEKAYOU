@@ -95,7 +95,7 @@ const collections: Collection[] = [
         imageUrl: "/thumbnails/moonfoursetimage.webp",
         totalCards: 162,
         category: "eternal-moon",
-        released: false,
+        released: true,
     },
     {
         id: "11",
@@ -152,7 +152,7 @@ const collections: Collection[] = [
         released: true,
     },
 ];
-const unreleasedSetIds: string[] = ["13"];
+const unreleasedSetIds: string[] = [""];
 const databaseSetId: Record<string, string> = {
     tcg: "FW",
     friendshipsbegin: "SD",

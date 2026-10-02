@@ -18,21 +18,21 @@ type LeaderboardUser = {
 };
 const LEADERBOARD_USER_ID = "94a1c998-d040-4dd2-b2fb-5f606287139d";
 const Leaderboard = () => {
-  const [ccgLeaders, setCcgLeaders] = useState<LeaderboardUser[]>([]);
-  const [tcgLeaders, setTcgLeaders] = useState<LeaderboardUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showVerificationNotice, setShowVerificationNotice] = useState(true);
-  const [viewerStatus, setViewerStatus] = useState<
+const [ccgLeaders, setCcgLeaders] = useState<LeaderboardUser[]>([]);
+const [tcgLeaders, setTcgLeaders] = useState<LeaderboardUser[]>([]);
+const [loading, setLoading] = useState(true);
+const [showVerificationNotice, setShowVerificationNotice] = useState(true);
+const [viewerStatus, setViewerStatus] = useState<
     "verified" | "unverified" | "ineligible"
   >("unverified");
-  const [isLightMode, setIsLightMode] = useState(() => {
+const [isLightMode, setIsLightMode] = useState(() => {
     if (typeof document === "undefined") return false;
-    const root = document.documentElement;
+const root = document.documentElement;
     return root.dataset.theme === "light" || root.classList.contains("light");
   });
   useEffect(() => {
-    const syncTheme = () => {
-      const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
       setIsLightMode(
         root.dataset.theme === "light" ||
           root.classList.contains("light") ||
@@ -40,7 +40,7 @@ const Leaderboard = () => {
       );
     };
     syncTheme();
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -52,10 +52,10 @@ const Leaderboard = () => {
     };
   }, []);
   useEffect(() => {
-    const loadLeaderboards = async () => {
+const loadLeaderboards = async () => {
       setLoading(true);
       try {
-        const { data: ccgProfiles, error: ccgProfilesError } = await supabase
+const { data: ccgProfiles, error: ccgProfilesError } = await supabase
           .from("profiles")
           .select("id, username, avatar_url, iso_hidden_sets, collection_total")
           .gte("collection_total", 1200);
@@ -63,7 +63,7 @@ const Leaderboard = () => {
           console.error("CCG leaderboard profiles error:", ccgProfilesError);
           return;
         }
-        const { data: tcgProfiles, error: tcgProfilesError } = await supabase
+const { data: tcgProfiles, error: tcgProfilesError } = await supabase
           .from("profiles")
           .select("id, username, avatar_url, iso_hidden_sets, collection_total")
           .gte("collection_total", 450);
@@ -71,14 +71,14 @@ const Leaderboard = () => {
           console.error("TCG leaderboard profiles error:", tcgProfilesError);
           return;
         }
-        const { data: tradingProfiles, error: tradingError } = await supabase
+const { data: tradingProfiles, error: tradingError } = await supabase
           .from("trading_profiles")
           .select("user_id, discord_username, trade_access_revoked");
         if (tradingError) {
           console.error("Leaderboard trading profile error:", tradingError);
           return;
         }
-        const eligibleUserIds = new Set(
+const eligibleUserIds = new Set(
           (tradingProfiles || [])
             .filter(
               (profile: any) =>
@@ -88,23 +88,23 @@ const Leaderboard = () => {
             )
             .map((profile: any) => profile.user_id),
         );
-        const {
+const {
           data: { session },
         } = await supabase.auth.getSession();
-        const viewerTradingProfile = (tradingProfiles || []).find(
+const viewerTradingProfile = (tradingProfiles || []).find(
           (profile: any) => profile.user_id === session?.user?.id,
         );
-        const { data: excludedUsers, error: exclusionsError } = await supabase
+const { data: excludedUsers, error: exclusionsError } = await supabase
           .from("leaderboard_exclusions")
           .select("user_id");
         if (exclusionsError) {
           console.error("Leaderboard exclusions error:", exclusionsError);
           return;
         }
-        const excludedUserIds = new Set(
+const excludedUserIds = new Set(
           (excludedUsers || []).map((user: any) => user.user_id),
         );
-        const viewerIsExcluded = session?.user?.id
+const viewerIsExcluded = session?.user?.id
           ? excludedUserIds.has(session.user.id)
           : false;
         if (viewerTradingProfile?.trade_access_revoked || viewerIsExcluded) {
@@ -117,15 +117,15 @@ const Leaderboard = () => {
         } else {
           setViewerStatus("unverified");
         }
-        const filterEligible = (profiles: any[]) =>
+const filterEligible = (profiles: any[]) =>
           profiles.filter(
             (profile: any) =>
               eligibleUserIds.has(profile.id) &&
               !excludedUserIds.has(profile.id),
           );
-        const eligibleCcgProfiles = filterEligible(ccgProfiles || []);
-        const eligibleTcgProfiles = filterEligible(tcgProfiles || []);
-        const allEligibleIds = Array.from(
+const eligibleCcgProfiles = filterEligible(ccgProfiles || []);
+const eligibleTcgProfiles = filterEligible(tcgProfiles || []);
+const allEligibleIds = Array.from(
           new Set([
             ...eligibleCcgProfiles.map((profile: any) => profile.id),
             ...eligibleTcgProfiles.map((profile: any) => profile.id),
@@ -136,7 +136,7 @@ const Leaderboard = () => {
           setTcgLeaders([]);
           return;
         }
-        const { data: progressTotals, error: progressError } =
+const { data: progressTotals, error: progressError } =
           await supabase.rpc("get_leaderboard_progress_totals", {
             p_user_ids: allEligibleIds,
           });
@@ -147,19 +147,19 @@ const Leaderboard = () => {
           );
           return;
         }
-        const ccgTotals = new Map<string, number>(
+const ccgTotals = new Map<string, number>(
           (progressTotals || []).map((row: any) => [
             row.user_id,
             Number(row.ccg_total) || 0,
           ]),
         );
-        const tcgTotals = new Map<string, number>(
+const tcgTotals = new Map<string, number>(
           (progressTotals || []).map((row: any) => [
             row.user_id,
             Number(row.tcg_total) || 0,
           ]),
         );
-        const ccgLeaderboard = eligibleCcgProfiles
+const ccgLeaderboard = eligibleCcgProfiles
           .map((profile: any) => ({
             id: profile.id,
             username: profile.username || "Anonymous",
@@ -168,7 +168,7 @@ const Leaderboard = () => {
           }))
           .sort((a, b) => b.total - a.total)
           .slice(0, 7);
-        const tcgLeaderboard = eligibleTcgProfiles
+const tcgLeaderboard = eligibleTcgProfiles
           .map((profile: any) => ({
             id: profile.id,
             username: profile.username || "Anonymous",
@@ -187,7 +187,7 @@ const Leaderboard = () => {
     };
     loadLeaderboards();
   }, []);
-  const renderAvatarEffects = (user: LeaderboardUser) => {
+const renderAvatarEffects = (user: LeaderboardUser) => {
     if (user.id !== LEADERBOARD_USER_ID) {
       return null;
     }
@@ -221,7 +221,7 @@ const Leaderboard = () => {
       </>
     );
   };
-  const CornerBrackets = ({ color = "#E7C84B" }: { color?: string }) => (
+const CornerBrackets = ({ color = "#E7C84B" }: { color?: string }) => (
     <>
       <div
         className="absolute left-0 top-0 h-4 w-4 border-l border-t"
@@ -233,25 +233,25 @@ const Leaderboard = () => {
       />
     </>
   );
-  const renderTopThree = (
+const renderTopThree = (
     leaders: LeaderboardUser[],
     section: "ccg" | "tcg",
   ) => {
-    const podium = leaders.slice(0, 3).map((user, index) => ({
+const podium = leaders.slice(0, 3).map((user, index) => ({
       user,
       rank: index + 1,
     }));
     return (
       <div className="grid items-end gap-3 pt-2 md:grid-cols-3 md:pt-8">
         {podium.map(({ user, rank }) => {
-          const { avatar, verification } = getProfileAssets(user);
-          const orderClass =
+const { avatar, verification } = getProfileAssets(user);
+const orderClass =
             rank === 1
               ? "order-1 md:order-2 md:-translate-y-5"
               : rank === 2
                 ? "order-2 md:order-1"
                 : "order-3 md:order-3";
-          const rankLabel =
+const rankLabel =
             rank === 1 ? "Champion" : rank === 2 ? "Runner-up" : "Third Place";
           return (
             <div
@@ -366,11 +366,11 @@ const Leaderboard = () => {
       </div>
     );
   };
-  const renderRemainingRanks = (
+const renderRemainingRanks = (
     leaders: LeaderboardUser[],
     section: "ccg" | "tcg",
   ) => {
-    const remaining = leaders.slice(3, 11);
+const remaining = leaders.slice(3, 11);
     return (
       <div
         className={`mt-5 border-t pt-5 ${
@@ -382,12 +382,12 @@ const Leaderboard = () => {
             isLightMode ? "text-zinc-500" : "text-zinc-400"
           }`}
         >
-          The chase · Ranks 4–7
+          The chase Â· Ranks 4â€“7
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {remaining.map((user, index) => {
-            const rank = index + 4;
-            const { avatar, verification } = getProfileAssets(user);
+const rank = index + 4;
+const { avatar, verification } = getProfileAssets(user);
             return (
               <div
                 key={`${section}-${user.id}`}
@@ -448,7 +448,7 @@ const Leaderboard = () => {
       </div>
     );
   };
-  const renderLeaderboardSection = (
+const renderLeaderboardSection = (
     title: string,
     subtitle: string,
     leaders: LeaderboardUser[],
@@ -651,7 +651,7 @@ const Leaderboard = () => {
                         : "border-white/10 bg-white/[0.05] text-zinc-300"
                     }`}
                   >
-                    Top 7 CCG · Top 7 TCG
+                    Top 7 CCG Â· Top 7 TCG
                   </div>
                 </div>
               </div>
@@ -688,7 +688,7 @@ const Leaderboard = () => {
                   isLightMode ? "text-zinc-500" : "text-zinc-400"
                 }`}
               >
-                Loading leaderboard…
+                Loading leaderboardâ€¦
               </div>
             </div>
           ) : (

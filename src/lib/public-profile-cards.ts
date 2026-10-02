@@ -20,7 +20,6 @@ export function usePublicProfileCards(userId?: string) {
     }
     const load = async () => {
       setLoading(true);
-      // ISO
       const generatedSets = [
         {
           id: "1",
@@ -63,6 +62,21 @@ export function usePublicProfileCards(userId?: string) {
             ZR: 14,
             SC: 7,
             SZR: 3,
+          },
+        },
+        {
+          id: "13",
+          rarities: {
+            R: 30,
+            SR: 20,
+            SSR: 26,
+            HR: 30,
+            UR: 16,
+            LSR: 16,
+            SGR: 8,
+            ZR: 7,
+            SC: 7,
+            SZR: 2,
           },
         },
         {
@@ -265,7 +279,6 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       }
-      // Fantasy Wonderland (FW)
       const fwProgress = progressMap["FW"] || {};
       const FW_STRUCTURE = [
         { prefix: "BP01C", count: 48 },
@@ -308,7 +321,6 @@ export function usePublicProfileCards(userId?: string) {
           }
         }
       });
-      // Discord (Set 12)
       const discordProgress = progressMap["12"] || {};
       const DISCORD_STRUCTURE = [
         { prefix: "BP02-C", count: 48 },
@@ -349,7 +361,6 @@ export function usePublicProfileCards(userId?: string) {
           }
         }
       });
-      // Nightmare Night (Set 14)
       const nightmareNightProgress = progressMap["14"] || {};
       const nightmareNightKeys = [
         ...Array.from(
@@ -423,7 +434,6 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       });
-      // Everything else (Rainbow, Fun, Star, Promos, etc.)
       (collection ?? []).forEach((row: any) => {
         const setId = String(row.set_id);
         if (
@@ -431,6 +441,7 @@ export function usePublicProfileCards(userId?: string) {
             "1",
             "2",
             "3",
+            "13",
             "4",
             "5",
             "6",
@@ -460,7 +471,6 @@ export function usePublicProfileCards(userId?: string) {
           }
         });
       });
-      // Wishlist
       const { data: wishlist } = await supabase
         .from("wishlists")
         .select("card_key")
@@ -472,7 +482,6 @@ export function usePublicProfileCards(userId?: string) {
           card_key,
         };
       });
-      // Trades
       const { data: trades } = await supabase
         .from("card_market_listings")
         .select("set_id, card_key")

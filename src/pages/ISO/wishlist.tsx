@@ -7,7 +7,7 @@ type Card = {
   set_id: string;
   card_key: string;
 };
-const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11"]);
+const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11", "13"]);
 
 const getCardNumber = (cardKey: string) => {
   const match = cardKey.match(/(\d+)$/);

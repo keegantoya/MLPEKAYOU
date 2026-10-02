@@ -1,4 +1,4 @@
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -67,10 +67,10 @@ const sets = [
       R: 30,
       SR: 14,
       ST: 20,
-      TR: 12,
-      TGR: 8,
       SSR: 15,
       FR: 18,
+      TR: 12,
+      TGR: 8,
       UR: 19,
       USR: 8,
       XR: 8,
@@ -123,6 +123,24 @@ const sets = [
       ZR: 14,
       SC: 7,
       SZR: 3,
+    },
+  },
+  {
+    id: "13",
+    name: "Moon: Fourth Edition",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 26,
+      HR: 30,
+      UR: 16,
+      LSR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      SZR: 2,
     },
   },
   {
@@ -204,11 +222,13 @@ const binderSets = {
     { id: "11", label: "Fun Moments Three" },
     { id: "4", label: "Star One" },
     { id: "6", label: "Rainbow Two" },
+    { id: "13", label: "Moon Four" },
   ],
   Moon: [
     { id: "1", label: "Moon One" },
     { id: "2", label: "Moon Two" },
     { id: "3", label: "Moon Three" },
+    { id: "13", label: "Moon Four" },
   ],
   Rainbow: [
     { id: "5", label: "Rainbow One" },
@@ -366,7 +386,7 @@ export default function MyCollectionBinder() {
     };
     load();
   }, [viewingUserId]);
-  const defaultCCGOrder = ["1", "5", "7", "2", "8", "3", "11", "4", "6"];
+  const defaultCCGOrder = ["1", "5", "7", "2", "8", "3", "11", "4", "6", "13"];
   const [hiddenCCGSets, setHiddenCCGSets] = useState<string[]>([]);
   const visibleCCGOrder = defaultCCGOrder.filter(
     (id) => !hiddenCCGSets.includes(id),
@@ -382,6 +402,7 @@ export default function MyCollectionBinder() {
     "1": "1",
     "2": "2",
     "3": "3",
+    "13": "13",
     "4": "4",
     "5": "5",
     "6": "6",
@@ -553,7 +574,7 @@ export default function MyCollectionBinder() {
       const rarityMatch = key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)/);
       return {
         rarity: rarityMatch
-          ? `${rarityMatch[1] ? "※" : ""}${rarityMatch[2]}`
+          ? `${rarityMatch[1] ? "â€»" : ""}${rarityMatch[2]}`
           : "",
         number: Number(key.match(/^P?BP03-[A-Z]+(\d{2})/)?.[1] || 0),
         key,
@@ -575,7 +596,6 @@ export default function MyCollectionBinder() {
     cards = BONUS_STRUCTURE.flatMap(({ prefix, count }) =>
       Array.from({ length: count }, (_, i) => {
         let actualIndex = i + 1;
-        // PER cards are numbered 07–18
         if (prefix === "SD01PER") {
           actualIndex += 6;
         }
@@ -604,7 +624,7 @@ export default function MyCollectionBinder() {
             key: `PR-${number}`,
             image:
               number === 6
-                ? "" // No PR006 image exists
+                ? ""
                 : cardImagePaths.ccgPromo(String(number).padStart(3, "0")),
           }))
         : Object.entries(selectedSet.rarities).flatMap(([rarity, count]) =>
@@ -615,7 +635,9 @@ export default function MyCollectionBinder() {
                 number: i + 1,
                 key: `${rarity}-${i + 1}`,
                 image:
-                  selectedSet.id === "3" && rarity === "SZR" && i === 0
+                  selectedSet.id === "13"
+                    ? getMoonFourFront(`${rarity}-${i + 1}`)
+                    : selectedSet.id === "3" && rarity === "SZR" && i === 0
                     ? cardImagePaths.fixed.cardBacksThirdMoonEditionBacksM3SZRBINDERVER
                     : cardImagePaths.ccg(selectedSet.folder, selectedSet.prefix, fileRarity, String(
                         i + 1,
@@ -624,7 +646,6 @@ export default function MyCollectionBinder() {
             }),
           );
   }
-  // Build one continuous CCG binder
   if (selectedBinder === "CCG") {
     const combinedCards: any[] = [];
     visibleCCGOrder.forEach((setId) => {
@@ -640,7 +661,9 @@ export default function MyCollectionBinder() {
             progressKey: `${rarity}-${i + 1}`,
             setId: set.id,
             image:
-              set.id === "3" && rarity === "SZR" && i === 0
+              set.id === "13"
+                ? getMoonFourFront(`${rarity}-${i + 1}`)
+                : set.id === "3" && rarity === "SZR" && i === 0
                 ? cardImagePaths.fixed.cardBacksThirdMoonEditionBacksM3SZRBINDERVER
                 : cardImagePaths.ccg(set.folder, set.prefix, fileRarity, String(
                     i + 1,
@@ -670,6 +693,10 @@ export default function MyCollectionBinder() {
           visibleCCGOrder.indexOf(a.card.setId) -
           visibleCCGOrder.indexOf(b.card.setId);
         if (setDifference !== 0) return setDifference;
+        if (a.card.setId === "6" && rarityOrder.length === 0) {
+          const rainbowTwoOrder = Object.keys(sets.find((set) => set.id === "6")!.rarities);
+          return rainbowTwoOrder.indexOf(a.card.rarity) - rainbowTwoOrder.indexOf(b.card.rarity) || a.originalIndex - b.originalIndex;
+        }
       }
       const rarityDifference =
         (rarityRank.get(a.card.rarity) ?? Number.MAX_SAFE_INTEGER) -
@@ -713,15 +740,12 @@ export default function MyCollectionBinder() {
     "3x3": { cols: 3, rows: 3, width: 360 },
     "4x3": { cols: 4, rows: 3, width: 480 },
     "4x4": { cols: 4, rows: 4, width: 480 },
-    // PC-only high-density binder view.
     "6x6": { cols: 6, rows: 6, width: 960 },
   };
   const { cols, rows, width } = layoutMap[layout];
   const slotsPerPage = cols * rows;
-  // Count the empty sleeves before the first card so the binder always ends on a complete spread.
   const totalSleeves = startSlot + cards.length;
   const totalPages = Math.ceil(totalSleeves / slotsPerPage);
-  // Always render complete left/right spreads.
   const totalSpreads = Math.max(1, Math.ceil(totalPages / 2));
   const getCCGSpreadForSet = (setId: string) => {
     let cardsBefore = 0;
@@ -763,9 +787,6 @@ export default function MyCollectionBinder() {
   const showClosedBinder = hidden;
   const renderPage = (physicalPageStart: number) => {
     return Array.from({ length: slotsPerPage }).map((_, slot) => {
-      // physicalPageStart is the global slot represented by the first sleeve on this page.
-      // Physical reading order: right page, left page, then the next spread.
-      // startSlot is also a global slot.
       const globalSlot = physicalPageStart + slot;
       const cardIndex = globalSlot - startSlot;
       if (cardIndex < 0 || cardIndex >= cards.length) {
@@ -842,7 +863,9 @@ export default function MyCollectionBinder() {
               willChange: "transform",
               transform: landscape
                 ? "translate(-50%, -50%) rotate(-90deg) scale(1.4)"
-                : shouldZoomCard
+                : String(selectedBinder === "CCG" ? card.setId : selectedSet.id) === "13"
+                  ? "scale(1.035)"
+                  : shouldZoomCard
                   ? "scale(1.06)"
                   : "scale(1)",
             }}
@@ -1223,7 +1246,6 @@ export default function MyCollectionBinder() {
               <div className="rounded-xl flex min-h-[420px] items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-50 dark:bg-[#0b0d0d] p-8">
                 <div className="max-w-md text-center">
                   <div className="rounded-xl mx-auto mb-3 flex h-12 w-12 items-center justify-center border border-[#FFD400]/20 bg-[#FFD400]/[0.04] font-mono text-lg text-[#725700] dark:text-[#725700] dark:text-[#FFD400]/55">
-                    //
                   </div>
                   <div className="font-['Oxanium'] text-sm font-bold uppercase tracking-[0.12em] text-zinc-600 dark:text-zinc-700 dark:text-white/55">
                     SET LOCKED
@@ -1434,7 +1456,7 @@ export default function MyCollectionBinder() {
                 aria-label="Close customization"
                 className="rounded-xl flex h-11 w-11 shrink-0 items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] font-mono text-xs text-zinc-600 dark:text-white/50 transition hover:border-[#FFD400]/50 hover:text-[#725700] dark:text-[#FFD400]"
               >
-                ✕
+                âœ•
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
@@ -1653,7 +1675,6 @@ export default function MyCollectionBinder() {
                                 : previewLayout === "4x4"
                                   ? 16
                                   : 36;
-                        // Exact same GLOBAL SLOT mapping used by the binder: LEFT = first block of slots; RIGHT = second block of slots; Slot 1 = global slot 0.
                         const offset = side === "right" ? pageSize : 0;
                         const previewCols =
                           previewLayout === "2x2"
@@ -1705,7 +1726,7 @@ export default function MyCollectionBinder() {
                                       className="pointer-events-none text-[15px] leading-none text-[#9A7200]"
                                       aria-hidden="true"
                                     >
-                                      ★
+                                      â˜…
                                     </span>
                                   )}
                                 </button>
@@ -1719,7 +1740,7 @@ export default function MyCollectionBinder() {
                 </div>
                 <div className="mt-3 flex items-start justify-center gap-2 px-2 text-center text-xs leading-relaxed">
                   <span className="shrink-0 text-[#9A7200]" aria-hidden="true">
-                    ★
+                    â˜…
                   </span>
                   <span
                     className={isLightMode ? "text-zinc-600" : "text-zinc-400"}

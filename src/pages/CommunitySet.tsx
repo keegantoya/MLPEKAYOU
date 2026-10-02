@@ -8,6 +8,7 @@ const sets: Record<string, { name: string; total: number }> = {
   "1": { name: "Eternal Moon First Edition", total: 186 },
   "2": { name: "Eternal Moon Second Edition", total: 189 },
   "3": { name: "Eternal Moon Third Edition", total: 290 },
+  "13": { name: "Eternal Moon Fourth Edition", total: 162 },
   "4": { name: "Star First Edition", total: 105 },
   "5": { name: "Rainbow First Edition", total: 146 },
   "6": { name: "Rainbow Second Edition", total: 170 },
@@ -157,6 +158,13 @@ const isoSets = [
     },
   },
   {
+    id: "13",
+    name: "Eternal Moon: Fourth Edition",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
+  },
+  {
     id: "11",
     name: "Fun Moments: Second Edition",
     folder: "fun-moments-two",
@@ -245,25 +253,59 @@ const isoSets = [
   },
 ];
 const forcedStillCollecting = [""];
-const manualPlacements: Record<string, string[]> = {
-  "2": ["Jacob", "Mari", "Silly Pony", "Keegan (Owner)"],
-  "8": ["Mari", "Keegan", "Jacob"],
+const compareFinishers = (a: any, b: any) => {
+  const timestamp = (user: any) => {
+    const recorded = Date.parse(user.completedAt || "");
+    if (Number.isFinite(recorded)) return recorded;
+    const fallback = Date.parse(user.updated || "");
+    return Number.isFinite(fallback) ? fallback : Number.POSITIVE_INFINITY;
+  };
+  const first = timestamp(a);
+  const second = timestamp(b);
+  if (first !== second) return first < second ? -1 : 1;
+  return String(a.id).localeCompare(String(b.id));
 };
 type CommunityQueryResult = { data: any[] | null; error: { message: string } | null };
-async function readCommunityPages(query: (from: number, to: number) => PromiseLike<CommunityQueryResult>) {
-  const rows: any[] = [];
-  const pageSize = 500;
+async function readCommunityPages(query: (from: number, to: number) => PromiseLike<CommunityQueryResult>, onProgress?: (count: number) => void) {
+const rows: any[] = [];
+const pageSize = 500;
   for (let from = 0; ; from += pageSize) {
-    const { data, error } = await query(from, from + pageSize - 1);
+const { data, error } = await query(from, from + pageSize - 1);
     if (error) throw new Error(error.message);
     rows.push(...(data || []));
+    onProgress?.(rows.length);
     if (!data || data.length < pageSize) return rows;
   }
+}
+async function readCommunityBatches(
+  ids: string[],
+  query: (ids: string[]) => PromiseLike<CommunityQueryResult>,
+  isCancelled: () => boolean,
+  onProgress?: (count: number) => void,
+) {
+  const rows: any[] = [];
+  let offset = 0;
+  let processed = 0;
+  await Promise.all(Array.from({ length: Math.min(4, Math.ceil(ids.length / 100)) }, async () => {
+    while (offset < ids.length && !isCancelled()) {
+      const start = offset;
+      offset += 100;
+      const { data, error } = await query(ids.slice(start, start + 100));
+      if (error) throw new Error(error.message);
+      rows.push(...(data || []));
+      processed += Math.min(100, ids.length - start);
+      onProgress?.(processed);
+    }
+  }));
+  return rows;
 }
 const CommunitySet = () => {
 const { id } = useParams();
 const navigate = useNavigate();
 const [isLoading, setIsLoading] = useState(true);
+const [loadingStage, setLoadingStage] = useState(0);
+const [loadingDetail, setLoadingDetail] = useState("Connecting to your community...");
+const [loadingSeconds, setLoadingSeconds] = useState(0);
 const [loadError, setLoadError] = useState<string | null>(null);
 const [reloadVersion, setReloadVersion] = useState(0);
 const [collectors, setCollectors] = useState<any[]>([]);
@@ -295,43 +337,59 @@ const observer = new MutationObserver(syncTheme);
     window.removeEventListener("themechange", syncTheme);
   };
 }, []);
+useEffect(() => {
+  if (!isLoading) return;
+  const started = Date.now();
+  setLoadingSeconds(0);
+  const timer = window.setInterval(() => setLoadingSeconds(Math.floor((Date.now() - started) / 1000)), 1000);
+  return () => window.clearInterval(timer);
+}, [isLoading, id, reloadVersion]);
 const set = id ? sets[id] : undefined;
   useEffect(() => {
     if (!id || !set) return;
 let cancelled = false;
 setIsLoading(true);
+setLoadingStage(0);
+setLoadingDetail("Connecting to your community...");
+setShowAllFinishers(false);
 setLoadError(null);
 setCollectors([]);
 setCompleted([]);
 const load = async () => {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) throw new Error(sessionError.message);
   if (!session?.user) throw new Error("Please log in to view community collections.");
-  const databaseSetId = id === "friendshipsbegin" ? "SD" : id === "fantasywonderland" ? "FW" : id === "discord" ? "12" : id;
-  const progress = await readCommunityPages((from, to) => supabase
+if (cancelled) return;
+setLoadingStage(1);
+setLoadingDetail("Reading collections for this set...");
+const databaseSetId = id === "friendshipsbegin" ? "SD" : id === "fantasywonderland" ? "FW" : id === "discord" ? "12" : id;
+const [progress, excludedUsers] = await Promise.all([
+  readCommunityPages((from, to) => supabase
     .from("collection_progress_raw")
-    .select("user_id, progress, updated_at")
+    .select("user_id, progress, updated_at, completed_at")
     .eq("set_id", databaseSetId)
     .order("user_id")
-    .range(from, to));
-  if (cancelled) return;
-  const progressUserIds: string[] = Array.from(new Set(progress.map(row => String(row.user_id))));
-  if (progressUserIds.length === 0) return;
-  const profiles: any[] = [];
-  const tradingProfiles: any[] = [];
-  // Keep GET URLs small instead of sending thousands of UUIDs in one request.
-  for (let offset = 0; offset < progressUserIds.length; offset += 100) {
-    if (cancelled) return;
-    const ids = progressUserIds.slice(offset, offset + 100);
-    const [profileResult, tradingResult] = await Promise.all([
-      supabase.from("profiles").select("id, username, avatar_url").in("id", ids),
-      supabase.from("trading_profiles").select("user_id, discord_username").in("user_id", ids),
-    ]);
-    if (profileResult.error) throw new Error(profileResult.error.message);
-    if (tradingResult.error) throw new Error(tradingResult.error.message);
-    profiles.push(...(profileResult.data || []));
-    tradingProfiles.push(...(tradingResult.data || []));
-  }
+    .range(from, to), count => {
+      if (!cancelled) setLoadingDetail(`${count.toLocaleString()} collections read...`);
+    }),
+  readCommunityPages((from, to) => supabase
+    .from("leaderboard_exclusions")
+    .select("user_id").order("user_id").range(from, to)),
+]);
+if (cancelled) return;
+const excludedUserIds = new Set(excludedUsers.map(row => String(row.user_id)));
+const progressUserIds = Array.from(new Set(progress
+  .filter(row => !excludedUserIds.has(String(row.user_id)))
+  .map(row => String(row.user_id))));
+if (progressUserIds.length === 0) return;
+setLoadingStage(2);
+setLoadingDetail(`Checking ${progressUserIds.length.toLocaleString()} collectors...`);
+const tradingProfiles = await readCommunityBatches(progressUserIds,
+  ids => supabase.from("trading_profiles").select("user_id, discord_username").in("user_id", ids),
+  () => cancelled, count => {
+    if (!cancelled) setLoadingDetail(`${count.toLocaleString()} of ${progressUserIds.length.toLocaleString()} collectors checked...`);
+  });
+if (cancelled) return;
 const eligibleUserIds = new Set(
         (tradingProfiles || [])
           .filter(
@@ -341,20 +399,6 @@ const eligibleUserIds = new Set(
           )
           .map((p: any) => p.user_id)
       );
-// Use the centralized leaderboard exclusion list.
-const excludedUsers = await readCommunityPages((from, to) => supabase
-  .from("leaderboard_exclusions").select("user_id").order("user_id").range(from, to));
-if (cancelled) return;
-const excludedUserIds = new Set(
-        (excludedUsers || []).map(
-          (user: any) => user.user_id
-        )
-      );
-      if (!progress || !profiles) return;
-const profileMap: Record<string, any> = {};
-      profiles.forEach((p: any) => {
-        profileMap[p.id] = p;
-      });
 const active: any[] = [];
 const finished: any[] = [];
       progress.forEach((row: any) => {
@@ -462,13 +506,11 @@ const isoSet = isoSets.find(
         }
 const user = {
   id: row.user_id,
-  username:
-    profileMap[row.user_id]?.username ||
-    "Anonymous",
-  avatar_url:
-    profileMap[row.user_id]?.avatar_url,
+  username: "Anonymous",
+  avatar_url: undefined as string | undefined,
   owned,
   updated: row.updated_at,
+  completedAt: row.completed_at,
 };
 const actualTotal = set.total;
         if (owned === actualTotal) {
@@ -477,6 +519,22 @@ const actualTotal = set.total;
           active.push(user);
         }
       });
+      const hasForcedCollectors = forcedStillCollecting.some(name => name.trim() !== "");
+      const activeCandidates = hasForcedCollectors ? active : [...active].sort((a, b) => b.owned - a.owned).slice(0, 10);
+      const finishedCandidates = [...finished].sort(compareFinishers).slice(0, 10);
+      const visibleIds = Array.from(new Set([...activeCandidates, ...finishedCandidates].map(user => String(user.id))));
+      setLoadingStage(3);
+      setLoadingDetail("Preparing finishers and top collectors...");
+      const profiles = await readCommunityBatches(visibleIds,
+        ids => supabase.from("profiles").select("id, username, avatar_url").in("id", ids),
+        () => cancelled);
+      if (cancelled) return;
+      const profileMap = new Map(profiles.map(profile => [String(profile.id), profile]));
+      for (const user of [...active, ...finished]) {
+        const profile = profileMap.get(String(user.id));
+        user.username = profile?.username || "Anonymous";
+        user.avatar_url = profile?.avatar_url;
+      }
       active.sort((a, b) => {
         if (
           forcedStillCollecting.includes(a.username)
@@ -488,36 +546,7 @@ const actualTotal = set.total;
           return 1;
         return b.owned - a.owned;
       });
-      if (manualPlacements[id || ""]) {
-const manualOrder =
-          manualPlacements[id || ""];
-        finished.sort((a, b) => {
-const aIndex = manualOrder.indexOf(
-            a.username
-          );
-const bIndex = manualOrder.indexOf(
-            b.username
-          );
-          if (
-            aIndex !== -1 &&
-            bIndex !== -1
-          ) {
-            return aIndex - bIndex;
-          }
-          if (aIndex !== -1) return -1;
-          if (bIndex !== -1) return 1;
-          return (
-            new Date(a.updated).getTime() -
-            new Date(b.updated).getTime()
-          );
-        });
-      } else {
-        finished.sort(
-          (a, b) =>
-            new Date(a.updated).getTime() -
-            new Date(b.updated).getTime()
-        );
-      }
+      finished.sort(compareFinishers);
       if (cancelled) return;
       setCollectors(active.slice(0, 10));
       setCompleted(finished.slice(0, 10));
@@ -533,7 +562,7 @@ const bIndex = manualOrder.indexOf(
   if (!set) return null;
 const completionPercentage = (owned: number) =>
   Math.min(100, (owned / set.total) * 100);
-const finisherAward = { icon: "🏆", label: "Finisher" };
+const finisherAward = { label: "Finisher" };
 return (
   <div
     className={`min-h-screen pb-20 transition-colors ${
@@ -589,10 +618,37 @@ return (
           </div>
         </div>
       </section>
-      {(isLoading || loadError) && (
-        <div role={loadError ? "alert" : "status"} className="mb-4 rounded-2xl border border-zinc-400/20 p-6 text-center">
-          <p>{loadError || "Loading community collections…"}</p>
-          {loadError && <button type="button" onClick={() => setReloadVersion(value => value + 1)} className="mt-3 rounded-full bg-[#FFD54A] px-5 py-2 font-semibold text-zinc-900">Try again</button>}
+      {isLoading && !loadError && (
+        <section aria-label="Loading community rankings" aria-busy="true" className={`mb-4 overflow-hidden rounded-[26px] border px-5 py-8 sm:py-10 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
+          <div className="mx-auto max-w-lg text-center">
+            <div className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center">
+              <div className={`absolute inset-0 rounded-full border-2 ${isLightMode ? "border-[#c29a00]/15" : "border-[#FFD54A]/15"}`} />
+              <div className={`absolute inset-0 animate-spin rounded-full border-2 border-transparent motion-reduce:animate-none ${isLightMode ? "border-t-[#a17c00] border-r-[#a17c00]/40" : "border-t-[#FFD54A] border-r-[#FFD54A]/40"}`} />
+              <div className={`flex h-14 w-14 items-center justify-center rounded-full ${isLightMode ? "bg-[#fff3b8] text-[#806100]" : "bg-[#FFD54A]/10 text-[#FFD54A]"}`}>
+                <Trophy size={25} className="animate-pulse motion-reduce:animate-none" />
+              </div>
+            </div>
+            <h2 className="text-xl font-semibold">Getting the community ready</h2>
+            <p role="status" aria-live="polite" aria-atomic="true" className={`mt-2 min-h-6 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>{loadingDetail}</p>
+            <ol className="mt-6 grid grid-cols-4 gap-2 text-xs sm:gap-3 sm:text-sm">
+              {["Connect", "Collections", "Eligibility", "Rankings"].map((label, index) => (
+                <li key={label} aria-current={index === loadingStage ? "step" : undefined} className={index <= loadingStage ? isLightMode ? "text-[#806100]" : "text-[#E8CA55]" : isLightMode ? "text-zinc-400" : "text-zinc-600"}>
+                  <div className={`mb-2 h-1.5 rounded-full transition-colors duration-300 ${index < loadingStage ? "bg-[#D2AD28]" : index === loadingStage ? "animate-pulse bg-[#D2AD28] motion-reduce:animate-none" : isLightMode ? "bg-zinc-200" : "bg-white/[0.08]"}`} />
+                  {label}
+                </li>
+              ))}
+            </ol>
+            <p className={`mt-5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
+              {loadingSeconds >= 12 ? "Larger sets can take a little longer. Still loading - no need to refresh." : "Finding finishers and collectors closest to completing this set."}
+              {loadingSeconds >= 5 && <span className="ml-2 tabular-nums" aria-hidden="true">{loadingSeconds}s</span>}
+            </p>
+          </div>
+        </section>
+      )}
+      {loadError && (
+        <div role="alert" className="mb-4 rounded-2xl border border-zinc-400/20 p-6 text-center">
+          <p>{loadError}</p>
+          <button type="button" onClick={() => setReloadVersion(value => value + 1)} className="mt-3 rounded-full bg-[#FFD54A] px-5 py-2 font-semibold text-zinc-900">Try again</button>
         </div>
       )}
       <div hidden={isLoading || !!loadError}>
@@ -661,7 +717,7 @@ const award = finisherAward;
                           aria-label={award.label}
                           title={award.label}
                         >
-                          {award.icon}
+                          <Trophy size={22} className="text-[#c29a00]" aria-hidden="true" />
                         </span>
                         <CardImage
                           src={assets.avatar}
@@ -832,7 +888,7 @@ const percentage = completionPercentage(user.owned);
                             >
                               <div
                                 className="h-full rounded-full bg-[#D2AD28]"
-                                style={{ width: `${percentage}%` }}
+                                style={{ width: `${percentage.toFixed(1)}%` }}
                               />
                             </div>
                             <span
@@ -840,7 +896,7 @@ const percentage = completionPercentage(user.owned);
                                 isLightMode ? "text-zinc-600" : "text-zinc-300"
                               }`}
                             >
-                              {percentage}%
+                              {percentage.toFixed(1)}%
                             </span>
                           </div>
                           <div
