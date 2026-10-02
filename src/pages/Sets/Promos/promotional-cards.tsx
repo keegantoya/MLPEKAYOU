@@ -14,7 +14,7 @@ const CCG_PROMO_SOURCES: Record<string, string> = {
   "PR-4": "Fun Moments One Box",
   "PR-5": "Moon Two 12-Pack Box",
   "PR-7": "Rainbow Two Box",
-  "PR-14": "Moon Three 12-Pack Box",
+  "PR-14": "Moon Four 12-Pack Box",
   "PR-8": "San Diego Comic-Con 2026",
   "PR-9": "San Diego Comic-Con 2026",
   "PR-10": "San Diego Comic-Con 2026",
