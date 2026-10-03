@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -46,6 +47,10 @@ const OFFER_SET_ORDER = [
   "8",
   "11",
   "9",
+  "SD",
+  "FW",
+  "12",
+  "14",
   "tcgpromos",
 ];
 const CCG_PROMO_ORDER = ["PR-1", "PR-2", "PR-3", "PR-4", "PR-5", "PR-7", "PR-14", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13"];
@@ -1394,7 +1399,8 @@ const ExploreProfile = ({
         >
           <div className="relative shrink-0">
             <div className="absolute -inset-1 animate-pulse rounded-[20px] bg-[#FFD54A]/25" />
-            <CardImage
+            <ProfileAvatar
+              profile={user}
               src={avatar}
               alt={user?.username || "User"}
               className={`relative h-12 w-12 rounded-[17px] border object-cover sm:h-14 sm:w-14 sm:rounded-[19px] ${
@@ -1489,7 +1495,8 @@ const ExploreProfile = ({
             </div>
           </div>
           <div className="mt-4 grid grid-cols-[64px_minmax(0,1fr)] items-start gap-3 sm:flex sm:items-center sm:gap-4">
-            <CardImage
+            <ProfileAvatar
+              profile={user}
               src={avatar}
               alt={user?.username}
               className={`h-16 w-16 shrink-0 rounded-2xl border object-cover sm:h-20 sm:w-20 ${
@@ -1940,7 +1947,8 @@ const ExploreProfile = ({
                         );
                       })()}
                     <div className="flex items-center gap-3">
-                      <CardImage
+                      <ProfileAvatar
+                        profile={user}
                         src={avatar}
                         alt={user?.username}
                         className="h-11 w-11 rounded-xl object-cover"

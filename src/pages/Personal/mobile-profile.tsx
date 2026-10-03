@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -20,6 +21,7 @@ import {
   Boxes,
   Search,
   Images,
+  Sparkles,
   Newspaper,
 } from "lucide-react";
 const PUSH_PUBLIC_KEY =
@@ -85,7 +87,6 @@ const MobileProfile = () => {
   const [canReviewLGS, setCanReviewLGS] = useState(false);
   const [showLGSReview, setShowLGSReview] = useState(false);
   const [lgsAccess, setLgsAccess] = useState<string | null>(null);
-  //  Leaderboard self-ban
   const [leaderboardBanned, setLeaderboardBanned] = useState(false);
   const [manuallyBannedFromLeaderboard, setManuallyBannedFromLeaderboard] = useState(false);
   const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
@@ -570,7 +571,6 @@ const MobileProfile = () => {
             data: { session },
           } = await checkedProfileRequest(supabase.auth.getSession());
           if (!session?.user) return;
-          //  Total cards owned
           const { data: collection } = await checkedProfileRequest(
             supabase
               .from("collection_progress_raw")
@@ -588,7 +588,6 @@ const MobileProfile = () => {
                 (typeof value === "object" && value?.owned === true),
             ).length;
           });
-          //  Completed sets
           const { data: progress } = await checkedProfileRequest(
             supabase
               .from("collection_progress")
@@ -599,7 +598,6 @@ const MobileProfile = () => {
           const progressMap = new Map(
             (progress || []).map((row: any) => [String(row.set_id), row]),
           );
-          //  Main checklist sets only
           const sets = [
             {
               id: "1",
@@ -796,7 +794,6 @@ const MobileProfile = () => {
               completed++;
             }
           });
-          //  Fantasy Wonderland
           const { data: fwProgress } = await checkedProfileRequest(
             supabase
               .from("collection_progress_raw")
@@ -905,7 +902,7 @@ const MobileProfile = () => {
         },
         {
           title: "Report a Bug",
-          subtitle: "Tell us when something isn’t working",
+          subtitle: "Tell us when something isnâ€™t working",
           onClick: () => setShowBugReport(true),
           danger: true,
           icon: <Bug size={17} />,
@@ -973,7 +970,7 @@ const MobileProfile = () => {
           border-color: rgba(138, 106, 0, 0.28) !important;
         }
       `}</style>
-      {/* Header */}
+      
       <div
         className={`sticky top-0 z-20 backdrop-blur-md ${
           isLightMode ? "bg-[#f5f5f3]/98" : "bg-[#0d0f10]/98"
@@ -981,7 +978,7 @@ const MobileProfile = () => {
       >
         <div className="px-5 py-1"></div>
       </div>
-      {/* Profile Card */}
+      
       <div className="px-5 pt-6">
         <div
           className={`relative overflow-hidden rounded-3xl border bg-[#151718] ${
@@ -1034,7 +1031,7 @@ const MobileProfile = () => {
                 )}
               </div>
             )}
-            {/* PROFILE */}
+            
             <div
               className={
                 editingProfile
@@ -1044,7 +1041,8 @@ const MobileProfile = () => {
             >
               {!editingProfile && (
                 <div className="relative shrink-0">
-                  <CardImage
+                  <ProfileAvatar
+                    profile={profile}
                     src={avatar}
                     alt=""
                     className="h-24 w-24 rounded-2xl border border-white/[0.10] bg-[#191a1b] object-cover shadow-[0_8px_24px_rgba(0,0,0,.28)]"
@@ -1052,7 +1050,7 @@ const MobileProfile = () => {
                 </div>
               )}
               <div className={editingProfile ? "w-full" : "min-w-0 flex-1"}>
-                {/* IDENTITY */}
+                
                 {editingProfile ? (
                   <div
                     className={`rounded-2xl border p-4 ${
@@ -1184,9 +1182,9 @@ const MobileProfile = () => {
                 )}
               </div>
             </div>
-            {/* PROFILE ACTIONS */}
+            
             <div className="mt-4 grid grid-cols-3 gap-2">
-              {/* EDIT PROFILE */}
+              
               <button
                 className={`group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
                   editingProfile
@@ -1300,7 +1298,7 @@ const MobileProfile = () => {
                     : "Edit Names"}
                 </span>
               </button>
-              {/* CHANGE AVATAR */}
+              
               <button
                 onClick={() => navigate("/Personal/change-avatar")}
                 className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-3 py-2.5 text-xs font-semibold text-black transition-all duration-200 hover:bg-[#FFE27A] active:scale-[0.97]"
@@ -1308,7 +1306,15 @@ const MobileProfile = () => {
                 <Pencil size={14} className="relative" />
                 <span className="relative">Edit Avatar</span>
               </button>
-              {/* SHARE PROFILE */}
+              <button
+                type="button"
+                onClick={() => navigate("/Personal/change-avatar?tab=frames")}
+                className="group relative flex items-center justify-center gap-2 rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-3 py-2.5 text-xs font-semibold text-black transition-all duration-200 hover:bg-[#FFE27A] active:scale-[0.97]"
+              >
+                <Sparkles size={14} />
+                <span>Frames</span>
+              </button>
+              
               <button
                 onClick={() => {
                   const url = `https://www.mlpekayou.community/${encodeURIComponent(
@@ -1333,13 +1339,13 @@ const MobileProfile = () => {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 3000);
                 }}
-                className={`group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
+                className={`group relative col-span-3 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
                   copied
                     ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-400"
                     : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
                 }`}
               >
-                <span>{copied ? "✓ Copied" : "Share Profile"}</span>
+                <span>{copied ? "âœ“ Copied" : "Share Profile"}</span>
               </button>
             </div>
             <button
@@ -1390,7 +1396,7 @@ const MobileProfile = () => {
               {vacationMode ? "Your trade and sale cards are hidden. Turn this off to show them again." : "Hide your trade and sale cards until you return."}
             </p>
             {vacationError && <p role="alert" className="mt-2 text-center text-xs text-red-400">{vacationError}</p>}
-            {/* BIO */}
+            
             {profile?.bio && (
               <p className="mt-5 border-t border-zinc-800/80 pt-4 text-sm leading-relaxed text-zinc-400">
                 {profile.bio}
@@ -1399,7 +1405,7 @@ const MobileProfile = () => {
           </div>
         </div>
       </div>
-      {/* Offer Response Strikes */}
+      
       <div
         className={`relative mx-5 mt-4 overflow-hidden rounded-2xl border p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)] ${
           offerStrikeCount >= 3
@@ -1465,7 +1471,7 @@ const MobileProfile = () => {
           ))}
         </div>
       </div>
-      {/* QUICK ACCESS */}
+      
       <div className="mx-5 mt-4">
         <div className="mb-2.5 flex items-center justify-between px-1">
           <h3 className="text-sm font-semibold text-zinc-300">Quick Access</h3>
@@ -1548,8 +1554,8 @@ const MobileProfile = () => {
                 </span>
                 <span className="mt-0.5 block truncate text-sm text-zinc-300">
                   {lgsAccess === "ALLGS"
-                    ? "All stores · View-only access"
-                    : "Your store’s events and attendance"}
+                    ? "All stores Â· View-only access"
+                    : "Your storeâ€™s events and attendance"}
                 </span>
               </span>
               <ChevronRight
@@ -1583,11 +1589,11 @@ const MobileProfile = () => {
           )}
         </div>
       </div>
-      {/* Quick Stats */}
+      
       <div className="relative mt-3 grid grid-cols-2 gap-3 px-5">
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
           <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {profileLoads.stats ? stats.owned.toLocaleString() : "—"}
+            {profileLoads.stats ? stats.owned.toLocaleString() : "â€”"}
           </div>
           <div className="mt-1 text-xs font-medium text-zinc-400">
             Cards Owned
@@ -1595,7 +1601,7 @@ const MobileProfile = () => {
         </div>
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
           <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {profileLoads.stats ? stats.completed : "—"}
+            {profileLoads.stats ? stats.completed : "â€”"}
           </div>
           <div className="mt-1 text-xs font-medium text-zinc-400">
             Sets Mastered
@@ -1720,7 +1726,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      {/* LEADERBOARD BAN CONFIRMATION MODAL */}
+      
       {showLeaderboardBanConfirm && (
         <div
           className={`fixed inset-0 z-[115] flex items-center justify-center p-4 backdrop-blur-md ${
@@ -1781,7 +1787,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      {/* LEADERBOARD BAN INFORMATION MODAL */}
+      
       {showLeaderboardBanInfo && (
         <div
           className={`fixed inset-0 z-[110] flex items-center justify-center p-4 backdrop-blur-md ${
@@ -1841,7 +1847,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      {/* Menu Sections */}
+      
       <div className="mt-4 space-y-4 px-5">
         {menuSections.map((section) => (
           <div key={section.title}>
@@ -1943,7 +1949,7 @@ const MobileProfile = () => {
           </div>
         ))}
       </div>
-      {/* ACCOUNT / DANGER ZONE */}
+      
       <div className="mt-8 px-5">
         <div className="relative overflow-hidden rounded-2xl border border-red-500/20 bg-[#151718]">
           <div className="p-5">
@@ -1977,7 +1983,7 @@ const MobileProfile = () => {
           </div>
         </div>
       </div>
-      {/* Logout */}
+      
       <div className="mt-10 px-5">
         <button
           className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/[0.06] py-3.5 text-sm font-semibold text-red-400 transition-all duration-200 hover:border-red-500/40 hover:bg-red-500/10"
@@ -1990,7 +1996,7 @@ const MobileProfile = () => {
           Log Out
         </button>
       </div>
-      {/* REPORT A BUG POPUP */}
+      
       {showBugReport && (
         <div
           className={`fixed inset-0 z-[30000] flex items-center justify-center px-4 backdrop-blur-md ${
@@ -2066,7 +2072,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      {/* USERNAME TAKEN MODAL */}
+      
       {showUsernameTakenModal && (
         <div
           className={`fixed inset-0 z-[130] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`}
@@ -2098,7 +2104,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      {/* PUSH NOTIFICATIONS ENABLED MODAL */}
+      
       {showPushEnabledModal && (
         <div
           className={`fixed inset-0 z-[135] flex items-center justify-center p-4 backdrop-blur-md ${
@@ -2150,7 +2156,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      {/* ACCOUNT DELETION MODAL */}
+      
       {showDeletionModal && (
         <div
           className={`fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md ${
@@ -2283,7 +2289,7 @@ function ProfileLoadingScreen({
         {failed ? (
           <>
             <p className="profile-loading-title" role="alert">
-              We couldn’t load your profile
+              We couldnâ€™t load your profile
             </p>
             <p className="profile-loading-subtitle">Please try again.</p>
             <button

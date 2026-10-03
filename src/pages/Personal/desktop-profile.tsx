@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import { getMoonFourFront, cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
@@ -22,7 +23,7 @@ function ShowcaseImage({
   return failedSrc === src ? (
     <div
       role="img"
-      aria-label={`${alt} — coming soon`}
+      aria-label={`${alt} â€” coming soon`}
       className="absolute inset-0 flex items-center justify-center bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100"
     >
       <span className="px-2 text-center text-sm font-bold">COMING SOON</span>
@@ -930,7 +931,8 @@ export default function DesktopProfile() {
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 flex-1 items-center gap-4">
-              <CardImage
+              <ProfileAvatar
+                profile={profile}
                 src={avatar}
                 alt=""
                 className={`h-16 w-16 shrink-0 rounded-xl sm:h-20 sm:w-20 border object-cover ${isLightMode ? "border-black/10 bg-zinc-100" : "border-white/[0.10] bg-[#191a1b]"}`}
@@ -1028,7 +1030,7 @@ export default function DesktopProfile() {
                     >
                       Offer strikes
                       <span className="font-bold">{offerStrikeCount}/3</span>
-                      <span className="opacity-60">· {offerStrikeLabel}</span>
+                      <span className="opacity-60">Â· {offerStrikeLabel}</span>
                     </button>
                   </div>
                 )}
@@ -1096,6 +1098,13 @@ export default function DesktopProfile() {
                 Change Avatar
               </button>
               <button
+                type="button"
+                onClick={() => navigate("/Personal/change-avatar?tab=frames")}
+                className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:bg-[#c89d13]/25" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A] hover:bg-[#FFD54A]/20"}`}
+              >
+                Frames
+              </button>
+              <button
                 onClick={handleProfileEdit}
                 className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${editingProfile ? (isLightMode ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]" : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]") : isLightMode ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"}`}
               >
@@ -1115,9 +1124,9 @@ export default function DesktopProfile() {
           </div>
         <div className={`mt-4 grid grid-cols-3 gap-3 border-t pt-4 ${isLightMode ? "border-black/10" : "border-white/[0.08]"}`}>
           {[
-            [profileLoads.stats && !profileLoadErrors.stats ? stats.owned.toLocaleString() : "—", "Cards Owned"],
-            [profileLoads.stats && !profileLoadErrors.stats ? stats.completed.toLocaleString() : "—", "Sets Mastered"],
-            [profileLoads.stats && !profileLoadErrors.stats ? stats.friends.toLocaleString() : "—", "Friends"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.owned.toLocaleString() : "â€”", "Cards Owned"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.completed.toLocaleString() : "â€”", "Sets Mastered"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.friends.toLocaleString() : "â€”", "Friends"],
           ].map(([value, label]) => (
             <div
               key={label}
@@ -1301,7 +1310,7 @@ export default function DesktopProfile() {
               ))}
             </div>
           </div>
-          {!profileLoads.showcase && <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading your collected hits…</p>}
+          {!profileLoads.showcase && <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading your collected hitsâ€¦</p>}
           {profileLoadErrors.showcase && <p role="alert" className="py-8 text-center text-sm text-zinc-500">Your collected hits could not be loaded. Refresh to try again.</p>}
           {profileLoads.showcase && !profileLoadErrors.showcase && visibleShowcaseCards.length === 0 && <p className="py-10 text-center text-sm text-zinc-500">Your collected hits will appear here.</p>}
           <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
@@ -1615,7 +1624,7 @@ export default function DesktopProfile() {
           className={`fixed inset-0 z-[120] flex items-center justify-center p-6 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`}
           onClick={() => setSelectedShowcaseCard(null)}
         >
-          <button type="button" aria-label="Close card preview" onClick={() => setSelectedShowcaseCard(null)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-2xl text-white shadow-lg">×</button>
+          <button type="button" aria-label="Close card preview" onClick={() => setSelectedShowcaseCard(null)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-2xl text-white shadow-lg">Ã—</button>
           <button
             type="button"
             className={`relative overflow-hidden rounded-2xl shadow-2xl ${
@@ -1676,7 +1685,7 @@ function ProfileLoadingScreen({
         {failed ? (
           <>
             <p className="profile-loading-title" role="alert">
-              We couldn’t load your profile
+              We couldnâ€™t load your profile
             </p>
             <p className="profile-loading-subtitle">Please try again.</p>
             <button

@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -254,14 +255,14 @@ const isoSets = [
 ];
 const forcedStillCollecting = [""];
 const compareFinishers = (a: any, b: any) => {
-  const timestamp = (user: any) => {
-    const recorded = Date.parse(user.completedAt || "");
+const timestamp = (user: any) => {
+const recorded = Date.parse(user.completedAt || "");
     if (Number.isFinite(recorded)) return recorded;
-    const fallback = Date.parse(user.updated || "");
+const fallback = Date.parse(user.updated || "");
     return Number.isFinite(fallback) ? fallback : Number.POSITIVE_INFINITY;
   };
-  const first = timestamp(a);
-  const second = timestamp(b);
+const first = timestamp(a);
+const second = timestamp(b);
   if (first !== second) return first < second ? -1 : 1;
   return String(a.id).localeCompare(String(b.id));
 };
@@ -283,14 +284,14 @@ async function readCommunityBatches(
   isCancelled: () => boolean,
   onProgress?: (count: number) => void,
 ) {
-  const rows: any[] = [];
-  let offset = 0;
-  let processed = 0;
+const rows: any[] = [];
+let offset = 0;
+let processed = 0;
   await Promise.all(Array.from({ length: Math.min(4, Math.ceil(ids.length / 100)) }, async () => {
     while (offset < ids.length && !isCancelled()) {
-      const start = offset;
+const start = offset;
       offset += 100;
-      const { data, error } = await query(ids.slice(start, start + 100));
+const { data, error } = await query(ids.slice(start, start + 100));
       if (error) throw new Error(error.message);
       rows.push(...(data || []));
       processed += Math.min(100, ids.length - start);
@@ -339,9 +340,9 @@ const observer = new MutationObserver(syncTheme);
 }, []);
 useEffect(() => {
   if (!isLoading) return;
-  const started = Date.now();
+const started = Date.now();
   setLoadingSeconds(0);
-  const timer = window.setInterval(() => setLoadingSeconds(Math.floor((Date.now() - started) / 1000)), 1000);
+const timer = window.setInterval(() => setLoadingSeconds(Math.floor((Date.now() - started) / 1000)), 1000);
   return () => window.clearInterval(timer);
 }, [isLoading, id, reloadVersion]);
 const set = id ? sets[id] : undefined;
@@ -519,19 +520,19 @@ const actualTotal = set.total;
           active.push(user);
         }
       });
-      const hasForcedCollectors = forcedStillCollecting.some(name => name.trim() !== "");
-      const activeCandidates = hasForcedCollectors ? active : [...active].sort((a, b) => b.owned - a.owned).slice(0, 10);
-      const finishedCandidates = [...finished].sort(compareFinishers).slice(0, 10);
-      const visibleIds = Array.from(new Set([...activeCandidates, ...finishedCandidates].map(user => String(user.id))));
+const hasForcedCollectors = forcedStillCollecting.some(name => name.trim() !== "");
+const activeCandidates = hasForcedCollectors ? active : [...active].sort((a, b) => b.owned - a.owned).slice(0, 10);
+const finishedCandidates = [...finished].sort(compareFinishers).slice(0, 10);
+const visibleIds = Array.from(new Set([...activeCandidates, ...finishedCandidates].map(user => String(user.id))));
       setLoadingStage(3);
       setLoadingDetail("Preparing finishers and top collectors...");
-      const profiles = await readCommunityBatches(visibleIds,
+const profiles = await readCommunityBatches(visibleIds,
         ids => supabase.from("profiles").select("id, username, avatar_url").in("id", ids),
         () => cancelled);
       if (cancelled) return;
-      const profileMap = new Map(profiles.map(profile => [String(profile.id), profile]));
+const profileMap = new Map(profiles.map(profile => [String(profile.id), profile]));
       for (const user of [...active, ...finished]) {
-        const profile = profileMap.get(String(user.id));
+const profile = profileMap.get(String(user.id));
         user.username = profile?.username || "Anonymous";
         user.avatar_url = profile?.avatar_url;
       }
@@ -719,10 +720,11 @@ const award = finisherAward;
                         >
                           <Trophy size={22} className="text-[#c29a00]" aria-hidden="true" />
                         </span>
-                        <CardImage
+                        <ProfileAvatar
+                          profile={user}
                           src={assets.avatar}
                           alt={user.username}
-                          className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
+                          className={`h-11 w-11 shrink-0 rounded-[22%] border object-cover ${
                             isLightMode ? "border-black/10" : "border-white/15"
                           }`}
                         />
@@ -859,10 +861,11 @@ const percentage = completionPercentage(user.owned);
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <CardImage
+                        <ProfileAvatar
+                          profile={user}
                           src={assets.avatar}
                           alt={user.username}
-                          className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
+                          className={`h-11 w-11 shrink-0 rounded-[22%] border object-cover ${
                             isLightMode ? "border-black/10" : "border-white/15"
                           }`}
                         />

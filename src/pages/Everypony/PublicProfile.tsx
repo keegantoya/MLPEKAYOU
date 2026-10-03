@@ -1,4 +1,5 @@
 import CardImage from "@/components/CardImage";
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -468,8 +469,8 @@ const renderRarityButtons = () => rarityTabs.length > 0 ? (
 ) : null;
 const compareCards = (a: any, b: any) => {
   if (String(a.set_id) === "9" && String(b.set_id) === "9") {
-    const order = ["PR-1", "PR-2", "PR-3", "PR-4", "PR-5", "PR-7", "PR-14", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13"];
-    const difference = order.indexOf(a.card_key) - order.indexOf(b.card_key);
+const order = ["PR-1", "PR-2", "PR-3", "PR-4", "PR-5", "PR-7", "PR-14", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13"];
+const difference = order.indexOf(a.card_key) - order.indexOf(b.card_key);
     if (difference !== 0) return difference;
   }
 const getNumber = (card: any) => {
@@ -531,7 +532,7 @@ const renderCard = (card: any) => (
                           <div className="absolute left-1.5 top-1.5 flex gap-1">
                             {card.is_for_trade && (
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">
-                                ⇄
+                                â‡„
                               </span>
                             )}
                             {card.is_for_sale && (
@@ -682,7 +683,7 @@ const modeLabel =
                     : "text-zinc-400 hover:bg-white/[0.06]"
                 }`}
               >
-                ×
+                Ã—
               </button>
             </div>
             <div className="flex min-w-0 flex-nowrap gap-2 overflow-x-auto p-3 sm:block sm:flex-1 sm:space-y-1 sm:overflow-x-hidden sm:overflow-y-auto">
@@ -734,7 +735,7 @@ const modeLabel =
                     : "text-zinc-400 hover:bg-white/[0.06]"
                 }`}
               >
-                ×
+                Ã—
               </button>
             </div>
             <div className="p-3 sm:p-6">
@@ -780,7 +781,9 @@ const modeLabel =
           <div className="h-0.5 bg-gradient-to-r from-[#D9B94A] via-[#F2DC87] to-transparent" />
           <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 lg:px-6">
             <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
-              <CardImage src={avatar} alt={profile?.username} className={`h-16 w-16 shrink-0 rounded-2xl border object-cover shadow-md ring-4 ring-[#D9B94A]/10 sm:h-20 sm:w-20 ${isLightMode ? "border-black/10" : "border-white/10"}`} />
+              <div className="flex h-[104px] w-[104px] shrink-0 items-center justify-center sm:h-32 sm:w-32">
+                <ProfileAvatar profile={profile} src={avatar} alt={profile?.username} className={`h-16 w-16 rounded-2xl border shadow-md sm:h-20 sm:w-20 ${isLightMode ? "border-black/10" : "border-white/10"}`} />
+              </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">{profile?.username}</h1>
@@ -825,7 +828,7 @@ const modeLabel =
                   <button
                     type="button"
                     onClick={() => {
-const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
+const url = `https\://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
                       if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(url);
                       } else {

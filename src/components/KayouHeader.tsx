@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
@@ -206,6 +207,7 @@ const KayouHeader = () => {
     const handleProfileUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<{
         avatar_url?: string;
+        avatar_frame?: string | null;
         username?: string;
       }>;
       const updates = customEvent.detail || {};
@@ -820,7 +822,7 @@ const KayouHeader = () => {
             : "0 10px 35px rgba(0,0,0,.45), inset 0 -1px 0 rgba(250,204,21,.10)",
         }}
       >
-        {/* DESKTOP HUD FRAME */}
+        
         <div
           className={`pointer-events-none absolute inset-x-0 bottom-0 hidden h-px bg-gradient-to-r from-transparent to-transparent sm:block ${
             isLightMode
@@ -840,7 +842,7 @@ const KayouHeader = () => {
         <div
           className="kayou-header-row relative flex w-full items-center justify-between px-2 sm:px-4"
         >
-          {/* LEFT SIDE */}
+          
           <div className="flex items-center gap-3 min-w-[70px]">
             {!user && (
               <Button
@@ -855,7 +857,7 @@ const KayouHeader = () => {
                 Create account
               </Button>
             )}
-            {/* MOBILE PROFILE / LOGIN */}
+            
             <div
               className="kayou-header-mobile-actions absolute left-3 flex -translate-y-1/2 items-center gap-1.5 sm:hidden"
             >
@@ -909,9 +911,9 @@ const KayouHeader = () => {
                 </>
               )}
             </div>
-            {/* DESKTOP DISCORD BUTTON */}
+            
             {user && (
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-5">
                 <Sheet modal={false} open={open} onOpenChange={setOpen}>
                   <SheetTrigger asChild>
                     <button
@@ -925,7 +927,8 @@ const KayouHeader = () => {
                             : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08] hover:shadow-[0_10px_28px_rgba(0,0,0,0.24)]"
                       }`}
                     >
-                      <CardImage
+                      <ProfileAvatar
+                        profile={profile}
                         src={avatarSrc || profileAvatar}
                         alt="avatar"
                         className={`relative z-10 h-12 w-12 rounded-2xl object-cover border transition-all duration-200 ${
@@ -961,7 +964,7 @@ const KayouHeader = () => {
                     }`}
                   >
                     <div className="flex h-full flex-col">
-                      {/* Profile Header */}
+                      
                       <div className="border-b border-white/10 px-5 py-5">
                         <div className="flex items-center gap-2">
                           <div className="min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-white">
@@ -977,7 +980,7 @@ const KayouHeader = () => {
                           )}
                         </div>
                       </div>
-                      {/* Menu Items */}
+                      
                       <div className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
                         <button
                           onClick={() => {
@@ -1065,7 +1068,7 @@ const KayouHeader = () => {
                           <span>ISO / Wishlist</span>
                         </button>
                       </div>
-                      {/* Footer */}
+                      
                       <div className="border-t border-white/10 p-3">
                         <div className="mb-2 flex items-center gap-2 px-1">
                           <button
@@ -1154,7 +1157,7 @@ const KayouHeader = () => {
               </div>
             )}
           </div>
-          {/* MOBILE CENTER LOGO */}
+          
           <CardImage
             src={
               isLightMode
@@ -1169,12 +1172,12 @@ const KayouHeader = () => {
               goHome();
             }}
           />
-          {/* CENTER LOGO + DESKTOP HUD NAV */}
+          
           <div className="absolute left-1/2 hidden sm:flex -translate-x-1/2 items-center">
             <div className="relative flex items-center">
-              {/* LEFT NAV SYSTEM */}
+              
               <div className="flex items-center gap-1.5">
-                {/* SHOP */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/support-mlpekayou")}
@@ -1194,7 +1197,7 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                {/* EXPLORE */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requireLogin("/explore")}
@@ -1214,7 +1217,7 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                {/* COLLECTIONS */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/collections")}
@@ -1234,7 +1237,7 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                {/* LEADERBOARD */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/leaderboard")}
@@ -1255,9 +1258,9 @@ const KayouHeader = () => {
                   </button>
                 </div>
               </div>
-              {/* CENTRAL LOGO CORE */}
+              
               <div className="relative mx-4 flex items-center">
-                {/* Left data rail */}
+                
                 <div className="mr-3 flex items-center gap-1">
                   <span className="h-px w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
                   <span className="h-1 w-1 bg-yellow-400 shadow-[0_0_7px_#facc15]" />
@@ -1280,15 +1283,15 @@ const KayouHeader = () => {
                     className="relative z-10 h-[42px] w-auto translate-y-[1px] scale-[1.9] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:translate-y-[1px] group-hover:scale-[1.96]"
                   />
                 </button>
-                {/* Right data rail */}
+                
                 <div className="ml-3 flex items-center gap-1">
                   <span className="h-1 w-1 bg-yellow-400 shadow-[0_0_7px_#facc15]" />
                   <span className="h-px w-8 bg-gradient-to-l from-transparent to-yellow-400/50" />
                 </div>
               </div>
-              {/* RIGHT NAV SYSTEM */}
+              
               <div className="flex items-center gap-1.5">
-                {/* FIRST FINISHERS */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/community")}
@@ -1308,7 +1311,7 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                {/* TRADING POST */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requireLogin("/trading-post")}
@@ -1328,7 +1331,7 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                {/* SELLING */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/selling")}
@@ -1348,7 +1351,7 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                {/* FAQ */}
+                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/faq")}
@@ -1371,7 +1374,7 @@ const KayouHeader = () => {
               </div>
             </div>
           </div>
-          {/* RIGHT SIDE */}
+          
           <div className="hidden sm:flex items-center gap-2 min-w-[40px]">
             {staffButtons}
             {user && (
@@ -1397,7 +1400,7 @@ const KayouHeader = () => {
             )}
           </div>
         </div>
-        {/* MOBILE FAQ + SELLING BUTTONS */}
+        
         <div
           className="kayou-header-mobile-actions absolute right-3 flex -translate-y-1/2 items-center gap-1.5 sm:hidden"
         >
@@ -1460,7 +1463,7 @@ const KayouHeader = () => {
           onClose={() => setShowLGSReview(false)}
         />
       )}
-      {/* SIGNUP SUCCESS POPUP */}
+      
       {showSignupSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-md">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#17191b]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.06)]">
@@ -1498,7 +1501,7 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      {/* FORGOT PASSWORD POPUP */}
+      
       {showForgotPassword && (
         <div
           className="
@@ -1529,7 +1532,7 @@ const KayouHeader = () => {
       "
             onClick={(e) => e.stopPropagation()}
           >
-            {/* HEADER */}
+            
             <div className="relative border-b border-[#30363A] bg-[#0D1113] px-6 py-5">
               <span className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-[#E7C84B]" />
               <span className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-[#E7C84B]/50" />
@@ -1572,7 +1575,7 @@ const KayouHeader = () => {
                 ></button>
               </div>
             </div>
-            {/* CONTENT */}
+            
             <div className="p-6 sm:p-7">
               <div className="mb-6">
                 <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#E7C84B]">
@@ -1586,7 +1589,7 @@ const KayouHeader = () => {
                   account.
                 </p>
               </div>
-              {/* EMAIL */}
+              
               <div>
                 <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-300">
                   EMAIL ADDRESS
@@ -1626,7 +1629,7 @@ const KayouHeader = () => {
                   </div>
                 )}
               </div>
-              {/* GMAIL WARNING */}
+              
               <div className="mt-5 rounded-xl border border-[#E7C84B]/25 bg-[#E7C84B]/[0.05] p-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10">
@@ -1641,7 +1644,7 @@ const KayouHeader = () => {
                   </p>
                 </div>
               </div>
-              {/* ACTIONS */}
+              
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
@@ -1712,7 +1715,7 @@ const KayouHeader = () => {
                 </Button>
               </div>
             </div>
-            {/* FOOTER */}
+            
             <div className="border-t border-[#252A2D] bg-[#0D1113] px-6 py-3">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-400">
@@ -1727,7 +1730,7 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      {/* RESET SENT POPUP */}
+      
       {showResetSent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
@@ -1776,7 +1779,7 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      {/* REPORT A BUG POPUP */}
+      
       {showBugReport && (
         <div
           className="fixed inset-0 z-[30000] flex items-center justify-center bg-transparent px-4 backdrop-blur-md"
@@ -1873,7 +1876,7 @@ const KayouHeader = () => {
       )}
       {showLoginRequired && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#050707]/95 px-4 backdrop-blur-md">
-          {/* TECH GRID */}
+          
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.3]"
             style={{
@@ -1882,13 +1885,13 @@ const KayouHeader = () => {
               backgroundSize: "44px 44px",
             }}
           />
-          {/* SCANLINES */}
+          
           <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,.025)_4px)]" />
-          {/* AMBIENT GOLD */}
+          
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FFD54A]/[0.025] blur-3xl" />
-          {/* PANEL */}
+          
           <div className="relative w-[92%] max-w-lg overflow-hidden border border-white/[0.10] bg-[#080b0b] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
-            {/* TOP SYSTEM BAR */}
+            
             <div className="flex items-center justify-between border-b border-white/[0.07] bg-[#050707] px-4 py-2.5">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-red-400 shadow-[0_0_10px_rgba(248,113,113,.9)]" />
@@ -1900,21 +1903,21 @@ const KayouHeader = () => {
                 AUTH NODE
               </span>
             </div>
-            {/* CONTENT */}
+            
             <div className="relative p-6 sm:p-8">
-              {/* CORNER BRACKETS */}
+              
               <div className="pointer-events-none absolute left-0 top-0 h-10 w-10 border-l border-t border-[#FFD54A]/50" />
               <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r border-t border-[#FFD54A]/25" />
               <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-10 border-b border-l border-[#FFD54A]/20" />
               <div className="pointer-events-none absolute bottom-0 right-0 h-10 w-10 border-b border-r border-[#FFD54A]/50" />
-              {/* ACCESS CORE */}
+              
               <div className="mx-auto flex h-16 w-16 items-center justify-center border border-[#FFD54A]/30 bg-[#FFD54A]/[0.06] shadow-[0_0_30px_rgba(255,212,74,.08)]">
                 <div className="relative flex h-8 w-8 items-center justify-center border border-[#FFD54A]/70">
                   <span className="absolute h-2 w-2 bg-[#FFD54A] shadow-[0_0_12px_#FFD54A]" />
                   <span className="absolute inset-1 border border-[#FFD54A]/20" />
                 </div>
               </div>
-              {/* TITLE */}
+              
               <div className="mt-6 text-center">
                 <div className="font-mono text-[6px] font-bold uppercase tracking-[0.35em] text-zinc-400">
                   COLLECTION SYSTEM
@@ -1924,7 +1927,7 @@ const KayouHeader = () => {
                 </h2>
                 <div className="mx-auto mt-3 h-px w-20 bg-gradient-to-r from-transparent via-[#FFD54A]/70 to-transparent" />
               </div>
-              {/* MESSAGE */}
+              
               <div className="mt-6 border border-white/[0.07] bg-[#050707] px-5 py-4 text-center">
                 <div className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-300">
                   Authorization Required
@@ -1934,7 +1937,7 @@ const KayouHeader = () => {
                   account.
                 </p>
               </div>
-              {/* ACTION */}
+              
               <Button
                 onClick={() => setShowLoginRequired(false)}
                 className="group relative mt-5 h-auto w-full overflow-hidden rounded-none border border-[#FFD54A]/60 bg-[#FFD54A] px-4 py-3 font-['Oxanium'] text-[10px] font-black uppercase tracking-[0.2em] text-[#090b0d] shadow-none transition-all duration-200 hover:bg-[#FFE27A] hover:text-[#090b0d] hover:shadow-[0_0_30px_rgba(255,212,74,.18)]"
@@ -1946,7 +1949,7 @@ const KayouHeader = () => {
                   <span className="text-sm transition-transform duration-200 group-hover:translate-x-1"></span>
                 </span>
               </Button>
-              {/* SYSTEM LABEL */}
+              
               <div className="mt-5 flex items-center justify-center gap-3">
                 <span className="h-px w-8 bg-white/[0.06]" />
                 <span className="font-mono text-[5px] uppercase tracking-[0.3em] text-zinc-400">
@@ -1955,7 +1958,7 @@ const KayouHeader = () => {
                 <span className="h-px w-8 bg-white/[0.06]" />
               </div>
             </div>
-            {/* BOTTOM STATUS */}
+            
             <div className="flex items-center justify-between border-t border-white/[0.06] bg-[#050707] px-4 py-2">
               <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-400">
                 STATUS: UNAUTHORIZED
@@ -1967,7 +1970,7 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      {/* UNCONFIRMED EMAIL POPUP */}
+      
       {showUnconfirmedEmail && (
         <div
           className="fixed inset-0 z-[30010] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
@@ -1997,7 +2000,7 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      {/* EXISTING ACCOUNT POPUP */}
+      
       {showExistingAccount && (
         <div
           className="fixed inset-0 z-[30010] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
@@ -2041,7 +2044,7 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      {/* LOGIN / CREATE ACCOUNT POPUP */}
+      
       {showLogin && (
         <div
           className="fixed inset-0 z-[30000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
@@ -2198,7 +2201,7 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      {/* MOBILE BOTTOM NAV */}
+      
       <div
         className={`
     sm:hidden fixed z-[99999]
@@ -2223,7 +2226,7 @@ const KayouHeader = () => {
           WebkitTransform: "translateX(-50%)",
         }}
       >
-        {/* HOMEPAGE */}
+        
         <button
           onClick={() => {
             if (mobileNavCollapsed) {
@@ -2247,7 +2250,7 @@ const KayouHeader = () => {
         >
           <Home className="h-5 w-5" />
         </button>
-        {/* COLLECTIONS */}
+        
         <button
           onClick={() => {
             setShowMobileProgressMenu(false);
@@ -2271,7 +2274,7 @@ const KayouHeader = () => {
         >
           <Sparkles className="h-5 w-5" />
         </button>
-        {/* EXPLORE */}
+        
         <button
           onClick={() => {
             setShowMobileProgressMenu(false);
@@ -2295,7 +2298,7 @@ const KayouHeader = () => {
         >
           <Users className="h-5 w-5" />
         </button>
-        {/* PROFILE */}
+        
         <button
           onClick={() => {
             setShowMobileProgressMenu(false);

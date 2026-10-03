@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -344,10 +345,11 @@ const winner = firstFinishers[String(set.id)];
           {winner ? (
             <>
               <div className="relative">
-                <CardImage
+                <ProfileAvatar
+                  profile={winner}
                   src={getProfileAssets(winner).avatar}
                   alt={winner.username}
-                  className="h-16 w-16 rounded-full border-2 border-[#D8B83F] object-cover"
+                  className="h-16 w-16 rounded-[22%] border-2 border-[#D8B83F] object-cover"
                 />
                 <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#FFD54A] px-1 text-sm font-bold text-black">
                   ★
@@ -420,10 +422,11 @@ const assets = getProfileAssets(topCollector);
           }`}
         >
           <div className="flex items-center gap-4">
-          <CardImage
+          <ProfileAvatar
+            profile={topCollector}
             src={assets.avatar}
             alt="Top Collector Avatar"
-            className="h-20 w-20 shrink-0 rounded-full border-2 border-[#D8B83F] object-cover"
+            className="h-20 w-20 shrink-0 rounded-[22%] border-2 border-[#D8B83F] object-cover"
           />
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1.5">
@@ -585,3 +588,4 @@ return (
 );
 };
 export default Community;
+

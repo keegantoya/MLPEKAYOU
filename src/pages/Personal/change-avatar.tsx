@@ -1,394 +1,269 @@
-import CardImage from "@/components/CardImage";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, Check, Lock, LockOpen } from "lucide-react";
+import CardImage from "@/components/CardImage";
+import ProfileAvatar, { avatarFrameQueryKey } from "@/components/ProfileAvatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
-import { getAvatar } from "../Everypony/profile-assets";
-import avatar001 from "@/assets/avatars/avatar001.webp";
-import avatar002 from "@/assets/avatars/avatar002.webp";
-import avatar003 from "@/assets/avatars/avatar003.webp";
-import avatar004 from "@/assets/avatars/avatar004.webp";
-import avatar005 from "@/assets/avatars/avatar005.webp";
-import avatar006 from "@/assets/avatars/avatar006.webp";
-import avatar007 from "@/assets/avatars/avatar007.webp";
-import avatar008 from "@/assets/avatars/avatar008.webp";
-import avatar009 from "@/assets/avatars/avatar009.webp";
-import avatar010 from "@/assets/avatars/avatar010.webp";
-import avatar011 from "@/assets/avatars/avatar011.webp";
-import avatar012 from "@/assets/avatars/avatar012.webp";
-import avatar013 from "@/assets/avatars/avatar013.webp";
-import avatar014 from "@/assets/avatars/avatar014.webp";
-import avatar015 from "@/assets/avatars/avatar015.webp";
-import avatar016 from "@/assets/avatars/avatar016.webp";
-import avatar017 from "@/assets/avatars/avatar017.webp";
-import avatar018 from "@/assets/avatars/avatar018.webp";
-import avatar019 from "@/assets/avatars/avatar019.webp";
-import avatar020 from "@/assets/avatars/avatar020.webp";
-import avatar021 from "@/assets/avatars/avatar021.webp";
-import avatar022 from "@/assets/avatars/avatar022.webp";
-import avatar023 from "@/assets/avatars/avatar023.webp";
-import avatar024 from "@/assets/avatars/avatar024.webp";
-import avatar025 from "@/assets/avatars/avatar025.webp";
-import avatar026 from "@/assets/avatars/avatar026.webp";
-import avatar027 from "@/assets/avatars/avatar027.webp";
-import avatar028 from "@/assets/avatars/avatar028.webp";
-import avatar029 from "@/assets/avatars/avatar029.webp";
-import avatar030 from "@/assets/avatars/avatar030.webp";
-import avatar031 from "@/assets/avatars/avatar031.webp";
-import avatar032 from "@/assets/avatars/avatar032.webp";
-import avatar033 from "@/assets/avatars/avatar033.webp";
-import avatar034 from "@/assets/avatars/avatar034.webp";
-import avatar035 from "@/assets/avatars/avatar035.webp";
-import avatar036 from "@/assets/avatars/avatar036.webp";
-import avatar037 from "@/assets/avatars/avatar037.webp";
-import avatar038 from "@/assets/avatars/avatar038.webp";
-import avatar039 from "@/assets/avatars/avatar039.webp";
-import avatar040 from "@/assets/avatars/avatar040.webp";
-import avatar041 from "@/assets/avatars/avatar041.webp";
-import avatar042 from "@/assets/avatars/avatar042.webp";
-import avatar043 from "@/assets/avatars/avatar043.webp";
-import avatar044 from "@/assets/avatars/avatar044.webp";
-import avatar045 from "@/assets/avatars/avatar045.webp";
-import avatar046 from "@/assets/avatars/avatar046.webp";
-import avatar047 from "@/assets/avatars/avatar047.webp";
-import avatar048 from "@/assets/avatars/avatar048.webp";
-import avatar049 from "@/assets/avatars/avatar049.webp";
-import avatar050 from "@/assets/avatars/avatar050.webp";
+import {
+  getAvatar,
+  SELECTABLE_AVATARS,
+  FRAME_CATALOG,
+  type ProfileAssetUser,
+} from "../Everypony/profile-assets";
 
-const avatarMap: Record<string, string> = {
-  avatar001,
-  avatar002,
-  avatar003,
-  avatar004,
-  avatar005,
-  avatar006,
-  avatar007,
-  avatar008,
-  avatar009,
-  avatar010,
-  avatar011,
-  avatar012,
-  avatar013,
-  avatar014,
-  avatar015,
-  avatar016,
-  avatar017,
-  avatar018,
-  avatar019,
-  avatar020,
-  avatar021,
-  avatar022,
-  avatar023,
-  avatar024,
-  avatar025,
-  avatar026,
-  avatar027,
-  avatar028,
-  avatar029,
-  avatar030,
-  avatar031,
-  avatar032,
-  avatar033,
-  avatar034,
-  avatar035,
-  avatar036,
-  avatar037,
-  avatar038,
-  avatar039,
-  avatar040,
-  avatar041,
-  avatar042,
-  avatar043,
-  avatar044,
-  avatar045,
-  avatar046,
-  avatar047,
-  avatar048,
-  avatar049,
-  avatar050,
-};
+const db = supabase as unknown as SupabaseClient;
+
+type FrameStatus = { frame_id: string; status: "locked" | "unlocked" | "revoked"; owned_count: number; total_count: number; required_count: number };
+
+type Selection = { kind: "avatar"; value: string } | { kind: "frame"; value: string | null };
+
 export default function ChangeAvatar() {
 const navigate = useNavigate();
-const [currentAvatar, setCurrentAvatar] = useState("avatar001");
-const [isLightMode, setIsLightMode] = useState(
-  () => document.documentElement.dataset.theme === "light"
-);
-const [pendingAvatar, setPendingAvatar] = useState<string | null>(null);
+const location = useLocation();
+const queryClient = useQueryClient();
+const [profile, setProfile] = useState<ProfileAssetUser | null>(null);
+const [activeTab, setActiveTab] = useState<"avatars" | "frames">(
+    () => new URLSearchParams(location.search).get("tab") === "frames" ? "frames" : "avatars",
+  );
+const [pending, setPending] = useState<Selection | null>(null);
+const [loading, setLoading] = useState(true);
 const [saving, setSaving] = useState(false);
+const [error, setError] = useState("");
+const [isLightMode, setIsLightMode] = useState(
+    () => document.documentElement.dataset.theme === "light",
+  );
+const [frameStatuses, setFrameStatuses] = useState<Record<string, FrameStatus>>({});
+const [infoFrame, setInfoFrame] = useState<string | null>(null);
+const [unlocking, setUnlocking] = useState(false);
+const [unlockError, setUnlockError] = useState("");
+const previewProfile = pending?.kind === "avatar"
+    ? { ...profile, avatar_url: pending.value }
+    : pending?.kind === "frame"
+      ? { ...profile, avatar_frame: pending.value }
+      : profile;
+const surface = isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]";
+const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
+const selectedStyle = isLightMode
+    ? "border-[#8a6a00]/50 bg-[#c89d13]/10 ring-2 ring-[#8a6a00]/15"
+    : "border-[#FFD54A]/55 bg-[#FFD54A]/10 ring-2 ring-[#FFD54A]/15";
+
   useEffect(() => {
-const loadAvatar = async () => {
-const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) return;
-const { data } = await supabase
-        .from("profiles")
-        .select("avatar_url")
-        .eq("id", session.user.id)
-        .single();
-      if (data?.avatar_url) {
-setCurrentAvatar(data.avatar_url);
+    setActiveTab(new URLSearchParams(location.search).get("tab") === "frames" ? "frames" : "avatars");
+  }, [location.search]);
+
+  useEffect(() => {
+let active = true;
+const load = async () => {
+      try {
+const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!active) return;
+        if (!session?.user) {
+          setError("Log in to change your avatar.");
+          return;
+        }
+const { data, error } = await db
+          .from("profiles")
+          .select("id, avatar_url, avatar_frame")
+          .eq("id", session.user.id)
+          .single();
+        if (error) throw error;
+        if (!active) return;
+        const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
+      if (statusError) throw statusError;
+      if (!active) return;
+      setFrameStatuses(Object.fromEntries((statuses || []).map((row: FrameStatus) => [row.frame_id, row])));
+      setProfile(data);
+        queryClient.setQueryData(avatarFrameQueryKey(session.user.id), data.avatar_frame ?? null);
+      } catch {
+        if (active) setError("Your avatar could not be loaded. Please try again.");
+      } finally {
+        if (active) setLoading(false);
       }
     };
-    loadAvatar();
+    void load();
+    const refresh = window.setInterval(() => { void load(); }, 30000);
+  return () => { active = false; window.clearInterval(refresh); };
+  }, [queryClient]);
+
+  useEffect(() => {
+const syncTheme = () => setIsLightMode(document.documentElement.dataset.theme === "light");
+const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
+    syncTheme();
+    return () => observer.disconnect();
   }, []);
-useEffect(() => {
-let mounted = true;
-let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-const syncFromDocument = () => {
-    if (!mounted) return;
-    setIsLightMode(document.documentElement.dataset.theme === "light");
-  };
-const observer = new MutationObserver(syncFromDocument);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class", "data-theme"],
-  });
-const loadThemePreference = async () => {
-const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!mounted) return;
-    if (!session?.user) {
-      setIsLightMode(false);
-      return;
-    }
-const { data, error } = await supabase
-      .from("user_light_mode_preferences")
-      .select("user_id")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    if (!mounted) return;
-    if (error) {
-      console.error("Unable to load avatar page theme preference:", error);
-    } else {
-      setIsLightMode(Boolean(data));
-    }
-    realtimeChannel = supabase
-      .channel(`change-avatar-theme-${session.user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "\*",
-          schema: "public",
-          table: "user_light_mode_preferences",
-          filter: `user_id=eq.${session.user.id}`,
-        },
-        (payload) => {
-          if (!mounted) return;
-          setIsLightMode(payload.eventType !== "DELETE");
-        }
-      )
-      .subscribe();
-  };
-  syncFromDocument();
-  loadThemePreference();
-  return () => {
-    mounted = false;
-    observer.disconnect();
-    if (realtimeChannel) {
-      supabase.removeChannel(realtimeChannel);
-    }
-  };
-}, []);
-useEffect(() => {
-const background = isLightMode ? "#f5f5f3" : "#0d0f10";
+
+  useEffect(() => {
 const previousHtmlBackground = document.documentElement.style.backgroundColor;
 const previousBodyBackground = document.body.style.backgroundColor;
-  document.documentElement.style.backgroundColor = background;
-  document.body.style.backgroundColor = background;
-  return () => {
-    document.documentElement.style.backgroundColor = previousHtmlBackground;
-    document.body.style.backgroundColor = previousBodyBackground;
+const background = isLightMode ? "#f5f5f3" : "#0d0f10";
+    document.documentElement.style.backgroundColor = background;
+    document.body.style.backgroundColor = background;
+    return () => {
+      document.documentElement.style.backgroundColor = previousHtmlBackground;
+      document.body.style.backgroundColor = previousBodyBackground;
+    };
+  }, [isLightMode]);
+
+const choose = (selection: Selection) => {
+    setError("");
+    setPending(selection);
   };
-}, [isLightMode]);
-const handleAvatarSelect = async (avatar: string) => {
+
+const confirm = async () => {
+    if (!pending || saving || !profile?.id) return;
+    setSaving(true);
+    setError("");
     try {
-      setSaving(true);
-const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) return;
-await supabase.auth.updateUser({
-  data: {
-    avatar_url: avatar,
-  },
-});
-await supabase
-  .from("profiles")
-  .update({
-    avatar_url: avatar,
-  })
-        .eq("id", session.user.id);
-window.dispatchEvent(
-  new CustomEvent("profile-updated", {
-    detail: {
-      avatar_url: avatar,
-    },
-  })
-);
-      navigate(-1);
+const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.user || session.user.id !== profile.id) throw new Error("Session changed");
+      if (pending.kind === "frame" && pending.value !== null) {
+      const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
+      if (statusError) throw statusError;
+      if (!statuses?.some((row: FrameStatus) => row.frame_id === pending.value && row.status === "unlocked")) throw new Error("Frame is locked");
+    }
+const update = pending.kind === "avatar"
+        ? { avatar_url: pending.value }
+        : { avatar_frame: pending.value };
+const { data, error: saveError } = await db
+        .from("profiles")
+        .update(update)
+        .eq("id", session.user.id)
+        .select("id, avatar_url, avatar_frame")
+        .single();
+      if (saveError) throw saveError;
+      setProfile(data);
+      queryClient.setQueryData(avatarFrameQueryKey(data.id), data.avatar_frame ?? null);
+      window.dispatchEvent(new CustomEvent("profile-updated", { detail: data }));
+      if (pending.kind === "avatar") {
+const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_url: pending.value } });
+        if (metadataError) console.error("Avatar metadata sync failed:", metadataError);
+      }
+      setPending(null);
+  
+    } catch {
+      setError(pending.kind === "frame"
+        ? "Your frame could not be saved. Please try again."
+        : "Your avatar could not be saved. Please try again.");
     } finally {
       setSaving(false);
     }
   };
-const confirmAvatarChange = async () => {
-  if (!pendingAvatar) return;
-  await handleAvatarSelect(pendingAvatar);
-  setPendingAvatar(null);
-};
-return (
-  <div className={`min-h-screen transition-colors duration-200 ${
-    isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
-  }`}>
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-8 md:py-8">
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-xl font-medium transition-colors ${
-              isLightMode
-                ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-100"
-                : "border-white/10 bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
-            }`}
-            aria-label="Back to profile"
-          >
-            ‹
-          </button>
-          <CardImage
-            src={getAvatar(currentAvatar)}
-            alt="Current avatar"
-            className={`h-24 w-24 rounded-3xl border object-cover sm:h-28 sm:w-28 ${
-              isLightMode ? "border-black/10" : "border-white/10"
-            }`}
-          />
-          <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Pick an Avatar</h1>
-            <p className={`mt-1 max-w-xl text-sm leading-6 ${
-              isLightMode ? "text-zinc-600" : "text-zinc-400"
-            }`}>
-              Choose a new profile picture from the avatars below.
-            </p>
-          </div>
-        </div>
-        <div>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7">
-            {Object.entries(avatarMap)
-              .filter(([name]) => !/^avatar(00[1-9]|01[0-5]|027)$/.test(name))
-              .map(([name]) => {
-                const selected = currentAvatar === name;
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    disabled={saving}
-                    onClick={() => setPendingAvatar(name)}
-                    aria-label={selected ? "Current avatar" : "Choose avatar"}
-                    className={`group relative overflow-hidden rounded-3xl border transition-all ${
-                      selected
-                        ? isLightMode
-                          ? "border-[#8a6a00]/45 bg-[#c89d13]/10 ring-2 ring-[#8a6a00]/10"
-                          : "border-[#FFD54A]/55 bg-[#FFD54A]/10 ring-2 ring-[#FFD54A]/10"
-                        : isLightMode
-                        ? "border-black/10 bg-white hover:-translate-y-0.5 hover:border-black/20 hover:shadow-[0_8px_22px_rgba(0,0,0,.08)]"
-                        : "border-white/[0.08] bg-[#151718] hover:-translate-y-0.5 hover:border-white/20 hover:bg-[#1a1c1d]"
-                    }`}
-                  >
-                    <CardImage
-                      src={getAvatar(name)}
-                      alt=""
-                      className="aspect-square w-full object-cover"
-                    />
-                    {selected && (
-                      <div className={`absolute inset-x-2 bottom-2 rounded-full px-2 py-1 text-center text-[11px] font-semibold backdrop-blur-sm ${
-                        isLightMode
-                          ? "bg-white/90 text-[#725700]"
-                          : "bg-[#0d0f10]/85 text-[#FFE27A]"
-                      }`}>
-                        Current
+
+  const unlockSupporter = async () => {
+    if (!profile?.id || unlocking) return;
+    setUnlocking(true);
+    setUnlockError("");
+    try {
+      const { error: unlockFailure } = await db.rpc("unlock_pakra_supporter_frame");
+      if (unlockFailure) throw unlockFailure;
+      const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
+      if (statusError) throw statusError;
+      setFrameStatuses(Object.fromEntries((statuses || []).map((row: FrameStatus) => [row.frame_id, row])));
+    } catch {
+      setUnlockError("Your frame could not be unlocked. Please try again.");
+    } finally { setUnlocking(false); }
+  };
+  const shownFrame = FRAME_CATALOG.find((frame) => frame.id === infoFrame);
+  const shownStatus = infoFrame ? frameStatuses[infoFrame] : null;
+  return (
+    <div className={`min-h-screen ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+      <main className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+        <header className="mb-5 flex items-center gap-3">
+          <button type="button" onClick={() => navigate(-1)} aria-label="Back to profile" className={`flex h-10 w-10 items-center justify-center rounded-xl border ${surface}`}><ChevronLeft className="h-5 w-5" /></button>
+          <div><h1 className="text-xl font-semibold sm:text-2xl">Profile appearance</h1><p className={`text-sm ${muted}`}>Choose your avatar and collect frames.</p></div>
+        </header>
+        <div className="grid items-start gap-5 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
+          <aside className={`flex items-center gap-4 rounded-2xl border p-4 lg:sticky lg:top-6 lg:flex-col lg:p-6 lg:text-center ${surface}`}>
+            <div className="flex h-28 w-28 shrink-0 items-center justify-center lg:h-44 lg:w-44"><ProfileAvatar profile={profile} frameId={profile?.avatar_frame ?? null} alt="Current avatar" className="h-20 w-20 lg:h-28 lg:w-28" /></div>
+            <div><p className="text-sm font-semibold">Your current look</p><p className={`mt-1 text-xs ${muted}`}>{FRAME_CATALOG.find((frame) => frame.id === profile?.avatar_frame)?.name || "No frame equipped"}</p><p className={`mt-3 max-w-52 text-xs leading-5 ${muted}`}>Frames appear wherever your profile picture is shown.</p></div>
+          </aside>
+          <section className="min-w-0">
+            <div className={`mb-5 flex gap-1 rounded-xl border p-1 ${surface}`}>
+              {(["avatars", "frames"] as const).map((tab) => <button key={tab} type="button" aria-pressed={activeTab === tab} onClick={() => setActiveTab(tab)} className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold ${activeTab === tab ? isLightMode ? "bg-[#c89d13]/15 text-[#725700]" : "bg-[#FFD54A]/15 text-[#FFE27A]" : muted}`}>{tab === "avatars" ? "Avatars" : "Frames"}</button>)}
+            </div>
+            {error && !pending ? <p role="alert" className="mb-4 text-sm text-red-500">{error}</p> : null}
+            {loading ? <p role="status" className={muted}>Loading your appearance...</p> : profile ? activeTab === "avatars" ? (
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 xl:grid-cols-5">
+                {SELECTABLE_AVATARS.map((name) => <button key={name} type="button" disabled={saving} onClick={() => choose({ kind: "avatar", value: name })} aria-label={`Choose avatar ${name.replace("avatar", "")}`} aria-pressed={profile.avatar_url === name} className={`relative aspect-square rounded-2xl border p-1.5 ${profile.avatar_url === name ? selectedStyle : surface}`}>
+                  <CardImage src={getAvatar(name)} alt="" className="h-full w-full rounded-[22%] object-cover" />
+                  {profile.avatar_url === name ? <span className="absolute bottom-2 right-2 rounded-full bg-[#E7C84B] p-1 text-black"><Check className="h-3 w-3" /></span> : null}
+                </button>)}
+              </div>
+            ) : (
+              <>
+                <p className={`mb-4 text-sm leading-6 ${muted}`}>Unlock frames through your collection. Tap a lock to see its requirement.</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                  {[{ id: null, name: "No frame" }, ...FRAME_CATALOG].map((frame) => {
+                    const selected = (profile.avatar_frame ?? null) === frame.id;
+                    const state = frame.id ? frameStatuses[frame.id] : null;
+                    const unlocked = frame.id === null || state?.status === "unlocked";
+                    return <article key={frame.id ?? "none"} className={`relative min-w-0 overflow-hidden rounded-2xl border ${selected ? selectedStyle : surface}`}>
+                      <div className="relative">
+                        <button type="button" disabled={saving} aria-pressed={selected} aria-label={unlocked ? `Choose ${frame.name}` : `${frame.name}, ${state?.status === "revoked" ? "permanently locked" : "locked"}`} onClick={() => unlocked ? choose({ kind: "frame", value: frame.id }) : (setUnlockError(""), setInfoFrame(frame.id))} className="flex aspect-square w-full items-center justify-center p-4">
+                          <ProfileAvatar profile={profile} frameId={frame.id} preview alt="" className="h-[60%] w-[60%]" />
+                        </button>
+                        {!unlocked ? <button type="button" onClick={() => { setUnlockError(""); setInfoFrame(frame.id); }} aria-label={`View ${frame.name} unlock requirement`} className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-800/75 text-white backdrop-blur-sm"><Lock className="h-7 w-7" /><span className="text-xs font-medium">{state?.status === "revoked" ? "Permanently locked" : "Locked"}</span></button> : null}
+                        {frame.id && unlocked ? <button type="button" onClick={() => { setUnlockError(""); setInfoFrame(frame.id); }} aria-label={`View ${frame.name} met requirement`} className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950 text-emerald-200"><LockOpen className="h-4 w-4" /></button> : null}
                       </div>
-                    )}
-                  </button>
-                );
-              })}
-          </div>
-          <p className={`mt-5 text-center text-xs leading-5 ${
-            isLightMode ? "text-zinc-500" : "text-zinc-500"
-          }`}>
-            Some older avatars are no longer available to select, but they remain visible for users who already have them.
-          </p>
+                      <div className="border-t border-current/10 px-3 py-3"><p className="text-sm font-semibold">{frame.name}</p><p className={`mt-1 text-xs ${muted}`}>{selected ? "Equipped" : unlocked ? "Available" : state?.status === "revoked" ? "Access revoked" : "merit" in frame && frame.merit ? "Unlock on merit" : `${state?.owned_count ?? 0} / ${state?.required_count ?? 0} ${"progressLabel" in frame ? frame.progressLabel : "cards"}`}</p></div>
+                    </article>;
+                  })}
+                </div>
+
+              </>
+            ) : null}
+          </section>
         </div>
-      </div>
-    </main>
-    {pendingAvatar && (
-      <div
-        className={`fixed inset-0 z-[9999] flex items-center justify-center px-4 backdrop-blur-md ${
-          isLightMode ? "bg-white/20" : "bg-black/70"
-        }`}
-        onMouseDown={(e) => {
-          if (e.target === e.currentTarget && !saving) {
-            setPendingAvatar(null);
-          }
-        }}
-      >
-        <div className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.30)] ${
-          isLightMode
-            ? "border-black/10 bg-white text-zinc-900"
-            : "border-white/[0.10] bg-[#151718] text-white"
-        }`}>
-          <h2 className="text-xl font-semibold tracking-tight">Use this avatar?</h2>
-          <div className="mt-5 flex items-center justify-center gap-4">
-            <CardImage
-              src={getAvatar(currentAvatar)}
-              alt="Current avatar"
-              className={`h-24 w-24 rounded-3xl border object-cover ${
-                isLightMode ? "border-black/10" : "border-white/10"
-              }`}
-            />
-            <ChevronRight className={isLightMode ? "text-[#725700]" : "text-[#FFE27A]"} />
-            <CardImage
-              src={getAvatar(pendingAvatar)}
-              alt="New avatar"
-              className={`h-24 w-24 rounded-3xl border object-cover ${
-                isLightMode ? "border-[#8a6a00]/30" : "border-[#FFD54A]/40"
-              }`}
-            />
+      </main>
+      <Dialog open={infoFrame !== null} onOpenChange={(open) => { if (!open) setInfoFrame(null); }}>
+        <DialogContent className={`w-[calc(100%-2rem)] max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl border ${surface} ${isLightMode ? "text-zinc-900" : "text-white"}`}>
+          <DialogTitle>{shownFrame?.name} {shownStatus?.status === "unlocked" ? "unlocked" : shownStatus?.status === "revoked" ? "permanently locked" : "requirement"}</DialogTitle>
+          <DialogDescription className={muted}>{shownFrame?.requirement}</DialogDescription>
+          {shownFrame ? <div className="flex h-60 items-center justify-center sm:h-80"><ProfileAvatar profile={profile} frameId={shownFrame.id} preview alt={shownFrame.name} className="h-36 w-36 sm:h-48 sm:w-48" /></div> : null}
+          <p className="text-sm">{shownStatus?.status === "revoked" ? "This frame is no longer available for your account." : shownStatus?.status === "unlocked" ? shownFrame?.merit ? "You unlocked this frame as a PakraCards customer." : `Requirement met: ${shownFrame?.requirement}` : shownFrame?.merit ? "If you have bought from PakraCards, unlock this frame below." : `You currently own ${shownStatus?.owned_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}. ${shownStatus?.required_count ?? 0} are required.`}</p>
+          {shownFrame?.merit && shownStatus?.status === "locked" ? <button type="button" disabled={unlocking} onClick={() => void unlockSupporter()} className={`rounded-xl border px-4 py-3 text-base font-semibold disabled:opacity-50 ${selectedStyle}`}>{unlocking ? "Unlocking..." : "Unlock frame"}</button> : null}
+          {unlockError ? <p role="alert" className="text-sm text-red-500">{unlockError}</p> : null}
+          <button type="button" onClick={() => setInfoFrame(null)} className={`rounded-xl border px-4 py-3 text-sm font-semibold ${selectedStyle}`}>Got it</button>
+        </DialogContent>
+      </Dialog>
+    <Dialog open={pending !== null} onOpenChange={(open) => { if (!open && !saving) { setPending(null); setError(""); } }}>
+        <DialogContent className={`w-[calc(100%-2rem)] max-w-3xl max-h-[90dvh] overflow-y-auto rounded-3xl border ${isLightMode ? "bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
+          onEscapeKeyDown={(event) => { if (saving) event.preventDefault(); }}
+          onPointerDownOutside={(event) => { if (saving) event.preventDefault(); }}>
+          <DialogTitle>{pending?.kind === "frame" ? pending.value ? "Use this frame?" : "Remove your frame?" : "Use this avatar?"}</DialogTitle>
+          <DialogDescription className={muted}>Your selection will appear on your profile.</DialogDescription>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 py-4 sm:gap-4 sm:py-6">
+            <div className="flex aspect-square w-full items-center justify-center">
+              <ProfileAvatar profile={profile} frameId={profile?.avatar_frame ?? null} alt="Current appearance" className="h-[62%] w-[62%] rounded-3xl" />
+            </div>
+            <ChevronRight className="h-5 w-5 shrink-0 text-[#b38a13]" />
+            <div className="flex aspect-square w-full items-center justify-center">
+              <ProfileAvatar profile={previewProfile} frameId={previewProfile?.avatar_frame ?? null} preview alt="New appearance" className="h-[62%] w-[62%] rounded-3xl" />
+            </div>
           </div>
-          <p className={`mt-4 text-center text-sm leading-6 ${
-            isLightMode ? "text-zinc-600" : "text-zinc-300"
-          }`}>
-            Your profile picture will update immediately.
-          </p>
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => setPendingAvatar(null)}
-              className={`rounded-xl border px-4 py-3 text-sm font-semibold ${
-                isLightMode
-                  ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                  : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
-              }`}
-            >
-              Cancel
+          {error ? <p role="alert" className="text-sm text-red-500">{error}</p> : null}
+          <DialogFooter className="grid grid-cols-2 gap-3 sm:space-x-0">
+            <button type="button" disabled={saving} onClick={() => { setPending(null); setError(""); }} className={`rounded-xl border px-4 py-3 text-sm font-semibold ${surface}`}>Cancel</button>
+            <button type="button" disabled={saving} onClick={() => void confirm()}
+              className={`rounded-xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${selectedStyle}`}>
+              {saving ? "Saving..." : pending?.kind === "frame" ? pending.value ? "Use Frame" : "Remove Frame" : "Use Avatar"}
             </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={confirmAvatarChange}
-              className={`rounded-xl border px-4 py-3 text-sm font-semibold ${
-                isLightMode
-                  ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                  : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFE27A]"
-              }`}
-            >
-              {saving ? "Changing..." : "Use Avatar"}
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-);
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
+

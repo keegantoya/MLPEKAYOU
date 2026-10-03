@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -47,6 +48,10 @@ const OFFER_SET_ORDER = [
   "8",
   "11",
   "9",
+  "SD",
+  "FW",
+  "12",
+  "14",
   "tcgpromos",
 ];
 const OFFER_RARITY_ORDER = [
@@ -95,8 +100,10 @@ const offerKeyFor = (recipientId: string, setId: string, cardKey: string) =>
   [recipientId, setId, cardKey].join("-");
 const inventoryRarity = (cardKey: string) => {
   const key = cardKey.toUpperCase().replace(/\u203B/g, "");
+  const nightmareParallel = key.match(/^PBP03-(ER|SPR|GR|CR|RR)\d{2}(?:-[ABC]2?)?$/);
+  if (nightmareParallel) return `P${nightmareParallel[1]}`;
   const prefixed = key.match(
-    /(?:BP|SD)\d{2}-?(PER|PSPR|PGR|PCR|PRR|SPR|SSR|SCR|SAR|SGR|UGR|USR|TGR|MTR|LSR|SZR|ZR|XR|HR|FR|TR|ST|SR|UR|GR|CR|ER|RR|SC|BP|AR|OR|PR|R|U|C|N|SN)/,
+    /(?:BP|SD)\d{2}-?(BASE|PER|PSPR|PGR|PCR|PRR|SPR|SSR|SCR|SAR|SGR|UGR|USR|TGR|MTR|LSR|SZR|ZR|XR|HR|FR|TR|ST|SR|UR|GR|CR|ER|RR|SC|BP|AR|OR|PR|R|U|C|N|SN)/,
   );
   if (prefixed) return prefixed[1];
   return key.split("-")[0].replace(/\d+$/g, "") || "Other";
@@ -472,6 +479,10 @@ export default function TradingPostInner() {
       "8": "Fun Moments Two",
       "11": "Fun Moments Three",
       "9": "CCG Promos",
+      SD: "Friendships Begin",
+      FW: "Fantasy Wonderland",
+      "12": "Discord",
+      "14": "Nightmare Night",
       tcgpromos: "TCG Promos",
     };
     return names[offerSetId] || setNames[offerSetId] || offerSetId;
@@ -1292,10 +1303,11 @@ export default function TradingPostInner() {
                       }`}
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <CardImage
+                        <ProfileAvatar
+                          profile={{ ...profiles[userId], id: userId }}
                           src={assets.avatar}
                           alt={profiles[userId]?.username || userId}
-                          className={`h-11 w-11 shrink-0 rounded-full border object-cover ${
+                          className={`h-11 w-11 shrink-0 rounded-[22%] border object-cover ${
                             isLightMode ? "border-black/10" : "border-white/15"
                           }`}
                         />
@@ -1369,10 +1381,11 @@ export default function TradingPostInner() {
                       isLightMode ? "border-black/10" : "border-white/[0.08]"
                     }`}
                   >
-                    <CardImage
+                    <ProfileAvatar
+                      profile={{ ...profiles[userId], id: userId }}
                       src={assets.avatar}
                       alt={profiles[userId]?.username || userId}
-                      className={`h-12 w-12 shrink-0 rounded-full border object-cover ${
+                      className={`h-12 w-12 shrink-0 rounded-[22%] border object-cover ${
                         isLightMode ? "border-black/10" : "border-white/15"
                       }`}
                     />
@@ -1663,12 +1676,13 @@ export default function TradingPostInner() {
               </div>
               <div className="p-3.5 sm:p-4">
                 <div className="flex items-center gap-3">
-                  <CardImage
+                  <ProfileAvatar
+                    profile={{ ...profiles[selectedCard.user_id], id: selectedCard.user_id }}
                     src={
                       getProfileAssets(profiles[selectedCard.user_id]).avatar
                     }
                     alt=""
-                    className="h-10 w-10 rounded-full object-cover"
+                    className="h-10 w-10 rounded-[22%] object-cover"
                   />
                   <div className="min-w-0">
                     <h2

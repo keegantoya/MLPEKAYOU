@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -1058,7 +1059,8 @@ export default function Inbox() {
                     }`}
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <CardImage
+                      <ProfileAvatar
+                        profile={{ id: request.profileId, avatar_url: request.avatar_url }}
                         src={getProfileAssets(request).avatar}
                         alt={request.username}
                         className={`h-11 w-11 shrink-0 rounded-xl border object-cover ${
@@ -1173,7 +1175,8 @@ export default function Inbox() {
                               : "border-white/[0.07] bg-white/[0.03]"
                           }`}
                         >
-                          <CardImage
+                          <ProfileAvatar
+                            profile={{ id: item.profileId, avatar_url: item.avatar_url }}
                             src={getProfileAssets(item).avatar}
                             alt={item.username}
                             className={`h-11 w-11 shrink-0 rounded-xl border object-cover ${
@@ -1285,7 +1288,8 @@ export default function Inbox() {
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-4">
-                        <CardImage
+                        <ProfileAvatar
+                          profile={{ id: request.sender_id, avatar_url: request.avatar_url }}
                           src={getProfileAssets(request).avatar}
                           alt={request.username}
                           className={`h-14 w-14 rounded-2xl border object-cover ${
@@ -1418,7 +1422,8 @@ export default function Inbox() {
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
-                          <CardImage
+                          <ProfileAvatar
+                            profile={{ ...profile, id: counterpartId }}
                             src={getProfileAssets(profile || {}).avatar}
                             alt={username}
                             className={`h-11 w-11 shrink-0 rounded-xl border object-cover ${
@@ -1837,7 +1842,8 @@ export default function Inbox() {
                           className="relative shrink-0 rounded-2xl text-left"
                           aria-label={`Open ${friend.username}'s profile`}
                         >
-                          <CardImage
+                          <ProfileAvatar
+                            profile={{ ...friend.profile, id: friend.id }}
                             src={getProfileAssets(friend.profile).avatar}
                             alt={friend.nickname || friend.username}
                             className={`h-16 w-16 rounded-2xl border object-cover ${
@@ -2093,10 +2099,11 @@ export default function Inbox() {
               className={`flex h-16 items-center justify-between border-b px-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
             >
               <div className="flex min-w-0 items-center gap-2.5">
-                <CardImage
+                <ProfileAvatar
+                  profile={{ ...messageFriend.profile, id: messageFriend.id }}
                   src={getProfileAssets(messageFriend.profile).avatar}
                   alt=""
-                  className="h-9 w-9 rounded-full object-cover"
+                  className="h-9 w-9 rounded-[22%] object-cover"
                 />
                 <div className="min-w-0">
                   <div

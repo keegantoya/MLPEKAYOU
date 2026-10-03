@@ -1,3 +1,4 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import {
@@ -200,9 +201,9 @@ const renderAvatarEffects = (user: LeaderboardUser) => {
         ].map((line, index) => (
           <div
             key={index}
-            className="absolute pointer-events-none"
+            className="pointer-events-none absolute z-[2]"
             style={{
-              left: line.left,
+              left: `calc(${line.left} - 9px)`,
               top: "-16px",
               animation: "stinkFloat 2s ease-in-out infinite",
               animationDelay: line.delay,
@@ -221,18 +222,6 @@ const renderAvatarEffects = (user: LeaderboardUser) => {
       </>
     );
   };
-const CornerBrackets = ({ color = "#E7C84B" }: { color?: string }) => (
-    <>
-      <div
-        className="absolute left-0 top-0 h-4 w-4 border-l border-t"
-        style={{ borderColor: color }}
-      />
-      <div
-        className="absolute bottom-0 left-0 h-4 w-4 border-b border-l"
-        style={{ borderColor: color }}
-      />
-    </>
-  );
 const renderTopThree = (
     leaders: LeaderboardUser[],
     section: "ccg" | "tcg",
@@ -242,21 +231,21 @@ const podium = leaders.slice(0, 3).map((user, index) => ({
       rank: index + 1,
     }));
     return (
-      <div className="grid items-end gap-3 pt-2 md:grid-cols-3 md:pt-8">
+      <div className="grid items-stretch gap-3 pt-4 sm:grid-cols-3">
         {podium.map(({ user, rank }) => {
 const { avatar, verification } = getProfileAssets(user);
 const orderClass =
             rank === 1
-              ? "order-1 md:order-2 md:-translate-y-5"
+              ? "order-1 sm:order-2"
               : rank === 2
-                ? "order-2 md:order-1"
-                : "order-3 md:order-3";
+                ? "order-2 sm:order-1"
+                : "order-3 sm:order-3";
 const rankLabel =
             rank === 1 ? "Champion" : rank === 2 ? "Runner-up" : "Third Place";
           return (
             <div
               key={`${section}-${user.id}`}
-              className={`relative overflow-hidden rounded-[26px] border px-4 pb-5 pt-6 text-center shadow-[0_18px_45px_rgba(0,0,0,.12)] transition-transform ${orderClass} ${
+              className={`relative grid min-w-0 grid-cols-[8rem_minmax(0,1fr)] items-center gap-x-3 overflow-hidden rounded-2xl border p-3 text-left sm:flex sm:flex-col sm:gap-0 sm:p-4 sm:text-center ${orderClass} ${
                 rank === 1
                   ? isLightMode
                     ? "border-[#d1a900]/50 bg-gradient-to-b from-[#fff9d9] via-white to-[#fffdf4]"
@@ -280,7 +269,7 @@ const rankLabel =
                 }`}
               />
               <div
-                className={`relative mx-auto flex h-10 w-10 items-center justify-center rounded-full border shadow-lg ${
+                className={`absolute left-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full border ${
                   rank === 1
                     ? "border-[#FFE27A]/60 bg-[#FFD54A] text-[#2b2100]"
                     : rank === 2
@@ -290,23 +279,18 @@ const rankLabel =
               >
                 {rank === 1 ? <Crown size={20} /> : <Medal size={19} />}
               </div>
-              <div className="relative mt-3">
-                <div className="relative mx-auto w-fit">
-                  <CardImage
+              <div className="relative row-span-3 flex h-36 w-32 items-center justify-center sm:mx-auto sm:h-auto sm:w-full sm:max-w-60 sm:aspect-square">
+                <div className="relative h-20 w-20 shrink-0 sm:h-[60%] sm:w-[60%]">
+                  <ProfileAvatar
+                    profile={user}
                     src={avatar}
                     alt=""
-                    className={`rounded-full border-4 object-cover shadow-xl ${
-                      rank === 1
-                        ? "h-24 w-24 border-[#FFD54A]"
-                        : rank === 2
-                          ? "h-20 w-20 border-slate-300"
-                          : "h-20 w-20 border-amber-600"
-                    }`}
+                    className="h-full w-full rounded-[22%] object-cover"
                   />
                   {renderAvatarEffects(user)}
                 </div>
               </div>
-              <div className="relative mt-3 flex min-w-0 items-center justify-center gap-1.5">
+              <div className="relative flex w-full min-w-0 items-center gap-1.5 sm:justify-center">
                 <div className="truncate text-lg font-bold">
                   {user.username}
                 </div>
@@ -320,7 +304,7 @@ const rankLabel =
                 )}
               </div>
               <div
-                className={`relative mt-1 text-xs font-bold uppercase tracking-[0.16em] ${
+                className={`relative mt-1 text-[10px] font-bold uppercase tracking-[0.12em] ${
                   rank === 1
                     ? isLightMode
                       ? "text-[#806400]"
@@ -332,8 +316,8 @@ const rankLabel =
               >
                 {rankLabel}
               </div>
-              <div className="relative mt-4">
-                <div className="text-3xl font-bold tabular-nums">
+              <div className="relative mt-2">
+                <div className="text-2xl font-bold tabular-nums">
                   {user.total.toLocaleString()}
                 </div>
                 <div
@@ -370,10 +354,10 @@ const renderRemainingRanks = (
     leaders: LeaderboardUser[],
     section: "ccg" | "tcg",
   ) => {
-const remaining = leaders.slice(3, 11);
+const remaining = leaders.slice(3);
     return (
       <div
-        className={`mt-5 border-t pt-5 ${
+        className={`mt-4 border-t pt-4 ${
           isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"
         }`}
       >
@@ -382,23 +366,23 @@ const remaining = leaders.slice(3, 11);
             isLightMode ? "text-zinc-500" : "text-zinc-400"
           }`}
         >
-          The chase · Ranks 4-11        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          The chase Â· Ranks 4-{leaders.length}        </div>
+        <div className="grid grid-cols-2 gap-3">
           {remaining.map((user, index) => {
 const rank = index + 4;
 const { avatar, verification } = getProfileAssets(user);
             return (
               <div
                 key={`${section}-${user.id}`}
-                className={`group relative overflow-hidden rounded-[20px] border p-3 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+                className={`group relative min-w-0 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
                   isLightMode
                     ? "border-black/10 bg-white hover:border-[#c9a92f]/35"
                     : "border-white/[0.08] bg-[#151718] hover:border-[#FFD54A]/25 hover:bg-white/[0.04]"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-col items-center gap-2 text-center md:flex-row md:gap-4 md:text-left">
                   <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-sm font-black ${
+                    className={`absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-black ${
                       isLightMode
                         ? "border-black/10 bg-zinc-100 text-zinc-700"
                         : "border-white/10 bg-white/[0.06] text-zinc-300"
@@ -406,15 +390,11 @@ const { avatar, verification } = getProfileAssets(user);
                   >
                     #{rank}
                   </div>
-                  <CardImage
-                    src={avatar}
-                    alt=""
-                    className={`h-11 w-11 shrink-0 rounded-full border-2 object-cover ${
-                      isLightMode ? "border-white" : "border-white/10"
-                    }`}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-1.5">
+                  <div className="flex h-28 w-28 shrink-0 items-center justify-center sm:h-32 sm:w-32">
+                    <ProfileAvatar profile={user} src={avatar} alt="" className="h-16 w-16 rounded-[22%] object-cover sm:h-20 sm:w-20" />
+                  </div>
+                  <div className="w-full min-w-0 flex-1">
+                    <div className="flex min-w-0 items-center justify-center gap-1.5 md:justify-start">
                       <div className="truncate text-sm font-bold">
                         {user.username}
                       </div>
@@ -455,13 +435,13 @@ const renderLeaderboardSection = (
   ) => {
     return (
       <section
-        className={`relative mt-8 overflow-hidden rounded-[30px] border p-4 first:mt-6 sm:p-6 ${
+        className={`relative mt-4 overflow-hidden rounded-2xl border p-3 sm:p-4 ${
           isLightMode
             ? "border-black/10 bg-[#fffefa] shadow-[0_20px_55px_rgba(0,0,0,.06)]"
             : "border-white/[0.08] bg-[#111314] shadow-[0_24px_60px_rgba(0,0,0,.22)]"
         }`}
       >
-        <CornerBrackets color={isLightMode ? "#C9A92F" : "#FFD54A"} />
+
         <div className="relative flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <div
@@ -575,20 +555,20 @@ const renderLeaderboardSection = (
         </div>
       )}
       <div
-        className={`min-h-screen overflow-x-hidden pb-24 transition-colors ${
+        className={`min-h-screen overflow-x-hidden pb-8 transition-colors ${
           isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
         }`}
       >
-        <main className="box-border min-w-0 w-full max-w-full px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+        <main className="box-border min-w-0 w-full max-w-full px-3 py-4 sm:px-5 lg:px-6">
           <section
-            className={`relative box-border w-full max-w-full overflow-hidden rounded-[30px] border px-5 py-7 sm:px-8 sm:py-9 ${
+            className={`relative box-border w-full max-w-full overflow-hidden rounded-2xl border px-4 py-4 sm:px-5 sm:py-5 ${
               isLightMode
                 ? "border-[#c9a92f]/25 bg-gradient-to-br from-[#fffdf2] via-white to-[#fff8d6] shadow-[0_20px_60px_rgba(104,82,0,.10)]"
                 : "border-[#FFD54A]/20 bg-gradient-to-br from-[#24200f] via-[#151718] to-[#101112] shadow-[0_24px_70px_rgba(0,0,0,.35)]"
             }`}
           >
-            <CornerBrackets color={isLightMode ? "#B99716" : "#FFD54A"} />
-            <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
+
+            <div className="relative flex items-center justify-between gap-4">
               <div className="max-w-3xl">
                 <div
                   className={`flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] ${
@@ -598,7 +578,7 @@ const renderLeaderboardSection = (
                   <Sparkles size={14} />
                   MLPEKAYOU Hall of Collectors
                 </div>
-                <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+                <h1 className="mt-2 text-2xl font-black tracking-[-0.04em] sm:text-3xl">
                   Collector
                   <span
                     className={`ml-2 ${
@@ -609,14 +589,14 @@ const renderLeaderboardSection = (
                   </span>
                 </h1>
                 <p
-                  className={`mt-3 max-w-2xl text-sm leading-6 sm:text-base ${
+                  className={`mt-2 max-w-2xl text-sm leading-5 ${
                     isLightMode ? "text-zinc-600" : "text-zinc-400"
                   }`}
                 >
                   The leading verified collectors across Kayou CCG and Trading
                   Card Game collections.
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   <div
                     className={`flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-bold ${
                       viewerStatus === "verified"
@@ -650,23 +630,11 @@ const renderLeaderboardSection = (
                         : "border-white/10 bg-white/[0.05] text-zinc-300"
                     }`}
                   >
-                    Top 7 CCG · Top 7 TCG
+                    Top 7 CCG Â· Top 7 TCG
                   </div>
                 </div>
               </div>
-              <div className="relative mx-auto shrink-0 lg:mx-8">
-                <div className="absolute inset-0 scale-125 rounded-full bg-[#FFD54A]/20 blur-3xl" />
-                <div
-                  className={`relative flex h-32 w-32 items-center justify-center rounded-full border-4 shadow-[0_20px_50px_rgba(0,0,0,.25)] sm:h-40 sm:w-40 ${
-                    isLightMode
-                      ? "border-[#d5b63d] bg-gradient-to-br from-[#fff6bd] to-[#e3bd2b] text-[#604800]"
-                      : "border-[#FFE27A] bg-gradient-to-br from-[#FFD54A] to-[#a87500] text-[#241a00]"
-                  }`}
-                >
-                  <Trophy className="h-16 w-16 sm:h-20 sm:w-20" />
-                  <div className="absolute inset-2 rounded-full border border-white/40" />
-                </div>
-              </div>
+  
             </div>
           </section>
           {loading ? (
