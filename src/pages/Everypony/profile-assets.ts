@@ -59,6 +59,7 @@ import frame002 from "@/frames/frame002.webp";
 import frame003 from "@/frames/frame003.webp";
 import frame004 from "@/frames/frame004.webp";
 import frame005 from "@/frames/frame005.webp";
+import frame006 from "@/frames/frame006.webp";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 import ownerBadge from "/website-assets/OwnerBadge.webp";
@@ -173,6 +174,8 @@ export const FRAME_CATALOG: readonly AvatarFrame[] = [
     requirement: "Own at least 95% of Rainbow 1: 139 of 146 cards.", progressLabel: "Rainbow 1 cards" },
   { id: "frame005", name: "Nightmare Night", image: frame005, scale: 1.6, top: 47,
     requirement: "Own at least 70% of Nightmare Night: 133 of 190 cards.", progressLabel: "Nightmare Night cards" },
+  { id: "frame006", name: "Moon 3", image: frame006, scale: 1.6, top: 47,
+    requirement: "Own at least 75% of Moon 3: 218 of 290 cards.", progressLabel: "Moon 3 cards" },
 ];
 
 export function getAvatar(avatar: string | null | undefined): string {
