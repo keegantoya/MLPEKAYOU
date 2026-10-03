@@ -574,7 +574,7 @@ export default function MyCollectionBinder() {
       const rarityMatch = key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)/);
       return {
         rarity: rarityMatch
-          ? `${rarityMatch[1] ? "â€»" : ""}${rarityMatch[2]}`
+          ? `${rarityMatch[1] ? "" : ""}${rarityMatch[2]}`
           : "",
         number: Number(key.match(/^P?BP03-[A-Z]+(\d{2})/)?.[1] || 0),
         key,
@@ -1457,7 +1457,7 @@ export default function MyCollectionBinder() {
                 aria-label="Close customization"
                 className="rounded-xl flex h-11 w-11 shrink-0 items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] font-mono text-xs text-zinc-600 dark:text-white/50 transition hover:border-[#FFD400]/50 hover:text-[#725700] dark:text-[#FFD400]"
               >
-                âœ•
+                
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
@@ -1727,7 +1727,7 @@ export default function MyCollectionBinder() {
                                       className="pointer-events-none text-[15px] leading-none text-[#9A7200]"
                                       aria-hidden="true"
                                     >
-                                      â˜…
+                                      
                                     </span>
                                   )}
                                 </button>
@@ -1741,7 +1741,7 @@ export default function MyCollectionBinder() {
                 </div>
                 <div className="mt-3 flex items-start justify-center gap-2 px-2 text-center text-xs leading-relaxed">
                   <span className="shrink-0 text-[#9A7200]" aria-hidden="true">
-                    â˜…
+                    
                   </span>
                   <span
                     className={isLightMode ? "text-zinc-600" : "text-zinc-400"}

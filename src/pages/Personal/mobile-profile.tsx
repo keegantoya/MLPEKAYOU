@@ -902,7 +902,7 @@ const MobileProfile = () => {
         },
         {
           title: "Report a Bug",
-          subtitle: "Tell us when something isnâ€™t working",
+          subtitle: "Tell us when something isn't working",
           onClick: () => setShowBugReport(true),
           danger: true,
           icon: <Bug size={17} />,
@@ -1345,7 +1345,7 @@ const MobileProfile = () => {
                     : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
                 }`}
               >
-                <span>{copied ? "âœ“ Copied" : "Share Profile"}</span>
+                <span>{copied ? "Copied" : "Share Profile"}</span>
               </button>
             </div>
             <button
@@ -1554,8 +1554,8 @@ const MobileProfile = () => {
                 </span>
                 <span className="mt-0.5 block truncate text-sm text-zinc-300">
                   {lgsAccess === "ALLGS"
-                    ? "All stores Â· View-only access"
-                    : "Your storeâ€™s events and attendance"}
+                    ? "All stores - View-only access"
+                    : "Your store's events and attendance"}
                 </span>
               </span>
               <ChevronRight
@@ -1593,7 +1593,7 @@ const MobileProfile = () => {
       <div className="relative mt-3 grid grid-cols-2 gap-3 px-5">
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
           <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {profileLoads.stats ? stats.owned.toLocaleString() : "â€”"}
+            {profileLoads.stats ? stats.owned.toLocaleString() : "-"}
           </div>
           <div className="mt-1 text-xs font-medium text-zinc-400">
             Cards Owned
@@ -1601,7 +1601,7 @@ const MobileProfile = () => {
         </div>
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
           <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {profileLoads.stats ? stats.completed : "â€”"}
+            {profileLoads.stats ? stats.completed : "-"}
           </div>
           <div className="mt-1 text-xs font-medium text-zinc-400">
             Sets Mastered
@@ -2289,7 +2289,7 @@ function ProfileLoadingScreen({
         {failed ? (
           <>
             <p className="profile-loading-title" role="alert">
-              We couldnâ€™t load your profile
+              We couldn't load your profile
             </p>
             <p className="profile-loading-subtitle">Please try again.</p>
             <button

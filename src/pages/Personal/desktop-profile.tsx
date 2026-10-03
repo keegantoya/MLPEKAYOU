@@ -23,7 +23,7 @@ function ShowcaseImage({
   return failedSrc === src ? (
     <div
       role="img"
-      aria-label={`${alt} â€” coming soon`}
+      aria-label={`${alt} coming soon`}
       className="absolute inset-0 flex items-center justify-center bg-zinc-300 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100"
     >
       <span className="px-2 text-center text-sm font-bold">COMING SOON</span>
@@ -1030,7 +1030,7 @@ export default function DesktopProfile() {
                     >
                       Offer strikes
                       <span className="font-bold">{offerStrikeCount}/3</span>
-                      <span className="opacity-60">Â· {offerStrikeLabel}</span>
+                      <span className="opacity-60"> {offerStrikeLabel}</span>
                     </button>
                   </div>
                 )}
@@ -1124,9 +1124,9 @@ export default function DesktopProfile() {
           </div>
         <div className={`mt-4 grid grid-cols-3 gap-3 border-t pt-4 ${isLightMode ? "border-black/10" : "border-white/[0.08]"}`}>
           {[
-            [profileLoads.stats && !profileLoadErrors.stats ? stats.owned.toLocaleString() : "â€”", "Cards Owned"],
-            [profileLoads.stats && !profileLoadErrors.stats ? stats.completed.toLocaleString() : "â€”", "Sets Mastered"],
-            [profileLoads.stats && !profileLoadErrors.stats ? stats.friends.toLocaleString() : "â€”", "Friends"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.owned.toLocaleString() : "", "Cards Owned"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.completed.toLocaleString() : "", "Sets Mastered"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.friends.toLocaleString() : "", "Friends"],
           ].map(([value, label]) => (
             <div
               key={label}
@@ -1310,7 +1310,7 @@ export default function DesktopProfile() {
               ))}
             </div>
           </div>
-          {!profileLoads.showcase && <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading your collected hitsâ€¦</p>}
+          {!profileLoads.showcase && <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading your collected hits…</p>}
           {profileLoadErrors.showcase && <p role="alert" className="py-8 text-center text-sm text-zinc-500">Your collected hits could not be loaded. Refresh to try again.</p>}
           {profileLoads.showcase && !profileLoadErrors.showcase && visibleShowcaseCards.length === 0 && <p className="py-10 text-center text-sm text-zinc-500">Your collected hits will appear here.</p>}
           <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
@@ -1624,7 +1624,7 @@ export default function DesktopProfile() {
           className={`fixed inset-0 z-[120] flex items-center justify-center p-6 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`}
           onClick={() => setSelectedShowcaseCard(null)}
         >
-          <button type="button" aria-label="Close card preview" onClick={() => setSelectedShowcaseCard(null)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-2xl text-white shadow-lg">Ã—</button>
+          <button type="button" aria-label="Close card preview" onClick={() => setSelectedShowcaseCard(null)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-2xl text-white shadow-lg">—</button>
           <button
             type="button"
             className={`relative overflow-hidden rounded-2xl shadow-2xl ${
@@ -1685,7 +1685,7 @@ function ProfileLoadingScreen({
         {failed ? (
           <>
             <p className="profile-loading-title" role="alert">
-              We couldnâ€™t load your profile
+              We couldn't load your profile
             </p>
             <p className="profile-loading-subtitle">Please try again.</p>
             <button
