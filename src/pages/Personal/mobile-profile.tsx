@@ -258,39 +258,51 @@ const MobileProfile = () => {
       );
     };
     const refresh = () => void refreshInboxCount();
-    const channel = supabase
-      .channel(`mobile-profile-inbox-${profile.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-          filter: `receiver=eq.${profile.id}`,
-        },
-        refresh,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "friend_requests",
-          filter: `receiver_id=eq.${profile.id}`,
-        },
-        refresh,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "trade_offers",
-          filter: `recipient_id=eq.${profile.id}`,
-        },
-        refresh,
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    const connect = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!active || error || !session?.access_token || session.user.id !== profile.id) return;
+        await supabase.realtime.setAuth(session.access_token);
+        if (!active) return;
+        channel = supabase
+          .channel(`mobile-profile-inbox-${profile.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "messages",
+              filter: `receiver=eq.${profile.id}`,
+            },
+            refresh,
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "friend_requests",
+              filter: `receiver_id=eq.${profile.id}`,
+            },
+            refresh,
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "trade_offers",
+              filter: `recipient_id=eq.${profile.id}`,
+            },
+            refresh,
+          )
+          .subscribe();
+      } catch (error) {
+        if (active) console.error("Unable to connect inbox updates:", error);
+      }
+    };
+    void connect();
     void refreshInboxCount();
     window.addEventListener("header-message-update", refresh);
     window.addEventListener("header-inbox-update", refresh);
@@ -298,7 +310,7 @@ const MobileProfile = () => {
       active = false;
       window.removeEventListener("header-message-update", refresh);
       window.removeEventListener("header-inbox-update", refresh);
-      void supabase.removeChannel(channel);
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [profile?.id]);
   useEffect(() => {

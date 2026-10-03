@@ -246,64 +246,71 @@ export default function Inbox() {
     let active = true;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     const connect = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!active || !session?.user) return;
-      const userId = session.user.id;
-      channel = supabase
-        .channel(`inbox-updates-${userId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "messages",
-            filter: `receiver=eq.${userId}`,
-          },
-          () => void loadInbox(false),
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "friend_requests",
-            filter: `receiver_id=eq.${userId}`,
-          },
-          () => void loadInbox(false),
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "friend_requests",
-            filter: `sender_id=eq.${userId}`,
-          },
-          () => void loadInbox(false),
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "trade_offers",
-            filter: `recipient_id=eq.${userId}`,
-          },
-          () => void loadOffers(userId),
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "trade_offers",
-            filter: `sender_id=eq.${userId}`,
-          },
-          () => void loadOffers(userId),
-        )
-        .subscribe();
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+        if (!active || error || !session?.access_token) return;
+        await supabase.realtime.setAuth(session.access_token);
+        if (!active) return;
+        const userId = session.user.id;
+        channel = supabase
+          .channel(`inbox-updates-${userId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "messages",
+              filter: `receiver=eq.${userId}`,
+            },
+            () => void loadInbox(false),
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "friend_requests",
+              filter: `receiver_id=eq.${userId}`,
+            },
+            () => void loadInbox(false),
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "friend_requests",
+              filter: `sender_id=eq.${userId}`,
+            },
+            () => void loadInbox(false),
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "trade_offers",
+              filter: `recipient_id=eq.${userId}`,
+            },
+            () => void loadOffers(userId),
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "trade_offers",
+              filter: `sender_id=eq.${userId}`,
+            },
+            () => void loadOffers(userId),
+          )
+          .subscribe();
+      } catch (error) {
+        if (active) console.error("Unable to connect inbox updates:", error);
+      }
     };
     void loadInbox();
     void connect();

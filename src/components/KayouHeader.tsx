@@ -379,39 +379,51 @@ const KayouHeader = () => {
         playNotificationSound();
       }
     };
-    const channel = supabase
-      .channel(`header-inbox-${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-          filter: `receiver=eq.${user.id}`,
-        },
-        handleMessageChange,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "friend_requests",
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        handleFriendRequestChange,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "trade_offers",
-          filter: `recipient_id=eq.${user.id}`,
-        },
-        handleTradeOfferChange,
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    const connect = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!active || error || !session?.access_token || session.user.id !== user.id) return;
+        await supabase.realtime.setAuth(session.access_token);
+        if (!active) return;
+        channel = supabase
+          .channel(`header-inbox-${user.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "messages",
+              filter: `receiver=eq.${user.id}`,
+            },
+            handleMessageChange,
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "friend_requests",
+              filter: `receiver_id=eq.${user.id}`,
+            },
+            handleFriendRequestChange,
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "trade_offers",
+              filter: `recipient_id=eq.${user.id}`,
+            },
+            handleTradeOfferChange,
+          )
+          .subscribe();
+      } catch (error) {
+        if (active) console.error("Unable to connect inbox updates:", error);
+      }
+    };
+    void connect();
     const refresh = () => void refreshInboxCount();
     void refreshInboxCount();
     window.addEventListener("header-message-update", refresh);
@@ -420,7 +432,7 @@ const KayouHeader = () => {
       active = false;
       window.removeEventListener("header-message-update", refresh);
       window.removeEventListener("header-inbox-update", refresh);
-      void supabase.removeChannel(channel);
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [user?.id]);
   useEffect(() => {
@@ -900,32 +912,6 @@ const KayouHeader = () => {
             {/* DESKTOP DISCORD BUTTON */}
             {user && (
               <div className="hidden sm:flex items-center gap-2">
-                <button
-                  type="button"
-                  data-header-theme-toggle="true"
-                  onClick={handleThemeToggle}
-                  disabled={themeSaving}
-                  aria-label={
-                    isLightMode ? "Switch to dark mode" : "Switch to light mode"
-                  }
-                  title={isLightMode ? "Dark mode" : "Light mode"}
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl border backdrop-blur-md transition-all duration-200 disabled:cursor-wait disabled:opacity-60 ${
-                    isLightMode
-                      ? "border-[#D6B84A]/45 bg-white text-[#8A6A16] shadow-[0_0_22px_rgba(231,200,75,.20)] hover:border-[#D6B84A]/70 hover:bg-[#fffaf0]"
-                      : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08]"
-                  }`}
-                >
-                  <CardImage
-                    src={
-                      isLightMode
-                        ? "/website-assets/LightMode.webp"
-                        : "/website-assets/DarkMode.webp"
-                    }
-                    alt=""
-                    aria-hidden="true"
-                    className="h-6 w-6 object-contain"
-                  />
-                </button>
                 <Sheet modal={false} open={open} onOpenChange={setOpen}>
                   <SheetTrigger asChild>
                     <button
@@ -1139,6 +1125,32 @@ const KayouHeader = () => {
                     </div>
                   </SheetContent>
                 </Sheet>
+                <button
+                  type="button"
+                  data-header-theme-toggle="true"
+                  onClick={handleThemeToggle}
+                  disabled={themeSaving}
+                  aria-label={
+                    isLightMode ? "Switch to dark mode" : "Switch to light mode"
+                  }
+                  title={isLightMode ? "Dark mode" : "Light mode"}
+                  className={`flex h-11 w-11 items-center justify-center rounded-2xl border backdrop-blur-md transition-all duration-200 disabled:cursor-wait disabled:opacity-60 ${
+                    isLightMode
+                      ? "border-[#D6B84A]/45 bg-white text-[#8A6A16] shadow-[0_0_22px_rgba(231,200,75,.20)] hover:border-[#D6B84A]/70 hover:bg-[#fffaf0]"
+                      : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08]"
+                  }`}
+                >
+                  <CardImage
+                    src={
+                      isLightMode
+                        ? "/website-assets/LightMode.webp"
+                        : "/website-assets/DarkMode.webp"
+                    }
+                    alt=""
+                    aria-hidden="true"
+                    className="h-6 w-6 object-contain"
+                  />
+                </button>
               </div>
             )}
           </div>
