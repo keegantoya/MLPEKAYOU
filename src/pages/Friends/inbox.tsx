@@ -745,33 +745,25 @@ export default function Inbox() {
     status: "accepted" | "declined",
   ) {
     if (!currentUserId || respondingOfferId) return;
-    if (getOfferStatus(offer) !== "pending") {
-      setOfferError("This offer has already expired or been answered.");
+    if (offer.status !== "pending") {
+      setOfferError("This offer has already been answered or cancelled.");
       return;
     }
     const responseNote = (offerNotes[offer.id] || "").trim().slice(0, 500);
     setRespondingOfferId(offer.id);
     setOfferError("");
-    const respondedAt = new Date().toISOString();
-    const { data, error } = await supabase
-      .from("trade_offers")
-      .update({
-        status,
-        response_note: responseNote || null,
-        responded_at: respondedAt,
+    const { data, error } = await (supabase as any)
+      .rpc("answer_trade_offer", {
+        p_offer_id: offer.id,
+        p_status: status,
+        p_response_note: responseNote || null,
       })
-      .eq("id", offer.id)
-      .eq("recipient_id", currentUserId)
-      .eq("status", "pending")
-      .gt("expires_at", respondedAt)
-      .select(
-        "id, sender_id, recipient_id, target_set_id, target_card_key, offered_cards, contact, status, response_note, created_at, expires_at, responded_at",
-      )
       .maybeSingle();
     if (error || !data) {
       console.error("Unable to answer trade offer:", error);
-      setOfferError("This offer could not be updated. It may have expired.");
+      setOfferError(error?.message || "Your response could not be saved. Please try again.");
       setRespondingOfferId(null);
+      await loadOffers(currentUserId);
       return;
     }
     setOffers((current) =>
@@ -786,32 +778,25 @@ export default function Inbox() {
     if (!currentUserId || cancellingOfferId) return;
     if (
       offer.sender_id !== currentUserId ||
-      getOfferStatus(offer) !== "pending"
+      offer.status !== "pending"
     ) {
       setOfferError("Only your own pending offers can be cancelled.");
       return;
     }
     setCancellingOfferId(offer.id);
     setOfferError("");
-    const cancelledAt = new Date().toISOString();
-    const { data, error } = await supabase
-      .from("trade_offers")
-      .update({
-        status: "cancelled",
-        responded_at: cancelledAt,
+    const { data, error } = await (supabase as any)
+      .rpc("answer_trade_offer", {
+        p_offer_id: offer.id,
+        p_status: "cancelled",
+        p_response_note: null,
       })
-      .eq("id", offer.id)
-      .eq("sender_id", currentUserId)
-      .eq("status", "pending")
-      .gt("expires_at", cancelledAt)
-      .select(
-        "id, sender_id, recipient_id, target_set_id, target_card_key, offered_cards, contact, status, response_note, created_at, expires_at, responded_at",
-      )
       .maybeSingle();
     if (error || !data) {
       console.error("Unable to cancel trade offer:", error);
-      setOfferError("This offer could not be cancelled. It may have expired.");
+      setOfferError(error?.message || "This offer could not be cancelled. Please try again.");
       setCancellingOfferId(null);
+      await loadOffers(currentUserId);
       return;
     }
     setOffers((current) =>
@@ -2122,7 +2107,7 @@ export default function Inbox() {
                 className={`rounded-lg px-3 py-1.5 text-xl ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/[0.06]"}`}
                 aria-label="Close messages"
               >
-                ×
+                {"\u00D7"}
               </button>
             </div>
             <div className="h-[calc(100%-64px)] overflow-hidden">

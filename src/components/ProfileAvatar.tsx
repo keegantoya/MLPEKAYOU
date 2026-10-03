@@ -1,5 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import CardImage from "@/components/CardImage";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -74,15 +73,31 @@ export default function ProfileAvatar({
         display: "inline-block",
         position: "relative",
         flexShrink: 0,
+        aspectRatio: "1 / 1",
+        height: "auto",
+        boxSizing: "border-box",
         overflow: "visible",
         verticalAlign: "middle",
         borderRadius: "22%",
       }}
     >
-      <CardImage
+      <img
         src={src || getAvatar(profile?.avatar_url)}
         alt={alt}
-        className="absolute inset-0 h-full w-full rounded-[inherit] object-cover"
+        draggable={false}
+        decoding="async"
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "block",
+          width: "100%",
+          height: "100%",
+          maxWidth: "none",
+          maxHeight: "none",
+          aspectRatio: "1 / 1",
+          borderRadius: "inherit",
+          objectFit: "cover",
+        }}
       />
       {frame ? (
         <img
