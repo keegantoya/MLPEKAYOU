@@ -795,7 +795,6 @@ const currentPage = Math.min(pageByView[currentView], totalPages);
 const pageStart = (currentPage - 1) * pageSize;
 const pageEnd = pageStart + pageSize;
 const pagedBans = filteredBans.slice(pageStart, pageEnd);
-
 const pagedCardReports = cardReports.slice(pageStart, pageEnd);
 const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
   : reportedAccounts.slice(Math.max(0, pageStart - cardReports.length), Math.max(0, pageEnd - cardReports.length));
@@ -856,6 +855,24 @@ const changePage = (nextPage: number) => {
       }`}
     >
       <style>{`
+        .listing-warning-editor { display: flex; flex-direction: column; width: 100%; max-width: 448px; max-height: min(520px, calc(100dvh - 32px)); overflow: hidden; }
+        .listing-warning-editor-heading { flex-shrink: 0; padding: 12px 14px 10px; border-bottom: 1px solid rgba(128,128,128,.2); }
+        .listing-warning-editor-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px; }
+        .listing-warning-card-summary .moderation-card-preview { width: 56px; height: 78px; flex-shrink: 0; }
+        .listing-warning-message-preview { max-height: 110px; overflow-y: auto; overscroll-behavior: contain; font-size: 13px; line-height: 19px; }
+        .listing-warning-custom-message { max-height: 120px; resize: vertical; }
+        .listing-warning-editor-footer { flex-shrink: 0; display: grid; grid-template-columns: 80px minmax(0,1fr); gap: 8px; padding: 10px 14px; border-top: 1px solid rgba(128,128,128,.2); }
+        @media (max-width: 639px) {
+          .moderation-modal-overlay.listing-warning-overlay { align-items: center; padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+          .listing-warning-editor { max-height: min(520px, calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); }
+          .listing-warning-editor-heading { padding: 12px 14px 10px; }
+          .listing-warning-editor-heading h2 { line-height: 22px; }
+          .listing-warning-editor-body { padding: 12px 14px; }
+          .listing-warning-card-summary .moderation-card-preview { width: 48px; height: 68px; border-radius: 6px; }
+          .listing-warning-message-preview { max-height: min(120px, 20dvh); font-size: 13px; line-height: 19px; }
+          .listing-warning-custom-message { max-height: min(120px, 20dvh); }
+          .listing-warning-editor-footer { grid-template-columns: 80px minmax(0,1fr); padding: 10px 14px; }
+        }
         .moderation-page p, .moderation-page h2 { overflow-wrap: anywhere; }
         .moderation-page button { min-height: 44px; }
         .moderation-price-card { display: grid; grid-template-columns: minmax(0, 1fr) 116px; grid-template-areas: "header preview" "reporter preview" "dismiss preview"; align-content: center; align-items: center; column-gap: 16px; min-height: 226px; }
@@ -872,7 +889,7 @@ const changePage = (nextPage: number) => {
           .moderation-price-card > .moderation-price-actions { margin-top: 0; }
         }
         .moderation-panel { scroll-margin-top: 96px; }
-        .moderation-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; }
+        .moderation-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; }
         .moderation-pagination-controls { display: flex; align-items: center; gap: 10px; }
         @media (max-width: 639px) {
           .moderation-pagination { padding: 16px 0; margin-top: 12px; }
@@ -882,7 +899,7 @@ const changePage = (nextPage: number) => {
         .moderation-history-desktop { display: none; }
         .moderation-history-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; font-size: 14px; }
         .moderation-history-table th { padding: 12px 20px; font-size: 12px; font-weight: 600; }
-        .moderation-history-table td { padding: 16px 20px; vertical-align: middle; overflow-wrap: anywhere; }
+        .moderation-history-table td { padding: 12px 14px; vertical-align: middle; overflow-wrap: anywhere; }
         .moderation-history-person { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .moderation-history-avatar { width: 32px; height: 32px; flex: 0 0 32px; overflow: hidden; border-radius: 50%; }
         .moderation-history-action { display: inline-block; padding: 6px 10px; border-radius: 8px; font-size: 12px; line-height: 18px; font-weight: 500; }
@@ -1716,34 +1733,41 @@ const changePage = (nextPage: number) => {
         </div>
       )}
       {warningTarget && (
-        <div className="moderation-modal-overlay fixed inset-0 z-[75] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+        <div className="moderation-modal-overlay listing-warning-overlay fixed inset-0 z-[75] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
           <form onSubmit={(event) => { event.preventDefault(); void removeListingAndWarn(); }} role="dialog" aria-modal="true" aria-labelledby="listing-warning-title"
-            className={`max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
-            <h2 id="listing-warning-title" className="text-xl font-bold">Remove listing and warn user</h2>
-            <div className="mt-4 flex items-center gap-4">
-              <ReportedCardThumbnail setId={warningTarget.setId} cardKey={warningTarget.cardKey} />
-              <div className="min-w-0 break-words">
-                <p className="font-semibold">{warningTarget.reportedUsername}</p>
-                <p className="break-all font-mono text-sm">{getModerationCardCode(warningTarget.setId, warningTarget.cardKey)}</p>
-                <p className="mt-2 text-red-500">Reported price: ${warningTarget.reportedPrice.toFixed(2)}</p>
+            className={`listing-warning-editor w-full max-w-md rounded-2xl border shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
+            <div className="listing-warning-editor-heading">
+              <h2 id="listing-warning-title" className="text-base font-bold">Remove listing and warn user</h2>
+            </div>
+            <div className="listing-warning-editor-body">
+              <div className="listing-warning-card-summary flex items-center gap-3">
+                <ReportedCardThumbnail setId={warningTarget.setId} cardKey={warningTarget.cardKey} />
+                <div className="min-w-0 break-words text-sm">
+                  <p className="font-semibold">{warningTarget.reportedUsername}</p>
+                  <p className="break-all font-mono text-xs sm:text-sm">{getModerationCardCode(warningTarget.setId, warningTarget.cardKey)}</p>
+                  <p className="mt-1 text-xs text-red-500 sm:text-sm">Reported price: ${warningTarget.reportedPrice.toFixed(2)}</p>
+                </div>
               </div>
+              <label className="mt-3 block text-xs font-semibold" htmlFor="suggested-card-price">Typical price or range (USD)</label>
+              <input id="suggested-card-price" value={suggestedPrice} onChange={(event) => setSuggestedPrice(event.target.value)} disabled={sendingWarning} required maxLength={100}
+                placeholder="$5.00 - $10.00" className="mt-1.5 w-full rounded-xl border border-zinc-500/30 bg-transparent px-3 py-2 text-base" />
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("template")} aria-pressed={warningMode === "template"} className={`rounded-xl border px-2 py-2 text-xs font-semibold ${warningMode === "template" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Prewritten message</button>
+                <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("custom")} aria-pressed={warningMode === "custom"} className={`rounded-xl border px-2 py-2 text-xs font-semibold ${warningMode === "custom" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Write my own</button>
+              </div>
+              {warningMode === "custom" ? <>
+                <label htmlFor="listing-warning-explanation" className="mt-3 block text-xs font-semibold sm:text-sm">Explanation of the card's true price range</label>
+                <textarea id="listing-warning-explanation" required maxLength={5000} rows={3} disabled={sendingWarning} value={customExplanation} onChange={(event) => setCustomExplanation(event.target.value)} className="listing-warning-custom-message mt-1.5 w-full rounded-xl border border-zinc-500/30 bg-transparent p-3 text-base" />
+              </> : <div className="mt-3">
+                <p className="mb-1.5 text-xs font-semibold opacity-70">Message preview</p>
+                <div tabIndex={0} role="region" aria-label="Prewritten warning message preview" className="listing-warning-message-preview whitespace-pre-wrap break-words rounded-xl bg-red-500/10 p-3">{warningMessage}</div>
+              </div>}
+              <p className="mt-3 text-xs leading-4 opacity-70">The sale listing will be removed. The warning stays in inbox history.</p>
+              {warningError && <p role="alert" className="mt-2 text-xs text-red-500 sm:text-sm">{warningError}</p>}
             </div>
-            <label className="mt-5 block text-sm font-semibold" htmlFor="suggested-card-price">Typical price or price range (USD)</label>
-            <input autoFocus id="suggested-card-price" value={suggestedPrice} onChange={(event) => setSuggestedPrice(event.target.value)} disabled={sendingWarning} required maxLength={100}
-              placeholder="$5.00 - $10.00" className="mt-2 w-full rounded-xl border border-zinc-500/30 bg-transparent p-3 text-base" />
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("template")} aria-pressed={warningMode === "template"} className={`rounded-xl border px-4 py-2 text-sm ${warningMode === "template" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Use prewritten message</button>
-              <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("custom")} aria-pressed={warningMode === "custom"} className={`rounded-xl border px-4 py-2 text-sm ${warningMode === "custom" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Write my own</button>
-            </div>
-            {warningMode === "custom" ? <>
-              <label htmlFor="listing-warning-explanation" className="mt-4 block text-sm font-semibold">Explanation of the card's true price range</label>
-              <textarea id="listing-warning-explanation" required maxLength={5000} rows={6} disabled={sendingWarning} value={customExplanation} onChange={(event) => setCustomExplanation(event.target.value)} className="mt-2 w-full rounded-xl border border-zinc-500/30 bg-transparent p-3 text-base" />
-            </> : <p className="mt-4 whitespace-pre-wrap break-words rounded-xl bg-red-500/10 p-4 text-sm leading-relaxed">{warningMessage}</p>}
-            <p className="mt-4 text-sm">The current sale listing will be removed. The user must accept this warning on the homepage and can revisit it in inbox history.</p>
-            {warningError && <p role="alert" className="mt-3 text-sm text-red-500">{warningError}</p>}
-            <div className="mt-5 grid gap-2 sm:grid-cols-2">
-              <button type="button" disabled={sendingWarning} onClick={() => setWarningTarget(null)} className="rounded-xl border border-zinc-500/30 px-4 py-3 font-semibold">Cancel</button>
-              <button type="submit" disabled={sendingWarning || !suggestedPrice.trim() || !warningMessage.trim()} className="rounded-xl bg-red-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{sendingWarning ? "Removing listing..." : "Remove listing and send warning"}</button>
+            <div className="listing-warning-editor-footer">
+              <button type="button" disabled={sendingWarning} onClick={() => setWarningTarget(null)} className="rounded-xl border border-zinc-500/30 px-3 py-2 text-sm font-semibold">Cancel</button>
+              <button type="submit" disabled={sendingWarning || !suggestedPrice.trim() || !warningMessage.trim()} className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{sendingWarning ? "Removing..." : "Remove and warn"}</button>
             </div>
           </form>
         </div>
