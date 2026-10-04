@@ -1,6 +1,7 @@
 import { cardImagePaths, getNightmareNightFront } from "@/lib/card-images";
 import { getISOSetId, funCatalog, moonCatalog, rainbowCatalog, starCatalog, tcgCatalog } from "@/lib/iso-card-catalog";
 import { getISOSetName as getModerationSetName, getISOCardCode as getModerationCardCode } from "@/lib/iso-card-catalog";
+import { buildListingWarningMessage } from "@/components/ListingModerationWarnings";
 import CardImage from "@/components/CardImage";
 import rylandGraceAvatar from "@/assets/avatars/rylandgrace.webp";
 import { useEffect, useRef, useState } from "react";
@@ -82,9 +83,10 @@ const getHistoryActionTitle = (item: ModerationHistoryItem) => {
     trading_report_contacted: "Report author contacted",
     trading_access_revoked: "Trading access revoked",
     trading_access_restored: "Trading access restored",
-    trading_access_restored_reports_cleared: "Access restored · Reports cleared",
+    trading_access_restored_reports_cleared: "Access restored - Reports cleared",
     trading_profile_report_dismissed: "Profile report dismissed",
     trading_card_report_dismissed: "Card report dismissed",
+    overpriced_listing_removed: "Sale listing removed and user warned",
   };
   return labels[item.action] || item.actionLabel;
 };
@@ -173,9 +175,45 @@ const [markingContacted, setMarkingContacted] = useState(false);
 const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
 const [dismissTarget, setDismissTarget] = useState<{ kind: "profile" | "card"; id: number; username: string } | null>(null);
 const [dismissing, setDismissing] = useState(false);
-  const hasOpenDialog = Boolean(selectedBan || selectedAccountReport || selectedReportComment || showOfferStrikeInfo || dismissTarget);
+const [warningTarget, setWarningTarget] = useState<CardPriceReport | null>(null);
+const [warningMode, setWarningMode] = useState<"template" | "custom">("template");
+const [suggestedPrice, setSuggestedPrice] = useState("");
+const [customExplanation, setCustomExplanation] = useState("");
+const [warningError, setWarningError] = useState("");
+const [sendingWarning, setSendingWarning] = useState(false);
+const warningMessage = warningTarget && warningMode === "template"
+  ? buildListingWarningMessage(warningTarget.reportedUsername, getModerationCardCode(warningTarget.setId, warningTarget.cardKey), suggestedPrice.trim())
+  : customExplanation.trim();
+const removeListingAndWarn = async () => {
+  if (!warningTarget || sendingWarning) return;
+  if (!/^\$?\d+(?:\.\d{1,2})?(?:\s*-\s*\$?\d+(?:\.\d{1,2})?)?$/.test(suggestedPrice.trim()) || !warningMessage.trim()) {
+    setWarningError("Enter a price or range, such as $5.00 - $10.00, and a written explanation.");
+    return;
+  }
+  setSendingWarning(true);
+  setWarningError("");
+  try {
+    const { error } = await (supabase as any).rpc("remove_overpriced_listing_and_warn", {
+      p_report_id: warningTarget.id,
+      p_suggested_price: suggestedPrice.trim(),
+      p_explanation: warningMode === "custom" ? customExplanation.trim() : null,
+      p_card_code: getModerationCardCode(warningTarget.setId, warningTarget.cardKey),
+      p_use_template: warningMode === "template",
+    });
+    if (error) throw error;
+    setCardReports((current) => current.filter((item) => !(item.reportedUserId === warningTarget.reportedUserId && item.setId === warningTarget.setId && item.cardKey === warningTarget.cardKey)));
+    setSuccessMessage(`${warningTarget.reportedUsername}'s sale listing was removed and their warning was saved.`);
+    setWarningTarget(null);
+    setHistoryLoaded(false);
+  } catch (error: any) {
+    setWarningError(error.message || "Unable to remove the listing. Please try again.");
+  } finally {
+    setSendingWarning(false);
+  }
+};
+  const hasOpenDialog = Boolean(selectedBan || selectedAccountReport || selectedReportComment || showOfferStrikeInfo || dismissTarget || warningTarget);
   useEffect(() => {
-    if (!hasOpenDialog || !window.matchMedia("(max-width: 1023px)").matches) return;
+    if (!hasOpenDialog) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previousOverflow; };
@@ -643,6 +681,7 @@ const { data: logRows, error: logError } = await supabase
         "trading_access_restored_reports_cleared",
         "trading_profile_report_dismissed",
         "trading_card_report_dismissed",
+        "overpriced_listing_removed",
       ])
       .order("created_at", { ascending: false });
 const { data: strikeRows, error: strikeError } = await supabase
@@ -698,6 +737,7 @@ const actionLabels: Record<string, string> = {
           "reinstated rights and cleared reports for",
         trading_profile_report_dismissed: "dismissed a profile report for",
         trading_card_report_dismissed: "dismissed a card report for",
+        overpriced_listing_removed: "removed an overpriced listing and warned",
       };
       return {
         id: row.id,
@@ -755,7 +795,7 @@ const currentPage = Math.min(pageByView[currentView], totalPages);
 const pageStart = (currentPage - 1) * pageSize;
 const pageEnd = pageStart + pageSize;
 const pagedBans = filteredBans.slice(pageStart, pageEnd);
-// Card cases and account cases share one ten-entry page, preserving their existing order.
+
 const pagedCardReports = cardReports.slice(pageStart, pageEnd);
 const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
   : reportedAccounts.slice(Math.max(0, pageStart - cardReports.length), Math.max(0, pageEnd - cardReports.length));
@@ -821,7 +861,7 @@ const changePage = (nextPage: number) => {
         .moderation-price-card { display: grid; grid-template-columns: minmax(0, 1fr) 116px; grid-template-areas: "header preview" "reporter preview" "dismiss preview"; align-content: center; align-items: center; column-gap: 16px; min-height: 226px; }
         .moderation-price-card > .moderation-price-header { grid-area: header; min-width: 0; }
         .moderation-price-card > .moderation-price-header + div { grid-area: reporter; min-width: 0; }
-        .moderation-price-card > button { grid-area: dismiss; width: 100%; }
+        .moderation-price-card > .moderation-price-actions { grid-area: dismiss; width: 100%; }
         .moderation-card-preview { grid-area: preview; width: 116px; height: 163px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 9px; }
         .moderation-card-preview-crop { width: 100%; height: 100%; overflow: hidden; border-radius: 9px; }
         @media (max-width: 639px) {
@@ -829,7 +869,7 @@ const changePage = (nextPage: number) => {
           .moderation-price-card > .moderation-price-header { padding: 0; flex-direction: row; align-items: flex-start; gap: 8px; }
           .moderation-price-card > .moderation-price-header > img { display: none; }
           .moderation-price-card > .moderation-card-preview { width: 96px; height: 135px; }
-          .moderation-price-card > button { margin-top: 0; }
+          .moderation-price-card > .moderation-price-actions { margin-top: 0; }
         }
         .moderation-panel { scroll-margin-top: 96px; }
         .moderation-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; }
@@ -1162,7 +1202,7 @@ const changePage = (nextPage: number) => {
                           <span className="text-red-500 block lg:inline">
                             Overpriced card report
                           </span>{" "}
-                          <span className="hidden lg:inline">· </span>{report.reportedUsername}
+                          <span className="hidden lg:inline">- </span>{report.reportedUsername}
                         </p>
                         <p
                           className={`mt-0.5 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
@@ -1195,10 +1235,17 @@ const changePage = (nextPage: number) => {
                         </span>
                       </p>
                     </div>
+                    <div className="moderation-price-actions mt-4 grid gap-2">
+                      <button type="button" onClick={() => {
+                        setWarningTarget(report); setWarningMode("template"); setSuggestedPrice(""); setCustomExplanation(""); setWarningError("");
+                      }} className="w-full rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white">
+                        Remove listing and warn user
+                      </button>
                     <button type="button" onClick={() => setDismissTarget({ kind: "card", id: report.id, username: report.reportedUsername })}
-                      className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold ${isLightMode ? "bg-zinc-100 text-zinc-800" : "bg-white/[0.08] text-white"}`}>
+                      className={`w-full rounded-xl px-4 py-3 text-sm font-bold ${isLightMode ? "bg-zinc-100 text-zinc-800" : "bg-white/[0.08] text-white"}`}>
                       Dismiss
                     </button>
+                    </div>
                   </div>
                 ))}
                 {pagedAccountReports.map((report, index) => (
@@ -1301,7 +1348,7 @@ const changePage = (nextPage: number) => {
                             >
                               <span className="mt-1 block">{getModerationSetName(offer.targetSetId)}</span>
                               <span className="block break-all font-mono">{getModerationCardCode(offer.targetSetId, offer.targetCardKey)}</span>
-                              <span className="mt-1 block text-xs">Expired unanswered · {new Date(offer.expiredAt).toLocaleString()}</span>
+                              <span className="mt-1 block text-xs">Expired unanswered - {new Date(offer.expiredAt).toLocaleString()}</span>
                             </span>
                           </p>
                         </div>
@@ -1469,7 +1516,7 @@ const changePage = (nextPage: number) => {
           {!pageLoading && totalItems > 0 && (
             <nav aria-label="List pagination" className={`moderation-pagination border-t ${isLightMode ? "border-black/10" : "border-white/10"}`}>
               <p aria-live="polite" className={`moderation-pagination-summary text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                Showing {pageStart + 1}–{Math.min(pageEnd, totalItems)} of {totalItems}
+                Showing {pageStart + 1}-{Math.min(pageEnd, totalItems)} of {totalItems}
               </p>
               <div className="moderation-pagination-controls">
                 <button
@@ -1666,6 +1713,39 @@ const changePage = (nextPage: number) => {
             </button>
             </div>
           </div>
+        </div>
+      )}
+      {warningTarget && (
+        <div className="moderation-modal-overlay fixed inset-0 z-[75] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <form onSubmit={(event) => { event.preventDefault(); void removeListingAndWarn(); }} role="dialog" aria-modal="true" aria-labelledby="listing-warning-title"
+            className={`max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
+            <h2 id="listing-warning-title" className="text-xl font-bold">Remove listing and warn user</h2>
+            <div className="mt-4 flex items-center gap-4">
+              <ReportedCardThumbnail setId={warningTarget.setId} cardKey={warningTarget.cardKey} />
+              <div className="min-w-0 break-words">
+                <p className="font-semibold">{warningTarget.reportedUsername}</p>
+                <p className="break-all font-mono text-sm">{getModerationCardCode(warningTarget.setId, warningTarget.cardKey)}</p>
+                <p className="mt-2 text-red-500">Reported price: ${warningTarget.reportedPrice.toFixed(2)}</p>
+              </div>
+            </div>
+            <label className="mt-5 block text-sm font-semibold" htmlFor="suggested-card-price">Typical price or price range (USD)</label>
+            <input autoFocus id="suggested-card-price" value={suggestedPrice} onChange={(event) => setSuggestedPrice(event.target.value)} disabled={sendingWarning} required maxLength={100}
+              placeholder="$5.00 - $10.00" className="mt-2 w-full rounded-xl border border-zinc-500/30 bg-transparent p-3 text-base" />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("template")} aria-pressed={warningMode === "template"} className={`rounded-xl border px-4 py-2 text-sm ${warningMode === "template" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Use prewritten message</button>
+              <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("custom")} aria-pressed={warningMode === "custom"} className={`rounded-xl border px-4 py-2 text-sm ${warningMode === "custom" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Write my own</button>
+            </div>
+            {warningMode === "custom" ? <>
+              <label htmlFor="listing-warning-explanation" className="mt-4 block text-sm font-semibold">Explanation of the card's true price range</label>
+              <textarea id="listing-warning-explanation" required maxLength={5000} rows={6} disabled={sendingWarning} value={customExplanation} onChange={(event) => setCustomExplanation(event.target.value)} className="mt-2 w-full rounded-xl border border-zinc-500/30 bg-transparent p-3 text-base" />
+            </> : <p className="mt-4 whitespace-pre-wrap break-words rounded-xl bg-red-500/10 p-4 text-sm leading-relaxed">{warningMessage}</p>}
+            <p className="mt-4 text-sm">The current sale listing will be removed. The user must accept this warning on the homepage and can revisit it in inbox history.</p>
+            {warningError && <p role="alert" className="mt-3 text-sm text-red-500">{warningError}</p>}
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <button type="button" disabled={sendingWarning} onClick={() => setWarningTarget(null)} className="rounded-xl border border-zinc-500/30 px-4 py-3 font-semibold">Cancel</button>
+              <button type="submit" disabled={sendingWarning || !suggestedPrice.trim() || !warningMessage.trim()} className="rounded-xl bg-red-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{sendingWarning ? "Removing listing..." : "Remove listing and send warning"}</button>
+            </div>
+          </form>
         </div>
       )}
       {dismissTarget && (

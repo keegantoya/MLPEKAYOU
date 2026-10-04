@@ -1,3 +1,4 @@
+import { ListingWarningHistory } from "@/components/ListingModerationWarnings";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { cardImagePaths } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
@@ -1141,6 +1142,7 @@ export default function Inbox() {
                     </div>
                   </div>
                 )}
+                <ListingWarningHistory isLightMode={isLightMode} />
                 {history.length > 0 && (
                   <div>
                     <h3

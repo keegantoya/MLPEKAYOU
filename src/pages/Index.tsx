@@ -1,7 +1,7 @@
+import { ListingWarningGate } from "@/components/ListingModerationWarnings";
 import CardImage from "@/components/CardImage";
 import React, { useEffect, useRef, useState } from "react";
 import LGSApplications from "@/pages/Pop-Ups/LGSApplications";
-
 type Announcement = {
   label: string;
   date: string;
@@ -12,7 +12,6 @@ type Announcement = {
   actionHref?: string;
   tone: "featured" | "warning" | "standard";
 };
-
 type CommunityReference = {
   title: string;
   href: string;
@@ -20,7 +19,6 @@ type CommunityReference = {
   image?: string;
   imageClass?: string;
 };
-
 function ArrowLeftIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -29,7 +27,6 @@ function ArrowLeftIcon() {
     </svg>
   );
 }
-
 function ArrowRightIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -38,7 +35,6 @@ function ArrowRightIcon() {
     </svg>
   );
 }
-
 function ExternalLinkIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -48,7 +44,6 @@ function ExternalLinkIcon({ className = "h-4 w-4" }: { className?: string }) {
     </svg>
   );
 }
-
 const announcements: Announcement[] = [
   {
     label: "Website update",
@@ -85,7 +80,6 @@ const announcements: Announcement[] = [
     tone: "standard",
   },
 ];
-
 const references: CommunityReference[] = [
   {
     title: "PonyRec",
@@ -112,23 +106,21 @@ const references: CommunityReference[] = [
     description: "A trusted Kayou CN shop run by Amber and Hao, offering singles, sealed products, live rips, and collectibles.",
   },
 ];
-
 export default function Index() {
-  const [showLGSApplication, setShowLGSApplication] = useState(false);
-  const [activeAnnouncement, setActiveAnnouncement] = useState(0);
-  const [announcementDirection, setAnnouncementDirection] = useState<"forward" | "backward">("forward");
-  const [outgoingAnnouncement, setOutgoingAnnouncement] = useState<number | null>(null);
-  const [isAnnouncementTransitioning, setIsAnnouncementTransitioning] = useState(false);
-  const announcementTimer = useRef<number | null>(null);
-  const [isLightMode, setIsLightMode] = useState(
+const [showLGSApplication, setShowLGSApplication] = useState(false);
+const [activeAnnouncement, setActiveAnnouncement] = useState(0);
+const [announcementDirection, setAnnouncementDirection] = useState<"forward" | "backward">("forward");
+const [outgoingAnnouncement, setOutgoingAnnouncement] = useState<number | null>(null);
+const [isAnnouncementTransitioning, setIsAnnouncementTransitioning] = useState(false);
+const announcementTimer = useRef<number | null>(null);
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-
   useEffect(() => {
-    const syncTheme = () => {
+const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -136,7 +128,6 @@ export default function Index() {
     syncTheme();
     return () => observer.disconnect();
   }, []);
-
   useEffect(() => {
     return () => {
       if (announcementTimer.current !== null) {
@@ -144,9 +135,8 @@ export default function Index() {
       }
     };
   }, []);
-
-  const announcement = announcements[activeAnnouncement];
-  const changeAnnouncement = (index: number, direction: "forward" | "backward") => {
+const announcement = announcements[activeAnnouncement];
+const changeAnnouncement = (index: number, direction: "forward" | "backward") => {
     if (index === activeAnnouncement || isAnnouncementTransitioning) return;
     setOutgoingAnnouncement(activeAnnouncement);
     setAnnouncementDirection(direction);
@@ -161,28 +151,28 @@ export default function Index() {
       announcementTimer.current = null;
     }, 560);
   };
-  const previousAnnouncement = () => changeAnnouncement(
+const previousAnnouncement = () => changeAnnouncement(
     activeAnnouncement === 0 ? announcements.length - 1 : activeAnnouncement - 1,
     "backward",
   );
-  const nextAnnouncement = () => changeAnnouncement(
+const nextAnnouncement = () => changeAnnouncement(
     activeAnnouncement === announcements.length - 1 ? 0 : activeAnnouncement + 1,
     "forward",
   );
-  const openAnnouncement = (index: number) => changeAnnouncement(
+const openAnnouncement = (index: number) => changeAnnouncement(
     index,
     index > activeAnnouncement ? "forward" : "backward",
   );
-  const pageBg = isLightMode
+const pageBg = isLightMode
     ? "bg-[#f6f4ee] text-zinc-900"
     : "bg-[#111111] text-white";
-  const surface = isLightMode
+const surface = isLightMode
     ? "border-black/10 bg-white text-zinc-900 shadow-[0_12px_35px_rgba(75,58,18,0.08)]"
     : "border-white/10 bg-[#181818] text-white shadow-[0_12px_35px_rgba(0,0,0,0.28)]";
-  const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
-  const bodyText = isLightMode ? "text-zinc-700" : "text-zinc-300";
-  const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
-  const getAnnouncementSurface = (item: Announcement) =>
+const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
+const bodyText = isLightMode ? "text-zinc-700" : "text-zinc-300";
+const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
+const getAnnouncementSurface = (item: Announcement) =>
     item.tone === "featured"
       ? isLightMode
         ? "border-[#D3AE18]/60 bg-gradient-to-br from-white via-white to-[#fff4bd]"
@@ -192,12 +182,12 @@ export default function Index() {
           ? "border-red-300 bg-gradient-to-br from-white to-red-50"
           : "border-red-500/35 bg-gradient-to-br from-[#211616] to-[#181818]"
         : surface;
-  const renderAnnouncementCard = (
+const renderAnnouncementCard = (
     item: Announcement,
     index: number,
     phase: "incoming" | "outgoing" | "sizing",
   ) => {
-    const motionClass = phase === "sizing"
+const motionClass = phase === "sizing"
       ? ""
       : phase === "incoming"
       ? announcementDirection === "forward"
@@ -265,7 +255,7 @@ export default function Index() {
                 <span className={`pt-1 text-[9px] font-bold uppercase tracking-wide ${muted}`}>Required</span>
               </div>
               <p className={`mt-2 text-xs leading-5 ${muted}`}>
-                Under “Where did you hear about us?”
+                Under "Where did you hear about us?"
               </p>
               <div className="relative mt-3 h-40">
                 <div className={`relative flex min-h-12 items-center justify-between rounded-xl border-2 border-[#E7C84B] px-3 ${
@@ -296,7 +286,7 @@ export default function Index() {
                   <span aria-hidden="true" className="checkout-cursor absolute right-5 top-1 h-5 w-3.5 bg-[#E7C84B] shadow-md [clip-path:polygon(0_0,0_100%,28%_73%,45%_100%,58%_93%,42%_67%,74%_67%)]" />
                 </div>
                 <div className="checkout-confirmation absolute inset-x-0 top-16 rounded-xl border border-[#E7C84B]/50 bg-[#E7C84B]/10 px-3 py-2.5 text-center text-[10px] font-black uppercase tracking-[0.1em]">
-                  MLPEKAYOU selected — order credited
+                  MLPEKAYOU selected - order credited
                 </div>
               </div>
               <p className={`mt-1 text-center text-[10px] font-semibold leading-4 ${muted}`}>
@@ -308,9 +298,9 @@ export default function Index() {
       </article>
     );
   };
-
   return (
     <>
+      <ListingWarningGate />
       <style>{`
         @keyframes mlpekayouAnnouncementEnterForward {
           from { opacity: 0; transform: translate3d(46px, 0, 0) scale(0.985); }
@@ -457,12 +447,11 @@ export default function Index() {
             </a>
           </div>
         </section>
-
         <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 sm:py-10 md:px-8 md:py-12">
           <section aria-labelledby="announcements-heading">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className={`text-sm font-semibold ${accentText}`}>What’s happening</p>
+                <p className={`text-sm font-semibold ${accentText}`}>What's happening</p>
                 <h2 id="announcements-heading" className="mt-1 text-3xl font-bold tracking-tight">Announcements</h2>
               </div>
               <p className={`text-sm ${muted}`}>{activeAnnouncement + 1} of {announcements.length}</p>
@@ -523,7 +512,6 @@ export default function Index() {
               </button>
             </div>
           </section>
-
           <section className="space-y-7" aria-labelledby="community-heading">
             <article className={`flex flex-col gap-5 rounded-3xl border p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between ${surface}`}>
               <div className="max-w-4xl">
@@ -541,7 +529,6 @@ export default function Index() {
                 Apply for the LGS Program
               </button>
             </article>
-
             <div>
               <p className={`text-sm font-semibold ${accentText}`}>Trusted places to continue</p>
               <h2 id="community-heading" className="mt-1 text-2xl font-bold tracking-tight">Community references</h2>
@@ -581,7 +568,6 @@ export default function Index() {
               </div>
             </div>
           </section>
-
           <footer className={`border-t pt-6 text-center text-xs leading-5 ${isLightMode ? "border-black/10 text-zinc-500" : "border-white/10 text-zinc-500"}`}>
             <p>MLPEKAYOU is a free fan website owned and operated by Keegan. It is not owned, operated, or managed by Kayou US.</p>
           </footer>
