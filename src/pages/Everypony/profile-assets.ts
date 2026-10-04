@@ -62,6 +62,7 @@ import frame005 from "@/frames/frame005.webp";
 import frame006 from "@/frames/frame006.webp";
 import frame007 from "@/frames/frame007.webp";
 import frame008 from "@/frames/frame008.png";
+import frame009 from "@/frames/frame009.webp";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 import ownerBadge from "/website-assets/OwnerBadge.webp";
@@ -182,6 +183,8 @@ export const FRAME_CATALOG: readonly AvatarFrame[] = [
     requirement: "Own at least 88% of Moon 1: 164 of 186 cards.", progressLabel: "Moon 1 cards" },
   { id: "frame008", name: "Moon 2", image: frame008, scale: 1.6, top: 47,
     requirement: "Own at least 90% of Moon 2: 171 of 189 cards.", progressLabel: "Moon 2 cards" },
+  { id: "frame009", name: "Rainbow 2", image: frame009, scale: 1.6, top: 47,
+    requirement: "Complete 100% of Rainbow 2: all 170 of 170 cards.", progressLabel: "Rainbow 2 cards" },
 ];
 
 export function getAvatar(avatar: string | null | undefined): string {

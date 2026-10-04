@@ -43,8 +43,6 @@ const [isLightMode, setIsLightMode] = useState(
   );
 const [frameStatuses, setFrameStatuses] = useState<Record<string, FrameStatus>>({});
 const [infoFrame, setInfoFrame] = useState<string | null>(null);
-const [unlocking, setUnlocking] = useState(false);
-const [unlockError, setUnlockError] = useState("");
 const previewProfile = pending?.kind === "avatar"
     ? { ...profile, avatar_url: pending.value }
     : pending?.kind === "frame"
@@ -161,20 +159,6 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
     }
   };
 
-  const unlockSupporter = async () => {
-    if (!profile?.id || unlocking) return;
-    setUnlocking(true);
-    setUnlockError("");
-    try {
-      const { error: unlockFailure } = await db.rpc("unlock_pakra_supporter_frame");
-      if (unlockFailure) throw unlockFailure;
-      const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
-      if (statusError) throw statusError;
-      setFrameStatuses(Object.fromEntries((statuses || []).map((row: FrameStatus) => [row.frame_id, row])));
-    } catch {
-      setUnlockError("Your frame could not be unlocked. Please try again.");
-    } finally { setUnlocking(false); }
-  };
   const shownFrame = FRAME_CATALOG.find((frame) => frame.id === infoFrame);
   const shownStatus = infoFrame ? frameStatuses[infoFrame] : null;
   return (
@@ -211,46 +195,42 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
                     const unlocked = frame.id === null || state?.status === "unlocked";
                     return <article key={frame.id ?? "none"} className={`relative min-w-0 overflow-hidden rounded-2xl border ${selected ? selectedStyle : surface}`}>
                       <div className="relative">
-                        <button type="button" disabled={saving} aria-pressed={selected} aria-label={unlocked ? `Choose ${frame.name}` : `${frame.name}, ${state?.status === "revoked" ? "permanently locked" : "locked"}`} onClick={() => unlocked ? choose({ kind: "frame", value: frame.id }) : (setUnlockError(""), setInfoFrame(frame.id))} className="flex aspect-square w-full items-center justify-center p-4">
+                        <button type="button" disabled={saving} aria-pressed={selected} aria-label={unlocked ? `Choose ${frame.name}` : `${frame.name}, ${state?.status === "revoked" ? "permanently locked" : "locked"}`} onClick={() => unlocked ? choose({ kind: "frame", value: frame.id }) : setInfoFrame(frame.id)} className="flex aspect-square w-full items-center justify-center p-4">
                           <ProfileAvatar profile={profile} frameId={frame.id} preview alt="" className="h-[60%] w-[60%]" />
                         </button>
-                        {!unlocked ? <button type="button" onClick={() => { setUnlockError(""); setInfoFrame(frame.id); }} aria-label={`View ${frame.name} unlock requirement`} className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-800/75 text-white backdrop-blur-sm"><Lock className="h-7 w-7" /><span className="text-xs font-medium">{state?.status === "revoked" ? "Permanently locked" : "Locked"}</span></button> : null}
-                        {frame.id && unlocked ? <button type="button" onClick={() => { setUnlockError(""); setInfoFrame(frame.id); }} aria-label={`View ${frame.name} met requirement`} className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950 text-emerald-200"><LockOpen className="h-4 w-4" /></button> : null}
+                        {!unlocked ? <button type="button" onClick={() => setInfoFrame(frame.id)} aria-label={`View ${frame.name} unlock requirement`} className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-800/75 text-white backdrop-blur-sm"><Lock className="h-7 w-7" /><span className="text-xs font-medium">{state?.status === "revoked" ? "Permanently locked" : "Locked"}</span></button> : null}
+                        {frame.id && unlocked ? <button type="button" onClick={() => setInfoFrame(frame.id)} aria-label={`View ${frame.name} met requirement`} className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950 text-emerald-200"><LockOpen className="h-4 w-4" /></button> : null}
                       </div>
-                      <div className="border-t border-current/10 px-3 py-3"><p className="text-sm font-semibold">{frame.name}</p><p className={`mt-1 text-xs ${muted}`}>{selected ? "Equipped" : unlocked ? "Available" : state?.status === "revoked" ? "Access revoked" : "merit" in frame && frame.merit ? "Unlock on merit" : `${state?.owned_count ?? 0} / ${state?.required_count ?? 0} ${"progressLabel" in frame ? frame.progressLabel : "cards"}`}</p></div>
+                      <div className="border-t border-current/10 px-3 py-3"><p className="text-sm font-semibold">{frame.name}</p><p className={`mt-1 text-xs ${muted}`}>{selected ? "Equipped" : unlocked ? "Available" : state?.status === "revoked" ? "Access revoked" : `${state?.owned_count ?? 0} / ${state?.required_count ?? "..."} ${"progressLabel" in frame ? frame.progressLabel : "cards"}`}</p></div>
                     </article>;
                   })}
                 </div>
-
               </>
             ) : null}
           </section>
         </div>
       </main>
       <Dialog open={infoFrame !== null} onOpenChange={(open) => { if (!open) setInfoFrame(null); }}>
-        <DialogContent className={`w-[calc(100%-2rem)] max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl border ${surface} ${isLightMode ? "text-zinc-900" : "text-white"}`}>
+        <DialogContent className={`max-w-md rounded-2xl border ${surface} ${isLightMode ? "text-zinc-900" : "text-white"}`}>
           <DialogTitle>{shownFrame?.name} {shownStatus?.status === "unlocked" ? "unlocked" : shownStatus?.status === "revoked" ? "permanently locked" : "requirement"}</DialogTitle>
           <DialogDescription className={muted}>{shownFrame?.requirement}</DialogDescription>
-          {shownFrame ? <div className="flex h-60 items-center justify-center sm:h-80"><ProfileAvatar profile={profile} frameId={shownFrame.id} preview alt={shownFrame.name} className="h-36 w-36 sm:h-48 sm:w-48" /></div> : null}
-          <p className="text-sm">{shownStatus?.status === "revoked" ? "This frame is no longer available for your account." : shownStatus?.status === "unlocked" ? shownFrame?.merit ? "You unlocked this frame as a PakraCards customer." : `Requirement met: ${shownFrame?.requirement}` : shownFrame?.merit ? "If you have bought from PakraCards, unlock this frame below." : `You currently own ${shownStatus?.owned_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}. ${shownStatus?.required_count ?? 0} are required.`}</p>
-          {shownFrame?.merit && shownStatus?.status === "locked" ? <button type="button" disabled={unlocking} onClick={() => void unlockSupporter()} className={`rounded-xl border px-4 py-3 text-base font-semibold disabled:opacity-50 ${selectedStyle}`}>{unlocking ? "Unlocking..." : "Unlock frame"}</button> : null}
-          {unlockError ? <p role="alert" className="text-sm text-red-500">{unlockError}</p> : null}
+          <p className="text-sm">{shownStatus?.status === "unlocked" ? `Requirement met: ${shownStatus?.owned_count ?? 0} / ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}.` : shownStatus?.status === "revoked" ? "This frame is no longer available for your account." : shownFrame?.merit ? "Unlock this frame on merit." : `You currently own ${shownStatus?.owned_count ?? 0} of ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}. Own ${shownStatus?.required_count ?? 0} to unlock ${shownFrame?.name ?? "this frame"}.`}</p>
           <button type="button" onClick={() => setInfoFrame(null)} className={`rounded-xl border px-4 py-3 text-sm font-semibold ${selectedStyle}`}>Got it</button>
         </DialogContent>
       </Dialog>
     <Dialog open={pending !== null} onOpenChange={(open) => { if (!open && !saving) { setPending(null); setError(""); } }}>
-        <DialogContent className={`w-[calc(100%-2rem)] max-w-3xl max-h-[90dvh] overflow-y-auto rounded-3xl border ${isLightMode ? "bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
+        <DialogContent className={`max-w-md rounded-3xl border ${isLightMode ? "bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
           onEscapeKeyDown={(event) => { if (saving) event.preventDefault(); }}
           onPointerDownOutside={(event) => { if (saving) event.preventDefault(); }}>
           <DialogTitle>{pending?.kind === "frame" ? pending.value ? "Use this frame?" : "Remove your frame?" : "Use this avatar?"}</DialogTitle>
           <DialogDescription className={muted}>Your selection will appear on your profile.</DialogDescription>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 py-4 sm:gap-4 sm:py-6">
-            <div className="flex aspect-square w-full items-center justify-center">
-              <ProfileAvatar profile={profile} frameId={profile?.avatar_frame ?? null} alt="Current appearance" className="h-[62%] w-[62%] rounded-3xl" />
+          <div className="flex items-center justify-center gap-3 py-8">
+            <div className="flex h-32 w-32 items-center justify-center">
+              <ProfileAvatar profile={profile} frameId={profile?.avatar_frame ?? null} alt="Current appearance" className="h-20 w-20 rounded-3xl" />
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-[#b38a13]" />
-            <div className="flex aspect-square w-full items-center justify-center">
-              <ProfileAvatar profile={previewProfile} frameId={previewProfile?.avatar_frame ?? null} preview alt="New appearance" className="h-[62%] w-[62%] rounded-3xl" />
+            <div className="flex h-32 w-32 items-center justify-center">
+              <ProfileAvatar profile={previewProfile} frameId={previewProfile?.avatar_frame ?? null} preview alt="New appearance" className="h-20 w-20 rounded-3xl" />
             </div>
           </div>
           {error ? <p role="alert" className="text-sm text-red-500">{error}</p> : null}
@@ -266,4 +246,3 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
     </div>
   );
 }
-
