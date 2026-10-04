@@ -1,4 +1,4 @@
-import { CARD_IMAGE_BYTES_CACHE, CARD_IMAGE_BYTES_TTL_MS, getCardImageRevision } from "@/lib/card-images";
+import { CARD_IMAGE_BYTES_CACHE, CARD_IMAGE_BYTES_TTL_MS, getCardImageRevision, isMoonFourBackRefreshTarget } from "@/lib/card-images";
 type ImageData = { blob: Blob } | undefined;
 type ImageLoader = (signal: AbortSignal) => Promise<Response | undefined>;
 const inFlight = new Map<string, Promise<ImageData>>();
@@ -11,8 +11,25 @@ function cacheKey(path: string, userId: string) {
   return key.href;
 }
 async function openImageCache() {
-  try { return typeof caches === "undefined" ? undefined : await caches.open(CARD_IMAGE_BYTES_CACHE); }
-  catch { return undefined; }
+  try {
+    return typeof caches === "undefined" ? undefined : await caches.open(CARD_IMAGE_BYTES_CACHE);
+  } catch {
+    return undefined;
+  }
+}
+async function removeStaleMoonFourBacks(disk: Cache, key: string) {
+  const current = new URL(key);
+  const path = current.searchParams.get("path");
+  if (!path || !isMoonFourBackRefreshTarget(path)) return;
+  const requests = await disk.keys();
+  await Promise.all(requests.map(async request => {
+    const saved = new URL(request.url);
+    const savedPath = saved.searchParams.get("path");
+    if (!savedPath || !isMoonFourBackRefreshTarget(savedPath)) return;
+    if (saved.searchParams.get("revision") !== getCardImageRevision(savedPath)) {
+      await disk.delete(request);
+    }
+  }));
 }
 export function suspendCardImageLoads() {
   epoch++;
@@ -20,7 +37,6 @@ export function suspendCardImageLoads() {
 }
 export function clearCardImageBytes() {
   suspendCardImageLoads();
-  // Explicit cache removal only. Normal sign-out preserves account-scoped files.
   if (typeof caches !== "undefined") void caches.delete(CARD_IMAGE_BYTES_CACHE).catch(() => {});
 }
 async function readOrDownload(key: string, load: ImageLoader, bypass: boolean): Promise<ImageData> {
@@ -28,6 +44,7 @@ async function readOrDownload(key: string, load: ImageLoader, bypass: boolean): 
   const disk = await openImageCache();
   if (disk) {
     try {
+      await removeStaleMoonFourBacks(disk, key);
       const saved = bypass ? undefined : await disk.match(key);
       if (saved) {
         const expires = Number(saved.headers.get("X-Card-Expires"));
@@ -37,7 +54,7 @@ async function readOrDownload(key: string, load: ImageLoader, bypass: boolean): 
         }
       }
       await disk.delete(key);
-    } catch { /* A storage failure must not prevent display. */ }
+    } catch {}
   }
   if (epoch !== started) return undefined;
   if (typeof URL.createObjectURL !== "function") return undefined;
@@ -48,16 +65,24 @@ async function readOrDownload(key: string, load: ImageLoader, bypass: boolean): 
     if (!response?.ok || !response.headers.get("Content-Type")?.startsWith("image/")) return undefined;
     const blob = await response.blob();
     if (epoch !== started || !blob.size) return undefined;
-    try {
-      await disk.put(key, new Response(blob, { headers: {
-        "Content-Type": blob.type,
-        "X-Card-Expires": String(Date.now() + CARD_IMAGE_BYTES_TTL_MS),
-      } }));
-      if (epoch !== started) { await disk.delete(key); return undefined; }
-    } catch { /* Quota full: display the downloaded image without storing it. */ }
+    if (disk) {
+      try {
+        await disk.put(key, new Response(blob, { headers: {
+          "Content-Type": blob.type,
+          "X-Card-Expires": String(Date.now() + CARD_IMAGE_BYTES_TTL_MS),
+        } }));
+        if (epoch !== started) {
+          await disk.delete(key);
+          return undefined;
+        }
+      } catch {}
+    }
     return epoch === started ? { blob } : undefined;
-  } catch { return undefined; }
-  finally { clearTimeout(timer); }
+  } catch {
+    return undefined;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 export async function getCachedCardImage(
   path: string,
@@ -70,7 +95,9 @@ export async function getCachedCardImage(
   if (!pending) {
     pending = readOrDownload(key, load, bypass);
     inFlight.set(key, pending);
-    void pending.finally(() => { if (inFlight.get(key) === pending) inFlight.delete(key); }).catch(() => {});
+    void pending.finally(() => {
+      if (inFlight.get(key) === pending) inFlight.delete(key);
+    }).catch(() => {});
   }
   const data = await pending;
   if (!data) return undefined;

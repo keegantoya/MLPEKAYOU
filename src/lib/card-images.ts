@@ -113,17 +113,16 @@ export const cardImagePaths = {
   },
 } as const;
 function getMoonFourImagePath(key: string) {
-  const normalized = key.trim().toUpperCase().replace(/^M4/, "").replace(/^SHINING[ _-]*ZR/, "SZR");
-  const match = normalized.match(/^(SZR|SSR|SGR|LSR|HR|SR|UR|ZR|SC|R)[ _-]*(\d+)$/);
+const normalized = key.trim().toUpperCase().replace(/^M4/, "").replace(/^SHINING[ _-]*ZR/, "SZR");
+const match = normalized.match(/^(SZR|SSR|SGR|LSR|HR|SR|UR|ZR|SC|R)[ _-]*(\d+)$/);
   if (!match) return "/placeholder-card.webp";
-  const number = Number(match[2]);
-  const counts: Record<string, number> = { R: 30, SR: 20, HR: 30, SSR: 26, UR: 16, SGR: 8, SC: 7, ZR: 7, SZR: 2, LSR: 16 };
+const number = Number(match[2]);
+const counts: Record<string, number> = { R: 30, SR: 20, HR: 30, SSR: 26, UR: 16, SGR: 8, SC: 7, ZR: 7, SZR: 2, LSR: 16 };
   if (number < 1 || number > counts[match[1]]) return "/placeholder-card.webp";
-  const padded = String(number).padStart(match[1] === "SZR" ? 3 : 2, "0");
+const padded = String(number).padStart(match[1] === "SZR" ? 3 : 2, "0");
   return `/cards/fourth-edition-moon/M4${match[1]}${padded}.webp`;
 }
 export const getMoonFourFront = (key: string) => cardImagePaths.moonFour(key);
-
 type Card = {
   set_id: string;
   card_key: string;
@@ -579,6 +578,10 @@ export const CARD_IMAGE_REVISIONS: Record<string, string> = {
   "promo-cards/mlpepr014.webp": "20261002-promos-3",
   "tcgpromos/RR28.webp": "20261002-promos-3",
 };
+export function isMoonFourBackRefreshTarget(path: string) {
+  return /(?:^|\/)M4R(?:18|19|20)BACK\.webp$/i.test(path.split(/[?#]/)[0]);
+}
 export function getCardImageRevision(path: string) {
+  if (isMoonFourBackRefreshTarget(path)) return "20261003-moon4-backs-rotation-2";
   return CARD_IMAGE_REVISIONS[path] ?? "1";
 }

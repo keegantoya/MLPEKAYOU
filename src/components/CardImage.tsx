@@ -4,16 +4,15 @@ import {
   CARD_IMAGE_PLACEHOLDER as PLACEHOLDER,
   CARD_IMAGE_WORKER_URL,
   getCardImageRevision,
+  isMoonFourBackRefreshTarget,
   getProtectedCardPath as protectedPath,
 } from "@/lib/card-images";
 import { getCardImageStoragePath, type CardImageSize } from "@/lib/card-image-variants";
 import { supabase } from "@/lib/supabase";
 import { forwardRef, useEffect, useRef, useState, type ImgHTMLAttributes } from "react";
-
 const unavailableThumbnails = new Set<string>();
 const authListeners = new Set<() => void>();
 let generation = 0;
-
 function imageUrl(path: string, publicProfile = false) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
   const url = new URL(encodedPath, `${CARD_IMAGE_WORKER_URL}/`);
@@ -22,7 +21,6 @@ function imageUrl(path: string, publicProfile = false) {
   if (publicProfile) url.searchParams.set("publicProfile", "1");
   return url.href;
 }
-
 async function fetchImage(path: string, accessToken: string | null, signal: AbortSignal, publicProfile: boolean) {
   const request = (token: string | null) => fetch(imageUrl(path, !token && publicProfile), {
     signal,
@@ -30,16 +28,13 @@ async function fetchImage(path: string, accessToken: string | null, signal: Abor
     cache: "default",
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
-
   let response = await request(accessToken);
   if (!accessToken || response.status !== 401 || signal.aborted) return response;
-
   const { data, error } = await supabase.auth.refreshSession();
   if (error || !data.session?.access_token || signal.aborted) return response;
   response = await request(data.session.access_token);
   return response;
 }
-
 onAuthIdentityChange(event => {
   if (event === "SIGNED_OUT") {
     generation++;
@@ -49,19 +44,19 @@ onAuthIdentityChange(event => {
     authListeners.forEach(listener => listener());
   }
 });
-
 type CardImageProps = ImgHTMLAttributes<HTMLImageElement> & {
   visible?: boolean;
   imageSize?: CardImageSize;
   publicProfile?: boolean;
 };
-
 const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImage(
   { src, imageSize = "grid", publicProfile = false, visible = true, loading = "lazy", onError, onLoad, style, ...props },
   forwardedRef,
 ) {
   const originalPath = protectedPath(src);
-  const thumbnailPath = getCardImageStoragePath(originalPath, imageSize);
+  const thumbnailPath = originalPath && isMoonFourBackRefreshTarget(originalPath)
+    ? originalPath
+    : getCardImageStoragePath(originalPath, imageSize);
   const [failedThumbnail, setFailedThumbnail] = useState<string | null>(null);
   const path = thumbnailPath && (unavailableThumbnails.has(thumbnailPath) || failedThumbnail === thumbnailPath)
     ? originalPath
@@ -69,14 +64,12 @@ const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImag
   const [revealedPath, setRevealedPath] = useState<string | null>(null);
   const active = visible || (!!path && revealedPath === path);
   useEffect(() => { if (visible) setRevealedPath(path); }, [visible, path]);
-
   const element = useRef<HTMLImageElement | null>(null);
   const [nearby, setNearby] = useState(loading === "eager");
   const [authVersion, setAuthVersion] = useState(0);
   const [retry, setRetry] = useState(0);
   const retries = useRef(0);
   const [image, setImage] = useState<{ path: string; url: string } | null>(null);
-
   useEffect(() => {
     const listener = () => {
       setImage(null);
@@ -86,9 +79,7 @@ const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImag
     authListeners.add(listener);
     return () => { authListeners.delete(listener); };
   }, []);
-
   useEffect(() => { retries.current = 0; }, [path]);
-
   useEffect(() => {
     if (!path || loading === "eager" || nearby) return;
     if (typeof IntersectionObserver === "undefined") {
@@ -104,24 +95,20 @@ const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImag
     if (element.current) observer.observe(element.current);
     return () => observer.disconnect();
   }, [path, loading, nearby]);
-
   useEffect(() => {
     if (!path || !active || (!nearby && loading !== "eager")) return;
     let cancelled = false;
     let release: (() => void) | undefined;
     const started = generation;
-
     void (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if ((!session?.user && !publicProfile) || cancelled || started !== generation) return;
-
       const source = await getCachedCardImage(
         path,
         session?.user?.id ?? "public-profile",
         signal => fetchImage(path, session?.access_token ?? null, signal, publicProfile),
         retries.current > 0,
       );
-
       if (cancelled || started !== generation) {
         source?.release();
         return;
@@ -134,16 +121,13 @@ const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImag
       release = source?.release;
       setImage(source ? { path, url: source.url } : null);
     })().catch(() => { if (!cancelled) setImage(null); });
-
     return () => {
       cancelled = true;
       release?.();
     };
   }, [path, originalPath, active, nearby, loading, retry, authVersion, publicProfile]);
-
   const resolved = path ? (image?.path === path ? image.url : PLACEHOLDER) : (active ? src : undefined);
   const waiting = !!path && resolved === PLACEHOLDER;
-
   return <img
     {...props}
     ref={node => {
@@ -176,5 +160,4 @@ const CardImage = forwardRef<HTMLImageElement, CardImageProps>(function CardImag
     }}
   />;
 });
-
 export default CardImage;
