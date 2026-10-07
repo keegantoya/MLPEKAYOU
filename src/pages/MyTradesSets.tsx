@@ -302,7 +302,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     }
   }
   if (currentSetId === "14" && key.startsWith("PBP03-")) {
-    return `※${key.slice(1)}`;
+    return `\u203B${key.slice(1)}`;
   }
   if (key.startsWith("SN-")) {
     return `\u25C7N-${key.slice(3)}`;
@@ -848,7 +848,15 @@ export default function MyTradesSets() {
       </div>
     );
   }
-  const getBulkCardCode = (card: any) => set.id === "13" ? `M4${card.rarity}${String(card.number).padStart(card.rarity === "SZR" ? 3 : 2, "0")}` : getISOCardCode(set.id, String(card.key));
+  const getBulkCardCode = (card: any) => {
+    if (set.id === "13") {
+      const rarity = card.rarity === "SZR" || card.rarity === "SHINING ZR"
+        ? "\u25C7ZR"
+        : card.rarity;
+      return `MLPME04-${rarity}-${String(card.number).padStart(3, "0")}`;
+    }
+    return getISOCardCode(set.id, String(card.key));
+  };
   let cards: any[] = [];
   if (set.id === "friendshipsbegin") {
     const BONUS_STRUCTURE = [
@@ -943,11 +951,11 @@ export default function MyTradesSets() {
       ...Array.from({ length: 6 }, (_, i) => `PBP03-RR${String(i + 1).padStart(2, "0")}`),
     ];
     const nightmareRarity = (key: string) => {
-      if (key.startsWith("PBP03-ER")) return "※ER";
-      if (key.startsWith("PBP03-GR")) return "※GR";
-      if (key.startsWith("PBP03-SPR")) return "※SPR";
-      if (key.startsWith("PBP03-CR")) return "※CR";
-      if (key.startsWith("PBP03-RR")) return "※RR";
+      if (key.startsWith("PBP03-ER")) return "\u203BER";
+      if (key.startsWith("PBP03-GR")) return "\u203BGR";
+      if (key.startsWith("PBP03-SPR")) return "\u203BSPR";
+      if (key.startsWith("PBP03-CR")) return "\u203BCR";
+      if (key.startsWith("PBP03-RR")) return "\u203BRR";
       if (key.startsWith("BP03-U")) return "U";
       if (key.startsWith("BP03-ER")) return "ER";
       if (key.startsWith("BP03-SR")) return "SR";
@@ -1214,12 +1222,12 @@ export default function MyTradesSets() {
               <div className={`shrink-0 border-b p-4 sm:px-6 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h2 id="bulk-editor-title" className="text-lg font-semibold">Bulk edit · {set.name}</h2>
+                    <h2 id="bulk-editor-title" className="text-lg font-semibold">Bulk edit {"\u00B7"} {set.name}</h2>
                     <p className={`mt-1 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
                       Set Trade or Sale to 0 to remove a listing. Save when finished.
                     </p>
                   </div>
-                  <button type="button" onClick={closeBulkEditor} disabled={bulkSaving} aria-label="Close bulk editor" className={`rounded-lg px-3 py-1 text-xl disabled:opacity-50 ${isLightMode ? "hover:bg-zinc-100" : "hover:bg-white/10"}`}>×</button>
+                  <button type="button" onClick={closeBulkEditor} disabled={bulkSaving} aria-label="Close bulk editor" className={`rounded-lg px-3 py-1 text-xl disabled:opacity-50 ${isLightMode ? "hover:bg-zinc-100" : "hover:bg-white/10"}`}>{"\u00D7"}</button>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <input
@@ -1266,7 +1274,7 @@ export default function MyTradesSets() {
                             className={`h-9 w-full rounded-lg border px-2 text-center text-base font-semibold outline-none disabled:opacity-60 ${isLightMode ? "border-black/10 bg-white focus:border-amber-500" : "border-white/10 bg-[#101213] focus:border-[#FFD54A]"}`}
                           />
                           {field !== "personal" && Number(row[field]) > 0 && (
-                            <button type="button" disabled={bulkSaving} aria-label={`Remove ${getBulkCardCode(card)} from ${field}`} onClick={() => updateBulkRow(card.key, { [field]: "0" })} className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold disabled:opacity-50 ${isLightMode ? "bg-zinc-300 text-zinc-900" : "bg-zinc-600 text-white"}`}>×</button>
+                            <button type="button" disabled={bulkSaving} aria-label={`Remove ${getBulkCardCode(card)} from ${field}`} onClick={() => updateBulkRow(card.key, { [field]: "0" })} className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold disabled:opacity-50 ${isLightMode ? "bg-zinc-300 text-zinc-900" : "bg-zinc-600 text-white"}`}>{"\u00D7"}</button>
                           )}
                         </div>
                       ))}

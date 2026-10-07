@@ -1,6 +1,6 @@
 import { ListingWarningHistory } from "@/components/ListingModerationWarnings";
 import ProfileAvatar from "@/components/ProfileAvatar";
-import { cardImagePaths } from "@/lib/card-images";
+import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import {
@@ -82,6 +82,7 @@ const OFFER_SET_NAMES: Record<string, string> = {
   "1": "Eternal Moon: First Edition",
   "2": "Eternal Moon: Second Edition",
   "3": "Eternal Moon: Third Edition",
+  "13": "Eternal Moon: Fourth Edition",
   "4": "Star: First Edition",
   "5": "Rainbow: First Edition",
   "6": "Rainbow: Second Edition",
@@ -97,6 +98,9 @@ const OFFER_SET_NAMES: Record<string, string> = {
 };
 const getOfferCardImage = (card: OfferCardRef) => {
   const [rarity, number] = card.card_key.split("-");
+  if (card.set_id === "13") {
+    return getMoonFourFront(card.card_key);
+  }
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
     return cardImagePaths.friendshipsBegin(card.card_key);
   }
