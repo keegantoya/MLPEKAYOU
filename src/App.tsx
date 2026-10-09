@@ -47,7 +47,6 @@ import FriendshipsBegin from "./pages/Sets/Trading Card Game/friendships-begin";
 import Discord from "./pages/Sets/Trading Card Game/discord";
 import NightmareNight from "./pages/Sets/Trading Card Game/nightmare-night";
 import PromotionalCards from "./pages/Sets/Promos/promotional-cards";
-import LeapingPonies from "./pages/Sets/Others/leaping-ponies";
 import Explore from "./pages/Everypony/explore";
 import Binders from "./pages/Main Pages/binders";
 import Support from "./pages/Main Pages/support-mlpekayou";
@@ -66,7 +65,7 @@ const RESERVED_PATHS = new Set([
   "/collections", "/moon-one", "/moon-two", "/moon-three", "/moon-four",
   "/rainbow-one", "/rainbow-two", "/fun-moments-one", "/fun-moments-two",
   "/fun-moments-three", "/star-one", "/fantasy-wonderland", "/friendships-begin",
-  "/discord", "/nightmare-night", "/promotional-cards", "/leaping-ponies",
+  "/discord", "/nightmare-night", "/promotional-cards",
   "/explore", "/my-progress", "/inventory", "/iso", "/community", "/leaderboard",
   "/selling", "/trading-post", "/faq", "/kayou-news", "/support-mlpekayou",
   "/binders", "/throwawaypage", "/mobile-profile", "/desktop-profile", "/inbox",
@@ -229,7 +228,6 @@ const AppRoutes = () => {
       <Route path="/discord" element={<RequireAuth><Discord /></RequireAuth>} />
       <Route path="/nightmare-night" element={<RequireAuth><NightmareNight /></RequireAuth>} />
       <Route path="/promotional-cards" element={<RequireAuth><PromotionalCards /></RequireAuth>} />
-      <Route path="/leaping-ponies" element={<RequireAuth><LeapingPonies /></RequireAuth>} />
       <Route path="/explore" element={<RequireAuth><Explore /></RequireAuth>} />
       <Route path="/my-progress" element={<RequireAuth><MyProgress /></RequireAuth>} />
       <Route path="/inventory" element={<RequireAuth><MyTrades /></RequireAuth>} />

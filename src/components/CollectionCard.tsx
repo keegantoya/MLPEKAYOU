@@ -57,8 +57,6 @@ const getLink = () => {
         return "/moon-four";
       case "14":
         return "/nightmare-night";
-      case "OTHERMERCH":
-        return "/leaping-ponies";
       default:
         return `/collection/${id}`;
     }

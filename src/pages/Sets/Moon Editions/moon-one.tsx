@@ -58,36 +58,16 @@ const getSealLighting = ([x, y, z, w]: Quaternion) => {
         brightness: .78 + Math.max(0, nx * .4 - ny * .3 + nz * .85) * .5
     };
 };
-const getInspectorCardHeight = (rotation: Quaternion, width: number, height: number) => {
-    const matrix = rotationMatrix(rotation).slice(9, -1).split(",").map(Number);
-    const maxX = Math.max(0, width / 2 - 14);
-    const maxY = Math.max(0, height / 2 - 14);
-    const fits = (size: number) => {
-        for (const x of [-size * 5 / 14, size * 5 / 14]) {
-            for (const y of [-size / 2, size / 2]) {
-                const px = matrix[0] * x + matrix[4] * y;
-                const py = matrix[1] * x + matrix[5] * y;
-                const pz = matrix[2] * x + matrix[6] * y;
-                const perspective = 1000 / (1000 - pz);
-                if (Math.abs(px * perspective) > maxX || Math.abs(py * perspective) > maxY) return false;
-            }
-        }
-        return true;
-    };
-    let low = 0;
-    let high = 440;
-    for (let index = 0; index < 16; index++) {
-        const middle = (low + high) / 2;
-        if (fits(middle)) low = middle;
-        else high = middle;
-    }
-    return low;
+const getInspectorCardHeight = (width: number, height: number) => {
+    const limit = Math.max(0, Math.min(width, height) / 2 - 12);
+    const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
+    return Math.min(440, 2 * Math.sqrt(Math.max(0, radius * radius - .25)) / Math.hypot(1, 5 / 7));
 };
 function CertificateSeal({ sideways = false }: { sideways?: boolean }) {
     const id = useId().replace(/:/g, "");
     return <span className={`m1-certificate-seal${sideways ? " m1-seal-sideways" : ""}`} aria-hidden="true">
         <span className="m1-seal-foil"/>
-        <svg viewBox="0 0 100 100" className="m1-seal-art" focusable="false">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="m1-seal-art" focusable="false">
             <defs>
                 <linearGradient id={`${id}-metal`} x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0" stopColor="#f6f8f9"/><stop offset=".23" stopColor="#bdc4ca"/><stop offset=".46" stopColor="#edf0f2"/><stop offset=".7" stopColor="#a6afb6"/><stop offset="1" stopColor="#eef2f4"/>
@@ -102,13 +82,15 @@ function CertificateSeal({ sideways = false }: { sideways?: boolean }) {
             <g>
                 <path d="M0 0H100V100H0Z" fill={`url(#${id}-dots)`} opacity=".42"/>
                 <path className="m1-seal-letter-band" d="M-2-2H27V102H-2Z" fill="#19252f"/>
-                <path d="M27 0H44V100H27Z" fill="#354149"/>
-                <path d="M27 0H44V100H27Z" fill={`url(#${id}-dots)`} opacity=".8"/>
+                <path d="M26-2H45V102H26Z" fill="#354149"/>
+                <path d="M26-2H45V102H26Z" fill={`url(#${id}-dots)`} opacity=".8"/>
+                <g transform="translate(44 4) scale(.92) translate(-44 0)">
                 <path d="M44 31L73 0H86Q100 0 100 14V21L77 39L100 69V86Q100 100 86 100H74L51 65L44 73Z" fill={`url(#${id}-metal)`} stroke="#e4e9ed" strokeWidth=".6"/>
                 <g transform="translate(83 83)" fontFamily="Arial,sans-serif" fontWeight="700" textAnchor="middle">
                     <text x=".35" y=".35" fontSize="5.2" fill="#f5f7f8">{"\u5361\u6e38"}</text>
                     <text x="0" y="0" fontSize="5.2" fill="#63717b">{"\u5361\u6e38"}</text>
                     <text x="0" y="3.4" fontSize="2.3" letterSpacing=".2" fill="#63717b">KAYOU</text>
+                </g>
                 </g>
                 <g transform="rotate(90 50 50)">
                     <text className="m1-seal-certificate" y="89" textAnchor="middle" fontSize="12" fontWeight="900" fontFamily="Arial,sans-serif" stroke="#14222b" strokeWidth=".25" paintOrder="stroke fill" fill={`url(#${id}-spectrum)`}>{Array.from("CERTIFICATE").map((letter, index) => <tspan key={index} x={16 + index * 6.8}>{letter}</tspan>)}</text>
@@ -127,22 +109,26 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
     onPrevious: () => void;
     onNext: () => void;
 }) {
+    const pan = useRef({ x: 0, y: 0 });
     const rotation = useRef<Quaternion>([0, 0, 0, 1]);
     const model = useRef<HTMLDivElement>(null);
     const stage = useRef<HTMLDivElement>(null);
     const dialog = useRef<HTMLDivElement>(null);
     const pointer = useRef<{
         id: number;
+        action: "rotate" | "move";
         x: number;
         y: number;
     } | null>(null);
     const [dragging, setDragging] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [dragMode, setDragMode] = useState<"rotate" | "move">("rotate");
     const [imageStatus, setImageStatus] = useState<Record<string, "loaded" | "error">>({});
     const [imageRetry, setImageRetry] = useState(0);
     const applyRotation = (next: Quaternion) => {
         rotation.current = next;
         if (model.current) {
-            model.current.style.transform = rotationMatrix(next);
+            model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(next)}`;
             const light = getSealLighting(next);
             model.current.style.setProperty("--m1-foil-x", `${light.x}%`);
             model.current.style.setProperty("--m1-foil-y", `${light.y}%`);
@@ -153,12 +139,29 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             model.current.style.setProperty("--m1-silver-brightness", String(light.brightness));
         }
     };
+    const moveCard = (dx: number, dy: number) => {
+        pan.current = { x: pan.current.x + dx, y: pan.current.y + dy };
+        applyRotation(rotation.current);
+    };
+    const resetView = () => {
+        pan.current = { x: 0, y: 0 };
+        setZoom(1);
+        setDragMode("rotate");
+        applyRotation([0, 0, 0, 1]);
+    };
+    const changeZoom = (next: number) => {
+        const value = Math.max(1, Math.min(4, next));
+        pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
+        setZoom(value);
+        if (value > 1) setDragMode("move");
+        applyRotation(rotation.current);
+    };
     const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
     const finishDrag = () => { pointer.current = null; setDragging(false); };
     useEffect(() => {
         const updateSize = () => {
             if (model.current && stage.current) {
-                const height = Math.floor(getInspectorCardHeight([0, 0, 0, 1], stage.current.clientWidth, stage.current.clientHeight));
+                const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight) * zoom);
                 model.current.style.height = `${height}px`;
                 model.current.style.width = `${height * 5 / 7}px`;
             }
@@ -167,15 +170,44 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         if (stage.current) observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
-    }, []);
+    }, [zoom]);
     useEffect(() => {
-        applyRotation([0, 0, 0, 1]);
+        resetView();
         finishDrag();
     }, [card.key]);
+    useEffect(() => {
+        const hiddenNavigation = new Set<HTMLElement>();
+        const markNavigation = () => {
+            const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
+            controls.forEach(control => {
+                if (dialog.current?.contains(control)) return;
+                let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
+                while (element && element !== document.body) {
+                    const bounds = element.getBoundingClientRect();
+                    if (getComputedStyle(element).position === "fixed" && bounds.top > window.innerHeight / 2) {
+                        element.setAttribute("data-m1-inspector-navigation", "");
+                        hiddenNavigation.add(element);
+                        break;
+                    }
+                    element = element.parentElement;
+                }
+            });
+        };
+        markNavigation();
+        const observer = new MutationObserver(markNavigation);
+        observer.observe(document.body, { childList: true, subtree: true });
+        window.addEventListener("resize", markNavigation);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("resize", markNavigation);
+            hiddenNavigation.forEach(element => element.removeAttribute("data-m1-inspector-navigation"));
+        };
+    }, []);
     useEffect(() => {
         const previousFocus = document.activeElement as HTMLElement | null;
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
+        document.body.classList.add("m1-inspector-open");
         stage.current?.focus();
         const onKey = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
@@ -183,7 +215,7 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
                 onClose();
             }
             if (event.key === "Tab") {
-                const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), [tabindex="0"]') || []);
+                const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]') || []);
                 const first = controls[0];
                 const last = controls[controls.length - 1];
                 if (event.shiftKey && (document.activeElement === first || !dialog.current?.contains(document.activeElement))) {
@@ -197,7 +229,7 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             }
         };
         document.addEventListener("keydown", onKey);
-        return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); previousFocus?.focus(); };
+        return () => { document.body.classList.remove("m1-inspector-open"); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); previousFocus?.focus(); };
     }, [onClose]);
     const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
         const drag = pointer.current;
@@ -207,6 +239,7 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
+        if (drag.action === "move") { moveCard(dx, dy); return; }
         const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
@@ -217,6 +250,11 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             turn(-dy, dx, 0, distance * sensitivity);
     };
     const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (dragMode === "move" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
+            moveCard(event.key === "ArrowLeft" ? -24 : event.key === "ArrowRight" ? 24 : 0, event.key === "ArrowUp" ? -24 : event.key === "ArrowDown" ? 24 : 0);
+            event.preventDefault();
+            return;
+        }
         const amount = Math.PI / 12;
         if (event.key === "ArrowLeft")
             event.shiftKey ? turn(0, 0, 1, -amount) : turn(0, 1, 0, -amount);
@@ -227,7 +265,7 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         else if (event.key === "ArrowDown")
             turn(1, 0, 0, -amount);
         else if (event.key.toLowerCase() === "r")
-            applyRotation([0, 0, 0, 1]);
+            resetView();
         else
             return;
         event.preventDefault();
@@ -241,12 +279,12 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
           <div><p className="m1-eyebrow">3D card inspector</p><h2 id="m1-inspector-title">{card.code}</h2></div>
           <button type="button" className="m1-icon-button" onClick={onClose} aria-label="Close inspector"><X size={20}/></button>
         </header>
-        <div ref={stage} tabIndex={0} role="group" aria-label="Rotate card. Drag in any direction or use arrow keys. Hold Shift to rotate sideways. Press R to reset." className={`m1-inspector-stage ${dragging ? "is-dragging" : ""}`} onKeyDown={handleKey} onPointerDown={event => {
+        <div ref={stage} tabIndex={0} role="group" aria-label={`${dragMode === "move" ? "Move card to inspect any area" : "Rotate card"}. Drag or use arrow keys. Press R to reset.`} className={`m1-inspector-stage ${dragging ? "is-dragging" : ""}`} onKeyDown={handleKey} onPointerDown={event => {
             if (pointer.current || (event.pointerType === "mouse" && event.button !== 0))
                 return;
             event.currentTarget.focus();
             event.currentTarget.setPointerCapture(event.pointerId);
-            pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+            pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
         }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
         finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
@@ -265,13 +303,15 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             </div>
           </div>
         </div>
-        <div role="status" className="m1-inspector-status">{imageFailed ? <><span>Card image unavailable.</span><button type="button" onClick={() => { setImageStatus(previous => { const next = { ...previous }; delete next[card.front]; delete next[card.back]; return next; }); setImageRetry(value => value + 1); }}>Retry images</button></> : !imagesReady ? "Loading the front and back..." : <><Move size={14}/><span>Drag to rotate in any direction</span></>}</div>
+        <div role="status" className="m1-inspector-status">{imageFailed ? <><span>Card image unavailable.</span><button type="button" onClick={() => { setImageStatus(previous => { const next = { ...previous }; delete next[card.front]; delete next[card.back]; return next; }); setImageRetry(value => value + 1); }}>Retry images</button></> : !imagesReady ? "Loading the front and back..." : <><Move size={14}/><span>{dragMode === "move" ? "Drag to inspect any area of the card" : "Drag to rotate in any direction"}</span></>}</div>
         <div className="m1-inspector-controls">
           <button type="button" onClick={() => applyRotation([0, 0, 0, 1])}>Front</button>
           <button type="button" onClick={() => applyRotation([0, 1, 0, 0])}>Back</button>
           <button type="button" onClick={() => turn(0, 0, 1, -Math.PI / 6)} aria-label="Roll card counterclockwise"><RotateCcw size={17}/></button>
           <button type="button" onClick={() => turn(0, 0, 1, Math.PI / 6)} aria-label="Roll card clockwise"><RotateCw size={17}/></button>
-          <button type="button" onClick={() => applyRotation([0, 0, 0, 1])}>Reset</button>
+          <button type="button" onClick={resetView}>Reset</button>
+          <button type="button" aria-pressed={dragMode === "move"} onClick={() => setDragMode(value => value === "move" ? "rotate" : "move")}>{dragMode === "move" ? "Switch to Zoom" : "Switch to Reposition"}</button>
+          <label className="m1-inspector-zoom"><span>Zoom</span><input type="range" min="100" max="400" step="5" value={Math.round(zoom * 100)} onChange={event => changeZoom(Number(event.target.value) / 100)} aria-label="Card zoom" aria-valuetext={`${Math.round(zoom * 100)} percent`}/><output>{Math.round(zoom * 100)}%</output></label>
         </div>
         <footer className="m1-inspector-footer">
           <button type="button" onClick={onPrevious} aria-label="Previous card"><ChevronLeft size={18}/><span>Previous</span></button>
@@ -320,16 +360,21 @@ const moonOneStyles = `
 .m1-face-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;user-select:none;-webkit-user-drag:none}.m1-front-image,.m1-back-image{display:block;max-width:none;max-height:none;margin:0;padding:0;border:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;transform:scale(1.045);transform-origin:50% 50%;border-radius:inherit}.m1-card-sheen{position:absolute;inset:0;background:linear-gradient(125deg,#ffffff0c,transparent 45%,#ffffff08);pointer-events:none;border-radius:inherit}.m1-card-ground{position:absolute;bottom:4%;left:30%;right:30%;height:15px;border-radius:50%;background:#0000001a;filter:blur(13px);pointer-events:none}
 .m1-inspector-status{display:flex;align-items:center;justify-content:center;gap:7px;min-height:28px;padding:4px 12px;font-size:12px;color:var(--m1-muted);text-align:center}.m1-inspector-status button{padding:5px 9px;border-radius:8px;background:var(--m1-subtle);font-size:11px}
 .m1-inspector-controls{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:6px 16px 10px}.m1-inspector-controls button{display:flex;align-items:center;justify-content:center;min-height:42px;min-width:42px;padding:10px 15px;border-radius:12px;background:var(--m1-subtle);font-size:12px;font-weight:600}
+.m1-inspector-controls button[aria-pressed="true"]{background:var(--m1-accent);color:#27230f}
+.m1-inspector-zoom{display:flex;align-items:center;justify-content:center;gap:10px;flex-basis:100%;min-height:28px;font-size:11px;color:var(--m1-muted)}.m1-inspector-zoom input{width:min(220px,50%);accent-color:var(--m1-accent);cursor:pointer;touch-action:pan-x}.m1-inspector-zoom output{min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
 .m1-inspector-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--m1-border);padding:6px 16px}.m1-inspector-footer>span{font-size:11px;color:var(--m1-muted)}.m1-inspector-footer button{display:flex;align-items:center;gap:4px;min-height:40px;border-radius:11px;background:var(--m1-subtle);padding:8px 10px;font-size:11px}
 
-.m1-certificate-seal{position:absolute;right:6%;bottom:7.5%;width:10.5%;aspect-ratio:1;border-radius:14%;overflow:hidden;isolation:isolate;background:#bbc2c8;box-shadow:0 .3px .8px #00000075,inset 0 0 0 .4px #ffffff90;pointer-events:none}
-.m1-certificate-seal.m1-seal-sideways{right:auto;left:7.5%;bottom:6%;transform:rotate(90deg)}
+.m1-certificate-seal{position:absolute;right:6%;bottom:7.5%;width:10.5%;aspect-ratio:1;border-radius:14%;overflow:hidden;isolation:isolate;background:#bbc2c8;box-shadow:0 .3px .8px #00000075;pointer-events:none}
+.m1-certificate-seal.m1-seal-sideways{right:auto;left:7.5%;top:6%;bottom:auto;transform:rotate(180deg)}
 .m1-seal-foil{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7%,#e4f4ff65 7.3% 8.3%,transparent 8.6% 19%),repeating-linear-gradient(125deg,#f5f6f875 0 .8px,#7f8c9930 .8px 1.6px),linear-gradient(var(--m1-foil-angle,115deg),#d3d9dd 0%,#fafcfc 12%,#77838e 23%,#c1cbd3 33%,#eef4f7 41%,#505a66 49%,#c6d0d7 60%,#f5f8fa 68%,#88929b 80%,#dce1e5 92%,#f7f8f8 100%);background-size:100% 100%,100% 100%,240% 240%;background-position:center,center,var(--m1-foil-x,50%) var(--m1-foil-y,50%)}
 .m1-seal-art{position:absolute;inset:0;width:100%;height:100%}
 .m1-seal-letter-band{opacity:1}
 .m1-seal-collection{opacity:var(--m1-collection-opacity,0)}
 .m1-seal-certificate{opacity:var(--m1-cert-opacity,.55)}
 .m1-seal-glint{position:absolute;inset:0;background:linear-gradient(var(--m1-foil-angle,115deg),transparent 25%,#c6efff18 36%,#ffffff60 48%,#ffe1ff16 57%,transparent 68%);background-size:230% 230%;background-position:var(--m1-foil-x,50%) var(--m1-foil-y,50%);opacity:.2}
+
+@media(max-width:639px){body.m1-inspector-open [data-m1-inspector-navigation]{display:none!important}}
+@media(max-width:600px){.m1-card-button{perspective:none;background:transparent;overflow:hidden;-webkit-mask-image:linear-gradient(#fff,#fff)}.m1-grid-model{transform:none!important;transform-style:flat;transition:none}.m1-grid-face{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible;-webkit-mask-image:linear-gradient(#fff,#fff)}.m1-grid-back{display:none;transform:none}.m1-grid-model[data-show-back="true"]>.m1-grid-face:first-child{display:none}.m1-grid-model[data-show-back="true"]>.m1-grid-back{display:block}.m1-grid-back-image{left:-1px;width:calc(100% + 2px)}}
 @media(hover:hover){.m1-card-button:hover{transform:translateY(-3px);box-shadow:0 7px 18px #00000018}.m1-rarities button:hover{transform:translateY(-1px)}.m1-icon-button:hover,.m1-inspector-controls button:hover{filter:brightness(.95)}}
 @media(min-width:1800px){.m1-card-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
 @media(max-width:1000px){.m1-header{flex-wrap:wrap;gap:14px}.m1-heading{flex-basis:calc(100% - 60px)}.m1-total{max-width:none;min-width:120px}.m1-mode{flex-shrink:0}.m1-rarities{grid-template-columns:repeat(4,minmax(0,1fr))}.m1-card-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
@@ -473,7 +518,7 @@ const MoonOne = () => {
                 const code = `MLPME01-${card.rarity}-${String(card.number).padStart(3, "0")}`;
                 return <article key={key} className={`m1-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="m1-card-button" onClick={() => toggleCard(key)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
-                <div className="m1-grid-model" style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
+                <div className="m1-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
                   <div className="m1-grid-face"><CardImage visible={loaded && (viewMode || !owned)} src={cardImagePaths.ccg(set.folder, set.prefix, card.rarity, String(card.number).padStart(3, "0"))} className="m1-grid-image" draggable={false} alt={code}/></div>
                   <div className="m1-grid-face m1-grid-back"><CardImage visible={loaded && !viewMode && owned} src={getCardBack(card.rarity, card.number)} className="m1-grid-image m1-grid-back-image" draggable={false} alt={`${code} back`}/>{card.rarity === "SC" && <CertificateSeal sideways={card.number === 7}/>}</div>
                 </div>
