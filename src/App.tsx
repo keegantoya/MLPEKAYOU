@@ -57,6 +57,7 @@ import ChangeAvatar from "./pages/Personal/change-avatar";
 import LeaderboardModeration from "./pages/Personal/LeaderboardModeration";
 import PublicProfile from "@/pages/Everypony/PublicProfile";
 import LGSBoards from "./pages/Personal/LGSBoards";
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
@@ -69,7 +70,7 @@ const RESERVED_PATHS = new Set([
   "/explore", "/my-progress", "/inventory", "/iso", "/community", "/leaderboard",
   "/selling", "/trading-post", "/faq", "/kayou-news", "/support-mlpekayou",
   "/binders", "/throwawaypage", "/mobile-profile", "/desktop-profile", "/inbox",
-  "/progress-tcg", "/leaderboard-moderation", "/lgs-boards",
+  "/progress-tcg", "/leaderboard-moderation", "/lgs-boards", "/game",
 ]);
 function SiteAccessGate({ children }: { children: ReactNode }) {
   const location = useLocation();

@@ -63,6 +63,7 @@ import frame006 from "@/frames/frame006.webp";
 import frame007 from "@/frames/frame007.webp";
 import frame008 from "@/frames/frame008.png";
 import frame009 from "@/frames/frame009.webp";
+import frame010 from "@/frames/frame010.webp";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 import ownerBadge from "/website-assets/OwnerBadge.webp";
@@ -185,6 +186,8 @@ export const FRAME_CATALOG: readonly AvatarFrame[] = [
     requirement: "Own at least 90% of Moon 2: 171 of 189 cards.", progressLabel: "Moon 2 cards" },
   { id: "frame009", name: "Rainbow 2", image: frame009, scale: 1.6, top: 47,
     requirement: "Complete 100% of Rainbow 2: all 170 of 170 cards.", progressLabel: "Rainbow 2 cards" },
+  { id: "frame010", name: "Pinkie's Party - Limited Time", image: frame010, scale: 1.6, top: 47,
+    requirement: "This is a limited-time unlockable frame. Complete the limited-time Pinkie Pie's Party mini game on the homepage to unlock it.", progressLabel: "Pinkie's Party completions" },
 ];
 
 export function getAvatar(avatar: string | null | undefined): string {

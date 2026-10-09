@@ -1,9 +1,19 @@
 import { ListingWarningGate } from "@/components/ListingModerationWarnings";
 import CardImage from "@/components/CardImage";
-import React, { useEffect, useRef, useState, useId, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState, useId, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { getStarOneBack, cardImagePaths } from "@/lib/card-images";
 import { RotateCcw, RotateCw, Move } from "lucide-react";
 import LGSApplications from "@/pages/Pop-Ups/LGSApplications";
+import { createPortal } from "react-dom";
+const PinkieParty = lazy(() => import("@/pages/Game/Pinkie-Party"));
+class PinkiePartyBoundary extends React.Component<{ children: React.ReactNode; onClose: () => void }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (this.state.failed) return createPortal(<div role="alertdialog" aria-modal="true" aria-label="Game unavailable" className="fixed inset-0 z-[31000] flex items-center justify-center bg-black/80 p-4"><div className="w-full max-w-sm rounded-2xl bg-[#181818] p-6 text-center text-white"><p className="text-sm leading-6">Pinkie's Party could not load. Close this popup and try again.</p><button type="button" autoFocus onClick={this.props.onClose} className="mt-4 min-h-11 rounded-xl bg-[#E7C84B] px-5 py-3 text-sm font-bold text-[#111111]">Close</button></div></div>, document.body);
+    return this.props.children;
+  }
+}
 const homepageSampleCard = {
     key: "SAR-1",
     code: "MLPSE01-\u25c7AR-001",
@@ -469,6 +479,14 @@ const references: CommunityReference[] = [
 ];
 export default function Index() {
 const [showLGSApplication, setShowLGSApplication] = useState(false);
+const [showPinkieParty, setShowPinkieParty] = useState(false);
+const pinkiePartyButton = useRef<HTMLButtonElement>(null);
+useEffect(() => {
+  if (!showPinkieParty) return;
+  const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setShowPinkieParty(false); };
+  document.addEventListener("keydown", closeOnEscape);
+  return () => document.removeEventListener("keydown", closeOnEscape);
+}, [showPinkieParty]);
 const [activeAnnouncement, setActiveAnnouncement] = useState(0);
 const [announcementDirection, setAnnouncementDirection] = useState<"forward" | "backward">("forward");
 const [outgoingAnnouncement, setOutgoingAnnouncement] = useState<number | null>(null);
@@ -581,6 +599,7 @@ const motionClass = phase === "sizing" ? "" : phase === "incoming"
   return (
     <>
       <ListingWarningGate />
+      {showPinkieParty && <PinkiePartyBoundary onClose={() => setShowPinkieParty(false)}><Suspense fallback={createPortal(<div role="dialog" aria-modal="true" aria-label="Loading Pinkie's Party" className="fixed inset-0 z-[31000] flex items-center justify-center bg-black/80 p-4"><div className="w-full max-w-sm rounded-2xl bg-[#181818] p-6 text-center text-white"><p role="status" className="text-sm font-semibold">Opening Sugarcube Corner...</p><button type="button" autoFocus onClick={() => setShowPinkieParty(false)} className="mt-4 min-h-11 rounded-xl bg-[#E7C84B] px-5 py-3 text-sm font-bold text-[#111111]">Cancel</button></div></div>, document.body)}><PinkieParty onClose={() => setShowPinkieParty(false)} isLightMode={isLightMode} returnFocusRef={pinkiePartyButton} /></Suspense></PinkiePartyBoundary>}
       <style>{homepageDemoStyles}</style>
       <style>{`
         @keyframes mlpekayouAnnouncementEnterForward {
@@ -654,11 +673,19 @@ const motionClass = phase === "sizing" ? "" : phase === "incoming"
                 <a href={redditHref} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 ${isLightMode ? "border-black/10" : "border-white/15"}`}>Join Reddit<ExternalLinkIcon /></a>
               </div>
             </div>
-            <HomepageCardDemo isLightMode={isLightMode} />
-            <SilverStampShowcase isLightMode={isLightMode} />
+            {showPinkieParty ? <div className={`flex h-[396px] items-center justify-center rounded-3xl border text-sm ${surface}`}>Card preview paused while you play.</div> : <HomepageCardDemo isLightMode={isLightMode} />}
+            {!showPinkieParty && <SilverStampShowcase isLightMode={isLightMode} />}
           </div>
         </section>
         <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 sm:py-10 md:px-8 md:py-12">
+          <section aria-labelledby="pinkie-party-heading" className={`relative flex flex-col gap-4 overflow-hidden rounded-3xl border p-5 sm:p-6 md:flex-row md:items-center md:justify-between ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#181818]"}`}>
+            <div className="min-w-0">
+              <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${isLightMode ? "text-[#765d12]" : "text-[#E7C84B]"}`}>Limited-time mini game</p>
+              <h2 id="pinkie-party-heading" className="mt-1 text-2xl font-bold tracking-tight">Pinkie's Party</h2>
+              <p className={`mt-2 max-w-2xl text-sm leading-6 ${bodyText}`}>Play as Fluttershy and find five Star 1 cards across the bakery, kitchen, and Pinkie's upstairs bedroom. Bring them back to Pinkie at the counter to unlock the limited-time Pinkie's Party avatar frame!</p>
+            </div>
+            <button ref={pinkiePartyButton} type="button" aria-haspopup="dialog" onClick={() => setShowPinkieParty(true)} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-[#E7C84B] px-6 py-3 text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477]">Play Pinkie's Party<ArrowRightIcon /></button>
+          </section>
           <section aria-labelledby="announcements-heading">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
