@@ -1,11 +1,18 @@
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft,
+  Search,
+  SlidersHorizontal,
+  Users,
+  Layers,
+  ChevronRight,
+  ChevronDown,
+  ShoppingBag,
   Check,
   Handshake,
   ShieldAlert,
@@ -96,6 +103,216 @@ const OFFER_RARITY_ORDER = [
   "SC",
   "PR",
 ];
+const displayFunCode = (
+  setId: string,
+  rarity: string,
+  number: number
+) => {
+const rarityCode = rarity;
+const cardNumber = String(number).padStart(3, "0");
+const setCodeMap: Record<string, string> = {
+    "7": "FME01",
+    "8": "FME02",
+    "11": "FME03",
+  };
+  if (setId === "7" && rarity === "SN") {
+    return `FME01-\u25C7N-${cardNumber}`;
+  }
+  if (setId === "7" && rarity === "R") {
+    if (number <= 6) {
+      return `INT01-R-${cardNumber}`;
+    }
+    if (number <= 15) {
+      return `INT01-R-${String(number + 5).padStart(3, "0")}`;
+    }
+    return `INT02-R-${String(number - 15).padStart(3, "0")}`;
+  }
+  if (setId === "7" && rarity === "UR") {
+    if (number <= 6) {
+      return `INT02-UR-${cardNumber}`;
+    }
+const specialNumbers = [10, 11, 12, 14];
+    return `INT02-UR-${String(
+      specialNumbers[number - 7]
+    ).padStart(3, "0")}`;
+  }
+  if (setId === "8" && rarity === "SN") {
+    return `FME02-\u25C7N-${cardNumber}`;
+  }
+  if (setId === "8" && rarity === "R") {
+    if (number <= 20) {
+      return `INT03-R-${cardNumber}`;
+    }
+    if (number <= 27) {
+      return `INT02-R-${String(number - 20).padStart(3, "0")}`;
+    }
+    return `INT02-R-${String(number - 15).padStart(3, "0")}`;
+  }
+  if (setId === "8" && rarity === "UR") {
+    if (number <= 6) {
+      return `INT03-UR-${cardNumber}`;
+    }
+const specialNumbers = [12, 13, 14, 15];
+    return `INT03-UR-${String(
+      specialNumbers[number - 7]
+    ).padStart(3, "0")}`;
+  }
+  if (setId === "11" && rarity === "N") {
+    return `FME03-N-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "SN") {
+    return `FME03-\u25C7N-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "R") {
+    if (number <= 15) {
+      return `MLPME02-R-${cardNumber}`;
+    }
+    return `MLPME03-R-${String(number - 15).padStart(3, "0")}`;
+  }
+  if (setId === "11" && rarity === "SR") {
+    return `MLPME03-SR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "SSR") {
+    return `FME03-SSR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "UR") {
+    return `RBE02-UR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "UGR") {
+    return `FME03-UGR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "CR") {
+    return `FME03-CR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "SCR") {
+    return `FME03-\u25C7CR-${cardNumber}`;
+  }
+const baseCode = setCodeMap[setId] || "";
+  return `${baseCode}-${rarity === "SCR" ? "\u25C7CR" : rarityCode}-${cardNumber}`;
+};
+
+const displayRainbowCode = (
+  setId: string,
+  rarity: string,
+  number: number
+) => {
+const rarityCode = rarity;
+const cardNumber = String(number).padStart(3, "0");
+  if (setId === "5" && rarity === "R") {
+    if (number <= 20) {
+      return `INT01-R-${cardNumber}`;
+    }
+    return `RBE01-R-${String(number - 20).padStart(3, "0")}`;
+  }
+  if (setId === "5" && rarity === "SR") {
+const actualNumber =
+      number <= 7
+        ? number
+        : [13, 14, 15, 16, 17, 18, 19, 20][number - 8];
+    return `INT01-SR-${String(actualNumber).padStart(3, "0")}`;
+  }
+  if (setId === "5" && rarity === "SSR") {
+    if (number <= 6) {
+      return `INT01-SSR-${String(number + 6).padStart(3, "0")}`;
+    }
+    if (number <= 9) {
+const specialNumbers = [16, 17, 20];
+      return `INT01-SSR-${String(
+        specialNumbers[number - 7]
+      ).padStart(3, "0")}`;
+    }
+    return `RBE01-SSR-${String(number - 9).padStart(3, "0")}`;
+  }
+  if (setId === "6" && rarity === "R") {
+    if (number <= 15) {
+      return `MLPME02-R-${String(number).padStart(3, "0")}`;
+    }
+    return `MLPME03-R-${String(number - 15).padStart(3, "0")}`;
+  }
+  if (setId === "6" && rarity === "SR") {
+const actualNumbers = [
+      1, 3, 5, 7, 9, 11, 13,
+      14, 15, 16, 17, 18, 19, 20,
+    ];
+    return `MLPME03-SR-${String(
+      actualNumbers[number - 1]
+    ).padStart(3, "0")}`;
+  }
+  if (setId === "6" && rarity === "SSR") {
+    if (number <= 6) {
+      return `MLPME03-SSR-${cardNumber}`;
+    }
+    if (number <= 14) {
+      return `MLPME03-SSR-${String(number + 6).padStart(3, "0")}`;
+    }
+    return `RBE02-SSR-001`;
+  }
+const setCodeMap: Record<string, string> = {
+    "5": "RBE01",
+    "6": "RBE02",
+  };
+const baseCode = setCodeMap[setId] || "";
+  return `${baseCode}-${rarityCode}-${cardNumber}`;
+};
+
+const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
+  const setId = String(card.set_id);
+  const key = card.card_key.replace(/^(?:BONUS|STARTER|STARTERS)-/, "");
+  if (/^(?:MLPME|MLPSE|MLPEPR|FME|INT|RBE)\d/i.test(key)) return key;
+  if (["SD", "friendshipsbegin", "FW", "12", "14"].includes(setId)) {
+    const match = key.match(/^(P?)(BP\d{2}|SD\d{2})-?(P?)([A-Z]+)(\d{2})(.*)$/i);
+    if (!match) return key;
+    const [, before, prefix, after, rawRarity, number, suffix] = match;
+    const parallel = Boolean(before || after || rawRarity === "PER");
+    const rarity = rawRarity === "PER" ? "ER" : rawRarity;
+    let displayNumber = number;
+    if (parallel && prefix === "BP01" && rarity === "ER") {
+      displayNumber = ["01", "02", "02", "02", "03", "03", "04", "04", "05", "05", "06", "06"][Number(number) - 1] || number;
+    }
+    if (parallel && prefix === "SD01" && rarity === "ER") displayNumber = String(Math.ceil((Number(number) - 6) / 2) + 6).padStart(2, "0");
+    return `${parallel ? "\u203B" : ""}${prefix}-${rarity}${displayNumber}${suffix}`;
+  }
+  if (setId === "tcgpromos") return key;
+  const match = key.match(/^(.+?)-(\d+)$/);
+  if (!match) return key;
+  const [, rarity, rawNumber] = match;
+  const number = Number(rawNumber);
+  const padded = String(number).padStart(3, "0");
+  if (["7", "8", "11"].includes(setId)) return displayFunCode(setId, rarity, number);
+  if (["5", "6"].includes(setId)) return displayRainbowCode(setId, rarity, number);
+  if (setId === "9") return `MLPEPR${padded}`;
+  if (setId === "4") return `MLPSE01-${rarity === "SAR" ? "\u25C7AR" : rarity}-${padded}`;
+  if (["1", "2", "3", "13"].includes(setId)) {
+    if (setId === "2" && rarity === "HR") return `INT03-HR-${padded}`;
+    const edition = ({ "1": "01", "2": "02", "3": "03", "13": "04" } as Record<string, string>)[setId];
+    const displayRarity = ["SHINING ZR", "SZR"].includes(rarity) ? "\u25C7ZR" : rarity;
+    return `MLPME${edition}-${displayRarity}-${padded}`;
+  }
+  return key;
+};
+
+const COLLECTION_SET_TOTALS: Record<string, number> = {
+  "1": 186, "2": 189, "3": 290, "13": 162, "4": 105,
+  "5": 146, "6": 170, "7": 127, "8": 136, "11": 148,
+  "9": 13, SD: 68, friendshipsbegin: 68, FW: 191,
+  "12": 191, "14": 190, tcgpromos: 28,
+};
+const normalizeCollectionKey = (key: string) => key
+  .toUpperCase()
+  .replace(/^(?:BONUS|STARTER|STARTERS)-/, "")
+  .replace(/^P(BP\d+)-/, "$1P")
+  .replace(/SHINING[ -]*ZR|\u25C7[ -]*ZR|\u2B26[ -]*ZR/g, "SZR")
+  .replace(/[^A-Z0-9]/g, "")
+  .replace(/\d+/g, (number) => String(Number(number)));
+const isOwnedProgress = (value: unknown) => value === true || Boolean(value && typeof value === "object" && (value as { owned?: boolean }).owned === true);
+const randomHeroCards = (cards: TradeCard[]) => {
+  const unique = [...new Map(cards.filter((card) => Boolean(getCardImage(card))).map((card) => [normalizeCollectionKey(card.card_key), card])).values()];
+  for (let index = unique.length - 1; index > 0; index--) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [unique[index], unique[swap]] = [unique[swap], unique[index]];
+  }
+  return unique.slice(0, 3);
+};
 const offerKeyFor = (recipientId: string, setId: string, cardKey: string) =>
   [recipientId, setId, cardKey].join("-");
 const inventoryRarity = (cardKey: string) => {
@@ -243,37 +460,37 @@ const getOfferCardNumber = (cardKey: string) => {
 const getOfferImageClassName = (card: { set_id: string; card_key: string }) => {
   const base = "absolute inset-0 h-full w-full max-w-none";
   const offerSetId = String(card.set_id);
-  if (offerSetId === "13") return `${base} scale-[1.035] object-contain object-center`;
+  if (offerSetId === "13") return `${base} scale-[1.045] object-contain object-center`;
   if (standardOfferZoomSets.has(offerSetId)) {
-    return `${base} scale-[1.05] object-contain object-center`;
+    return `${base} scale-[1.06] object-contain object-center`;
   }
   const cardNumber = getOfferCardNumber(card.card_key);
   if (offerSetId === "9") {
     if (cardNumber === 1) {
-      return `${base} scale-[1.01] object-contain object-center`;
+      return `${base} scale-[1.02] object-contain object-center`;
     }
     if (cardNumber === 7) {
-      return `${base} scale-[1.05] object-contain object-center`;
+      return `${base} scale-[1.06] object-contain object-center`;
     }
     if (cardNumber !== null && [2, 3, 4, 5].includes(cardNumber)) {
-      return `${base} scale-[1.05] object-contain object-center`;
+      return `${base} scale-[1.06] object-contain object-center`;
     }
-    return `${base} scale-[1.08] object-contain object-center`;
+    return `${base} scale-[1.09] object-contain object-center`;
   }
   if (offerSetId === "tcgpromos") {
     if (cardNumber === 11) {
-      return `${base} translate-y-[2px] scale-[1.02] object-cover object-center`;
+      return `${base} translate-y-[2px] scale-[1.03] object-cover object-center`;
     }
     if (cardNumber === 10) {
-      return `${base} scale-[1.02] object-cover object-center`;
+      return `${base} scale-[1.03] object-cover object-center`;
     }
     if (cardNumber === 9) {
-      return `${base} -translate-y-px scale-[1.01] object-cover object-center`;
+      return `${base} -translate-y-px scale-[1.02] object-cover object-center`;
     }
     if (cardNumber === 12) {
       return `${base} -translate-y-[2px] object-cover object-center`;
     }
-    return `${base} scale-[1.01] object-contain object-center`;
+    return `${base} scale-[1.02] object-contain object-center`;
   }
   const contained = ["SD", "friendshipsbegin", "FW", "12", "14"].includes(
     offerSetId,
@@ -304,7 +521,7 @@ function ListingCardImage({
   return (
     <CardImage imageSize={imageSize ?? (((String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28")) ? "original" : undefined)}
       src={src}
-      alt={card.card_key}
+      alt={getListingDisplayCode(card)}
       onError={() => setFailedSrc(src)}
       draggable={false}
       className={
@@ -326,7 +543,7 @@ function ListingCardImage({
             }
           : offerMode
             ? undefined
-            : { transform: "scale(1.035)" }
+            : { transform: ["SD", "friendshipsbegin", "FW", "12", "14"].includes(String(card.set_id)) ? undefined : "scale(1.045)" }
       }
     />
   );
@@ -352,6 +569,7 @@ function InventoryCardImage({
         sale_quantity: 0,
       }}
       offerMode={offerMode}
+      imageSize={imageSize}
     />
   );
 }
@@ -371,6 +589,25 @@ export default function TradingPostInner() {
     setId === "9" || setId === "tcgpromos" ? "PR" : null,
   );
   const [page, setPage] = useState(0);
+  const [search, setSearch] = useState("");
+  const [listingType, setListingType] = useState<"iso" | "all" | "trade" | "sale">("iso");
+  const [sortBy, setSortBy] = useState("cards");
+  const [loadStage, setLoadStage] = useState(0);
+  const [ownedCardKeys, setOwnedCardKeys] = useState<Set<string>>(new Set());
+  const [isoError, setIsoError] = useState("");
+  const [reload, setReload] = useState(0);
+  const [heroCards, setHeroCards] = useState<TradeCard[]>([]);
+  const [loadError, setLoadError] = useState("");
+  useEffect(() => {
+    setSelectedRarity(null);
+    setSearch("");
+    setListingType("iso");
+    setHeroCards([]);
+    setOwnedCardKeys(new Set());
+    setIsoError("");
+    setPage(0);
+    setOpenProfile(null);
+  }, [setId]);
   const [openProfile, setOpenProfile] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<TradeCard | null>(null);
   const [reportTarget, setReportTarget] = useState<string | null>(null);
@@ -417,6 +654,34 @@ export default function TradingPostInner() {
       !root.classList.contains("dark")
     );
   });
+  const [strikeCounts, setStrikeCounts] = useState<Record<string, number>>({});
+  const [sortOpen, setSortOpen] = useState(false);
+  const marketRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = marketRef.current;
+    if (!element) return;
+    const measure = () => {
+      const top = Math.max(0, element.getBoundingClientRect().top + window.scrollY);
+      const offset = `${Math.round(top)}px`;
+      if (element.style.getPropertyValue("--tp-page-top") !== offset) element.style.setProperty("--tp-page-top", offset);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    if (element.parentElement) observer.observe(element.parentElement);
+    window.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("resize", measure);
+    };
+  }, [showLoginModal]);
+  useEffect(() => {
+    if (!sortOpen) return;
+    const dismiss = (event: KeyboardEvent) => { if (event.key === "Escape") setSortOpen(false); };
+    window.addEventListener("keydown", dismiss);
+    return () => window.removeEventListener("keydown", dismiss);
+  }, [sortOpen]);
   useEffect(() => {
     const syncTheme = () => {
       const root = document.documentElement;
@@ -439,14 +704,27 @@ export default function TradingPostInner() {
     };
   }, []);
   useEffect(() => {
-    if (!selectedCard && !reportTarget && !showUnsetPriceNotice && !offerTarget)
+    if (!selectedCard && !reportTarget && !showUnsetPriceNotice && !offerTarget && !openProfile)
       return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [selectedCard, reportTarget, showUnsetPriceNotice, offerTarget]);
+  }, [selectedCard, reportTarget, showUnsetPriceNotice, offerTarget, openProfile]);
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || isSendingOffer || isReporting || isReportingCard) return;
+      if (confirmReport) { setConfirmReport(null); return; }
+      if (showUnsetPriceNotice) { setShowUnsetPriceNotice(false); return; }
+      if (reportTarget) { setReportTarget(null); return; }
+      if (offerTarget) { setOfferTarget(null); return; }
+      if (selectedCard) { setSelectedCard(null); return; }
+      setOpenProfile(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [confirmReport, showUnsetPriceNotice, reportTarget, offerTarget, selectedCard, isSendingOffer, isReporting, isReportingCard]);
   const USERS_PER_PAGE = 10;
   const setNames: Record<string, string> = {
     "1": "Eternal Moon: First Edition",
@@ -500,8 +778,17 @@ export default function TradingPostInner() {
   }, []);
   useEffect(() => {
     if (!setId) return;
+    let active = true;
+    let requestVersion = 0;
+    let hasLoaded = false;
     const load = async () => {
-      setLoading(true);
+      if (!active) return;
+      const version = ++requestVersion;
+      const isCurrent = () => active && version === requestVersion;
+      if (!hasLoaded) setLoading(true);
+      setLoadError("");
+      try {
+      setLoadStage(0);
       let allTrades: any[] = [];
       let from = 0;
       const pageSize = 1000;
@@ -516,12 +803,15 @@ export default function TradingPostInner() {
           .order("card_key", { ascending: true })
           .range(from, from + pageSize - 1);
         query = query.eq("set_id", databaseSetId);
-        const { data } = await query;
+        const { data, error } = await query;
+        if (!isCurrent()) return;
+        if (error) throw error;
         if (!data || data.length === 0) break;
         allTrades = [...allTrades, ...data];
         if (data.length < pageSize) break;
         from += pageSize;
       }
+      setLoadStage(1);
       const uniqueTrades = Array.from(
         new Map(
           allTrades.map((card) => [
@@ -537,13 +827,83 @@ export default function TradingPostInner() {
           id: `${card.user_id}-${card.set_id}-${card.card_key}`,
         }));
       const { data: sessionData } = await supabase.auth.getSession();
+      if (!isCurrent()) return;
       const sessionUserId = sessionData.session?.user.id;
+      let heroCandidates: TradeCard[] = uniqueTrades.map((card) => ({ ...card, id: `${card.user_id}-${card.set_id}-${card.card_key}` }));
+      if (sessionUserId) {
+        const collectionSetIds = ["SD", "friendshipsbegin"].includes(setId)
+          ? ["SD", "friendshipsbegin", "SD_STARTERS", "SD_BONUS"]
+          : [databaseSetId];
+        const { data: collectionData, error: collectionError } = await supabase
+          .from("collection_progress_raw")
+          .select("set_id, progress")
+          .eq("user_id", sessionUserId)
+          .in("set_id", collectionSetIds);
+        if (!isCurrent()) return;
+        if (collectionError) {
+          setOwnedCardKeys(new Set());
+          setIsoError("Your ISO could not be loaded. Please try again.");
+        } else {
+          setIsoError("");
+          heroCandidates = [...heroCandidates, ...(collectionData || []).flatMap((row: { progress: unknown }) =>
+            Object.keys((row.progress || {}) as Record<string, unknown>).map((key) => ({
+              id: `hero-${key}`,
+              user_id: sessionUserId,
+              set_id: databaseSetId,
+              card_key: key.replace(/^(?:BONUS|STARTER|STARTERS)-/, ""),
+              is_for_trade: false,
+              is_for_sale: false,
+              asking_price: null,
+              trade_quantity: 0,
+              sale_quantity: 0,
+            })),
+          )];
+          setOwnedCardKeys(new Set((collectionData || []).flatMap((row: { progress: unknown }) =>
+            Object.entries((row.progress || {}) as Record<string, unknown>)
+              .filter(([, value]) => isOwnedProgress(value))
+              .map(([key]) => normalizeCollectionKey(key)),
+          )));
+        }
+      } else {
+        setOwnedCardKeys(new Set());
+      }
+      setHeroCards((current) => current.length ? current : randomHeroCards(heroCandidates));
       const participantIds = Array.from(
         new Set([
           ...trades.map((card) => card.user_id),
           ...(sessionUserId ? [sessionUserId] : []),
         ]),
       );
+      const nextStrikeCounts: Record<string, number> = {};
+      if (sessionUserId) {
+        const { data: moderatorRows, error: moderatorError } = await supabase
+          .from("leaderboard_moderators")
+          .select("user_id")
+          .eq("user_id", sessionUserId);
+        if (!isCurrent()) return;
+        const canReadAll = !moderatorError && (moderatorRows || []).some((row: { user_id: string }) => row.user_id === sessionUserId);
+        const strikeUserIds = canReadAll ? participantIds : [sessionUserId];
+        let strikeOffset = 0;
+        let strikesAvailable = true;
+        strikeUserIds.forEach((id) => { nextStrikeCounts[id] = 0; });
+        while (strikeUserIds.length) {
+          const { data: strikeRows, error: strikeError } = await supabase
+            .from("trade_offer_expiration_strikes")
+            .select("recipient_user_id")
+            .in("recipient_user_id", strikeUserIds)
+            .is("cleared_at", null)
+            .order("id", { ascending: true })
+            .range(strikeOffset, strikeOffset + 999);
+          if (!isCurrent()) return;
+          if (strikeError) { strikesAvailable = false; break; }
+          (strikeRows || []).forEach((row: { recipient_user_id: string }) => {
+            nextStrikeCounts[row.recipient_user_id] = (nextStrikeCounts[row.recipient_user_id] || 0) + 1;
+          });
+          if (!strikeRows || strikeRows.length < 1000) break;
+          strikeOffset += 1000;
+        }
+        if (!strikesAvailable) Object.keys(nextStrikeCounts).forEach((id) => { delete nextStrikeCounts[id]; });
+      }
       const [profilesResult, tradingProfilesResult] = participantIds.length
         ? await Promise.all([
             supabase
@@ -556,6 +916,10 @@ export default function TradingPostInner() {
               .in("user_id", participantIds),
           ])
         : [{ data: [] }, { data: [] }];
+      if (!isCurrent()) return;
+      if ("error" in profilesResult && profilesResult.error) throw profilesResult.error;
+      if ("error" in tradingProfilesResult && tradingProfilesResult.error) throw tradingProfilesResult.error;
+      setLoadStage(2);
       const profileData = profilesResult.data;
       const tradingData = tradingProfilesResult.data;
       let reportData: { reported_user_id: string }[] = [];
@@ -604,6 +968,7 @@ export default function TradingPostInner() {
             .eq("status", "pending")
             .gt("expires_at", new Date().toISOString()),
         ]);
+        if (!isCurrent()) return;
         reportData = userReportsResult.data || [];
         cardReportData = cardReportsResult.data || [];
         sentOfferData = sentOffersResult.data || [];
@@ -641,8 +1006,8 @@ export default function TradingPostInner() {
         }
         tradeMap[card.user_id].push(card);
       });
-      setGroupedTrades({});
-      setTimeout(() => {
+      if (!isCurrent()) return;
+        setStrikeCounts(nextStrikeCounts);
         setProfiles(profileMap);
         setTradingProfiles(tradingMap);
         setGroupedTrades(tradeMap);
@@ -691,22 +1056,31 @@ export default function TradingPostInner() {
         });
         setOfferStates(nextOfferStates);
         setActiveOffersByRecipient(nextActiveCounts);
-        setLoading(false);
-      }, 0);
+        hasLoaded = true;
+      } catch (error) {
+        if (isCurrent()) {
+          console.error("Unable to load marketplace:", error);
+          setLoadError("The marketplace could not be loaded. Please try again.");
+        }
+      } finally {
+        if (isCurrent()) setLoading(false);
+      }
     };
     load();
     const channel = supabase
       .channel("trades")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "card_market_listings" },
+        { event: "*", schema: "public", table: "card_market_listings", filter: `set_id=eq.${setId === "SD" ? "friendshipsbegin" : setId}` },
         () => load(),
       )
       .subscribe();
     return () => {
+      active = false;
+      requestVersion++;
       supabase.removeChannel(channel);
     };
-  }, [setId]);
+  }, [setId, reload]);
   const submitReport = async () => {
     if (!reportTarget || !currentUserId || reportedUsers.has(reportTarget))
       return;
@@ -997,7 +1371,7 @@ export default function TradingPostInner() {
       return match ? `${match[1]}${match[2]}` : "";
     }
     if (key.startsWith("RR")) return "PR";
-    if (setId === "friendshipsbegin") {
+    if (setId === "friendshipsbegin" || setId === "SD") {
       const match = key.match(/SD01([A-Z]+)\d+/);
       return match ? match[1] : "";
     }
@@ -1015,31 +1389,35 @@ export default function TradingPostInner() {
     }
     return "";
   };
-  const visibleUsers = Object.entries(groupedTrades).filter(
-    ([userId, cards]) => {
-      if (!tradingProfiles[userId]) return false;
-      if (!selectedRarity && setId !== "9" && setId !== "tcgpromos") {
-        return false;
-      }
-      return cards.some((c) => getRarity(c.card_key) === selectedRarity);
-    },
-  );
-  const totalPages = Math.ceil(visibleUsers.length / USERS_PER_PAGE);
-  const filterCardsForRarity = (cards: TradeCard[]) => {
-    if (setId === "9" || setId === "tcgpromos") {
-      return cards.filter((card) => getRarity(card.card_key) === "PR");
-    }
-    if (!selectedRarity) return [];
-    return cards.filter((card) => getRarity(card.card_key) === selectedRarity);
+  const matchesCard = (card: TradeCard) => {
+    const rarityMatches = !selectedRarity || getRarity(card.card_key) === selectedRarity;
+    const typeMatches = listingType === "iso"
+      ? Boolean(currentUserId) && !isoError && card.user_id !== currentUserId && !ownedCardKeys.has(normalizeCollectionKey(card.card_key)) && (card.is_for_trade || card.is_for_sale)
+      : listingType === "all" || (listingType === "trade" ? card.is_for_trade : card.is_for_sale);
+    const term = search.trim().toLowerCase();
+    const searchMatches = !term || [profiles[card.user_id]?.username, tradingProfiles[card.user_id]?.discord_username].some((value) => String(value || "").toLowerCase().includes(term));
+    return rarityMatches && typeMatches && searchMatches;
   };
-  const sortedVisibleUsers = [...visibleUsers].sort(
-    ([, cardsA], [, cardsB]) =>
-      filterCardsForRarity(cardsB).length - filterCardsForRarity(cardsA).length,
+  const filterCardsForRarity = (cards: TradeCard[]) => cards.filter(matchesCard);
+  const visibleUsers = Object.entries(groupedTrades).filter(([userId, cards]) => tradingProfiles[userId] && cards.some(matchesCard));
+  const totalPages = Math.ceil(visibleUsers.length / USERS_PER_PAGE);
+  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
+  const sortedVisibleUsers = [...visibleUsers].sort(([idA, cardsA], [idB, cardsB]) =>
+    sortBy === "name"
+      ? String(profiles[idA]?.username || idA).localeCompare(String(profiles[idB]?.username || idB))
+      : filterCardsForRarity(cardsB).length - filterCardsForRarity(cardsA).length,
   );
-  const pagedUsers = sortedVisibleUsers.slice(
-    page * USERS_PER_PAGE,
-    page * USERS_PER_PAGE + USERS_PER_PAGE,
-  );
+  const pagedUsers = sortedVisibleUsers.slice(currentPage * USERS_PER_PAGE, (currentPage + 1) * USERS_PER_PAGE);
+  const allListings = Object.values(groupedTrades).flat();
+  const collectionTotal = COLLECTION_SET_TOTALS[setId || ""] || 0;
+  const collectionOwned = Math.min(collectionTotal, ownedCardKeys.size);
+  const collectionMissing = Math.max(0, collectionTotal - collectionOwned);
+  const collectionPercent = collectionTotal ? Math.round(collectionOwned / collectionTotal * 100) : 0;
+  const availableMissingCards = new Set(allListings
+    .filter((card) => card.user_id !== currentUserId && (card.is_for_trade || card.is_for_sale) && !ownedCardKeys.has(normalizeCollectionKey(card.card_key)))
+    .map((card) => normalizeCollectionKey(card.card_key))).size;
+  const visibleListingCount = visibleUsers.reduce((count, [, cards]) => count + filterCardsForRarity(cards).length, 0);
+  const resetFilters = () => { setSearch(""); setSelectedRarity(null); setListingType("iso"); setPage(0); };
   const getOfferRarity = (card: InventoryCard) =>
     card.set_id === "tcgpromos" ? "PR" : inventoryRarity(card.card_key);
   const getOfferRarityRank = (offerSetId: string, rarity: string) => {
@@ -1110,536 +1488,106 @@ export default function TradingPostInner() {
     .slice(0, 150);
   return (
     <div
-      className={`min-h-screen pb-16 font-['Oxanium'] transition-colors ${
+      ref={marketRef}
+      className={`tp-market ${isLightMode ? "tp-light" : ""} font-['Oxanium'] transition-colors ${
         isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-white"
       }`}
     >
-      <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={() => navigate("/trading-post")}
-          className={`mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
-            isLightMode
-              ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-50"
-              : "border-white/10 bg-[#17191a] text-zinc-300 hover:bg-white/[0.05]"
-          }`}
-        >
-          <ArrowLeft size={16} />
-          Trading Post
-        </button>
-        <section
-          className={`mb-4 overflow-hidden rounded-[26px] border ${
-            isLightMode
-              ? "border-black/10 bg-white"
-              : "border-white/[0.08] bg-[#17191a]"
-          }`}
-        >
-          <div className="h-1 bg-gradient-to-r from-[#FFD54A] via-[#e8c446] to-transparent" />
-          <div className="p-4 sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <div
-                  className={`text-sm font-medium ${isLightMode ? "text-[#7c6000]" : "text-[#E8CA55]"}`}
-                >
-                  Collector listings
-                </div>
-                <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
-                  {setNames[setId || ""] || `Set ${setId}`}
-                </h1>
-                <p
-                  className={`mt-2 max-w-2xl text-sm leading-relaxed ${
-                    isLightMode ? "text-zinc-600" : "text-zinc-400"
-                  }`}
-                >
-                  Choose a rarity, then click a collector's name or the View
-                  profile button to open their profile, ISO, wishlist, and
-                  trades.
-                </p>
-              </div>
-              <div
-                className={`w-fit rounded-full px-3 py-1.5 text-sm ${
-                  isLightMode
-                    ? "bg-zinc-100 text-zinc-600"
-                    : "bg-white/[0.05] text-zinc-300"
-                }`}
-              >
-                {visibleUsers.length} collectors
-              </div>
-            </div>
+      <style>{`
+        .tp-market{--tp-panel:#171b23;--tp-soft:#202631;--tp-line:#ffffff12;--tp-muted:#a0a9b8;--tp-accent:#ffd54a;--tp-ink:#f7f8fc;background:radial-gradient(ellipse at 95% 0%,#70602419,transparent 45%),#10131a!important;color:var(--tp-ink)!important;overflow-x:clip;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh - var(--tp-page-top,0px));min-height:calc(100dvh - var(--tp-page-top,0px));padding-bottom:0}
+        .tp-market.tp-light{--tp-panel:#fff;--tp-soft:#f3f4f7;--tp-line:#18223814;--tp-muted:#606b7d;--tp-accent:#b18100;--tp-ink:#202635;background:radial-gradient(ellipse at 95% 0%,#fff0b1,transparent 45%),#f5f5f8!important}
+        .tp-main{display:flex;flex-direction:column;flex:1;box-sizing:border-box;width:100%;max-width:none;margin:0;padding:18px clamp(16px,3vw,64px) max(12px,env(safe-area-inset-bottom,0px))}
+        .tp-market button,.tp-market input,.tp-market select{font:inherit}
+        .tp-market button{cursor:pointer}.tp-market button:disabled{cursor:default;opacity:.45}.tp-market button:focus-visible,.tp-market input:focus-visible,.tp-market select:focus-visible{outline:3px solid var(--tp-accent);outline-offset:3px}
+        .tp-back{align-self:flex-start;flex-shrink:0;display:inline-flex;align-items:center;gap:8px;font-size:13px!important;color:var(--tp-muted);margin-bottom:10px}
+        .tp-hero{flex-shrink:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,.6fr) auto minmax(240px,.75fr);gap:24px;align-items:center;padding:0 0 14px;margin-bottom:16px;border-bottom:1px solid var(--tp-line)}.tp-hero>.tp-toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:0;min-width:0}.tp-hero>.tp-toolbar .tp-search{width:100%}.tp-hero>.tp-toolbar .tp-sort{width:100%;max-width:none;height:36px}.tp-hero>.tp-toolbar .tp-search input{height:44px}
+        .tp-kicker{color:var(--tp-muted);font-size:12px;font-weight:600}.tp-hero h1{font-size:clamp(24px,1.9vw,32px);font-weight:700;line-height:1.2;margin:0 0 7px;letter-spacing:-.8px;max-width:900px}.tp-hero p{font-size:12px;color:var(--tp-muted);line-height:1.6;max-width:620px}.tp-hero-copy{min-width:0}
+        .tp-hero-art{display:flex;gap:12px;align-items:center;justify-content:flex-end;padding:8px 8px;min-width:0}.tp-art-card{--tp-tilt:0deg;position:relative;flex:0 1 auto;min-width:0;width:96px;aspect-ratio:5/7;border-radius:7px;overflow:hidden;box-shadow:0 6px 14px #0002;animation:tp-drift 8s ease-in-out infinite;background:var(--tp-soft);transform:rotate(var(--tp-tilt))}.tp-art-card:first-child{--tp-tilt:-3deg;animation-delay:-2s}.tp-art-card:last-child{--tp-tilt:3deg;animation-delay:-5s}.tp-art-card:nth-child(2){width:104px;animation-delay:-1s}.tp-art-card.tp-art-double{aspect-ratio:10/7;width:136px}.tp-hero-loading{color:var(--tp-muted);font-size:12px}.tp-hero-art:has(.tp-art-card:only-child) .tp-art-card{--tp-tilt:0deg}
+        .tp-stats{display:flex;flex-wrap:wrap;gap:22px;padding:10px 0 0;margin:0}.tp-stat{display:flex;align-items:baseline;gap:8px}.tp-stat>svg{display:none}.tp-stat>div{display:flex;align-items:baseline;gap:7px}.tp-stat strong{font-size:16px;font-weight:700}.tp-stat span{font-size:12px;color:var(--tp-muted)}
+        .tp-workspace{flex:1;display:grid;grid-template-columns:240px minmax(0,1fr);align-items:stretch;gap:24px}.tp-filters{align-self:start;position:sticky;top:90px;background:var(--tp-panel);border:1px solid var(--tp-line);border-radius:22px;padding:20px}.tp-filter-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:800;margin-bottom:22px}.tp-reset{font-size:12px!important;color:var(--tp-accent)}.tp-label{display:block;font-size:10px;font-weight:800;letter-spacing:1.5px;color:var(--tp-muted);text-transform:uppercase;margin:22px 0 10px}.tp-type{display:flex;flex-direction:column;gap:6px}.tp-type button{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:11px;font-size:13px;text-align:left;background:var(--tp-soft);border:1px solid transparent;transition:background .2s,transform .2s}.tp-type button[aria-pressed=true],.tp-rarities button[aria-pressed=true]{background:#ffd54a;color:#29230e;border-color:#ffd54a}.tp-type button:hover{transform:translateX(3px)}.tp-rarities{display:flex;flex-wrap:wrap;gap:6px}.tp-rarities button{border:1px solid var(--tp-line);background:var(--tp-soft);padding:8px 10px;border-radius:9px;font-size:12px;transition:transform .2s,background .2s}.tp-rarities button:hover{transform:translateY(-2px)}.tp-guide{border-top:1px solid var(--tp-line);margin-top:24px;padding-top:18px;color:var(--tp-muted);font-size:12px;line-height:1.7}.tp-guide strong{display:block;color:var(--tp-ink);margin-bottom:6px}
+        .tp-results{display:flex;flex-direction:column;min-width:0}.tp-results-head{flex-shrink:0}.tp-results>.tp-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}.tp-results>.tp-loading{flex:1}.tp-results>.tp-pagination{margin-top:auto}.tp-empty>button{flex-shrink:0}.tp-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}.tp-search{display:flex;align-items:center;gap:10px;background:var(--tp-panel);border:1px solid var(--tp-line);border-radius:14px;padding:0 14px;flex:1;min-width:0;color:var(--tp-muted)}.tp-search input{height:48px;background:transparent;border:0;min-width:0;width:100%;font-size:16px;color:var(--tp-ink);outline:none}.tp-search button{display:grid;place-items:center}.tp-sort{background:var(--tp-panel);border:1px solid var(--tp-line);border-radius:14px;height:48px;padding:0 12px;font-size:13px!important;color:var(--tp-ink);max-width:180px}.tp-results-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.tp-results-head h2{font-size:18px;font-weight:800}.tp-results-head p{font-size:12px;color:var(--tp-muted);margin-top:3px}.tp-result-badge{background:#ffd54a15;color:var(--tp-accent);border:1px solid #d9b33c30;padding:7px 11px;border-radius:30px;font-size:12px;white-space:nowrap}
+        .tp-collector{background:var(--tp-panel);border:1px solid var(--tp-line);border-radius:22px;overflow:hidden;margin-bottom:18px;animation:tp-enter .4s both}.tp-collector-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--tp-line);background:linear-gradient(90deg,#ffd54a06,transparent)}.tp-identity{flex:1;min-width:120px}.tp-name{font-size:16px!important;font-weight:800;display:flex;align-items:center;gap:7px;text-align:left}.tp-name:hover{color:var(--tp-accent)}.tp-identity p{color:var(--tp-muted);font-size:12px;margin-top:4px;overflow-wrap:anywhere}.tp-profile-btn{display:flex;align-items:center;gap:6px;border:1px solid var(--tp-line);background:var(--tp-soft);border-radius:11px;padding:9px 12px;font-size:12px!important;font-weight:700;transition:background .2s}.tp-profile-btn:hover{background:#ffd54a;color:#29230e}.tp-report-btn{display:grid;place-items:center;padding:8px;border-radius:9px;color:var(--tp-muted)}.tp-report-btn:hover{background:#f0525220;color:#ef7070}.tp-collector-summary{display:flex;gap:12px;font-size:11px;color:var(--tp-muted);padding:12px 20px 0}.tp-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:14px;padding:16px 20px 20px;grid-auto-flow:dense}.tp-card{min-width:0;transition:transform .25s}.tp-card:hover{transform:translateY(-5px)}.tp-card-image{display:block;width:100%;position:relative;aspect-ratio:5/7;border-radius:14px;overflow:hidden;background:var(--tp-soft);box-shadow:0 5px 12px #0002}.tp-card-double{grid-column:span 2}.tp-card-double .tp-card-image{aspect-ratio:10/7}.tp-card-image:after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffffff22 50%,transparent 65%);transform:translateX(-110%);transition:transform .65s;pointer-events:none}.tp-card:hover .tp-card-image:after{transform:translateX(110%)}.tp-card-tags{position:absolute;left:6px;top:6px;display:flex;gap:4px}.tp-card-tags span{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#131720e6;color:#ffd54a;box-shadow:0 2px 6px #0003}.tp-card-info{display:flex;flex-direction:column;gap:4px;padding-top:9px}.tp-card-info strong{font-size:12px;overflow-wrap:anywhere}.tp-card-info span{font-size:11px;color:var(--tp-muted)}.tp-price{color:var(--tp-accent)!important;font-weight:800}.tp-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;background:var(--tp-panel);border:1px solid var(--tp-line);border-radius:16px;font-size:12px}.tp-pagination button{padding:9px 13px;border-radius:10px;background:var(--tp-soft)}
+        .tp-loading{min-width:0;padding:28px;border:1px solid var(--tp-line);border-radius:22px;background:var(--tp-panel)}.tp-loading-head{display:flex;align-items:center;gap:18px;min-width:0;margin-bottom:22px}.tp-loading-bars{display:flex;align-items:center;gap:4px;flex-shrink:0;height:20px;margin-left:auto;color:var(--tp-accent)}.tp-loading-bars i{display:block;width:3px;height:16px;border-radius:1px;background:currentColor;transform:scaleY(.45);animation:tp-bars 1.2s ease-in-out infinite}.tp-loading-bars i:nth-child(2){animation-delay:.15s}.tp-loading-bars i:nth-child(3){animation-delay:.3s}.tp-loading h3{font-size:17px;font-weight:800}.tp-loading p,.tp-inventory-loading p{font-size:12px;color:var(--tp-muted);margin-top:5px;line-height:1.6}.tp-load-steps{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0;font-size:11px;color:var(--tp-muted)}.tp-load-steps span{padding:7px 0;margin-right:14px}.tp-load-steps .tp-step-active{color:var(--tp-accent)}.tp-load-track{height:3px;border-radius:9px;background:var(--tp-soft);overflow:hidden;margin:18px 0}.tp-load-track span{display:block;width:35%;height:100%;background:linear-gradient(90deg,transparent,#ffd54a,transparent);animation:tp-scan 1.8s ease-in-out infinite}.tp-skeleton{position:relative;background:var(--tp-soft);border-radius:12px;overflow:hidden}.tp-skeleton:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent,#c1c4d518,transparent);transform:translateX(-100%);animation:tp-shimmer 1.6s infinite}.tp-skeleton-grid{display:grid;min-width:0;width:100%;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.tp-skeleton-grid>div{height:clamp(90px,10vw,150px);min-width:0;aspect-ratio:auto}.tp-loading-head>div:first-child{min-width:0;flex:1}.tp-load-steps span{min-width:0;overflow-wrap:anywhere}.tp-empty{text-align:center;padding:28px 20px;background:var(--tp-panel);border:1px solid var(--tp-line);border-radius:22px}.tp-empty>svg{margin:0 auto 10px;color:var(--tp-accent)}.tp-empty h3{font-size:17px;font-weight:800}.tp-empty p{color:var(--tp-muted);font-size:13px;margin:8px auto 16px;max-width:520px}.tp-empty button{background:#ffd54a;color:#29230e;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:700}
+        .tp-profile-overlay{position:fixed;inset:0;z-index:115;display:flex;align-items:flex-start;justify-content:center;padding:calc(112px + env(safe-area-inset-top,0px)) 20px 24px;background:#0009;backdrop-filter:blur(8px)}.tp-profile-dialog{width:min(1100px,100%);max-height:min(68dvh,calc(100dvh - 148px - env(safe-area-inset-top,0px)));background:var(--tp-panel);border:1px solid var(--tp-line);border-radius:22px;overflow:auto;box-shadow:0 24px 80px #0006;animation:tp-enter .25s both}.tp-profile-dialog>header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:var(--tp-panel);border-bottom:1px solid var(--tp-line)}.tp-profile-body{padding:16px}.tp-inventory-loading{display:flex;align-items:center;flex-direction:column;padding:40px 20px;text-align:center;gap:12px}.tp-inventory-loading .tp-load-track{width:220px;max-width:100%}.tp-market [role=dialog]{animation:tp-enter .25s both}.tp-market input,.tp-market textarea{font-size:16px!important}
+        @keyframes tp-enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes tp-drift{0%,100%{transform:translateY(0) rotate(var(--tp-tilt))}50%{transform:translateY(-4px) rotate(var(--tp-tilt))}}@keyframes tp-bars{0%,100%{transform:scaleY(.45);opacity:.45}50%{transform:scaleY(1);opacity:1}}@keyframes tp-scan{from{transform:translateX(-110%)}to{transform:translateX(390%)}}@keyframes tp-shimmer{to{transform:translateX(100%)}}
+        .tp-sort-wrap{position:relative;min-width:0}.tp-market .tp-sort{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border-radius:14px!important;appearance:none}.tp-sort-menu{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;overflow:hidden;padding:6px;border:1px solid var(--tp-line);border-radius:14px;background:var(--tp-panel);box-shadow:0 12px 24px #0004}.tp-sort-menu button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:10px;border-radius:10px;font-size:12px;text-align:left}.tp-sort-menu button:hover,.tp-sort-menu button[aria-pressed=true]{background:var(--tp-soft)}.tp-name-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.tp-strikes{display:inline-flex;align-items:center;border-radius:999px;background:var(--tp-soft);padding:4px 8px;font-size:10px;color:var(--tp-muted);white-space:nowrap}.tp-strikes-warning{color:var(--tp-accent);background:#ffd54a15}.tp-market input{border-radius:10px}.tp-loading-bars i{border-radius:999px}.tp-market .tp-back,.tp-market .tp-name,.tp-market .tp-reset{border-radius:10px}.tp-profile-dialog>header{border-radius:22px 22px 0 0}.tp-profile-dialog .rounded-none{border-radius:12px!important}
+        .tp-collection{min-width:0;border:1px solid var(--tp-line);border-radius:16px;padding:14px 16px;background:var(--tp-panel)}.tp-collection-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--tp-muted)}.tp-collection-heading strong{color:var(--tp-accent);font-size:14px}.tp-collection-owned{margin-top:9px;font-size:12px;color:var(--tp-muted)}.tp-collection-owned strong{font-size:22px;line-height:1;color:var(--tp-ink)}.tp-collection-track{height:6px;border-radius:999px;background:var(--tp-soft);overflow:hidden;margin:12px 0}.tp-collection-track span{display:block;height:100%;border-radius:inherit;background:#ffd54a;transition:width .5s ease}.tp-collection-details{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--tp-muted)}.tp-collection-details button{display:inline-flex;align-items:center;gap:3px;border-radius:8px;color:var(--tp-accent)}.tp-collection-error{margin-top:12px;font-size:12px;color:var(--tp-muted)}
+        @media(min-width:1201px) and (max-width:1600px){.tp-hero{grid-template-columns:minmax(0,1fr) minmax(210px,.7fr) auto;gap:14px 22px}.tp-hero>.tp-toolbar{grid-column:1/-1;grid-template-columns:minmax(0,1fr) 220px;align-items:center}.tp-hero>.tp-toolbar .tp-sort{height:44px}}
+        @media(min-width:1800px){.tp-card-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+        @media(max-width:1200px){.tp-hero{grid-template-columns:minmax(0,1fr) auto;gap:14px 24px}.tp-collection{grid-column:1;grid-row:2}.tp-hero>.tp-toolbar{grid-column:2;grid-row:2;grid-template-columns:minmax(0,1fr);align-items:center}.tp-hero>.tp-toolbar .tp-sort{height:44px}}
+        @media(max-width:1000px){.tp-workspace{grid-template-columns:200px minmax(0,1fr);gap:16px}.tp-filters{padding:16px}.tp-hero{gap:18px}.tp-hero-art{gap:10px}.tp-art-card{width:86px}.tp-art-card:nth-child(2){width:94px}.tp-card-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}}
+        @media(max-width:700px){.tp-main{padding:16px 12px max(12px,env(safe-area-inset-bottom,0px))}.tp-back{margin-bottom:12px}.tp-hero{grid-template-columns:1fr;padding:0 0 12px;gap:10px;margin-bottom:14px}.tp-collection{grid-column:auto;grid-row:auto}.tp-hero>.tp-toolbar{grid-column:auto;grid-row:auto;grid-template-columns:minmax(0,1fr)}.tp-hero>.tp-toolbar .tp-sort{height:36px}.tp-hero h1{font-size:25px;letter-spacing:-.5px}.tp-hero-art{justify-content:center;gap:12px;padding:8px 4px}.tp-art-card{width:84px;border-radius:6px}.tp-art-card:nth-child(2){width:92px}.tp-art-card.tp-art-double{width:116px}.tp-stats{gap:14px;padding:8px 0 0;margin:0}.tp-stat strong{font-size:17px}.tp-stat span{font-size:11px}.tp-workspace{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);gap:16px}.tp-filters{position:static;padding:14px;border-radius:18px}.tp-filter-title{margin-bottom:10px}.tp-label{margin:14px 0 8px}.tp-type{flex-direction:row;flex-wrap:wrap}.tp-type button{flex:1 1 calc(50% - 6px);justify-content:center;padding:9px 7px;font-size:11px}.tp-type button:hover{transform:none}.tp-guide{display:none}.tp-rarities{gap:5px}.tp-rarities button{padding:7px 9px;font-size:11px}.tp-toolbar{flex-wrap:wrap;gap:8px}.tp-search{flex-basis:100%}.tp-sort{max-width:none;width:100%;height:40px}.tp-collector-head{padding:14px 12px;gap:9px}.tp-name{font-size:14px!important}.tp-profile-btn{padding:8px;font-size:11px!important}.tp-collector-summary{padding:12px 12px 0}.tp-card-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}.tp-card-info strong{font-size:10px}.tp-card-info span{font-size:10px}.tp-loading{padding:20px 14px}.tp-skeleton-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.tp-profile-overlay{padding:calc(104px + env(safe-area-inset-top,0px)) 10px 18px}.tp-profile-dialog{max-height:min(70dvh,calc(100dvh - 132px - env(safe-area-inset-top,0px)))}.tp-profile-body{padding:8px}.tp-results-head h2{font-size:16px}.tp-result-badge{font-size:10px}}
+        @media(prefers-reduced-motion:reduce){.tp-market *,.tp-market *:before,.tp-market *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.tp-card:hover{transform:none}}
+      `}</style>
+      <main className="tp-main">
+        <button className="tp-back" type="button" onClick={() => navigate("/trading-post")}><ArrowLeft size={16} /> All Trading Post sets</button>
+        <section className="tp-hero">
+          <div className="tp-hero-copy">
+                        <h1>{setNames[setId || ""] || getOfferSetName(setId || "")}</h1>
+            <p>Find cards for trade or sale. Your ISO shows what you need.</p>
+        <div className="tp-stats" aria-label="Set listing totals">
+          <div className="tp-stat"><Users size={24} /><div><strong>{loading ? "--" : Object.keys(groupedTrades).length}</strong><span>Collectors</span></div></div>
+          <div className="tp-stat"><Handshake size={24} /><div><strong>{loading ? "--" : allListings.filter((card) => card.is_for_trade).length}</strong><span>Trade listings</span></div></div>
+          <div className="tp-stat"><ShoppingBag size={24} /><div><strong>{loading ? "--" : allListings.filter((card) => card.is_for_sale).length}</strong><span>Sale listings</span></div></div>
+        </div>
+
           </div>
-        </section>
-        {setId &&
-          rarityMap[setId] &&
-          setId !== "9" &&
-          setId !== "tcgpromos" && (
-            <section
-              className={`mb-4 rounded-[22px] border p-2 ${
-                isLightMode
-                  ? "border-black/10 bg-white"
-                  : "border-white/[0.08] bg-[#17191a]"
-              }`}
-            >
-              <div className="flex gap-2 overflow-x-auto">
-                {rarityMap[setId].map((rarity) => {
-                  const active = selectedRarity === rarity;
-                  const label =
-                    rarity === "SHINING ZR" || rarity === "SZR"
-                      ? "\u2B26ZR"
-                      : rarity === "SN"
-                        ? "\u2B26N"
-                        : rarity === "LC"
-                          ? "PR"
-                          : rarity === "SCR" && setId !== "4"
-                            ? "\u2B26CR"
-                            : rarity === "SAR"
-                              ? "\u25C7AR"
-                              : (setId === "FW" ||
-                                    setId === "friendshipsbegin" ||
-                                    setId === "12" ||
-                                    setId === "14") &&
-                                  rarity.startsWith("P")
-                                ? `\u203B${rarity.slice(1)}`
-                                : rarity;
-                  return (
-                    <button
-                      key={rarity}
-                      type="button"
-                      onClick={() => {
-                        setSelectedRarity(active ? null : rarity);
-                        setPage(0);
-                      }}
-                      className={`shrink-0 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition ${
-                        active
-                          ? "bg-[#FFD54A] text-zinc-900"
-                          : isLightMode
-                            ? "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                            : "bg-white/[0.05] text-zinc-300 hover:bg-white/[0.09]"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-        {loading && (
-          <section
-            className={`rounded-[24px] border py-12 text-center ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#17191a]"
-            }`}
-          >
-            <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-zinc-400/30 border-t-[#D5AD1F]" />
-            <div
-              className={`mt-3 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-            >
-              Loading listings...
-            </div>
+          <section className="tp-collection" aria-label="Your collection in this set">
+            <div className="tp-collection-heading"><span>Your collection</span><strong>{loading || isoError || loadError ? "--" : `${collectionPercent}%`}</strong></div>
+            {isoError || loadError ? <p className="tp-collection-error">Collection progress is unavailable.</p> : <>
+              <div className="tp-collection-owned">{loading ? "Loading your progress..." : <><strong>{collectionOwned}</strong><span> / {collectionTotal} owned</span></>}</div>
+              <div className="tp-collection-track" role="progressbar" aria-label="Set completion" aria-valuemin={0} aria-valuemax={100} aria-valuenow={loading ? undefined : collectionPercent} aria-valuetext={loading ? "Loading collection progress" : `${collectionOwned} of ${collectionTotal} cards owned`}><span style={{ width: loading ? "0%" : `${collectionPercent}%` }} /></div>
+              <div className="tp-collection-details"><span>{loading ? "--" : collectionMissing} missing</span><button type="button" disabled={loading} onClick={resetFilters}>{loading ? "--" : availableMissingCards} available <ChevronRight size={12} /></button></div>
+            </>}
           </section>
-        )}
-        {!loading &&
-          !selectedRarity &&
-          setId !== "9" &&
-          setId !== "tcgpromos" && (
-            <section
-              className={`rounded-[24px] border px-6 py-10 text-center ${
-                isLightMode
-                  ? "border-black/10 bg-white"
-                  : "border-white/[0.08] bg-[#17191a]"
-              }`}
-            >
-              <div className="text-base font-semibold">Choose a rarity</div>
-              <p
-                className={`mt-1 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-              >
-                Collector listings will appear here.
-              </p>
-            </section>
-          )}
-        {!loading &&
-          (selectedRarity || setId === "9" || setId === "tcgpromos") &&
-          pagedUsers.length === 0 && (
-            <section
-              className={`rounded-[24px] border px-6 py-10 text-center ${
-                isLightMode
-                  ? "border-black/10 bg-white"
-                  : "border-white/[0.08] bg-[#17191a]"
-              }`}
-            >
-              <div className="text-base font-semibold">No listings found</div>
-              <p
-                className={`mt-1 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-              >
-                No collectors match this rarity right now.
-              </p>
-            </section>
-          )}
-        {!loading && pagedUsers.length > 0 && (
-          <div className="space-y-3">
-            {pagedUsers.map(([userId, cards]) => {
-              const filteredCards = filterCardsForRarity(cards);
-              const assets = getProfileAssets(profiles[userId]);
-              const tradeCount = filteredCards.filter(
-                (card) => card.is_for_trade,
-              ).length;
-              const saleCount = filteredCards.filter(
-                (card) => card.is_for_sale,
-              ).length;
-              if (openProfile === userId) {
-                return (
-                  <section
-                    key={userId}
-                    className={`overflow-hidden rounded-[24px] border ${
-                      isLightMode
-                        ? "border-[#c9a62d]/40 bg-white"
-                        : "border-[#FFD54A]/25 bg-[#17191a]"
-                    }`}
-                  >
-                    <div
-                      className={`flex items-center justify-between gap-3 border-b px-4 py-3 ${
-                        isLightMode ? "border-black/10" : "border-white/[0.08]"
-                      }`}
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <ProfileAvatar
-                          profile={{ ...profiles[userId], id: userId }}
-                          src={assets.avatar}
-                          alt={profiles[userId]?.username || userId}
-                          className={`h-11 w-11 shrink-0 rounded-[22%] border object-cover ${
-                            isLightMode ? "border-black/10" : "border-white/15"
-                          }`}
-                        />
-                        <div className="min-w-0">
-                          <div className="truncate text-base font-semibold">
-                            {profiles[userId]?.username || userId}
-                          </div>
-                          <div
-                            className={`mt-0.5 text-sm ${
-                              isLightMode ? "text-zinc-500" : "text-zinc-400"
-                            }`}
-                          >
-                            Collector profile &middot; ISO &middot; Wishlist
-                            &middot; Trades
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {currentUserId !== userId && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!reportedUsers.has(userId)) {
-                                setReportError("");
-                                setReportTarget(userId);
-                              }
-                            }}
-                            disabled={reportedUsers.has(userId)}
-                            className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold ${reportedUsers.has(userId) ? (isLightMode ? "bg-emerald-100 text-emerald-700" : "bg-emerald-500/15 text-emerald-400") : isLightMode ? "bg-red-50 text-red-600" : "bg-red-500/10 text-red-400"}`}
-                          >
-                            {reportedUsers.has(userId) ? (
-                              <ShieldCheck size={16} />
-                            ) : (
-                              <ShieldAlert size={16} />
-                            )}
-                            {reportedUsers.has(userId)
-                              ? "Reported"
-                              : "Report user"}
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setOpenProfile(null)}
-                          className={`rounded-full px-3 py-2 text-sm font-medium ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300"}`}
-                        >
-                          Close
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-3 sm:p-5">
-                      <ExploreProfile
-                        user={profiles[userId]}
-                        tradingProfile={tradingProfiles[userId]}
-                        onClose={() => setOpenProfile(null)}
-                      />
-                    </div>
-                  </section>
-                );
-              }
-              return (
-                <section
-                  key={userId}
-                  className={`overflow-hidden rounded-[24px] border ${
-                    isLightMode
-                      ? "border-black/10 bg-white"
-                      : "border-white/[0.08] bg-[#17191a]"
-                  }`}
-                >
-                  <div
-                    className={`flex items-center gap-3 border-b px-4 py-3 sm:px-5 ${
-                      isLightMode ? "border-black/10" : "border-white/[0.08]"
-                    }`}
-                  >
-                    <ProfileAvatar
-                      profile={{ ...profiles[userId], id: userId }}
-                      src={assets.avatar}
-                      alt={profiles[userId]?.username || userId}
-                      className={`h-12 w-12 shrink-0 rounded-[22%] border object-cover ${
-                        isLightMode ? "border-black/10" : "border-white/15"
-                      }`}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setOpenProfile(userId)}
-                          className={`truncate text-base font-semibold underline decoration-2 underline-offset-4 ${
-                            isLightMode
-                              ? "text-[#715700] decoration-[#b99826]/40 hover:text-black"
-                              : "text-[#FFD54A] decoration-[#FFD54A]/40 hover:text-[#ffe98a]"
-                          }`}
-                        >
-                          {profiles[userId]?.username || userId}
-                        </button>
-                        {assets.verification && (
-                          <CardImage
-                            src={assets.verification.badge}
-                            alt={assets.verification.label}
-                            title={assets.verification.label}
-                            className="h-4 w-4 shrink-0 object-contain"
-                          />
-                        )}
-                      </div>
-                      <div
-                        className={`mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm ${
-                          isLightMode ? "text-zinc-500" : "text-zinc-400"
-                        }`}
-                      >
-                        {tradingProfiles[userId]?.discord_username && (
-                          <span>
-                            Discord: {tradingProfiles[userId].discord_username}
-                          </span>
-                        )}
-                        <span>
-                          {tradeCount} trade{tradeCount === 1 ? "" : "s"}
-                        </span>
-                        <span>
-                          {saleCount} sale{saleCount === 1 ? "" : "s"}
-                        </span>
-                      </div>
-                    </div>
-                    {currentUserId !== userId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!reportedUsers.has(userId)) {
-                            setReportError("");
-                            setReportTarget(userId);
-                          }
-                        }}
-                        disabled={reportedUsers.has(userId)}
-                        title={
-                          reportedUsers.has(userId)
-                            ? "You already reported this user"
-                            : "Report inactive or unresponsive user"
-                        }
-                        aria-label={
-                          reportedUsers.has(userId)
-                            ? "User already reported"
-                            : "Report user"
-                        }
-                        className={`flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition ${
-                          reportedUsers.has(userId)
-                            ? isLightMode
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-emerald-500/15 text-emerald-400"
-                            : isLightMode
-                              ? "bg-zinc-100 text-zinc-500 hover:bg-red-50 hover:text-red-600"
-                              : "bg-white/[0.07] text-zinc-400 hover:bg-red-500/10 hover:text-red-400"
-                        }`}
-                      >
-                        {reportedUsers.has(userId) ? (
-                          <ShieldCheck size={19} />
-                        ) : (
-                          <ShieldAlert size={19} />
-                        )}
-                        <span className="hidden sm:inline">
-                          {reportedUsers.has(userId)
-                            ? "Reported"
-                            : "Report user"}
-                        </span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setOpenProfile(userId)}
-                      className={`shrink-0 rounded-full px-3 py-2 text-sm font-semibold transition ${
-                        isLightMode
-                          ? "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                          : "bg-white/[0.07] text-zinc-200 hover:bg-white/[0.12]"
-                      }`}
-                    >
-                      View profile &rarr;
-                    </button>
-                  </div>
-                  <div className="p-3 sm:p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="text-sm font-semibold">
-                        Available cards
-                      </div>
-                      <div
-                        className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-                      >
-                        {filteredCards.length}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 [grid-auto-flow:dense]">
-                      {filteredCards
-                        .sort((a, b) => {
-                          if (setId === "9") return comparePromoCards(a, b);
-                          if (setId === "friendshipsbegin" || setId === "14") {
-                            return a.card_key.localeCompare(
-                              b.card_key,
-                              undefined,
-                              { numeric: true },
-                            );
-                          }
-                          const getNum = (key: string) => {
-                            if (!key.includes("-")) {
-                              const match = key.match(/(\d+)$/);
-                              return match ? parseInt(match[1]) : 0;
-                            }
-                            return parseInt(key.split("-")[1]);
-                          };
-                          return getNum(a.card_key) - getNum(b.card_key);
-                        })
-                        .map((card) => {
-                          const [rarity, number] = card.card_key.split("-");
-                          const isDoubleCard =
-                            card.set_id === "3" &&
-                            rarity === "SZR" &&
-                            Number(number) === 1;
-                          return (
-                            <div
-                              key={card.id}
-                              className={`relative overflow-hidden rounded-[14px] ${
-                                isDoubleCard
-                                  ? "col-span-2 aspect-[10/7]"
-                                  : "aspect-[5/7]"
-                              }`}
-                            >
-                              <button
-                                type="button"
-                                onClick={() => setSelectedCard(card)}
-                                aria-label={`View ${card.card_key} listing details`}
-                                className="absolute inset-0 h-full w-full"
-                              >
-                                <ListingCardImage card={card} />
-                                <div className="absolute left-1.5 top-1.5 flex gap-1">
-                                  {card.is_for_trade && (
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">
-                                      &#8644;
-                                    </span>
-                                  )}
-                                  {card.is_for_sale && (
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-zinc-900">
-                                      $
-                                    </span>
-                                  )}
-                                </div>
-                              </button>
-                              {card.is_for_sale &&
-                                currentUserId !== userId &&
-                                (() => {
-                                  const reportKey = `${card.user_id}-${card.set_id}-${card.card_key}`;
-                                  const alreadyReported =
-                                    reportedCardKeys.has(reportKey);
-                                  return (
-                                    <button
-                                      type="button"
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        if (
-                                          Number(card.asking_price ?? 0) <= 0
-                                        ) {
-                                          setShowUnsetPriceNotice(true);
-                                          return;
-                                        }
-                                        setCardReportError("");
-                                        setSelectedCard(card);
-                                      }}
-                                      disabled={alreadyReported}
-                                      title={
-                                        alreadyReported
-                                          ? "You already reported this price"
-                                          : "Report this card's price"
-                                      }
-                                      aria-label={
-                                        alreadyReported
-                                          ? "Card price already reported"
-                                          : `Report ${card.card_key} price`
-                                      }
-                                      className={`absolute bottom-1.5 right-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full border shadow-lg backdrop-blur-sm ${alreadyReported ? "border-emerald-400/30 bg-emerald-500/90 text-white" : "border-white/20 bg-red-500/90 text-white hover:bg-red-600"}`}
-                                    >
-                                      {alreadyReported ? (
-                                        <ShieldCheck size={16} />
-                                      ) : (
-                                        <ShieldAlert size={16} />
-                                      )}
-                                    </button>
-                                  );
-                                })()}
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        )}
-        {totalPages > 1 && (
-          <div
-            className={`mt-5 flex items-center justify-between rounded-[20px] border p-2 ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#17191a]"
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-              className={`rounded-full px-4 py-2 text-sm font-medium disabled:opacity-30 ${
-                isLightMode
-                  ? "bg-zinc-100 text-zinc-700"
-                  : "bg-white/[0.06] text-zinc-300"
-              }`}
-            >
-              &larr; Previous
-            </button>
-            <span
-              className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-            >
-              Page {page + 1} of {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={page >= totalPages - 1}
-              className={`rounded-full px-4 py-2 text-sm font-medium disabled:opacity-30 ${
-                isLightMode
-                  ? "bg-zinc-100 text-zinc-700"
-                  : "bg-white/[0.06] text-zinc-300"
-              }`}
-            >
-              Next &rarr;
-            </button>
-          </div>
-        )}
+          <div className="tp-hero-art" aria-hidden="true">{heroCards.map((card) => <div key={card.card_key} className={`tp-art-card ${card.set_id === "3" && /^SZR-0*1$/.test(card.card_key) ? "tp-art-double" : ""}`}><ListingCardImage card={card} /></div>)}{heroCards.length === 0 && loading && <div className="tp-hero-loading">Finding cards from this set...</div>}</div>
+            <div className="tp-toolbar">
+              <label className="tp-search"><Search size={19} /><input aria-label="Search collectors or Discord usernames" placeholder="Search collectors..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(0); }} />{search && <button type="button" aria-label="Clear search" onClick={() => { setSearch(""); setPage(0); }}><X size={16} /></button>}</label>
+              <div className="tp-sort-wrap" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setSortOpen(false); }}><button type="button" className="tp-sort" aria-label="Sort collectors" aria-expanded={sortOpen} aria-controls="tp-sort-options" onClick={() => setSortOpen((value) => !value)}>{sortBy === "cards" ? "Most matching cards" : "Collector name A-Z"}<ChevronDown size={16} /></button>{sortOpen && <div className="tp-sort-menu" id="tp-sort-options">{[{ value: "cards", label: "Most matching cards" }, { value: "name", label: "Collector name A-Z" }].map((option) => <button type="button" key={option.value} aria-pressed={sortBy === option.value} onClick={() => { setSortBy(option.value); setPage(0); setSortOpen(false); }}>{option.label}{sortBy === option.value && <Check size={14} />}</button>)}</div>}</div>
+            </div>
+
+        </section>
+        <div className="tp-workspace">
+          <aside className="tp-filters" aria-label="Listing filters">
+            <div className="tp-filter-title"><span className="flex items-center gap-2"><SlidersHorizontal size={16} /> Refine listings</span><button type="button" className="tp-reset" onClick={resetFilters}>Reset</button></div>
+            <span className="tp-label">I'm looking for</span>
+            <div className="tp-type">{([{ key: "iso", label: "Your ISO", icon: Search }, { key: "all", label: "All listings", icon: Layers }, { key: "trade", label: "For trade", icon: Handshake }, { key: "sale", label: "For sale", icon: ShoppingBag }] as const).map(({ key, label, icon: Icon }) => <button key={key} type="button" aria-pressed={listingType === key} onClick={() => { setListingType(key); setPage(0); }}><Icon size={16} />{label}</button>)}</div>
+            <span className="tp-label">Rarity</span>
+            <div className="tp-rarities">{["ALL", ...(rarityMap[setId === "SD" ? "friendshipsbegin" : setId || ""] || [])].map((rarity) => <button key={rarity} type="button" aria-pressed={rarity === "ALL" ? !selectedRarity : selectedRarity === rarity} onClick={() => { setSelectedRarity(rarity === "ALL" ? null : rarity); setPage(0); }}>{rarity === "ALL" ? "All rarities" : getOfferRarityLabel(setId || "", rarity)}</button>)}</div>
+            <div className="tp-guide"><strong>Your missing cards, matched</strong><p>Your ISO shows cards missing from your collection that other collectors have for trade or sale. Open a card to see quantities, price, and offer options. Open a collector's profile to explore their ISO and wishlist. Use their Discord username to discuss a purchase.</p></div>
+          </aside>
+          <section className="tp-results" aria-label="Collector listings" aria-busy={loading}>
+            <div className="tp-results-head"><div><h2>{listingType === "iso" ? "Your ISO" + (selectedRarity ? " / " + getOfferRarityLabel(setId || "", selectedRarity) : "") : selectedRarity ? getOfferRarityLabel(setId || "", selectedRarity) + " listings" : "Explore listings"}</h2><p>{loading ? "Gathering this set's collector listings" : `${visibleListingCount} matching listings from ${visibleUsers.length} collectors`}</p></div><span className="tp-result-badge">{listingType === "iso" ? "Missing from your collection" : listingType === "all" ? "Trade + sale" : listingType === "trade" ? "For trade" : "For sale"}</span></div>
+            {loadError && !loading && <div className="tp-empty" role="alert"><ShieldAlert size={28} /><h3>Unable to load the marketplace</h3><p>{loadError}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Try again</button></div>}
+            {loading ? <div className="tp-loading" role="status">
+              <div className="tp-loading-head"><div><h3>Loading listings</h3><p>{["Fetching card listings for this set.", "Loading collector profiles and contact details.", "Checking availability and your offer history."][loadStage]}</p></div><div className="tp-loading-bars" aria-hidden="true"><i /><i /><i /></div></div>
+              <div className="tp-load-steps">{["Card listings", "Collector profiles", "Offer history"].map((label, index) => <span key={label} className={index === loadStage ? "tp-step-active" : ""}>{index < loadStage ? "Done: " : `${index + 1}. `}{label}</span>)}</div>
+              <div className="tp-load-track" aria-hidden="true"><span /></div><div className="tp-skeleton-grid" aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <div key={index} className="tp-skeleton" style={{ animationDelay: `${index * 40}ms` }} />)}</div>
+            </div> : loadError ? null : listingType === "iso" && isoError ? <div className="tp-empty" role="alert"><ShieldAlert size={36} /><h3>Unable to load your ISO</h3><p>{isoError}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Try again</button></div> : pagedUsers.length === 0 ? <div className="tp-empty"><Search size={36} /><h3>{listingType === "iso" ? "No ISO matches right now" : allListings.length ? "No matches this time" : "This set is waiting for listings"}</h3><p>{listingType === "iso" ? "Nothing from your ISO in this set is for sale or trade right now, try again another time." : allListings.length ? "Try a different rarity, listing type, or collector name." : "Collector cards will appear here when they become available for trade or sale."}</p><button type="button" onClick={() => { setSearch(""); setSelectedRarity(null); setListingType("all"); setPage(0); }}>Browse all listings</button></div> : <div key={`${selectedRarity}-${listingType}-${currentPage}`}>
+              {pagedUsers.map(([userId, cards], index) => {
+                const filteredCards = filterCardsForRarity(cards);
+                const assets = getProfileAssets(profiles[userId]);
+                return <article key={userId} className="tp-collector" style={{ animationDelay: `${Math.min(index, 5) * 55}ms` }}>
+                  <header className="tp-collector-head">
+                    <ProfileAvatar profile={{ ...profiles[userId], id: userId }} src={assets.avatar} alt={profiles[userId]?.username || "Collector"} className="h-11 w-11 shrink-0 rounded-xl object-cover" />
+                    <div className="tp-identity"><div className="tp-name-row"><button className="tp-name" type="button" onClick={() => setOpenProfile(userId)}>{profiles[userId]?.username || "Collector"}{assets.verification && <CardImage src={assets.verification.badge} alt={assets.verification.label} title={assets.verification.label} className="h-4 w-4 shrink-0 object-contain" />}</button><span className={`tp-strikes ${Number(strikeCounts[userId] || 0) > 0 ? "tp-strikes-warning" : ""}`} title={strikeCounts[userId] === undefined ? "Strike counts are visible to the collector and moderators" : "Active offer expiration strikes"}>{strikeCounts[userId] === undefined ? "Strikes unavailable" : `${strikeCounts[userId]} strike${strikeCounts[userId] === 1 ? "" : "s"}`}</span></div><p>Discord: {tradingProfiles[userId]?.discord_username}</p></div>
+                    <button className="tp-profile-btn" type="button" onClick={() => setOpenProfile(userId)}>View profile <ChevronRight size={14} /></button>
+                    {currentUserId !== userId && <button className="tp-report-btn" type="button" disabled={reportedUsers.has(userId)} aria-label={reportedUsers.has(userId) ? "Collector already reported" : "Report inactive or unresponsive collector"} title={reportedUsers.has(userId) ? "Already reported" : "Report collector"} onClick={() => { setReportError(""); setReportTarget(userId); }}>{reportedUsers.has(userId) ? <ShieldCheck size={17} /> : <ShieldAlert size={17} />}</button>}
+                  </header>
+                  <div className="tp-collector-summary"><span>{filteredCards.length} matching cards</span><span>{filteredCards.filter((card) => card.is_for_trade).length} for trade</span><span>{filteredCards.filter((card) => card.is_for_sale).length} for sale</span></div>
+                  <div className="tp-card-grid">{[...filteredCards].sort((a, b) => setId === "9" ? comparePromoCards(a, b) : a.card_key.localeCompare(b.card_key, undefined, { numeric: true })).map((card) => {
+                    const double = card.set_id === "3" && /^SZR-0*1$/.test(card.card_key);
+                    const price = Number(card.asking_price || 0);
+                    return <div key={card.id} className={`tp-card ${double ? "tp-card-double" : ""}`}><button type="button" className="tp-card-image" aria-label={`Open ${getListingDisplayCode(card)}, ${card.is_for_trade ? "for trade" : ""} ${card.is_for_sale ? "for sale" : ""}`} onClick={() => { setCardReportError(""); setSelectedCard(card); }}><ListingCardImage card={card} /><div className="tp-card-tags">{card.is_for_trade && <span title="For trade"><Handshake size={14} /></span>}{card.is_for_sale && <span title="For sale">$</span>}</div></button><div className="tp-card-info"><strong>{getListingDisplayCode(card)}</strong>{card.is_for_sale && <span className="tp-price">{price > 0 ? `$${price.toFixed(2)}` : "Ask collector for price"}</span>}<span>{card.is_for_trade && `Trade x${card.trade_quantity || 1}`}{card.is_for_trade && card.is_for_sale && " / "}{card.is_for_sale && `Sale x${card.sale_quantity || 1}`}</span></div></div>;
+                  })}</div>
+                </article>;
+              })}
+            </div>}
+            {!loading && totalPages > 1 && <nav className="tp-pagination" aria-label="Collector pages"><button type="button" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Previous</button><span>Page {currentPage + 1} of {totalPages}</span><button type="button" disabled={currentPage >= totalPages - 1} onClick={() => setPage(currentPage + 1)}>Next</button></nav>}
+          </section>
+        </div>
       </main>
+      {openProfile && <div className="tp-profile-overlay" onMouseDown={() => setOpenProfile(null)}><div className="tp-profile-dialog" role="dialog" aria-modal="true" aria-labelledby="tp-profile-title" onMouseDown={(event) => event.stopPropagation()}><header><div><h2 id="tp-profile-title" className="font-bold">{profiles[openProfile]?.username || "Collector"}</h2><p className="text-xs opacity-60">Profile / ISO / Wishlist / Trades</p></div><button type="button" className="tp-profile-btn" onClick={() => setOpenProfile(null)} aria-label="Close collector profile"><X size={18} /> Close</button></header><div className="tp-profile-body"><ExploreProfile user={profiles[openProfile]} tradingProfile={tradingProfiles[openProfile]} onClose={() => setOpenProfile(null)} /></div></div></div>}
       {selectedCard && (
         <div
           className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm"
@@ -1698,6 +1646,7 @@ export default function TradingPostInner() {
                     </div>
                   </div>
                 </div>
+                <div className="mt-3 text-sm font-bold">{getListingDisplayCode(selectedCard)}</div>
                 <div className="mt-3 space-y-2">
                   {selectedCard.is_for_trade && (
                     <div
@@ -2033,8 +1982,11 @@ export default function TradingPostInner() {
                         ))}
                       </div>
                       {!inventoryLoaded ? (
-                        <div className="py-16 text-center text-sm text-zinc-500">
-                          Loading your inventory...
+                        <div role="status" className="tp-inventory-loading">
+                          <div className="tp-loading-bars" aria-hidden="true" style={{ marginLeft: 0 }}><i /><i /><i /></div>
+                          <strong>Opening your collection</strong>
+                          <p>Finding owned cards you can include in this offer.</p>
+                          <div className="tp-load-track"><span /></div>
                         </div>
                       ) : visibleOfferInventory.length === 0 ? (
                         <div
@@ -2100,7 +2052,7 @@ export default function TradingPostInner() {
                             key={card.id}
                             type="button"
                             onClick={() => toggleOfferCard(card)}
-                            aria-label="Remove selected card"
+                            aria-label={`Remove ${getListingDisplayCode(card)} from your offer`}
                             className="relative h-12 aspect-[5/7] overflow-hidden rounded-[6px] border border-[#FFD54A]/40"
                           >
                             <InventoryCardImage card={card} offerMode />
