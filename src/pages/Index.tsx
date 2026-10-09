@@ -55,6 +55,35 @@ const getSealLighting = ([x, y, z, w]: Quaternion) => {
         brightness: .78 + Math.max(0, nx * .4 - ny * .3 + nz * .85) * .5
     };
 };
+const getPremiumCardEdges = (height: number, aspect: number) => {
+    if (height <= 0) return [];
+    const width = height * aspect;
+    const radius = height * .032;
+    const points: { x: number; y: number }[] = [];
+    const corners = [
+        { x: width - radius, y: radius, angle: -Math.PI / 2 },
+        { x: width - radius, y: height - radius, angle: 0 },
+        { x: radius, y: height - radius, angle: Math.PI / 2 },
+        { x: radius, y: radius, angle: Math.PI },
+    ];
+    for (const corner of corners) {
+        for (let step = 0; step <= 4; step++) {
+            const angle = corner.angle + step * Math.PI / 8;
+            points.push({ x: corner.x + Math.cos(angle) * radius, y: corner.y + Math.sin(angle) * radius });
+        }
+    }
+    return points.map((point, index) => {
+        const next = points[(index + 1) % points.length];
+        const dx = next.x - point.x;
+        const dy = next.y - point.y;
+        return {
+            left: `${(point.x + next.x) / 2}px`,
+            top: `${(point.y + next.y) / 2}px`,
+            width: `${Math.hypot(dx, dy) + .2}px`,
+            transform: `translate(-50%, -50%) rotateZ(${Math.atan2(dy, dx)}rad) rotateX(90deg)`,
+        };
+    });
+};
 const getInspectorCardHeight = (width: number, height: number, aspect: number) => {
     const limit = Math.max(0, Math.min(width, height) / 2 - 12);
     const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
@@ -109,13 +138,20 @@ function SilverStampShowcase({ isLightMode }: { isLightMode: boolean }) {
             <CertificateSeal />
         </div>
         <p className={`text-sm leading-6 ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}>Built entirely in HTML code with SVG and CSS, the stamp is a 3D model that responds to the direction you drag the card.</p>
-        <p className={`mt-2 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>Horizontal movement reveals COLLECTION. Vertical movement reveals CERTIFICATE. This stationary preview flashes between the two. I did not have a good image of the Kayou China logo, so I changed it for the demo!</p>
+        <p className={`mt-2 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>Horizontal movement reveals COLLECTION. Vertical movement reveals CERTIFICATE. This stationary preview flashes between the two.</p>
         <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)} className={`mt-3 min-h-11 rounded-xl border px-3 text-xs font-semibold ${isLightMode ? "border-black/10" : "border-white/15"}`}>{paused ? "Resume stamp preview" : "Pause stamp preview"}</button>
     </aside>;
 }
 function HomepageCardDemo({ isLightMode }: { isLightMode: boolean }) {
     const card = homepageSampleCard;
     const aspect = 5 / 7;
+    const [baseHeight, setBaseHeight] = useState(0);
+    const zoomRef = useRef(1);
+    const renderFrame = useRef<number | null>(null);
+    useEffect(() => () => {
+        if (renderFrame.current !== null) cancelAnimationFrame(renderFrame.current);
+        renderFrame.current = null;
+    }, []);
     const pan = useRef({ x: 0, y: 0 });
     const rotation = useRef<Quaternion>([0, 0, 0, 1]);
     const model = useRef<HTMLDivElement>(null);
@@ -133,9 +169,12 @@ function HomepageCardDemo({ isLightMode }: { isLightMode: boolean }) {
     const [imageRetry, setImageRetry] = useState(0);
     const applyRotation = (next: Quaternion) => {
         rotation.current = next;
+        if (renderFrame.current !== null) return;
+        renderFrame.current = requestAnimationFrame(() => {
+            renderFrame.current = null;
         if (model.current) {
-            model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(next)}`;
-            const light = getSealLighting(next);
+            model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(rotation.current)} scale3d(${zoomRef.current},${zoomRef.current},${zoomRef.current})`;
+            const light = getSealLighting(rotation.current);
             model.current.style.setProperty("--home3d-foil-x", `${light.x}%`);
             model.current.style.setProperty("--home3d-foil-y", `${light.y}%`);
             model.current.style.setProperty("--home3d-foil-angle", `${light.angle}deg`);
@@ -144,6 +183,7 @@ function HomepageCardDemo({ isLightMode }: { isLightMode: boolean }) {
             model.current.style.setProperty("--home3d-collection-opacity", String(light.collection));
             model.current.style.setProperty("--home3d-silver-brightness", String(light.brightness));
         }
+        });
     };
     const moveCard = (dx: number, dy: number) => {
         pan.current = { x: pan.current.x + dx, y: pan.current.y + dy };
@@ -151,13 +191,15 @@ function HomepageCardDemo({ isLightMode }: { isLightMode: boolean }) {
     };
     const resetView = () => {
         pan.current = { x: 0, y: 0 };
+        zoomRef.current = 1;
         setZoom(1);
         setDragMode("rotate");
         applyRotation([0, 0, 0, 1]);
     };
     const changeZoom = (next: number) => {
         const value = Math.max(1, Math.min(4, next));
-        pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
+        pan.current = { x: pan.current.x * value / zoomRef.current, y: pan.current.y * value / zoomRef.current };
+        zoomRef.current = value;
         setZoom(value);
         if (value > 1) setDragMode("move");
         applyRotation(rotation.current);
@@ -167,17 +209,18 @@ function HomepageCardDemo({ isLightMode }: { isLightMode: boolean }) {
     useEffect(() => {
         const updateSize = () => {
             if (model.current && stage.current) {
-                const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect) * zoom);
+                const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect));
                 model.current.style.height = `${height}px`;
                 model.current.style.width = `${height * aspect}px`;
                 model.current.style.setProperty("--home3d-card-depth", `${height * .022}px`);
+                setBaseHeight(previous => previous === height ? previous : height);
             }
         };
         const observer = new ResizeObserver(updateSize);
         if (stage.current) observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
-    }, [aspect, zoom]);
+    }, [aspect]);
     useEffect(() => {
         resetView();
         finishDrag();
@@ -225,7 +268,7 @@ function HomepageCardDemo({ isLightMode }: { isLightMode: boolean }) {
     const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
     return <div className="home3d-inspector-dialog home-card-demo" data-home-theme={isLightMode ? "light" : "dark"}>
         <header className="home3d-inspector-header">
-          <div><p className="home3d-eyebrow">Star 1 - Premium Thick Card</p><h2>{card.code}</h2></div>
+          <div><p className="home3d-eyebrow">Try it here / Star 1</p><h2>{card.code}</h2></div>
           <span className="home-demo-badge">Live 3D</span>
         </header>
         <div ref={stage} tabIndex={0} role="group" aria-label={`${dragMode === "move" ? "Move card to inspect any area" : "Rotate card"}. Drag or use arrow keys. Press R to reset.`} className={`home3d-inspector-stage ${dragging ? "is-dragging" : ""}`} onKeyDown={handleKey} onPointerDown={event => {
@@ -241,7 +284,7 @@ function HomepageCardDemo({ isLightMode }: { isLightMode: boolean }) {
         finishDrag(); }}>
           <div className="home3d-card-ground"/>
           <div ref={model} className="home3d-card-model">
-            {Array.from({ length: 33 }, (_, index) => <div key={index} aria-hidden="true" className="home3d-card-core" style={{ transform: `translateZ(calc(var(--home3d-card-depth,6px) * ${(index / 32 - .5).toFixed(5)}))` }}/>) }
+            {getPremiumCardEdges(baseHeight, aspect).map((edge, index) => <div key={index} aria-hidden="true" className="home3d-card-edge" style={edge}/>)}
             <div className="home3d-card-face home3d-card-front">
               <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="home3d-face-image home3d-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
               <div className="home3d-card-sheen"/>
@@ -271,8 +314,8 @@ const homepageDemoStyles = `
 .home3d-inspector-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px}.home3d-inspector-header h2{font-size:clamp(12px,2vw,16px);margin:0;letter-spacing:-.02em}
 .home3d-inspector-stage{position:relative;height:auto;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;perspective:1000px;perspective-origin:50% 50%;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;background:radial-gradient(ellipse at 50% 44%,#bda05a14,transparent 65%);border-radius:18px;margin:0 10px;isolation:isolate}.home3d-inspector-stage.is-dragging{cursor:grabbing}
 .home3d-back-art{position:absolute;inset:0;border-radius:inherit;transform-origin:50% 50%}
-.home3d-card-model{position:relative;height:0;aspect-ratio:5/7;flex:none;transform-style:preserve-3d;will-change:transform;pointer-events:none}
-.home3d-card-core{position:absolute;inset:0;border-radius:4.5% / 3.2%;background:#fff;border:0;backface-visibility:visible;-webkit-backface-visibility:visible;pointer-events:none}
+.home3d-card-model{position:relative;height:0;aspect-ratio:5/7;flex:none;transform-style:preserve-3d;pointer-events:none}
+.home3d-card-edge{position:absolute;height:var(--home3d-card-depth,6px);background:#fff;backface-visibility:visible;-webkit-backface-visibility:visible;pointer-events:none;transform-origin:center center}
 .home3d-card-face{position:absolute;inset:0;border-radius:4.5% / 3.2%;background:transparent}.home3d-card-face{transform-style:flat;isolation:isolate;overflow:hidden;clip-path:inset(0 round 4.5% / 3.2%);-webkit-mask-image:linear-gradient(#fff,#fff);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 9px 26px #00000024;transform:translateZ(calc(var(--home3d-card-depth,6px) / 2 + .1px))}.home3d-card-back{transform:rotateY(180deg) translateZ(calc(var(--home3d-card-depth,6px) / 2 + .1px))}
 .home3d-face-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;user-select:none;-webkit-user-drag:none}.home3d-front-image,.home3d-back-image{display:block;max-width:none;max-height:none;margin:0;padding:0;border:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;transform:scale(1.035);transform-origin:50% 50%;border-radius:inherit}.home3d-card-sheen{position:absolute;inset:0;background:linear-gradient(125deg,#ffffff0c,transparent 45%,#ffffff08);pointer-events:none;border-radius:inherit}.home3d-card-ground{position:absolute;bottom:4%;left:30%;right:30%;height:15px;border-radius:50%;background:#0000001a;filter:blur(13px);pointer-events:none}
 .home3d-inspector-status{display:flex;align-items:center;justify-content:center;gap:7px;min-height:28px;padding:4px 12px;font-size:12px;color:var(--home3d-muted);text-align:center}.home3d-inspector-status button{padding:5px 9px;border-radius:8px;background:var(--home3d-subtle);font-size:11px}
@@ -313,6 +356,8 @@ const homepageDemoStyles = `
 @media(max-width:1023px){.home-stamp-showcase{display:grid;grid-template-columns:140px minmax(0,1fr);column-gap:20px;padding-top:4px}.home-stamp-display{grid-column:1;grid-row:1 / span 5;margin:0}.home-stamp-showcase>p,.home-stamp-showcase>h2,.home-stamp-showcase>button{grid-column:2}.home-stamp-showcase>button{justify-self:start}}
 @media(max-width:399px){.home-stamp-showcase{grid-template-columns:100px minmax(0,1fr);column-gap:14px}.home-stamp-display{width:100px;height:100px}.home-stamp-showcase>p:not(:first-child){grid-column:1 / -1;margin-top:12px}.home-stamp-showcase>button{grid-column:1 / -1}.home-stamp-display{grid-row:1 / span 2}}
 @media(prefers-reduced-motion:reduce){.home-stamp-display .home3d-seal-certificate,.home-stamp-display .home3d-seal-collection{animation-duration:8s;animation-timing-function:steps(1,end)}}
+
+@media(hover:none) and (pointer:coarse){.home3d-card-face{box-shadow:none;-webkit-mask-image:none;clip-path:none}.home3d-card-ground{filter:none;background:transparent}}
 
 `;
 
@@ -603,7 +648,7 @@ const motionClass = phase === "sizing" ? "" : phase === "incoming"
               <p className={`text-xs font-bold uppercase tracking-[0.18em] ${accentText}`}>Officially rolled out</p>
               <h1 id="cards-rollout-heading" className="mt-2 max-w-xl text-3xl font-bold tracking-[-0.035em] sm:text-4xl">3D cards are live in every collection.</h1>
               <p className={`mt-3 max-w-xl text-sm leading-6 ${bodyText}`}>Explore your cards from every angle. Flip them over, rotate freely, and zoom up to 400% to see the details.</p>
-              <p className={`mt-3 max-w-xl text-sm leading-6 ${muted}`}>Give {homepageSampleCard.code} a spin here. Drag to rotate, or switch to Reposition to move around the card while zoomed in.</p>
+              <p className={`mt-3 max-w-xl text-sm leading-6 ${muted}`}>Give Star 1 {homepageSampleCard.code} a spin here. Drag to rotate, or switch to Reposition to move around the card while zoomed in.</p>
               <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
                 <a href={discordHref} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 ${isLightMode ? "border-black/10" : "border-white/15"}`}>Join Discord<ExternalLinkIcon /></a>
                 <a href={redditHref} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 ${isLightMode ? "border-black/10" : "border-white/15"}`}>Join Reddit<ExternalLinkIcon /></a>
