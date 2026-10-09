@@ -158,19 +158,22 @@ const databaseSetId: Record<string, string> = {
     friendshipsbegin: "SD",
 };
 const Collections = () => {
-const location = useLocation();
-const [activeCategory, setActiveCategory] = useState(() => location.state?.category || "all");
-const [sets, setSets] = useState<Collection[]>([]);
-const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-const [hideMastered, setHideMastered] = useState(true);
-const [sortBy, setSortBy] = useState<"release" | "set">("release");
-const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
+    const location = useLocation();
+    const [activeCategory, setActiveCategory] = useState(() => location.state?.category || "all");
+    const [sets, setSets] = useState<Collection[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const [retryKey, setRetryKey] = useState(0);
+    const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+    const [hideMastered, setHideMastered] = useState(true);
+    const [sortBy, setSortBy] = useState<"release" | "set">("release");
+    const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
     useEffect(() => {
-const syncTheme = () => {
+        const syncTheme = () => {
             setIsLightMode(document.documentElement.dataset.theme === "light");
         };
         syncTheme();
-const observer = new MutationObserver(syncTheme);
+        const observer = new MutationObserver(syncTheme);
         observer.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ["class", "data-theme"],
@@ -183,140 +186,167 @@ const observer = new MutationObserver(syncTheme);
         }
     }, [location.state]);
     useEffect(() => {
-const load = async (userOverride?: any) => {
-let user = userOverride;
-            if (!user) {
-const { data } = await supabase.auth.getSession();
-                user = data.session?.user;
-            }
-            if (!user) {
-                setHiddenSets([]);
-                setSets(collections.map((set) => ({
-                    ...set,
-                    progress: 0,
-                    collectedCards: 0,
-                })));
-                return;
-            }
-const { data: collectionData, error: collectionError } = await supabase
-                .from("collection_progress")
-                .select("set_id, progress")
-                .eq("user_id", user.id);
-            if (collectionError) {
-                console.error("Failed to load collection progress:", collectionError);
-            }
-const progressRows = new Map<string, any>((collectionData || []).map((row: any) => [String(row.set_id), row]));
-const { data: profile, error: profileError } = await supabase
-                .from("profiles")
-                .select("iso_hidden_sets")
-                .eq("id", user.id)
-                .single();
-            if (profileError) {
-                console.error("Failed to load hidden collection sets:", profileError);
-            }
-const storedHiddenSets: string[] = Array.isArray(profile?.iso_hidden_sets)
-                ? profile.iso_hidden_sets
-                : [];
-const mappedHiddenSets = storedHiddenSets.flatMap((id: string) => {
-                switch (id) {
-                    case "FW":
-                        return ["tcg"];
-                    case "SD":
-                    case "SD_STARTERS":
-                    case "SD_BONUS":
-                        return ["friendshipsbegin"];
-                    case "TCG_PROMOS":
-                    case "tcgpromos":
-                        return ["tcgpromos"];
-                    default:
-                        return [id];
+        let active = true;
+        let requestVersion = 0;
+        const load = async (userOverride?: any) => {
+            const version = ++requestVersion;
+            const isCurrent = () => active && version === requestVersion;
+            setIsLoading(true);
+            setLoadError(null);
+            try {
+                let user = userOverride;
+                if (userOverride === undefined) {
+                    const { data, error } = await supabase.auth.getSession();
+                    if (error)
+                        throw error;
+                    user = data.session?.user;
                 }
-            });
-const uniqueHiddenSets = [...new Set(mappedHiddenSets)];
-            setHiddenSets(uniqueHiddenSets);
-const countProgress = (row: any, setId: string): number => {
-                if (!row?.progress) {
-                    return 0;
+                if (!isCurrent())
+                    return;
+                if (!user) {
+                    setHiddenSets([]);
+                    setSets(collections.map((set) => ({
+                        ...set,
+                        progress: 0,
+                        collectedCards: 0,
+                    })));
+                    return;
                 }
-                if (setId === "9" || setId === "tcgpromos") {
-                    const keys = setId === "9"
-                        ? [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((number) => `PR-${number}`)
-                        : Array.from({ length: 28 }, (_, i) => `RR${String(i + 1).padStart(2, "0")}`);
-                    return keys.filter((key) => {
-                        const value = row.progress[key];
-                        return value === true || (value !== null && typeof value === "object" && value?.owned === true);
-                    }).length;
+                const { data: collectionData, error: collectionError } = await supabase
+                    .from("collection_progress")
+                    .select("set_id, progress")
+                    .eq("user_id", user.id);
+                if (collectionError) {
+                    throw collectionError;
                 }
-                if (setId === "3") {
-const validKeys = new Set<string>();
-const rarities: Record<string, number> = {
-                        R: 60,
-                        SR: 40,
-                        SSR: 40,
-                        HR: 60,
-                        LSR: 32,
-                        UR: 18,
-                        SGR: 16,
-                        ZR: 14,
-                        SC: 7,
-                        SZR: 3,
-                    };
-                    Object.entries(rarities).forEach(([rarity, count]) => {
-                        for (let i = 1; i <= count; i++) {
-                            validKeys.add(`${rarity}-${i}`);
-                        }
-                    });
-                    return Object.entries(row.progress).filter(([key, value]) => Boolean(value) && validKeys.has(key)).length;
+                const progressRows = new Map<string, any>((collectionData || []).map((row: any) => [String(row.set_id), row]));
+                const { data: profile, error: profileError } = await supabase
+                    .from("profiles")
+                    .select("iso_hidden_sets")
+                    .eq("id", user.id)
+                    .single();
+                if (profileError) {
+                    if (profileError.code !== "PGRST116")
+                        throw profileError;
                 }
-                return Object.values(row.progress).filter(Boolean).length;
-            };
-const progressMap: Record<string, number> = {};
-            collections.forEach((set) => {
-const dbId = databaseSetId[set.id] || set.id;
-const row = progressRows.get(dbId);
-                progressMap[set.id] = countProgress(row, String(dbId));
-            });
-            progressMap["tcgpromos"] = countProgress(progressRows.get("tcgpromos"), "tcgpromos");
-const updated = collections.map((set) => {
-let collected = progressMap[set.id] || 0;
-let totalCards = set.totalCards;
-                if (set.id === "9") {
-const ccgPromosHidden = uniqueHiddenSets.includes("9");
-const tcgPromosHidden = uniqueHiddenSets.includes("tcgpromos");
-const ccgCollected = progressMap["9"] || 0;
-const tcgCollected = progressMap["tcgpromos"] || 0;
-const visibleCCGCollected = ccgPromosHidden
-                        ? 0
-                        : Math.min(ccgCollected, 13);
-const visibleTCGCollected = tcgPromosHidden
-                        ? 0
-                        : Math.min(tcgCollected, 28);
-const visibleCCGTotal = ccgPromosHidden ? 0 : 13;
-const visibleTCGTotal = tcgPromosHidden ? 0 : 28;
-                    collected = visibleCCGCollected + visibleTCGCollected;
-                    totalCards = visibleCCGTotal + visibleTCGTotal;
-                }
-const progress = totalCards > 0
-                    ? Math.min(100, Math.floor((collected / totalCards) * 100))
-                    : 0;
-                return {
-                    ...set,
-                    collectedCards: collected,
-                    totalCards,
-                    progress,
+                if (!isCurrent())
+                    return;
+                const storedHiddenSets: string[] = Array.isArray(profile?.iso_hidden_sets)
+                    ? profile.iso_hidden_sets
+                    : [];
+                const mappedHiddenSets = storedHiddenSets.flatMap((id: string) => {
+                    switch (id) {
+                        case "FW":
+                            return ["tcg"];
+                        case "SD":
+                        case "SD_STARTERS":
+                        case "SD_BONUS":
+                            return ["friendshipsbegin"];
+                        case "TCG_PROMOS":
+                        case "tcgpromos":
+                            return ["tcgpromos"];
+                        default:
+                            return [id];
+                    }
+                });
+                const uniqueHiddenSets = [...new Set(mappedHiddenSets)];
+                setHiddenSets(uniqueHiddenSets);
+                const countProgress = (row: any, setId: string): number => {
+                    if (!row?.progress) {
+                        return 0;
+                    }
+                    if (setId === "9" || setId === "tcgpromos") {
+                        const keys = setId === "9"
+                            ? [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((number) => `PR-${number}`)
+                            : Array.from({ length: 28 }, (_, i) => `RR${String(i + 1).padStart(2, "0")}`);
+                        return keys.filter((key) => {
+                            const value = row.progress[key];
+                            return value === true || (value !== null && typeof value === "object" && value?.owned === true);
+                        }).length;
+                    }
+                    if (setId === "3") {
+                        const validKeys = new Set<string>();
+                        const rarities: Record<string, number> = {
+                            R: 60,
+                            SR: 40,
+                            SSR: 40,
+                            HR: 60,
+                            LSR: 32,
+                            UR: 18,
+                            SGR: 16,
+                            ZR: 14,
+                            SC: 7,
+                            SZR: 3,
+                        };
+                        Object.entries(rarities).forEach(([rarity, count]) => {
+                            for (let i = 1; i <= count; i++) {
+                                validKeys.add(`${rarity}-${i}`);
+                            }
+                        });
+                        return Object.entries(row.progress).filter(([key, value]) => Boolean(value) && validKeys.has(key)).length;
+                    }
+                    return Object.values(row.progress).filter(Boolean).length;
                 };
-            });
-            setSets(updated);
+                const progressMap: Record<string, number> = {};
+                collections.forEach((set) => {
+                    const dbId = databaseSetId[set.id] || set.id;
+                    const row = progressRows.get(dbId);
+                    progressMap[set.id] = countProgress(row, String(dbId));
+                });
+                progressMap["tcgpromos"] = countProgress(progressRows.get("tcgpromos"), "tcgpromos");
+                const updated = collections.map((set) => {
+                    let collected = progressMap[set.id] || 0;
+                    let totalCards = set.totalCards;
+                    if (set.id === "9") {
+                        const ccgPromosHidden = uniqueHiddenSets.includes("9");
+                        const tcgPromosHidden = uniqueHiddenSets.includes("tcgpromos");
+                        const ccgCollected = progressMap["9"] || 0;
+                        const tcgCollected = progressMap["tcgpromos"] || 0;
+                        const visibleCCGCollected = ccgPromosHidden
+                            ? 0
+                            : Math.min(ccgCollected, 13);
+                        const visibleTCGCollected = tcgPromosHidden
+                            ? 0
+                            : Math.min(tcgCollected, 28);
+                        const visibleCCGTotal = ccgPromosHidden ? 0 : 13;
+                        const visibleTCGTotal = tcgPromosHidden ? 0 : 28;
+                        collected = visibleCCGCollected + visibleTCGCollected;
+                        totalCards = visibleCCGTotal + visibleTCGTotal;
+                    }
+                    const progress = totalCards > 0
+                        ? Math.min(100, Math.floor((collected / totalCards) * 100))
+                        : 0;
+                    return {
+                        ...set,
+                        collectedCards: collected,
+                        totalCards,
+                        progress,
+                    };
+                });
+                setSets(updated);
+            }
+            catch (error) {
+                if (isCurrent()) {
+                    console.error("Failed to load collections:", error);
+                    setLoadError("We could not load your collection. Please try again.");
+                }
+            }
+            finally {
+                if (isCurrent())
+                    setIsLoading(false);
+            }
         };
         load();
-const { data: { subscription }, } = onAuthIdentityChange((_event, session) => {
-            load(session?.user);
+        const { data: { subscription }, } = onAuthIdentityChange((_event, session) => {
+            load(session?.user ?? null);
         });
         return () => {
+            active = false;
+            requestVersion++;
             subscription.unsubscribe();
         };
-    }, []);
-const setOrder: Record<string, number> = {
+    }, [retryKey]);
+    const setOrder: Record<string, number> = {
         star: 1,
         "eternal-moon": 2,
         rainbow: 3,
@@ -324,9 +354,9 @@ const setOrder: Record<string, number> = {
         tcg: 5,
         promos: 6,
     };
-const promoNodeFullyHidden = hiddenSets.includes("9") && hiddenSets.includes("tcgpromos");
-const isSetHidden = (setId: string) => setId === "9" ? promoNodeFullyHidden : hiddenSets.includes(setId);
-const filtered = (activeCategory === "all"
+    const promoNodeFullyHidden = hiddenSets.includes("9") && hiddenSets.includes("tcgpromos");
+    const isSetHidden = (setId: string) => setId === "9" ? promoNodeFullyHidden : hiddenSets.includes(setId);
+    const filtered = (activeCategory === "all"
         ? sets
             .filter((c) => !hideMastered || c.progress !== 100)
             .filter((c) => !isSetHidden(c.id))
@@ -335,7 +365,7 @@ const filtered = (activeCategory === "all"
         .filter((c) => c.released || unreleasedSetIds.includes(c.id))
         .sort((a, b) => {
         if (sortBy === "set") {
-const categoryDiff = (setOrder[a.category] ?? 999) - (setOrder[b.category] ?? 999);
+            const categoryDiff = (setOrder[a.category] ?? 999) - (setOrder[b.category] ?? 999);
             if (categoryDiff !== 0) {
                 return categoryDiff;
             }
@@ -343,26 +373,47 @@ const categoryDiff = (setOrder[a.category] ?? 999) - (setOrder[b.category] ?? 99
         return (collections.findIndex((s) => s.id === a.id) -
             collections.findIndex((s) => s.id === b.id));
     });
-const ccgSets = sets.filter((set) => set.released &&
+    const ccgSets = sets.filter((set) => set.released &&
         (set.category !== "tcg" || set.id === "14") &&
         set.id !== "9" &&
         set.id !== "tcgpromos" &&
         !hiddenSets.includes(set.id));
-const totalSets = ccgSets.length;
-const completedSets = ccgSets.filter((set) => set.progress === 100).length;
-const ccgCardsCollected = ccgSets.reduce((sum, set) => sum + (set.collectedCards || 0), 0);
-const ccgCardsAvailable = ccgSets.reduce((sum, set) => sum + (set.totalCards || 0), 0);
-const promoSet = sets.find((set) => set.id === "9");
-const promoCardsCollected = promoSet?.collectedCards || 0;
-const promoCardsAvailable = promoSet?.totalCards || 0;
-const totalCardsCollected = ccgCardsCollected + promoCardsCollected;
-const totalCardsAvailable = ccgCardsAvailable + promoCardsAvailable;
-const completionRate = totalCardsAvailable > 0
+    const totalSets = ccgSets.length;
+    const completedSets = ccgSets.filter((set) => set.progress === 100).length;
+    const ccgCardsCollected = ccgSets.reduce((sum, set) => sum + (set.collectedCards || 0), 0);
+    const ccgCardsAvailable = ccgSets.reduce((sum, set) => sum + (set.totalCards || 0), 0);
+    const promoSet = sets.find((set) => set.id === "9");
+    const promoCardsCollected = promoSet?.collectedCards || 0;
+    const promoCardsAvailable = promoSet?.totalCards || 0;
+    const totalCardsCollected = ccgCardsCollected + promoCardsCollected;
+    const totalCardsAvailable = ccgCardsAvailable + promoCardsAvailable;
+    const completionRate = totalCardsAvailable > 0
         ? Math.round((totalCardsCollected / totalCardsAvailable) * 100)
         : 0;
-    return (<div className={`min-h-screen pb-24 font-['Oxanium'] transition-colors duration-200 sm:pb-10 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+    return (<div className={`collections-page min-h-screen pb-24 font-['Oxanium'] transition-colors duration-200 sm:pb-10 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+      <style>{`
+        .collections-page .collection-skeleton {
+          position: relative;
+          display: block;
+          overflow: hidden;
+          border-radius: 12px;
+          background: ${isLightMode ? "rgba(0,0,0,.07)" : "rgba(255,255,255,.07)"};
+        }
+        .collections-page .collection-skeleton::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, transparent, ${isLightMode ? "rgba(255,255,255,.65)" : "rgba(255,255,255,.08)"}, transparent);
+          animation: collection-shimmer 1.8s ease-in-out infinite;
+        }
+        @keyframes collection-shimmer { to { transform: translateX(100%); } }
+        @media (prefers-reduced-motion: reduce) {
+          .collections-page .collection-skeleton::after { animation: none; }
+        }
+      `}</style>
       <main className="w-full max-w-none px-3 pb-4 pt-6 sm:px-6 sm:py-8">
-        <section className={`rounded-[20px] border p-3.5 sm:rounded-[24px] sm:p-5 ${isLightMode
+        <section aria-busy={isLoading} aria-label="Collection completion" className={`rounded-[20px] border p-3.5 sm:rounded-[24px] sm:p-5 ${isLightMode
             ? "border-black/10 bg-white shadow-[0_10px_28px_rgba(0,0,0,.04)]"
             : "border-white/[0.08] bg-[#151718]"}`}>
           <div className="flex items-end justify-between gap-4 px-1">
@@ -371,16 +422,15 @@ const completionRate = totalCardsAvailable > 0
                 Collection completion
               </p>
               <p className={`mt-1 text-3xl font-bold tracking-tight sm:text-4xl ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>
-                {completionRate}%
+                {isLoading || loadError ? <span aria-hidden="true" className="collection-skeleton h-9 w-24 sm:h-10"/> : `${completionRate}%`}
               </p>
             </div>
             <p className={`pb-1 text-right text-xs font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-              {totalCardsCollected.toLocaleString()} of{" "}
-              {totalCardsAvailable.toLocaleString()} cards
+              {isLoading || loadError ? <span aria-hidden="true" className="collection-skeleton h-4 w-32 sm:w-44"/> : <>{totalCardsCollected.toLocaleString()} of{" "}{totalCardsAvailable.toLocaleString()} cards</>}
             </p>
           </div>
           <div className={`mt-3 h-2.5 overflow-hidden rounded-full ${isLightMode ? "bg-zinc-200" : "bg-white/[0.08]"}`}>
-            <div className="h-full rounded-full bg-[#FFD54A] transition-[width] duration-500" style={{ width: `${completionRate}%` }}/>
+            <div className={`${isLoading || loadError ? "collection-skeleton w-full" : ""} h-full rounded-full bg-[#FFD54A] transition-[width] duration-500`} style={{ width: isLoading || loadError ? "100%" : `${completionRate}%`, backgroundColor: isLoading || loadError ? undefined : "#FFD54A" }}/>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
             {[
@@ -393,7 +443,7 @@ const completionRate = totalCardsAvailable > 0
                 ? "border-black/10 bg-zinc-50"
                 : "border-white/10 bg-black/20"}`}>
                 <div className={`text-lg font-semibold sm:text-2xl ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>
-                  {stat.value}
+                  {isLoading || loadError ? <span aria-hidden="true" className="collection-skeleton h-7 w-20 sm:h-8"/> : stat.value}
                 </div>
                 <div className={`mt-0.5 text-[11px] font-medium sm:mt-1 sm:text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                   {stat.label}
@@ -413,7 +463,7 @@ const completionRate = totalCardsAvailable > 0
             { label: "TCG", value: "tcg" },
             { label: "Promos", value: "promos" },
         ].map((item) => {
-const active = activeCategory === item.value;
+            const active = activeCategory === item.value;
             return (<button key={item.value} type="button" onClick={() => setActiveCategory(item.value)} className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${active
                     ? "border-[#FFD54A] bg-[#FFD54A] text-black"
                     : isLightMode
@@ -447,17 +497,40 @@ const active = activeCategory === item.value;
             <CatalogSidebar activeCategory={activeCategory} onCategoryChange={setActiveCategory} hideMastered={hideMastered} onToggleHideMastered={() => setHideMastered((prev) => !prev)} sortBy={sortBy} onSortChange={setSortBy}/>
           </aside>
           <div className="min-w-0 flex-1">
-            {activeCategory === "" ? (<div className="py-20"/>) : filtered.length === 0 ? (<div className={`rounded-2xl border border-dashed p-8 text-center text-sm sm:p-10 sm:text-base ${isLightMode
+            {isLoading ? (<div role="status" aria-live="polite">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2 px-1">
+                  <p className="text-sm font-semibold">Loading your collection</p>
+                  <p className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Checking saved cards and hidden sets...</p>
+                </div>
+                <div aria-hidden="true" className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(auto-fill,minmax(170px,1fr))]">
+                  {Array.from({ length: activeCategory === "all" ? 12 : Math.max(1, collections.filter((set) => set.category === activeCategory).length) }, (_, index) => (<div key={index} className={`overflow-hidden rounded-[18px] border ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}>
+                      <div className="collection-skeleton aspect-[4/3] !rounded-b-none !rounded-t-[17px]"/>
+                      <div className="space-y-3 p-3 sm:p-4">
+                        <div className="collection-skeleton h-5 w-3/4"/>
+                        <div className="collection-skeleton h-3 w-1/2"/>
+                        <div className="collection-skeleton h-2 w-full"/>
+                        <div className="flex justify-between gap-3">
+                          <div className="collection-skeleton h-3 w-16"/>
+                          <div className="collection-skeleton h-3 w-10"/>
+                        </div>
+                      </div>
+                    </div>))}
+                </div>
+              </div>) : loadError ? (<div role="alert" className={`rounded-2xl border p-6 text-center ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}>
+                <p className="font-semibold">Collection unavailable</p>
+                <p className={`mt-2 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{loadError}</p>
+                <button type="button" onClick={() => setRetryKey((key) => key + 1)} className="mt-4 min-h-11 rounded-xl bg-[#FFD54A] px-5 py-2 text-sm font-semibold text-black">Try again</button>
+              </div>) : activeCategory === "" ? (<div className="py-20"/>) : filtered.length === 0 ? (<div className={`rounded-2xl border border-dashed p-8 text-center text-sm sm:p-10 sm:text-base ${isLightMode
                 ? "border-black/10 bg-zinc-50 text-zinc-500"
                 : "border-white/10 bg-white/[0.03] text-zinc-400"}`}>
                 No sets to show with the current filters.
               </div>) : (<div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(auto-fill,minmax(170px,1fr))]">
                 {filtered.map((col) => {
-const isHidden = isSetHidden(col.id);
-const isMastered = (col.collectedCards ?? 0) >= col.totalCards;
-const waitingOnKayouIds: string[] = [];
-const isUnreleased = unreleasedSetIds.includes(col.id);
-const isWaiting = waitingOnKayouIds.includes(col.id);
+                const isHidden = isSetHidden(col.id);
+                const isMastered = (col.collectedCards ?? 0) >= col.totalCards;
+                const waitingOnKayouIds: string[] = [];
+                const isUnreleased = unreleasedSetIds.includes(col.id);
+                const isWaiting = waitingOnKayouIds.includes(col.id);
                 return (<div key={col.id} className="group relative">
                       <div className={`relative overflow-hidden rounded-[18px] ${isUnreleased || isWaiting
                         ? "pointer-events-none opacity-50 grayscale"
