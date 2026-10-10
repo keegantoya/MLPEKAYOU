@@ -1,8 +1,9 @@
 import CardImage from "@/components/CardImage";
+import { moonCatalog, starCatalog, rainbowCatalog, funCatalog, promosCatalog } from "@/lib/iso-card-catalog";
+import { cardImagePaths, getMoonOneBack } from "@/lib/card-images";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, RotateCcw } from "lucide-react";
-
 type SetConfig = {
   id: string;
   name: string;
@@ -10,7 +11,6 @@ type SetConfig = {
   prefix: string;
   rarities: Record<string, number>;
 };
-
 type GameCard = {
   id: string;
   pairId: string;
@@ -20,7 +20,6 @@ type GameCard = {
   back: string;
   label: string;
 };
-
 type Turn = "player" | "bot";
 type Phase = "setup" | "playing" | "complete";
 type GameState = {
@@ -34,7 +33,6 @@ type GameState = {
   message: string;
   back: string;
 };
-
 const CCG_SETS: SetConfig[] = [
   { id: "1", name: "Moon 1", folder: "first-edition-moon", prefix: "M1", rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } },
   { id: "2", name: "Moon 2", folder: "second-edition-moon", prefix: "M2", rarities: { R: 30, SR: 20, SSR: 54, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 1 } },
@@ -47,46 +45,44 @@ const CCG_SETS: SetConfig[] = [
   { id: "8", name: "Fun Moments 2", folder: "fun-moments-two", prefix: "FM2", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12 } },
   { id: "11", name: "Fun Moments 3", folder: "fun-moments-three", prefix: "FM3", rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, UGR: 9, CR: 12, SCR: 12 } },
 ];
-
 const PROMO_CARDS = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14];
-const MOON_THREE_SC_BACK = "/card-backs/third-moon-edition-backs/m3scback.webp";
-
+const GENERIC_CARD_BACK = getMoonOneBack("SC", 1);
+const CCG_CATALOGS = [moonCatalog, starCatalog, rainbowCatalog, funCatalog];
+function cardCode(setId: string, rarity: string, number: number) {
+  const catalog = CCG_CATALOGS.find(candidate => candidate.sets.some(set => set.id === setId));
+  if (!catalog) throw new Error(`Unknown CCG set: ${setId}`);
+  return catalog.getDisplayCardCode(setId, rarity, number);
+}
 function cardCropClass(source: string) {
   const noZoom = /\.png(?:$|[?#])/i.test(source) || /BP0?[23](?:[^0-9]|$)/i.test(source);
   return noZoom ? "" : "scale-[1.035]";
 }
-
 function pad(value: number) {
   return String(value).padStart(3, "0");
 }
-
 function cardFront(set: SetConfig, rarity: string, number: number) {
   const code = rarity === "SHINING ZR" ? "SZR" : rarity;
   const numberCode = set.id === "13" ? String(number).padStart(code === "SZR" ? 3 : 2, "0") : pad(number);
-  return `/cards/${set.folder}/${set.prefix}${code}${numberCode}.webp`;
+  return cardImagePaths.ccg(set.folder, set.prefix, code, numberCode);
 }
-
 function cardBack(_set: SetConfig, _rarity: string, _number: number) {
-  return MOON_THREE_SC_BACK;
+  return GENERIC_CARD_BACK;
 }
-
 function makePool(set: SetConfig): GameCard[] {
   return Object.entries(set.rarities).flatMap(([rarity, count]) =>
     Array.from({ length: count }, (_, index) => {
       const number = index + 1;
       const key = `${set.id}:${rarity}:${number}`;
-      return { id: key, pairId: key, setId: set.id, rarity, front: cardFront(set, rarity, number), back: cardBack(set, rarity, number), label: `${set.name} ${rarity} ${pad(number)}` };
+      return { id: key, pairId: key, setId: set.id, rarity, front: cardFront(set, rarity, number), back: cardBack(set, rarity, number), label: cardCode(set.id, rarity, number) };
     }),
   );
 }
-
 function makePromoPool(): GameCard[] {
   return PROMO_CARDS.map((number) => {
     const key = `9:PR:${number}`;
-    return { id: key, pairId: key, setId: "9", rarity: "PR", front: `/promo-cards/mlpepr${pad(number)}.webp`, back: MOON_THREE_SC_BACK, label: `CCG Promo PR-${number}` };
+    return { id: key, pairId: key, setId: "9", rarity: "PR", front: cardImagePaths.ccgPromo(number), back: GENERIC_CARD_BACK, label: promosCatalog.getDisplayCardCode("9", number) };
   });
 }
-
 function shuffle<T>(items: T[]) {
   const result = [...items];
   for (let i = result.length - 1; i > 0; i -= 1) {
@@ -95,8 +91,6 @@ function shuffle<T>(items: T[]) {
   }
   return result;
 }
-
-
 const EMPTY_GAME: GameState = {
   phase: "setup",
   deck: [],
@@ -106,9 +100,8 @@ const EMPTY_GAME: GameState = {
   botBooks: [],
   turn: "player",
   message: "",
-  back: MOON_THREE_SC_BACK,
+  back: GENERIC_CARD_BACK,
 };
-
 function collectBooks(hand: GameCard[], books: GameCard[]) {
   const counts = new Map<string, GameCard[]>();
   hand.forEach((card) => counts.set(card.pairId, [...(counts.get(card.pairId) ?? []), card]));
@@ -119,12 +112,10 @@ function collectBooks(hand: GameCard[], books: GameCard[]) {
     books: [...books, ...completed.map((cards) => cards[0])],
   };
 }
-
 function drawOne(hand: GameCard[], deck: GameCard[]) {
   if (hand.length || deck.length === 0) return { hand, deck, drawn: null as GameCard | null };
   return { hand: [deck[0]], deck: deck.slice(1), drawn: deck[0] };
 }
-
 function finishGame(state: GameState, message: string): GameState {
   const allBooksCollected = state.playerBooks.length + state.botBooks.length >= 13;
   const hasPossibleMatch = state.playerHand.some((playerCard) =>
@@ -142,7 +133,6 @@ function finishGame(state: GameState, message: string): GameState {
   const finalMessage = allBooksCollected ? message : "The draw pile is empty and no more ranks can be matched.";
   return { ...state, phase: "complete", message: `${result} ${finalMessage}` };
 }
-
 function beginGame(pool: GameCard[]): GameState {
   const ranks = shuffle(pool).slice(0, 13);
   const fullDeck = shuffle(ranks.flatMap((rank) =>
@@ -153,7 +143,7 @@ function beginGame(pool: GameCard[]): GameState {
   const playerCollected = collectBooks(playerStart, []);
   const botCollected = collectBooks(botStart, []);
   const drawnDeck = fullDeck.slice(14);
-  const back = drawnDeck[0]?.back ?? ranks[0]?.back ?? MOON_THREE_SC_BACK;
+  const back = drawnDeck[0]?.back ?? ranks[0]?.back ?? GENERIC_CARD_BACK;
   let state: GameState = {
     phase: "playing",
     deck: drawnDeck,
@@ -171,14 +161,12 @@ function beginGame(pool: GameCard[]): GameState {
   state = { ...state, botHand: bot.hand, deck: bot.deck };
   return finishGame({ ...state, back: state.deck[0]?.back ?? state.back }, state.message);
 }
-
 function askForRank(state: GameState, actor: Turn, pairId: string): GameState {
   if (state.phase !== "playing" || state.turn !== actor) return state;
   const askerHand = actor === "player" ? state.playerHand : state.botHand;
   const targetHand = actor === "player" ? state.botHand : state.playerHand;
   const rank = askerHand.find((card) => card.pairId === pairId);
   if (!rank) return state;
-
   const matches = targetHand.filter((card) => card.pairId === pairId);
   let deck = state.deck;
   let playerHand = actor === "player" ? askerHand : targetHand;
@@ -186,7 +174,6 @@ function askForRank(state: GameState, actor: Turn, pairId: string): GameState {
   let playerBooks = state.playerBooks;
   let botBooks = state.botBooks;
   const name = rank.label;
-
   if (matches.length > 0) {
     const collected = collectBooks([...askerHand, ...matches], actor === "player" ? playerBooks : botBooks);
     if (actor === "player") {
@@ -207,7 +194,6 @@ function askForRank(state: GameState, actor: Turn, pairId: string): GameState {
     const next: GameState = { ...state, deck, playerHand, botHand, playerBooks, botBooks, turn: actor, back: deck[0]?.back ?? state.back };
     return finishGame(next, actor === "player" ? `Rarity hands over ${name}.` : `Rarity gets ${name}.`);
   }
-
   const drawn = deck[0] ?? null;
   if (drawn) {
     deck = deck.slice(1);
@@ -239,16 +225,12 @@ function askForRank(state: GameState, actor: Turn, pairId: string): GameState {
   const next: GameState = { ...state, deck, playerHand, botHand, playerBooks, botBooks, turn: nextTurn, back: deck[0]?.back ?? state.back };
   return finishGame(next, message);
 }
-
-
 type Point = [number, number, number];
 type Face = { points: Point[]; color: string; opacity?: number; image?: number; label?: string; normal?: Point; normals?: Point[]; eye?: string };
-
 function tint(hex: string, light: number) {
   const value = parseInt(hex.slice(1), 16);
   return `rgb(${[value >> 16, (value >> 8) & 255, value & 255].map(v => Math.round(Math.min(255, v * light))).join(",")})`;
 }
-
 function box(out: Face[], x: number, y: number, z: number, w: number, h: number, d: number, color: string, top = true) {
   const a = x - w / 2, b = x + w / 2, c = z - d / 2, e = z + d / 2;
   const low = y - h / 2, high = y + h / 2;
@@ -258,7 +240,6 @@ function box(out: Face[], x: number, y: number, z: number, w: number, h: number,
     { points: [[b, low, c], [b, low, e], [b, high, e], [b, high, c]], color: tint(color, 0.78) },
   );
 }
-
 function ellipsoid(out: Face[], x: number, y: number, z: number, rx: number, ry: number, rz: number, color: string, segments = 8, rings = 5) {
   const at = (u: number, v: number): Point => {
     const latitude = -Math.PI / 2 + v / rings * Math.PI;
@@ -277,7 +258,6 @@ function ellipsoid(out: Face[], x: number, y: number, z: number, rx: number, ry:
     }
   }
 }
-
 type SweepNode = [number, number, number, number, number];
 function sweep(out: Face[], nodes: SweepNode[], color: string, sides = 12) {
   const directions = nodes.map((node, index) => {
@@ -310,7 +290,6 @@ function sweep(out: Face[], nodes: SweepNode[], color: string, sides = 12) {
   }
   out.push({ points: points[0], color }, { points: points[points.length - 1], color });
 }
-
 function curve(out: Face[], control: SweepNode[], color: string, resolution = 5, sides = 12) {
   const nodes: SweepNode[] = [];
   for (let i = 0; i < control.length - 1; i++) {
@@ -323,9 +302,7 @@ function curve(out: Face[], control: SweepNode[], color: string, resolution = 5,
   nodes.push(control[control.length - 1]);
   sweep(out, nodes, color, sides);
 }
-
 type ScreenPoint = { x: number; y: number; depth: number };
-
 function drawEye(ctx: CanvasRenderingContext2D, points: ScreenPoint[], color: string) {
   const a = points[0], b = points[1], d = points[3];
   ctx.save();
@@ -344,7 +321,6 @@ function drawEye(ctx: CanvasRenderingContext2D, points: ScreenPoint[], color: st
   for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(0.73 + i * 0.07, 0.13 + i * 0.045); ctx.lineTo(0.91 + i * 0.09, 0.025 + i * 0.065); ctx.stroke(); }
   ctx.restore();
 }
-
 class PartyRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
@@ -519,8 +495,6 @@ class PartyRenderer {
     this.buffers = []; this.textures = []; this.shaders = []; this.textureCache.clear(); this.colors.clear();
   }
 }
-
-
 function buildTableScene() {
   const faces: Face[] = [];
   box(faces, 0, 0.68, 0.42, 4.38, 0.28, 1.42, "#7e542f");
@@ -539,7 +513,6 @@ function buildTableScene() {
   }
   return faces;
 }
-
 function buildRarity(time: number, imageWidth: number, imageHeight: number) {
   const faces: Face[] = [];
   const bob = Math.sin(time * 0.65) * 0.012;
@@ -551,7 +524,6 @@ function buildRarity(time: number, imageWidth: number, imageHeight: number) {
   const top = 2.42 + bob;
   const bottom = 0.6 + bob;
   faces.push({ points: [[left, top, -0.86], [right, top, -0.86], [right, bottom, -0.86], [left, bottom, -0.86]], color: "#ffffff", normal: [0, 0, -1], image: 1 });
-
   const angle = Math.PI;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
@@ -567,7 +539,6 @@ function RarityTable({ backs, playerCards, onAsk, canAsk, speech, lightMode }: {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [graphicsError, setGraphicsError] = useState(false);
   const [displayedSpeech, setDisplayedSpeech] = useState("");
-
   useEffect(() => {
     setDisplayedSpeech("");
     if (!speech) return;
@@ -579,7 +550,6 @@ function RarityTable({ backs, playerCards, onAsk, canAsk, speech, lightMode }: {
     }, 55);
     return () => window.clearInterval(timer);
   }, [speech]);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -626,7 +596,6 @@ function RarityTable({ backs, playerCards, onAsk, canAsk, speech, lightMode }: {
       renderer.dispose();
     };
   }, [lightMode]);
-
   return (
     <section className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm dark:border-[#E7C84B]/25 dark:bg-[#111315] dark:shadow-[0_18px_48px_rgba(0,0,0,.28)]" aria-label="Rarity at the Go Fish table">
       <div className="flex min-h-10 items-center border-b border-black/10 bg-zinc-50 px-3 py-2 dark:border-[#E7C84B]/20 dark:bg-[#17191b]">
@@ -661,7 +630,8 @@ function RarityTable({ backs, playerCards, onAsk, canAsk, speech, lightMode }: {
       )}
       {playerCards.length > 0 && (
         <div className="absolute inset-x-0 bottom-0 z-10 flex h-[112px] items-end justify-center bg-gradient-to-t from-white/90 via-white/35 to-transparent px-1 pb-1 dark:from-[#111315]/90 dark:via-[#111315]/35 sm:h-[140px] sm:px-3 sm:pb-2" aria-label="Your hand">
-          <div className="flex h-full w-full items-end justify-start overflow-x-auto px-2 sm:justify-center" style={{ perspective: "900px" }}>
+          <div className="flex h-full w-full items-end overflow-x-auto px-2">
+            <div className="mx-auto flex w-max shrink-0 items-end" style={{ perspective: "900px" }}>
             {playerCards.map(({ card, count }, index) => {
               const middle = (playerCards.length - 1) / 2;
               const offset = index - middle;
@@ -675,6 +645,7 @@ function RarityTable({ backs, playerCards, onAsk, canAsk, speech, lightMode }: {
                 </button>
               );
             })}
+            </div>
           </div>
         </div>
       )}
@@ -687,7 +658,6 @@ export default function GoFish() {
   const [setChoice, setSetChoice] = useState("any");
   const [game, setGame] = useState<GameState>(EMPTY_GAME);
   const [lightMode, setLightMode] = useState(() => document.documentElement.dataset.theme === "light");
-
   useEffect(() => {
     const syncTheme = () => setLightMode(document.documentElement.dataset.theme === "light");
     const observer = new MutationObserver(syncTheme);
@@ -695,14 +665,12 @@ export default function GoFish() {
     syncTheme();
     return () => observer.disconnect();
   }, []);
-
   const pool = useMemo(() => {
     if (setChoice === "promos") return makePromoPool();
     if (setChoice === "any") return CCG_SETS.flatMap(makePool);
     const set = CCG_SETS.find((candidate) => candidate.id === setChoice);
     return set ? makePool(set) : [];
   }, [setChoice]);
-
   useEffect(() => {
     if (game.phase !== "playing" || game.turn !== "bot") return;
     const timer = window.setTimeout(() => {
@@ -713,10 +681,9 @@ export default function GoFish() {
       }
       const chosen = ranks[Math.floor(Math.random() * ranks.length)];
       setGame((current) => askForRank(current, "bot", chosen.pairId));
-    }, Math.max(4000, game.message.length * 55 + 700));
+    }, game.message === "Rarity: Go Fish!" ? 650 : Math.min(2200, Math.max(850, game.message.length * 28 + 200)));
     return () => window.clearTimeout(timer);
   }, [game]);
-
   const handRanks = useMemo(() => {
     const grouped = new Map<string, { card: GameCard; count: number }>();
     game.playerHand.forEach((card) => {
@@ -726,7 +693,6 @@ export default function GoFish() {
     });
     return [...grouped.values()].sort((a, b) => a.card.label.localeCompare(b.card.label));
   }, [game.playerHand]);
-
   const start = () => setGame(beginGame(pool));
   const speech = game.phase === "setup" ? "Choose a set, then deal the cards." : game.message;
   const books = [
@@ -735,7 +701,6 @@ export default function GoFish() {
   ];
   const opponentBacks = game.phase === "setup" ? pool.slice(0, 7).map((card) => card.back) : game.botHand.map((card) => card.back);
   const askForPlayerCard = (pairId: string) => setGame((current) => askForRank(current, "player", pairId));
-
   return (
     <main className="min-h-[100svh] bg-[#f5f5f7] px-2 pb-3 pt-2 text-zinc-900 dark:bg-[#111315] dark:text-white sm:px-4 sm:pt-3">
       <div className="mx-auto w-full max-w-7xl">
@@ -748,7 +713,6 @@ export default function GoFish() {
         <header className="mb-2 flex items-end justify-between gap-3">
           <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#80630b] dark:text-[#E7C84B]">CCG mini game</p><h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Go Fish</h1></div>
         </header>
-
         <details className="mb-2 rounded-xl border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-[#17191b]">
           <summary className="min-h-11 cursor-pointer px-3 py-2.5 text-sm font-semibold text-[#80630b] dark:text-[#FFE477]">Rules &amp; gameplay</summary>
           <div className="grid gap-2 border-t border-black/10 px-3 py-3 text-xs leading-5 text-zinc-600 dark:border-white/10 dark:text-zinc-300 sm:grid-cols-2 sm:gap-x-6 sm:text-sm">
@@ -758,7 +722,6 @@ export default function GoFish() {
             <p>The game ends when all books are made or no more matches are possible. The player with the most books wins.</p>
           </div>
         </details>
-
         {game.phase === "setup" ? (
           <section className="mx-auto mb-2 flex max-w-5xl items-center gap-2 rounded-xl border border-black/10 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#17191b]">
               <label htmlFor="go-fish-set" className="shrink-0 text-xs font-semibold text-zinc-600 dark:text-zinc-300 sm:text-sm">Card set</label>
@@ -770,9 +733,7 @@ export default function GoFish() {
               <button type="button" onClick={start} disabled={pool.length < 13} className="min-h-10 shrink-0 rounded-lg bg-[#E7C84B] px-3 text-sm font-bold text-[#111315] transition hover:bg-[#FFE477] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5">Deal</button>
           </section>
         ) : null}
-
         <RarityTable backs={opponentBacks} playerCards={game.phase === "playing" ? handRanks : []} onAsk={askForPlayerCard} canAsk={game.phase === "playing" && game.turn === "player"} speech={speech} lightMode={lightMode} />
-
         {game.phase !== "setup" && (
           <div className="mt-2 space-y-2">
             <section className="grid gap-2 rounded-xl border border-black/10 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#17191b] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-3" aria-label="Game status">
