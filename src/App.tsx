@@ -57,7 +57,7 @@ import ChangeAvatar from "./pages/Personal/change-avatar";
 import LeaderboardModeration from "./pages/Personal/LeaderboardModeration";
 import PublicProfile from "@/pages/Everypony/PublicProfile";
 import LGSBoards from "./pages/Personal/LGSBoards";
-
+import MatchPairs from "./pages/Game/Match-Pairs";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
@@ -70,24 +70,24 @@ const RESERVED_PATHS = new Set([
   "/explore", "/my-progress", "/inventory", "/iso", "/community", "/leaderboard",
   "/selling", "/trading-post", "/faq", "/kayou-news", "/support-mlpekayou",
   "/binders", "/throwawaypage", "/mobile-profile", "/desktop-profile", "/inbox",
-  "/progress-tcg", "/leaderboard-moderation", "/lgs-boards", "/game",
+  "/progress-tcg", "/leaderboard-moderation", "/lgs-boards", "/game", "/match-pairs",
 ]);
 function SiteAccessGate({ children }: { children: ReactNode }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [authState, setAuthState] = useState<"checking" | "authenticated" | "anonymous">("checking");
-  const [showLoginRequired, setShowLoginRequired] = useState(false);
-  const normalizedPath = location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
-  const isPublicProfilePath = /^\/[^/]+$/.test(normalizedPath) && !RESERVED_PATHS.has(normalizedPath);
-  const isPublicPath = PUBLIC_AUTH_PATHS.has(normalizedPath) || isPublicProfilePath;
-  const isBlockedRoute = authState === "anonymous" && !isPublicPath;
+const location = useLocation();
+const navigate = useNavigate();
+const [authState, setAuthState] = useState<"checking" | "authenticated" | "anonymous">("checking");
+const [showLoginRequired, setShowLoginRequired] = useState(false);
+const normalizedPath = location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
+const isPublicProfilePath = /^\/[^/]+$/.test(normalizedPath) && !RESERVED_PATHS.has(normalizedPath);
+const isPublicPath = PUBLIC_AUTH_PATHS.has(normalizedPath) || isPublicProfilePath;
+const isBlockedRoute = authState === "anonymous" && !isPublicPath;
   useEffect(() => {
-    let mounted = true;
+let mounted = true;
     void supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       setAuthState(session?.user ? "authenticated" : "anonymous");
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setAuthState(session?.user ? "authenticated" : "anonymous");
       if (session?.user) setShowLoginRequired(false);
@@ -102,7 +102,7 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
   useEffect(() => { if (isPublicProfilePath) setShowLoginRequired(false); }, [isPublicProfilePath]);
   useEffect(() => {
     if (!showLoginRequired) return;
-    const previousOverflow = document.body.style.overflow;
+const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previousOverflow; };
   }, [showLoginRequired]);
@@ -143,16 +143,16 @@ function SiteAccessGate({ children }: { children: ReactNode }) {
   );
 }
 function RequireLGSStaff({ children }: { children: ReactNode }) {
-  const [access, setAccess] = useState<"checking" | "allowed" | "denied">("checking");
+const [access, setAccess] = useState<"checking" | "allowed" | "denied">("checking");
   useEffect(() => {
-    let mounted = true;
-    let request = 0;
-    let accessUserId: string | null = null;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const checkAccess = async () => {
-      const ticket = ++request;
+let mounted = true;
+let request = 0;
+let accessUserId: string | null = null;
+let timer: ReturnType<typeof setTimeout> | undefined;
+const checkAccess = async () => {
+const ticket = ++request;
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (!mounted || ticket !== request) return;
         if (sessionError || !session?.user) {
           accessUserId = null;
@@ -161,18 +161,18 @@ function RequireLGSStaff({ children }: { children: ReactNode }) {
         }
         if (accessUserId !== session.user.id) setAccess("checking");
         accessUserId = session.user.id;
-        const { data, error } = await (supabase as unknown as SupabaseClient).from("lgs_staff").select("role, store_id").eq("user_id", session.user.id).eq("active", true).maybeSingle();
+const { data, error } = await (supabase as unknown as SupabaseClient).from("lgs_staff").select("role, store_id").eq("user_id", session.user.id).eq("active", true).maybeSingle();
         if (!mounted || ticket !== request) return;
-        const qualifies = !error && data && (data.role === "ALLGS" || (data.role === "STAFF" && data.store_id));
+const qualifies = !error && data && (data.role === "ALLGS" || (data.role === "STAFF" && data.store_id));
         setAccess(qualifies ? "allowed" : "denied");
       } catch { if (mounted && ticket === request) setAccess("denied"); }
     };
-    const scheduleCheck = () => {
+const scheduleCheck = () => {
       ++request;
       clearTimeout(timer);
       timer = setTimeout(() => { if (mounted) void checkAccess(); }, 0);
     };
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       if ((session?.user.id ?? null) !== accessUserId) setAccess(session?.user ? "checking" : "denied");
       scheduleCheck();
@@ -193,15 +193,15 @@ function RequireLGSStaff({ children }: { children: ReactNode }) {
 }
 const AppRoutes = () => {
   useEffect(() => {
-    let lastUserId: string | null = null;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUserId = session?.user?.id ?? null;
+let lastUserId: string | null = null;
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+const currentUserId = session?.user?.id ?? null;
       if (currentUserId !== lastUserId) lastUserId = currentUserId;
     });
-    const handleRightClick = (event: MouseEvent) => {
+const handleRightClick = (event: MouseEvent) => {
       if (event.target instanceof HTMLElement && event.target.tagName === "IMG") event.preventDefault();
     };
-    const preventDrag = (event: DragEvent) => event.preventDefault();
+const preventDrag = (event: DragEvent) => event.preventDefault();
     document.addEventListener("contextmenu", handleRightClick);
     document.addEventListener("dragstart", preventDrag);
     return () => {
@@ -256,15 +256,16 @@ const AppRoutes = () => {
       <Route path="/account-confirmation" element={<AccountConfirmation />} />
       <Route path="/leaderboard-moderation" element={<RequireAuth><LeaderboardModeration /></RequireAuth>} />
       <Route path="/lgs-boards" element={<RequireLGSStaff><LGSBoards /></RequireLGSStaff>} />
+      <Route path="/match-pairs" element={<RequireAuth><MatchPairs /></RequireAuth>} />
       <Route path="/:username" element={<PublicProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
 function AppLayout() {
-  const { pathname, search } = useLocation();
-  const normalizedPath = pathname.replace(/\/+$/, "").toLowerCase() || "/";
-  const hideNavigation = normalizedPath === "/links" || normalizedPath === "/lgs-boards" || new URLSearchParams(search).has("embed");
+const { pathname, search } = useLocation();
+const normalizedPath = pathname.replace(/\/+$/, "").toLowerCase() || "/";
+const hideNavigation = normalizedPath === "/links" || normalizedPath === "/lgs-boards" || new URLSearchParams(search).has("embed");
   return (
     <>
       <ScrollToTop />

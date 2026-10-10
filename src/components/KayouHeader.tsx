@@ -2,10 +2,14 @@ import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
+import PinkieParty from "@/pages/Game/Pinkie-Party";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   ShoppingBag,
   Shield,
+  Bug,
+  Gamepad2,
+  ChevronDown,
   Store,
   Home,
   Trophy,
@@ -75,6 +79,10 @@ const KayouHeader = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [showBugReport, setShowBugReport] = useState(false);
+  const [showMiniGames, setShowMiniGames] = useState(false);
+  const [showPinkieParty, setShowPinkieParty] = useState(false);
+  const miniGamesRef = useRef<HTMLDivElement>(null);
+  const miniGameButtonRef = useRef<HTMLButtonElement>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [resetSubmitting, setResetSubmitting] = useState(false);
   const [showTradesMenu, setShowTradesMenu] = useState(false);
@@ -249,6 +257,23 @@ const KayouHeader = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  useEffect(() => {
+    if (!showMiniGames) return;
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!miniGamesRef.current?.contains(event.target as Node)) {
+        setShowMiniGames(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowMiniGames(false);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [showMiniGames]);
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -1377,12 +1402,74 @@ const KayouHeader = () => {
           
           <div className="hidden sm:flex items-center gap-2 min-w-[40px]">
             {staffButtons}
+            <div ref={miniGamesRef} className="relative hidden lg:block">
+              <button
+                type="button"
+                ref={miniGameButtonRef}
+                aria-label="Video games"
+                aria-haspopup="menu"
+                aria-expanded={showMiniGames}
+                onClick={() => setShowMiniGames((value) => !value)}
+                className={`flex h-10 items-center gap-2 rounded-xl border px-3 text-sm font-semibold transition-all duration-200 ${
+                  isLightMode
+                    ? "border-[#E7C84B]/30 bg-white text-[#6d5210] hover:bg-[#fffaf0]"
+                    : "border-white/10 bg-white/[0.045] text-zinc-200 hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
+                }`}
+              >
+                <Gamepad2 className="h-[17px] w-[17px]" aria-hidden="true" />
+                <span>Video games</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${showMiniGames ? "rotate-180" : ""}`} aria-hidden="true" />
+              </button>
+              {showMiniGames && (
+                <div
+                  role="menu"
+                  aria-label="Mini games"
+                  className={`absolute right-0 top-[calc(100%+8px)] z-[21000] min-w-[220px] overflow-hidden rounded-2xl border p-1.5 shadow-[0_18px_48px_rgba(0,0,0,.35)] ${
+                    isLightMode
+                      ? "border-[#E7C84B]/25 bg-white text-[#312d24]"
+                      : "border-white/10 bg-[#17191b] text-white"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setShowMiniGames(false);
+                      setShowPinkieParty(true);
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-colors ${
+                      isLightMode ? "hover:bg-[#E7C84B]/10" : "hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    <Gamepad2 className="h-4 w-4 shrink-0 text-[#E7C84B]" aria-hidden="true" />
+                    <span>Pinkie Pie&apos;s Party</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setShowMiniGames(false);
+                      requestNavigation("/match-pairs");
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-colors ${
+                      isLightMode ? "hover:bg-[#E7C84B]/10" : "hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    <Gamepad2 className="h-4 w-4 shrink-0 text-[#E7C84B]" aria-hidden="true" />
+                    <span>Match Pairs</span>
+                  </button>
+                </div>
+              )}
+            </div>
             {user && (
               <Button
+                type="button"
                 onClick={() => setShowBugReport(true)}
-                className="flex h-10 items-center rounded-full border border-white/10 bg-white/[0.045] px-4 text-sm font-medium text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] transition-all duration-200 sm:flex hover:border-white/20 hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
+                aria-label="Report a bug"
+                title="Report a bug"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/[0.08] p-0 text-red-400 shadow-[inset_0_1px_0_rgba(255,255,255,.04)] transition-all duration-200 hover:border-red-400/60 hover:bg-red-500/[0.16] hover:text-red-300 active:scale-[0.98]"
               >
-                Report a bug
+                <Bug className="h-[19px] w-[19px]" aria-hidden="true" />
               </Button>
             )}
             {!user && (
@@ -1461,6 +1548,13 @@ const KayouHeader = () => {
         <LGSApproveDeny
           isLightMode={isLightMode}
           onClose={() => setShowLGSReview(false)}
+        />
+      )}
+      {showPinkieParty && (
+        <PinkieParty
+          isLightMode={isLightMode}
+          onClose={() => setShowPinkieParty(false)}
+          returnFocusRef={miniGameButtonRef}
         />
       )}
       

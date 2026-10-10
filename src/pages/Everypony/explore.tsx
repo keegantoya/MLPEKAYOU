@@ -1,5 +1,7 @@
 import CardImage from "@/components/CardImage";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import PinkieParty from "@/pages/Game/Pinkie-Party";
 import { Search, Users, ArrowUpRight, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import ExploreProfile from "./explore-profile";
@@ -8,16 +10,18 @@ import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 import ownerBadge from "/website-assets/OwnerBadge.webp";
 const Explore = () => {
-    const [collectorCount, setCollectorCount] = useState(0);
-    const [userSearch, setUserSearch] = useState("");
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [searchingUsers, setSearchingUsers] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<any>(null);
-    const [selectedUserTradingProfile, setSelectedUserTradingProfile] = useState<any>(null);
-    const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
+const [collectorCount, setCollectorCount] = useState(0);
+const [userSearch, setUserSearch] = useState("");
+const [searchResults, setSearchResults] = useState<any[]>([]);
+const [searchingUsers, setSearchingUsers] = useState(false);
+const [selectedUser, setSelectedUser] = useState<any>(null);
+const [selectedUserTradingProfile, setSelectedUserTradingProfile] = useState<any>(null);
+const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
+const [showPinkieParty, setShowPinkieParty] = useState(false);
+const pinkiePartyButtonRef = useRef<HTMLButtonElement>(null);
     useEffect(() => {
-        const loadStats = async () => {
-            const { count: collectors } = await supabase
+const loadStats = async () => {
+const { count: collectors } = await supabase
                 .from("profiles")
                 .select("*", { count: "exact", head: true });
             setCollectorCount(collectors ?? 0);
@@ -25,27 +29,27 @@ const Explore = () => {
         loadStats();
     }, []);
     useEffect(() => {
-        let mounted = true;
-        let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-        const syncFromDocument = () => {
+let mounted = true;
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+const syncFromDocument = () => {
             if (!mounted)
                 return;
             setIsLightMode(document.documentElement.dataset.theme === "light");
         };
-        const observer = new MutationObserver(syncFromDocument);
+const observer = new MutationObserver(syncFromDocument);
         observer.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ["class", "data-theme"],
         });
-        const loadThemePreference = async () => {
-            const { data: { session }, } = await supabase.auth.getSession();
+const loadThemePreference = async () => {
+const { data: { session }, } = await supabase.auth.getSession();
             if (!mounted)
                 return;
             if (!session?.user) {
                 syncFromDocument();
                 return;
             }
-            const { data, error } = await supabase
+const { data, error } = await supabase
                 .from("user_light_mode_preferences")
                 .select("user_id")
                 .eq("user_id", session.user.id)
@@ -83,9 +87,9 @@ const Explore = () => {
         };
     }, []);
     useEffect(() => {
-        const background = isLightMode ? "#f5f5f3" : "#0d0f10";
-        const previousHtmlBackground = document.documentElement.style.backgroundColor;
-        const previousBodyBackground = document.body.style.backgroundColor;
+const background = isLightMode ? "#f5f5f3" : "#0d0f10";
+const previousHtmlBackground = document.documentElement.style.backgroundColor;
+const previousBodyBackground = document.body.style.backgroundColor;
         document.documentElement.style.backgroundColor = background;
         document.body.style.backgroundColor = background;
         return () => {
@@ -93,15 +97,15 @@ const Explore = () => {
             document.body.style.backgroundColor = previousBodyBackground;
         };
     }, [isLightMode]);
-    async function searchUsers(query: string) {
+async function searchUsers(query: string) {
         setUserSearch(query);
-        const trimmedQuery = query.trim();
+const trimmedQuery = query.trim();
         if (!trimmedQuery) {
             setSearchResults([]);
             return;
         }
         setSearchingUsers(true);
-        const { data: profileMatches, error: profileError } = await supabase
+const { data: profileMatches, error: profileError } = await supabase
             .from("profiles")
             .select("id, username, avatar_url, vacation_mode")
             .ilike("username", `${trimmedQuery}%`)
@@ -112,14 +116,14 @@ const Explore = () => {
             setSearchingUsers(false);
             return;
         }
-        const candidateProfiles = profileMatches || [];
+const candidateProfiles = profileMatches || [];
         if (candidateProfiles.length === 0) {
             setSearchResults([]);
             setSearchingUsers(false);
             return;
         }
-        const candidateIds = candidateProfiles.map((profile) => profile.id);
-        const { data: tradingProfiles, error: tradingError } = await supabase
+const candidateIds = candidateProfiles.map((profile) => profile.id);
+const { data: tradingProfiles, error: tradingError } = await supabase
             .from("trading_profiles")
             .select("user_id, discord_username")
             .in("user_id", candidateIds);
@@ -129,16 +133,16 @@ const Explore = () => {
             setSearchingUsers(false);
             return;
         }
-        const searchableUserIds = new Set((tradingProfiles || [])
+const searchableUserIds = new Set((tradingProfiles || [])
             .filter((profile) => profile.discord_username !== null &&
             String(profile.discord_username).trim().length > 0)
             .map((profile) => profile.user_id));
-        const sorted = candidateProfiles
+const sorted = candidateProfiles
             .filter((profile) => searchableUserIds.has(profile.id))
             .sort((a, b) => {
-            const aq = a.username.toLowerCase();
-            const bq = b.username.toLowerCase();
-            const q = trimmedQuery.toLowerCase();
+const aq = a.username.toLowerCase();
+const bq = b.username.toLowerCase();
+const q = trimmedQuery.toLowerCase();
             if (aq === q)
                 return -1;
             if (bq === q)
@@ -195,6 +199,18 @@ const Explore = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+          <section aria-labelledby="explore-games-heading" className={`rounded-[28px] border p-4 sm:p-5 lg:hidden ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>Mini games</p>
+            <h2 id="explore-games-heading" className="mt-1 text-lg font-semibold">Play from your phone</h2>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button ref={pinkiePartyButtonRef} type="button" aria-haspopup="dialog" onClick={() => setShowPinkieParty(true)} className="min-h-14 rounded-xl bg-[#E7C84B] px-4 py-3 text-left text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477]">
+                Pinkie Pie&apos;s Party
+              </button>
+              <Link to="/match-pairs" className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${isLightMode ? "border-[#E7C84B]/50 bg-[#E7C84B]/10 text-zinc-900 hover:bg-[#E7C84B]/20" : "border-[#E7C84B]/35 bg-[#E7C84B]/[0.08] text-white hover:bg-[#E7C84B]/[0.14]"}`}>
+                Match Pairs
+              </Link>
             </div>
           </section>
           <section>
@@ -263,7 +279,7 @@ const Explore = () => {
                     </div>) : searchResults.length > 0 ? (<div className="max-h-[420px] overflow-y-auto">
                       {searchResults.map((user) => (<button key={user.id} type="button" onClick={async () => {
                         setSelectedUser(user);
-                        const { data: tradingProfile } = await supabase
+const { data: tradingProfile } = await supabase
                             .from("trading_profiles")
                             .select("*")
                             .eq("user_id", user.id)
@@ -331,6 +347,7 @@ const Explore = () => {
             </section>)}
         </div>
       </main>
+      {showPinkieParty && <PinkieParty isLightMode={isLightMode} onClose={() => setShowPinkieParty(false)} returnFocusRef={pinkiePartyButtonRef} />}
     </div>);
 };
 export default Explore;

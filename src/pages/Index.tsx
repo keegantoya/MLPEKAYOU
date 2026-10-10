@@ -142,8 +142,8 @@ function CertificateSeal({ centered = false }: { centered?: boolean }) {
 function SilverStampShowcase({ isLightMode }: { isLightMode: boolean }) {
     const [paused, setPaused] = useState(false);
     return <aside className="home-stamp-showcase" data-paused={paused} aria-labelledby="silver-stamp-heading">
-        <p className={`text-xs font-bold uppercase tracking-[0.14em] ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>A closer look</p>
-        <h2 id="silver-stamp-heading" className="mt-1 text-lg font-bold">The silver stamp</h2>
+        <p className={`text-xs font-bold uppercase tracking-[0.14em] ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>A closer look at</p>
+        <h2 id="silver-stamp-heading" className="mt-1 text-lg font-bold">THE Kayou Silver Stamp</h2>
         <div className="home-stamp-display" role="img" aria-label="Silver Kayou stamp, alternating between COLLECTION and CERTIFICATE in the same position">
             <CertificateSeal />
         </div>
