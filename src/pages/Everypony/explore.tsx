@@ -211,6 +211,9 @@ const q = trimmedQuery.toLowerCase();
               <Link to="/match-pairs" className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${isLightMode ? "border-[#E7C84B]/50 bg-[#E7C84B]/10 text-zinc-900 hover:bg-[#E7C84B]/20" : "border-[#E7C84B]/35 bg-[#E7C84B]/[0.08] text-white hover:bg-[#E7C84B]/[0.14]"}`}>
                 Match Pairs
               </Link>
+              <Link to="/go-fish" className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${isLightMode ? "border-[#E7C84B]/50 bg-[#E7C84B]/10 text-zinc-900 hover:bg-[#E7C84B]/20" : "border-[#E7C84B]/35 bg-[#E7C84B]/[0.08] text-white hover:bg-[#E7C84B]/[0.14]"}`}>
+                Go Fish
+              </Link>
             </div>
           </section>
           <section>

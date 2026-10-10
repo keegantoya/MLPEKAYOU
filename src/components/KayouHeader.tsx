@@ -1092,6 +1092,21 @@ const KayouHeader = () => {
                           <Heart className="h-[18px] w-[18px] text-zinc-400" />
                           <span>ISO / Wishlist</span>
                         </button>
+                        <div className="my-2 border-t border-white/10 pt-3">
+                          <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#E7C84B]">Mini games</p>
+                          <button onClick={() => { setShowPinkieParty(true); setOpen(false); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white">
+                            <Gamepad2 className="h-[18px] w-[18px] text-[#E7C84B]" aria-hidden="true" />
+                            <span>Pinkie Pie&apos;s Party</span>
+                          </button>
+                          <button onClick={() => { requestNavigation("/match-pairs"); setOpen(false); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white">
+                            <Gamepad2 className="h-[18px] w-[18px] text-[#E7C84B]" aria-hidden="true" />
+                            <span>Match Pairs</span>
+                          </button>
+                          <button onClick={() => { requestNavigation("/go-fish"); setOpen(false); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white">
+                            <Gamepad2 className="h-[18px] w-[18px] text-[#E7C84B]" aria-hidden="true" />
+                            <span>Go Fish</span>
+                          </button>
+                        </div>
                       </div>
                       
                       <div className="border-t border-white/10 p-3">
@@ -1457,6 +1472,20 @@ const KayouHeader = () => {
                   >
                     <Gamepad2 className="h-4 w-4 shrink-0 text-[#E7C84B]" aria-hidden="true" />
                     <span>Match Pairs</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setShowMiniGames(false);
+                      requestNavigation("/go-fish");
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition-colors ${
+                      isLightMode ? "hover:bg-[#E7C84B]/10" : "hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    <Gamepad2 className="h-4 w-4 shrink-0 text-[#E7C84B]" aria-hidden="true" />
+                    <span>Go Fish</span>
                   </button>
                 </div>
               )}

@@ -58,6 +58,7 @@ import LeaderboardModeration from "./pages/Personal/LeaderboardModeration";
 import PublicProfile from "@/pages/Everypony/PublicProfile";
 import LGSBoards from "./pages/Personal/LGSBoards";
 import MatchPairs from "./pages/Game/Match-Pairs";
+import GoFish from "./pages/Game/Go-Fish";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
@@ -70,7 +71,7 @@ const RESERVED_PATHS = new Set([
   "/explore", "/my-progress", "/inventory", "/iso", "/community", "/leaderboard",
   "/selling", "/trading-post", "/faq", "/kayou-news", "/support-mlpekayou",
   "/binders", "/throwawaypage", "/mobile-profile", "/desktop-profile", "/inbox",
-  "/progress-tcg", "/leaderboard-moderation", "/lgs-boards", "/game", "/match-pairs",
+  "/progress-tcg", "/leaderboard-moderation", "/lgs-boards", "/game", "/match-pairs", "/go-fish",
 ]);
 function SiteAccessGate({ children }: { children: ReactNode }) {
 const location = useLocation();
@@ -257,6 +258,7 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
       <Route path="/leaderboard-moderation" element={<RequireAuth><LeaderboardModeration /></RequireAuth>} />
       <Route path="/lgs-boards" element={<RequireLGSStaff><LGSBoards /></RequireLGSStaff>} />
       <Route path="/match-pairs" element={<RequireAuth><MatchPairs /></RequireAuth>} />
+      <Route path="/go-fish" element={<RequireAuth><GoFish /></RequireAuth>} />
       <Route path="/:username" element={<PublicProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

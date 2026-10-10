@@ -1202,6 +1202,7 @@ export default function MyTradesSets() {
       "\u203BRR",
     ],
     friendshipsbegin: ["C", "U", "SR", "SPR", "GR", "CR", "ER", "\u203BER", "\u203BRR"],
+    "12": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
     "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
     "9": ["PR"],
     tcgpromos: ["PR"],
@@ -2010,6 +2011,7 @@ export default function MyTradesSets() {
                     if (
                       set.id === "FW" ||
                       set.id === "friendshipsbegin" ||
+                      set.id === "12" ||
                       set.id === "tcgpromos"
                     ) {
                       const match = card.key.match(

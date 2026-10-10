@@ -2,7 +2,6 @@ import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Layers, Search, X } from "lucide-react";
-
 const setButtons = [
   {
     title: "Eternal Moon I",
@@ -126,12 +125,10 @@ const groups = [
   "TCG",
   "Promos",
 ];
-
 type SetButton = (typeof setButtons)[number];
-
 function SetPreview({ set }: { set: SetButton }) {
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
+const [loaded, setLoaded] = useState(false);
+const [failed, setFailed] = useState(false);
   return (
     <div className="tp-index-preview">
       {!loaded && !failed && <div className="tp-index-shimmer" aria-hidden="true" />}
@@ -140,23 +137,22 @@ function SetPreview({ set }: { set: SetButton }) {
     </div>
   );
 }
-
 export default function TradingPost() {
-  const [activeGroup, setActiveGroup] = useState("All");
-  const [search, setSearch] = useState("");
-  const [isLightMode, setIsLightMode] = useState(() => {
+const [activeGroup, setActiveGroup] = useState("All");
+const [search, setSearch] = useState("");
+const [isLightMode, setIsLightMode] = useState(() => {
     if (typeof document === "undefined") return false;
-    const root = document.documentElement;
+const root = document.documentElement;
     return root.dataset.theme === "light" || root.classList.contains("light") || !root.classList.contains("dark");
   });
-  const pageRef = useRef<HTMLDivElement>(null);
+const pageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const syncTheme = () => {
-      const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
       setIsLightMode(root.dataset.theme === "light" || root.classList.contains("light") || !root.classList.contains("dark"));
     };
     syncTheme();
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
     window.addEventListener("themechange", syncTheme);
     return () => {
@@ -165,14 +161,14 @@ export default function TradingPost() {
     };
   }, []);
   useEffect(() => {
-    const element = pageRef.current;
+const element = pageRef.current;
     if (!element) return;
-    const measure = () => {
-      const offset = `${Math.round(Math.max(0, element.getBoundingClientRect().top + window.scrollY))}px`;
+const measure = () => {
+const offset = `${Math.round(Math.max(0, element.getBoundingClientRect().top + window.scrollY))}px`;
       if (element.style.getPropertyValue("--tp-index-top") !== offset) element.style.setProperty("--tp-index-top", offset);
     };
     measure();
-    const observer = new ResizeObserver(measure);
+const observer = new ResizeObserver(measure);
     if (element.parentElement) observer.observe(element.parentElement);
     window.addEventListener("resize", measure);
     window.visualViewport?.addEventListener("resize", measure);
@@ -182,13 +178,13 @@ export default function TradingPost() {
       window.visualViewport?.removeEventListener("resize", measure);
     };
   }, []);
-  const term = search.trim().toLowerCase();
-  const visibleSets = setButtons.filter((set) => (activeGroup === "All" || set.group === activeGroup) && (!term || `${set.title} ${set.group}`.toLowerCase().includes(term)));
+const term = search.trim().toLowerCase();
+const visibleSets = setButtons.filter((set) => (activeGroup === "All" || set.group === activeGroup) && (!term || `${set.title} ${set.group}`.toLowerCase().includes(term)));
   return (
     <div ref={pageRef} className={`tp-index font-['Oxanium'] ${isLightMode ? "tp-index-light" : ""}`}>
       <style>{`
-        .tp-index{--index-bg:#10131a;--index-panel:#171b23;--index-soft:#202631;--index-line:#ffffff12;--index-ink:#f7f8fc;--index-muted:#a0a9b8;--index-accent:#ffd54a;display:flex;flex-direction:column;min-height:calc(100vh - var(--tp-index-top,0px));min-height:calc(100dvh - var(--tp-index-top,0px));background:var(--index-bg);color:var(--index-ink);overflow-x:clip}
-        .tp-index-light{--index-bg:#f5f5f8;--index-panel:#fff;--index-soft:#f0f1f5;--index-line:#18223818;--index-ink:#202635;--index-muted:#606b7d;--index-accent:#9b7400}
+        .tp-index{--index-bg:hsl(var(--background));--index-panel:#171b23;--index-soft:#202631;--index-line:#ffffff12;--index-ink:#f7f8fc;--index-muted:#a0a9b8;--index-accent:#ffd54a;display:flex;flex-direction:column;min-height:calc(100vh - var(--tp-index-top,0px));min-height:calc(100dvh - var(--tp-index-top,0px));background:var(--index-bg);color:var(--index-ink);overflow-x:clip}
+        .tp-index-light{--index-bg:hsl(var(--background));--index-panel:#fff;--index-soft:#f0f1f5;--index-line:#18223818;--index-ink:#202635;--index-muted:#606b7d;--index-accent:#9b7400}
         .tp-index *{box-sizing:border-box}.tp-index button,.tp-index input{font:inherit}.tp-index button{cursor:pointer}.tp-index button:focus-visible,.tp-index a:focus-visible,.tp-index input:focus-visible{outline:3px solid var(--index-accent);outline-offset:4px}
         .tp-index-main{display:flex;flex-direction:column;flex:1;width:100%;max-width:none;padding:26px clamp(16px,3vw,64px) max(16px,env(safe-area-inset-bottom,0px))}
         .tp-index-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,390px);align-items:center;gap:24px;padding-bottom:22px;border-bottom:1px solid var(--index-line)}.tp-index-title-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.tp-index h1{font-size:clamp(28px,2.8vw,42px);font-weight:750;letter-spacing:-1px;line-height:1.15;margin:0}.tp-index-set-count{border:1px solid var(--index-line);background:var(--index-panel);color:var(--index-muted);border-radius:999px;padding:5px 10px;font-size:12px}.tp-index-header p{font-size:13px;line-height:1.7;color:var(--index-muted);margin:10px 0 0}

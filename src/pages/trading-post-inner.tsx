@@ -1490,12 +1490,12 @@ export default function TradingPostInner() {
     <div
       ref={marketRef}
       className={`tp-market ${isLightMode ? "tp-light" : ""} font-['Oxanium'] transition-colors ${
-        isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-white"
+        isLightMode ? "text-zinc-900" : "text-white"
       }`}
     >
       <style>{`
-        .tp-market{--tp-panel:#171b23;--tp-soft:#202631;--tp-line:#ffffff12;--tp-muted:#a0a9b8;--tp-accent:#ffd54a;--tp-ink:#f7f8fc;background:radial-gradient(ellipse at 95% 0%,#70602419,transparent 45%),#10131a!important;color:var(--tp-ink)!important;overflow-x:clip;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh - var(--tp-page-top,0px));min-height:calc(100dvh - var(--tp-page-top,0px));padding-bottom:0}
-        .tp-market.tp-light{--tp-panel:#fff;--tp-soft:#f3f4f7;--tp-line:#18223814;--tp-muted:#606b7d;--tp-accent:#b18100;--tp-ink:#202635;background:radial-gradient(ellipse at 95% 0%,#fff0b1,transparent 45%),#f5f5f8!important}
+        .tp-market{--tp-panel:#171b23;--tp-soft:#202631;--tp-line:#ffffff12;--tp-muted:#a0a9b8;--tp-accent:#ffd54a;--tp-ink:#f7f8fc;background:hsl(var(--background))!important;color:var(--tp-ink)!important;overflow-x:clip;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh - var(--tp-page-top,0px));min-height:calc(100dvh - var(--tp-page-top,0px));padding-bottom:0}
+        .tp-market.tp-light{--tp-panel:#fff;--tp-soft:#f3f4f7;--tp-line:#18223814;--tp-muted:#606b7d;--tp-accent:#b18100;--tp-ink:#202635;background:hsl(var(--background))!important}
         .tp-main{display:flex;flex-direction:column;flex:1;box-sizing:border-box;width:100%;max-width:none;margin:0;padding:18px clamp(16px,3vw,64px) max(12px,env(safe-area-inset-bottom,0px))}
         .tp-market button,.tp-market input,.tp-market select{font:inherit}
         .tp-market button{cursor:pointer}.tp-market button:disabled{cursor:default;opacity:.45}.tp-market button:focus-visible,.tp-market input:focus-visible,.tp-market select:focus-visible{outline:3px solid var(--tp-accent);outline-offset:3px}
