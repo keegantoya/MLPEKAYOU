@@ -112,25 +112,20 @@ function collectBooks(hand: GameCard[], books: GameCard[]) {
     books: [...books, ...completed.map((cards) => cards[0])],
   };
 }
-function drawOne(hand: GameCard[], deck: GameCard[]) {
-  if (hand.length || deck.length === 0) return { hand, deck, drawn: null as GameCard | null };
-  return { hand: [deck[0]], deck: deck.slice(1), drawn: deck[0] };
-}
 function finishGame(state: GameState, message: string): GameState {
   const allBooksCollected = state.playerBooks.length + state.botBooks.length >= 13;
-  const hasPossibleMatch = state.playerHand.some((playerCard) =>
-    state.botHand.some((botCard) => botCard.pairId === playerCard.pairId),
-  );
-  const stalled = state.deck.length === 0 &&
-    (state.playerHand.length === 0 || state.botHand.length === 0 || !hasPossibleMatch);
-  const complete = allBooksCollected || stalled;
+  const complete = allBooksCollected || state.deck.length === 0 || state.playerHand.length === 0 || state.botHand.length === 0;
   if (!complete) return { ...state, message };
   const result = state.playerBooks.length > state.botBooks.length
     ? "You win."
     : state.playerBooks.length < state.botBooks.length
       ? "Rarity wins."
       : "It is a tie.";
-  const finalMessage = allBooksCollected ? message : "The draw pile is empty and no more ranks can be matched.";
+  const finalMessage = allBooksCollected
+    ? message
+    : state.deck.length === 0
+      ? "The draw pile is empty."
+      : "A player's hand is empty.";
   return { ...state, phase: "complete", message: `${result} ${finalMessage}` };
 }
 function beginGame(pool: GameCard[]): GameState {
@@ -138,11 +133,11 @@ function beginGame(pool: GameCard[]): GameState {
   const fullDeck = shuffle(ranks.flatMap((rank) =>
     Array.from({ length: 4 }, (_, copy) => ({ ...rank, id: `${rank.pairId}-${copy + 1}` })),
   ));
-  const playerStart = fullDeck.slice(0, 7);
-  const botStart = fullDeck.slice(7, 14);
+  const playerStart = fullDeck.slice(0, 6);
+  const botStart = fullDeck.slice(6, 12);
   const playerCollected = collectBooks(playerStart, []);
   const botCollected = collectBooks(botStart, []);
-  const drawnDeck = fullDeck.slice(14);
+  const drawnDeck = fullDeck.slice(12);
   const back = drawnDeck[0]?.back ?? ranks[0]?.back ?? GENERIC_CARD_BACK;
   let state: GameState = {
     phase: "playing",
@@ -152,13 +147,9 @@ function beginGame(pool: GameCard[]): GameState {
     playerBooks: playerCollected.books,
     botBooks: botCollected.books,
     turn: "player",
-    message: "Your turn. Ask Rarity for a rank in your hand.",
+    message: "Your turn. Ask Rarity for a card you hold.",
     back,
   };
-  const player = drawOne(state.playerHand, state.deck);
-  state = { ...state, playerHand: player.hand, deck: player.deck };
-  const bot = drawOne(state.botHand, state.deck);
-  state = { ...state, botHand: bot.hand, deck: bot.deck };
   return finishGame({ ...state, back: state.deck[0]?.back ?? state.back }, state.message);
 }
 function askForRank(state: GameState, actor: Turn, pairId: string): GameState {
@@ -185,12 +176,6 @@ function askForRank(state: GameState, actor: Turn, pairId: string): GameState {
     }
     if (actor === "player") botHand = targetHand.filter((card) => card.pairId !== pairId);
     else playerHand = targetHand.filter((card) => card.pairId !== pairId);
-    const playerDraw = drawOne(playerHand, deck);
-    playerHand = playerDraw.hand;
-    deck = playerDraw.deck;
-    const botDraw = drawOne(botHand, deck);
-    botHand = botDraw.hand;
-    deck = botDraw.deck;
     const next: GameState = { ...state, deck, playerHand, botHand, playerBooks, botBooks, turn: actor, back: deck[0]?.back ?? state.back };
     return finishGame(next, actor === "player" ? `Rarity hands over ${name}.` : `Rarity gets ${name}.`);
   }
@@ -210,18 +195,12 @@ function askForRank(state: GameState, actor: Turn, pairId: string): GameState {
   let nextTurn: Turn = actor === "player" ? "bot" : "player";
   let gotRequestedRank = Boolean(drawn && drawn.pairId === pairId);
   let message = actor === "player"
-    ? "Rarity: Go Fish!"
-    : drawn ? `Rarity asked for ${name} and drew a card.` : `Rarity asked for ${name}, but the draw pile is empty. Your turn.`;
+    ? drawn ? "Rarity: Go Fish!" : "The draw pile is empty."
+    : drawn ? `Rarity asked for ${name} and drew a card.` : `Rarity asked for ${name}, but the draw pile is empty.`;
   if (gotRequestedRank && drawn) {
     nextTurn = actor;
-    message = actor === "player" ? "Rarity: Go Fish!" : "Rarity drew the rank she asked for and will go again.";
+    message = actor === "player" ? `You drew ${name} and will go again.` : "Rarity drew the card she asked for and will go again.";
   }
-  const playerDraw = drawOne(playerHand, deck);
-  playerHand = playerDraw.hand;
-  deck = playerDraw.deck;
-  const botDraw = drawOne(botHand, deck);
-  botHand = botDraw.hand;
-  deck = botDraw.deck;
   const next: GameState = { ...state, deck, playerHand, botHand, playerBooks, botBooks, turn: nextTurn, back: deck[0]?.back ?? state.back };
   return finishGame(next, message);
 }
@@ -613,8 +592,8 @@ function RarityTable({ backs, playerCards, onAsk, canAsk, speech, lightMode }: {
       )}
       {backs.length > 0 && (
         <div className="pointer-events-none absolute left-1/2 top-[43%] sm:top-[40%] z-[5] flex -translate-x-1/2 items-end overflow-visible" style={{ perspective: "700px" }} aria-label="Rarity's card backs">
-          {backs.slice(0, 7).map((source, index) => {
-            const offset = index - (Math.min(7, backs.length) - 1) / 2;
+          {backs.slice(0, 6).map((source, index) => {
+            const offset = index - (Math.min(6, backs.length) - 1) / 2;
             const rotation = offset * -5;
             const lift = Math.abs(offset) * 1.5;
             return (
@@ -696,10 +675,10 @@ export default function GoFish() {
   const start = () => setGame(beginGame(pool));
   const speech = game.phase === "setup" ? "Choose a set, then deal the cards." : game.message;
   const books = [
-    { label: "Your books", cards: game.playerBooks, score: game.playerBooks.length },
-    { label: "Rarity's books", cards: game.botBooks, score: game.botBooks.length },
+    { label: "Your sets", cards: game.playerBooks, score: game.playerBooks.length },
+    { label: "Rarity's sets", cards: game.botBooks, score: game.botBooks.length },
   ];
-  const opponentBacks = game.phase === "setup" ? pool.slice(0, 7).map((card) => card.back) : game.botHand.map((card) => card.back);
+  const opponentBacks = game.phase === "setup" ? pool.slice(0, 6).map((card) => card.back) : game.botHand.map((card) => card.back);
   const askForPlayerCard = (pairId: string) => setGame((current) => askForRank(current, "player", pairId));
   return (
     <main className="min-h-[100svh] bg-[#f5f5f7] px-2 pb-3 pt-2 text-zinc-900 dark:bg-[#111315] dark:text-white sm:px-4 sm:pt-3">
@@ -716,10 +695,10 @@ export default function GoFish() {
         <details className="mb-2 rounded-xl border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-[#17191b]">
           <summary className="min-h-11 cursor-pointer px-3 py-2.5 text-sm font-semibold text-[#80630b] dark:text-[#FFE477]">Rules &amp; gameplay</summary>
           <div className="grid gap-2 border-t border-black/10 px-3 py-3 text-xs leading-5 text-zinc-600 dark:border-white/10 dark:text-zinc-300 sm:grid-cols-2 sm:gap-x-6 sm:text-sm">
-            <p>Ask Rarity for a rank that appears in your hand. If she has it, you collect those cards and take another turn.</p>
-            <p>If she does not have it, draw from the pile. Draw the rank you asked for and you keep your turn.</p>
-            <p>Collect all four copies of a rank to make a book. Books are removed from your hand.</p>
-            <p>The game ends when all books are made or no more matches are possible. The player with the most books wins.</p>
+            <p>Each player is dealt six cards. Ask Rarity for a card you hold. If she has any copies, she gives you all of them and you take another turn.</p>
+            <p>If she has none, she says “Go Fish.” Draw one card. If it is the card you asked for, show it and take another turn; otherwise, your turn ends.</p>
+            <p>When you collect four identical cards, lay them down as a set. Sets are removed from your hand.</p>
+            <p>The game ends when the draw pile is empty or either player has no cards left. The player with the most sets wins.</p>
           </div>
         </details>
         {game.phase === "setup" ? (
@@ -739,17 +718,17 @@ export default function GoFish() {
             <section className="grid gap-2 rounded-xl border border-black/10 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#17191b] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-3" aria-label="Game status">
               <p className="text-xs font-semibold leading-5 text-zinc-700 dark:text-zinc-200 sm:text-sm">{game.phase === "complete" ? "Game over" : game.turn === "player" ? "Your turn" : "Rarity's turn"}</p>
               <div className="grid grid-cols-3 items-center gap-2">
-                <div className="rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-center dark:border-[#E7C84B]/25 dark:bg-[#E7C84B]/[0.07]"><span className="block text-[9px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Your books</span><span className="text-base font-bold text-[#80630b] dark:text-[#FFE477]">{game.playerBooks.length}</span></div>
-                <div className="rounded-lg border border-black/10 bg-zinc-50 px-2 py-2 text-center dark:border-white/10 dark:bg-white/[0.035]"><span className="block text-[9px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Rarity's books</span><span className="text-base font-bold text-zinc-700 dark:text-zinc-200">{game.botBooks.length}</span></div>
+                <div className="rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-center dark:border-[#E7C84B]/25 dark:bg-[#E7C84B]/[0.07]"><span className="block text-[9px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Your sets</span><span className="text-base font-bold text-[#80630b] dark:text-[#FFE477]">{game.playerBooks.length}</span></div>
+                <div className="rounded-lg border border-black/10 bg-zinc-50 px-2 py-2 text-center dark:border-white/10 dark:bg-white/[0.035]"><span className="block text-[9px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Rarity's sets</span><span className="text-base font-bold text-zinc-700 dark:text-zinc-200">{game.botBooks.length}</span></div>
                 <div className="flex items-center justify-center gap-2 rounded-lg border border-black/10 bg-zinc-50 p-2 dark:border-white/10 dark:bg-white/[0.035]">
                   <div className="relative h-[58px] w-[40px] shrink-0 overflow-hidden rounded-md border border-[#E7C84B]/45 bg-zinc-100 shadow-sm dark:bg-zinc-800 sm:h-[68px] sm:w-[46px]"><CardImage src={game.back} alt="Top card in the draw pile" className={"h-full w-full object-cover " + cardCropClass(game.back)} /></div>
                   <p className="whitespace-nowrap text-[10px] text-zinc-600 dark:text-zinc-400 sm:text-xs">{game.playerHand.length} in hand<br />{game.deck.length} in pile</p>
                 </div>
               </div>
             </section>
-            <section className="rounded-xl border border-black/10 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#17191b]" aria-label={`Books collected: ${game.playerBooks.length + game.botBooks.length} of 13`}>
+            <section className="rounded-xl border border-black/10 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#17191b]" aria-label={`Sets collected: ${game.playerBooks.length + game.botBooks.length} of 13`}>
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-xs font-bold text-zinc-700 dark:text-zinc-200">Books</h2>
+                <h2 className="text-xs font-bold text-zinc-700 dark:text-zinc-200">Sets</h2>
                 <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">{game.playerBooks.length + game.botBooks.length} / 13</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
