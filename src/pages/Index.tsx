@@ -1,8 +1,20 @@
 import React from "react";
 
+function DiscordServerInvite() {
+  return (
+    <div className="flex justify-center px-3 pt-5 sm:px-6">
+      <a href="https://discord.gg/mlpekayou" target="_blank" rel="noopener noreferrer" className="inline-flex rounded-full bg-[#5865F2] px-6 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-[#4752C4] sm:text-base">
+        Join the MLPEKAYOU Discord server
+      </a>
+    </div>
+  );
+}
+
 export default function Index() {
   return (
-    <main className="min-h-screen bg-[hsl(var(--background))] px-3 py-5 text-zinc-900 dark:text-zinc-100 sm:px-6 sm:py-10">
+    <>
+      <DiscordServerInvite />
+          <main className="min-h-screen bg-[hsl(var(--background))] px-3 py-5 text-zinc-900 dark:text-zinc-100 sm:px-6 sm:py-10">
       <article className="mx-auto w-full max-w-7xl overflow-hidden rounded-3xl border border-black/10 bg-white shadow-[0_16px_50px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#17191b] dark:shadow-[0_18px_55px_rgba(0,0,0,0.35)]">
         <header className="border-b border-black/10 px-5 py-7 dark:border-white/10 sm:px-9 sm:py-9">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#80630b] dark:text-[#E7C84B]">A note from the lady who runs this</p>
@@ -25,7 +37,7 @@ export default function Index() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">What is Happening?</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">What is Happening</h2>
             <p>I am unfortunately needing a mental health break. I have befriended many members of this community, many of whom have turned out to be some of the worst individuals I've ever met in my life. I will not surround myself with people who stoop to low levels or do not have the general community's best interests in mind. I have met many selfish, downright disgusting people, and I have also met some of the kindest, most loving people in my entire life since I took on this project. Unfortunately, right now, the negative people are outweighing the positive for me. For my mental health, I am choosing to take a small step back for some time.</p>
           </section>
 
@@ -44,6 +56,7 @@ export default function Index() {
           </section>
         </div>
       </article>
-    </main>
+      </main>
+    </>
   );
 }
