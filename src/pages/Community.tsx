@@ -101,6 +101,9 @@ const manualFirstFinishers: Record<
     "discord": {
     id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
   },
+    "13": {
+    id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
+  },
 };
 type Category =
   | "star"
