@@ -1,61 +1,411 @@
-import React from "react";
+import { ListingWarningGate } from "@/components/ListingModerationWarnings";
+import CardImage from "@/components/CardImage";
+import React, { useEffect, useRef, useState } from "react";
+import LGSApplications from "@/pages/Pop-Ups/LGSApplications";
 
-function DiscordServerInvite() {
+type Announcement = {
+  label: string;
+  date: string;
+  title: string;
+  body: string;
+  detail: string;
+  actionLabel?: string;
+  actionHref?: string;
+  tone: "featured" | "warning" | "standard";
+};
+
+type CommunityReference = {
+  title: string;
+  href: string;
+  description: string;
+  image?: string;
+  imageClass?: string;
+};
+
+const discordHref = "https://discord.gg/mlpekayou";
+const redditHref = "https://www.reddit.com/r/MLPEKAYOU/s/L6kDyhN2aP";
+
+function ArrowLeftIcon() {
   return (
-    <div className="flex justify-center px-3 pt-5 sm:px-6">
-      <a href="https://discord.gg/mlpekayou" target="_blank" rel="noopener noreferrer" className="inline-flex rounded-full bg-[#5865F2] px-6 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-[#4752C4] sm:text-base">
-        Join the MLPEKAYOU Discord server
-      </a>
-    </div>
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
+    </svg>
   );
 }
 
-export default function Index() {
+function ArrowRightIcon() {
   return (
-    <>
-      <DiscordServerInvite />
-          <main className="min-h-screen bg-[hsl(var(--background))] px-3 py-5 text-zinc-900 dark:text-zinc-100 sm:px-6 sm:py-10">
-      <article className="mx-auto w-full max-w-7xl overflow-hidden rounded-3xl border border-black/10 bg-white shadow-[0_16px_50px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#17191b] dark:shadow-[0_18px_55px_rgba(0,0,0,0.35)]">
-        <header className="border-b border-black/10 px-5 py-7 dark:border-white/10 sm:px-9 sm:py-9">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#80630b] dark:text-[#E7C84B]">A note from the lady who runs this</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-5xl">I need to take a little time away</h1>
-          <p className="mt-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 sm:text-base">Hi! That's me! Surprise! A lot of people seem to think I am Kayou Official, but no. This website is not owned or run by Kayou at all!</p>
-        </header>
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
 
-        <figure className="border-b border-black/10 bg-zinc-100 p-2 dark:border-white/10 dark:bg-[#101112] sm:p-4">
-          <img
-            src={"/kayou's-assets/IMG_0567.webp"}
-            alt="Keegan!"
-            className="mx-auto max-h-[560px] w-full rounded-2xl object-contain"
-          />
-        </figure>
+function ExternalLinkIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </svg>
+  );
+}
 
-        <div className="mx-auto max-w-6xl space-y-8 px-5 py-7 text-[15px] leading-7 text-zinc-700 dark:text-zinc-300 sm:px-9 sm:py-10 sm:text-base sm:leading-8 lg:px-14">
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">MLPEKAYOU Means a LOT to me</h2>
-            <p>My name is Keegan, and I am the sole developer of MLPEKAYOU. Everything you see, I built myself, with my own two hands, over the span of about nine or so months now. MLPEKAYOU's first rollout was in April of 2026, and boy, was it rough. I've lived and I've learned, and I've gotten much better at what I've done.</p>
-          </section>
+const announcements: Announcement[] = [
+  {
+    label: "Website update",
+    date: "September 17, 2026",
+    title: "MLPEKAYOU is Underfunded",
+    body: "This database is entirely free to users and features no paywalls or advertisements. As it gets bigger and bigger, it becomes extremely hard to keep funded.",
+    detail: "Typically, streaming for StonesTradingCo covers the costs. This last two months has, however, been a huge dry spell in products. I have not been paid in a while, but that doesn't stop the website from needing funding. StonesTradingCo sends me commission based on my sales, which goes to the website.",
+    actionLabel: "Shop through Keegan",
+    actionHref: "https://stonestradingco.com/collections/my-little-pony",
+    tone: "featured",
+  },
+  {
+    label: "Accessibility update",
+    date: "August 26, 2026",
+    title: "A simpler, more accessible MLPEKAYOU",
+    body: "The website interface was rebuilt to be easier to navigate and more accessible for hard-of-sight and disabled collectors.",
+    detail: "Light and dark themes are now supported throughout the website, with clearer spacing, simpler controls, and better readability.",
+    tone: "standard",
+  },
+  {
+    label: "Domain update",
+    date: "August 11, 2026",
+    title: "MLPEKAYOU is still MLPEKAYOU",
+    body: "A copyright strike caused several hours of downtime and forced a temporary domain change. No user information was affected.",
+    detail: "The rights to mlpekayou.com were returned to Keegan, and the original domain now redirects visitors to the active MLPEKAYOU website.",
+    tone: "warning",
+  },
+  {
+    label: "Account maintenance",
+    date: "August 10, 2026",
+    title: "Inactive account cleanup",
+    body: "Accounts at least 30 days old with no collection progress, along with accounts that never confirmed their email address, were permanently removed.",
+    detail: "If a confirmation or password-reset link does not work, mark the email as trusted and refresh the page before opening it again. Gmail is especially likely to interfere with these messages.",
+    tone: "standard",
+  },
+];
 
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">What is Happening</h2>
-            <p>I am unfortunately needing a mental health break. I have befriended many members of this community, many of whom have turned out to be some of the worst individuals I've ever met in my life. I will not surround myself with people who stoop to low levels or do not have the general community's best interests in mind. I have met many selfish, downright disgusting people, and I have also met some of the kindest, most loving people in my entire life since I took on this project. Unfortunately, right now, the negative people are outweighing the positive for me. For my mental health, I am choosing to take a small step back for some time.</p>
-          </section>
+const references: CommunityReference[] = [
+  {
+    title: "PonyRec",
+    href: "https://www.ponyrec.net/",
+    image: "/website-assets/ponyreclogo.webp",
+    imageClass: "max-h-24 w-full object-contain",
+    description: "Deck building, TCG mechanics, competitive play, and other gameplay resources created by Tangent.",
+  },
+  {
+    title: "Doodle Binder",
+    href: "https://www.doodlebinder.com/",
+    image: "/website-assets/binder1custom.webp",
+    imageClass: "h-full min-h-32 w-full object-cover object-center",
+    description: "Individually customized binders made by Eternal using acrylic paint, mixed materials, and hand-finished artwork.",
+  },
+  {
+    title: "Stones Trading Co",
+    href: "https://stonestradingco.com/collections/my-little-pony",
+    description: "Shop English Kayou products through Keegan and help support MLPEKAYOU at no additional cost.",
+  },
+  {
+    title: "PakraCards",
+    href: "https://pakracards.com",
+    description: "A trusted Kayou CN shop run by Amber and Hao, offering singles, sealed products, live rips, and collectibles.",
+  },
+];
 
-          <section className="space-y-4">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">Please understand where I am coming from</h2>
-            <p>Many people seem to fail to understand that I am not like them, and that I do not perceive things the way they do. I come from an environment that is do or die, where freaking out is sometimes the only answer, because occasionally freaking out is the only reason some people get to go home or not. It may sound silly in comparison with something so small like pony cards, but when it consumed my life and ended in my leaving with traumatic brain injuries, it hardwired me into a new personality and a new way of thinking that I cannot simply forget. All of the scars on my face and my body tell different stories that I don't want to repeat, but they should serve as a reminder that we are not the same.</p>
-            <p>I host this website for free. I require zero payments or paywalls. It is very expensive for me to maintain, and very stressful for me to own and run. I ask that if you see me behaving in a way that you deem not normal, you remind yourself that we are not the same and we come from two different places. You haven't lived the life I have, and you are (hopefully) not medicated for PTSD. You do not have to attend physical therapy for injuries that will last a lifetime. You do not have to go to cognitive and speech therapy in an attempt to restore what brain damage took from you. If you know what I mean when I say I was an 11C for the 81s/120s, I don't know if I should say I love you or I'm sorry. If you don't know what that means, I'm happy for you.</p>
-            <p>We do not act or behave the same, because we are not the same. You do not come from where I do. Making fun of me for not fully being capable of grasping or understanding basics is not as funny as you think it is. Making fun of me for freaking out over little things that are insignificant to you isn't funny, because we do not think the same. We never will. My brain has been damaged and rewired until I looked in the mirror and didn't recognize who was looking back at me. I often must have help getting up out of chairs and be strapped to heart monitors some days when my physical condition declines beyond me helping myself. My mental condition is not much better.</p>
-            <p>Please think of that when you find it funny to make fun of me in public or private forums about how I process, understand, or react to things. I do not and will not ever think or process things on the same level as you. I would love to change the way that I am, but I am incapable. I don't know who I am anymore. I am struggling deeply with my identity and behavior that I am left unable to control or understand after all of my brain injuries.</p>
-          </section>
+export default function Index() {
+  const [showLGSApplication, setShowLGSApplication] = useState(false);
+  const [activeAnnouncement, setActiveAnnouncement] = useState(0);
+  const [announcementDirection, setAnnouncementDirection] = useState<"forward" | "backward">("forward");
+  const [outgoingAnnouncement, setOutgoingAnnouncement] = useState<number | null>(null);
+  const [isAnnouncementTransitioning, setIsAnnouncementTransitioning] = useState(false);
+  const announcementTimer = useRef<number | null>(null);
+  const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
 
-          <section className="space-y-4 rounded-2xl border border-[#E7C84B]/40 bg-[#E7C84B]/10 p-5 dark:border-[#E7C84B]/25 dark:bg-[#E7C84B]/[0.06] sm:p-6">
-            <h2 className="text-xl font-bold text-[#705607] dark:text-[#FFE477] sm:text-2xl">Thank you for giving me space</h2>
-            <p>I do all of this for you for free. I want nothing in return. You don't owe me anything. Sometimes I even feel like I do all of this for nothing. I feel like I have given, and given, and given, and people have spat in my face over insignificant things. I don't want to be spat on anymore. My mental health cannot take it.</p>
-            <p>Thank you for your understanding and your time. The homepage will be restored and MLPEKAYOU's development will continue when I feel I am mentally ready to continue this project. I hope this is considered conducting myself professionally in a public space, I'm not sure. If this all upset or offended you, I apologize. I think honesty is always better than ghosting or silence. I am not abandoning you. I just can't do this right now.</p>
-          </section>
+  useEffect(() => {
+    const syncTheme = () => setIsLightMode(document.documentElement.dataset.theme === "light");
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
+    syncTheme();
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (announcementTimer.current !== null) window.clearTimeout(announcementTimer.current);
+    };
+  }, []);
+
+  const announcement = announcements[activeAnnouncement];
+  const changeAnnouncement = (index: number, direction: "forward" | "backward") => {
+    if (index === activeAnnouncement || isAnnouncementTransitioning) return;
+    setOutgoingAnnouncement(activeAnnouncement);
+    setAnnouncementDirection(direction);
+    setActiveAnnouncement(index);
+    setIsAnnouncementTransitioning(true);
+    if (announcementTimer.current !== null) window.clearTimeout(announcementTimer.current);
+    announcementTimer.current = window.setTimeout(() => {
+      setOutgoingAnnouncement(null);
+      setIsAnnouncementTransitioning(false);
+      announcementTimer.current = null;
+    }, 560);
+  };
+  const previousAnnouncement = () => changeAnnouncement(activeAnnouncement === 0 ? announcements.length - 1 : activeAnnouncement - 1, "backward");
+  const nextAnnouncement = () => changeAnnouncement(activeAnnouncement === announcements.length - 1 ? 0 : activeAnnouncement + 1, "forward");
+  const openAnnouncement = (index: number) => changeAnnouncement(index, index > activeAnnouncement ? "forward" : "backward");
+  const pageBg = isLightMode ? "bg-[#f6f4ee] text-zinc-900" : "bg-[#111111] text-white";
+  const surface = isLightMode
+    ? "border-black/10 bg-white text-zinc-900 shadow-[0_12px_35px_rgba(75,58,18,0.08)]"
+    : "border-white/10 bg-[#181818] text-white shadow-[0_12px_35px_rgba(0,0,0,0.28)]";
+  const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
+  const bodyText = isLightMode ? "text-zinc-700" : "text-zinc-300";
+  const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
+  const getAnnouncementSurface = (item: Announcement) => item.tone === "featured"
+    ? isLightMode
+      ? "border-[#D3AE18]/60 bg-gradient-to-br from-white via-white to-[#fff4bd]"
+      : "border-[#E7C84B]/60 bg-gradient-to-br from-[#25200d] via-[#181818] to-[#111111]"
+    : item.tone === "warning"
+      ? isLightMode
+        ? "border-red-300 bg-gradient-to-br from-white to-red-50"
+        : "border-red-500/35 bg-gradient-to-br from-[#211616] to-[#181818]"
+      : surface;
+
+  const renderAnnouncementCard = (item: Announcement, index: number, phase: "incoming" | "outgoing" | "sizing") => {
+    const motionClass = phase === "sizing" ? "" : phase === "incoming"
+      ? announcementDirection === "forward" ? "mlpekayou-announcement-enter-forward" : "mlpekayou-announcement-enter-backward"
+      : announcementDirection === "forward" ? "mlpekayou-announcement-exit-forward" : "mlpekayou-announcement-exit-backward";
+    return (
+      <article
+        key={`${phase}-${index}-${announcementDirection}`}
+        aria-live={phase === "incoming" ? "polite" : undefined}
+        aria-hidden={phase !== "incoming" ? "true" : undefined}
+        className={`relative flex [grid-area:1/1] flex-col justify-center overflow-hidden rounded-3xl border p-5 sm:p-7 ${getAnnouncementSurface(item)} ${motionClass} ${phase === "incoming" ? "z-10" : phase === "sizing" ? "invisible pointer-events-none z-0" : "pointer-events-none z-0"}`}
+      >
+        <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#E7C84B]/15 blur-3xl" />
+        <div className={`relative ${item.title === "MLPEKAYOU is Underfunded" ? "grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(300px,0.78fr)] md:gap-8" : ""}`}>
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className={`text-sm font-semibold ${item.tone === "warning" ? "text-red-500" : accentText}`}>{item.label}</span>
+              <time className={`text-xs ${muted}`}>{item.date}</time>
+            </div>
+            <h3 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">{item.title}</h3>
+            <p className={`mt-4 max-w-4xl text-[15px] leading-7 ${bodyText}`}>{item.body}</p>
+            <p className={`mt-3 max-w-4xl text-sm leading-6 ${muted}`}>{item.detail}</p>
+            {item.actionHref && item.actionLabel && (
+              <a href={item.actionHref} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#E7C84B] px-5 py-3 text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477]">
+                {item.actionLabel}<ExternalLinkIcon />
+              </a>
+            )}
+          </div>
+          {item.title === "MLPEKAYOU is Underfunded" && (
+            <div className={`w-full rounded-2xl border p-4 ${isLightMode ? "border-[#D3AE18]/45 bg-white/80 text-zinc-950" : "border-[#E7C84B]/35 bg-black/20 text-white"}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="inline-flex rounded-full bg-[#E7C84B] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#111111]">At checkout</span>
+                  <h4 className="mt-2 text-base font-black tracking-tight sm:text-lg">Select MLPEKAYOU</h4>
+                </div>
+                <span className={`pt-1 text-[9px] font-bold uppercase tracking-wide ${muted}`}>Required</span>
+              </div>
+              <p className={`mt-2 text-xs leading-5 ${muted}`}>Under "Where did you hear about us?"</p>
+              <div className="relative mt-3 h-40">
+                <div className={`relative flex min-h-12 items-center justify-between rounded-xl border-2 border-[#E7C84B] px-3 ${isLightMode ? "bg-[#fffdf3]" : "bg-[#17160f]"}`}>
+                  <span className={`checkout-placeholder absolute left-3 text-sm font-semibold ${muted}`}>Select an option</span>
+                  <span className="checkout-selected absolute left-3 text-sm font-black tracking-wide">MLPEKAYOU</span>
+                  <span aria-hidden="true" className="checkout-chevron ml-auto h-2.5 w-2.5 border-b-2 border-r-2 border-current" />
+                </div>
+                <div className={`checkout-menu pointer-events-none absolute left-0 right-0 top-14 z-10 overflow-hidden rounded-xl border shadow-xl ${isLightMode ? "border-zinc-200 bg-white" : "border-white/15 bg-[#171717]"}`}>
+                  <div className={`px-3 py-1.5 text-xs font-semibold ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>TikTok</div>
+                  <div className={`border-t px-3 py-1.5 text-xs font-semibold ${isLightMode ? "border-zinc-200" : "border-white/10"}`}>Discord</div>
+                  <div className={`checkout-option border-t px-3 py-2 text-xs font-black ${isLightMode ? "border-zinc-200" : "border-white/10"}`}>MLPEKAYOU</div>
+                  <span aria-hidden="true" className="checkout-cursor absolute right-5 top-1 h-5 w-3.5 bg-[#E7C84B] shadow-md [clip-path:polygon(0_0,0_100%,28%_73%,45%_100%,58%_93%,42%_67%,74%_67%)]" />
+                </div>
+                <div className="checkout-confirmation absolute inset-x-0 top-16 rounded-xl border border-[#E7C84B]/50 bg-[#E7C84B]/10 px-3 py-2.5 text-center text-[10px] font-black uppercase tracking-[0.1em]">MLPEKAYOU selected - order credited</div>
+              </div>
+              <p className={`mt-1 text-center text-[10px] font-semibold leading-4 ${muted}`}>Other choices do not credit MLPEKAYOU.</p>
+            </div>
+          )}
         </div>
       </article>
+    );
+  };
+
+  return (
+    <>
+      <ListingWarningGate />
+      <style>{`
+        @keyframes mlpekayouAnnouncementEnterForward {
+          from { opacity: 0; transform: translate3d(46px, 0, 0) scale(0.985); }
+          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
+        @keyframes mlpekayouAnnouncementExitForward {
+          from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+          to { opacity: 0; transform: translate3d(-46px, 0, 0) scale(0.985); }
+        }
+        @keyframes mlpekayouAnnouncementEnterBackward {
+          from { opacity: 0; transform: translate3d(-46px, 0, 0) scale(0.985); }
+          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
+        @keyframes mlpekayouAnnouncementExitBackward {
+          from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+          to { opacity: 0; transform: translate3d(46px, 0, 0) scale(0.985); }
+        }
+        .mlpekayou-announcement-enter-forward { animation: mlpekayouAnnouncementEnterForward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .mlpekayou-announcement-exit-forward { animation: mlpekayouAnnouncementExitForward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .mlpekayou-announcement-enter-backward { animation: mlpekayouAnnouncementEnterBackward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .mlpekayou-announcement-exit-backward { animation: mlpekayouAnnouncementExitBackward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+        @keyframes checkoutMenu {
+          0%, 12%, 78%, 100% { opacity: 0; transform: translateY(-6px); visibility: hidden; }
+          18%, 70% { opacity: 1; transform: translateY(0); visibility: visible; }
+        }
+        @keyframes checkoutCursor {
+          0%, 20% { opacity: 0; transform: translate(24px, -8px); }
+          26% { opacity: 1; transform: translate(24px, -8px); }
+          50%, 62% { opacity: 1; transform: translate(0, 58px); }
+          70%, 100% { opacity: 0; transform: translate(0, 58px); }
+        }
+        @keyframes checkoutOption {
+          0%, 46% { background-color: transparent; }
+          53%, 100% { background-color: rgba(231, 200, 75, 0.34); }
+        }
+        @keyframes checkoutPlaceholder { 0%, 68% { opacity: 1; } 74%, 100% { opacity: 0; } }
+        @keyframes checkoutSelected { 0%, 68% { opacity: 0; } 76%, 100% { opacity: 1; } }
+        @keyframes checkoutConfirmation {
+          0%, 74% { opacity: 0; transform: translateY(6px); }
+          82%, 96% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(0); }
+        }
+        @keyframes checkoutChevron { 0%, 12%, 78%, 100% { transform: rotate(45deg); } 18%, 70% { transform: rotate(225deg); } }
+        .checkout-menu { animation: checkoutMenu 6s ease-in-out infinite; }
+        .checkout-cursor { animation: checkoutCursor 6s ease-in-out infinite; }
+        .checkout-option { animation: checkoutOption 6s ease-in-out infinite; }
+        .checkout-placeholder { animation: checkoutPlaceholder 6s ease-in-out infinite; }
+        .checkout-selected { animation: checkoutSelected 6s ease-in-out infinite; }
+        .checkout-confirmation { animation: checkoutConfirmation 6s ease-in-out infinite; }
+        .checkout-chevron { animation: checkoutChevron 6s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .mlpekayou-announcement-enter-forward, .mlpekayou-announcement-exit-forward,
+          .mlpekayou-announcement-enter-backward, .mlpekayou-announcement-exit-backward { animation: none; }
+          .checkout-menu, .checkout-cursor, .checkout-placeholder { display: none; animation: none; }
+          .checkout-option, .checkout-selected, .checkout-confirmation { animation: none; opacity: 1; transform: none; }
+          .checkout-chevron { animation: none; transform: rotate(45deg); }
+        }
+      `}</style>
+      {showLGSApplication && <LGSApplications onClose={() => setShowLGSApplication(false)} isLightMode={isLightMode} />}
+      <main className={`min-h-screen w-full overflow-x-hidden transition-colors duration-200 ${pageBg}`}>
+        <section className={`border-b ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#171717]"}`}>
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-7 px-4 py-9 sm:px-6 sm:py-12 md:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12 lg:py-16">
+            <div>
+              <p className={`text-sm font-bold uppercase tracking-[0.18em] ${accentText}`}>MLPEKAYOU</p>
+              <h1 className="mt-3 max-w-3xl text-4xl font-bold tracking-[-0.035em] sm:text-5xl md:text-6xl">The home of English My Little Pony Kayou collectors.</h1>
+              <p className={`mt-5 max-w-2xl text-base leading-7 sm:text-lg ${bodyText}`}>I am back! After a week-long break, I am excited to continue my work for MLPEKAYOU and the community. In the future, please do think of others before you speak. Negativity is not acceptable in this community. I shouldn't have to state that I am an infantry veteran in order to be treated with kindness.</p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <a href="https://stonestradingco.com/collections/my-little-pony" target="_blank" rel="noopener noreferrer" className={`group flex min-w-0 flex-col rounded-2xl border p-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E7C84B] ${isLightMode ? "border-[#D3AE18]/35 bg-[#fffdf3] hover:border-[#D3AE18]" : "border-[#E7C84B]/25 bg-[#E7C84B]/[0.05] hover:border-[#E7C84B]/60"}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-[0.14em] ${accentText}`}>American products</span>
+                  <span className="mt-2 flex items-center justify-between gap-3 text-base font-bold">StonesTradingCo<ExternalLinkIcon className={`h-4 w-4 shrink-0 ${accentText}`} /></span>
+                  <span className={`mt-1.5 text-xs leading-5 ${bodyText}`}>Shop authentic American MLP Kayou products.</span>
+                </a>
+                <a href="https://pakracards.com" target="_blank" rel="noopener noreferrer" className={`group flex min-w-0 flex-col rounded-2xl border p-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E7C84B] ${isLightMode ? "border-[#D3AE18]/35 bg-[#fffdf3] hover:border-[#D3AE18]" : "border-[#E7C84B]/25 bg-[#E7C84B]/[0.05] hover:border-[#E7C84B]/60"}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-[0.14em] ${accentText}`}>Chinese products</span>
+                  <span className="mt-2 flex items-center justify-between gap-3 text-base font-bold">PakraCards<ExternalLinkIcon className={`h-4 w-4 shrink-0 ${accentText}`} /></span>
+                  <span className={`mt-1.5 text-xs leading-5 ${bodyText}`}>Shop authentic Chinese MLP Kayou products.</span>
+                </a>
+              </div>
+              <p className={`mt-5 text-xs leading-5 ${muted}`}>MLPEKAYOU supports North American English cards only. SEA, Japanese, and Chinese Kayou cards are not included.</p>
+            </div>
+            <div className="grid min-w-0 gap-4">
+              <a href={discordHref} target="_blank" rel="noopener noreferrer" className={`group relative overflow-hidden rounded-3xl border p-5 transition-all hover:-translate-y-0.5 sm:p-6 ${surface} ${isLightMode ? "hover:border-[#5865F2]/60" : "hover:border-[#8791FF]/60"}`}>
+                <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#5865F2]/15 blur-3xl" />
+                <div className="relative">
+                  <div className="flex items-center justify-between gap-3">
+                    <CardImage src={isLightMode ? "/website-assets/discordlightmode.webp" : "/website-assets/discordlogo.webp"} alt="Discord" className="h-8 w-auto" />
+                    <ExternalLinkIcon className={`h-4 w-4 ${isLightMode ? "text-[#4752C4]" : "text-[#A6ADFF]"}`} />
+                  </div>
+                  <p className={`mt-4 text-[11px] font-bold uppercase tracking-[0.14em] ${isLightMode ? "text-[#4752C4]" : "text-[#A6ADFF]"}`}>Chat, pulls, and live rip nights</p>
+                  <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:text-2xl">Join the MLPEKAYOU Discord</h2>
+                  <p className={`mt-2 text-sm leading-6 ${bodyText}`}>Get collection help, share pulls, arrange trades, follow English Kayou releases, and join live rip nights with other collectors.</p>
+                  <span className={`mt-4 inline-flex items-center gap-2 text-sm font-bold ${isLightMode ? "text-[#4752C4]" : "text-[#A6ADFF]"}`}>Join the Discord<ExternalLinkIcon /></span>
+                </div>
+              </a>
+              <a href={redditHref} target="_blank" rel="noopener noreferrer" className={`group relative overflow-hidden rounded-3xl border p-5 transition-all hover:-translate-y-0.5 sm:p-6 ${surface} ${isLightMode ? "hover:border-[#D93900]/60" : "hover:border-[#FF956E]/60"}`}>
+                <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#FF4500]/15 blur-3xl" />
+                <div className="relative">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className={`text-lg font-black tracking-tight ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`}>r/MLPEKAYOU</span>
+                    <ExternalLinkIcon className={`h-4 w-4 ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`} />
+                  </div>
+                  <p className={`mt-4 text-[11px] font-bold uppercase tracking-[0.14em] ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`}>Trading and selling, collector first</p>
+                  <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:text-2xl">Prefer Reddit? You're welcome here.</h2>
+                  <p className={`mt-2 text-sm leading-6 ${bodyText}`}>A moderated space for trading and selling English Kayou cards. No "what's this worth?" posts. "Card bros" are banned. Built for collectors who prefer not to use Discord.</p>
+                  <span className={`mt-4 inline-flex items-center gap-2 text-sm font-bold ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`}>Join the Reddit<ExternalLinkIcon /></span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+        <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 sm:py-10 md:px-8 md:py-12">
+          <section aria-labelledby="announcements-heading">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className={`text-sm font-semibold ${accentText}`}>What's happening</p>
+                <h2 id="announcements-heading" className="mt-1 text-3xl font-bold tracking-tight">Announcements</h2>
+              </div>
+              <p className={`text-sm ${muted}`}>{activeAnnouncement + 1} of {announcements.length}</p>
+            </div>
+            <div className="mt-5 grid overflow-hidden rounded-3xl">
+              {announcements.map((item, index) => renderAnnouncementCard(item, index, "sizing"))}
+              {outgoingAnnouncement !== null && renderAnnouncementCard(announcements[outgoingAnnouncement], outgoingAnnouncement, "outgoing")}
+              {renderAnnouncementCard(announcement, activeAnnouncement, "incoming")}
+            </div>
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <button type="button" onClick={previousAnnouncement} aria-label="Previous announcement" className={`inline-flex h-11 w-11 items-center justify-center rounded-full border font-bold transition-colors ${isLightMode ? "border-black/15 bg-white text-zinc-800 hover:border-[#E7C84B]" : "border-white/15 bg-[#181818] text-white hover:border-[#E7C84B]/60"}`}><ArrowLeftIcon /></button>
+              <div className="flex items-center justify-center gap-2">
+                {announcements.map((item, index) => (
+                  <button key={item.title} type="button" onClick={() => openAnnouncement(index)} aria-label={`Open announcement ${index + 1}: ${item.title}`} aria-current={index === activeAnnouncement ? "true" : undefined} className={`h-2.5 rounded-full transition-all ${index === activeAnnouncement ? "w-8 bg-[#E7C84B]" : isLightMode ? "w-2.5 bg-black/20 hover:bg-black/35" : "w-2.5 bg-white/20 hover:bg-white/35"}`} />
+                ))}
+              </div>
+              <button type="button" onClick={nextAnnouncement} aria-label="Next announcement" className={`inline-flex h-11 w-11 items-center justify-center rounded-full border font-bold transition-colors ${isLightMode ? "border-black/15 bg-white text-zinc-800 hover:border-[#E7C84B]" : "border-white/15 bg-[#181818] text-white hover:border-[#E7C84B]/60"}`}><ArrowRightIcon /></button>
+            </div>
+          </section>
+          <section className="space-y-7" aria-labelledby="community-heading">
+            <article className={`flex flex-col gap-5 rounded-3xl border p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between ${surface}`}>
+              <div className="max-w-4xl">
+                <p className={`text-sm font-semibold ${accentText}`}>For local game stores</p>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight">Bring organized play to your community.</h2>
+                <p className={`mt-2 text-sm leading-6 ${bodyText}`}>Approved stores can manage tournaments, track attendance, and preserve event history in one shared space. Stores may apply whether they already host events or are preparing for their first one.</p>
+              </div>
+              <button type="button" onClick={() => setShowLGSApplication(true)} className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#E7C84B] px-5 py-3 text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477] sm:w-auto">Apply for the LGS Program</button>
+            </article>
+            <div>
+              <p className={`text-sm font-semibold ${accentText}`}>Trusted places to continue</p>
+              <h2 id="community-heading" className="mt-1 text-2xl font-bold tracking-tight">Community references</h2>
+              <div className="mt-4 grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {references.map((resource) => (
+                  <a key={resource.title} href={resource.href} target="_blank" rel="noopener noreferrer" className={`group flex h-full min-h-36 overflow-hidden rounded-2xl border transition-all hover:-translate-y-0.5 ${surface} ${isLightMode ? "hover:border-[#E7C84B]/70" : "hover:border-[#E7C84B]/45"}`}>
+                    {resource.image && (
+                      <div className={`flex w-24 shrink-0 items-center justify-center overflow-hidden sm:w-28 ${isLightMode ? "bg-[#f1eee5]" : "bg-[#101010]"}`}>
+                        <CardImage src={resource.image} alt={resource.title} className={resource.title === "Doodle Binder" ? "h-full w-full object-cover object-center" : "max-h-20 w-full object-contain p-3"} />
+                      </div>
+                    )}
+                    <div className={`flex min-w-0 flex-1 flex-col justify-center ${resource.image ? "p-4" : "p-5"}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-base font-bold tracking-tight">{resource.title}</h3>
+                        <span aria-hidden="true" className={accentText}><ExternalLinkIcon className="h-4 w-4" /></span>
+                      </div>
+                      <p className={`mt-2 text-xs leading-5 ${bodyText}`}>{resource.description}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+          <footer className={`border-t pt-6 text-center text-xs leading-5 ${isLightMode ? "border-black/10 text-zinc-500" : "border-white/10 text-zinc-500"}`}>
+            <p>MLPEKAYOU is a free fan website owned and operated by Keegan. It is not owned, operated, or managed by Kayou US.</p>
+          </footer>
+        </div>
       </main>
     </>
   );
