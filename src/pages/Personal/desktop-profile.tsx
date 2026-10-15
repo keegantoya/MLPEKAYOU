@@ -69,9 +69,12 @@ export default function DesktopProfile() {
     [],
   );
   const [profile, setProfile] = useState<any>(null);
-  const [isLightMode, setIsLightMode] = useState(
-    () => document.documentElement.dataset.theme === "light",
-  );
+  const [activeTheme, setActiveTheme] = useState<"light" | "dark" | "spooky">(() => {
+    const theme = document.documentElement.dataset.theme;
+    return theme === "light" || theme === "spooky" ? theme : "dark";
+  });
+  const isLightMode = activeTheme === "light";
+  const isSpookyMode = activeTheme === "spooky";
   const [discord, setDiscord] = useState("");
   const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
   const [offerStrikeCount, setOfferStrikeCount] = useState(0);
@@ -126,68 +129,25 @@ export default function DesktopProfile() {
   ];
   useEffect(() => {
     let mounted = true;
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
     const syncFromDocument = () => {
       if (!mounted) return;
-      setIsLightMode(document.documentElement.dataset.theme === "light");
+      const theme = document.documentElement.dataset.theme;
+      setActiveTheme(theme === "light" || theme === "spooky" ? theme : "dark");
     };
     const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-    const loadThemePreference = async () => {
-      return trackProfileLoad("theme", async () => {
-        const {
-          data: { session },
-        } = await checkedProfileRequest(supabase.auth.getSession());
-        if (!mounted) return;
-        if (!session?.user) {
-          setIsLightMode(false);
-          return;
-        }
-        const { data, error } = await checkedProfileRequest(
-          supabase
-            .from("user_light_mode_preferences")
-            .select("user_id")
-            .eq("user_id", session.user.id)
-            .maybeSingle(),
-        );
-        if (!mounted) return;
-        if (error) {
-          console.error(
-            "Unable to load desktop profile theme preference:",
-            error,
-          );
-        } else {
-          setIsLightMode(Boolean(data));
-        }
-        realtimeChannel = supabase
-          .channel(`desktop-profile-theme-${session.user.id}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "user_light_mode_preferences",
-              filter: `user_id=eq.${session.user.id}`,
-            },
-            (payload) => {
-              if (!mounted) return;
-              setIsLightMode(payload.eventType !== "DELETE");
-            },
-          )
-          .subscribe();
-      });
-    };
     syncFromDocument();
-    loadThemePreference();
+    void trackProfileLoad("theme", async () => {
+      syncFromDocument();
+    });
     return () => {
       mounted = false;
       observer.disconnect();
-      if (realtimeChannel) supabase.removeChannel(realtimeChannel);
     };
-  }, []);
+  }, [trackProfileLoad]);
   useEffect(() => {
     loadProfile();
     loadStats();
@@ -918,9 +878,9 @@ export default function DesktopProfile() {
   const essentialProfileLoaded = profileLoads.profile && profileLoads.theme;
   const essentialProfileFailed = profileLoadErrors.profile || profileLoadErrors.theme;
   if (!essentialProfileLoaded)
-    return <ProfileLoadingScreen light={isLightMode} failed={false} />;
+    return <ProfileLoadingScreen light={isLightMode} spooky={isSpookyMode} failed={false} />;
   if (essentialProfileFailed || !profile)
-    return <ProfileLoadingScreen light={isLightMode} failed />;
+    return <ProfileLoadingScreen light={isLightMode} spooky={isSpookyMode} failed />;
   return (
     <div
       className={`min-h-screen transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}
@@ -1310,7 +1270,7 @@ export default function DesktopProfile() {
               ))}
             </div>
           </div>
-          {!profileLoads.showcase && <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading your collected hits…</p>}
+          {!profileLoads.showcase && <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading your collected hits...</p>}
           {profileLoadErrors.showcase && <p role="alert" className="py-8 text-center text-sm text-zinc-500">Your collected hits could not be loaded. Refresh to try again.</p>}
           {profileLoads.showcase && !profileLoadErrors.showcase && visibleShowcaseCards.length === 0 && <p className="py-10 text-center text-sm text-zinc-500">Your collected hits will appear here.</p>}
           <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
@@ -1624,7 +1584,7 @@ export default function DesktopProfile() {
           className={`fixed inset-0 z-[120] flex items-center justify-center p-6 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`}
           onClick={() => setSelectedShowcaseCard(null)}
         >
-          <button type="button" aria-label="Close card preview" onClick={() => setSelectedShowcaseCard(null)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-2xl text-white shadow-lg">—</button>
+          <button type="button" aria-label="Close card preview" onClick={() => setSelectedShowcaseCard(null)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-2xl text-white shadow-lg">-</button>
           <button
             type="button"
             className={`relative overflow-hidden rounded-2xl shadow-2xl ${
@@ -1648,17 +1608,21 @@ export default function DesktopProfile() {
 }
 function ProfileLoadingScreen({
   light,
+  spooky,
   failed,
 }: {
   light: boolean;
+  spooky: boolean;
   failed: boolean;
 }) {
   const logo = light
     ? "/website-assets/mlpekayouwiki4.webp"
-    : "/website-assets/darkmodelogo.webp";
+    : spooky
+      ? "/website-assets/nightmarelogo.webp"
+      : "/website-assets/darkmodelogo.webp";
   return (
     <div
-      className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}
+      className={`profile-loading-screen${light ? " profile-loading-light" : ""}${spooky ? " profile-loading-spooky" : ""}`}
     >
       <style>{`
         .profile-loading-screen{position:relative;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:32px 24px;background:#0d0f10;color:#f4f4f5}
@@ -1669,6 +1633,9 @@ function ProfileLoadingScreen({
         .profile-loading-title{margin:0;font-size:17px;font-weight:700;line-height:1.4}
         .profile-loading-subtitle{margin:6px 0 0;font-size:13px;line-height:1.5;color:#a1a1aa}
         .profile-loading-light .profile-loading-subtitle{color:#71717a}
+        .profile-loading-spooky .profile-loading-bar::after{background:#a77be8}
+        .profile-loading-spooky .profile-loading-retry{background:#7544ad;color:#fff}
+        .profile-loading-spooky .profile-loading-retry:focus-visible{outline-color:#b18bff}
         .profile-loading-bar{position:relative;width:150px;height:3px;margin:22px auto 0;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.10)}
         .profile-loading-light .profile-loading-bar{background:rgba(24,24,27,.10)}
         .profile-loading-bar::after{content:"";position:absolute;inset:0;width:45%;border-radius:inherit;background:#ffda4b;animation:profile-loading-bar 1.1s ease-in-out infinite}

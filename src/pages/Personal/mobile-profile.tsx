@@ -59,9 +59,12 @@ const MobileProfile = () => {
   );
   const [profile, setProfile] = useState<any>(null);
   const [inboxNotificationCount, setInboxNotificationCount] = useState(0);
-  const [isLightMode, setIsLightMode] = useState(
-    () => document.documentElement.dataset.theme === "light",
-  );
+  const [activeTheme, setActiveTheme] = useState<"light" | "dark" | "spooky">(() => {
+    const theme = document.documentElement.dataset.theme;
+    return theme === "light" || theme === "spooky" ? theme : "dark";
+  });
+  const isLightMode = activeTheme === "light";
+  const isSpookyMode = activeTheme === "spooky";
   const [discord, setDiscord] = useState("");
   const [tradeAccessRevoked, setTradeAccessRevoked] = useState(false);
   const [offerStrikeCount, setOfferStrikeCount] = useState(0);
@@ -316,67 +319,25 @@ const MobileProfile = () => {
   }, [profile?.id]);
   useEffect(() => {
     let mounted = true;
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
     const syncFromDocument = () => {
       if (!mounted) return;
-      setIsLightMode(document.documentElement.dataset.theme === "light");
+      const theme = document.documentElement.dataset.theme;
+      setActiveTheme(theme === "light" || theme === "spooky" ? theme : "dark");
     };
     const observer = new MutationObserver(syncFromDocument);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
-    const loadThemePreference = async () => {
-      return trackProfileLoad("theme", async () => {
-        const {
-          data: { session },
-        } = await checkedProfileRequest(supabase.auth.getSession());
-        if (!mounted) return;
-        if (!session?.user) {
-          setIsLightMode(false);
-          return;
-        }
-        const { data, error } = await checkedProfileRequest(
-          supabase
-            .from("user_light_mode_preferences")
-            .select("user_id")
-            .eq("user_id", session.user.id)
-            .maybeSingle(),
-        );
-        if (!mounted) return;
-        if (error) {
-          console.error("Unable to load profile theme preference:", error);
-        } else {
-          setIsLightMode(Boolean(data));
-        }
-        realtimeChannel = supabase
-          .channel(`mobile-profile-theme-${session.user.id}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "user_light_mode_preferences",
-              filter: `user_id=eq.${session.user.id}`,
-            },
-            (payload) => {
-              if (!mounted) return;
-              setIsLightMode(payload.eventType !== "DELETE");
-            },
-          )
-          .subscribe();
-      });
-    };
     syncFromDocument();
-    loadThemePreference();
+    void trackProfileLoad("theme", async () => {
+      syncFromDocument();
+    });
     return () => {
       mounted = false;
       observer.disconnect();
-      if (realtimeChannel) {
-        supabase.removeChannel(realtimeChannel);
-      }
     };
-  }, []);
+  }, [trackProfileLoad]);
   async function selfBanFromLeaderboard() {
     if (leaderboardBanned) return;
     const {
@@ -914,9 +875,9 @@ const MobileProfile = () => {
   const essentialProfileFailed =
     profileLoadErrors.profile || profileLoadErrors.theme;
   if (!essentialProfileLoaded)
-    return <ProfileLoadingScreen light={isLightMode} failed={false} />;
+    return <ProfileLoadingScreen light={isLightMode} spooky={isSpookyMode} failed={false} />;
   if (essentialProfileFailed || !profile)
-    return <ProfileLoadingScreen light={isLightMode} failed />;
+    return <ProfileLoadingScreen light={isLightMode} spooky={isSpookyMode} failed />;
   return (
     <div
       className={`mobile-profile-scope relative overflow-hidden transition-colors duration-200 ${
@@ -2252,17 +2213,21 @@ function Placeholder({ title }: { title: string }) {
 export default MobileProfile;
 function ProfileLoadingScreen({
   light,
+  spooky,
   failed,
 }: {
   light: boolean;
+  spooky: boolean;
   failed: boolean;
 }) {
   const logo = light
     ? "/website-assets/mlpekayouwiki4.webp"
-    : "/website-assets/darkmodelogo.webp";
+    : spooky
+      ? "/website-assets/nightmarelogo.webp"
+      : "/website-assets/darkmodelogo.webp";
   return (
     <div
-      className={`profile-loading-screen${light ? " profile-loading-light" : ""}`}
+      className={`profile-loading-screen${light ? " profile-loading-light" : ""}${spooky ? " profile-loading-spooky" : ""}`}
     >
       <style>{`
         .profile-loading-screen{position:relative;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:32px 24px;background:#0d0f10;color:#f4f4f5}
@@ -2273,6 +2238,9 @@ function ProfileLoadingScreen({
         .profile-loading-title{margin:0;font-size:17px;font-weight:700;line-height:1.4}
         .profile-loading-subtitle{margin:6px 0 0;font-size:13px;line-height:1.5;color:#a1a1aa}
         .profile-loading-light .profile-loading-subtitle{color:#71717a}
+        .profile-loading-spooky .profile-loading-bar::after{background:#a77be8}
+        .profile-loading-spooky .profile-loading-retry{background:#7544ad;color:#fff}
+        .profile-loading-spooky .profile-loading-retry:focus-visible{outline-color:#b18bff}
         .profile-loading-bar{position:relative;width:150px;height:3px;margin:22px auto 0;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.10)}
         .profile-loading-light .profile-loading-bar{background:rgba(24,24,27,.10)}
         .profile-loading-bar::after{content:"";position:absolute;inset:0;width:45%;border-radius:inherit;background:#ffda4b;animation:profile-loading-bar 1.1s ease-in-out infinite}

@@ -52,6 +52,9 @@ const KayouHeader = () => {
   const [inboxNotificationCount, setInboxNotificationCount] = useState(0);
   const notificationAudio = useRef<AudioContext | null>(null);
   const [isLightMode, setIsLightMode] = useState(false);
+  const [isSpookyMode, setIsSpookyMode] = useState(false);
+  const [spookyUnlocked, setSpookyUnlocked] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [themeSaving, setThemeSaving] = useState(false);
   const [avatarSrc, setAvatarSrc] = useState<string | null>(() => {
     return sessionStorage.getItem("avatar");
@@ -642,59 +645,136 @@ const KayouHeader = () => {
     }
     requestNavigation(path);
   };
-  const applyTheme = (lightMode: boolean) => {
+  const halloweenAccessEndsAt = new Date("2026-11-01T06:00:00.000Z");
+  const canChooseSpooky = spookyUnlocked || new Date() < halloweenAccessEndsAt;
+  const currentTheme = isLightMode ? "light" : isSpookyMode ? "spooky" : "dark";
+  const themeIcon =
+    currentTheme === "light"
+      ? "/website-assets/LightMode.webp"
+      : currentTheme === "spooky"
+        ? "/website-assets/DarkMode.webp"
+        : "/website-assets/darkmodeactual.webp";
+  const applyTheme = (theme: "light" | "dark" | "spooky") => {
+    const lightMode = theme === "light";
     document.documentElement.classList.toggle("light", lightMode);
     document.documentElement.classList.toggle("dark", !lightMode);
-    document.documentElement.dataset.theme = lightMode ? "light" : "dark";
+    document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = lightMode ? "light" : "dark";
   };
   useEffect(() => {
     if (!user) {
       setIsLightMode(false);
-      applyTheme(false);
+      setIsSpookyMode(false);
+      setSpookyUnlocked(false);
+      applyTheme("dark");
       return;
     }
     let cancelled = false;
     const loadThemePreference = async () => {
-      const { data, error } = await supabase
-        .from("user_light_mode_preferences")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const themeDb = supabase as unknown as SupabaseClient;
+      const [legacyResult, themeResult] = await Promise.all([
+        themeDb
+          .from("user_light_mode_preferences")
+          .select("user_id")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        themeDb
+          .from("user_theme_preferences")
+          .select("theme, spooky_unlocked")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+      ]);
       if (cancelled) return;
-      if (error) {
-        console.error("Unable to load theme preference:", error);
-        setIsLightMode(false);
-        applyTheme(false);
-        return;
+      if (legacyResult.error) {
+        console.error("Unable to load legacy theme preference:", legacyResult.error);
       }
-      const lightMode = Boolean(data);
-      setIsLightMode(lightMode);
-      applyTheme(lightMode);
+      if (themeResult.error) {
+        console.error("Unable to load theme preference:", themeResult.error);
+      }
+      const unlocked = Boolean(themeResult.data?.spooky_unlocked);
+      const savedTheme = themeResult.data?.theme;
+      const theme =
+        savedTheme === "light" || savedTheme === "dark" || savedTheme === "spooky"
+          ? savedTheme
+          : legacyResult.data
+            ? "light"
+            : "dark";
+      const allowSpooky = unlocked || new Date() < halloweenAccessEndsAt;
+      const safeTheme = theme === "spooky" && !allowSpooky ? "dark" : theme;
+      setSpookyUnlocked(unlocked);
+      setIsLightMode(safeTheme === "light");
+      setIsSpookyMode(safeTheme === "spooky");
+      applyTheme(safeTheme);
+      if (theme === "spooky" && safeTheme !== theme) {
+        void themeDb
+          .from("user_theme_preferences")
+          .upsert(
+            { user_id: user.id, theme: "dark", spooky_unlocked: false },
+            { onConflict: "user_id" },
+          );
+      }
     };
-    loadThemePreference();
+    void loadThemePreference();
     return () => {
       cancelled = true;
     };
   }, [user?.id]);
-  const handleThemeToggle = async () => {
-    if (!user || themeSaving) return;
-    const nextLightMode = !isLightMode;
+  useEffect(() => {
+    if (!showThemeMenu) return;
+    const closeOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest(".kayou-theme-picker")) setShowThemeMenu(false);
+    };
+    const closeEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowThemeMenu(false);
+    };
+    document.addEventListener("mousedown", closeOutside);
+    document.addEventListener("keydown", closeEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOutside);
+      document.removeEventListener("keydown", closeEscape);
+    };
+  }, [showThemeMenu]);
+  const handleThemeSelect = async (theme: "light" | "dark" | "spooky") => {
+    if (!user || themeSaving || (theme === "spooky" && !canChooseSpooky)) return;
+    const previousTheme = currentTheme;
+    const nextSpookyUnlocked = spookyUnlocked || theme === "spooky";
     setThemeSaving(true);
-    setIsLightMode(nextLightMode);
-    applyTheme(nextLightMode);
-    const { error } = nextLightMode
-      ? await supabase
-          .from("user_light_mode_preferences")
-          .upsert({ user_id: user.id }, { onConflict: "user_id" })
-      : await supabase
-          .from("user_light_mode_preferences")
-          .delete()
-          .eq("user_id", user.id);
-    if (error) {
-      console.error("Unable to save theme preference:", error);
-      setIsLightMode(!nextLightMode);
-      applyTheme(!nextLightMode);
+    setShowThemeMenu(false);
+    setIsLightMode(theme === "light");
+    setIsSpookyMode(theme === "spooky");
+    setSpookyUnlocked(nextSpookyUnlocked);
+    applyTheme(theme);
+    const themeDb = supabase as unknown as SupabaseClient;
+    const { error: preferenceError } = await themeDb
+      .from("user_theme_preferences")
+      .upsert(
+        {
+          user_id: user.id,
+          theme,
+          spooky_unlocked: nextSpookyUnlocked,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+    const { error: legacyError } =
+      theme === "light"
+        ? await supabase
+            .from("user_light_mode_preferences")
+            .upsert({ user_id: user.id }, { onConflict: "user_id" })
+        : await supabase
+            .from("user_light_mode_preferences")
+            .delete()
+            .eq("user_id", user.id);
+    if (preferenceError || legacyError) {
+      console.error(
+        "Unable to save theme preference:",
+        preferenceError || legacyError,
+      );
+      setIsLightMode(previousTheme === "light");
+      setIsSpookyMode(previousTheme === "spooky");
+      setSpookyUnlocked(spookyUnlocked);
+      applyTheme(previousTheme);
     }
     setThemeSaving(false);
   };
@@ -702,7 +782,9 @@ const KayouHeader = () => {
     await supabase.auth.signOut({ scope: "local" });
     setUser(null);
     setIsLightMode(false);
-    applyTheme(false);
+    setIsSpookyMode(false);
+    setSpookyUnlocked(false);
+    applyTheme("dark");
     navigate("/");
   };
   const isActive = (path: string) => {
@@ -771,7 +853,7 @@ const KayouHeader = () => {
   );
   return (
     <div
-      className={`kayou-header-scope ${isLightMode ? "kayou-header-light" : ""}`}
+      className={`kayou-header-scope ${isLightMode ? "kayou-header-light" : ""} ${isSpookyMode ? "kayou-header-spooky" : ""}`}
     >
       <style>
         {`
@@ -786,7 +868,242 @@ const KayouHeader = () => {
   .kayou-header-light .kayou-staff-menu button{color:#312d24}
   .kayou-staff-button:focus-visible,.kayou-staff-menu button:focus-visible{outline:2px solid #e7c84b;outline-offset:3px}
   @media(min-width:640px){.kayou-staff-button span{display:none}}
+  html[data-theme="spooky"] {
+    --primary: 270 76% 68%;
+    --ring: 270 76% 68%;
+    color-scheme: dark;
+  }
+  html[data-theme="spooky"] [class*="text-[#E7C84B]"],
+  html[data-theme="spooky"] [class*="text-[#FFE477]"],
+  html[data-theme="spooky"] [class*="text-yellow-"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-yellow-300"],
+  html[data-theme="spooky"] [class*="text-[#FFE477]"] { color: #d8c2ff !important; }
+  html[data-theme="spooky"] [class*="border-[#E7C84B]"],
+  html[data-theme="spooky"] [class*="border-yellow-300"],
+  html[data-theme="spooky"] [class*="border-yellow-400"],
+  html[data-theme="spooky"] [class*="border-[#D6B84A]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="bg-[#E7C84B]"]:not([class*="bg-[#E7C84B]/"]),
+  html[data-theme="spooky"] [class*="bg-[#FFE477]"]:not([class*="bg-[#FFE477]/"]),
+  html[data-theme="spooky"] [class*="bg-yellow-400"]:not([class*="bg-yellow-400/"]),
+  html[data-theme="spooky"] [class*="bg-yellow-500"]:not([class*="bg-yellow-500/"]) { background-color: #7544ad !important; }
+  html[data-theme="spooky"] [class*="bg-[#E7C84B]/"],
+  html[data-theme="spooky"] [class*="bg-[#FFE477]/"],
+  html[data-theme="spooky"] [class*="bg-yellow-400/"],
+  html[data-theme="spooky"] [class*="bg-yellow-500/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="from-yellow-400"],
+  html[data-theme="spooky"] [class*="from-yellow-500"] { --tw-gradient-from: #c9acff var(--tw-gradient-from-position) !important; --tw-gradient-to: rgb(201 172 255 / 0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+  html[data-theme="spooky"] [class*="via-yellow-400"],
+  html[data-theme="spooky"] [class*="via-yellow-500"] { --tw-gradient-via: #c9acff var(--tw-gradient-via-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important; }
+  html[data-theme="spooky"] [class*="to-yellow-400"],
+  html[data-theme="spooky"] [class*="to-yellow-500"] { --tw-gradient-to: #c9acff var(--tw-gradient-to-position) !important; }
+  html[data-theme="spooky"] [class*="shadow-"][class*="250,204,21"],
+  html[data-theme="spooky"] [class*="shadow-"][class*="#facc15"],
+  html[data-theme="spooky"] [class*="231,200,75"],
+  html[data-theme="spooky"] [class*="rgba(231,200,75"],
+  html[data-theme="spooky"] [class*="255,213,74"],
+  html[data-theme="spooky"] [class*="255,226,122"],
+  html[data-theme="spooky"] [class*="#ffd54a"],
+  html[data-theme="spooky"] [class*="#ffe27a"] { box-shadow: 0 0 12px rgba(201,172,255,.82) !important; }
+  html[data-theme="spooky"] .kayou-staff-button { color: #c9acff; border-color: rgba(201,172,255,.58); }
+  html[data-theme="spooky"] .kayou-staff-button:hover { background: rgba(167,123,232,.14); }
+  html[data-theme="spooky"] [class*="text-[#ffe06a]"],
+  html[data-theme="spooky"] [class*="text-[#FFE06A]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="border-[#ffe06a]"],
+  html[data-theme="spooky"] [class*="border-[#FFE06A]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="bg-[#ffe06a]"]:not([class*="bg-[#ffe06a]/"]),
+  html[data-theme="spooky"] [class*="bg-[#FFE06A]"]:not([class*="bg-[#FFE06A]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#ffe06a]/"],
+  html[data-theme="spooky"] [class*="bg-[#FFE06A]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] .tp-index { --index-accent: #c9acff !important; }
+  html[data-theme="spooky"] .tp-index .tp-index-filters button[aria-pressed="true"],
+  html[data-theme="spooky"] .tp-index .tp-index-empty button { background: #7544ad !important; border-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] .tp-index .tp-index-filters button:hover { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] .tp-index .tp-index-card:hover { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] .tp-market { --tp-accent: #c9acff !important; --tp-action: #7544ad !important; --tp-action-ink: #fff !important; --tp-glow-rgb: 201,172,255 !important; }
+  html[data-theme="spooky"] .tp-market .tp-type button[aria-pressed="true"],
+  html[data-theme="spooky"] .tp-market .tp-rarities button[aria-pressed="true"],
+  html[data-theme="spooky"] .tp-market .tp-empty > button,
+  html[data-theme="spooky"] .tp-market .tp-profile-btn:hover { background: #7544ad !important; border-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] .tp-market .tp-collector-head { background: linear-gradient(90deg, rgba(201,172,255,.05), transparent) !important; }
+  html[data-theme="spooky"] .tp-market .tp-card-tags span { color: #c9acff !important; }
+  html[data-theme="spooky"] .tp-market .tp-result-badge { background: rgba(167,123,232,.12) !important; border-color: rgba(201,172,255,.28) !important; }
+  html[data-theme="spooky"] .tp-market .tp-strikes-warning { background: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] .tp-market .tp-load-track span,
+  html[data-theme="spooky"] .tp-market .tp-collection-track span { background: linear-gradient(90deg, transparent, #c9acff, transparent) !important; }
+  html[data-theme="spooky"] .m4-page,
+  html[data-theme="spooky"] .m4-inspector-dialog { --m4-accent: #c9acff !important; }
+  html[data-theme="spooky"] .m4-page .m4-mode .is-active,
+  html[data-theme="spooky"] .m4-page .m4-rarities .is-active,
+  html[data-theme="spooky"] .m4-page .m4-empty button,
+  html[data-theme="spooky"] .m4-inspector-dialog .m4-inspector-controls button[aria-pressed="true"] { background: #7544ad !important; border-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] .m4-page .m4-rarities .is-active > span { color: #eee3ff !important; }
+  html[data-theme="spooky"] .m4-page button:focus-visible,
+  html[data-theme="spooky"] .m4-inspector-dialog button:focus-visible,
+  html[data-theme="spooky"] .m4-inspector-stage:focus-visible { outline-color: #c9acff !important; }
+  html[data-theme="spooky"] .m4-inspector-stage { background: radial-gradient(ellipse at 50% 44%, rgba(201,172,255,.12), transparent 65%) !important; }
+  html[data-theme="spooky"] [class*="-page"] {
+    --collection-accent: #c9acff !important;
+    --set-accent: #c9acff !important;
+    --m1-accent: #c9acff !important;
+    --m2-accent: #c9acff !important;
+    --m3-accent: #c9acff !important;
+    --m4-accent: #c9acff !important;
+    --s1-accent: #c9acff !important;
+    --r1-accent: #c9acff !important;
+    --r2-accent: #c9acff !important;
+    --fm1-accent: #c9acff !important;
+    --fm2-accent: #c9acff !important;
+    --fm3-accent: #c9acff !important;
+    --sd-accent: #c9acff !important;
+    --fw-accent: #c9acff !important;
+    --tcg-accent: #c9acff !important;
+    --nn-accent: #c9acff !important;
+  }
+  html[data-theme="spooky"] [class*="-page"] [class*="-mode"] .is-active,
+  html[data-theme="spooky"] [class*="-page"] [class*="-rarities"] .is-active,
+  html[data-theme="spooky"] [class*="-page"] [class*="-controls"] button[aria-pressed="true"],
+  html[data-theme="spooky"] [class*="-page"] [class*="-empty"] button,
+  html[data-theme="spooky"] [class*="-inspector-dialog"] [class*="-inspector-controls"] button[aria-pressed="true"] { background: #7544ad !important; border-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="-page"] [class*="-rarities"] .is-active > span { color: #eee3ff !important; }
+  html[data-theme="spooky"] [class*="-page"] [class*="-progress-track"] > *,
+  html[data-theme="spooky"] [class*="-page"] [class*="-progress"] > [style*="width"],
+  html[data-theme="spooky"] [class*="-inspector-dialog"] [class*="-progress-track"] > * { background-color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="-page"] input[type="range"],
+  html[data-theme="spooky"] [class*="-inspector-dialog"] input[type="range"] { accent-color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="-page"] button:focus-visible,
+  html[data-theme="spooky"] [class*="-inspector-dialog"] button:focus-visible,
+  html[data-theme="spooky"] [class*="-inspector-stage"]:focus-visible { outline-color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="-page"] [class*="-inspector-stage"] { background-image: radial-gradient(ellipse at 50% 44%, rgba(201,172,255,.12), transparent 65%) !important; }
+  html[data-theme="spooky"] [class*="-page"] .text-yellow-300,
+  html[data-theme="spooky"] [class*="-page"] .text-yellow-400,
+  html[data-theme="spooky"] [class*="-page"] .text-yellow-500,
+  html[data-theme="spooky"] [class*="-page"] [class*="text-[#FFD54A]"],
+  html[data-theme="spooky"] [class*="-page"] [class*="text-[#ffd54a]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="-page"] [class*="border-[#FFD54A]"],
+  html[data-theme="spooky"] [class*="-page"] [class*="border-[#ffd54a]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="text-[#E8CA55]"],
+  html[data-theme="spooky"] [class*="text-[#e8ca55]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#D9BC68]"],
+  html[data-theme="spooky"] [class*="text-[#d9bc68]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#E6CD86]"],
+  html[data-theme="spooky"] [class*="text-[#e6cd86]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#8A6B1B]"],
+  html[data-theme="spooky"] [class*="text-[#8a6b1b]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#C9AC59]"],
+  html[data-theme="spooky"] [class*="text-[#c9ac59]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#70551A]"],
+  html[data-theme="spooky"] [class*="text-[#70551a]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#BFA865]"],
+  html[data-theme="spooky"] [class*="text-[#bfa865]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#80621C]"],
+  html[data-theme="spooky"] [class*="text-[#80621c]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#91752F]"],
+  html[data-theme="spooky"] [class*="text-[#91752f]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#745A00]"],
+  html[data-theme="spooky"] [class*="text-[#745a00]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#806100]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#725800]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#B18C00]"],
+  html[data-theme="spooky"] [class*="text-[#b18c00]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="border-[#E8CA55]"],
+  html[data-theme="spooky"] [class*="border-[#e8ca55]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="border-[#D9BC68]"],
+  html[data-theme="spooky"] [class*="border-[#d9bc68]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="border-[#C9AC59]"],
+  html[data-theme="spooky"] [class*="border-[#c9ac59]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="border-[#BCA04E]"],
+  html[data-theme="spooky"] [class*="border-[#bca04e]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="border-[#D4B63D]"],
+  html[data-theme="spooky"] [class*="border-[#d4b63d]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="bg-[#E8CA55]"]:not([class*="bg-[#E8CA55]/"]),
+  html[data-theme="spooky"] [class*="bg-[#e8ca55]"]:not([class*="bg-[#e8ca55]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#E8CA55]/"],
+  html[data-theme="spooky"] [class*="bg-[#e8ca55]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="bg-[#D9BC68]"]:not([class*="bg-[#D9BC68]/"]),
+  html[data-theme="spooky"] [class*="bg-[#d9bc68]"]:not([class*="bg-[#d9bc68]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#D9BC68]/"],
+  html[data-theme="spooky"] [class*="bg-[#d9bc68]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="bg-[#D5AD16]"]:not([class*="bg-[#D5AD16]/"]),
+  html[data-theme="spooky"] [class*="bg-[#d5ad16]"]:not([class*="bg-[#d5ad16]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#D5AD16]/"],
+  html[data-theme="spooky"] [class*="bg-[#d5ad16]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="bg-[#EFE4C5]"]:not([class*="bg-[#EFE4C5]/"]),
+  html[data-theme="spooky"] [class*="bg-[#efe4c5]"]:not([class*="bg-[#efe4c5]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#EFE4C5]/"],
+  html[data-theme="spooky"] [class*="bg-[#efe4c5]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFF6C9]"]:not([class*="bg-[#FFF6C9]/"]),
+  html[data-theme="spooky"] [class*="bg-[#fff6c9]"]:not([class*="bg-[#fff6c9]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFF6C9]/"],
+  html[data-theme="spooky"] [class*="bg-[#fff6c9]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFF8D8]"]:not([class*="bg-[#FFF8D8]/"]),
+  html[data-theme="spooky"] [class*="bg-[#fff8d8]"]:not([class*="bg-[#fff8d8]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFF8D8]/"],
+  html[data-theme="spooky"] [class*="bg-[#fff8d8]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFF1AD]"]:not([class*="bg-[#FFF1AD]/"]),
+  html[data-theme="spooky"] [class*="bg-[#fff1ad]"]:not([class*="bg-[#fff1ad]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFF1AD]/"],
+  html[data-theme="spooky"] [class*="bg-[#fff1ad]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="ring-[#D9BC68]"],
+  html[data-theme="spooky"] [class*="ring-[#d9bc68]"],
+  html[data-theme="spooky"] [class*="ring-[#D9bc68]"] { --tw-ring-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] .kayou-staff-button:focus-visible,
+  html[data-theme="spooky"] .kayou-staff-menu button:focus-visible { outline-color: #b18bff; }
+  html[data-theme="spooky"] [class*="text-orange-"],
+  html[data-theme="spooky"] [class*="text-[#F2A55E]"],
+  html[data-theme="spooky"] [class*="text-[#f2a55e]"],
+  html[data-theme="spooky"] [class*="text-[#FF9B5C]"],
+  html[data-theme="spooky"] [class*="text-[#ff9b5c]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="border-orange-"],
+  html[data-theme="spooky"] [class*="border-[#F2A55E]"],
+  html[data-theme="spooky"] [class*="border-[#f2a55e]"] { border-color: rgba(177,139,255,.38) !important; }
+  html[data-theme="spooky"] [class*="text-[#FFD54A]"],
+  html[data-theme="spooky"] [class*="text-[#ffd54a]"] { color: #c9acff !important; }
+  html[data-theme="spooky"] [class*="text-[#FFE27A]"],
+  html[data-theme="spooky"] [class*="text-[#ffe27a]"] { color: #d8c2ff !important; }
+  html[data-theme="spooky"] [class*="border-[#FFD54A]"],
+  html[data-theme="spooky"] [class*="border-[#ffd54a]"],
+  html[data-theme="spooky"] [class*="border-[#FFE27A]"],
+  html[data-theme="spooky"] [class*="border-[#ffe27a]"] { border-color: rgba(201,172,255,.58) !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFD54A]"]:not([class*="bg-[#FFD54A]/"]),
+  html[data-theme="spooky"] [class*="bg-[#ffd54a]"]:not([class*="bg-[#ffd54a]/"]) { background-color: #7544ad !important; color: #fff !important; }
+  html[data-theme="spooky"] [class*="bg-[#FFD54A]/"],
+  html[data-theme="spooky"] [class*="bg-[#ffd54a]/"] { background-color: rgba(167,123,232,.12) !important; }
+  html[data-theme="spooky"] [class*="from-[#FFD54A]"],
+  html[data-theme="spooky"] [class*="from-[#ffd54a]"] { --tw-gradient-from: #c9acff var(--tw-gradient-from-position) !important; --tw-gradient-to: rgb(201 172 255 / 0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+  html[data-theme="spooky"] [class*="via-[#FFD54A]"],
+  html[data-theme="spooky"] [class*="via-[#ffd54a]"] { --tw-gradient-via: #c9acff var(--tw-gradient-via-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important; }
+  html[data-theme="spooky"] [class*="to-[#FFD54A]"],
+  html[data-theme="spooky"] [class*="to-[#ffd54a]"] { --tw-gradient-to: #c9acff var(--tw-gradient-to-position) !important; }
   .kayou-header-light { color: #5f4a12; }
+  .kayou-header-spooky { color: #c9acff; }
+  .kayou-header-spooky .kayou-staff-button { border-color: rgba(177,139,255,.25); background: rgba(255,255,255,.045); color: #c9acff; }
+  .kayou-header-spooky .kayou-staff-menu { background: #17191b; border: 1px solid rgba(177,139,255,.2); }
+  .kayou-header-spooky [class*="text-[#E7C84B]"],
+  .kayou-header-spooky [class*="text-[#FFE477]"],
+  .kayou-header-spooky [class*="text-yellow-400"] { color: #c9acff !important; }
+  .kayou-header-spooky [class*="border-[#E7C84B]"],
+  .kayou-header-spooky [class*="border-yellow-400"] { border-color: rgba(177,139,255,.35) !important; }
+  .kayou-header-spooky [class*="bg-[#E7C84B]"]:not([class*="bg-[#E7C84B]/"]) { background-color: #7544ad !important; }
+  .kayou-header-spooky-logo { width: auto !important; height: 80px !important; max-width: none !important; max-height: none !important; transform: translateY(1px) scale(.65) !important; transform-origin: center center !important; object-fit: contain !important; }
+  .kayou-theme-picker { position: relative; }
+  .kayou-theme-menu { position: absolute; z-index: 25000; top: 0; left: calc(100% + 10px); display: flex; width: 0; overflow: hidden; gap: 8px; padding: 0; opacity: 0; pointer-events: none; border: 1px solid transparent; border-radius: 16px; background: #17191b; box-shadow: 0 14px 34px rgba(0,0,0,.42); transition: width .24s ease, max-height .24s ease, opacity .18s ease, padding .24s ease; }
+  .kayou-theme-menu[data-open="true"] { width: 270px; padding: 8px; opacity: 1; pointer-events: auto; border-color: rgba(255,255,255,.12); }
+  .kayou-theme-option { display: flex; min-width: 78px; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 9px 5px; color: #f4f4f5; font-size: 11px; font-weight: 700; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
+  .kayou-theme-option:hover,.kayou-theme-option[aria-pressed="true"] { border-color: rgba(177,139,255,.55); background: rgba(177,139,255,.12); }
+  .kayou-theme-option:active { transform: scale(.97); }
+  .kayou-theme-option img { width: 24px; height: 24px; object-fit: contain; }
+  .kayou-header-light .kayou-theme-menu { background: #fffdf7; box-shadow: 0 14px 34px rgba(91,67,10,.18); }
+  .kayou-header-light .kayou-theme-option { border-color: rgba(160,120,20,.18); color: #312d24; }
+  .kayou-header-spooky .kayou-theme-menu { background: #17191b; border-color: rgba(177,139,255,.28); }
+  .kayou-header-spooky .kayou-theme-option:hover,.kayou-header-spooky .kayou-theme-option[aria-pressed="true"] { border-color: rgba(177,139,255,.6); background: rgba(116,68,173,.17); }
+  .kayou-theme-menu-note { position: absolute; top: calc(100% + 5px); left: 8px; width: max-content; color: #a1a1aa; font-size: 9px; }
+  @media(max-width:639px) {
+    .kayou-header-spooky-logo { width: auto !important; height: 32px !important; max-width: none !important; max-height: none !important; transform: translate(-50%,0) !important; }
+    .kayou-theme-menu { top: calc(100% + 8px); left: auto; right: 0; box-sizing: border-box; flex-direction: column; width: 0; max-width: calc(100vw - 24px); max-height: 0; gap: 4px; border-radius: 12px; }
+    .kayou-theme-menu[data-open="true"] { width: 150px; max-height: 210px; padding: 7px; }
+    .kayou-theme-option { min-height: 38px; flex-direction: row; justify-content: flex-start; padding: 6px 8px; }
+    .kayou-theme-option img { width: 20px; height: 20px; }
+  }
   .kayou-header-light [class*="bg-[#0"],
   .kayou-header-light [class*="bg-[#1"],
   .kayou-header-light [class*="bg-black"] { background-color: rgba(255,255,255,.98) !important; }
@@ -844,14 +1161,16 @@ const KayouHeader = () => {
           transform: "translateZ(0)",
           boxShadow: isLightMode
             ? "0 10px 40px rgba(160,120,20,.14), 0 0 30px rgba(231,200,75,.16), inset 0 -1px 0 rgba(190,145,30,.30)"
-            : "0 10px 35px rgba(0,0,0,.45), inset 0 -1px 0 rgba(250,204,21,.10)",
+            : isSpookyMode
+              ? "0 10px 35px rgba(0,0,0,.5), inset 0 -1px 0 rgba(177,139,255,.28)"
+              : "0 10px 35px rgba(0,0,0,.45), inset 0 -1px 0 rgba(250,204,21,.10)",
         }}
       >
         
         <div
           className={`pointer-events-none absolute inset-x-0 bottom-0 hidden h-px bg-gradient-to-r from-transparent to-transparent sm:block ${
             isLightMode
-              ? "via-[#FFE477]/80 shadow-[0_0_14px_rgba(231,200,75,.55)]"
+              ? "via-[#FFE477]/80 shadow-[0_0_14px_rgba(177,139,255,.55)]"
               : "via-yellow-400/35"
           }`}
         />
@@ -1168,32 +1487,38 @@ const KayouHeader = () => {
                     </div>
                   </SheetContent>
                 </Sheet>
-                <button
-                  type="button"
-                  data-header-theme-toggle="true"
-                  onClick={handleThemeToggle}
-                  disabled={themeSaving}
-                  aria-label={
-                    isLightMode ? "Switch to dark mode" : "Switch to light mode"
-                  }
-                  title={isLightMode ? "Dark mode" : "Light mode"}
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl border backdrop-blur-md transition-all duration-200 disabled:cursor-wait disabled:opacity-60 ${
-                    isLightMode
-                      ? "border-[#D6B84A]/45 bg-white text-[#8A6A16] shadow-[0_0_22px_rgba(231,200,75,.20)] hover:border-[#D6B84A]/70 hover:bg-[#fffaf0]"
-                      : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08]"
-                  }`}
-                >
-                  <CardImage
-                    src={
+                <div className="kayou-theme-picker">
+                  <button
+                    type="button"
+                    data-header-theme-toggle="true"
+                    onClick={() => setShowThemeMenu((value) => !value)}
+                    disabled={themeSaving}
+                    aria-label="Choose theme"
+                    aria-expanded={showThemeMenu}
+                    title="Choose theme"
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl border backdrop-blur-md transition-all duration-200 disabled:cursor-wait disabled:opacity-60 ${
                       isLightMode
-                        ? "/website-assets/LightMode.webp"
-                        : "/website-assets/DarkMode.webp"
-                    }
-                    alt=""
-                    aria-hidden="true"
-                    className="h-6 w-6 object-contain"
-                  />
-                </button>
+                        ? "border-[#D6B84A]/45 bg-white text-[#8A6A16] shadow-[0_0_22px_rgba(231,200,75,.20)] hover:border-[#D6B84A]/70 hover:bg-[#fffaf0]"
+                        : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    <CardImage src={themeIcon} alt="" aria-hidden="true" className="h-6 w-6 object-contain" />
+                  </button>
+                  <div className="kayou-theme-menu" data-open={showThemeMenu} role="group" aria-label="Theme choices">
+                    <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "light"} onClick={() => void handleThemeSelect("light")}>
+                      <CardImage src="/website-assets/LightMode.webp" alt="" aria-hidden="true" /> Light
+                    </button>
+                    <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "dark"} onClick={() => void handleThemeSelect("dark")}>
+                      <CardImage src="/website-assets/darkmodeactual.webp" alt="" aria-hidden="true" /> Dark
+                    </button>
+                    {canChooseSpooky && (
+                      <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "spooky"} onClick={() => void handleThemeSelect("spooky")}>
+                        <CardImage src="/website-assets/DarkMode.webp" alt="" aria-hidden="true" /> Spooky
+                      </button>
+                    )}
+                  </div>
+                  {showThemeMenu && !canChooseSpooky && !spookyUnlocked && <span className="kayou-theme-menu-note">Halloween theme unavailable</span>}
+                </div>
               </div>
             )}
           </div>
@@ -1202,10 +1527,12 @@ const KayouHeader = () => {
             src={
               isLightMode
                 ? "/website-assets/mlpekayouwiki4.webp"
-                : "/website-assets/darkmodelogo.webp"
+                : isSpookyMode
+                  ? "/website-assets/nightmarelogo.webp"
+                  : "/website-assets/darkmodelogo.webp"
             }
             alt="MLP Kayou Wiki"
-            className="sm:hidden absolute left-1/2 -translate-x-1/2 h-8 w-auto scale-[1.65] cursor-pointer object-contain drop-shadow-md"
+            className={`sm:hidden absolute left-1/2 -translate-x-1/2 cursor-pointer object-contain drop-shadow-md ${isSpookyMode ? "kayou-header-spooky-logo" : "h-8 w-auto scale-[1.65]"}`}
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -1317,10 +1644,12 @@ const KayouHeader = () => {
                     src={
                       isLightMode
                         ? "/website-assets/mlpekayouwiki4.webp"
-                        : "/website-assets/darkmodelogo.webp"
+                        : isSpookyMode
+                          ? "/website-assets/nightmarelogo.webp"
+                          : "/website-assets/darkmodelogo.webp"
                     }
                     alt="MLP Kayou Wiki"
-                    className="relative z-10 h-[42px] w-auto translate-y-[1px] scale-[1.9] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:translate-y-[1px] group-hover:scale-[1.96]"
+                    className={`relative z-10 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:translate-y-[1px] ${isSpookyMode ? "kayou-header-spooky-logo" : "h-[42px] w-auto translate-y-[1px] scale-[1.9] group-hover:scale-[1.96]"}`}
                   />
                 </button>
                 
@@ -1521,31 +1850,28 @@ const KayouHeader = () => {
           className="kayou-header-mobile-actions absolute right-3 flex -translate-y-1/2 items-center gap-1.5 sm:hidden"
         >
           {user && (
-            <button
-              type="button"
-              onClick={handleThemeToggle}
-              disabled={themeSaving}
-              aria-label={
-                isLightMode ? "Switch to dark mode" : "Switch to light mode"
-              }
-              title={isLightMode ? "Dark mode" : "Light mode"}
-              className={`flex h-8 w-8 items-center justify-center rounded-xl border transition-colors disabled:cursor-wait disabled:opacity-60 ${
-                isLightMode
-                  ? "border-black/10 bg-black/[0.035] hover:bg-black/[0.07]"
-                  : "border-white/10 bg-white/[0.045] hover:bg-white/[0.08]"
-              }`}
-            >
-              <CardImage
-                src={
+            <div className="kayou-theme-picker">
+              <button
+                type="button"
+                onClick={() => setShowThemeMenu((value) => !value)}
+                disabled={themeSaving}
+                aria-label="Choose theme"
+                aria-expanded={showThemeMenu}
+                title="Choose theme"
+                className={`flex h-8 w-8 items-center justify-center rounded-xl border transition-colors disabled:cursor-wait disabled:opacity-60 ${
                   isLightMode
-                    ? "/website-assets/LightMode.webp"
-                    : "/website-assets/DarkMode.webp"
-                }
-                alt=""
-                aria-hidden="true"
-                className="h-4 w-4 object-contain"
-              />
-            </button>
+                    ? "border-black/10 bg-black/[0.035] hover:bg-black/[0.07]"
+                    : "border-white/10 bg-white/[0.045] hover:bg-white/[0.08]"
+                }`}
+              >
+                <CardImage src={themeIcon} alt="" aria-hidden="true" className="h-4 w-4 object-contain" />
+              </button>
+              <div className="kayou-theme-menu" data-open={showThemeMenu} role="group" aria-label="Theme choices">
+                <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "light"} onClick={() => void handleThemeSelect("light")}><CardImage src="/website-assets/LightMode.webp" alt="" aria-hidden="true" /> Light</button>
+                <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "dark"} onClick={() => void handleThemeSelect("dark")}><CardImage src="/website-assets/darkmodeactual.webp" alt="" aria-hidden="true" /> Dark</button>
+                {canChooseSpooky && <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "spooky"} onClick={() => void handleThemeSelect("spooky")}><CardImage src="/website-assets/DarkMode.webp" alt="" aria-hidden="true" /> Spooky</button>}
+              </div>
+            </div>
           )}
           <button
             type="button"
@@ -1862,7 +2188,9 @@ const KayouHeader = () => {
                 src={
                   isLightMode
                     ? "/website-assets/mlpekayouwiki4.webp"
-                    : "/website-assets/darkmodelogo.webp"
+                    : isSpookyMode
+                      ? "/website-assets/nightmarelogo.webp"
+                      : "/website-assets/darkmodelogo.webp"
                 }
                 className="w-[600px] sm:w-[700px] md:w-[800px] h-auto object-contain drop-shadow-2xl"
               />
