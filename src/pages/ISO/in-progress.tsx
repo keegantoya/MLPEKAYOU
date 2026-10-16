@@ -7,7 +7,7 @@ import ISOChecking from "./iso-checking";
 type Card = { set_id: string; card_key: string };
 type IsoStatusRow = { card_key: string; status: string };
 
-const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11", "13"]);
+const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11"]);
 
 const getCardNumber = (cardKey: string) => {
   const match = cardKey.match(/(\d+)$/);
@@ -24,9 +24,6 @@ const getImageClassName = (card: Card) => {
   const cardNumber = getCardNumber(card.card_key);
 
   if (card.set_id === "9") {
-    if (cardNumber === 15) {
-      return `${base} scale-[1.025] object-contain object-center`;
-    }
     if (cardNumber === 1) {
       return `${base} scale-[1.02] object-contain object-center`;
     }
@@ -55,7 +52,7 @@ const getImageClassName = (card: Card) => {
     return `${base} scale-[1.01] object-contain object-center`;
   }
 
-  const contained = ["SD", "FW", "12", "14"].includes(card.set_id);
+  const contained = ["SD", "FW", "12", "14", "hearthswarming-eve"].includes(card.set_id);
   return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
 };
 
@@ -138,6 +135,10 @@ export default function InProgress() {
         ) {
           return;
         }
+        if (row.card_key.startsWith("hearthswarming-eve-")) {
+          parsed.push({ set_id: "hearthswarming-eve", card_key: row.card_key.slice("hearthswarming-eve-".length) });
+          return;
+        }
         if (row.card_key.startsWith("BONUS-")) {
           parsed.push({ set_id: "SD", card_key: row.card_key.substring(6) });
           return;
@@ -210,7 +211,8 @@ export default function InProgress() {
             {cards.map((card) => (
               <ISOChecking
                 key={`${card.set_id}:${card.card_key}`}
-                contentClassName="!rounded-[6px] sm:!rounded-xl"
+                contentClassName="!rounded-[2px]"
+                contentStyle={{ borderRadius: "2px" }}
                 userId={userId}
                 setId={card.set_id}
                 cardKey={card.set_id === "SD" ? `BONUS-${card.card_key}` : card.card_key}
@@ -219,7 +221,7 @@ export default function InProgress() {
                 }}
                 onComplete={() => removeCard(card)}
               >
-                <div className="relative aspect-[5/7] overflow-hidden rounded-[6px] sm:rounded-xl bg-transparent transition hover:-translate-y-0.5">
+                <div className="relative aspect-[5/7] overflow-hidden rounded-[7px] bg-transparent transition hover:-translate-y-0.5">
                   <InProgressImage card={card} />
                 </div>
               </ISOChecking>

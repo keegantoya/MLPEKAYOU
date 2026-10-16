@@ -42,12 +42,12 @@ export default function ISOCONTROLS({
 }: ISOControlsProps) {
 const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 let value = e.target.value.toUpperCase();
-    value = value.replace(/<>/g, "◇");
-    value = value.replace(/#/g, "※");
-    value = value.replace(/<ZR/g, "◇ZR");
-    value = value.replace(/<AR/g, "◇AR");
-    value = value.replace(/<CR/g, "◇CR");
-    value = value.replace(/<N/g, "◇N");
+    value = value.replace(/<>/g, "\u25c7");
+    value = value.replace(/#/g, "\u203b");
+    value = value.replace(/<ZR/g, "\u25c7ZR");
+    value = value.replace(/<AR/g, "\u25c7AR");
+    value = value.replace(/<CR/g, "\u25c7CR");
+    value = value.replace(/<N/g, "\u25c7N");
     onCardCodeSearchChange(value);
   };
 const handleCharacterSearchChange = (
@@ -88,14 +88,14 @@ const switchClass = (active: boolean, disabled = false) =>
               className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-zinc-200 text-sm text-zinc-500 transition hover:bg-zinc-300 dark:bg-white/10 dark:text-zinc-400 dark:hover:bg-white/15"
               aria-label="Clear character search"
             >
-              ×
+              &#xd7;
             </button>
           )}
         </div>
       </div>
     );
   }
-  const setsForVisibility = availableSets.some((category) =>
+  const setsWithNightmare = availableSets.some((category) =>
     category.children.some((set) => set.id === "14"),
   )
     ? availableSets
@@ -107,6 +107,7 @@ const switchClass = (active: boolean, disabled = false) =>
                 children: [
                   ...category.children,
                   { id: "14", name: "Nightmare Night" },
+{ id: "hearthswarming-eve", name: "HeartsWarming Eve" },
                 ],
               }
             : category,
@@ -116,10 +117,12 @@ const switchClass = (active: boolean, disabled = false) =>
           {
             id: "tcg",
             name: "TCG",
-            children: [{ id: "14", name: "Nightmare Night" }],
+            children: [{ id: "14", name: "Nightmare Night" },
+{ id: "hearthswarming-eve", name: "HeartsWarming Eve" }],
           },
         ];
 
+  const setsForVisibility = setsWithNightmare.map(category => category.id === "tcg" && !category.children.some(set => set.id === "hearthswarming-eve") ? { ...category, children: [...category.children, { id: "hearthswarming-eve", name: "HeartsWarming Eve" }] } : category);
   return (
     <>
       <aside className="mx-auto flex max-h-[72dvh] w-full flex-col overflow-y-auto rounded-[22px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-xl sm:max-h-none sm:overflow-hidden sm:rounded-[28px] dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
@@ -133,7 +136,7 @@ const switchClass = (active: boolean, disabled = false) =>
               title="Close"
             >
               <span className="text-[11px] font-bold leading-none text-[#7a1f1b] opacity-0 transition-opacity group-hover:opacity-100">
-                ×
+                &#xd7;
               </span>
             </button>
           </div>
@@ -192,7 +195,7 @@ const switchClass = (active: boolean, disabled = false) =>
                 className="w-full rounded-xl border border-black/10 bg-zinc-100 px-3 py-1.5 text-sm uppercase text-zinc-900 outline-none transition placeholder:normal-case placeholder:text-zinc-400 focus:border-[#FFD54A] focus:ring-4 focus:ring-[#FFD54A]/15 sm:rounded-2xl sm:px-4 sm:py-2.5 sm:text-[15px] dark:border-white/10 dark:bg-black/20 dark:text-white dark:placeholder:text-zinc-500"
               />
               <p className="mt-2 hidden text-xs leading-5 text-zinc-400 sm:block dark:text-zinc-500">
-                Tip: use # for ※ and &lt;&gt; for ◇.
+                Tip: use # for &#x203b; and &lt;&gt; for &#x25c7;.
               </p>
             </section>
             <section className="order-4 min-w-0 rounded-2xl bg-white p-2 shadow-sm sm:order-none sm:rounded-[22px] sm:p-3.5 dark:bg-white/[0.06]">
@@ -276,7 +279,7 @@ const switchClass = (active: boolean, disabled = false) =>
                   </div>
                 </div>
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 text-lg text-zinc-500 sm:h-8 sm:w-8 sm:text-xl dark:bg-white/[0.08] dark:text-zinc-300">
-                  ›
+                  &#x203a;
                 </span>
               </button>
             </section>
@@ -326,7 +329,7 @@ const hiddenInCategory = category.children.filter((set) =>
                             {category.children.length}{" "}
                             {category.children.length === 1 ? "set" : "sets"}
                             {hiddenInCategory > 0
-                              ? ` · ${hiddenInCategory} hidden`
+                              ? ` \u00b7 ${hiddenInCategory} hidden`
                               : ""}
                           </div>
                         </div>
@@ -335,7 +338,7 @@ const hiddenInCategory = category.children.filter((set) =>
                             isExpanded ? "rotate-90" : ""
                           }`}
                         >
-                          ›
+                          &#x203a;
                         </span>
                       </button>
                       {isExpanded && (

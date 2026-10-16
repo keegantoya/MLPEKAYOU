@@ -20,6 +20,7 @@ const sets: Record<string, { name: string; total: number }> = {
   fantasywonderland: { name: "Fantasy Wonderland", total: 191 },
   discord: { name: "Discord", total: 191 },
   "14": { name: "Nightmare Night", total: 190 },
+  "hearthswarming-eve": { name: "HeartsWarming Eve", total: 191 },
 };
 const isoSets = [
   {
@@ -248,6 +249,27 @@ const isoSets = [
       PER: 12,
       PSPR: 11,
       PGR: 5,
+      PCR: 12,
+      PRR: 6,
+    },
+  },
+  {
+    id: "hearthswarming-eve",
+    name: "HeartsWarming Eve",
+    folder: "hearthswarming-eve",
+    prefix: "BP04",
+    rarities: {
+      C: 48,
+      U: 18,
+      ER: 6,
+      SR: 14,
+      SPR: 28,
+      GR: 12,
+      CR: 12,
+      RR: 6,
+      PER: 12,
+      PGR: 6,
+      PSPR: 11,
       PCR: 12,
       PRR: 6,
     },

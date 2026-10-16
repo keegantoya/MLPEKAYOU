@@ -109,6 +109,13 @@ const setButtons = [
     image: "/thumbnails/nightmarenightsetimage.webp",
   },
   {
+    title: "HeartsWarming Eve",
+    subtitle: "191 Cards",
+    group: "TCG",
+    to: "/trading-post/hearthswarming-eve",
+    image: "/thumbnails/hearthswarmingsetimage.png",
+  },
+  {
     title: "TCG Promos",
     subtitle: "28 Cards",
     group: "Promos",

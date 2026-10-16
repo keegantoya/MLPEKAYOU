@@ -1,3 +1,5 @@
+import { HEARTHSWARMING_EVE_CARDS, HEARTHSWARMING_EVE_KEYS, HEARTHSWARMING_EVE_RARITIES, getHeartswarmingEveRarity, isHeartswarmingEveOwned } from "@/lib/hearthswarming-eve";
+import { getHeartswarmingEveFront } from "@/lib/card-images";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -23,7 +25,9 @@ type CardImageCard = {
   card_key: string;
 };
 const getTradeCardImage = (card: CardImageCard) =>
-  String(card.set_id) === "13"
+  String(card.set_id) === "hearthswarming-eve"
+    ? getHeartswarmingEveFront(card.card_key)
+    :   String(card.set_id) === "13"
     ? getMoonFourFront(card.card_key)
     : String(card.set_id) === "14"
     ? getNightmareNightFront(card.card_key)
@@ -58,6 +62,7 @@ const OFFER_SET_ORDER = [
   "FW",
   "12",
   "14",
+  "hearthswarming-eve",
   "tcgpromos",
 ];
 const getPromoCardKeys = (setId: string) => {
@@ -159,7 +164,7 @@ const getCardImageClassName = (
     }
     return `${base} scale-[1.01] object-contain object-center`;
   }
-  const contained = ["SD", "FW", "12", "14"].includes(setId);
+  const contained = ["SD", "FW", "12", "14", "hearthswarming-eve"].includes(setId);
   return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
 };
 type SafeCardImageProps = {
@@ -524,6 +529,15 @@ const ExploreProfile = ({
           }
         });
       });
+      if (!hiddenIsoSets.includes("hearthswarming-eve")) {
+        const progress = (isoProgress || []).find((row: any) => String(row.set_id) === "hearthswarming-eve")?.progress || {};
+        HEARTHSWARMING_EVE_CARDS.forEach(({ key: cardKey }) => {
+          const fullKey = `hearthswarming-eve-${cardKey}`;
+          if (!isHeartswarmingEveOwned(progress[cardKey]) && !inProgressCards.has(fullKey) && !inProgressCards.has(cardKey) && !isoCards.some(card => card.id === fullKey)) {
+            isoCards.push({ id: fullKey, set_id: "hearthswarming-eve", card_key: cardKey });
+          }
+        });
+      }
       setUserIsoCards(isoCards);
       const { data: collection } = await supabase
         .from("collection_progress_raw")
@@ -569,6 +583,7 @@ const ExploreProfile = ({
           completed++;
         }
       });
+      if (!tcgCatalog.sets.some(set => set.id === "hearthswarming-eve") && complete("hearthswarming-eve", HEARTHSWARMING_EVE_KEYS)) completed++;
       setuserStats({
         trades: (tradeCards || []).length,
         owned,
@@ -803,6 +818,7 @@ const ExploreProfile = ({
       FW: "Fantasy Wonderland",
       "12": "Discord",
       "14": "Nightmare Night",
+      "hearthswarming-eve": "HeartsWarming Eve",
       SD: "Friendships Begin",
       friendshipsbegin: "Friendships Begin",
       tcgpromos: "TCG Promos",
@@ -885,7 +901,7 @@ const ExploreProfile = ({
     TRADE_SET_TABS,
     WISHLIST_SET_TABS,
   ]);
-  const profileSetOrder = ["1", "2", "3", "13", "4", "5", "6", "7", "8", "11", "9", "SD", "friendshipsbegin", "FW", "12", "14", "tcgpromos"];
+  const profileSetOrder = ["1", "2", "3", "13", "4", "5", "6", "7", "8", "11", "9", "SD", "friendshipsbegin", "FW", "12", "14", "hearthswarming-eve", "tcgpromos"];
   const sectionCards = selectedSection === "iso" ? visibleIsoCards : selectedSection === "trade" ? allTradeCards : userWishlistCards;
   const sectionHidden = selectedSection === "iso" ? userProfileSettings.hide_iso : selectedSection === "wishlist" ? userProfileSettings.hide_wishlist : false;
   const sectionTabs = (sectionHidden ? [] : selectedSection === "iso" ? ISO_SET_TABS : selectedSection === "trade" ? TRADE_SET_TABS : WISHLIST_SET_TABS).slice().sort((a, b) => {
@@ -940,6 +956,7 @@ const ExploreProfile = ({
     "PR",
   ];
   function getRarity(cardKey: string) {
+    if (/^P?BP04-/.test(String(cardKey))) return getHeartswarmingEveRarity(String(cardKey));
     const key = String(cardKey);
     const nightmareParallel = key.match(/^PBP03-(ER|SPR|GR|CR|RR)\d{2}(?:-(?:A2?|B2?|C2?))?$/);
     if (nightmareParallel) {
@@ -961,6 +978,7 @@ const ExploreProfile = ({
     return card.set_id === "tcgpromos" ? "PR" : getRarity(card.card_key);
   }
   function getOfferRarityRank(setId: string, rarity: string) {
+    if (setId === "hearthswarming-eve") return Object.keys(HEARTHSWARMING_EVE_RARITIES).indexOf(rarity);
     if (["SHINING ZR", "SZR"].includes(rarity)) return 1001;
     if (setId === "4" && rarity === "SAR") return 1002;
     if (["7", "8", "11"].includes(setId) && rarity === "SCR") return 1002;
@@ -999,6 +1017,10 @@ const ExploreProfile = ({
       const setB = String(b.set_id);
       if (setA !== setB) {
         return setA.localeCompare(setB, undefined, { numeric: true });
+      }
+      if (setA === "hearthswarming-eve") {
+        const order = Object.keys(HEARTHSWARMING_EVE_RARITIES);
+        return rank(order, getRarity(a.card_key)) - rank(order, getRarity(b.card_key)) || String(a.card_key).localeCompare(String(b.card_key), undefined, { numeric: true }) || String(a.type ?? "").localeCompare(String(b.type ?? ""));
       }
       if (setA === "9") {
         const promoDifference = CCG_PROMO_ORDER.indexOf(a.card_key) - CCG_PROMO_ORDER.indexOf(b.card_key);

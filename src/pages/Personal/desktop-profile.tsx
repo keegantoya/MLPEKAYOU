@@ -125,7 +125,6 @@ export default function DesktopProfile() {
     { label: "Wishlist & ISO", path: "/iso" },
     { label: "Inbox & Friends", path: "/inbox" },
     { label: "Trading", path: "/trading-post" },
-    { label: "Kayou Events", path: "/kayou-news" },
   ];
   useEffect(() => {
     let mounted = true;
@@ -573,6 +572,12 @@ export default function DesktopProfile() {
         const cards: any[] = [];
         (data || []).forEach((row: any) => {
           Object.entries(row.progress || {}).forEach(([card_key, owned]) => {
+            if (String(row.set_id) === "hearthswarming-eve") {
+              if ((owned === true || (typeof owned === "object" && owned !== null && "owned" in owned && owned.owned === true)) && /^PBP04-RR0[1-6]$/.test(card_key)) {
+                cards.push({ set_id: "hearthswarming-eve", card_key });
+              }
+              return;
+            }
             if (String(row.set_id) === "14") {
               const isOwned =
                 owned === true ||
@@ -620,6 +625,9 @@ export default function DesktopProfile() {
   }, []);
   const getTradeCardImage = (card: any) => {
     if (!card) return "";
+    if (String(card.set_id) === "hearthswarming-eve") {
+      return cardImagePaths.hearthswarmingEve(card.card_key);
+    }
     if (String(card.set_id) === "13") return getMoonFourFront(String(card.card_key));
     if (card.set_id === "friendshipsbegin" || card.set_id === "SD") {
       const cleanKey = String(card.card_key)
@@ -800,6 +808,9 @@ export default function DesktopProfile() {
             String(card.card_key).startsWith("XR-")
           );
         case "tcg":
+          if (String(card.set_id) === "hearthswarming-eve") {
+            return /^PBP04-RR0[1-6]$/.test(card.card_key);
+          }
           if (String(card.set_id) === "14") {
             return /^PBP03-RR0[1-6]$/.test(card.card_key);
           }

@@ -7,7 +7,7 @@ type Card = {
   set_id: string;
   card_key: string;
 };
-const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11", "13"]);
+const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11"]);
 
 const getCardNumber = (cardKey: string) => {
   const match = cardKey.match(/(\d+)$/);
@@ -24,9 +24,6 @@ const getImageClassName = (card: Card) => {
   const cardNumber = getCardNumber(card.card_key);
 
   if (card.set_id === "9") {
-    if (cardNumber === 15) {
-      return `${base} scale-[1.025] object-contain object-center`;
-    }
     if (cardNumber === 1) {
       return `${base} scale-[1.02] object-contain object-center`;
     }
@@ -55,7 +52,7 @@ const getImageClassName = (card: Card) => {
     return `${base} scale-[1.01] object-contain object-center`;
   }
 
-  const contained = ["SD", "FW", "12", "14"].includes(card.set_id);
+  const contained = ["SD", "FW", "12", "14", "hearthswarming-eve"].includes(card.set_id);
   return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
 };
 
@@ -180,7 +177,8 @@ export default function Wishlist() {
                   className="group relative overflow-visible"
                 >
                   <ISOChecking
-                    contentClassName="!rounded-[6px] sm:!rounded-xl"
+                    contentClassName="!rounded-[2px]"
+                    contentStyle={{ borderRadius: "2px" }}
                     userId={userId}
                     setId={card.set_id}
                     cardKey={card.card_key}
@@ -188,7 +186,7 @@ export default function Wishlist() {
                     isWishlisted
                     toggleWishlist={removeFromWishlist}
                   >
-                    <div className="relative aspect-[5/7] overflow-hidden rounded-[6px] sm:rounded-xl bg-transparent transition hover:-translate-y-0.5">
+                    <div className="relative aspect-[5/7] overflow-hidden rounded-[6px] bg-transparent transition hover:-translate-y-0.5">
                       <WishlistImage card={card} />
                     </div>
                   </ISOChecking>

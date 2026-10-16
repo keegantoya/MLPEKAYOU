@@ -1,4 +1,4 @@
-import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
+import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveRarityLabel, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
 import CardImage from "@/components/CardImage";
 import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -67,10 +67,10 @@ const sets = [
       R: 30,
       SR: 14,
       ST: 20,
-      SSR: 15,
-      FR: 18,
       TR: 12,
       TGR: 8,
+      SSR: 15,
+      FR: 18,
       UR: 19,
       USR: 8,
       XR: 8,
@@ -126,24 +126,6 @@ const sets = [
     },
   },
   {
-    id: "13",
-    name: "Moon: Fourth Edition",
-    folder: "fourth-edition-moon",
-    prefix: "M4",
-    rarities: {
-      R: 30,
-      SR: 20,
-      SSR: 26,
-      HR: 30,
-      UR: 16,
-      LSR: 16,
-      SGR: 8,
-      ZR: 7,
-      SC: 7,
-      SZR: 2,
-    },
-  },
-  {
     id: "4",
     name: "Star: First Edition",
     folder: "star-one",
@@ -164,7 +146,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 13 },
+    rarities: { PR: 12 },
   },
   {
     id: "FW",
@@ -194,12 +176,19 @@ const sets = [
     prefix: "BP03",
     rarities: {},
   },
+{
+    id: "hearthswarming-eve",
+    name: "HeartsWarming Eve",
+    folder: "hearthswarming-eve",
+    prefix: "BP04",
+    rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6 },
+  },
   {
     id: "tcgpromos",
     name: "TCG Promos",
     folder: "tcgpromos",
     prefix: "RR",
-    rarities: { PR: 28 },
+    rarities: { PR: 27 },
   },
 ];
 const binders = [
@@ -222,13 +211,11 @@ const binderSets = {
     { id: "11", label: "Fun Moments Three" },
     { id: "4", label: "Star One" },
     { id: "6", label: "Rainbow Two" },
-    { id: "13", label: "Moon Four" },
   ],
   Moon: [
     { id: "1", label: "Moon One" },
     { id: "2", label: "Moon Two" },
     { id: "3", label: "Moon Three" },
-    { id: "13", label: "Moon Four" },
   ],
   Rainbow: [
     { id: "5", label: "Rainbow One" },
@@ -245,6 +232,7 @@ const binderSets = {
     { id: "discord", label: "Discord" },
     { id: "friendshipsbegin", label: "Friendships Begin" },
     { id: "14", label: "Nightmare Night" },
+{ id: "hearthswarming-eve", label: "HeartsWarming Eve" },
   ],
   Promos: [
     { id: "tcgpromos", label: "TCG Promos" },
@@ -386,7 +374,7 @@ export default function MyCollectionBinder() {
     };
     load();
   }, [viewingUserId]);
-  const defaultCCGOrder = ["1", "5", "7", "2", "8", "3", "11", "4", "6", "13"];
+  const defaultCCGOrder = ["1", "5", "7", "2", "8", "3", "11", "4", "6"];
   const [hiddenCCGSets, setHiddenCCGSets] = useState<string[]>([]);
   const visibleCCGOrder = defaultCCGOrder.filter(
     (id) => !hiddenCCGSets.includes(id),
@@ -402,7 +390,6 @@ export default function MyCollectionBinder() {
     "1": "1",
     "2": "2",
     "3": "3",
-    "13": "13",
     "4": "4",
     "5": "5",
     "6": "6",
@@ -447,7 +434,7 @@ export default function MyCollectionBinder() {
           return {
             rarity: "ER",
             key: `BP01ER${num}`,
-            image: cardImagePaths.fantasyEmerald(num),
+            image: `/fantasy-wonderland/SD01ER${num}.webp`,
           };
         });
       }
@@ -457,7 +444,7 @@ export default function MyCollectionBinder() {
           return {
             rarity: "PER",
             key: `BP01PER${num}`,
-            image: cardImagePaths.fantasyParallelEmerald(num),
+            image: `/fantasy-wonderland/SD01PER${num}.webp`,
           };
         });
       }
@@ -466,7 +453,7 @@ export default function MyCollectionBinder() {
         return numbers.map((n) => ({
           rarity: "PSPR",
           key: `BP01PSPR${String(n).padStart(2, "0")}`,
-          image: cardImagePaths.fantasyParallelSapphire(String(n).padStart(2, "0")),
+          image: `/fantasy-wonderland/BP01PSPR${String(n).padStart(2, "0")}.webp`,
         }));
       }
       return Array.from({ length: count }, (_, i) => {
@@ -474,7 +461,7 @@ export default function MyCollectionBinder() {
         return {
           rarity: prefix.replace("BP01", ""),
           key: `${prefix}${num}`,
-          image: cardImagePaths.fantasyByPrefix(prefix, num),
+          image: `/fantasy-wonderland/${prefix}${num}.webp`,
         };
       });
     });
@@ -500,12 +487,12 @@ export default function MyCollectionBinder() {
           {
             rarity: "PER",
             key: `BP02-PER${String(i + 1).padStart(2, "0")}-A2`,
-            image: cardImagePaths.discordParallelEmeraldA(String(i + 1).padStart(2, "0")),
+            image: `/cards/discord/BP02-PER${String(i + 1).padStart(2, "0")}-A2.webp`,
           },
           {
             rarity: "PER",
             key: `BP02-PER${String(i + 1).padStart(2, "0")}-B2`,
-            image: cardImagePaths.discordParallelEmeraldB(String(i + 1).padStart(2, "0")),
+            image: `/cards/discord/BP02-PER${String(i + 1).padStart(2, "0")}-B2.webp`,
           },
         ]).flat();
       }
@@ -515,10 +502,12 @@ export default function MyCollectionBinder() {
         return {
           rarity,
           key: `BP02-${rarity}${num}`,
-          image: cardImagePaths.discordByRarity(rarity, num),
+          image: `/cards/discord/BP02-${rarity}${num}.webp`,
         };
       });
     });
+  } else if (selectedSet.id === "hearthswarming-eve") {
+    cards = HEARTHSWARMING_EVE_CARDS.map(card => ({ ...card, rarity: getHeartswarmingEveRarityLabel(card.key) }));
   } else if (selectedSet.id === "14") {
     const nightmareKeys = [
       ...Array.from(
@@ -574,11 +563,11 @@ export default function MyCollectionBinder() {
       const rarityMatch = key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)/);
       return {
         rarity: rarityMatch
-          ? `${rarityMatch[1] ? "" : ""}${rarityMatch[2]}`
+          ? `${rarityMatch[1] ? "\u203b" : ""}${rarityMatch[2]}`
           : "",
         number: Number(key.match(/^P?BP03-[A-Z]+(\d{2})/)?.[1] || 0),
         key,
-        image: cardImagePaths.nightmareNight(imageKey),
+        image: `/cards/nightmare-night/${imageKey}.webp`,
       };
     });
   } else if (selectedSet.id === "friendshipsbegin") {
@@ -596,6 +585,7 @@ export default function MyCollectionBinder() {
     cards = BONUS_STRUCTURE.flatMap(({ prefix, count }) =>
       Array.from({ length: count }, (_, i) => {
         let actualIndex = i + 1;
+        // PER cards are numbered 07\u201318
         if (prefix === "SD01PER") {
           actualIndex += 6;
         }
@@ -604,28 +594,28 @@ export default function MyCollectionBinder() {
         return {
           rarity: prefix.replace("SD01", ""),
           key: `BONUS-${key}`,
-          image: cardImagePaths.friendshipsBegin(key),
+          image: `/friendships-begin/${key}.webp`,
         };
       }),
     );
   } else if (selectedSet.id === "tcgpromos") {
-    cards = Array.from({ length: 28 }, (_, i) => ({
+    cards = Array.from({ length: 27 }, (_, i) => ({
       rarity: "PR",
       number: i + 1,
       key: `RR${String(i + 1).padStart(2, "0")}`,
-      image: cardImagePaths.tcgRubyPromo(String(i + 1).padStart(2, "0")),
+      image: `/tcgpromos/RR${String(i + 1).padStart(2, "0")}.webp`,
     }));
   } else {
     cards =
       selectedSet.id === "9"
-        ? [1, 2, 3, 4, 5, 6, 7, null, 14, 8, 9, 10, 11, 12, 13, 15].map((number) => ({
+        ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((number) => ({
             rarity: "PR",
             number,
-            key: number === null ? "UNRELEASED-SLOT-8" : `PR-${number}`,
+            key: `PR-${number}`,
             image:
-              number === 6 || number === null
-                ? ""
-                : cardImagePaths.ccgPromo(String(number).padStart(3, "0")),
+              number === 6
+                ? "" // No PR006 image exists
+                : `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`,
           }))
         : Object.entries(selectedSet.rarities).flatMap(([rarity, count]) =>
             Array.from({ length: count as number }, (_, i) => {
@@ -635,17 +625,16 @@ export default function MyCollectionBinder() {
                 number: i + 1,
                 key: `${rarity}-${i + 1}`,
                 image:
-                  selectedSet.id === "13"
-                    ? getMoonFourFront(`${rarity}-${i + 1}`)
-                    : selectedSet.id === "3" && rarity === "SZR" && i === 0
-                    ? cardImagePaths.fixed.cardBacksThirdMoonEditionBacksM3SZRBINDERVER
-                    : cardImagePaths.ccg(selectedSet.folder, selectedSet.prefix, fileRarity, String(
+                  selectedSet.id === "3" && rarity === "SZR" && i === 0
+                    ? "/card-backs/third-moon-edition-backs/M3SZRBINDERVER.webp"
+                    : `/cards/${selectedSet.folder}/${selectedSet.prefix}${fileRarity}${String(
                         i + 1,
-                      ).padStart(3, "0")),
+                      ).padStart(3, "0")}.webp`,
               };
             }),
           );
   }
+  // Build one continuous CCG binder
   if (selectedBinder === "CCG") {
     const combinedCards: any[] = [];
     visibleCCGOrder.forEach((setId) => {
@@ -661,13 +650,11 @@ export default function MyCollectionBinder() {
             progressKey: `${rarity}-${i + 1}`,
             setId: set.id,
             image:
-              set.id === "13"
-                ? getMoonFourFront(`${rarity}-${i + 1}`)
-                : set.id === "3" && rarity === "SZR" && i === 0
-                ? cardImagePaths.fixed.cardBacksThirdMoonEditionBacksM3SZRBINDERVER
-                : cardImagePaths.ccg(set.folder, set.prefix, fileRarity, String(
+              set.id === "3" && rarity === "SZR" && i === 0
+                ? "/card-backs/third-moon-edition-backs/M3SZRBINDERVER.webp"
+                : `/cards/${set.folder}/${set.prefix}${fileRarity}${String(
                     i + 1,
-                  ).padStart(3, "0")),
+                  ).padStart(3, "0")}.webp`,
           };
         }),
       );
@@ -693,10 +680,6 @@ export default function MyCollectionBinder() {
           visibleCCGOrder.indexOf(a.card.setId) -
           visibleCCGOrder.indexOf(b.card.setId);
         if (setDifference !== 0) return setDifference;
-        if (a.card.setId === "6" && rarityOrder.length === 0) {
-          const rainbowTwoOrder = Object.keys(sets.find((set) => set.id === "6")!.rarities);
-          return rainbowTwoOrder.indexOf(a.card.rarity) - rainbowTwoOrder.indexOf(b.card.rarity) || a.originalIndex - b.originalIndex;
-        }
       }
       const rarityDifference =
         (rarityRank.get(a.card.rarity) ?? Number.MAX_SAFE_INTEGER) -
@@ -740,12 +723,15 @@ export default function MyCollectionBinder() {
     "3x3": { cols: 3, rows: 3, width: 360 },
     "4x3": { cols: 4, rows: 3, width: 480 },
     "4x4": { cols: 4, rows: 4, width: 480 },
+    // PC-only high-density binder view.
     "6x6": { cols: 6, rows: 6, width: 960 },
   };
   const { cols, rows, width } = layoutMap[layout];
   const slotsPerPage = cols * rows;
+  // Count the empty sleeves before the first card so the binder always ends on a complete spread.
   const totalSleeves = startSlot + cards.length;
   const totalPages = Math.ceil(totalSleeves / slotsPerPage);
+  // Always render complete left/right spreads.
   const totalSpreads = Math.max(1, Math.ceil(totalPages / 2));
   const getCCGSpreadForSet = (setId: string) => {
     let cardsBefore = 0;
@@ -787,6 +773,9 @@ export default function MyCollectionBinder() {
   const showClosedBinder = hidden;
   const renderPage = (physicalPageStart: number) => {
     return Array.from({ length: slotsPerPage }).map((_, slot) => {
+      // physicalPageStart is the global slot represented by the first sleeve on this page.
+      // Physical reading order: right page, left page, then the next spread.
+      // startSlot is also a global slot.
       const globalSlot = physicalPageStart + slot;
       const cardIndex = globalSlot - startSlot;
       if (cardIndex < 0 || cardIndex >= cards.length) {
@@ -798,7 +787,7 @@ export default function MyCollectionBinder() {
         );
       }
       const card = cards[cardIndex];
-      if (selectedSet.id === "9" && (card.number === 6 || card.number === null)) {
+      if (selectedSet.id === "9" && card.number === 6) {
         return (
           <div
             key={cardIndex}
@@ -832,7 +821,7 @@ export default function MyCollectionBinder() {
       }
       const shouldZoomCard = ![
         "12",
-        "14",
+        "14", "hearthswarming-eve",
         "FW",
         "discord",
         "friendshipsbegin",
@@ -848,7 +837,6 @@ export default function MyCollectionBinder() {
           className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg"
         >
           <CardImage
-            imageSize={(selectedSet.id === "9" && card.number === 14) || (selectedSet.id === "tcgpromos" && card.number === 28) ? "original" : "grid"}
             src={card.image}
             loading="lazy"
             draggable={false}
@@ -864,9 +852,7 @@ export default function MyCollectionBinder() {
               willChange: "transform",
               transform: landscape
                 ? "translate(-50%, -50%) rotate(-90deg) scale(1.4)"
-                : String(selectedBinder === "CCG" ? card.setId : selectedSet.id) === "13"
-                  ? "scale(1.035)"
-                  : shouldZoomCard
+                : shouldZoomCard
                   ? "scale(1.06)"
                   : "scale(1)",
             }}
@@ -1247,6 +1233,7 @@ export default function MyCollectionBinder() {
               <div className="rounded-xl flex min-h-[420px] items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-50 dark:bg-[#0b0d0d] p-8">
                 <div className="max-w-md text-center">
                   <div className="rounded-xl mx-auto mb-3 flex h-12 w-12 items-center justify-center border border-[#FFD400]/20 bg-[#FFD400]/[0.04] font-mono text-lg text-[#725700] dark:text-[#725700] dark:text-[#FFD400]/55">
+                    //
                   </div>
                   <div className="font-['Oxanium'] text-sm font-bold uppercase tracking-[0.12em] text-zinc-600 dark:text-zinc-700 dark:text-white/55">
                     SET LOCKED
@@ -1421,13 +1408,13 @@ export default function MyCollectionBinder() {
         </section>
       </main>
       {showCustomization && (
-        <div className="fixed inset-0 z-[2147483647] flex items-center justify-center p-2 sm:p-6">
+        <div className="fixed inset-0 z-[2147483647] flex items-center justify-center p-3 sm:p-6">
           <div
             className={`absolute inset-0 backdrop-blur-sm ${isLightMode ? "bg-white/60" : "bg-black/75"}`}
             onClick={() => setShowCustomization(false)}
           />
           <div
-            className={`relative z-10 flex min-h-0 max-h-[calc(100dvh-32px-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full max-w-[760px] flex-col overflow-hidden rounded-[24px] border ${
+            className={`relative z-10 flex max-h-[calc(100dvh-24px)] w-full max-w-[760px] flex-col overflow-hidden rounded-[24px] border ${
               isLightMode
                 ? "border-black/10 bg-white"
                 : "border-white/10 bg-[#101212]"
@@ -1454,26 +1441,24 @@ export default function MyCollectionBinder() {
               </div>
               <button
                 onClick={() => setShowCustomization(false)}
-                aria-label="Close customization"
-                className="rounded-xl flex h-11 w-11 shrink-0 items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] font-mono text-xs text-zinc-600 dark:text-white/50 transition hover:border-[#FFD400]/50 hover:text-[#725700] dark:text-[#FFD400]"
+                className="rounded-xl flex h-8 w-8 items-center justify-center border border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] font-mono text-xs text-zinc-600 dark:text-white/50 transition hover:border-[#FFD400]/50 hover:text-[#725700] dark:text-[#FFD400]"
               >
-                
+                &#x2715;
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
-              <div className="p-3 sm:p-5">
-                <p className="mb-3 text-sm text-zinc-500 dark:text-zinc-600 dark:text-white/50">
+            <div className="min-h-0 overflow-y-auto">
+              <div className="p-4 sm:p-5">
+                <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-600 dark:text-white/50">
                   Choose a layout, starting slot, and rarity order.
                 </p>
-                <details open={!isMobile}
-                  className={`mb-3 rounded-[18px] border p-3 ${
+                <div
+                  className={`mb-5 rounded-[18px] border p-3 ${
                     isLightMode
                       ? "border-black/10 bg-zinc-50"
                       : "border-white/10 bg-[#080909]"
                   }`}
                 >
-                  <summary className="cursor-pointer text-sm font-semibold">Rarity order</summary>
-                  <div className="my-3 flex items-center justify-between gap-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
                       <div
                         className={`text-sm font-semibold ${
@@ -1483,7 +1468,7 @@ export default function MyCollectionBinder() {
                         Rarity order
                       </div>
                       <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                        Drag the handles to reorder. Swipe labels to scroll.
+                        Drag rarities into the order you want to see them.
                       </div>
                     </div>
                     <button
@@ -1503,19 +1488,9 @@ export default function MyCollectionBinder() {
                       <div
                         key={rarity}
                         data-rarity={rarity}
-                        className={`flex select-none items-center gap-1 rounded-xl border px-1.5 py-0.5 text-sm font-semibold transition-opacity active:cursor-grabbing ${
-                          isLightMode
-                            ? "border-black/10 bg-white text-zinc-700"
-                            : "border-white/10 bg-[#151717] text-zinc-200"
-                        } ${rarityDrag?.rarity === rarity ? "opacity-25" : "opacity-100"}`}
-                      >
-                        <button
-                          type="button"
-                          aria-label={`Drag ${rarity} to reorder`}
-                          className="flex h-9 w-8 shrink-0 touch-none items-center justify-center cursor-grab active:cursor-grabbing"
                         onPointerDown={(event) => {
                           const bounds =
-                            event.currentTarget.parentElement!.getBoundingClientRect();
+                            event.currentTarget.getBoundingClientRect();
                           event.currentTarget.setPointerCapture(
                             event.pointerId,
                           );
@@ -1562,9 +1537,16 @@ export default function MyCollectionBinder() {
                           lastRarityTarget.current = null;
                           setRarityDrag(null);
                         }}
-                        >
-                          <GripVertical className="h-4 w-4 text-zinc-400" aria-hidden="true" />
-                        </button>
+                        className={`flex touch-none select-none cursor-grab items-center gap-2 rounded-xl border px-2.5 py-2 text-sm font-semibold transition-opacity active:cursor-grabbing ${
+                          isLightMode
+                            ? "border-black/10 bg-white text-zinc-700"
+                            : "border-white/10 bg-[#151717] text-zinc-200"
+                        } ${rarityDrag?.rarity === rarity ? "opacity-25" : "opacity-100"}`}
+                      >
+                        <GripVertical
+                          className="h-4 w-4 shrink-0 text-zinc-400"
+                          aria-hidden="true"
+                        />
                         <span className="min-w-0 flex-1 truncate">
                           {rarity}
                         </span>
@@ -1574,7 +1556,7 @@ export default function MyCollectionBinder() {
                       </div>
                     ))}
                   </div>
-                </details>
+                </div>
                 {rarityDrag && (
                   <div
                     className={`pointer-events-none fixed z-[2147483647] flex items-center gap-2 rounded-xl border px-2.5 py-2 text-sm font-semibold shadow-2xl ring-2 ring-[#FFD400]/70 ${
@@ -1596,7 +1578,7 @@ export default function MyCollectionBinder() {
                     </span>
                   </div>
                 )}
-                <div className="mb-3 grid grid-cols-5 gap-1.5 sm:flex sm:justify-center sm:gap-2">
+                <div className="mb-5 flex flex-wrap justify-center gap-2">
                   {(["3x3", "4x3", "4x4", "2x2", "6x6"] as const).map(
                     (value) => (
                       <button
@@ -1607,7 +1589,7 @@ export default function MyCollectionBinder() {
                           setStartSlot(0);
                           setSpread(1);
                         }}
-                        className={`rounded-xl min-w-0 border px-2 py-2.5 sm:min-w-[58px] sm:px-3 text-sm font-semibold transition ${
+                        className={`rounded-xl min-w-[58px] border px-3 py-2 text-sm font-semibold transition ${
                           layout === value
                             ? "border-[#FFD400]/70 bg-[#FFD400] text-[#0b0b0b]"
                             : "border-black/10 dark:border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-[#151717] text-zinc-700 dark:text-white/55 hover:border-[#FFD400]/35 hover:text-[#725700] dark:text-[#FFD400]"
@@ -1627,14 +1609,14 @@ export default function MyCollectionBinder() {
                   style={{
                     height: isMobile
                       ? previewLayout === "6x6"
-                        ? "260px"
+                        ? "390px"
                         : previewLayout === "4x4"
-                          ? "250px"
+                          ? "300px"
                           : previewLayout === "4x3"
                             ? "235px"
                             : previewLayout === "3x3"
-                              ? "245px"
-                              : "190px"
+                              ? "250px"
+                              : "220px"
                       : "auto",
                   }}
                 >
@@ -1646,13 +1628,13 @@ export default function MyCollectionBinder() {
                       top: isMobile ? "50%" : undefined,
                       transform: isMobile
                         ? previewLayout === "6x6"
-                          ? "translate(-50%, -50%) scale(.48)"
+                          ? "translate(-50%, -50%) scale(.56)"
                           : previewLayout === "4x4"
                             ? "translate(-50%, -50%) scale(.68)"
                             : previewLayout === "4x3"
                               ? "translate(-50%, -50%) scale(.68)"
                               : previewLayout === "3x3"
-                                ? "translate(-50%, -50%) scale(.78)"
+                                ? "translate(-50%, -50%) scale(1)"
                                 : "translate(-50%, -50%) scale(1)"
                         : "none",
                       transformOrigin: "center center",
@@ -1676,6 +1658,7 @@ export default function MyCollectionBinder() {
                                 : previewLayout === "4x4"
                                   ? 16
                                   : 36;
+                        // Exact same GLOBAL SLOT mapping used by the binder: LEFT = first block of slots; RIGHT = second block of slots; Slot 1 = global slot 0.
                         const offset = side === "right" ? pageSize : 0;
                         const previewCols =
                           previewLayout === "2x2"
@@ -1727,7 +1710,7 @@ export default function MyCollectionBinder() {
                                       className="pointer-events-none text-[15px] leading-none text-[#9A7200]"
                                       aria-hidden="true"
                                     >
-                                      
+                                      &#x2605;
                                     </span>
                                   )}
                                 </button>
@@ -1741,7 +1724,7 @@ export default function MyCollectionBinder() {
                 </div>
                 <div className="mt-3 flex items-start justify-center gap-2 px-2 text-center text-xs leading-relaxed">
                   <span className="shrink-0 text-[#9A7200]" aria-hidden="true">
-                    
+                    &#x2605;
                   </span>
                   <span
                     className={isLightMode ? "text-zinc-600" : "text-zinc-400"}
@@ -1764,7 +1747,7 @@ export default function MyCollectionBinder() {
               </span>
               <button
                 onClick={() => setShowCustomization(false)}
-                className="rounded-xl border border-[#FFD400]/25 bg-zinc-100 dark:bg-[#151717] min-h-11 min-w-20 px-4 py-2 font-mono text-sm font-bold uppercase tracking-[0.12em] text-[#725700] dark:text-[#725700] dark:text-[#FFD400]/75 hover:border-[#FFD400]/55 hover:text-[#725700] dark:text-[#FFD400]"
+                className="rounded-xl border border-[#FFD400]/25 bg-zinc-100 dark:bg-[#151717] px-3 py-1.5 font-mono text-[6px] font-bold uppercase tracking-[0.12em] text-[#725700] dark:text-[#725700] dark:text-[#FFD400]/75 hover:border-[#FFD400]/55 hover:text-[#725700] dark:text-[#FFD400]"
               >
                 Done
               </button>

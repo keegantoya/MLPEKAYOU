@@ -66,11 +66,11 @@ const TCG_RARITIES = [
   "Colorful Rare",
   "Emerald Rare",
   "Ruby Rare",
-  "※Emerald Rare",
-  "※Special Rare",
-  "※Gold Rare",
-  "※Colorful Rare",
-  "※Ruby Rare",
+  "\u203bEmerald Rare",
+  "\u203bSpecial Rare",
+  "\u203bGold Rare",
+  "\u203bColorful Rare",
+  "\u203bRuby Rare",
 ];
 
 const NAV_ITEMS = [
@@ -125,7 +125,7 @@ const visibleHideSets = allSets.filter((set) => {
 const isAllowed =
   mode === "CCG"
     ? ["1", "2", "3", "4", "5", "6", "7", "8", "9", "11"].includes(set.id)
-    : ["SD_STARTERS", "SD_BONUS", "FW", "12", "TCG_PROMOS"].includes(set.id);
+    : ["SD_STARTERS", "SD_BONUS", "FW", "12", "hearthswarming-eve", "TCG_PROMOS"].includes(set.id);
 
   if (!isAllowed) {
     return false;
@@ -229,15 +229,15 @@ const isAllowed =
                 onCardCodeSearchChange(
                   e.target.value
                     .toUpperCase()
-                    .replace(/#/g, "※")
-                    .replace(/<>/g, "◇")
-                    .replace(/<ZR/g, "◇ZR")
-                    .replace(/<AR/g, "◇AR")
-                    .replace(/<CR/g, "◇CR")
-                    .replace(/<N/g, "◇N")
+                    .replace(/#/g, "\u203b")
+                    .replace(/<>/g, "\u25c7")
+                    .replace(/<ZR/g, "\u25c7ZR")
+                    .replace(/<AR/g, "\u25c7AR")
+                    .replace(/<CR/g, "\u25c7CR")
+                    .replace(/<N/g, "\u25c7N")
                 )
               }
-              placeholder="Type # for ※ <> for ◇"
+              placeholder="Type # for &#x203b; <> for &#x25c7;"
               className="
                 w-full
                 rounded-xl
@@ -606,15 +606,15 @@ const isAllowed =
     }`}
   >
     {rarity === "SN"
-  ? "◇N"
+  ? "\u25c7N"
   : rarity === "SHINING ZR"
-  ? "◇ZR"
+  ? "\u25c7ZR"
   : rarity === "SZR"
-  ? "◇ZR"
+  ? "\u25c7ZR"
   : rarity === "SCR" && selectedSetId !== "4"
-? "◇CR"
+? "\u25c7CR"
 : rarity === "SAR"
-? "◇AR"
+? "\u25c7AR"
 : rarity}
   </button>
 ))}

@@ -8,19 +8,20 @@ const setImages: Record<string, string> = {
   FW: "/thumbnails/fantasysetimage.webp",
   discord: "/thumbnails/discordsetimage.webp",
   "14": "/thumbnails/nightmarenightsetimage.webp",
+"hearthswarming-eve": "/thumbnails/hearthswarmingsetimage.png",
   tcgpromos: "/thumbnails/tcgpromossetimage.webp",
 };
 const sets = [
   {
     id: "friendshipsbegin_bonus",
-    name: "Friendships Begin — Bonus Deck",
+    name: "Friendships Begin \u2014 Bonus Deck",
     total: 68,
     rarities: {},
     isNew: false,
   },
   {
     id: "friendshipsbegin_decks",
-    name: "Friendships Begin — Starter Decks",
+    name: "Friendships Begin \u2014 Starter Decks",
     total: 6,
     rarities: null,
     isNew: false,
@@ -46,10 +47,17 @@ const sets = [
   rarities: {},
   isNew: false,
 },
+{
+  id: "hearthswarming-eve",
+  name: "HeartsWarming Eve",
+  total: 191,
+  rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6 },
+  isNew: false,
+},
   {
   id: "tcgpromos",
   name: "TCG Promos",
-  total: 28,
+  total: 27,
   rarities: null,
   isNew: false,
 },
@@ -60,6 +68,7 @@ const releasedRoutes: Record<string, string> = {
   "FW": "/fantasy-wonderland",
   "discord": "/discord",
   "14": "/nightmare-night",
+"hearthswarming-eve": "/hearthswarming-eve",
   "tcgpromos": "/promotional-cards",
 };
 const MyProgressTCG = () => {
@@ -128,6 +137,9 @@ rawHidden.forEach((id: string) => {
     case "12":
       mappedHidden.push("discord");
       break;
+    case "hearthswarming-eve":
+      mappedHidden.push("hearthswarming-eve");
+      break;
     case "14":
     case "nightmare-night":
       mappedHidden.push("14");
@@ -156,6 +168,7 @@ const found =
   set.id === "friendshipsbegin_decks"
     ? progressMap.get("SD")
     : progressMap.get(set.id);
+// BONUS
         if (set.id === "friendshipsbegin_bonus") {
 const progressData = found?.progress || {};
 const BONUS_STRUCTURE = [
@@ -174,7 +187,7 @@ BONUS_STRUCTURE.forEach(({ prefix, count }) => {
   for (let i = 1; i <= count; i++) {
 let actualIndex = i;
     if (prefix === "SD01PER") {
-      actualIndex = i + 6;
+      actualIndex = i + 6; // match your real PER numbering (07\u201316)
     }
 const key = `${prefix}${String(actualIndex).padStart(2, "0")}`;
 const stateKey = `BONUS-${key}`;
@@ -184,6 +197,7 @@ const stateKey = `BONUS-${key}`;
   newProgress[set.id] = owned;
   return;
 }
+// STARTER DECKS
         if (set.id === "friendshipsbegin_decks") {
 const progressData = found?.progress || {};
 const decks = [
@@ -222,16 +236,15 @@ const complete = cards.every(
           newProgress[set.id] = completed;
           return;
         }
+// TCG PROMOS
 if (set.id === "tcgpromos") {
-const owned = Array.from({ length: 28 }, (_, i) => `RR${String(i + 1).padStart(2, "0")}`).filter((key) => {
-  const value = tcgPromosProgress[key];
-  return value === true || (value !== null && typeof value === "object" && value?.owned === true);
-}).length;
+const owned = Object.values(tcgPromosProgress).filter(Boolean).length;
   newProgress[set.id] = owned;
   return;
 }
-if (set.id === "discord" || set.id === "14") {
-const progressData = progressMap.get(set.id === "14" ? "14" : "12")?.progress || {};
+// DISCORD
+if (set.id === "discord" || set.id === "14" || set.id === "hearthswarming-eve") {
+const progressData = progressMap.get(set.id === "discord" ? "12" : set.id)?.progress || {};
 const owned = Object.values(progressData).filter(
     (value) =>
       value === true ||
@@ -242,6 +255,7 @@ const owned = Object.values(progressData).filter(
   newProgress[set.id] = owned;
   return;
 }
+// FANTASY WONDERLAND
 const STRUCTURE = [
   { prefix: "BP01C", count: 48 },
   { prefix: "BP01U", count: 18 },
@@ -284,13 +298,18 @@ newProgress[set.id] = owned;
     };
     loadProgress();
   }, []);
+// =========================================================
+// TCG UI DATA
+// Same presentation structure as CCG Progress.
+// All TCG progress logic above remains unchanged.
+// =========================================================
 const mainSets = sets.filter((set) =>
     [
       "friendshipsbegin_bonus",
       "friendshipsbegin_decks",
       "FW",
       "discord",
-      "14",
+      "14", "hearthswarming-eve",
     ].includes(set.id)
   );
 const promoSets = sets.filter((set) => set.id === "tcgpromos");

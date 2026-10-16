@@ -7,6 +7,7 @@ export const cardImagePaths = {
   fantasyEmerald: (number: ImagePathPart) => `/fantasy-wonderland/SD01ER${number}.webp`,
   fantasyParallelEmerald: (number: ImagePathPart) => `/fantasy-wonderland/SD01PER${number}.webp`,
   fantasyWonderland: (key: ImagePathPart) => `/fantasy-wonderland/${key}.webp`,
+  hearthswarmingEve: (key: ImagePathPart) => `/cards/hearthswarming-eve/${String(key).replace(/^BP02-GR/, "BP04-GR")}.webp`,
   discord: (key: ImagePathPart) => `/cards/discord/${key}.webp`,
   moonFour: (key: ImagePathPart) => getMoonFourImagePath(String(key)),
   nightmareNight: (key: ImagePathPart) => `/cards/nightmare-night/${key}.webp`,
@@ -182,6 +183,9 @@ const key = String(card.card_key);
       : key.startsWith("BP01PER")
       ? cardImagePaths.fantasyParallelEmerald(key.slice(-2))
       : cardImagePaths.fantasyWonderland(key);
+  }
+  if (setId === "hearthswarming-eve") {
+    return cardImagePaths.hearthswarmingEve(card.card_key);
   }
   if (setId === "12") {
     return cardImagePaths.discord(card.card_key);
@@ -507,6 +511,12 @@ const num = Number(key.replace("BP02-C", ""));
 export const getDiscordFront = (key: string) => {
   return cardImagePaths.discord(key);
 };
+export const getHeartswarmingEveFront = (key: string) => cardImagePaths.hearthswarmingEve(key);
+export const getHeartswarmingEveBack = (key: string) => {
+    const match = key.match(/^(P?)BP0[24]-(SPR|SR|GR|CR|RR|ER|C|U)(\d{2})$/);
+    if (!match) return getDiscordBack("BP02-U01");
+    return getDiscordBack(`BP02-${match[1] ? "P" : ""}${match[2]}${match[3]}`);
+};
 export const getFantasyWonderlandBack = (key: string) => {
   if (key.startsWith("BP01PRR")) {
     return cardImagePaths.parallelRubyBack(key.slice(-2));
@@ -565,8 +575,8 @@ const erMatch = key.match(/^BP03-ER(0[12])-([ABC])$/);
 const imageKey = erMatch ? `${key}${erMatch[2]}` : key;
     return cardImagePaths.nightmareNight(imageKey);
   };
-export const CARD_IMAGE_WORKER_URL = "https://mlpekayou-images.keegan-586.workers.dev";
-export const CARD_IMAGE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="744" height="1040"><rect width="744" height="1040" rx="28" fill="#e5e7eb"/></svg>')}`;
+export const CARD_IMAGE_WORKER_URL = "https\://mlpekayou-images.keegan-586.workers.dev";
+export const CARD_IMAGE_PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http\://www.w3.org/2000/svg" width="744" height="1040"><rect width="744" height="1040" rx="28" fill="#e5e7eb"/></svg>')}`;
 const PROTECTED_PREFIXES = ["cards/", "card-backs/", "fantasy-wonderland/", "friendships-begin/", "fun-moments-one-backs/", "fun-moments-two-backs/", "fun-moments-three-backs/", "moon-1-other-backs/", "moon-2-other-backs/", "promo-cards/", "rainbow-1-backs/", "tcg-card-backs/", "tcgpromos/"];
 export function getProtectedCardPath(src?: string) {
   if (!src || /^(data:|blob:)/i.test(src)) return null;

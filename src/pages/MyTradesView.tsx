@@ -1,4 +1,5 @@
-import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
+import { getHeartswarmingEveRarityLabel } from "@/lib/hearthswarming-eve";
+import { getHeartswarmingEveFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -60,6 +61,7 @@ const { data: trades } = await supabase
         .eq("user_id", user.id);
 const filtered = (trades || []).filter((card) => {
         if (!card.is_for_trade && !card.is_for_sale) return false;
+//  Friendships Begin (bonus + starters all live under same set_id)
         if (setId === "SD_BONUS" || setId === "SD_STARTERS") {
           return card.set_id === "friendshipsbegin";
         }
@@ -75,32 +77,33 @@ const getRarityCode = (rarity: string) => {
     return rarity;
   };
 const getCardImage = (card: TradeCard) => {
-    if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
     if (card.set_id === "friendshipsbegin") {
-      return cardImagePaths.friendshipsBegin(card.card_key);
+      return `/friendships-begin/${card.card_key}.webp`;
     }
     if (card.set_id === "FW") {
 const num = card.card_key.slice(-2);
       if (card.card_key.startsWith("BP01ER")) {
-        return cardImagePaths.fantasyEmerald(num);
+        return `/fantasy-wonderland/SD01ER${num}.webp`;
       }
       if (card.card_key.startsWith("BP01PER")) {
-        return cardImagePaths.fantasyParallelEmerald(num);
+        return `/fantasy-wonderland/SD01PER${num}.webp`;
       }
-      return cardImagePaths.fantasyWonderland(card.card_key);
+      return `/fantasy-wonderland/${card.card_key}.webp`;
     }
+
+  if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveFront(card.card_key);
     if (String(card.set_id) === "14") {
-      return cardImagePaths.nightmareNight(card.card_key);
+      return `/cards/nightmare-night/${card.card_key}.webp`;
     }
     if (card.set_id === "12") {
-      return cardImagePaths.discord(card.card_key);
+      return `/cards/discord/${card.card_key}.webp`;
     }
     if (card.set_id === "9") {
 const number = card.card_key.split("-")[1];
-      return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
+      return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
     }
     if (card.set_id === "tcgpromos") {
-      return cardImagePaths.tcgPromo(card.card_key);
+      return `/tcgpromos/${card.card_key}.webp`;
     }
 const [rarityRaw, number] = card.card_key.split("-");
 const rarity = getRarityCode(rarityRaw);
@@ -117,9 +120,11 @@ const config: any = {
     };
 const c = config[card.set_id];
     if (!c) return "";
-    return cardImagePaths.ccgWithExtension(c.folder, c.prefix, rarity, String(number).padStart(3, "0"), card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
+    return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}${
+      card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
         ? ".webp"
-        : ".webp");
+        : ".webp"
+    }`;
   };
   return (
     <div
@@ -156,7 +161,7 @@ const c = config[card.set_id];
                   isLightMode ? "text-zinc-500" : "text-zinc-400"
                 }`}
               >
-                Trade & sale listings
+                Trade &amp; sale listings
               </div>
               <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
                 My Trades
@@ -215,7 +220,7 @@ const c = config[card.set_id];
                 : "border-white/[0.08] bg-[#151718]"
             }`}
           >
-            <div className="text-base font-semibold">Loading trades&hellip;</div>
+            <div className="text-base font-semibold">Loading trades&#x2026;</div>
           </section>
         )}
         {!loading && cards.length === 0 && (
@@ -242,9 +247,11 @@ const c = config[card.set_id];
               Object.entries(
                 cards.reduce((acc: Record<string, TradeCard[]>, card) => {
 let rarity = card.card_key.split("-")[0];
-                  if (String(card.set_id) === "14") {
-const match = card.card_key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
-                    rarity = match ? `${match[1] ? "\u203B" : ""}${match[2]}` : "OTHER";
+                  if (String(card.set_id) === "hearthswarming-eve") {
+                    rarity = getHeartswarmingEveRarityLabel(card.card_key);
+                  } else if (String(card.set_id) === "14") {
+                    const match = card.card_key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
+                    rarity = match ? `${match[1] ? "\u203b" : ""}${match[2]}` : "OTHER";
                   } else if (card.set_id === "tcgpromos") {
                     rarity = "PR";
                   } else if (
@@ -256,11 +263,11 @@ const match = card.card_key.match(
                       /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/,
                     );
                     rarity = match?.[0] || "OTHER";
-                    if (rarity === "PER") rarity = "\u203BER";
-                    if (rarity === "PSPR") rarity = "\u203BSPR";
-                    if (rarity === "PCR") rarity = "\u203BCR";
-                    if (rarity === "PRR") rarity = "\u203BRR";
-                    if (rarity === "PGR") rarity = "\u203BGR";
+                    if (rarity === "PER") rarity = "\u203bER";
+                    if (rarity === "PSPR") rarity = "\u203bSPR";
+                    if (rarity === "PCR") rarity = "\u203bCR";
+                    if (rarity === "PRR") rarity = "\u203bRR";
+                    if (rarity === "PGR") rarity = "\u203bGR";
                   }
                   if (!acc[rarity]) acc[rarity] = [];
                   acc[rarity].push(card);
@@ -295,7 +302,6 @@ const rarityOrders: Record<string, string[]> = {
                     "SC",
                     "SZR",
                   ],
-                  "13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
                   "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
                   "5": [
                     "R",
@@ -334,11 +340,11 @@ const rarityOrders: Record<string, string[]> = {
                     "GR",
                     "CR",
                     "RR",
-                    "\u203BER",
-                    "\u203BSPR",
-                    "\u203BGR",
-                    "\u203BCR",
-                    "\u203BRR",
+                    "\u203bER",
+                    "\u203bSPR",
+                    "\u203bGR",
+                    "\u203bCR",
+                    "\u203bRR",
                   ],
                   "12": [
                     "C",
@@ -349,11 +355,11 @@ const rarityOrders: Record<string, string[]> = {
                     "GR",
                     "CR",
                     "RR",
-                    "\u203BER",
-                    "\u203BSPR",
-                    "\u203BGR",
-                    "\u203BCR",
-                    "\u203BRR",
+                    "\u203bER",
+                    "\u203bSPR",
+                    "\u203bGR",
+                    "\u203bCR",
+                    "\u203bRR",
                   ],
                   friendshipsbegin: [
                     "C",
@@ -363,10 +369,11 @@ const rarityOrders: Record<string, string[]> = {
                     "GR",
                     "CR",
                     "ER",
-                    "\u203BER",
-                    "\u203BRR",
+                    "\u203bER",
+                    "\u203bRR",
                   ],
-                  "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
+                  "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bSPR", "\u203bGR", "\u203bCR", "\u203bRR"],
+"hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bGR", "\u203bSPR", "\u203bCR", "\u203bRR"],
                   tcgpromos: ["PR"],
                 };
 const currentOrder =
@@ -391,13 +398,13 @@ const currentOrder =
                   >
                     <h2 className="text-base font-semibold">
                       {rarity === "SHINING ZR" || rarity === "SZR"
-                        ? "\u25C7ZR"
+                        ? "\u25c7ZR"
                         : rarity === "SN"
-                          ? "\u25C7N"
+                          ? "\u25c7N"
                           : rarity === "SCR" && String(setId) !== "4"
-                            ? "\u25C7CR"
+                            ? "\u25c7CR"
                             : rarity === "SAR"
-                              ? "\u25C7AR"
+                              ? "\u25c7AR"
                               : rarity}
                     </h2>
                     <span
@@ -411,15 +418,7 @@ const currentOrder =
                   <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4 sm:gap-2.5">
                     {rarityCards
                       .sort((a, b) => {
-                        if (String(setId) === "9") {
-const order = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].map((number) => `PR-${number}`);
-const indexA = order.indexOf(a.card_key);
-const indexB = order.indexOf(b.card_key);
-                          return (indexA < 0 ? order.length : indexA) - (indexB < 0 ? order.length : indexB);
-                        }
-                        if (String(setId) === "tcgpromos") {
-                          return Number(a.card_key.replace(/^RR/, "")) - Number(b.card_key.replace(/^RR/, ""));
-                        }
+if (String(a.set_id) === "hearthswarming-eve") return Number(a.card_key.match(/(\d{2})$/)?.[1]) - Number(b.card_key.match(/(\d{2})$/)?.[1]);
 const numA = parseInt(a.card_key.split("-")[1]);
 const numB = parseInt(b.card_key.split("-")[1]);
                         return numA - numB;
@@ -453,14 +452,11 @@ const isLandscape =
                               ) : (
                                 <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                   <CardImage
-                                    imageSize={(String(card.set_id) === "9" && ["PR-14", "PR-15"].includes(card.card_key)) || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28") ? "original" : undefined}
                                     src={getCardImage(card)}
                                     alt={card.card_key}
                                     className={isLandscape
                                       ? "absolute object-contain object-center"
-                                      : String(card.set_id) === "9" && card.card_key === "PR-15"
-                                        ? "h-full w-full object-cover object-center scale-[1.025]"
-                                        : "h-full w-full object-cover object-center"}
+                                      : "h-full w-full object-cover object-center"}
                                     style={isLandscape
                                       ? {
                                           left: "50%",
@@ -478,12 +474,12 @@ const isLandscape =
                             <div className="mt-1 flex min-h-5 flex-wrap items-center gap-1 px-0.5 text-[10px] font-semibold sm:text-xs">
                               {card.is_for_trade && (
                                 <span className="rounded-md bg-emerald-500/12 px-1.5 py-0.5 text-emerald-600 dark:text-emerald-400">
-                                  Trade &middot; {card.trade_quantity}
+                                  Trade &#xb7; {card.trade_quantity}
                                 </span>
                               )}
                               {card.is_for_sale && (
                                 <span className="rounded-md bg-sky-500/12 px-1.5 py-0.5 text-sky-600 dark:text-sky-400">
-                                  ${Number(card.asking_price || 0).toFixed(2)} &middot; {card.sale_quantity}
+                                  ${Number(card.asking_price || 0).toFixed(2)} &#xb7; {card.sale_quantity}
                                 </span>
                               )}
                             </div>

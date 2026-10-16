@@ -1,3 +1,6 @@
+import { HEARTHSWARMING_EVE_CARDS } from "@/lib/hearthswarming-eve";
+import { HEARTHSWARMING_EVE_RARITIES, getHeartswarmingEveRarity, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
+import { getHeartswarmingEveFront } from "@/lib/card-images";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
@@ -59,6 +62,7 @@ const OFFER_SET_ORDER = [
   "FW",
   "12",
   "14",
+  "hearthswarming-eve",
   "tcgpromos",
 ];
 const OFFER_RARITY_ORDER = [
@@ -258,8 +262,9 @@ const baseCode = setCodeMap[setId] || "";
 const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
   const setId = String(card.set_id);
   const key = card.card_key.replace(/^(?:BONUS|STARTER|STARTERS)-/, "");
+  if (setId === "hearthswarming-eve") return getHeartswarmingEveDisplayCode(key);
   if (/^(?:MLPME|MLPSE|MLPEPR|FME|INT|RBE)\d/i.test(key)) return key;
-  if (["SD", "friendshipsbegin", "FW", "12", "14"].includes(setId)) {
+  if (["SD", "friendshipsbegin", "FW", "12", "14", "hearthswarming-eve"].includes(setId)) {
     const match = key.match(/^(P?)(BP\d{2}|SD\d{2})-?(P?)([A-Z]+)(\d{2})(.*)$/i);
     if (!match) return key;
     const [, before, prefix, after, rawRarity, number, suffix] = match;
@@ -292,6 +297,7 @@ const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
 };
 
 const COLLECTION_SET_TOTALS: Record<string, number> = {
+  "hearthswarming-eve": 191,
   "1": 186, "2": 189, "3": 290, "13": 162, "4": 105,
   "5": 146, "6": 170, "7": 127, "8": 136, "11": 148,
   "9": 14, SD: 68, friendshipsbegin: 68, FW: 191,
@@ -317,6 +323,7 @@ const offerKeyFor = (recipientId: string, setId: string, cardKey: string) =>
   [recipientId, setId, cardKey].join("-");
 const inventoryRarity = (cardKey: string) => {
   const key = cardKey.toUpperCase().replace(/\u203B/g, "");
+  if (/^P?BP04-/.test(key)) return getHeartswarmingEveRarity(key);
   const nightmareParallel = key.match(/^PBP03-(ER|SPR|GR|CR|RR)\d{2}(?:-[ABC]2?)?$/);
   if (nightmareParallel) return `P${nightmareParallel[1]}`;
   const prefixed = key.match(
@@ -326,6 +333,7 @@ const inventoryRarity = (cardKey: string) => {
   return key.split("-")[0].replace(/\d+$/g, "") || "Other";
 };
 const rarityMap: Record<string, string[]> = {
+  "hearthswarming-eve": Object.keys(HEARTHSWARMING_EVE_RARITIES),
   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
   "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
   "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
@@ -407,6 +415,7 @@ const getCardImage = (card: TradeCard) => {
     }
     return cardImagePaths.fantasyWonderland(card.card_key);
   }
+  if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveFront(card.card_key);
   if (String(card.set_id) === "14") {
     const erMatch = card.card_key.match(/^BP03-ER(0[12])-([ABC])$/);
     const imageKey = erMatch ? `${card.card_key}${erMatch[2]}` : card.card_key;
@@ -495,7 +504,7 @@ const getOfferImageClassName = (card: { set_id: string; card_key: string }) => {
     }
     return `${base} scale-[1.02] object-contain object-center`;
   }
-  const contained = ["SD", "friendshipsbegin", "FW", "12", "14"].includes(
+  const contained = ["SD", "friendshipsbegin", "FW", "12", "14", "hearthswarming-eve"].includes(
     offerSetId,
   );
   return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
@@ -546,7 +555,7 @@ function ListingCardImage({
             }
           : offerMode
             ? undefined
-            : { transform: ["SD", "friendshipsbegin", "FW", "12", "14"].includes(String(card.set_id)) ? undefined : "scale(1.045)" }
+            : { transform: ["SD", "friendshipsbegin", "FW", "12", "14", "hearthswarming-eve"].includes(String(card.set_id)) ? undefined : "scale(1.045)" }
       }
     />
   );
@@ -752,6 +761,7 @@ export default function TradingPostInner() {
     FW: "Fantasy Wonderland",
     "12": "Discord",
     "14": "Nightmare Night",
+    "hearthswarming-eve": "HeartsWarming Eve",
     tcgpromos: "TCG Promos",
   };
   const getOfferSetName = (offerSetId: string) => {
@@ -771,6 +781,7 @@ export default function TradingPostInner() {
       FW: "Fantasy Wonderland",
       "12": "Discord",
       "14": "Nightmare Night",
+      "hearthswarming-eve": "HeartsWarming Eve",
       tcgpromos: "TCG Promos",
     };
     return names[offerSetId] || setNames[offerSetId] || offerSetId;
@@ -876,6 +887,19 @@ export default function TradingPostInner() {
         }
       } else {
         setOwnedCardKeys(new Set());
+      }
+      if (setId === "hearthswarming-eve" && heroCandidates.length === 0) {
+        heroCandidates = HEARTHSWARMING_EVE_CARDS.map(({ key }) => ({
+          id: `hero-bp04-${key}`,
+          user_id: sessionUserId || "",
+          set_id: "hearthswarming-eve",
+          card_key: key,
+          is_for_trade: false,
+          is_for_sale: false,
+          asking_price: null,
+          trade_quantity: 0,
+          sale_quantity: 0,
+        }));
       }
       setHeroCards((current) => current.length ? current : randomHeroCards(heroCandidates));
       const participantIds = Array.from(
@@ -1374,6 +1398,7 @@ export default function TradingPostInner() {
     );
   }
   const getRarity = (key: string) => {
+    if (setId === "hearthswarming-eve") return getHeartswarmingEveRarity(key);
     if (setId === "14") {
       const match = key.match(
         /^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/,
@@ -1431,6 +1456,7 @@ export default function TradingPostInner() {
   const getOfferRarity = (card: InventoryCard) =>
     card.set_id === "tcgpromos" ? "PR" : inventoryRarity(card.card_key);
   const getOfferRarityRank = (offerSetId: string, rarity: string) => {
+    if (offerSetId === "hearthswarming-eve") return Object.keys(HEARTHSWARMING_EVE_RARITIES).indexOf(rarity);
     if (["SHINING ZR", "SZR"].includes(rarity)) return 1001;
     if (offerSetId === "4" && rarity === "SAR") return 1002;
     if (["7", "8", "11"].includes(offerSetId) && rarity === "SCR") return 1002;

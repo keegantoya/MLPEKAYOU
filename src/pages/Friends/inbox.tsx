@@ -1,6 +1,4 @@
-import { ListingWarningHistory } from "@/components/ListingModerationWarnings";
-import ProfileAvatar from "@/components/ProfileAvatar";
-import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
+import { getHeartswarmingEveFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import {
@@ -82,7 +80,6 @@ const OFFER_SET_NAMES: Record<string, string> = {
   "1": "Eternal Moon: First Edition",
   "2": "Eternal Moon: Second Edition",
   "3": "Eternal Moon: Third Edition",
-  "13": "Eternal Moon: Fourth Edition",
   "4": "Star: First Edition",
   "5": "Rainbow: First Edition",
   "6": "Rainbow: Second Edition",
@@ -92,41 +89,41 @@ const OFFER_SET_NAMES: Record<string, string> = {
   "11": "Fun Moments: Third Edition",
   "12": "Discord",
   "14": "Nightmare Night",
+"hearthswarming-eve": "HeartsWarming Eve",
   FW: "Fantasy Wonderland",
   friendshipsbegin: "Friendships Begin",
   tcgpromos: "TCG Promos",
 };
 const getOfferCardImage = (card: OfferCardRef) => {
   const [rarity, number] = card.card_key.split("-");
-  if (card.set_id === "13") {
-    return getMoonFourFront(card.card_key);
-  }
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
-    return cardImagePaths.friendshipsBegin(card.card_key);
+    return `/friendships-begin/${card.card_key}.webp`;
   }
   if (card.set_id === "FW") {
     const num = card.card_key.slice(-2);
     if (card.card_key.startsWith("BP01ER")) {
-      return cardImagePaths.fantasyEmerald(num);
+      return `/fantasy-wonderland/SD01ER${num}.webp`;
     }
     if (card.card_key.startsWith("BP01PER")) {
-      return cardImagePaths.fantasyParallelEmerald(num);
+      return `/fantasy-wonderland/SD01PER${num}.webp`;
     }
-    return cardImagePaths.fantasyWonderland(card.card_key);
+    return `/fantasy-wonderland/${card.card_key}.webp`;
   }
+
+  if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveFront(card.card_key);
   if (card.set_id === "14") {
     const erMatch = card.card_key.match(/^BP03-ER(0[12])-([ABC])$/);
     const imageKey = erMatch ? `${card.card_key}${erMatch[2]}` : card.card_key;
-    return cardImagePaths.nightmareNight(imageKey);
+    return `/cards/nightmare-night/${imageKey}.webp`;
   }
   if (card.set_id === "12") {
-    return cardImagePaths.discord(card.card_key);
+    return `/cards/discord/${card.card_key}.webp`;
   }
   if (card.set_id === "9") {
-    return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
   if (card.set_id === "tcgpromos") {
-    return cardImagePaths.tcgPromo(card.card_key);
+    return `/tcgpromos/${card.card_key}.webp`;
   }
   const config: Record<string, { folder: string; prefix: string }> = {
     "1": { folder: "first-edition-moon", prefix: "M1" },
@@ -142,7 +139,7 @@ const getOfferCardImage = (card: OfferCardRef) => {
   const item = config[card.set_id];
   if (!item) return "";
   const rarityCode = rarity === "SHINING ZR" ? "SZR" : rarity;
-  return cardImagePaths.ccg(item.folder, item.prefix, rarityCode, String(number).padStart(3, "0"));
+  return `/cards/${item.folder}/${item.prefix}${rarityCode}${String(number).padStart(3, "0")}.webp`;
 };
 function OfferCardThumbnail({ card }: { card: OfferCardRef }) {
   const src = getOfferCardImage(card);
@@ -252,71 +249,64 @@ export default function Inbox() {
     let active = true;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     const connect = async () => {
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
-        if (!active || error || !session?.access_token) return;
-        await supabase.realtime.setAuth(session.access_token);
-        if (!active) return;
-        const userId = session.user.id;
-        channel = supabase
-          .channel(`inbox-updates-${userId}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "messages",
-              filter: `receiver=eq.${userId}`,
-            },
-            () => void loadInbox(false),
-          )
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "friend_requests",
-              filter: `receiver_id=eq.${userId}`,
-            },
-            () => void loadInbox(false),
-          )
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "friend_requests",
-              filter: `sender_id=eq.${userId}`,
-            },
-            () => void loadInbox(false),
-          )
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "trade_offers",
-              filter: `recipient_id=eq.${userId}`,
-            },
-            () => void loadOffers(userId),
-          )
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "trade_offers",
-              filter: `sender_id=eq.${userId}`,
-            },
-            () => void loadOffers(userId),
-          )
-          .subscribe();
-      } catch (error) {
-        if (active) console.error("Unable to connect inbox updates:", error);
-      }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!active || !session?.user) return;
+      const userId = session.user.id;
+      channel = supabase
+        .channel(`inbox-updates-${userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "messages",
+            filter: `receiver=eq.${userId}`,
+          },
+          () => void loadInbox(false),
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "friend_requests",
+            filter: `receiver_id=eq.${userId}`,
+          },
+          () => void loadInbox(false),
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "friend_requests",
+            filter: `sender_id=eq.${userId}`,
+          },
+          () => void loadInbox(false),
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "trade_offers",
+            filter: `recipient_id=eq.${userId}`,
+          },
+          () => void loadOffers(userId),
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "trade_offers",
+            filter: `sender_id=eq.${userId}`,
+          },
+          () => void loadOffers(userId),
+        )
+        .subscribe();
     };
     void loadInbox();
     void connect();
@@ -750,25 +740,33 @@ export default function Inbox() {
     status: "accepted" | "declined",
   ) {
     if (!currentUserId || respondingOfferId) return;
-    if (offer.status !== "pending") {
-      setOfferError("This offer has already been answered or cancelled.");
+    if (getOfferStatus(offer) !== "pending") {
+      setOfferError("This offer has already expired or been answered.");
       return;
     }
     const responseNote = (offerNotes[offer.id] || "").trim().slice(0, 500);
     setRespondingOfferId(offer.id);
     setOfferError("");
-    const { data, error } = await (supabase as any)
-      .rpc("answer_trade_offer", {
-        p_offer_id: offer.id,
-        p_status: status,
-        p_response_note: responseNote || null,
+    const respondedAt = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("trade_offers")
+      .update({
+        status,
+        response_note: responseNote || null,
+        responded_at: respondedAt,
       })
+      .eq("id", offer.id)
+      .eq("recipient_id", currentUserId)
+      .eq("status", "pending")
+      .gt("expires_at", respondedAt)
+      .select(
+        "id, sender_id, recipient_id, target_set_id, target_card_key, offered_cards, contact, status, response_note, created_at, expires_at, responded_at",
+      )
       .maybeSingle();
     if (error || !data) {
       console.error("Unable to answer trade offer:", error);
-      setOfferError(error?.message || "Your response could not be saved. Please try again.");
+      setOfferError("This offer could not be updated. It may have expired.");
       setRespondingOfferId(null);
-      await loadOffers(currentUserId);
       return;
     }
     setOffers((current) =>
@@ -783,25 +781,32 @@ export default function Inbox() {
     if (!currentUserId || cancellingOfferId) return;
     if (
       offer.sender_id !== currentUserId ||
-      offer.status !== "pending"
+      getOfferStatus(offer) !== "pending"
     ) {
       setOfferError("Only your own pending offers can be cancelled.");
       return;
     }
     setCancellingOfferId(offer.id);
     setOfferError("");
-    const { data, error } = await (supabase as any)
-      .rpc("answer_trade_offer", {
-        p_offer_id: offer.id,
-        p_status: "cancelled",
-        p_response_note: null,
+    const cancelledAt = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("trade_offers")
+      .update({
+        status: "cancelled",
+        responded_at: cancelledAt,
       })
+      .eq("id", offer.id)
+      .eq("sender_id", currentUserId)
+      .eq("status", "pending")
+      .gt("expires_at", cancelledAt)
+      .select(
+        "id, sender_id, recipient_id, target_set_id, target_card_key, offered_cards, contact, status, response_note, created_at, expires_at, responded_at",
+      )
       .maybeSingle();
     if (error || !data) {
       console.error("Unable to cancel trade offer:", error);
-      setOfferError(error?.message || "This offer could not be cancelled. Please try again.");
+      setOfferError("This offer could not be cancelled. It may have expired.");
       setCancellingOfferId(null);
-      await loadOffers(currentUserId);
       return;
     }
     setOffers((current) =>
@@ -1049,8 +1054,7 @@ export default function Inbox() {
                     }`}
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <ProfileAvatar
-                        profile={{ id: request.profileId, avatar_url: request.avatar_url }}
+                      <CardImage
                         src={getProfileAssets(request).avatar}
                         alt={request.username}
                         className={`h-11 w-11 shrink-0 rounded-xl border object-cover ${
@@ -1146,7 +1150,6 @@ export default function Inbox() {
                     </div>
                   </div>
                 )}
-                <ListingWarningHistory isLightMode={isLightMode} />
                 {history.length > 0 && (
                   <div>
                     <h3
@@ -1166,8 +1169,7 @@ export default function Inbox() {
                               : "border-white/[0.07] bg-white/[0.03]"
                           }`}
                         >
-                          <ProfileAvatar
-                            profile={{ id: item.profileId, avatar_url: item.avatar_url }}
+                          <CardImage
                             src={getProfileAssets(item).avatar}
                             alt={item.username}
                             className={`h-11 w-11 shrink-0 rounded-xl border object-cover ${
@@ -1279,8 +1281,7 @@ export default function Inbox() {
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-4">
-                        <ProfileAvatar
-                          profile={{ id: request.sender_id, avatar_url: request.avatar_url }}
+                        <CardImage
                           src={getProfileAssets(request).avatar}
                           alt={request.username}
                           className={`h-14 w-14 rounded-2xl border object-cover ${
@@ -1413,8 +1414,7 @@ export default function Inbox() {
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
-                          <ProfileAvatar
-                            profile={{ ...profile, id: counterpartId }}
+                          <CardImage
                             src={getProfileAssets(profile || {}).avatar}
                             alt={username}
                             className={`h-11 w-11 shrink-0 rounded-xl border object-cover ${
@@ -1833,8 +1833,7 @@ export default function Inbox() {
                           className="relative shrink-0 rounded-2xl text-left"
                           aria-label={`Open ${friend.username}'s profile`}
                         >
-                          <ProfileAvatar
-                            profile={{ ...friend.profile, id: friend.id }}
+                          <CardImage
                             src={getProfileAssets(friend.profile).avatar}
                             alt={friend.nickname || friend.username}
                             className={`h-16 w-16 rounded-2xl border object-cover ${
@@ -2090,11 +2089,10 @@ export default function Inbox() {
               className={`flex h-16 items-center justify-between border-b px-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.07]"}`}
             >
               <div className="flex min-w-0 items-center gap-2.5">
-                <ProfileAvatar
-                  profile={{ ...messageFriend.profile, id: messageFriend.id }}
+                <CardImage
                   src={getProfileAssets(messageFriend.profile).avatar}
                   alt=""
-                  className="h-9 w-9 rounded-[22%] object-cover"
+                  className="h-9 w-9 rounded-full object-cover"
                 />
                 <div className="min-w-0">
                   <div
@@ -2113,7 +2111,7 @@ export default function Inbox() {
                 className={`rounded-lg px-3 py-1.5 text-xl ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/[0.06]"}`}
                 aria-label="Close messages"
               >
-                {"\u00D7"}
+                &#xd7;
               </button>
             </div>
             <div className="h-[calc(100%-64px)] overflow-hidden">

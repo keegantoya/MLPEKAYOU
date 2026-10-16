@@ -1,3 +1,4 @@
+import { HEARTHSWARMING_EVE_KEYS, isHeartswarmingEveOwned } from "@/lib/hearthswarming-eve";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 export type Card = {
@@ -20,6 +21,7 @@ export function usePublicProfileCards(userId?: string) {
     }
     const load = async () => {
       setLoading(true);
+      // ISO
       const generatedSets = [
         {
           id: "1",
@@ -62,21 +64,6 @@ export function usePublicProfileCards(userId?: string) {
             ZR: 14,
             SC: 7,
             SZR: 3,
-          },
-        },
-        {
-          id: "13",
-          rarities: {
-            R: 30,
-            SR: 20,
-            SSR: 26,
-            HR: 30,
-            UR: 16,
-            LSR: 16,
-            SGR: 8,
-            ZR: 7,
-            SC: 7,
-            SZR: 2,
           },
         },
         {
@@ -173,7 +160,7 @@ export function usePublicProfileCards(userId?: string) {
       });
       const { data: profile } = await supabase
         .from("profiles")
-        .select("hide_iso, iso_hidden_sets, vacation_mode")
+        .select("hide_iso, iso_hidden_sets")
         .eq("id", userId)
         .maybeSingle();
       if (profile?.hide_iso) {
@@ -193,7 +180,7 @@ export function usePublicProfileCards(userId?: string) {
         setIsoCards([]);
         setWishlistCards(wishlistCards);
         setTradeCards(
-          (profile?.vacation_mode ? [] : trades ?? []).map((trade: any) => ({
+          (trades ?? []).map((trade: any) => ({
             ...trade,
             listing_type: "trade" as const,
           })),
@@ -248,14 +235,12 @@ export function usePublicProfileCards(userId?: string) {
         "PR-4",
         "PR-5",
         "PR-7",
-        "PR-14",
         "PR-8",
         "PR-9",
         "PR-10",
         "PR-11",
         "PR-12",
         "PR-13",
-        "PR-15",
       ]) {
         const value = progressMap["9"]?.[cardKey];
         const owned =
@@ -268,7 +253,7 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       }
-      for (let i = 1; i <= 28; i++) {
+      for (let i = 1; i <= 27; i++) {
         const cardKey = `RR${String(i).padStart(2, "0")}`;
         const value = progressMap["tcgpromos"]?.[cardKey];
         const owned =
@@ -281,6 +266,7 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       }
+      // Fantasy Wonderland (FW)
       const fwProgress = progressMap["FW"] || {};
       const FW_STRUCTURE = [
         { prefix: "BP01C", count: 48 },
@@ -323,6 +309,7 @@ export function usePublicProfileCards(userId?: string) {
           }
         }
       });
+      // Discord (Set 12)
       const discordProgress = progressMap["12"] || {};
       const DISCORD_STRUCTURE = [
         { prefix: "BP02-C", count: 48 },
@@ -363,6 +350,7 @@ export function usePublicProfileCards(userId?: string) {
           }
         }
       });
+      // Nightmare Night (Set 14)
       const nightmareNightProgress = progressMap["14"] || {};
       const nightmareNightKeys = [
         ...Array.from(
@@ -436,6 +424,10 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       });
+      HEARTHSWARMING_EVE_KEYS.forEach(cardKey => {
+        if (!isHeartswarmingEveOwned(progressMap["hearthswarming-eve"]?.[cardKey])) iso.push({ set_id: "hearthswarming-eve", card_key: cardKey });
+      });
+      // Everything else (Rainbow, Fun, Star, Promos, etc.)
       (collection ?? []).forEach((row: any) => {
         const setId = String(row.set_id);
         if (
@@ -443,7 +435,6 @@ export function usePublicProfileCards(userId?: string) {
             "1",
             "2",
             "3",
-            "13",
             "4",
             "5",
             "6",
@@ -452,7 +443,7 @@ export function usePublicProfileCards(userId?: string) {
             "9",
             "11",
             "12",
-            "14",
+            "14", "hearthswarming-eve",
             "FW",
             "SD",
             "tcgpromos",
@@ -473,6 +464,7 @@ export function usePublicProfileCards(userId?: string) {
           }
         });
       });
+      // Wishlist
       const { data: wishlist } = await supabase
         .from("wishlists")
         .select("card_key")
@@ -484,6 +476,7 @@ export function usePublicProfileCards(userId?: string) {
           card_key,
         };
       });
+      // Trades
       const { data: trades } = await supabase
         .from("card_market_listings")
         .select("set_id, card_key")
@@ -498,7 +491,7 @@ export function usePublicProfileCards(userId?: string) {
       );
       setWishlistCards(wishlistCards);
       setTradeCards(
-        (profile?.vacation_mode ? [] : trades ?? []).map((trade: any) => ({
+        (trades ?? []).map((trade: any) => ({
           ...trade,
           listing_type: "trade" as const,
         })),

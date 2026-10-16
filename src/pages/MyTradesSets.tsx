@@ -1,6 +1,4 @@
-import { onAuthIdentityChange } from "@/lib/auth-identity";
-import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
-import { getISOCardCode } from "@/lib/iso-card-catalog";
+import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveRarityLabel, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -127,24 +125,6 @@ const sets = [
     },
   },
   {
-    id: "13",
-    name: "Eternal Moon: Fourth Edition",
-    folder: "fourth-edition-moon",
-    prefix: "M4",
-    rarities: {
-      R: 30,
-      SR: 20,
-      SSR: 26,
-      HR: 30,
-      UR: 16,
-      LSR: 16,
-      SGR: 8,
-      ZR: 7,
-      SC: 7,
-      SZR: 2,
-    },
-  },
-  {
     id: "4",
     name: "Star: First Edition",
     folder: "star-one",
@@ -165,7 +145,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 14 },
+    rarities: { PR: 12 },
   },
   {
     id: "FW",
@@ -195,20 +175,26 @@ const sets = [
     prefix: "BP03",
     rarities: {},
   },
+{
+    id: "hearthswarming-eve",
+    name: "HeartsWarming Eve",
+    folder: "hearthswarming-eve",
+    prefix: "BP04",
+    rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6 },
+  },
   {
     id: "tcgpromos",
     name: "TCG Promos",
     folder: "tcgpromos",
     prefix: "RR",
-    rarities: { PR: 28 },
+    rarities: { PR: 27 },
   },
 ];
 const getDisplayCode = (card: any, currentSetId: string) => {
   const key = String(card.key || "");
+  //  Promotional Cards: the six SDCC cards are PR-8 through PR-13.
   if (currentSetId === "9") {
     const num = Number(card.number);
-    if (num === 14) return "MLPE-PR-009";
-    if (num === 15) return "NYCC-001";
     if (num >= 8 && num <= 13) {
       return `SDCC-${String(num - 7).padStart(2, "0")}`;
     }
@@ -237,7 +223,6 @@ const getDisplayCode = (card: any, currentSetId: string) => {
         25: "\u203BBP01-CR04",
         26: "\u203BBP01-CR05",
         27: "\u203BBP01-CR06",
-        28: "RR-28",
       };
       if (newPromoNames[num]) return newPromoNames[num];
     }
@@ -254,6 +239,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${isReferenceRarity ? "\u203B" : ""}SD01-${displayRarity}${number}`;
     }
   }
+  //  Fantasy Wonderland / BP01.
   if (currentSetId === "FW") {
     const match = key.match(
       /^BP01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)$/,
@@ -278,6 +264,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${reference}BP01-${displayRarity}${number}`;
     }
   }
+  //  Discord / BP02. A2/B2 are image variants of the same displayed card code.
   if (currentSetId === "12") {
     const match = key.match(
       /^BP02-(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)(?:-(?:A2|B2))?$/,
@@ -302,16 +289,20 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${reference}BP02-${displayRarity}${number}`;
     }
   }
+  if (currentSetId === "hearthswarming-eve") return getHeartswarmingEveDisplayCode(key);
   if (currentSetId === "14" && key.startsWith("PBP03-")) {
-    return `\u203B${key.slice(1)}`;
+    return `\u203b${key.slice(1)}`;
   }
+  //  All SN cards display the S rarity as a diamond.// The normal set keys are "SN-1", "SN-2", etc.
   if (key.startsWith("SN-")) {
     return `\u25C7N-${key.slice(3)}`;
   }
+  //  Also handle compact SN keys if one is supplied by a special set.
   const compactSnMatch = key.match(/^(.*?)(?:SN)(\d+)$/);
   if (compactSnMatch) {
     return `${compactSnMatch[1]}\u25C7N${compactSnMatch[2]}`;
   }
+  //  SCR uses the diamond form ONLY in Fun Moments.// The normal keys are "SCR-1", "SCR-2", etc.
   if (["7", "8", "11"].includes(currentSetId)) {
     if (key.startsWith("SCR-")) {
       return `\u25C7CR-${key.slice(4)}`;
@@ -321,6 +312,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
       return `${compactScrMatch[1]}\u25C7CR${compactScrMatch[2]}`;
     }
   }
+  //  Both SHINING ZR and SZR display as \u25C7ZR.
   const zrMatch = key.match(/^(?:SHINING ZR|SZR)-?(\d+)$/);
   if (zrMatch) {
     return `\u25C7ZR-${zrMatch[1]}`;
@@ -379,15 +371,6 @@ export default function MyTradesSets() {
   const [savedQuantities, setSavedQuantities] = useState<
     Record<string, number>
   >({});
-  type BulkRow = { personal: string; trade: string; sale: string; price: string };
-  const [bulkOpen, setBulkOpen] = useState(false);
-  const [bulkCards, setBulkCards] = useState<any[]>([]);
-  const [bulkRows, setBulkRows] = useState<Record<string, BulkRow>>({});
-  const [bulkOriginalRows, setBulkOriginalRows] = useState<Record<string, BulkRow>>({});
-  const [bulkSearch, setBulkSearch] = useState("");
-  const [bulkListedOnly, setBulkListedOnly] = useState(false);
-  const [bulkSaving, setBulkSaving] = useState(false);
-  const [bulkError, setBulkError] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [inventoryDirty, setInventoryDirty] = useState(false);
   const [showIntroPopup, setShowIntroPopup] = useState(false);
@@ -430,12 +413,14 @@ export default function MyTradesSets() {
         const { data } = await supabase.auth.getSession();
         user = data.session?.user;
       }
+      //  handle logged-out case
       if (!user) {
         setProgressMap({});
         setMarketListings({});
         setQuantities({});
         return;
       }
+      //  [LOAD] LOAD PROGRESS
       const { data: progress } = await supabase
         .from("collection_progress")
         .select("set_id, progress")
@@ -444,6 +429,7 @@ export default function MyTradesSets() {
       progress?.forEach((row: any) => {
         map[row.set_id] = row.progress || {};
       });
+      // Load the richer trade and sale details without changing the existing tables.
       const { data: listings } = await supabase
         .from("card_market_listings")
         .select(
@@ -463,6 +449,7 @@ export default function MyTradesSets() {
         };
       });
       setMarketListings(listingMap);
+      //  [LOAD] LOAD QUANTITIES
       const { data: qtyData } = await supabase
         .from("card_quantity")
         .select("card_key, quantity")
@@ -477,19 +464,16 @@ export default function MyTradesSets() {
       setProgressMap(map);
       setInventoryDirty(false);
     };
+    //  initial load
     load();
     const {
       data: { subscription },
-    } = onAuthIdentityChange((event) => {
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         setProgressMap({});
         setMarketListings({});
         setQuantities({});
         setSavedQuantities({});
-        setBulkOpen(false);
-        setBulkCards([]);
-        setBulkRows({});
-        setBulkOriginalRows({});
         setInventoryDirty(false);
         inventoryDirtyRef.current = false;
       }
@@ -588,12 +572,6 @@ export default function MyTradesSets() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [inventoryDirty]);
   useEffect(() => {
-    if (!bulkOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
-  }, [bulkOpen]);
-  useEffect(() => {
     if (!selectedCard) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -613,14 +591,6 @@ export default function MyTradesSets() {
     setInventoryDirty(dirty);
     inventoryDirtyRef.current = dirty;
   }, [listingDraft, savedListingDraft]);
-  useEffect(() => {
-    if (!bulkOpen) return;
-    const dirty = Object.keys(bulkRows).some((key) =>
-      JSON.stringify(bulkRows[key]) !== JSON.stringify(bulkOriginalRows[key]),
-    );
-    setInventoryDirty(dirty);
-    inventoryDirtyRef.current = dirty;
-  }, [bulkOpen, bulkRows, bulkOriginalRows]);
   const changeQuantity = (cardKey: string, value: number) => {
     const next = Math.max(1, value);
     setQuantities((prev) => {
@@ -818,7 +788,6 @@ export default function MyTradesSets() {
     "moon-one": "1",
     "moon-two": "2",
     "moon-three": "3",
-    "moon-four": "13",
     "star-one": "4",
     "rainbow-one": "5",
     "rainbow-two": "6",
@@ -830,6 +799,7 @@ export default function MyTradesSets() {
     "friendships-begin": "friendshipsbegin",
     discord: "12",
     "nightmare-night": "14",
+    "hearthswarming-eve": "hearthswarming-eve",
     "tcg-promos": "tcgpromos",
   };
   const resolvedSetId = slugMap[setId || ""] || setId;
@@ -849,15 +819,6 @@ export default function MyTradesSets() {
       </div>
     );
   }
-  const getBulkCardCode = (card: any) => {
-    if (set.id === "13") {
-      const rarity = card.rarity === "SZR" || card.rarity === "SHINING ZR"
-        ? "\u25C7ZR"
-        : card.rarity;
-      return `MLPME04-${rarity}-${String(card.number).padStart(3, "0")}`;
-    }
-    return getISOCardCode(set.id, String(card.key));
-  };
   let cards: any[] = [];
   if (set.id === "friendshipsbegin") {
     const BONUS_STRUCTURE = [
@@ -875,12 +836,12 @@ export default function MyTradesSets() {
       for (let i = 1; i <= count; i++) {
         let actualIndex = i;
         if (prefix === "SD01PER") {
-          actualIndex = i + 6;
+          actualIndex = i + 6; //  shift to 07-18
         }
         const num = String(actualIndex).padStart(2, "0");
         cards.push({
           key: `${prefix}${num}`,
-          image: cardImagePaths.friendshipsByPrefix(prefix, num),
+          image: `/friendships-begin/${prefix}${num}.webp`,
         });
       }
     });
@@ -906,7 +867,7 @@ export default function MyTradesSets() {
           const num = String(i + 7).padStart(2, "0");
           cards.push({
             key: `BP01ER${num}`,
-            image: cardImagePaths.fantasyEmerald(num),
+            image: `/fantasy-wonderland/SD01ER${num}.webp`,
           });
         }
         return;
@@ -917,7 +878,7 @@ export default function MyTradesSets() {
           const num = String(n).padStart(2, "0");
           cards.push({
             key: `BP01PSPR${num}`,
-            image: cardImagePaths.fantasyParallelSapphire(num),
+            image: `/fantasy-wonderland/BP01PSPR${num}.webp`,
           });
         });
         return;
@@ -928,11 +889,13 @@ export default function MyTradesSets() {
           key: `${prefix}${num}`,
           image:
             prefix === "BP01PER"
-              ? cardImagePaths.fantasyParallelEmerald(num)
-              : cardImagePaths.fantasyByPrefix(prefix, num),
+              ? `/fantasy-wonderland/SD01PER${num}.webp`
+              : `/fantasy-wonderland/${prefix}${num}.webp`,
         });
       }
     });
+  } else if (set.id === "hearthswarming-eve") {
+    cards = HEARTHSWARMING_EVE_CARDS.map(card => ({ ...card, rarity: getHeartswarmingEveRarityLabel(card.key) }));
   } else if (set.id === "14") {
     const nightmareKeys = [
       ...Array.from({ length: 48 }, (_, i) => `BP03-C${String(i + 1).padStart(2, "0")}`),
@@ -952,11 +915,11 @@ export default function MyTradesSets() {
       ...Array.from({ length: 6 }, (_, i) => `PBP03-RR${String(i + 1).padStart(2, "0")}`),
     ];
     const nightmareRarity = (key: string) => {
-      if (key.startsWith("PBP03-ER")) return "\u203BER";
-      if (key.startsWith("PBP03-GR")) return "\u203BGR";
-      if (key.startsWith("PBP03-SPR")) return "\u203BSPR";
-      if (key.startsWith("PBP03-CR")) return "\u203BCR";
-      if (key.startsWith("PBP03-RR")) return "\u203BRR";
+      if (key.startsWith("PBP03-ER")) return "\u203bER";
+      if (key.startsWith("PBP03-GR")) return "\u203bGR";
+      if (key.startsWith("PBP03-SPR")) return "\u203bSPR";
+      if (key.startsWith("PBP03-CR")) return "\u203bCR";
+      if (key.startsWith("PBP03-RR")) return "\u203bRR";
       if (key.startsWith("BP03-U")) return "U";
       if (key.startsWith("BP03-ER")) return "ER";
       if (key.startsWith("BP03-SR")) return "SR";
@@ -973,7 +936,7 @@ export default function MyTradesSets() {
         key,
         rarity: nightmareRarity(key),
         number: Number(key.match(/(\d{2})(?=-|$)/)?.[1] || 0),
-        image: cardImagePaths.nightmareNight(imageKey),
+        image: `/cards/nightmare-night/${imageKey}.webp`,
       };
     });
   } else if (set.id === "12") {
@@ -998,11 +961,11 @@ export default function MyTradesSets() {
           const num = String(i + 1).padStart(2, "0");
           cards.push({
             key: `BP02-PER${num}-A2`,
-            image: cardImagePaths.discordParallelEmeraldA(num),
+            image: `/cards/discord/BP02-PER${num}-A2.webp`,
           });
           cards.push({
             key: `BP02-PER${num}-B2`,
-            image: cardImagePaths.discordParallelEmeraldB(num),
+            image: `/cards/discord/BP02-PER${num}-B2.webp`,
           });
         }
         return;
@@ -1011,20 +974,20 @@ export default function MyTradesSets() {
         const num = String(i).padStart(2, "0");
         cards.push({
           key: `${prefix}${num}`,
-          image: cardImagePaths.discordByPrefix(prefix, num),
+          image: `/cards/discord/${prefix}${num}.webp`,
         });
       }
     });
   } else if (set.id === "tcgpromos") {
-    for (let i = 1; i <= 28; i++) {
+    for (let i = 1; i <= 27; i++) {
       const num = String(i).padStart(2, "0");
       cards.push({
         key: `RR${num}`,
-        image: cardImagePaths.tcgRubyPromo(num),
+        image: `/tcgpromos/RR${num}.webp`,
       });
     }
   } else if (set.id === "9") {
-    cards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].map((num) => ({
+    cards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13].map((num) => ({
       rarity: "PR",
       number: num,
       key: `PR-${num}`,
@@ -1035,7 +998,6 @@ export default function MyTradesSets() {
         rarity,
         number: i + 1,
         key: `${rarity}-${i + 1}`,
-        ...(set.id === "13" ? { image: getMoonFourFront(`${rarity}-${i + 1}`) } : {}),
       })),
     );
   }
@@ -1052,141 +1014,25 @@ export default function MyTradesSets() {
   const ownedBonusCards = cards.filter(
     (card) => progress[card.key] || progress[`BONUS-${card.key}`],
   );
-  const bulkChangedKeys = Object.keys(bulkRows).filter(
-    (key) => JSON.stringify(bulkRows[key]) !== JSON.stringify(bulkOriginalRows[key]),
-  );
-  const visibleBulkCards = bulkCards.filter((card) => {
-    if (bulkListedOnly && !marketListings[card.key]?.is_for_trade && !marketListings[card.key]?.is_for_sale) return false;
-    return getBulkCardCode(card).toLowerCase().includes(bulkSearch.trim().toLowerCase());
-  });
-  const openBulkEditor = () => {
-    if (inventoryDirty || !ownedBonusCards.length) return;
-    const rows: Record<string, BulkRow> = {};
-    ownedBonusCards.forEach((card) => {
-      const listing = marketListings[card.key] || emptyListing;
-      rows[card.key] = {
-        personal: String(quantities[card.key] || 1),
-        trade: String(listing.is_for_trade ? listing.trade_quantity || 1 : 0),
-        sale: String(listing.is_for_sale ? listing.sale_quantity || 1 : 0),
-        price: listing.asking_price === null ? "" : String(listing.asking_price),
-      };
-    });
-    setBulkCards([...ownedBonusCards].sort((a, b) =>
-      Number(Boolean(marketListings[b.key]?.is_for_trade || marketListings[b.key]?.is_for_sale)) -
-      Number(Boolean(marketListings[a.key]?.is_for_trade || marketListings[a.key]?.is_for_sale)),
-    ));
-    setBulkRows(rows);
-    setBulkOriginalRows(Object.fromEntries(Object.entries(rows).map(([key, row]) => [key, { ...row }])));
-    setBulkSearch("");
-    setBulkListedOnly(false);
-    setBulkError("");
-    setBulkOpen(true);
-  };
-  const updateBulkRow = (key: string, changes: Partial<BulkRow>) => {
-    setBulkRows((current) => ({ ...current, [key]: { ...current[key], ...changes } }));
-  };
-  const closeBulkEditor = () => {
-    if (bulkSaving) return;
-    setBulkOpen(false);
-    setBulkRows({});
-    setBulkOriginalRows({});
-    setInventoryDirty(false);
-    inventoryDirtyRef.current = false;
-  };
-  const saveBulkEditor = async () => {
-    if (bulkSaving) return;
-    if (!bulkChangedKeys.length) { closeBulkEditor(); return; }
-    setBulkError("");
-    for (const key of bulkChangedKeys) {
-      const row = bulkRows[key];
-      if (!/^[1-9]\d*$/.test(row.personal) || !/^\d+$/.test(row.trade) || !/^\d+$/.test(row.sale) ||
-          Number(row.personal) > 99999 || Number(row.trade) > 99999 || Number(row.sale) > 99999) {
-        setBulkError("Enter whole quantities: Personal must be at least 1; Trade and Sale can be 0.");
-        return;
-      }
-      if (Number(row.sale) > 0 && (!/^\d+(?:\.\d{1,2})?$/.test(row.price) || Number(row.price) < 0)) {
-        setBulkError(`Enter a valid sale price for ${key} before listing it for sale.`);
-        return;
-      }
-    }
-    setBulkSaving(true);
-    try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session?.user) throw sessionError || new Error("Please sign in again.");
-      const userId = session.user.id;
-      const quantityUpdates = bulkChangedKeys.filter((key) => bulkRows[key].personal !== bulkOriginalRows[key].personal)
-        .map((key) => ({ user_id: userId, set_id: resolvedSetId, card_key: key, quantity: Number(bulkRows[key].personal) }));
-      const listingKeys = bulkChangedKeys.filter((key) =>
-        bulkRows[key].trade !== bulkOriginalRows[key].trade ||
-        bulkRows[key].sale !== bulkOriginalRows[key].sale ||
-        (Number(bulkRows[key].sale) > 0 && bulkRows[key].price !== bulkOriginalRows[key].price),
-      );
-      const listingUpdates = listingKeys.filter((key) => Number(bulkRows[key].trade) > 0 || Number(bulkRows[key].sale) > 0)
-        .map((key) => ({
-          user_id: userId, set_id: resolvedSetId, card_key: key,
-          is_for_trade: Number(bulkRows[key].trade) > 0,
-          is_for_sale: Number(bulkRows[key].sale) > 0,
-          trade_quantity: Number(bulkRows[key].trade),
-          sale_quantity: Number(bulkRows[key].sale),
-          asking_price: Number(bulkRows[key].sale) > 0 ? Number(bulkRows[key].price) : null,
-        }));
-      const listingDeletes = listingKeys.filter((key) => Number(bulkRows[key].trade) === 0 && Number(bulkRows[key].sale) === 0 && Boolean(marketListings[key]));
-      for (let i = 0; i < quantityUpdates.length; i += 100) {
-        const { error } = await supabase.from("card_quantity").upsert(quantityUpdates.slice(i, i + 100), { onConflict: "user_id,set_id,card_key" });
-        if (error) throw error;
-      }
-      for (let i = 0; i < listingUpdates.length; i += 100) {
-        const { error } = await supabase.from("card_market_listings").upsert(listingUpdates.slice(i, i + 100), { onConflict: "user_id,set_id,card_key" });
-        if (error) throw error;
-      }
-      for (let i = 0; i < listingDeletes.length; i += 100) {
-        const { error } = await supabase.from("card_market_listings").delete()
-          .eq("user_id", userId).eq("set_id", resolvedSetId).in("card_key", listingDeletes.slice(i, i + 100));
-        if (error) throw error;
-      }
-      const nextQuantities = { ...quantities };
-      quantityUpdates.forEach((row) => { nextQuantities[row.card_key] = row.quantity; });
-      setQuantities(nextQuantities);
-      setSavedQuantities(nextQuantities);
-      setMarketListings((current) => {
-        const next = { ...current };
-        listingUpdates.forEach((row) => {
-          next[row.card_key] = {
-            is_for_trade: row.is_for_trade, is_for_sale: row.is_for_sale,
-            trade_quantity: row.trade_quantity, sale_quantity: row.sale_quantity,
-            asking_price: row.asking_price,
-          };
-        });
-        listingDeletes.forEach((key) => { delete next[key]; });
-        return next;
-      });
-      setBulkOpen(false);
-      setBulkRows({});
-      setBulkOriginalRows({});
-      setInventoryDirty(false);
-      inventoryDirtyRef.current = false;
-    } catch (error) {
-      console.error("Failed to save bulk inventory changes:", error);
-      setBulkError("Some changes could not be saved. Keep this window open and try Save again.");
-    } finally {
-      setBulkSaving(false);
-    }
-  };
   const hasStarterDeck =
     set.id === "friendshipsbegin" &&
     ["SD01A", "SD01B", "SD01C", "SD01D", "SD01E", "SD01F"].some((deck) =>
       Array.from({ length: 21 }).some((_, i) => progress[`${deck}-${i + 1}`]),
     );
   const rarityOrders: Record<string, string[]> = {
+    //  Star
     "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
+    //  Eternal Moon
     "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
     "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
     "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
-    "13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+    //  Rainbow
     "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
     "6": ["BASE", "R", "SR", "ST", "TR", "TGR", "SSR", "FR", "UR", "USR", "XR"],
+    //  Fun Moments
     "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
     "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
+    //  Fantasy Wonderland
     FW: [
       "C",
       "U",
@@ -1202,9 +1048,11 @@ export default function MyTradesSets() {
       "\u203BCR",
       "\u203BRR",
     ],
+    //  Friendships Begin
     friendshipsbegin: ["C", "U", "SR", "SPR", "GR", "CR", "ER", "\u203BER", "\u203BRR"],
-    "12": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
     "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
+"hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bGR", "\u203bSPR", "\u203bCR", "\u203bRR"],
+    //  Promos
     "9": ["PR"],
     tcgpromos: ["PR"],
   };
@@ -1218,92 +1066,6 @@ export default function MyTradesSets() {
       }`}
     >
       <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
-        {bulkOpen && (
-          <div className="fixed inset-0 z-[20100] flex items-start justify-center bg-black/70 px-2 pb-3 pt-[calc(76px+env(safe-area-inset-top))] backdrop-blur-sm sm:pt-20" role="dialog" aria-modal="true" aria-labelledby="bulk-editor-title">
-            <div className={`flex max-h-[min(68dvh,620px)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border shadow-2xl sm:max-h-[min(76dvh,680px)] ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#17191a] text-white"}`}>
-              <div className={`shrink-0 border-b p-4 sm:px-6 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 id="bulk-editor-title" className="text-lg font-semibold">Bulk edit {"\u00B7"} {set.name}</h2>
-                    <p className={`mt-1 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                      Set Trade or Sale to 0 to remove a listing. Save when finished.
-                    </p>
-                  </div>
-                  <button type="button" onClick={closeBulkEditor} disabled={bulkSaving} aria-label="Close bulk editor" className={`rounded-lg px-3 py-1 text-xl disabled:opacity-50 ${isLightMode ? "hover:bg-zinc-100" : "hover:bg-white/10"}`}>{"\u00D7"}</button>
-                </div>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <input
-                    type="search"
-                    value={bulkSearch}
-                    onChange={(event) => setBulkSearch(event.target.value)}
-                    placeholder="Search card code"
-                    aria-label="Search owned cards"
-                    className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-base outline-none sm:text-sm ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-[#101213]"}`}
-                  />
-                  <label className="flex items-center gap-1.5 whitespace-nowrap text-xs">
-                    <input type="checkbox" checked={bulkListedOnly} onChange={(event) => setBulkListedOnly(event.target.checked)} /> Listed only
-                  </label>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button type="button" disabled={bulkSaving} onClick={() => setBulkRows((current) => Object.fromEntries(Object.entries(current).map(([key, row]) => [key, { ...row, trade: "0" }]))) } className={`rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${isLightMode ? "border-black/10 hover:bg-zinc-100" : "border-white/10 hover:bg-white/10"}`}>Remove all from trade</button>
-                  <button type="button" disabled={bulkSaving} onClick={() => setBulkRows((current) => Object.fromEntries(Object.entries(current).map(([key, row]) => [key, { ...row, sale: "0" }]))) } className={`rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${isLightMode ? "border-black/10 hover:bg-zinc-100" : "border-white/10 hover:bg-white/10"}`}>Remove all from sale</button>
-                </div>
-              </div>
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 sm:px-6">
-                <div className={`sticky top-0 z-20 grid grid-cols-[minmax(110px,1fr)_repeat(3,66px)] gap-1 border-b px-2 py-2 text-[10px] font-semibold uppercase tracking-wide sm:grid-cols-[minmax(180px,1fr)_repeat(3,96px)] sm:gap-3 ${isLightMode ? "border-black/10 bg-white text-zinc-600" : "border-white/10 bg-[#17191a] text-zinc-400"}`}>
-                  <span>Card</span><span className="text-center">Personal</span><span className="text-center">Trade</span><span className="text-center">Sale</span>
-                </div>
-                {visibleBulkCards.map((card) => {
-                  const row = bulkRows[card.key];
-                  if (!row) return null;
-                  const changed = JSON.stringify(row) !== JSON.stringify(bulkOriginalRows[card.key]);
-                  return (
-                    <div key={card.key} className={`grid grid-cols-[minmax(110px,1fr)_repeat(3,66px)] items-center gap-1 border-b px-2 py-2 last:border-0 sm:grid-cols-[minmax(180px,1fr)_repeat(3,96px)] sm:gap-3 ${isLightMode ? "border-black/[0.06]" : "border-white/[0.06]"} ${changed ? isLightMode ? "bg-amber-50" : "bg-[#FFD54A]/[0.06]" : ""}`}>
-                      <div className="min-w-0">
-                        <div className="truncate text-xs font-semibold sm:text-sm" title={getBulkCardCode(card)}>{getBulkCardCode(card)}</div>
-                        {(marketListings[card.key]?.is_for_trade || marketListings[card.key]?.is_for_sale) && <div className={`mt-0.5 text-[10px] ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>Currently listed</div>}
-                      </div>
-                      {(["personal", "trade", "sale"] as const).map((field) => (
-                        <div key={field} className="relative">
-                          <input
-                            aria-label={`${getBulkCardCode(card)} ${field} quantity`}
-                            type="text"
-                            inputMode="numeric"
-                            value={row[field]}
-                            disabled={bulkSaving}
-                            onFocus={(event) => event.target.select()}
-                            onChange={(event) => { if (/^\d{0,5}$/.test(event.target.value)) updateBulkRow(card.key, { [field]: event.target.value }); }}
-                            className={`h-9 w-full rounded-lg border px-2 text-center text-base font-semibold outline-none disabled:opacity-60 ${isLightMode ? "border-black/10 bg-white focus:border-amber-500" : "border-white/10 bg-[#101213] focus:border-[#FFD54A]"}`}
-                          />
-                          {field !== "personal" && Number(row[field]) > 0 && (
-                            <button type="button" disabled={bulkSaving} aria-label={`Remove ${getBulkCardCode(card)} from ${field}`} onClick={() => updateBulkRow(card.key, { [field]: "0" })} className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold disabled:opacity-50 ${isLightMode ? "bg-zinc-300 text-zinc-900" : "bg-zinc-600 text-white"}`}>{"\u00D7"}</button>
-                          )}
-                        </div>
-                      ))}
-                      {Number(row.sale) > 0 && (
-                        <label className={`col-span-4 flex items-center justify-end gap-2 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                          Sale price $
-                          <input type="text" inputMode="decimal" value={row.price} disabled={bulkSaving} onChange={(event) => { if (/^\d*(?:\.\d{0,2})?$/.test(event.target.value)) updateBulkRow(card.key, { price: event.target.value }); }} aria-label={`${getBulkCardCode(card)} sale price`} className={`h-8 w-20 rounded-lg border px-2 text-base outline-none disabled:opacity-60 ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#101213]"}`} />
-                        </label>
-                      )}
-                    </div>
-                  );
-                })}
-                {visibleBulkCards.length === 0 && <p className="py-10 text-center text-sm">No owned cards match this filter.</p>}
-              </div>
-              <div className={`shrink-0 border-t p-3 sm:px-6 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
-                {bulkError && <p role="alert" className="mb-2 text-sm text-red-500">{bulkError}</p>}
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>{bulkChangedKeys.length} card{bulkChangedKeys.length === 1 ? "" : "s"} changed</span>
-                  <div className="flex gap-2">
-                    <button type="button" disabled={bulkSaving} onClick={closeBulkEditor} className={`rounded-lg border px-3 py-2 text-sm disabled:opacity-50 ${isLightMode ? "border-black/10" : "border-white/10"}`}>Cancel</button>
-                    <button type="button" disabled={bulkSaving || !bulkChangedKeys.length} onClick={() => void saveBulkEditor()} className="rounded-lg bg-[#FFD54A] px-4 py-2 text-sm font-bold text-black disabled:opacity-50">{bulkSaving ? "Saving..." : "Save changes"}</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         {selectedCard && listingDraft && (
           <div
             className="fixed inset-0 z-[150] flex items-center justify-center bg-black/65 p-2 backdrop-blur-md sm:p-5"
@@ -1335,23 +1097,21 @@ export default function MyTradesSets() {
                         : "aspect-[5/7] max-w-[105px] md:max-w-[310px]"
                     } overflow-hidden rounded-xl md:rounded-2xl`}
                   >
-                    <CardImage imageSize="original"
+                    <CardImage
                       src={
                         set.id === "9"
-                          ? cardImagePaths.ccgPromo(String(selectedCard.number).padStart(3, "0"))
+                          ? `/promo-cards/mlpepr${String(selectedCard.number).padStart(3, "0")}.webp`
                           : set.id === "tcgpromos"
-                            ? cardImagePaths.tcgPromo(selectedCard.key)
+                            ? `/tcgpromos/${selectedCard.key}.webp`
                             : selectedCard.image ||
-                              cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(selectedCard.rarity), String(selectedCard.number).padStart(3, "0"))
+                              `/cards/${set.folder}/${set.prefix}${getRarityCode(selectedCard.rarity)}${String(selectedCard.number).padStart(3, "0")}.webp`
                       }
                       alt={getDisplayCode(selectedCard, set.id)}
                       className={`h-full w-full ${
-                        set.id === "9" && selectedCard.key === "PR-15"
-                          ? "object-cover scale-[1.025]"
-                          : ["12", "14", "FW", "friendshipsbegin", "FB"].includes(set.id) ||
-                            isNonZoomTcgPromo(selectedCard)
-                            ? "object-contain"
-                            : "object-cover scale-[1.035]"
+                        ["12", "14", "hearthswarming-eve", "FW", "friendshipsbegin", "FB"].includes(set.id) ||
+                        isNonZoomTcgPromo(selectedCard)
+                          ? "object-contain"
+                          : "object-cover scale-[1.035]"
                       }`}
                     />
                   </div>
@@ -1731,21 +1491,22 @@ export default function MyTradesSets() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
-              <button
-                type="button"
-                onClick={openBulkEditor}
-                disabled={!ownedBonusCards.length || inventoryDirty}
-                className={`rounded-2xl border px-3 py-3 text-center transition disabled:cursor-not-allowed disabled:opacity-50 ${
+              <div
+                className={`rounded-2xl border px-3 py-3 text-center ${
                   isLightMode
-                    ? "border-[#b89000]/30 bg-[#FFD54A]/15 hover:bg-[#FFD54A]/25"
-                    : "border-[#FFD54A]/30 bg-[#FFD54A]/10 hover:bg-[#FFD54A]/20"
+                    ? "border-black/10 bg-zinc-50"
+                    : "border-white/10 bg-white/[0.03]"
                 }`}
               >
-                <div className="text-sm font-semibold">Bulk edit</div>
-                <div className={`mt-1 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                  Personal, trade &amp; sale
+                <div className="text-sm font-semibold">Tap any card</div>
+                <div
+                  className={`mt-1 text-xs ${
+                    isLightMode ? "text-zinc-500" : "text-zinc-400"
+                  }`}
+                >
+                  Edit its details
                 </div>
-              </button>
+              </div>
               <button
                 type="button"
                 onClick={handleEditToggle}
@@ -2014,7 +1775,6 @@ export default function MyTradesSets() {
                     if (
                       set.id === "FW" ||
                       set.id === "friendshipsbegin" ||
-                      set.id === "12" ||
                       set.id === "tcgpromos"
                     ) {
                       const match = card.key.match(
@@ -2135,31 +1895,28 @@ export default function MyTradesSets() {
                                 >
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                     <CardImage
-                                      imageSize={(set.id === "9" && ["PR-14", "PR-15"].includes(card.key)) || (set.id === "tcgpromos" && card.key === "RR28") ? "original" : undefined}
                                       src={
                                         set.id === "9"
-                                          ? cardImagePaths.ccgPromo(String(card.number).padStart(3, "0"))
+                                          ? `/promo-cards/mlpepr${String(card.number).padStart(3, "0")}.webp`
                                           : set.id === "tcgpromos"
-                                            ? cardImagePaths.tcgPromo(card.key)
+                                            ? `/tcgpromos/${card.key}.webp`
                                             : card.image ||
-                                              cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(card.number).padStart(3, "0"))
+                                              `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`
                                       }
                                       alt={key}
                                       className={`h-full w-full ${
-                                        set.id === "9" && card.key === "PR-15"
-                                          ? "object-cover scale-[1.025]"
-                                          : [
-                                              "12",
-                                              "14",
-                                              "FW",
-                                              "friendshipsbegin",
-                                              "FB",
-                                            ].includes(set.id) ||
-                                            isNonZoomTcgPromo(card)
-                                            ? "object-contain"
-                                            : isLandscape
-                                              ? "h-full w-full object-contain"
-                                              : "object-cover scale-[1.035]"
+                                        [
+                                          "12",
+                                          "14", "hearthswarming-eve",
+                                          "FW",
+                                          "friendshipsbegin",
+                                          "FB",
+                                        ].includes(set.id) ||
+                                        isNonZoomTcgPromo(card)
+                                          ? "object-contain"
+                                          : isLandscape
+                                            ? "h-full w-full object-contain"
+                                            : "object-cover scale-[1.035]"
                                       }`}
                                       style={
                                         isLandscape

@@ -61,6 +61,12 @@ const sets = [
     name: "Nightmare Night",
     total: 190,
   },
+  {
+    id: "hearthswarming-eve",
+    dbId: "hearthswarming-eve",
+    name: "HeartsWarming Eve",
+    total: 191,
+  },
 ];
 const manualFirstFinishers: Record<
   string,
@@ -220,6 +226,7 @@ const visibleSets =
             "discord",
             "friendshipsbegin",
             "14",
+            "hearthswarming-eve",
           ].includes(set.id)
         )
       : sets.filter((set) => {
@@ -288,7 +295,7 @@ const active = activeCategory === category;
             : "bg-white/[0.04] text-zinc-500"
         }`}
       >
-        →
+        &#x2192;
       </span>
     </button>
   );
@@ -341,7 +348,7 @@ const winner = firstFinishers[String(set.id)];
               isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
             }`}
           >
-            Open →
+            Open &#x2192;
           </span>
         </div>
         <div className="flex w-[92px] shrink-0 flex-col items-center justify-center text-center">
@@ -355,7 +362,7 @@ const winner = firstFinishers[String(set.id)];
                   className="h-16 w-16 rounded-[22%] border-2 border-[#D8B83F] object-cover"
                 />
                 <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#FFD54A] px-1 text-sm font-bold text-black">
-                  ★
+                  &#x2605;
                 </span>
               </div>
               <div className="mt-2 max-w-[92px] truncate text-sm font-semibold">
@@ -378,7 +385,7 @@ const winner = firstFinishers[String(set.id)];
                     : "border-[#FFD54A]/35 bg-[#FFD54A]/10 text-[#FFE27A]"
                 }`}
               >
-                ★
+                &#x2605;
               </div>
               <div className="mt-2 text-sm font-semibold">Unclaimed</div>
               <div
@@ -591,4 +598,3 @@ return (
 );
 };
 export default Community;
-

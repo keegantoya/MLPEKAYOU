@@ -53,8 +53,8 @@ const getLink = () => {
         return "/fun-moments-three";
       case "12":
         return "/discord";
-      case "13":
-        return "/moon-four";
+      case "hearthswarming-eve":
+        return "/hearthswarming-eve";
       case "14":
         return "/nightmare-night";
       default:
@@ -127,7 +127,7 @@ return (
           )}
         </div>
         <span className="mt-0.5 shrink-0 text-sm leading-none text-zinc-400 transition-transform duration-200 group-hover:translate-x-0.5 dark:text-zinc-500">
-          →
+          &#x2192;
         </span>
       </div>
       {showProgress && (

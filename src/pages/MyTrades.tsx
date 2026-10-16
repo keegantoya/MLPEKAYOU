@@ -1,4 +1,3 @@
-import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -79,7 +78,7 @@ const activeTrades = [
     loadData();
 const {
       data: { subscription },
-    } = onAuthIdentityChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       loadData(session?.user);
     });
     return () => subscription.unsubscribe();
@@ -123,14 +122,6 @@ const collections = [
       setName: "Three",
       imageUrl: "/thumbnails/moonthreesetimage.webp",
       totalCards: 290,
-      category: "eternal-moon",
-    },
-    {
-      id: "13",
-      title: "Eternal Moon",
-      setName: "Four",
-      imageUrl: "/thumbnails/moonfoursetimage.webp",
-      totalCards: 162,
       category: "eternal-moon",
     },
     {
@@ -197,12 +188,20 @@ const collections = [
       totalCards: 190,
       category: "nightmare-night",
     },
+{
+      id: "hearthswarming-eve",
+      title: "HeartsWarming Eve",
+      setName: "TCG",
+      imageUrl: "/thumbnails/hearthswarmingsetimage.png",
+      totalCards: 191,
+      category: "hearthswarming-eve",
+    },
     {
       id: "9",
       title: "Promotional",
       setName: "Cards",
       imageUrl: "/thumbnails/promossetimage.webp",
-      totalCards: 14,
+      totalCards: 12,
       category: "promo-cards",
     },
     {
@@ -210,7 +209,7 @@ const collections = [
       title: "TCG",
       setName: "Promos",
       imageUrl: "/thumbnails/tcgpromossetimage.webp",
-      totalCards: 28,
+      totalCards: 27,
       category: "tcgpromos",
     },
   ];
@@ -225,7 +224,7 @@ const filteredCollections = collections.filter((col) => {
     if (normalizedHiddenSets.has(normalizeSetId(col.id))) return false;
     if (!normalizedOwnedSets.has(normalizeSetId(col.id))) return false;
     if (activeFilter === "moon") {
-      return col.id === "1" || col.id === "2" || col.id === "3" || col.id === "13";
+      return col.id === "1" || col.id === "2" || col.id === "3";
     }
     if (activeFilter === "star") {
       return col.id === "4";
@@ -240,7 +239,7 @@ const filteredCollections = collections.filter((col) => {
       return col.id === "9" || col.id === "tcgpromos";
     }
     if (activeFilter === "tcg") {
-      return col.id === "SD" || col.id === "FW" || col.id === "12" || col.id === "14";
+      return col.id === "SD" || col.id === "FW" || col.id === "12" || col.id === "14" || col.id === "hearthswarming-eve";
     }
     return activeFilter === "moon";
   });
@@ -258,7 +257,6 @@ const slugMap: Record<string, string> = {
     "1": "moon-one",
     "2": "moon-two",
     "3": "moon-three",
-    "13": "moon-four",
     "4": "star-one",
     "5": "rainbow-one",
     "6": "rainbow-two",
@@ -270,6 +268,7 @@ const slugMap: Record<string, string> = {
     SD: "friendships-begin",
     "12": "discord",
     "14": "nightmare-night",
+"hearthswarming-eve": "hearthswarming-eve",
     tcgpromos: "tcg-promos",
   };
 const activeTradeCollections = collections.filter((col) =>
@@ -442,7 +441,7 @@ const visibleTradeCollections = activeTradeCollections.slice(
                               isLightMode ? "text-zinc-700" : "text-zinc-300"
                             }`}
                           >
-                            Open →
+                            Open &#x2192;
                           </span>
                         </div>
                       </div>
@@ -520,7 +519,7 @@ const visibleTradeCollections = activeTradeCollections.slice(
                         : "bg-white/[0.05] text-zinc-300 hover:bg-white/[0.1]"
                     }`}
                   >
-                    ←
+                    &#x2190;
                   </button>
                 ) : (
                   <span className="h-8 w-8" />
@@ -541,7 +540,7 @@ const visibleTradeCollections = activeTradeCollections.slice(
                         : "bg-white/[0.05] text-zinc-300 hover:bg-white/[0.1]"
                     }`}
                   >
-                    →
+                    &#x2192;
                   </button>
                 ) : (
                   <span className="h-8 w-8" />
@@ -578,7 +577,7 @@ const visibleTradeCollections = activeTradeCollections.slice(
                               isLightMode ? "text-zinc-500" : "text-zinc-500"
                             }`}
                           >
-                            Open trades →
+                            Open trades &#x2192;
                           </div>
                         </div>
                       </button>
