@@ -1473,31 +1473,6 @@ const MobileProfile = () => {
               className="shrink-0 text-[#FFD54A] transition-transform group-hover:translate-x-1"
             />
           </button>
-          <button
-            type="button"
-            onClick={() => navigate("/kayou-news")}
-            className={`group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-all hover:bg-[#191a1b] ${
-              lgsAccess !== null || canReviewLGS
-                ? "border-b border-zinc-800"
-                : ""
-            }`}
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.035] text-[#FFD54A] transition-colors group-hover:border-[#FFD54A]/40">
-              <Newspaper size={19} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-semibold text-white">
-                Kayou Previews
-              </span>
-              <span className="mt-0.5 block truncate text-sm text-zinc-300">
-                Upcoming cards and reveals
-              </span>
-            </span>
-            <ChevronRight
-              size={18}
-              className="shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-[#FFD54A]"
-            />
-          </button>
           {lgsAccess !== null && (
             <button
               type="button"

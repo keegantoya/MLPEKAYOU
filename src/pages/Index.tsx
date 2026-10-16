@@ -1,412 +1,76 @@
-import { ListingWarningGate } from "@/components/ListingModerationWarnings";
+import React from "react";
 import CardImage from "@/components/CardImage";
-import React, { useEffect, useRef, useState } from "react";
-import LGSApplications from "@/pages/Pop-Ups/LGSApplications";
-
-type Announcement = {
-  label: string;
-  date: string;
-  title: string;
-  body: string;
-  detail: string;
-  actionLabel?: string;
-  actionHref?: string;
-  tone: "featured" | "warning" | "standard";
-};
-
-type CommunityReference = {
-  title: string;
-  href: string;
-  description: string;
-  image?: string;
-  imageClass?: string;
-};
-
-const discordHref = "https://discord.gg/mlpekayou";
-const redditHref = "https://www.reddit.com/r/MLPEKAYOU/s/L6kDyhN2aP";
-
-function ArrowLeftIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 12H5" />
-      <path d="m12 19-7-7 7-7" />
-    </svg>
-  );
-}
-
-function ArrowRightIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-function ExternalLinkIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 3h6v6" />
-      <path d="M10 14 21 3" />
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    </svg>
-  );
-}
-
-const announcements: Announcement[] = [
-  {
-    label: "Website update",
-    date: "September 17, 2026",
-    title: "MLPEKAYOU is Underfunded",
-    body: "This database is entirely free to users and features no paywalls or advertisements. As it gets bigger and bigger, it becomes extremely hard to keep funded.",
-    detail: "Typically, streaming for StonesTradingCo covers the costs. This last two months has, however, been a huge dry spell in products. I have not been paid in a while, but that doesn't stop the website from needing funding. StonesTradingCo sends me commission based on my sales, which goes to the website.",
-    actionLabel: "Shop through Keegan",
-    actionHref: "https://stonestradingco.com/collections/my-little-pony",
-    tone: "featured",
-  },
-  {
-    label: "Accessibility update",
-    date: "August 26, 2026",
-    title: "A simpler, more accessible MLPEKAYOU",
-    body: "The website interface was rebuilt to be easier to navigate and more accessible for hard-of-sight and disabled collectors.",
-    detail: "Light and dark themes are now supported throughout the website, with clearer spacing, simpler controls, and better readability.",
-    tone: "standard",
-  },
-  {
-    label: "Domain update",
-    date: "August 11, 2026",
-    title: "MLPEKAYOU is still MLPEKAYOU",
-    body: "A copyright strike caused several hours of downtime and forced a temporary domain change. No user information was affected.",
-    detail: "The rights to mlpekayou.com were returned to Keegan, and the original domain now redirects visitors to the active MLPEKAYOU website.",
-    tone: "warning",
-  },
-  {
-    label: "Account maintenance",
-    date: "August 10, 2026",
-    title: "Inactive account cleanup",
-    body: "Accounts at least 30 days old with no collection progress, along with accounts that never confirmed their email address, were permanently removed.",
-    detail: "If a confirmation or password-reset link does not work, mark the email as trusted and refresh the page before opening it again. Gmail is especially likely to interfere with these messages.",
-    tone: "standard",
-  },
-];
-
-const references: CommunityReference[] = [
-  {
-    title: "PonyRec",
-    href: "https://www.ponyrec.net/",
-    image: "/website-assets/ponyreclogo.webp",
-    imageClass: "max-h-24 w-full object-contain",
-    description: "Deck building, TCG mechanics, competitive play, and other gameplay resources created by Tangent.",
-  },
-  {
-    title: "Doodle Binder",
-    href: "https://www.doodlebinder.com/",
-    image: "/website-assets/binder1custom.webp",
-    imageClass: "h-full min-h-32 w-full object-cover object-center",
-    description: "Individually customized binders made by Eternal using acrylic paint, mixed materials, and hand-finished artwork.",
-  },
-  {
-    title: "Stones Trading Co",
-    href: "https://stonestradingco.com/collections/my-little-pony",
-    description: "Shop English Kayou products through Keegan and help support MLPEKAYOU at no additional cost.",
-  },
-  {
-    title: "PakraCards",
-    href: "https://pakracards.com",
-    description: "A trusted Kayou CN shop run by Amber and Hao, offering singles, sealed products, live rips, and collectibles.",
-  },
-];
-
-export default function Index() {
-  const [showLGSApplication, setShowLGSApplication] = useState(false);
-  const [activeAnnouncement, setActiveAnnouncement] = useState(0);
-  const [announcementDirection, setAnnouncementDirection] = useState<"forward" | "backward">("forward");
-  const [outgoingAnnouncement, setOutgoingAnnouncement] = useState<number | null>(null);
-  const [isAnnouncementTransitioning, setIsAnnouncementTransitioning] = useState(false);
-  const announcementTimer = useRef<number | null>(null);
-  const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
-
-  useEffect(() => {
-    const syncTheme = () => setIsLightMode(document.documentElement.dataset.theme === "light");
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
-    syncTheme();
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (announcementTimer.current !== null) window.clearTimeout(announcementTimer.current);
-    };
-  }, []);
-
-  const announcement = announcements[activeAnnouncement];
-  const changeAnnouncement = (index: number, direction: "forward" | "backward") => {
-    if (index === activeAnnouncement || isAnnouncementTransitioning) return;
-    setOutgoingAnnouncement(activeAnnouncement);
-    setAnnouncementDirection(direction);
-    setActiveAnnouncement(index);
-    setIsAnnouncementTransitioning(true);
-    if (announcementTimer.current !== null) window.clearTimeout(announcementTimer.current);
-    announcementTimer.current = window.setTimeout(() => {
-      setOutgoingAnnouncement(null);
-      setIsAnnouncementTransitioning(false);
-      announcementTimer.current = null;
-    }, 560);
-  };
-  const previousAnnouncement = () => changeAnnouncement(activeAnnouncement === 0 ? announcements.length - 1 : activeAnnouncement - 1, "backward");
-  const nextAnnouncement = () => changeAnnouncement(activeAnnouncement === announcements.length - 1 ? 0 : activeAnnouncement + 1, "forward");
-  const openAnnouncement = (index: number) => changeAnnouncement(index, index > activeAnnouncement ? "forward" : "backward");
-  const pageBg = isLightMode ? "bg-[#f6f4ee] text-zinc-900" : "bg-[#111111] text-white";
-  const surface = isLightMode
-    ? "border-black/10 bg-white text-zinc-900 shadow-[0_12px_35px_rgba(75,58,18,0.08)]"
-    : "border-white/10 bg-[#181818] text-white shadow-[0_12px_35px_rgba(0,0,0,0.28)]";
-  const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
-  const bodyText = isLightMode ? "text-zinc-700" : "text-zinc-300";
-  const accentText = isLightMode ? "text-[#765d12]" : "text-[#E7C84B]";
-  const getAnnouncementSurface = (item: Announcement) => item.tone === "featured"
-    ? isLightMode
-      ? "border-[#D3AE18]/60 bg-gradient-to-br from-white via-white to-[#fff4bd]"
-      : "border-[#E7C84B]/60 bg-gradient-to-br from-[#25200d] via-[#181818] to-[#111111]"
-    : item.tone === "warning"
-      ? isLightMode
-        ? "border-red-300 bg-gradient-to-br from-white to-red-50"
-        : "border-red-500/35 bg-gradient-to-br from-[#211616] to-[#181818]"
-      : surface;
-
-  const renderAnnouncementCard = (item: Announcement, index: number, phase: "incoming" | "outgoing" | "sizing") => {
-    const motionClass = phase === "sizing" ? "" : phase === "incoming"
-      ? announcementDirection === "forward" ? "mlpekayou-announcement-enter-forward" : "mlpekayou-announcement-enter-backward"
-      : announcementDirection === "forward" ? "mlpekayou-announcement-exit-forward" : "mlpekayou-announcement-exit-backward";
-    return (
-      <article
-        key={`${phase}-${index}-${announcementDirection}`}
-        aria-live={phase === "incoming" ? "polite" : undefined}
-        aria-hidden={phase !== "incoming" ? "true" : undefined}
-        className={`relative flex [grid-area:1/1] flex-col justify-center overflow-hidden rounded-3xl border p-5 sm:p-7 ${getAnnouncementSurface(item)} ${motionClass} ${phase === "incoming" ? "z-10" : phase === "sizing" ? "invisible pointer-events-none z-0" : "pointer-events-none z-0"}`}
-      >
-        <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#E7C84B]/15 blur-3xl" />
-        <div className={`relative ${item.title === "MLPEKAYOU is Underfunded" ? "grid items-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(300px,0.78fr)] md:gap-8" : ""}`}>
-          <div>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className={`text-sm font-semibold ${item.tone === "warning" ? "text-red-500" : accentText}`}>{item.label}</span>
-              <time className={`text-xs ${muted}`}>{item.date}</time>
-            </div>
-            <h3 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">{item.title}</h3>
-            <p className={`mt-4 max-w-4xl text-[15px] leading-7 ${bodyText}`}>{item.body}</p>
-            <p className={`mt-3 max-w-4xl text-sm leading-6 ${muted}`}>{item.detail}</p>
-            {item.actionHref && item.actionLabel && (
-              <a href={item.actionHref} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#E7C84B] px-5 py-3 text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477]">
-                {item.actionLabel}<ExternalLinkIcon />
-              </a>
-            )}
-          </div>
-          {item.title === "MLPEKAYOU is Underfunded" && (
-            <div className={`w-full rounded-2xl border p-4 ${isLightMode ? "border-[#D3AE18]/45 bg-white/80 text-zinc-950" : "border-[#E7C84B]/35 bg-black/20 text-white"}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <span className="inline-flex rounded-full bg-[#E7C84B] px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#111111]">At checkout</span>
-                  <h4 className="mt-2 text-base font-black tracking-tight sm:text-lg">Select MLPEKAYOU</h4>
-                </div>
-                <span className={`pt-1 text-[9px] font-bold uppercase tracking-wide ${muted}`}>Required</span>
-              </div>
-              <p className={`mt-2 text-xs leading-5 ${muted}`}>Under "Where did you hear about us?"</p>
-              <div className="relative mt-3 h-40">
-                <div className={`relative flex min-h-12 items-center justify-between rounded-xl border-2 border-[#E7C84B] px-3 ${isLightMode ? "bg-[#fffdf3]" : "bg-[#17160f]"}`}>
-                  <span className={`checkout-placeholder absolute left-3 text-sm font-semibold ${muted}`}>Select an option</span>
-                  <span className="checkout-selected absolute left-3 text-sm font-black tracking-wide">MLPEKAYOU</span>
-                  <span aria-hidden="true" className="checkout-chevron ml-auto h-2.5 w-2.5 border-b-2 border-r-2 border-current" />
-                </div>
-                <div className={`checkout-menu pointer-events-none absolute left-0 right-0 top-14 z-10 overflow-hidden rounded-xl border shadow-xl ${isLightMode ? "border-zinc-200 bg-white" : "border-white/15 bg-[#171717]"}`}>
-                  <div className={`px-3 py-1.5 text-xs font-semibold ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>TikTok</div>
-                  <div className={`border-t px-3 py-1.5 text-xs font-semibold ${isLightMode ? "border-zinc-200" : "border-white/10"}`}>Discord</div>
-                  <div className={`checkout-option border-t px-3 py-2 text-xs font-black ${isLightMode ? "border-zinc-200" : "border-white/10"}`}>MLPEKAYOU</div>
-                  <span aria-hidden="true" className="checkout-cursor absolute right-5 top-1 h-5 w-3.5 bg-[#E7C84B] shadow-md [clip-path:polygon(0_0,0_100%,28%_73%,45%_100%,58%_93%,42%_67%,74%_67%)]" />
-                </div>
-                <div className="checkout-confirmation absolute inset-x-0 top-16 rounded-xl border border-[#E7C84B]/50 bg-[#E7C84B]/10 px-3 py-2.5 text-center text-[10px] font-black uppercase tracking-[0.1em]">MLPEKAYOU selected - order credited</div>
-              </div>
-              <p className={`mt-1 text-center text-[10px] font-semibold leading-4 ${muted}`}>Other choices do not credit MLPEKAYOU.</p>
-            </div>
-          )}
-        </div>
-      </article>
-    );
-  };
-
-  return (
-    <>
-      <ListingWarningGate />
-      <style>{`
-        @keyframes mlpekayouAnnouncementEnterForward {
-          from { opacity: 0; transform: translate3d(46px, 0, 0) scale(0.985); }
-          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-        }
-        @keyframes mlpekayouAnnouncementExitForward {
-          from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-          to { opacity: 0; transform: translate3d(-46px, 0, 0) scale(0.985); }
-        }
-        @keyframes mlpekayouAnnouncementEnterBackward {
-          from { opacity: 0; transform: translate3d(-46px, 0, 0) scale(0.985); }
-          to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-        }
-        @keyframes mlpekayouAnnouncementExitBackward {
-          from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-          to { opacity: 0; transform: translate3d(46px, 0, 0) scale(0.985); }
-        }
-        .mlpekayou-announcement-enter-forward { animation: mlpekayouAnnouncementEnterForward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-        .mlpekayou-announcement-exit-forward { animation: mlpekayouAnnouncementExitForward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-        .mlpekayou-announcement-enter-backward { animation: mlpekayouAnnouncementEnterBackward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-        .mlpekayou-announcement-exit-backward { animation: mlpekayouAnnouncementExitBackward 560ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-        @keyframes checkoutMenu {
-          0%, 12%, 78%, 100% { opacity: 0; transform: translateY(-6px); visibility: hidden; }
-          18%, 70% { opacity: 1; transform: translateY(0); visibility: visible; }
-        }
-        @keyframes checkoutCursor {
-          0%, 20% { opacity: 0; transform: translate(24px, -8px); }
-          26% { opacity: 1; transform: translate(24px, -8px); }
-          50%, 62% { opacity: 1; transform: translate(0, 58px); }
-          70%, 100% { opacity: 0; transform: translate(0, 58px); }
-        }
-        @keyframes checkoutOption {
-          0%, 46% { background-color: transparent; }
-          53%, 100% { background-color: rgba(231, 200, 75, 0.34); }
-        }
-        @keyframes checkoutPlaceholder { 0%, 68% { opacity: 1; } 74%, 100% { opacity: 0; } }
-        @keyframes checkoutSelected { 0%, 68% { opacity: 0; } 76%, 100% { opacity: 1; } }
-        @keyframes checkoutConfirmation {
-          0%, 74% { opacity: 0; transform: translateY(6px); }
-          82%, 96% { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(0); }
-        }
-        @keyframes checkoutChevron { 0%, 12%, 78%, 100% { transform: rotate(45deg); } 18%, 70% { transform: rotate(225deg); } }
-        .checkout-menu { animation: checkoutMenu 6s ease-in-out infinite; }
-        .checkout-cursor { animation: checkoutCursor 6s ease-in-out infinite; }
-        .checkout-option { animation: checkoutOption 6s ease-in-out infinite; }
-        .checkout-placeholder { animation: checkoutPlaceholder 6s ease-in-out infinite; }
-        .checkout-selected { animation: checkoutSelected 6s ease-in-out infinite; }
-        .checkout-confirmation { animation: checkoutConfirmation 6s ease-in-out infinite; }
-        .checkout-chevron { animation: checkoutChevron 6s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .mlpekayou-announcement-enter-forward, .mlpekayou-announcement-exit-forward,
-          .mlpekayou-announcement-enter-backward, .mlpekayou-announcement-exit-backward { animation: none; }
-          .checkout-menu, .checkout-cursor, .checkout-placeholder { display: none; animation: none; }
-          .checkout-option, .checkout-selected, .checkout-confirmation { animation: none; opacity: 1; transform: none; }
-          .checkout-chevron { animation: none; transform: rotate(45deg); }
-        }
-      `}</style>
-      {showLGSApplication && <LGSApplications onClose={() => setShowLGSApplication(false)} isLightMode={isLightMode} />}
-      <main className={`min-h-screen w-full overflow-x-hidden transition-colors duration-200 ${pageBg}`}>
-        <section className={`border-b ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#171717]"}`}>
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-7 px-4 py-9 sm:px-6 sm:py-12 md:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12 lg:py-16">
-            <div>
-              <p className={`text-sm font-bold uppercase tracking-[0.18em] ${accentText}`}>MLPEKAYOU</p>
-              <h1 className="mt-3 max-w-3xl text-4xl font-bold tracking-[-0.035em] sm:text-5xl md:text-6xl">The home of English My Little Pony Kayou collectors.</h1>
-              <p className={`mt-5 max-w-2xl text-base leading-7 sm:text-lg ${bodyText}`}>I am back! After a week-long break, I am excited to continue my work for MLPEKAYOU and the community. In the future, please do think of others before you speak. Negativity is not acceptable in this community. I shouldn't have to state that I am an infantry veteran in order to be treated with kindness.</p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <a href="https://stonestradingco.com/collections/my-little-pony" target="_blank" rel="noopener noreferrer" className={`group flex min-w-0 flex-col rounded-2xl border p-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E7C84B] ${isLightMode ? "border-[#D3AE18]/35 bg-[#fffdf3] hover:border-[#D3AE18]" : "border-[#E7C84B]/25 bg-[#E7C84B]/[0.05] hover:border-[#E7C84B]/60"}`}>
-                  <span className={`text-[10px] font-bold uppercase tracking-[0.14em] ${accentText}`}>American products</span>
-                  <span className="mt-2 flex items-center justify-between gap-3 text-base font-bold">StonesTradingCo<ExternalLinkIcon className={`h-4 w-4 shrink-0 ${accentText}`} /></span>
-                  <span className={`mt-1.5 text-xs leading-5 ${bodyText}`}>Shop authentic American MLP Kayou products.</span>
-                </a>
-                <a href="https://pakracards.com" target="_blank" rel="noopener noreferrer" className={`group flex min-w-0 flex-col rounded-2xl border p-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E7C84B] ${isLightMode ? "border-[#D3AE18]/35 bg-[#fffdf3] hover:border-[#D3AE18]" : "border-[#E7C84B]/25 bg-[#E7C84B]/[0.05] hover:border-[#E7C84B]/60"}`}>
-                  <span className={`text-[10px] font-bold uppercase tracking-[0.14em] ${accentText}`}>Chinese products</span>
-                  <span className="mt-2 flex items-center justify-between gap-3 text-base font-bold">PakraCards<ExternalLinkIcon className={`h-4 w-4 shrink-0 ${accentText}`} /></span>
-                  <span className={`mt-1.5 text-xs leading-5 ${bodyText}`}>Shop authentic Chinese MLP Kayou products.</span>
-                </a>
-              </div>
-              <p className={`mt-5 text-xs leading-5 ${muted}`}>MLPEKAYOU supports North American English cards only. SEA, Japanese, and Chinese Kayou cards are not included.</p>
-            </div>
-            <div className="grid min-w-0 gap-4">
-              <a href={discordHref} target="_blank" rel="noopener noreferrer" className={`group relative overflow-hidden rounded-3xl border p-5 transition-all hover:-translate-y-0.5 sm:p-6 ${surface} ${isLightMode ? "hover:border-[#5865F2]/60" : "hover:border-[#8791FF]/60"}`}>
-                <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#5865F2]/15 blur-3xl" />
-                <div className="relative">
-                  <div className="flex items-center justify-between gap-3">
-                    <CardImage src={isLightMode ? "/website-assets/discordlightmode.webp" : "/website-assets/discordlogo.webp"} alt="Discord" className="h-8 w-auto" />
-                    <ExternalLinkIcon className={`h-4 w-4 ${isLightMode ? "text-[#4752C4]" : "text-[#A6ADFF]"}`} />
-                  </div>
-                  <p className={`mt-4 text-[11px] font-bold uppercase tracking-[0.14em] ${isLightMode ? "text-[#4752C4]" : "text-[#A6ADFF]"}`}>Chat, pulls, and live rip nights</p>
-                  <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:text-2xl">Join the MLPEKAYOU Discord</h2>
-                  <p className={`mt-2 text-sm leading-6 ${bodyText}`}>Get collection help, share pulls, arrange trades, follow English Kayou releases, and join live rip nights with other collectors.</p>
-                  <span className={`mt-4 inline-flex items-center gap-2 text-sm font-bold ${isLightMode ? "text-[#4752C4]" : "text-[#A6ADFF]"}`}>Join the Discord<ExternalLinkIcon /></span>
-                </div>
-              </a>
-              <a href={redditHref} target="_blank" rel="noopener noreferrer" className={`group relative overflow-hidden rounded-3xl border p-5 transition-all hover:-translate-y-0.5 sm:p-6 ${surface} ${isLightMode ? "hover:border-[#D93900]/60" : "hover:border-[#FF956E]/60"}`}>
-                <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#FF4500]/15 blur-3xl" />
-                <div className="relative">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className={`text-lg font-black tracking-tight ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`}>r/MLPEKAYOU</span>
-                    <ExternalLinkIcon className={`h-4 w-4 ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`} />
-                  </div>
-                  <p className={`mt-4 text-[11px] font-bold uppercase tracking-[0.14em] ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`}>Trading and selling, collector first</p>
-                  <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:text-2xl">Prefer Reddit? You're welcome here.</h2>
-                  <p className={`mt-2 text-sm leading-6 ${bodyText}`}>A moderated space for trading and selling English Kayou cards. No "what's this worth?" posts. "Card bros" are banned. Built for collectors who prefer not to use Discord.</p>
-                  <span className={`mt-4 inline-flex items-center gap-2 text-sm font-bold ${isLightMode ? "text-[#B83200]" : "text-[#FF956E]"}`}>Join the Reddit<ExternalLinkIcon /></span>
-                </div>
-              </a>
-            </div>
-          </div>
-        </section>
-        <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 sm:py-10 md:px-8 md:py-12">
-          <section aria-labelledby="announcements-heading">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className={`text-sm font-semibold ${accentText}`}>What's happening</p>
-                <h2 id="announcements-heading" className="mt-1 text-3xl font-bold tracking-tight">Announcements</h2>
-              </div>
-              <p className={`text-sm ${muted}`}>{activeAnnouncement + 1} of {announcements.length}</p>
-            </div>
-            <div className="mt-5 grid overflow-hidden rounded-3xl">
-              {announcements.map((item, index) => renderAnnouncementCard(item, index, "sizing"))}
-              {outgoingAnnouncement !== null && renderAnnouncementCard(announcements[outgoingAnnouncement], outgoingAnnouncement, "outgoing")}
-              {renderAnnouncementCard(announcement, activeAnnouncement, "incoming")}
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-4">
-              <button type="button" onClick={previousAnnouncement} aria-label="Previous announcement" className={`inline-flex h-11 w-11 items-center justify-center rounded-full border font-bold transition-colors ${isLightMode ? "border-black/15 bg-white text-zinc-800 hover:border-[#E7C84B]" : "border-white/15 bg-[#181818] text-white hover:border-[#E7C84B]/60"}`}><ArrowLeftIcon /></button>
-              <div className="flex items-center justify-center gap-2">
-                {announcements.map((item, index) => (
-                  <button key={item.title} type="button" onClick={() => openAnnouncement(index)} aria-label={`Open announcement ${index + 1}: ${item.title}`} aria-current={index === activeAnnouncement ? "true" : undefined} className={`h-2.5 rounded-full transition-all ${index === activeAnnouncement ? "w-8 bg-[#E7C84B]" : isLightMode ? "w-2.5 bg-black/20 hover:bg-black/35" : "w-2.5 bg-white/20 hover:bg-white/35"}`} />
-                ))}
-              </div>
-              <button type="button" onClick={nextAnnouncement} aria-label="Next announcement" className={`inline-flex h-11 w-11 items-center justify-center rounded-full border font-bold transition-colors ${isLightMode ? "border-black/15 bg-white text-zinc-800 hover:border-[#E7C84B]" : "border-white/15 bg-[#181818] text-white hover:border-[#E7C84B]/60"}`}><ArrowRightIcon /></button>
-            </div>
-          </section>
-          <section className="space-y-7" aria-labelledby="community-heading">
-            <article className={`flex flex-col gap-5 rounded-3xl border p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between ${surface}`}>
-              <div className="max-w-4xl">
-                <p className={`text-sm font-semibold ${accentText}`}>For local game stores</p>
-                <h2 className="mt-1 text-2xl font-bold tracking-tight">Bring organized play to your community.</h2>
-                <p className={`mt-2 text-sm leading-6 ${bodyText}`}>Approved stores can manage tournaments, track attendance, and preserve event history in one shared space. Stores may apply whether they already host events or are preparing for their first one.</p>
-              </div>
-              <button type="button" onClick={() => setShowLGSApplication(true)} className="inline-flex min-h-11 w-full shrink-0 items-center justify-center rounded-xl bg-[#E7C84B] px-5 py-3 text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477] sm:w-auto">Apply for the LGS Program</button>
-            </article>
-            <div>
-              <p className={`text-sm font-semibold ${accentText}`}>Trusted places to continue</p>
-              <h2 id="community-heading" className="mt-1 text-2xl font-bold tracking-tight">Community references</h2>
-              <div className="mt-4 grid auto-rows-fr gap-3 md:grid-cols-2 xl:grid-cols-4">
-                {references.map((resource) => (
-                  <a key={resource.title} href={resource.href} target="_blank" rel="noopener noreferrer" className={`group flex h-full min-h-36 overflow-hidden rounded-2xl border transition-all hover:-translate-y-0.5 ${surface} ${isLightMode ? "hover:border-[#E7C84B]/70" : "hover:border-[#E7C84B]/45"}`}>
-                    {resource.image && (
-                      <div className={`flex w-24 shrink-0 items-center justify-center overflow-hidden sm:w-28 ${isLightMode ? "bg-[#f1eee5]" : "bg-[#101010]"}`}>
-                        <CardImage src={resource.image} alt={resource.title} className={resource.title === "Doodle Binder" ? "h-full w-full object-cover object-center" : "max-h-20 w-full object-contain p-3"} />
-                      </div>
-                    )}
-                    <div className={`flex min-w-0 flex-1 flex-col justify-center ${resource.image ? "p-4" : "p-5"}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-base font-bold tracking-tight">{resource.title}</h3>
-                        <span aria-hidden="true" className={accentText}><ExternalLinkIcon className="h-4 w-4" /></span>
-                      </div>
-                      <p className={`mt-2 text-xs leading-5 ${bodyText}`}>{resource.description}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </section>
-          <footer className={`border-t pt-6 text-center text-xs leading-5 ${isLightMode ? "border-black/10 text-zinc-500" : "border-white/10 text-zinc-500"}`}>
-            <p>MLPEKAYOU is a free fan website owned and operated by Keegan. It is not owned, operated, or managed by Kayou US.</p>
-          </footer>
-        </div>
-      </main>
-    </>
-  );
+import { getPromotionalCardsBack as getCardBack, cardImagePaths } from "@/lib/card-images";
+const promoFront = cardImagePaths.ccgPromo("015");
+const promoBack = getCardBack(15);
+const funMomentsBox = "https://stonestradingco.com/cdn/shop/files/funmoments004.png?v=1789970426&width=1064";
+const funMomentsProduct = "https://stonestradingco.com/products/fun-moments-four";
+const featureStyles = `
+.kayou-news{--page-bg:hsl(var(--background));--page-text:hsl(var(--foreground));--muted:hsl(var(--muted-foreground));--accent:hsl(var(--kayou-yellow));--accent-border:hsl(var(--kayou-yellow) / .4);--accent-soft:hsl(var(--kayou-yellow) / .08);--accent-text:hsl(var(--kayou-yellow));--release-bg:hsl(var(--background));--release-border:hsl(var(--border));--fun-bg:hsl(var(--background));--fun-title:hsl(var(--foreground));--fun-emphasis:hsl(var(--kayou-yellow));--fun-copy:hsl(var(--muted-foreground));--fun-eyebrow:hsl(var(--kayou-yellow));--fun-button:hsl(var(--kayou-yellow));--fun-button-ink:hsl(var(--primary-foreground));position:relative;width:100%;min-width:0;min-height:100vh;overflow:hidden;background:var(--page-bg);color:var(--page-text)}
+html[data-theme="spooky"] .kayou-news{--accent:#c9acff;--accent-border:rgba(201,172,255,.58);--accent-soft:rgba(167,123,232,.12);--accent-text:#d8c2ff;--fun-emphasis:#c9acff;--fun-eyebrow:#c9acff;--fun-button:#7544ad;--fun-button-ink:#fff}
+.kayou-news *{box-sizing:border-box}
+.kayou-news .news-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);align-items:center;gap:3vw;isolation:isolate;overflow:hidden;min-height:0;padding:18px clamp(20px,4vw,62px)}
+.kayou-news .news-kicker{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--accent-border);border-radius:999px;padding:9px 14px;background:var(--accent-soft);color:var(--accent-text);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.kayou-news .news-live-dot{width:8px;height:8px;border-radius:100%;background:var(--accent);box-shadow:0 0 18px var(--accent);animation:news-pulse 1.8s ease-in-out infinite}
+.kayou-news .news-title{max-width:900px;margin:16px 0 0;color:var(--page-text);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:clamp(46px,6.8vw,104px);line-height:1.04;letter-spacing:-.055em;font-weight:800;text-wrap:balance}
+.kayou-news .news-title span{display:block;color:var(--accent);margin-top:8px;letter-spacing:-.045em}
+.kayou-news .news-intro{max-width:640px;margin:22px 0 0;color:var(--muted);font-size:clamp(16px,1.5vw,21px);line-height:1.7}
+.kayou-news .promo-stage{position:relative;display:grid;place-items:center;min-height:520px;perspective:1200px;isolation:isolate}
+.kayou-news .promo-card{position:relative;z-index:1;width:min(44vw,340px);min-width:230px;aspect-ratio:5/7;transform-style:flat;overflow:hidden;border-radius:4.2% / 3%;clip-path:inset(0 round 4.2% / 3%);-webkit-clip-path:inset(0 round 4.2% / 3%);background:transparent!important;animation:promo-gentle-spin 24s linear infinite;box-shadow:none;filter:drop-shadow(0 22px 22px #0006)}
+.kayou-news .promo-card-face{position:absolute;inset:0;border:0;background:transparent!important;backface-visibility:visible;-webkit-backface-visibility:visible;transform-style:flat}
+.kayou-news .promo-card-front{z-index:2;opacity:1;transform:none;animation:promo-front-visible 24s step-end infinite}
+.kayou-news .promo-card-back{z-index:1;opacity:0;transform:scaleX(-1);animation:promo-back-visible 24s step-end infinite}
+.kayou-news .promo-crop{position:absolute;inset:0;overflow:hidden;border:0;border-radius:4.2% / 3%;isolation:isolate;background:transparent;clip-path:inset(0 round 4.2% / 3%);-webkit-clip-path:inset(0 round 4.2% / 3%);-webkit-mask-image:linear-gradient(#fff,#fff);mask-image:linear-gradient(#fff,#fff);backface-visibility:visible;-webkit-backface-visibility:visible}
+.kayou-news .promo-crop>img.promo-card-image{position:absolute!important;inset:0!important;display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;object-fit:cover!important;object-position:center!important;transform:scale(1.025)!important;transform-origin:center!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;backface-visibility:visible;-webkit-backface-visibility:visible;user-select:none;-webkit-user-drag:none}
+.kayou-news .promo-crop:after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(125deg,#fff0 27%,#ffffff4f 45%,#fff0 62%);background-size:250% 250%;animation:promo-foil-sweep 7s ease-in-out infinite;pointer-events:none;backface-visibility:visible;-webkit-backface-visibility:visible}
+.kayou-news .ticker{position:relative;overflow:hidden;border-top:1px solid var(--release-border);border-bottom:1px solid var(--release-border);background:color-mix(in srgb,var(--page-text) 4%,var(--page-bg))}
+.kayou-news .ticker-track{display:flex;width:max-content;animation:ticker-slide 28s linear infinite}
+.kayou-news .ticker-group{display:flex;flex:0 0 auto;width:max-content;justify-content:flex-start}
+.kayou-news .ticker span{padding:16px 22px;color:var(--accent);font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
+.kayou-news .fun-feature{position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);align-items:center;gap:4vw;min-height:0;padding:clamp(28px,5vw,72px);border-top:1px solid var(--release-border);overflow:hidden;background:var(--fun-bg)}
+.kayou-news .fun-feature-content,.kayou-news .fun-product-art{position:relative;z-index:1}
+.kayou-news .fun-eyebrow{color:var(--fun-eyebrow);font-size:13px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+.kayou-news .fun-title{margin:15px 0 0;color:var(--fun-title);font-size:clamp(52px,7vw,104px);line-height:.98;letter-spacing:-.055em;font-weight:800}
+.kayou-news .fun-title span{display:block;color:var(--fun-emphasis)}
+.kayou-news .fun-copy{max-width:620px;margin:28px 0 0;color:var(--fun-copy);font-size:clamp(17px,1.7vw,23px);line-height:1.65}
+.kayou-news .preorder-link{display:inline-flex;align-items:center;gap:14px;margin-top:32px;border:1px solid color-mix(in srgb,var(--fun-button) 70%,white);border-radius:999px;padding:16px 22px;background:var(--fun-button);color:var(--fun-button-ink);font-size:15px;font-weight:900;text-decoration:none;box-shadow:0 8px 24px #0002;transition:transform .2s,box-shadow .2s}
+.kayou-news .preorder-link:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 18px 45px #397e9d77}
+.kayou-news .preorder-arrow{display:grid;width:30px;height:30px;place-items:center;border-radius:50%;background:var(--fun-button-ink);color:var(--fun-button);font-size:18px}
+.kayou-news .fun-product-art{display:grid;align-items:end;justify-items:start;width:100%;max-width:520px;aspect-ratio:1.05;min-width:0;min-height:0;margin-inline:auto;text-decoration:none;isolation:isolate}
+.kayou-news .fun-box{position:relative;z-index:2;display:block;width:84%;max-height:460px;margin-top:70px;object-fit:contain;filter:drop-shadow(0 28px 35px #1c0c2180);animation:box-float 5s ease-in-out infinite}
+.kayou-news .release-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--release-border)}
+.kayou-news .release-cell{padding:clamp(22px,3vw,42px);background:var(--release-bg)}
+.kayou-news .release-label{color:var(--accent);font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+.kayou-news .release-name{margin-top:10px;color:var(--page-text);font-size:clamp(17px,2vw,25px);font-weight:800}
+.kayou-news .promo-logo-pattern{position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;justify-content:space-around;overflow:hidden;pointer-events:none;opacity:.13}
+.kayou-news .logo-lane{display:flex;flex:0 0 auto;width:max-content;animation:logo-travel 90s linear infinite;will-change:transform}
+.kayou-news .logo-lane:nth-child(even){animation-direction:reverse;animation-duration:110s}
+.kayou-news .logo-run{display:flex;flex:none;align-items:center;gap:60px;padding-right:60px}
+.kayou-news .promo-logo-pattern img{display:block;flex:none;width:clamp(150px,15vw,240px);height:100px;object-fit:contain}
+.kayou-news .fun-volume{position:absolute;top:0;right:0;z-index:0;font-family:ui-sans-serif,system-ui,sans-serif;font-size:clamp(260px,30vw,420px);line-height:.85;font-weight:800;letter-spacing:-.06em;color:var(--fun-emphasis);opacity:.28;pointer-events:none;user-select:none}
+@keyframes promo-front-visible{0%{opacity:1}25%{opacity:0}75%{opacity:1}100%{opacity:1}}
+@keyframes promo-back-visible{0%{opacity:0}25%{opacity:1}75%{opacity:0}100%{opacity:0}}
+@keyframes promo-gentle-spin{from{transform:rotateX(3deg) rotateY(0deg)}to{transform:rotateX(3deg) rotateY(360deg)}}
+@keyframes promo-foil-sweep{0%,100%{background-position:130% 0;opacity:.15}50%{background-position:-30% 100%;opacity:.75}}
+@keyframes logo-travel{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes news-pulse{0%,100%{opacity:.55;box-shadow:0 0 8px var(--accent)}50%{opacity:1;box-shadow:0 0 22px var(--accent)}}
+@keyframes ticker-slide{to{transform:translateX(-50%)}}
+@keyframes box-float{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-14px) rotate(-1deg)}}
+@media(max-width:850px){.kayou-news .news-hero,.kayou-news .fun-feature{grid-template-columns:minmax(0,1fr)}.kayou-news .news-hero{gap:18px;padding:24px 24px 28px}.kayou-news .news-hero>div{min-width:0}.kayou-news .news-title{font-size:clamp(42px,8vw,70px);line-height:1.04}.kayou-news .news-intro{font-size:16px;line-height:1.6;margin-top:16px;max-width:560px}.kayou-news .promo-stage{min-height:0;height:350px}.kayou-news .promo-card{width:220px;min-width:0}.kayou-news .fun-feature{gap:24px;padding:32px 24px}.kayou-news .fun-product-art{width:min(100%,420px);aspect-ratio:1.05}.kayou-news .fun-volume{font-size:340px;top:0;right:0}.kayou-news .fun-title{font-size:64px}.kayou-news .fun-copy{font-size:17px;line-height:1.6;margin-top:18px}.kayou-news .fun-box{width:84%;margin-top:60px}.kayou-news .release-cell{padding:24px 18px}}
+@media(max-width:560px){.kayou-news .news-hero{padding:20px 18px 24px;gap:12px}.kayou-news .news-title{font-size:clamp(36px,10.5vw,54px);letter-spacing:-.045em}.kayou-news .news-kicker{font-size:10px;letter-spacing:.12em;padding:8px 11px}.kayou-news .promo-stage{height:310px}.kayou-news .promo-card{width:194px}.kayou-news .promo-logo-pattern{opacity:.08}.kayou-news .promo-logo-pattern img{width:150px;height:70px}.kayou-news .logo-run{gap:32px;padding-right:32px}.kayou-news .ticker span{font-size:10px;padding:13px 16px;letter-spacing:.12em}.kayou-news .fun-feature{padding:28px 18px;gap:22px}.kayou-news .fun-title{font-size:clamp(48px,14vw,68px)}.kayou-news .fun-product-art{width:min(100%,340px)}.kayou-news .fun-volume{font-size:clamp(240px,78vw,290px);top:0;right:2px}.kayou-news .fun-box{width:84%;margin-top:50px}.kayou-news .preorder-link{font-size:14px;padding:12px 16px;gap:10px;margin-top:22px;max-width:100%}.kayou-news .release-strip{grid-template-columns:minmax(0,1fr)}.kayou-news .release-cell{padding:18px}.kayou-news .release-name{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.kayou-news .promo-card-front{animation:none!important;opacity:1!important}.kayou-news .promo-card-back{animation:none!important;opacity:0!important}.kayou-news *, .kayou-news *:before,.kayou-news *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+`;
+export default function KayouNews() {
+return (
+<div className="kayou-news">
+<style>{featureStyles}</style>
+<main className="relative w-full">
+<section className="news-hero"><div className="promo-logo-pattern" aria-hidden="true">{[0,1,2,3].map(row => <div className="logo-lane" key={row}>{[0,1].map(copy => <div className="logo-run" key={copy}>{[0,1,2,3,4,5].map(tile => <img key={tile} src="/website-assets/KayouLogoPFP.webp" alt=""/>)}</div>)}</div>)}</div><div className="relative z-10"><div className="news-kicker"><span className="news-live-dot"/>NYCC 2026 EXCLUSIVE</div><h1 className="news-title">Kayou US<span>NYCC Magic</span></h1><p className="news-intro">NYCC-001 was available at New York Comic Con From October 09-11, 2026. The card came in a bundle with a Boom Studios comic.</p></div>
+<div className="promo-stage" aria-label="Slowly rotating 3D view of MLPEPR015"><div className="promo-card"><div className="promo-card-face promo-card-front"><div className="promo-crop"><CardImage imageSize="original" visible={true} loading="eager" src={promoFront} draggable={false} alt="MLPEPR015 front" className="promo-card-image promo-front-image" style={{ backgroundColor: "transparent", transform: "scale(1.025)", transformOrigin: "center", borderRadius: "4.2% / 3%" }}/></div></div><div className="promo-card-face promo-card-back"><div className="promo-crop"><CardImage imageSize="original" visible={true} loading="eager" src={promoBack} draggable={false} alt="MLPEPR015 back" className="promo-card-image" style={{ backgroundColor: "transparent", transform: "scale(1.025)", transformOrigin: "center", borderRadius: "4.2% / 3%" }}/></div></div></div></div>
+</section>
+<div className="ticker" aria-hidden="true"><div className="ticker-track">{[0, 1].map(copy => <div className="ticker-group" key={copy}>{["NYCC 2026", "NYCC-001", "OCT 09-11 2026", "Limited promo spotlight", "NYCC 2026", "NYCC-001", "OCT 09-11 2026", "Limited promo spotlight"].map((item, index) => <span key={`${copy}-${index}`}>{item}</span>)}</div>)}</div></div>
+<section className="fun-feature"><div className="fun-feature-content"><div className="fun-eyebrow">Coming in November</div><h2 className="fun-title">Fun<br/><span>Moments</span></h2><p className="fun-copy">A new box is on the way. Take a look at the Fun Moments 4 box and get your preorder in through StonesTradingCo. It supports the website when you select MLPEKAYOU at checkout!</p><a className="preorder-link" href={funMomentsProduct} target="_blank" rel="noopener noreferrer">Preorder Fun Moments 4<span className="preorder-arrow" aria-hidden="true">&gt;</span></a></div><a className="fun-product-art" href={funMomentsProduct} target="_blank" rel="noopener noreferrer" aria-label="View Fun Moments 4 preorder at Stone's Trading Co."><span className="fun-volume" aria-hidden="true"></span><img className="fun-box" src={funMomentsBox} alt="Fun Moments 4 box" loading="lazy"/></a></section>
+<section className="release-strip" aria-label="Release highlights"><div className="release-cell"><div className="release-label">On the table now</div><div className="release-name">Moon: Fourth Edition</div></div><div className="release-cell"><div className="release-label">Coming in November</div><div className="release-name">Fun Moments: Fourth Edition</div></div><div className="release-cell"><div className="release-label">From the convention</div><div className="release-name">NYCC-001</div></div></section>
+</main></div>
+);
 }

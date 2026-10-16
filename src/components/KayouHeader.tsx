@@ -1338,16 +1338,6 @@ const KayouHeader = () => {
                         </button>
                         <button
                           onClick={() => {
-                            requestNavigation("/kayou-news");
-                            setOpen(false);
-                          }}
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white"
-                        >
-                          <CalendarDays className="h-[18px] w-[18px] text-zinc-400" />
-                          <span>Kayou US Events</span>
-                        </button>
-                        <button
-                          onClick={() => {
                             requestNavigation("/inbox");
                             setOpen(false);
                           }}
