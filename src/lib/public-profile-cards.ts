@@ -66,6 +66,10 @@ export function usePublicProfileCards(userId?: string) {
             SZR: 3,
           },
         },
+{
+          id: "13",
+          rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
+        },
         {
           id: "4",
           rarities: {
@@ -434,7 +438,7 @@ export function usePublicProfileCards(userId?: string) {
           [
             "1",
             "2",
-            "3",
+            "3", "13",
             "4",
             "5",
             "6",

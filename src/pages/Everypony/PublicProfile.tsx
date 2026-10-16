@@ -215,6 +215,7 @@ export default function PublicProfile() {
       "1": "Moon One",
       "2": "Moon Two",
       "3": "Moon Three",
+      "13": "Moon Four",
       "4": "Star One",
       "5": "Rainbow One",
       "6": "Rainbow Two",
@@ -497,6 +498,7 @@ export default function PublicProfile() {
                           "SC",
                           "SZR",
                         ],
+"13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
                         "4": [
                           "SSR",
                           "SCR",
@@ -606,6 +608,7 @@ export default function PublicProfile() {
 "hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "PER", "PGR", "PSPR", "PCR", "PRR"],
                       };
                       const getRarity = (card: any) => {
+                        if (String(card.set_id) === "13") return String(card.card_key).replace(/^SHINING ZR-/, "SZR-").split("-")[0];
                         if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveRarity(card.card_key);
                         if (card.set_id === "FW")
                           return (
@@ -652,7 +655,7 @@ export default function PublicProfile() {
                         <CardImage
                           src={getTradeCardImage(card)}
                           style={
-                            String(card.set_id) === "14" &&
+                            String(card.set_id) === "13" ? { transform: "scale(1.055)" } : String(card.set_id) === "14" &&
                             /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key)
                               ? {
                                   left: "50%",
@@ -1125,7 +1128,7 @@ export default function PublicProfile() {
                       <CardImage
                         src={getTradeCardImage(card)}
                         style={
-                          String(card.set_id) === "14" &&
+                          String(card.set_id) === "13" ? { transform: "scale(1.055)" } : String(card.set_id) === "14" &&
                           /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key)
                             ? {
                                 left: "50%",

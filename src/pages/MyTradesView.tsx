@@ -1,3 +1,4 @@
+import { getMoonFourFront } from "@/lib/card-images";
 import { getHeartswarmingEveRarityLabel } from "@/lib/hearthswarming-eve";
 import { getHeartswarmingEveFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
@@ -77,6 +78,7 @@ const getRarityCode = (rarity: string) => {
     return rarity;
   };
 const getCardImage = (card: TradeCard) => {
+    if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
     if (card.set_id === "friendshipsbegin") {
       return `/friendships-begin/${card.card_key}.webp`;
     }
@@ -302,6 +304,7 @@ const rarityOrders: Record<string, string[]> = {
                     "SC",
                     "SZR",
                   ],
+"13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
                   "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
                   "5": [
                     "R",

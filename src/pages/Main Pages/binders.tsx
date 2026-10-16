@@ -1,4 +1,5 @@
 import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveRarityLabel, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
+import { getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -126,6 +127,13 @@ const sets = [
     },
   },
   {
+    id: "13",
+    name: "Moon: Fourth Edition",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
+  },
+  {
     id: "4",
     name: "Star: First Edition",
     folder: "star-one",
@@ -208,6 +216,7 @@ const binderSets = {
     { id: "2", label: "Moon Two" },
     { id: "8", label: "Fun Moments Two" },
     { id: "3", label: "Moon Three" },
+    { id: "13", label: "Moon Four" },
     { id: "11", label: "Fun Moments Three" },
     { id: "4", label: "Star One" },
     { id: "6", label: "Rainbow Two" },
@@ -216,6 +225,7 @@ const binderSets = {
     { id: "1", label: "Moon One" },
     { id: "2", label: "Moon Two" },
     { id: "3", label: "Moon Three" },
+    { id: "13", label: "Moon Four" },
   ],
   Rainbow: [
     { id: "5", label: "Rainbow One" },
@@ -374,7 +384,7 @@ export default function MyCollectionBinder() {
     };
     load();
   }, [viewingUserId]);
-  const defaultCCGOrder = ["1", "5", "7", "2", "8", "3", "11", "4", "6"];
+  const defaultCCGOrder = ["1", "5", "7", "2", "8", "3", "13", "11", "4", "6"];
   const [hiddenCCGSets, setHiddenCCGSets] = useState<string[]>([]);
   const visibleCCGOrder = defaultCCGOrder.filter(
     (id) => !hiddenCCGSets.includes(id),
@@ -390,6 +400,7 @@ export default function MyCollectionBinder() {
     "1": "1",
     "2": "2",
     "3": "3",
+    "13": "13",
     "4": "4",
     "5": "5",
     "6": "6",
@@ -625,6 +636,9 @@ export default function MyCollectionBinder() {
                 number: i + 1,
                 key: `${rarity}-${i + 1}`,
                 image:
+                  selectedSet.id === "13"
+                    ? getMoonFourFront(`${rarity}-${i + 1}`)
+                    :
                   selectedSet.id === "3" && rarity === "SZR" && i === 0
                     ? "/card-backs/third-moon-edition-backs/M3SZRBINDERVER.webp"
                     : `/cards/${selectedSet.folder}/${selectedSet.prefix}${fileRarity}${String(
@@ -650,6 +664,9 @@ export default function MyCollectionBinder() {
             progressKey: `${rarity}-${i + 1}`,
             setId: set.id,
             image:
+              set.id === "13"
+                ? getMoonFourFront(`${rarity}-${i + 1}`)
+                :
               set.id === "3" && rarity === "SZR" && i === 0
                 ? "/card-backs/third-moon-edition-backs/M3SZRBINDERVER.webp"
                 : `/cards/${set.folder}/${set.prefix}${fileRarity}${String(

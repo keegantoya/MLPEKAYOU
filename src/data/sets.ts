@@ -66,6 +66,17 @@ export const sets = [
       SZR: 3
     }
   },
+{
+    id: "13",
+    title: "Eternal Moon",
+    setName: "Fourth Volume",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    imageUrl: "/thumbnails/moonfoursetimage.webp",
+    totalCards: 162,
+    category: "eternal-moon",
+    rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 }
+  },
 
   {
     id: "4",

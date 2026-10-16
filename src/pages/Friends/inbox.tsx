@@ -1,3 +1,4 @@
+import { getMoonFourFront } from "@/lib/card-images";
 import { getHeartswarmingEveFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -80,6 +81,7 @@ const OFFER_SET_NAMES: Record<string, string> = {
   "1": "Eternal Moon: First Edition",
   "2": "Eternal Moon: Second Edition",
   "3": "Eternal Moon: Third Edition",
+  "13": "Eternal Moon: Fourth Edition",
   "4": "Star: First Edition",
   "5": "Rainbow: First Edition",
   "6": "Rainbow: Second Edition",
@@ -110,6 +112,7 @@ const getOfferCardImage = (card: OfferCardRef) => {
     return `/fantasy-wonderland/${card.card_key}.webp`;
   }
 
+  if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
   if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveFront(card.card_key);
   if (card.set_id === "14") {
     const erMatch = card.card_key.match(/^BP03-ER(0[12])-([ABC])$/);

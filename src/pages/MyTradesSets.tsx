@@ -1,3 +1,5 @@
+import { getMoonFourDisplayCode } from "@/lib/moon-four-catalog";
+import { getMoonFourFront } from "@/lib/card-images";
 import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveRarityLabel, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
@@ -124,6 +126,13 @@ const sets = [
       SZR: 3,
     },
   },
+{
+    id: "13",
+    name: "Eternal Moon: Fourth Edition",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
+  },
   {
     id: "4",
     name: "Star: First Edition",
@@ -192,6 +201,7 @@ const sets = [
 ];
 const getDisplayCode = (card: any, currentSetId: string) => {
   const key = String(card.key || "");
+  if (currentSetId === "13") return getMoonFourDisplayCode(key);
   //  Promotional Cards: the six SDCC cards are PR-8 through PR-13.
   if (currentSetId === "9") {
     const num = Number(card.number);
@@ -788,6 +798,7 @@ export default function MyTradesSets() {
     "moon-one": "1",
     "moon-two": "2",
     "moon-three": "3",
+    "moon-four": "13",
     "star-one": "4",
     "rainbow-one": "5",
     "rainbow-two": "6",
@@ -986,6 +997,8 @@ export default function MyTradesSets() {
         image: `/tcgpromos/RR${num}.webp`,
       });
     }
+  } else if (set.id === "13") {
+    cards = Object.entries(set.rarities).flatMap(([rarity, count]) => Array.from({ length: count as number }, (_, index) => ({ rarity, number: index + 1, key: `${rarity}-${index + 1}`, image: getMoonFourFront(`${rarity}-${index + 1}`) })));
   } else if (set.id === "9") {
     cards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13].map((num) => ({
       rarity: "PR",
@@ -1026,6 +1039,7 @@ export default function MyTradesSets() {
     "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
     "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
     "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+"13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
     //  Rainbow
     "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
     "6": ["BASE", "R", "SR", "ST", "TR", "TGR", "SSR", "FR", "UR", "USR", "XR"],

@@ -40,6 +40,7 @@ import ISO from "./pages/ISO/iso";
 import ThrowawayPage from "./pages/throwawaypage";
 import MoonOne from "./pages/Sets/Moon Editions/moon-one";
 import MoonTwo from "./pages/Sets/Moon Editions/moon-two";
+import MoonFour from "./pages/Sets/Moon Editions/moon-four";
 import MoonThree from "./pages/Sets/Moon Editions/moon-three";
 import RainbowOne from "./pages/Sets/Rainbow Editions/rainbow-one";
 import RainbowTwo from "./pages/Sets/Rainbow Editions/rainbow-two";
@@ -335,6 +336,7 @@ const AppRoutes = () => {
           </RequireAuth>
         }
       />
+      <Route path="/moon-four" element={<RequireAuth><MoonFour /></RequireAuth>} />
       <Route
         path="/moon-three"
         element={

@@ -1,12 +1,103 @@
-import { moonCatalog } from "@/lib/iso-card-catalog";
-const { sets, getDisplayCardCode, getRarityCode } = moonCatalog;
-import { cardImagePaths, getMoonFourFront } from "@/lib/card-images";
+import { getMoonFourDisplayCode } from "@/lib/moon-four-catalog";
+import { getMoonFourFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useWishlist } from "./wishlist-in-iso";
 import ISOChecking from "./iso-checking";
 import { moonCharacterMap } from "./Card Characters/card-characters-moon";
+const getRarityCode = (rarity: string) => {
+  if (rarity === "SHINING ZR") return "SZR";
+  return rarity;
+};
+const getDisplayCardCode = (
+  setId: string,
+  rarity: string,
+  number: number
+) => {
+if (setId === "13") return getMoonFourDisplayCode(`${rarity}-${number}`);
+const rarityCode = getRarityCode(rarity);
+const cardNumber = String(number).padStart(3, "0");
+  if (setId === "2" && rarity === "HR") {
+    return `INT03-HR-${cardNumber}`;
+  }
+  if (
+    setId === "2" &&
+    (rarity === "SHINING ZR" || rarity === "SZR")
+  ) {
+    return `MLPME02-\u25c7ZR-${cardNumber}`;
+  }
+  if (setId === "3" && rarity === "SZR") {
+    return `MLPME03-\u25c7ZR-${cardNumber}`;
+  }
+const setCodeMap: Record<string, string> = {
+    "1": "MLPME01",
+    "2": "MLPME02",
+    "3": "MLPME03",
+  };
+  return `${setCodeMap[setId]}-${rarityCode}-${cardNumber}`;
+};
+const sets = [
+  {
+    id: "1",
+    name: "Moon First Edition",
+    folder: "first-edition-moon",
+    prefix: "M1",
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 54,
+      HR: 36,
+      UR: 16,
+      LSR: 15,
+      SGR: 8,
+      SC: 7,
+    },
+  },
+  {
+    id: "2",
+    name: "Moon Second Edition",
+    folder: "second-edition-moon",
+    prefix: "M2",
+    rarities: {
+      R: 30,
+      SR: 20,
+      SSR: 54,
+      HR: 30,
+      UR: 16,
+      LSR: 16,
+      SGR: 8,
+      ZR: 7,
+      SC: 7,
+      "SHINING ZR": 1,
+    },
+  },
+  {
+    id: "3",
+    name: "Moon Third Edition",
+    folder: "third-edition-moon",
+    prefix: "M3",
+    rarities: {
+      R: 60,
+      SR: 40,
+      SSR: 40,
+      HR: 60,
+      LSR: 32,
+      UR: 18,
+      SGR: 16,
+      ZR: 14,
+      SC: 7,
+      SZR: 3,
+    },
+  },
+{
+    id: "13",
+    name: "Moon Fourth Edition",
+    folder: "fourth-edition-moon",
+    prefix: "M4",
+    rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
+  },
+]
 interface ISOMOONProps {
   userId?: string;
   cardCodeSearch: string;
@@ -78,7 +169,7 @@ return (
 <div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">
 {selectableSets.map((set) => (
 <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${selectedSet === set.id ? "bg-[#FFD54A] text-zinc-900" : "bg-zinc-100 text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300"}`}>
-{set.id === "1" ? "Moon 1" : set.id === "2" ? "Moon 2" : set.id === "13" ? "Moon 4" : "Moon 3"}
+{set.id === "13" ? "Moon 4" : set.id === "1" ? "Moon 1" : set.id === "2" ? "Moon 2" : "Moon 3"}
 </button>
 ))}
 </div>
@@ -156,7 +247,7 @@ const visibleCards =
                 <option value="all">All rarities</option>
                 {availableRarities.map((rarity) => (
                   <option key={rarity} value={rarity}>
-                    {rarity === "SHINING ZR" || rarity === "SZR" ? "\u25C7ZR" : rarity}
+                    {rarity === "SHINING ZR" || rarity === "SZR" ? "\u25c7ZR" : rarity}
                   </option>
                 ))}
               </select>
@@ -185,11 +276,11 @@ const cardContent = (
                       }`}
                     >
                       <CardImage
-                        src={set.id === "13" ? getMoonFourFront(`${card.rarity}-${card.number}`) : cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(
+                        src={set.id === "13" ? getMoonFourFront(`${card.rarity}-${card.number}`) : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(
                           card.number
-                        ).padStart(3, "0"))}
+                        ).padStart(3, "0")}.webp`}
                         alt={getDisplayCardCode(set.id, card.rarity, card.number)}
-                        className={`h-full w-full ${set.id === "13" ? "scale-[1.055]" : "scale-[1.05]"} object-contain object-center`}
+                        className="h-full w-full scale-[1.05] object-contain object-center"
                       />
                     </div>
                   </div>
