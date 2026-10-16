@@ -63,10 +63,10 @@ const facing = Math.max(0, nz);
 };
 const getPremiumCardEdges = (height: number, aspect: number) => {
     if (height <= 0) return [];
-    const width = height * aspect;
-    const radius = height * .032;
-    const points: { x: number; y: number }[] = [];
-    const corners = [
+const width = height * aspect;
+const radius = height * .032;
+const points: { x: number; y: number }[] = [];
+const corners = [
         { x: width - radius, y: radius, angle: -Math.PI / 2 },
         { x: width - radius, y: height - radius, angle: 0 },
         { x: radius, y: height - radius, angle: Math.PI / 2 },
@@ -74,14 +74,14 @@ const getPremiumCardEdges = (height: number, aspect: number) => {
     ];
     for (const corner of corners) {
         for (let step = 0; step <= 4; step++) {
-            const angle = corner.angle + step * Math.PI / 8;
+const angle = corner.angle + step * Math.PI / 8;
             points.push({ x: corner.x + Math.cos(angle) * radius, y: corner.y + Math.sin(angle) * radius });
         }
     }
     return points.map((point, index) => {
-        const next = points[(index + 1) % points.length];
-        const dx = next.x - point.x;
-        const dy = next.y - point.y;
+const next = points[(index + 1) % points.length];
+const dx = next.x - point.x;
+const dy = next.y - point.y;
         return {
             left: `${(point.x + next.x) / 2}px`,
             top: `${(point.y + next.y) / 2}px`,
@@ -142,9 +142,9 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
     onNext: () => void;
 }) {
 const aspect = 5 / 7;
-    const [baseHeight, setBaseHeight] = useState(0);
-    const zoomRef = useRef(1);
-    const renderFrame = useRef<number | null>(null);
+const [baseHeight, setBaseHeight] = useState(0);
+const zoomRef = useRef(1);
+const renderFrame = useRef<number | null>(null);
     useEffect(() => () => {
         if (renderFrame.current !== null) cancelAnimationFrame(renderFrame.current);
         renderFrame.current = null;
@@ -183,7 +183,7 @@ const light = getSealLighting(rotation.current);
         }
         });
     };
-    const moveCard = (dx: number, dy: number) => {
+const moveCard = (dx: number, dy: number) => {
         pan.current = { x: pan.current.x + dx, y: pan.current.y + dy };
         applyRotation(rotation.current);
     };
@@ -407,9 +407,9 @@ const starOneStyles = `
 .s1-inspector-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px}.s1-inspector-header h2{font-size:clamp(14px,3vw,20px);margin:0;letter-spacing:-.02em}
 .s1-inspector-stage{position:relative;height:auto;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;perspective:1000px;perspective-origin:50% 50%;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;background:radial-gradient(ellipse at 50% 44%,#bda05a14,transparent 65%);border-radius:18px;margin:0 10px;isolation:isolate}.s1-inspector-stage.is-dragging{cursor:grabbing}
 .s1-back-art{position:absolute;inset:0;border-radius:inherit;transform-origin:50% 50%}
-.s1-card-model{position:relative;height:0;aspect-ratio:5/7;flex:none;transform-style:preserve-3d;pointer-events:none}
-.s1-card-edge{position:absolute;height:var(--s1-card-depth,6px);background:#fff;backface-visibility:visible;-webkit-backface-visibility:visible;pointer-events:none;transform-origin:center center}
-.s1-card-face{position:absolute;inset:0;border-radius:4.5% / 3.2%;background:transparent}.s1-card-face{transform-style:flat;isolation:isolate;overflow:hidden;clip-path:inset(0 round 4.5% / 3.2%);-webkit-mask-image:linear-gradient(#fff,#fff);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 9px 26px #00000024;transform:translateZ(calc(var(--s1-card-depth,6px) / 2 + .1px))}.s1-card-back{transform:rotateY(180deg) translateZ(calc(var(--s1-card-depth,6px) / 2 + .1px))}
+.s1-card-model{position:relative;height:0;aspect-ratio:5/7;flex:none;-webkit-transform-style:preserve-3d;transform-style:preserve-3d;pointer-events:none}
+.s1-card-edge{position:absolute;height:var(--s1-card-depth,6px);background:#fff;backface-visibility:hidden;-webkit-backface-visibility:hidden;pointer-events:none;transform-origin:center center}
+.s1-card-face{position:absolute;inset:0;border-radius:4.5% / 3.2%;background:#fff}.s1-card-face{transform-style:flat;isolation:isolate;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 9px 26px #00000024;transform:translateZ(calc(var(--s1-card-depth,6px) / 2 + .1px))}.s1-card-back{transform:rotateY(180deg) translateZ(calc(var(--s1-card-depth,6px) / 2 + .1px))}
 .s1-face-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;user-select:none;-webkit-user-drag:none}.s1-front-image,.s1-back-image{display:block;max-width:none;max-height:none;margin:0;padding:0;border:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;transform:scale(1.035);transform-origin:50% 50%;border-radius:inherit}.s1-card-sheen{position:absolute;inset:0;background:linear-gradient(125deg,#ffffff0c,transparent 45%,#ffffff08);pointer-events:none;border-radius:inherit}.s1-card-ground{position:absolute;bottom:4%;left:30%;right:30%;height:15px;border-radius:50%;background:#0000001a;filter:blur(13px);pointer-events:none}
 .s1-inspector-status{display:flex;align-items:center;justify-content:center;gap:7px;min-height:28px;padding:4px 12px;font-size:12px;color:var(--s1-muted);text-align:center}.s1-inspector-status button{padding:5px 9px;border-radius:8px;background:var(--s1-subtle);font-size:11px}
 .s1-inspector-controls{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:6px 16px 10px}.s1-inspector-controls button{display:flex;align-items:center;justify-content:center;min-height:42px;min-width:42px;padding:10px 15px;border-radius:12px;background:var(--s1-subtle);font-size:12px;font-weight:600}
@@ -436,7 +436,6 @@ const starOneStyles = `
 .s1-page .s1-grid-back-image,.s1-inspector-dialog .s1-back-image{transform:scale(1.05)}
 @media(prefers-reduced-motion:reduce){.s1-page *{transition:none!important}.s1-card-button:hover,.s1-rarities button:hover{transform:none}}
 @media(hover:none) and (pointer:coarse){.s1-card-face{box-shadow:none;-webkit-mask-image:none;clip-path:none}.s1-card-ground{filter:none;background:transparent}.s1-inspector-overlay{backdrop-filter:none;-webkit-backdrop-filter:none}.s1-card-button{perspective:none;background:transparent;overflow:hidden}.s1-grid-model{transform:none!important;transform-style:flat;transition:none}.s1-grid-face{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible}.s1-grid-back{display:none;transform:none}.s1-grid-model[data-show-back="true"]>.s1-grid-face:first-child{display:none}.s1-grid-model[data-show-back="true"]>.s1-grid-back{display:block}}
-
 `;
 const StarOne = () => {
 const navigate = useNavigate();
