@@ -165,7 +165,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 13 },
+    rarities: { PR: 14 },
   },
   {
     id: "FW",
@@ -208,6 +208,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
   if (currentSetId === "9") {
     const num = Number(card.number);
     if (num === 14) return "MLPE-PR-009";
+    if (num === 15) return "NYCC-001";
     if (num >= 8 && num <= 13) {
       return `SDCC-${String(num - 7).padStart(2, "0")}`;
     }
@@ -1023,7 +1024,7 @@ export default function MyTradesSets() {
       });
     }
   } else if (set.id === "9") {
-    cards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((num) => ({
+    cards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].map((num) => ({
       rarity: "PR",
       number: num,
       key: `PR-${num}`,
@@ -1345,10 +1346,12 @@ export default function MyTradesSets() {
                       }
                       alt={getDisplayCode(selectedCard, set.id)}
                       className={`h-full w-full ${
-                        ["12", "14", "FW", "friendshipsbegin", "FB"].includes(set.id) ||
-                        isNonZoomTcgPromo(selectedCard)
-                          ? "object-contain"
-                          : "object-cover scale-[1.035]"
+                        set.id === "9" && selectedCard.key === "PR-15"
+                          ? "object-cover scale-[1.025]"
+                          : ["12", "14", "FW", "friendshipsbegin", "FB"].includes(set.id) ||
+                            isNonZoomTcgPromo(selectedCard)
+                            ? "object-contain"
+                            : "object-cover scale-[1.035]"
                       }`}
                     />
                   </div>
@@ -2132,7 +2135,7 @@ export default function MyTradesSets() {
                                 >
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                     <CardImage
-                                      imageSize={(set.id === "9" && card.key === "PR-14") || (set.id === "tcgpromos" && card.key === "RR28") ? "original" : undefined}
+                                      imageSize={(set.id === "9" && ["PR-14", "PR-15"].includes(card.key)) || (set.id === "tcgpromos" && card.key === "RR28") ? "original" : undefined}
                                       src={
                                         set.id === "9"
                                           ? cardImagePaths.ccgPromo(String(card.number).padStart(3, "0"))
@@ -2143,18 +2146,20 @@ export default function MyTradesSets() {
                                       }
                                       alt={key}
                                       className={`h-full w-full ${
-                                        [
-                                          "12",
-                                          "14",
-                                          "FW",
-                                          "friendshipsbegin",
-                                          "FB",
-                                        ].includes(set.id) ||
-                                        isNonZoomTcgPromo(card)
-                                          ? "object-contain"
-                                          : isLandscape
-                                            ? "h-full w-full object-contain"
-                                            : "object-cover scale-[1.035]"
+                                        set.id === "9" && card.key === "PR-15"
+                                          ? "object-cover scale-[1.025]"
+                                          : [
+                                              "12",
+                                              "14",
+                                              "FW",
+                                              "friendshipsbegin",
+                                              "FB",
+                                            ].includes(set.id) ||
+                                            isNonZoomTcgPromo(card)
+                                            ? "object-contain"
+                                            : isLandscape
+                                              ? "h-full w-full object-contain"
+                                              : "object-cover scale-[1.035]"
                                       }`}
                                       style={
                                         isLandscape

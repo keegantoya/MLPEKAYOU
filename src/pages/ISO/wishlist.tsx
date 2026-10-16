@@ -24,6 +24,9 @@ const getImageClassName = (card: Card) => {
   const cardNumber = getCardNumber(card.card_key);
 
   if (card.set_id === "9") {
+    if (cardNumber === 15) {
+      return `${base} scale-[1.025] object-contain object-center`;
+    }
     if (cardNumber === 1) {
       return `${base} scale-[1.02] object-contain object-center`;
     }
@@ -154,7 +157,7 @@ export default function Wishlist() {
       {cards.length === 0 ? (
         <section className="rounded-[24px] border border-black/10 bg-white px-6 py-12 text-center shadow-sm dark:border-white/[0.08] dark:bg-[#17191a]">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-pink-50 text-xl dark:bg-pink-400/[0.08]">
-            ♡
+            &#x2661;
           </div>
           <h2 className="mt-4 text-base font-semibold">Your wishlist is empty</h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
@@ -177,8 +180,7 @@ export default function Wishlist() {
                   className="group relative overflow-visible"
                 >
                   <ISOChecking
-                    contentClassName="!rounded-[2px]"
-                    contentStyle={{ borderRadius: "2px" }}
+                    contentClassName="!rounded-[6px] sm:!rounded-xl"
                     userId={userId}
                     setId={card.set_id}
                     cardKey={card.card_key}
@@ -186,7 +188,7 @@ export default function Wishlist() {
                     isWishlisted
                     toggleWishlist={removeFromWishlist}
                   >
-                    <div className="relative aspect-[5/7] overflow-hidden rounded-[6px] bg-transparent transition hover:-translate-y-0.5">
+                    <div className="relative aspect-[5/7] overflow-hidden rounded-[6px] sm:rounded-xl bg-transparent transition hover:-translate-y-0.5">
                       <WishlistImage card={card} />
                     </div>
                   </ISOChecking>

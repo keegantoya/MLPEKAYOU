@@ -215,7 +215,7 @@ const c = config[card.set_id];
                 : "border-white/[0.08] bg-[#151718]"
             }`}
           >
-            <div className="text-base font-semibold">Loading trades…</div>
+            <div className="text-base font-semibold">Loading trades&hellip;</div>
           </section>
         )}
         {!loading && cards.length === 0 && (
@@ -244,7 +244,7 @@ const c = config[card.set_id];
 let rarity = card.card_key.split("-")[0];
                   if (String(card.set_id) === "14") {
 const match = card.card_key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
-                    rarity = match ? `${match[1] ? "※" : ""}${match[2]}` : "OTHER";
+                    rarity = match ? `${match[1] ? "\u203B" : ""}${match[2]}` : "OTHER";
                   } else if (card.set_id === "tcgpromos") {
                     rarity = "PR";
                   } else if (
@@ -256,11 +256,11 @@ const match = card.card_key.match(
                       /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/,
                     );
                     rarity = match?.[0] || "OTHER";
-                    if (rarity === "PER") rarity = "※ER";
-                    if (rarity === "PSPR") rarity = "※SPR";
-                    if (rarity === "PCR") rarity = "※CR";
-                    if (rarity === "PRR") rarity = "※RR";
-                    if (rarity === "PGR") rarity = "※GR";
+                    if (rarity === "PER") rarity = "\u203BER";
+                    if (rarity === "PSPR") rarity = "\u203BSPR";
+                    if (rarity === "PCR") rarity = "\u203BCR";
+                    if (rarity === "PRR") rarity = "\u203BRR";
+                    if (rarity === "PGR") rarity = "\u203BGR";
                   }
                   if (!acc[rarity]) acc[rarity] = [];
                   acc[rarity].push(card);
@@ -334,11 +334,11 @@ const rarityOrders: Record<string, string[]> = {
                     "GR",
                     "CR",
                     "RR",
-                    "※ER",
-                    "※SPR",
-                    "※GR",
-                    "※CR",
-                    "※RR",
+                    "\u203BER",
+                    "\u203BSPR",
+                    "\u203BGR",
+                    "\u203BCR",
+                    "\u203BRR",
                   ],
                   "12": [
                     "C",
@@ -349,11 +349,11 @@ const rarityOrders: Record<string, string[]> = {
                     "GR",
                     "CR",
                     "RR",
-                    "※ER",
-                    "※SPR",
-                    "※GR",
-                    "※CR",
-                    "※RR",
+                    "\u203BER",
+                    "\u203BSPR",
+                    "\u203BGR",
+                    "\u203BCR",
+                    "\u203BRR",
                   ],
                   friendshipsbegin: [
                     "C",
@@ -363,10 +363,10 @@ const rarityOrders: Record<string, string[]> = {
                     "GR",
                     "CR",
                     "ER",
-                    "※ER",
-                    "※RR",
+                    "\u203BER",
+                    "\u203BRR",
                   ],
-                  "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "※ER", "※SPR", "※GR", "※CR", "※RR"],
+                  "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
                   tcgpromos: ["PR"],
                 };
 const currentOrder =
@@ -391,13 +391,13 @@ const currentOrder =
                   >
                     <h2 className="text-base font-semibold">
                       {rarity === "SHINING ZR" || rarity === "SZR"
-                        ? "◇ZR"
+                        ? "\u25C7ZR"
                         : rarity === "SN"
-                          ? "◇N"
+                          ? "\u25C7N"
                           : rarity === "SCR" && String(setId) !== "4"
-                            ? "◇CR"
+                            ? "\u25C7CR"
                             : rarity === "SAR"
-                              ? "◇AR"
+                              ? "\u25C7AR"
                               : rarity}
                     </h2>
                     <span
@@ -412,9 +412,9 @@ const currentOrder =
                     {rarityCards
                       .sort((a, b) => {
                         if (String(setId) === "9") {
-                          const order = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((number) => `PR-${number}`);
-                          const indexA = order.indexOf(a.card_key);
-                          const indexB = order.indexOf(b.card_key);
+const order = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].map((number) => `PR-${number}`);
+const indexA = order.indexOf(a.card_key);
+const indexB = order.indexOf(b.card_key);
                           return (indexA < 0 ? order.length : indexA) - (indexB < 0 ? order.length : indexB);
                         }
                         if (String(setId) === "tcgpromos") {
@@ -453,12 +453,14 @@ const isLandscape =
                               ) : (
                                 <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                   <CardImage
-                                    imageSize={(String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28") ? "original" : undefined}
+                                    imageSize={(String(card.set_id) === "9" && ["PR-14", "PR-15"].includes(card.card_key)) || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28") ? "original" : undefined}
                                     src={getCardImage(card)}
                                     alt={card.card_key}
                                     className={isLandscape
                                       ? "absolute object-contain object-center"
-                                      : "h-full w-full object-cover object-center"}
+                                      : String(card.set_id) === "9" && card.card_key === "PR-15"
+                                        ? "h-full w-full object-cover object-center scale-[1.025]"
+                                        : "h-full w-full object-cover object-center"}
                                     style={isLandscape
                                       ? {
                                           left: "50%",
@@ -476,12 +478,12 @@ const isLandscape =
                             <div className="mt-1 flex min-h-5 flex-wrap items-center gap-1 px-0.5 text-[10px] font-semibold sm:text-xs">
                               {card.is_for_trade && (
                                 <span className="rounded-md bg-emerald-500/12 px-1.5 py-0.5 text-emerald-600 dark:text-emerald-400">
-                                  Trade · {card.trade_quantity}
+                                  Trade &middot; {card.trade_quantity}
                                 </span>
                               )}
                               {card.is_for_sale && (
                                 <span className="rounded-md bg-sky-500/12 px-1.5 py-0.5 text-sky-600 dark:text-sky-400">
-                                  ${Number(card.asking_price || 0).toFixed(2)} · {card.sale_quantity}
+                                  ${Number(card.asking_price || 0).toFixed(2)} &middot; {card.sale_quantity}
                                 </span>
                               )}
                             </div>

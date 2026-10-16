@@ -10,7 +10,14 @@ import {
   getNightmareNightFront,
   getMoonFourFront,
 } from "@/lib/card-images";
-import { tcgCatalog } from "@/lib/iso-card-catalog";
+import {
+  funCatalog,
+  moonCatalog,
+  promosCatalog,
+  rainbowCatalog,
+  starCatalog,
+  tcgCatalog,
+} from "@/lib/iso-card-catalog";
 type CardImageCard = {
   set_id: string | number;
   card_key: string;
@@ -53,7 +60,12 @@ const OFFER_SET_ORDER = [
   "14",
   "tcgpromos",
 ];
-const CCG_PROMO_ORDER = ["PR-1", "PR-2", "PR-3", "PR-4", "PR-5", "PR-7", "PR-14", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13"];
+const getPromoCardKeys = (setId: string) => {
+  const set = promosCatalog.sets.find((catalogSet) => catalogSet.id === setId);
+  return set?.cards.map((number) => promosCatalog.getCardKey(setId, number)) ?? [];
+};
+const CCG_PROMO_ORDER = getPromoCardKeys("9");
+const TCG_PROMO_ORDER = getPromoCardKeys("tcgpromos");
 const canonicalOfferSetId = (setId: string | number) =>
   String(setId) === "SD" ? "friendshipsbegin" : String(setId);
 const offerKeyFor = (
@@ -118,6 +130,9 @@ const getCardImageClassName = (
   }
   const cardNumber = getCardNumber(card.card_key);
   if (setId === "9") {
+    if (cardNumber === 15) {
+      return `${base} scale-[1.025] object-contain object-center`;
+    }
     if (cardNumber === 1) {
       return `${base} scale-[1.01] object-contain object-center`;
     }
@@ -428,134 +443,15 @@ const ExploreProfile = ({
       });
       const isoCards: any[] = [];
       const isoSets = [
-        {
-          id: "1",
-          rarities: {
-            R: 30,
-            SR: 20,
-            SSR: 54,
-            HR: 36,
-            UR: 16,
-            LSR: 15,
-            SGR: 8,
-            SC: 7,
-          },
-        },
-        {
-          id: "2",
-          rarities: {
-            R: 30,
-            SR: 20,
-            SSR: 54,
-            HR: 30,
-            UR: 16,
-            LSR: 16,
-            SGR: 8,
-            ZR: 7,
-            SC: 7,
-            "SHINING ZR": 1,
-          },
-        },
-        {
-          id: "3",
-          rarities: {
-            R: 60,
-            SR: 40,
-            SSR: 40,
-            HR: 60,
-            UR: 18,
-            LSR: 32,
-            SGR: 16,
-            ZR: 14,
-            SC: 7,
-            SZR: 3,
-          },
-        },
-        {
-          id: "13",
-          rarities: { R: 30, SR: 20, SSR: 26, HR: 30, UR: 16, LSR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
-        },
-        {
-          id: "4",
-          rarities: {
-            SSR: 20,
-            SCR: 18,
-            UR: 18,
-            USR: 15,
-            AR: 9,
-            OR: 7,
-            BP: 9,
-            SAR: 9,
-          },
-        },
-        {
-          id: "5",
-          rarities: {
-            R: 30,
-            SR: 15,
-            FR: 18,
-            TR: 12,
-            TGR: 8,
-            MTR: 18,
-            SSR: 15,
-            UR: 15,
-            USR: 8,
-            XR: 7,
-          },
-        },
-        {
-          id: "6",
-          rarities: {
-            BASE: 18,
-            R: 30,
-            SR: 14,
-            ST: 20,
-            SSR: 15,
-            FR: 18,
-            TR: 12,
-            TGR: 8,
-            UR: 19,
-            USR: 8,
-            XR: 8,
-          },
-        },
-        {
-          id: "7",
-          rarities: { N: 20, SN: 20, R: 35, SR: 15, SSR: 15, UR: 10, CR: 12 },
-        },
-        {
-          id: "8",
-          rarities: {
-            N: 20,
-            SN: 20,
-            R: 35,
-            SR: 15,
-            SSR: 15,
-            UR: 10,
-            UGR: 9,
-            CR: 12,
-          },
-        },
-        {
-          id: "11",
-          rarities: {
-            N: 20,
-            SN: 20,
-            R: 35,
-            SR: 15,
-            SSR: 15,
-            UR: 10,
-            UGR: 9,
-            CR: 12,
-            SCR: 12,
-          },
-        },
-        { id: "9", rarities: { PR: 13 } },
-        { id: "SD", rarities: {} },
-        { id: "FW", rarities: {} },
-        { id: "12", rarities: {} },
-        { id: "14", rarities: {} },
-        { id: "tcgpromos", rarities: { RR: 28 } },
+        ...funCatalog.sets,
+        ...moonCatalog.sets,
+        ...starCatalog.sets,
+        ...rainbowCatalog.sets,
+        ...tcgCatalog.sets,
+        ...promosCatalog.sets.map((set) => ({
+          id: set.id,
+          rarities: { [set.id === "9" ? "PR" : "RR"]: set.cards.length },
+        })),
       ];
       isoSets.forEach((set) => {
         if (set.id === "9") {
@@ -574,156 +470,32 @@ const ExploreProfile = ({
         if (hiddenIsoSets.includes(String(set.id))) {
           return;
         }
-        if (set.id === "FW") {
-          const progressRow = (isoProgress || []).find(
-            (row: any) => String(row.set_id) === "FW",
-          );
-          const progress = progressRow?.progress || {};
-          const FW_STRUCTURE = [
-            { prefix: "BP01C", count: 48 },
-            { prefix: "BP01U", count: 18 },
-            { prefix: "BP01ER", count: 6 },
-            { prefix: "BP01SR", count: 14 },
-            { prefix: "BP01SPR", count: 28 },
-            { prefix: "BP01GR", count: 12 },
-            { prefix: "BP01CR", count: 12 },
-            { prefix: "BP01RR", count: 6 },
-            { prefix: "BP01PER", count: 12 },
-            { prefix: "BP01PSPR", count: 11 },
-            { prefix: "BP01PGR", count: 6 },
-            { prefix: "BP01PCR", count: 12 },
-            { prefix: "BP01PRR", count: 6 },
-          ];
-          FW_STRUCTURE.forEach(({ prefix, count }) => {
-            for (let i = 0; i < count; i++) {
-              let num = i + 1;
-              if (prefix === "BP01ER") {
-                num = i + 7;
-              }
-              if (prefix === "BP01PSPR") {
-                const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
-                num = PSPR_NUMBERS[i];
-                if (!num) continue;
-              }
-              const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
-              if (progress[cardKey] !== true && !inProgressCards.has(cardKey)) {
-                isoCards.push({
-                  id: `FW-${cardKey}`,
-                  set_id: "FW",
-                  card_key: cardKey,
-                });
-              }
-            }
-          });
-          return;
-        }
-        if (set.id === "12") {
-          const progressRow = (isoProgress || []).find(
-            (row: any) => String(row.set_id) === "12",
-          );
-          const progress = progressRow?.progress || {};
-          const DISCORD_STRUCTURE = [
-            { prefix: "BP02-C", count: 48 },
-            { prefix: "BP02-U", count: 18 },
-            { prefix: "BP02-ER", count: 6 },
-            { prefix: "BP02-SR", count: 14 },
-            { prefix: "BP02-SPR", count: 28 },
-            { prefix: "BP02-GR", count: 12 },
-            { prefix: "BP02-CR", count: 12 },
-            { prefix: "BP02-RR", count: 6 },
-            { prefix: "BP02-PER", count: 12 },
-            { prefix: "BP02-PSPR", count: 11 },
-            { prefix: "BP02-PGR", count: 6 },
-            { prefix: "BP02-PCR", count: 12 },
-            { prefix: "BP02-PRR", count: 6 },
-          ];
-          DISCORD_STRUCTURE.forEach(({ prefix, count }) => {
-            for (let i = 0; i < count; i++) {
-              let cardKey = "";
-              if (prefix === "BP02-PER") {
-                const num = Math.floor(i / 2) + 1;
-                const side = i % 2 === 0 ? "A2" : "B2";
-                cardKey = `${prefix}${String(num).padStart(2, "0")}-${side}`;
-              } else if (prefix === "BP02-PSPR") {
-                cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
-              } else {
-                cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
-              }
-              if (progress[cardKey] !== true && !inProgressCards.has(cardKey)) {
-                isoCards.push({
-                  id: `12-${cardKey}`,
-                  set_id: "12",
-                  card_key: cardKey,
-                });
-              }
-            }
-          });
-          return;
-        }
-        if (
-          set.id === "SD" &&
-          (hiddenIsoSets.includes("SD_STARTERS") ||
-            hiddenIsoSets.includes("SD_BONUS"))
-        ) {
-          return;
-        }
-        if (set.id === "SD") {
-          const progressRow = (isoProgress || []).find(
-            (row: any) => String(row.set_id) === "SD",
-          );
-          const progress = progressRow?.progress || {};
-          const SD_STRUCTURE = [
-            { prefix: "SD01C", count: 9 },
-            { prefix: "SD01U", count: 7 },
-            { prefix: "SD01SR", count: 6 },
-            { prefix: "SD01SPR", count: 10 },
-            { prefix: "SD01GR", count: 6 },
-            { prefix: "SD01CR", count: 6 },
-            { prefix: "SD01ER", count: 6 },
-            { prefix: "SD01PER", count: 12 },
-            { prefix: "SD01PRR", count: 6 },
-          ];
-          SD_STRUCTURE.forEach(({ prefix, count }) => {
-            for (let i = 0; i < count; i++) {
-              let num = i + 1;
-              if (prefix === "SD01PER") {
-                num = i + 7;
-                if (num > 18) continue;
-              }
-              const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
-              const isOwned =
-                progress[cardKey] === true ||
-                progress[`BONUS-${cardKey}`] === true ||
-                progress[`STARTER-${cardKey}`] === true;
-              const isInProgress =
-                inProgressCards.has(cardKey) ||
-                inProgressCards.has(`BONUS-${cardKey}`);
+        if (["SD", "FW", "12", "14"].includes(set.id)) {
+          if (set.id === "SD" &&
+            (hiddenIsoSets.includes("SD_STARTERS") || hiddenIsoSets.includes("SD_BONUS"))) {
+            return;
+          }
+          const catalogSet = tcgCatalog.sets.find((entry) => entry.id === set.id);
+          if (catalogSet) {
+            const sdProgress = set.id === "SD"
+              ? (isoProgress || []).find((row: any) => String(row.set_id) === "SD")?.progress || {}
+              : {};
+            tcgCatalog.getCards(catalogSet).forEach(({ key: cardKey }) => {
+              const fullKey = `${set.id}-${cardKey}`;
+              const isOwned = set.id === "SD"
+                ? [cardKey, `BONUS-${cardKey}`, `STARTER-${cardKey}`].some((alias) => sdProgress[alias] === true)
+                : Boolean(ownedCards[fullKey]);
+              const isInProgress = inProgressCards.has(fullKey) || inProgressCards.has(cardKey) ||
+                (set.id === "SD" && inProgressCards.has(`BONUS-${cardKey}`));
               if (!isOwned && !isInProgress) {
-                isoCards.push({
-                  id: `SD-${cardKey}`,
-                  set_id: "SD",
-                  card_key: cardKey,
-                });
-              }
-            }
-          });
-          return;
-        }
-        if (set.id === "14") {
-          const nightmareSet = tcgCatalog.sets.find((catalogSet) => catalogSet.id === "14");
-          if (nightmareSet) {
-            tcgCatalog.getCards(nightmareSet).forEach(({ key: cardKey }) => {
-              const fullKey = `14-${cardKey}`;
-              if (!ownedCards[fullKey] && !inProgressCards.has(fullKey)) {
-                isoCards.push({ id: fullKey, set_id: "14", card_key: cardKey });
+                isoCards.push({ id: fullKey, set_id: set.id, card_key: cardKey });
               }
             });
           }
           return;
         }
         if (set.id === "tcgpromos") {
-          for (let i = 1; i <= 28; i++) {
-            const cardKey = `RR${String(i).padStart(2, "0")}`;
+          TCG_PROMO_ORDER.forEach((cardKey) => {
             const fullKey = `tcgpromos-${cardKey}`;
             if (!ownedCards[fullKey] && !inProgressCards.has(fullKey)) {
               isoCards.push({
@@ -732,7 +504,7 @@ const ExploreProfile = ({
                 card_key: cardKey,
               });
             }
-          }
+          });
           return;
         }
         Object.entries(set.rarities).forEach(([rarity, count]) => {
@@ -777,9 +549,6 @@ const ExploreProfile = ({
         const progress = rawProgress.get(setId);
         return Boolean(progress && keys.length && keys.every((key) => isOwned(progress[key])));
       };
-      const numbered = (prefix: string, count: number, start = 1) =>
-        Array.from({ length: count }, (_, i) => `${prefix}${String(start + i).padStart(2, "0")}`);
-
       let completed = 0;
       isoSets.forEach((set) => {
         if (["9", "SD", "FW", "12", "14", "tcgpromos"].includes(set.id)) return;
@@ -789,49 +558,17 @@ const ExploreProfile = ({
         if (complete(set.id, keys)) completed++;
       });
 
-      const fwStructure = [
-        ["BP01C", 48], ["BP01U", 18], ["BP01SR", 14],
-        ["BP01SPR", 28], ["BP01GR", 12], ["BP01CR", 12],
-        ["BP01RR", 6], ["BP01PER", 12], ["BP01PGR", 6],
-        ["BP01PCR", 12], ["BP01PRR", 6],
-      ] as const;
-      const fwKeys = [
-        ...fwStructure.flatMap(([prefix, count]) => numbered(prefix, count)),
-        ...numbered("BP01ER", 6, 7),
-        ...[1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map((n) => `BP01PSPR${String(n).padStart(2, "0")}`),
-      ];
-      if (complete("FW", fwKeys)) completed++;
-
-      const bp02Structure = [
-        ["BP02-C", 48], ["BP02-U", 18], ["BP02-ER", 6],
-        ["BP02-SR", 14], ["BP02-SPR", 28], ["BP02-GR", 12],
-        ["BP02-CR", 12], ["BP02-RR", 6], ["BP02-PSPR", 11],
-        ["BP02-PGR", 6], ["BP02-PCR", 12], ["BP02-PRR", 6],
-      ] as const;
-      const bp02Keys = [
-        ...bp02Structure.flatMap(([prefix, count]) => numbered(prefix, count)),
-        ...Array.from({ length: 6 }, (_, i) => ["A2", "B2"].map((side) => `BP02-PER${String(i + 1).padStart(2, "0")}-${side}`)).flat(),
-      ];
-      if (complete("12", bp02Keys)) completed++;
-
-      const sdStructure = [
-        ["SD01C", 9], ["SD01U", 7], ["SD01SR", 6],
-        ["SD01SPR", 10], ["SD01GR", 6], ["SD01CR", 6],
-        ["SD01ER", 6], ["SD01PRR", 6],
-      ] as const;
-      const sdKeys = [
-        ...sdStructure.flatMap(([prefix, count]) => numbered(prefix, count)),
-        ...numbered("SD01PER", 12, 7),
-      ];
-      const sdProgress = rawProgress.get("SD");
-      if (sdProgress && sdKeys.every((key) =>
-        [key, `BONUS-${key}`, `STARTER-${key}`].some((alias) => isOwned(sdProgress[alias])),
-      )) completed++;
-
-      const nightmareSet = tcgCatalog.sets.find((set) => set.id === "14");
-      if (nightmareSet && complete("14", tcgCatalog.getCards(nightmareSet).map((card) => card.key))) {
-        completed++;
-      }
+      tcgCatalog.sets.forEach((set) => {
+        const keys = tcgCatalog.getCards(set).map((card) => card.key);
+        if (set.id === "SD") {
+          const progress = rawProgress.get("SD");
+          if (progress && keys.every((key) =>
+            [key, `BONUS-${key}`, `STARTER-${key}`].some((alias) => isOwned(progress[alias])),
+          )) completed++;
+        } else if (complete(set.id, keys)) {
+          completed++;
+        }
+      });
       setuserStats({
         trades: (tradeCards || []).length,
         owned,

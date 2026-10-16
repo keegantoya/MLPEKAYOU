@@ -75,7 +75,7 @@ const setButtons = [
   },
   {
     title: "Promo Cards",
-    subtitle: "13 Cards",
+    subtitle: "14 Cards",
     group: "Promos",
     to: "/trading-post/9",
     image: "/thumbnails/promossetimage.webp",

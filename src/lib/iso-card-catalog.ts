@@ -15,7 +15,7 @@ const setCodeMap: Record<string, string> = {
     "11": "FME03",
   };
   if (setId === "7" && rarity === "SN") {
-    return `FME01-◇N-${cardNumber}`;
+    return `FME01-\u25C7N-${cardNumber}`;
   }
   if (setId === "7" && rarity === "R") {
     if (number <= 6) {
@@ -36,7 +36,7 @@ const specialNumbers = [10, 11, 12, 14];
     ).padStart(3, "0")}`;
   }
   if (setId === "8" && rarity === "SN") {
-    return `FME02-◇N-${cardNumber}`;
+    return `FME02-\u25C7N-${cardNumber}`;
   }
   if (setId === "8" && rarity === "R") {
     if (number <= 20) {
@@ -60,7 +60,7 @@ const specialNumbers = [12, 13, 14, 15];
     return `FME03-N-${cardNumber}`;
   }
   if (setId === "11" && rarity === "SN") {
-    return `FME03-◇N-${cardNumber}`;
+    return `FME03-\u25C7N-${cardNumber}`;
   }
   if (setId === "11" && rarity === "R") {
     if (number <= 15) {
@@ -84,7 +84,7 @@ const specialNumbers = [12, 13, 14, 15];
     return `FME03-CR-${cardNumber}`;
   }
   if (setId === "11" && rarity === "SCR") {
-    return `FME03-◇CR-${cardNumber}`;
+    return `FME03-\u25C7CR-${cardNumber}`;
   }
 const baseCode = setCodeMap[setId] || "";
   return `${baseCode}-${rarityCode}-${cardNumber}`;
@@ -160,13 +160,13 @@ const cardNumber = String(number).padStart(3, "0");
     setId === "2" &&
     (rarity === "SHINING ZR" || rarity === "SZR")
   ) {
-    return `MLPME02-◇ZR-${cardNumber}`;
+    return `MLPME02-\u25C7ZR-${cardNumber}`;
   }
   if (setId === "13" && (rarity === "SZR" || rarity === "SHINING ZR")) {
     return `MLPME04-\u25C7ZR-${cardNumber}`;
   }
   if (setId === "3" && rarity === "SZR") {
-    return `MLPME03-◇ZR-${cardNumber}`;
+    return `MLPME03-\u25C7ZR-${cardNumber}`;
   }
 const setCodeMap: Record<string, string> = {
     "1": "MLPME01",
@@ -247,12 +247,11 @@ const sets = [
       SZR: 2,
     },
   },
-
 ]
 return { sets, getDisplayCardCode, getRarityCode };
 })();
 export const promosCatalog = (() => {
-const ccgCards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13];
+const ccgCards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15];
 const tcgCards = Array.from({ length: 28 }, (_, i) => i + 1);
 const getDisplayCardCode = (
   setId: string,
@@ -260,6 +259,7 @@ const getDisplayCardCode = (
 ) => {
   if (setId === "9") {
     if (number === 14) return "MLPE-PR-009";
+    if (number === 15) return "NYCC-001";
     if (number <= 7) {
       return `MLPE-PR-${String(number).padStart(3, "0")}`;
     }
@@ -277,14 +277,14 @@ const getDisplayCardCode = (
     }
 const newPromoNames: Record<number, string> = {
       19: "TK-01",
-      20: "※TK-01",
-      21: "※TK-01",
-      22: "※BP03-CR-01",
-      23: "※BP03-CR-02",
-      24: "※BP03-CR-03",
-      25: "※BP01-CR-04",
-      26: "※BP01-CR-05",
-      27: "※BP01-CR-06",
+      20: "\u203BTK-01",
+      21: "\u203BTK-01",
+      22: "\u203BBP03-CR-01",
+      23: "\u203BBP03-CR-02",
+      24: "\u203BBP03-CR-03",
+      25: "\u203BBP01-CR-04",
+      26: "\u203BBP01-CR-05",
+      27: "\u203BBP01-CR-06",
     };
     return newPromoNames[number] || `RR-${String(number).padStart(2, "0")}`;
   }
@@ -433,10 +433,10 @@ const getDisplayCardCode = (
 const rarityCode = getRarityCode(rarity);
 const cardNumber = String(number).padStart(3, "0");
   if (setId === "4" && rarity === "SAR") {
-    return `MLPSE01-◇AR-${cardNumber}`;
+    return `MLPSE01-\u25C7AR-${cardNumber}`;
   }
 const baseCode = "MLPSE01";
-  return `${baseCode}-${rarity === "SAR" ? "◇AR" : rarityCode}-${cardNumber}`;
+  return `${baseCode}-${rarity === "SAR" ? "\u25C7AR" : rarityCode}-${cardNumber}`;
 };
 const sets = [
   {
@@ -686,44 +686,44 @@ let displayCode = "";
     if (card.rarity === "PER") {
 const num = parseInt(card.key.slice(-2), 10);
 const displayNum = Math.ceil((num - 6) / 2) + 6;
-      displayCode = `※SD01-ER${String(displayNum).padStart(2, "0")}`;
+      displayCode = `\u203BSD01-ER${String(displayNum).padStart(2, "0")}`;
     } else if (card.rarity === "PRR") {
-      displayCode = `※SD01-RR${card.key.slice(-2)}`;
+      displayCode = `\u203BSD01-RR${card.key.slice(-2)}`;
     } else {
       displayCode = card.key.replace(/^SD01/, "SD01-");
     }
   } else if (set.id === "14") {
     if (card.rarity === "PER") {
 const match = card.key.match(/PBP03-ER(\d{2})/);
-      displayCode = match ? `※BP03-ER${match[1]}` : card.key;
+      displayCode = match ? `\u203BBP03-ER${match[1]}` : card.key;
     } else if (card.rarity === "PSPR") {
-      displayCode = `※BP03-SPR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP03-SPR${card.key.slice(-2)}`;
     } else if (card.rarity === "PGR") {
-      displayCode = `※BP03-GR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP03-GR${card.key.slice(-2)}`;
     } else if (card.rarity === "PCR") {
-      displayCode = `※BP03-CR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP03-CR${card.key.slice(-2)}`;
     } else if (card.rarity === "PRR") {
-      displayCode = `※BP03-RR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP03-RR${card.key.slice(-2)}`;
     } else {
       displayCode = card.key;
     }
   } else if (set.id === "12") {
     if (card.rarity === "PER") {
 const match = card.key.match(/PER(\d{2})/);
-      displayCode = match ? `※BP02-ER${match[1]}` : card.key;
+      displayCode = match ? `\u203BBP02-ER${match[1]}` : card.key;
     } else if (card.rarity === "PSPR") {
 const displayMap = [
         "01","02","05","10","14","15",
         "16","18","23","24","26",
       ];
 const index = parseInt(card.key.slice(-2), 10) - 1;
-      displayCode = `※BP02-SPR${displayMap[index]}`;
+      displayCode = `\u203BBP02-SPR${displayMap[index]}`;
     } else if (card.rarity === "PGR") {
-      displayCode = `※BP02-GR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP02-GR${card.key.slice(-2)}`;
     } else if (card.rarity === "PCR") {
-      displayCode = `※BP02-CR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP02-CR${card.key.slice(-2)}`;
     } else if (card.rarity === "PRR") {
-      displayCode = `※BP02-RR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP02-RR${card.key.slice(-2)}`;
     } else {
       displayCode = card.key.replace(/^BP02-?/, "BP02-");
     }
@@ -736,22 +736,22 @@ const perMap = [
         "04","04","05","05","06","06",
       ];
 const index = parseInt(card.key.slice(-2), 10) - 1;
-      displayCode = `※BP01-ER${perMap[index]}`;
+      displayCode = `\u203BBP01-ER${perMap[index]}`;
     } else if (card.rarity === "PSPR") {
-      displayCode = `※BP01-SPR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP01-SPR${card.key.slice(-2)}`;
     } else if (card.rarity === "PGR") {
-      displayCode = `※BP01-GR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP01-GR${card.key.slice(-2)}`;
     } else if (card.rarity === "PCR") {
-      displayCode = `※BP01-CR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP01-CR${card.key.slice(-2)}`;
     } else if (card.rarity === "PRR") {
-      displayCode = `※BP01-RR${card.key.slice(-2)}`;
+      displayCode = `\u203BBP01-RR${card.key.slice(-2)}`;
     } else {
       displayCode = card.key.replace(/^BP01/, "BP01-");
     }
   }
 return displayCode;
 };
-const getDisplayRarity = (rarity: string) => rarity.startsWith("P") ? `※${rarity.slice(1)}` : rarity;
+const getDisplayRarity = (rarity: string) => rarity.startsWith("P") ? `\u203B${rarity.slice(1)}` : rarity;
 return { sets, getCards, getDisplayCardCode, getDisplayRarity };
 })();
 const catalogGroups = [funCatalog, moonCatalog, promosCatalog, rainbowCatalog, starCatalog, tcgCatalog];

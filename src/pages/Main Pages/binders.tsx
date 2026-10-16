@@ -618,7 +618,7 @@ export default function MyCollectionBinder() {
   } else {
     cards =
       selectedSet.id === "9"
-        ? [1, 2, 3, 4, 5, 6, 7, null, 14, 8, 9, 10, 11, 12, 13].map((number) => ({
+        ? [1, 2, 3, 4, 5, 6, 7, null, 14, 8, 9, 10, 11, 12, 13, 15].map((number) => ({
             rarity: "PR",
             number,
             key: number === null ? "UNRELEASED-SLOT-8" : `PR-${number}`,

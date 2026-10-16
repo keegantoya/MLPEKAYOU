@@ -36,7 +36,6 @@ export default function ISOChecking({
 const [open, setOpen] = useState(false);
 const [loading, setLoading] = useState(false);
 const [status, setStatus] = useState<Status | null>(null);
-
 const isoCardKey =
     setId === "FW" || setId === "SD"
       ? cardKey
@@ -47,21 +46,21 @@ const cardCode = getISOCardCode(setId, cardKey);
 const setName = getISOSetName(setId);
 useEffect(() => {
   if (!open) return;
-  const previouslyFocused = document.activeElement as HTMLElement | null;
-  const previousOverflow = document.body.style.overflow;
+const previouslyFocused = document.activeElement as HTMLElement | null;
+const previousOverflow = document.body.style.overflow;
   document.body.style.overflow = "hidden";
   menuPanelRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
-  const handleKeyDown = (event: KeyboardEvent) => {
+const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape" && !loading) setOpen(false);
     if (event.key !== "Tab") return;
-    const controls = Array.from(menuPanelRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled), [href], input:not(:disabled), [tabindex='0']") ?? []);
+const controls = Array.from(menuPanelRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled), [href], input:not(:disabled), [tabindex='0']") ?? []);
     if (!controls.length) {
       event.preventDefault();
       menuPanelRef.current?.focus();
       return;
     }
-    const first = controls[0];
-    const last = controls[controls.length - 1];
+const first = controls[0];
+const last = controls[controls.length - 1];
     if (event.shiftKey && (document.activeElement === first || document.activeElement === menuPanelRef.current)) {
       event.preventDefault();
       last.focus();
@@ -258,7 +257,7 @@ const { error } = await supabase
             </div>
             <div className="grid items-start gap-3 p-3 sm:grid-cols-[220px_minmax(0,1fr)] sm:gap-5 sm:p-5">
               <div className="flex min-w-0 items-start justify-center self-start">
-                <div className={`pointer-events-none w-[min(180px,24dvh)] overflow-hidden rounded-md shadow-lg [&>*]:w-full sm:w-full ${contentClassName ?? ""}`} style={contentStyle} aria-hidden="true">
+                <div className={`pointer-events-none w-[min(180px,24dvh)] overflow-hidden rounded-xl shadow-lg [&>*]:w-full sm:rounded-2xl sm:w-full ${contentClassName ?? ""}`} style={contentStyle} aria-hidden="true">
                   {children}
                 </div>
               </div>

@@ -20,8 +20,8 @@ const sets = [
   {
     id: "9",
     name: "Promotional Cards",
-    total: 13,
-    rarities: { PR: 13 },
+    total: 14,
+    rarities: { PR: 14 },
   },
   {
     id: "1",
@@ -261,8 +261,8 @@ const found = progressMap.get(set.id);
           return;
         }
         if (set.id === "9") {
-          newProgress[set.id] = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].filter((number) => {
-            const value = found.progress[`PR-${number}`];
+          newProgress[set.id] = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].filter((number) => {
+const value = found.progress[`PR-${number}`];
             return value === true || (value !== null && typeof value === "object" && value?.owned === true);
           }).length;
           return;
@@ -286,7 +286,6 @@ const {
 const mainSets = sets.filter((s) =>
     ["1", "5", "7", "2", "3", "13", "8", "11"].includes(s.id)
   );
-const promoSets = sets.filter((s) => ["9"].includes(s.id));
 const visibleSets = sets.filter(
     (set) =>
       !hiddenSets.includes(set.id) &&
@@ -322,6 +321,7 @@ const activeSets = sets.filter(
         "7",
         "8",
         "11",
+        "9",
       ].includes(set.id) &&
       releasedRoutes[set.id] &&
       !hiddenSets.includes(set.id) &&
@@ -359,7 +359,7 @@ const percent =
     set.total > 0
       ? Math.min(100, Math.round((owned / set.total) * 100))
       : 0;
-const isMastered = percent === 100;
+const isMastered = owned === set.total;
 const route = releasedRoutes[set.id];
 const image = setImages[set.id];
   return (
@@ -510,34 +510,6 @@ return (
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
         {activeSets.map(renderSetCard)}
       </div>
-      {promoSets.filter(
-        (set) =>
-          releasedRoutes[set.id] &&
-          !hiddenSets.includes(set.id) &&
-          (progress[set.id] || 0) < set.total
-      ).length > 0 && (
-        <>
-          {renderSectionHeader(
-            "Promotional Cards",
-            promoSets.filter(
-              (set) =>
-                releasedRoutes[set.id] &&
-                !hiddenSets.includes(set.id) &&
-                (progress[set.id] || 0) < set.total
-            ).length
-          )}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            {promoSets
-              .filter(
-                (set) =>
-                  releasedRoutes[set.id] &&
-                  !hiddenSets.includes(set.id) &&
-                  (progress[set.id] || 0) < set.total
-              )
-              .map(renderSetCard)}
-          </div>
-        </>
-      )}
       {renderSectionHeader("Mastered Collection", masteredSets.length)}
       {masteredSets.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">

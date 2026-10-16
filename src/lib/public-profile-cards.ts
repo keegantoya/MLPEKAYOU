@@ -255,6 +255,7 @@ export function usePublicProfileCards(userId?: string) {
         "PR-11",
         "PR-12",
         "PR-13",
+        "PR-15",
       ]) {
         const value = progressMap["9"]?.[cardKey];
         const owned =

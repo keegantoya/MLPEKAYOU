@@ -177,12 +177,14 @@ const cardContent = (
                         }`}
                       >
                         <CardImage
-                          imageSize={(set.id === "9" && card.number === 14) || (set.id === "tcgpromos" && card.number === 28) ? "original" : "grid"}
+                          imageSize={(set.id === "9" && [14, 15].includes(card.number)) || (set.id === "tcgpromos" && card.number === 28) ? "original" : "grid"}
                           src={getImage(set.id, card.number)}
                           alt={getDisplayCardCode(set.id, card.number)}
                           className={
-                            set.id === "9" && card.number === 1
-                              ? "h-full w-full scale-[1.02] object-contain object-center"
+                            set.id === "9" && card.number === 15
+                              ? "h-full w-full scale-[1.025] object-contain object-center"
+                              : set.id === "9" && card.number === 1
+                                ? "h-full w-full scale-[1.02] object-contain object-center"
                               : set.id === "9" && card.number === 7
                                 ? "h-full w-full scale-[1.06] object-contain object-center"
                                 : set.id === "9" && [2, 3, 4, 5].includes(card.number)

@@ -58,6 +58,7 @@ export const cardImagePaths = {
     cardBacksM2ZRBACK: "/card-backs/M2ZRBACK.webp",
     cardBacksPromosSdccboombacks: "/card-backs/promos/sdccboombacks.webp",
     cardBacksPromosPr009back: "/card-backs/promos/pr009back.webp",
+  cardBacksPromosPr15back: "/card-backs/promos/pr15back.webp",
     cardBacksR1FRBACK: "/card-backs/R1FRBACK.webp",
     cardBacksRainbowTwoR2BASEBACKS: "/card-backs/rainbow-two/R2BASEBACKS.webp",
     cardBacksRainbowTwoR2FRBACK: "/card-backs/rainbow-two/R2FRBACK.webp",
@@ -113,8 +114,8 @@ export const cardImagePaths = {
   },
 } as const;
 function getMoonFourImagePath(key: string) {
-const normalized = key.trim().toUpperCase().replace(/^M4/, "").replace(/^SHINING[ _-]*ZR/, "SZR");
-const match = normalized.match(/^(SZR|SSR|SGR|LSR|HR|SR|UR|ZR|SC|R)[ _-]*(\d+)$/);
+const normalized = key.trim().toUpperCase().replace(/^M4/, "").replace(/^SHINING[ _-]?ZR/, "SZR");
+const match = normalized.match(/^(SZR|SSR|SGR|LSR|HR|SR|UR|ZR|SC|R)[ _-]?(\d+)$/);
   if (!match) return "/placeholder-card.webp";
 const number = Number(match[2]);
 const counts: Record<string, number> = { R: 30, SR: 20, HR: 30, SSR: 26, UR: 16, SGR: 8, SC: 7, ZR: 7, SZR: 2, LSR: 16 };
@@ -392,6 +393,9 @@ const padded = String(number).padStart(3, "0");
   return cardImagePaths.fixed.cardBacksM1RSRSGRSCBACK;
 };
 export const getPromotionalCardsBack = (number?: number) => {
+  if (number === 15) {
+    return cardImagePaths.fixed.cardBacksPromosPr15back;
+  }
   if (number === 14) {
     return cardImagePaths.fixed.cardBacksPromosPr009back;
   }

@@ -294,7 +294,7 @@ const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
 const COLLECTION_SET_TOTALS: Record<string, number> = {
   "1": 186, "2": 189, "3": 290, "13": 162, "4": 105,
   "5": 146, "6": 170, "7": 127, "8": 136, "11": 148,
-  "9": 13, SD: 68, friendshipsbegin: 68, FW: 191,
+  "9": 14, SD: 68, friendshipsbegin: 68, FW: 191,
   "12": 191, "14": 190, tcgpromos: 28,
 };
 const normalizeCollectionKey = (key: string) => key
@@ -385,7 +385,7 @@ const rarityMap: Record<string, string[]> = {
     "PRR",
   ],
 };
-const CCG_PROMO_ORDER = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13].map((number) => `PR-${number}`);
+const CCG_PROMO_ORDER = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].map((number) => `PR-${number}`);
 const comparePromoCards = (a: { card_key: string }, b: { card_key: string }) => {
   const indexA = CCG_PROMO_ORDER.indexOf(a.card_key);
   const indexB = CCG_PROMO_ORDER.indexOf(b.card_key);
@@ -466,6 +466,9 @@ const getOfferImageClassName = (card: { set_id: string; card_key: string }) => {
   }
   const cardNumber = getOfferCardNumber(card.card_key);
   if (offerSetId === "9") {
+    if (cardNumber === 15) {
+      return `${base} scale-[1.025] object-contain object-center`;
+    }
     if (cardNumber === 1) {
       return `${base} scale-[1.02] object-contain object-center`;
     }
@@ -527,7 +530,7 @@ function ListingCardImage({
       className={
         isLandscape
           ? "absolute object-contain"
-          : offerMode
+          : offerMode || (String(card.set_id) === "9" && card.card_key === "PR-15")
             ? getOfferImageClassName(card)
             : "absolute inset-0 h-full w-full object-cover"
       }
@@ -1581,7 +1584,7 @@ export default function TradingPostInner() {
             {loadError && !loading && <div className="tp-empty" role="alert"><ShieldAlert size={28} /><h3>Unable to load the marketplace</h3><p>{loadError}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Try again</button></div>}
             {loading ? <div className="tp-loading" role="status" aria-live="polite">
               <div className="tp-loading-head"><div><span className="tp-load-eyebrow">TRADING POST / LIVE CONNECTION</span><h3>Finding your matches<span className="tp-load-dots" aria-hidden="true">...</span></h3><p>{["Connecting to this set's card listings.", "Loading collector profiles and contact details.", "Checking availability and your offer history."][loadStage]}</p></div><div className="tp-loading-indicator"><div className="tp-loading-orbit" aria-hidden="true"><span /><i /></div><span>Working</span><small aria-live="off">{loadingSeconds}s elapsed</small></div></div>
-              <div className="tp-load-steps" aria-label="Loading progress">{["Card listings", "Collector profiles", "Offer history"].map((label, index) => <span key={label} className={`tp-load-step ${index < loadStage ? "tp-step-done" : index === loadStage ? "tp-step-active" : ""}`} aria-current={index === loadStage ? "step" : undefined}><i aria-hidden="true">{index < loadStage ? "✓" : index + 1}</i><span>{label}</span></span>)}</div>
+              <div className="tp-load-steps" aria-label="Loading progress">{["Card listings", "Collector profiles", "Offer history"].map((label, index) => <span key={label} className={`tp-load-step ${index < loadStage ? "tp-step-done" : index === loadStage ? "tp-step-active" : ""}`} aria-current={index === loadStage ? "step" : undefined}><i aria-hidden="true">{index < loadStage ? "{\u2713}" : index + 1}</i><span>{label}</span></span>)}</div>
               <div className="tp-load-track" aria-hidden="true"><span /></div><div className="tp-skeleton-grid" aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <div key={index} className="tp-skeleton" style={{ animationDelay: `${index * 90}ms` }}><span /><i /><i /></div>)}</div>
               <details className="tp-load-details"><summary>What is loading?</summary><ul><li>Listings available for trade or sale in this set</li><li>Collector profiles and contact details</li><li>Your collection matches and offer activity</li></ul><p>This can take a little longer when a set has many listings. The page will fill in automatically when the data is ready.</p></details>
             </div> : loadError ? null : listingType === "iso" && isoError ? <div className="tp-empty" role="alert"><ShieldAlert size={36} /><h3>Unable to load your ISO</h3><p>{isoError}</p><button type="button" onClick={() => setReload((value) => value + 1)}>Try again</button></div> : pagedUsers.length === 0 ? <div className="tp-empty"><Search size={36} /><h3>{listingType === "iso" ? "No ISO matches right now" : allListings.length ? "No matches this time" : "This set is waiting for listings"}</h3><p>{listingType === "iso" ? "Nothing from your ISO in this set is for sale or trade right now, try again another time." : allListings.length ? "Try a different rarity, listing type, or collector name." : "Collector cards will appear here when they become available for trade or sale."}</p><button type="button" onClick={() => { setSearch(""); setSelectedRarity(null); setListingType("all"); setPage(0); }}>Browse all listings</button></div> : <div key={`${selectedRarity}-${listingType}-${currentPage}`}>

@@ -12,6 +12,8 @@ export const promoCharacterMap: Record<string, string[]> = {
   "9-PR-11": ["Rainbow Dash, Apple Bloom, Tank"],
   "9-PR-12": ["Fluttershy, Sweetie Belle, Angel"],
   "9-PR-13": ["Rarity, Scootaloo, Princess Luna, Opalescence"],
+  "9-PR-14": ["Pinkie Pie"],
+  "9-PR-15": ["Twilight Sparkle, Rarity, Pinkie Pie, Applejack, Rainbow Dash, Fluttershy"],
 
   // TCG Promos
   "tcgpromos-RR01": ["Princess Twilight Sparkle"],
