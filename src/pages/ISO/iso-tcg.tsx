@@ -173,7 +173,7 @@ const sets = [
     name: "HEARTSWARMING EVE",
     folder: "hearthswarming-eve",
     prefix: "BP04",
-    rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6 },
+    rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6, TK: 6 },
   },
 ];
 interface ISOTCGProps {

@@ -110,7 +110,7 @@ const setButtons = [
   },
   {
     title: "HeartsWarming Eve",
-    subtitle: "191 Cards",
+    subtitle: "197 Cards",
     group: "TCG",
     to: "/trading-post/hearthswarming-eve",
     image: "/thumbnails/hearthswarmingsetimage.png",

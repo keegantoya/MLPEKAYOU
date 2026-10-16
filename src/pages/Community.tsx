@@ -1,3 +1,4 @@
+import { ArrowUpRight, Crown, Flag, Layers, Search, ShieldCheck, Trophy, X } from "lucide-react";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useNavigate } from "react-router-dom";
@@ -65,7 +66,7 @@ const sets = [
     id: "hearthswarming-eve",
     dbId: "hearthswarming-eve",
     name: "HeartsWarming Eve",
-    total: 191,
+    total: 197,
   },
 ];
 const manualFirstFinishers: Record<
@@ -111,490 +112,156 @@ const manualFirstFinishers: Record<
     id: "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
   },
 };
-type Category =
-  | "star"
-  | "ccg"
-  | "rainbow"
-  | "funmoments"
-  | "tcg";
+type Category = "all" | "star" | "ccg" | "rainbow" | "funmoments" | "tcg";
+type Collector = { id: string; username?: string; avatar_url?: string | null };
+const categories: { id: Category; label: string; icon?: string }[] = [
+  { id: "all", label: "All collections" },
+  { id: "ccg", label: "Moon", icon: elementOfKindness },
+  { id: "star", label: "Star", icon: elementOfMagic },
+  { id: "rainbow", label: "Rainbow", icon: elementOfLoyalty },
+  { id: "funmoments", label: "Fun Moments", icon: elementOfGenerosity },
+  { id: "tcg", label: "Trading Card Game", icon: elementOfHonesty },
+];
+const collectionPresentation: Record<string, { category: Category; title: string; image: string }> = {
+  "1": { category: "ccg", title: "Moon One", image: "/thumbnails/moononesetimage.webp" },
+  "2": { category: "ccg", title: "Moon Two", image: "/thumbnails/moontwosetimage.webp" },
+  "3": { category: "ccg", title: "Moon Three", image: "/thumbnails/moonthreesetimage.webp" },
+  "13": { category: "ccg", title: "Moon Four", image: "/thumbnails/moonfoursetimage.webp" },
+  "4": { category: "star", title: "Star One", image: "/thumbnails/staronesetimage.webp" },
+  "5": { category: "rainbow", title: "Rainbow One", image: "/thumbnails/rainbowonesetimage.webp" },
+  "6": { category: "rainbow", title: "Rainbow Two", image: "/thumbnails/rainbowtwosetimage.webp" },
+  "7": { category: "funmoments", title: "Fun Moments One", image: "/thumbnails/funonesetimage.webp" },
+  "8": { category: "funmoments", title: "Fun Moments Two", image: "/thumbnails/funtwosetimage.webp" },
+  "11": { category: "funmoments", title: "Fun Moments Three", image: "/thumbnails/funthreesetimage.webp" },
+  friendshipsbegin: { category: "tcg", title: "Friendships Begin", image: "/thumbnails/friendshipsbeginsetimage.webp" },
+  fantasywonderland: { category: "tcg", title: "Fantasy Wonderland", image: "/thumbnails/fantasysetimage.webp" },
+  discord: { category: "tcg", title: "Discord", image: "/thumbnails/discordsetimage.webp" },
+  "14": { category: "tcg", title: "Nightmare Night", image: "/thumbnails/nightmarenightsetimage.webp" },
+  "hearthswarming-eve": { category: "tcg", title: "HeartsWarming Eve", image: "/thumbnails/hearthswarmingsetimage.png" },
+};
+const collectionOrder = ["1", "2", "3", "13", "4", "5", "6", "7", "8", "11", "friendshipsbegin", "fantasywonderland", "discord", "14", "hearthswarming-eve"];
+const championId = "2692c7a3-bce3-45b7-8636-5e18bf39edc3";
+const readTheme = () => {
+  if (typeof document === "undefined") return "dark";
+  const root = document.documentElement;
+  const stored = root.dataset.theme || "";
+  if (stored === "spooky" || root.classList.contains("spooky")) return "spooky";
+  return stored === "light" || root.classList.contains("light") ? "light" : "dark";
+};
+const communityStyles = `
+.community-hub{--ch-bg:#111315;--ch-panel:#181b1e;--ch-soft:#202428;--ch-text:#f2f3f4;--ch-muted:#9bA3ab;--ch-line:#ffffff12;--ch-accent:#e7c84b;--ch-wash:#e7c84b12;--ch-on-accent:#211c0c;min-height:calc(100dvh - 80px);background:var(--ch-bg);color:var(--ch-text);font-family:inherit;padding:34px 28px max(92px,env(safe-area-inset-bottom));box-sizing:border-box}
+.community-hub[data-mode="light"]{--ch-bg:hsl(var(--background,0 0% 98%));--ch-panel:#fff;--ch-soft:#f1f3f4;--ch-text:#20262b;--ch-muted:#6d767d;--ch-line:#19242d14;--ch-wash:#c49b1210}
+.community-hub[data-mode="spooky"]{--ch-accent:#be9af9;--ch-wash:#be9af914;--ch-on-accent:#251a39}
+.community-hub *{box-sizing:border-box}.community-hub button,.community-hub input{font:inherit}.community-hub button{cursor:pointer}.community-hub button:focus-visible,.community-hub input:focus-visible{outline:2px solid var(--ch-accent);outline-offset:4px}.ch-wrap{max-width:1330px;margin:auto}.ch-topline{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:30px}.ch-kicker{display:flex;align-items:center;gap:9px;color:var(--ch-muted);font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}.ch-kicker i{width:7px;height:7px;display:block;border-radius:50%;background:var(--ch-accent)}.ch-top-link{display:flex;align-items:center;gap:7px;border:0;background:none;color:var(--ch-muted);font-size:12px;padding:6px 0}.ch-top-link:hover{color:var(--ch-text)}
+.ch-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,430px);gap:56px;align-items:center;margin-bottom:34px}.ch-intro h1{font-size:clamp(40px,5.4vw,68px);line-height:1.04;letter-spacing:-.055em;font-weight:750;margin:0 0 18px}.ch-intro h1 span{color:var(--ch-accent)}.ch-intro>p{max-width:510px;margin:0;font-size:14px;line-height:1.8;color:var(--ch-muted)}.ch-intro-facts{display:flex;gap:28px;margin-top:24px}.ch-fact{display:flex;align-items:baseline;gap:7px;font-size:11px;color:var(--ch-muted)}.ch-fact strong{color:var(--ch-text);font-size:20px;font-weight:700;letter-spacing:-.04em}
+.ch-spotlight{position:relative;padding:24px;border:1px solid var(--ch-line);border-radius:22px;background:var(--ch-panel);overflow:hidden}.ch-spotlight:before{content:"";position:absolute;left:0;top:25px;bottom:25px;width:3px;border-radius:0 3px 3px 0;background:var(--ch-accent)}.ch-spotlight-label{display:flex;align-items:center;gap:8px;color:var(--ch-accent);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.ch-spotlight-person{display:flex;align-items:center;gap:16px;margin:20px 0 16px}.ch-champion-avatar{width:66px;height:66px;flex-shrink:0;border-radius:19px;object-fit:cover;background:var(--ch-soft)}.ch-champion-name{display:flex;align-items:center;gap:7px;font-size:24px;font-weight:700;letter-spacing:-.035em;min-width:0}.ch-champion-name>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ch-verification{width:18px;height:18px;object-fit:contain}.ch-champion-role{color:var(--ch-muted);font-size:11px;margin:4px 0 0}.ch-spotlight-note{margin:0;padding-top:16px;border-top:1px solid var(--ch-line);font-size:11px;line-height:1.75;color:var(--ch-muted)}
+.ch-browse{border-top:1px solid var(--ch-line);padding-top:26px}.ch-browse-top{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:20px}.ch-section-title{display:flex;align-items:center;gap:12px}.ch-section-title h2{font-size:19px;margin:0;font-weight:650;letter-spacing:-.03em}.ch-count{padding:4px 8px;background:var(--ch-soft);border:1px solid var(--ch-line);border-radius:7px;color:var(--ch-muted);font-size:10px;font-variant-numeric:tabular-nums}.ch-search{display:flex;align-items:center;gap:9px;min-width:270px;background:var(--ch-panel);border:1px solid var(--ch-line);border-radius:12px;padding:0 12px;color:var(--ch-muted)}.ch-search input{width:100%;min-width:0;border:0;outline:none;background:transparent;color:var(--ch-text);font-size:16px;padding:11px 0;line-height:1.2}.ch-search input::placeholder{color:var(--ch-muted);font-size:12px}.ch-search button{padding:4px;border:0;background:none;color:var(--ch-muted);display:flex;align-items:center;justify-content:center}.ch-tabs{display:flex;gap:7px;overflow:auto;padding:3px 3px 14px;margin:0 -3px 8px;scrollbar-width:thin;scrollbar-color:var(--ch-line) transparent}.ch-tab{display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;border:1px solid var(--ch-line);border-radius:11px;background:var(--ch-panel);padding:10px 14px;color:var(--ch-muted);font-size:11px;transition:background .15s,color .15s,border-color .15s}.ch-tab img{width:19px;height:19px;object-fit:contain}.ch-tab b{font-size:9px;font-weight:500;opacity:.7;margin-left:2px}.ch-tab[aria-pressed="true"]{background:var(--ch-accent);border-color:var(--ch-accent);color:var(--ch-on-accent);font-weight:700}.ch-tab:not([aria-pressed="true"]):hover{border-color:var(--ch-muted);color:var(--ch-text)}
+.ch-table-head{display:grid;grid-template-columns:40px minmax(0,1fr) 92px minmax(180px,250px) 34px;gap:18px;padding:8px 22px 12px;color:var(--ch-muted);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.ch-table-head>span:first-child{grid-column:2}.ch-rows{display:grid;gap:8px}.ch-row{width:100%;display:grid;grid-template-columns:40px minmax(0,1fr) 92px minmax(180px,250px) 34px;align-items:center;gap:18px;padding:18px 22px;text-align:left;border:1px solid var(--ch-line);border-radius:16px;background:var(--ch-panel);color:var(--ch-text);transition:border-color .15s,background .15s}.ch-row:hover{border-color:var(--ch-accent);background:var(--ch-soft)}.ch-row-number{font-size:11px;font-variant-numeric:tabular-nums;color:var(--ch-muted)}.ch-set{display:flex;align-items:center;gap:17px;min-width:0}.ch-set-art{width:57px;height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--ch-soft);padding:5px;overflow:hidden}.ch-set-art img{width:100%;height:100%;object-fit:contain}.ch-set-copy{min-width:0}.ch-set-family{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ch-muted);margin-bottom:6px}.ch-set-title{display:block;font-size:16px;line-height:1.3;letter-spacing:-.025em;font-weight:650}.ch-set-mobile-count{display:none}.ch-total{font-size:20px;font-weight:600;letter-spacing:-.035em;font-variant-numeric:tabular-nums}.ch-total span{display:block;font-size:9px;letter-spacing:0;font-weight:400;color:var(--ch-muted);margin-top:4px}.ch-finisher{display:flex;align-items:center;gap:11px;min-width:0}.ch-finisher-avatar{width:37px;height:37px;border-radius:11px;object-fit:cover;background:var(--ch-soft);flex-shrink:0}.ch-finisher-copy{min-width:0}.ch-finisher-name{display:block;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ch-finisher-caption{display:flex;align-items:center;gap:4px;color:var(--ch-muted);font-size:9px;margin-top:5px}.ch-finisher-caption svg{color:var(--ch-accent)}.ch-open-icon{width:37px;height:37px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--ch-line);border-radius:11px;color:var(--ch-muted);flex-shrink:0}.ch-unclaimed .ch-finisher-name{color:var(--ch-muted);font-weight:400;font-size:11px}.ch-arrow{height:31px;width:31px;border:1px solid var(--ch-line);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--ch-muted);transition:background .15s,color .15s}.ch-row:hover .ch-arrow{background:var(--ch-accent);color:var(--ch-on-accent);border-color:transparent}
+.ch-footer{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:21px 2px;color:var(--ch-muted);font-size:10px;line-height:1.7}.ch-footer-note{display:flex;align-items:flex-start;gap:8px}.ch-footer-note svg{flex-shrink:0;margin-top:2px;color:var(--ch-accent)}.ch-empty{border:1px dashed var(--ch-line);border-radius:16px;padding:50px 20px;text-align:center;color:var(--ch-muted)}.ch-empty h3{color:var(--ch-text);margin:14px 0 8px;font-size:18px}.ch-empty p{font-size:12px;margin:0 0 20px}.ch-clear{border:1px solid var(--ch-line);border-radius:10px;background:var(--ch-soft);color:var(--ch-text);padding:10px 16px;font-size:12px}.ch-error{display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid var(--ch-line);background:var(--ch-wash);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--ch-muted)}.ch-error button{border:0;background:none;color:var(--ch-accent);font-size:12px;text-decoration:underline;text-underline-offset:3px}.ch-skeleton{display:block;height:12px;width:110px;border-radius:4px;background:var(--ch-soft);animation:ch-pulse 1.6s ease-in-out infinite}.ch-skeleton-small{width:66px;height:9px;margin-top:9px}@keyframes ch-pulse{50%{opacity:.35}}
+@media(min-width:1600px){.community-hub{padding-top:48px}.ch-hero{gap:100px;margin-bottom:44px}}
+@media(max-width:1000px){.ch-hero{gap:28px;grid-template-columns:minmax(0,1fr) minmax(290px,360px)}.ch-intro h1{font-size:48px}.ch-table-head,.ch-row{grid-template-columns:24px minmax(0,1fr) 65px minmax(150px,200px) 30px;gap:14px;padding-left:16px;padding-right:16px}.ch-set{gap:13px}.ch-set-title{font-size:14px}.ch-set-art{width:48px;height:57px}.ch-tabs{gap:6px}.ch-tab{padding:10px 12px}}
+@media(max-width:720px){.community-hub{padding:20px 14px max(92px,env(safe-area-inset-bottom))}.ch-topline{margin-bottom:26px}.ch-top-link{font-size:10px}.ch-kicker{font-size:9px;letter-spacing:.1em}.ch-hero{grid-template-columns:1fr;gap:24px;margin-bottom:25px}.ch-intro h1{font-size:46px;margin-bottom:14px}.ch-intro>p{font-size:12px;line-height:1.8}.ch-intro-facts{margin-top:18px;gap:24px}.ch-fact strong{font-size:18px}.ch-spotlight{padding:18px 20px;border-radius:17px}.ch-spotlight-person{margin:15px 0 13px;gap:13px}.ch-champion-avatar{width:48px;height:48px;border-radius:14px}.ch-champion-name{font-size:21px}.ch-spotlight-note{font-size:10px;padding-top:12px;line-height:1.8}.ch-spotlight:before{top:18px;bottom:18px}.ch-browse{padding-top:22px}.ch-browse-top{flex-wrap:wrap;gap:16px;margin-bottom:14px}.ch-search{min-width:0;width:100%}.ch-search input{padding:12px 0}.ch-section-title h2{font-size:18px}.ch-tabs{margin-bottom:5px;padding-bottom:11px}.ch-tab{padding:10px 12px;font-size:10px}.ch-tab img{height:17px;width:17px}.ch-table-head{display:none}.ch-rows{gap:9px}.ch-row{grid-template-columns:minmax(0,1fr) 27px;gap:13px;padding:16px;border-radius:15px}.ch-row-number,.ch-total{display:none}.ch-set{grid-column:1;gap:13px}.ch-set-art{width:51px;height:58px}.ch-set-title{font-size:15px}.ch-set-family{font-size:8px;margin-bottom:5px}.ch-set-mobile-count{display:block;font-size:10px;margin-top:5px;color:var(--ch-muted)}.ch-finisher{grid-column:1;gap:9px;margin-left:64px;margin-top:0;padding-top:12px;border-top:1px solid var(--ch-line)}.ch-finisher-avatar,.ch-open-icon{width:26px;height:26px;border-radius:8px}.ch-finisher-name{font-size:11px}.ch-finisher-caption{font-size:8px;margin-top:3px}.ch-finisher-caption svg{width:9px;height:9px}.ch-arrow{grid-column:2;grid-row:1 / span 2;width:27px;height:30px}.ch-unclaimed .ch-finisher-name{font-size:10px}.ch-footer{flex-direction:column;align-items:flex-start;font-size:9px;gap:10px;padding-top:18px}.ch-footer>span{padding-left:21px}.ch-error{font-size:11px;gap:12px}.ch-empty{padding:36px 16px}}
+@media(prefers-reduced-motion:reduce){.community-hub *{animation:none!important;transition:none!important}}
+`;
 const Community = () => {
-const navigate = useNavigate();
-const [activeCategory, setActiveCategory] =
-    useState<Category>("ccg");
-const [firstFinishers, setFirstFinishers] =
-    useState<any>({});
-const [topCollector, setTopCollector] =
-    useState<any>(null);
-const [isLightMode, setIsLightMode] = useState(() => {
-  if (typeof document === "undefined") return false;
-const root = document.documentElement;
-  return root.dataset.theme === "light" || root.classList.contains("light");
-});
-useEffect(() => {
-const syncTheme = () => {
-const root = document.documentElement;
-    setIsLightMode(
-      root.dataset.theme === "light" ||
-      root.classList.contains("light") ||
-      !root.classList.contains("dark")
-    );
-  };
-  syncTheme();
-const observer = new MutationObserver(syncTheme);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class", "data-theme"],
-  });
-  window.addEventListener("themechange", syncTheme);
-  return () => {
-    observer.disconnect();
-    window.removeEventListener("themechange", syncTheme);
-  };
-}, []);
+  const navigate = useNavigate();
+  const [activeCategory, setActiveCategory] = useState<Category>("all");
+  const [search, setSearch] = useState("");
+  const [profiles, setProfiles] = useState<Record<string, Collector>>({});
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const [theme, setTheme] = useState(readTheme);
   useEffect(() => {
-async function loadProfiles() {
-const ids = [
-        ...new Set([
-          ...Object.values(manualFirstFinishers).map(
-            (x) => x.id
-          ),
-          "2692c7a3-bce3-45b7-8636-5e18bf39edc3",
-        ]),
-      ];
-const { data } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url")
-        .in("id", ids);
-const profileMap = Object.fromEntries(
-        (data ?? []).map((p) => [p.id, p])
-      );
-const finishers: any = {};
-      for (const [setId, value] of Object.entries(
-        manualFirstFinishers
-      )) {
-        finishers[setId] = profileMap[value.id];
-      }
-      setFirstFinishers(finishers);
-      setTopCollector(
-        profileMap[
-          "2692c7a3-bce3-45b7-8636-5e18bf39edc3"
-        ]
-      );
-    }
-    loadProfiles();
+    const sync = () => setTheme(readTheme());
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
+    window.addEventListener("themechange", sync);
+    sync();
+    return () => { observer.disconnect(); window.removeEventListener("themechange", sync); };
   }, []);
-const categoryConfig: Record<
-    Category,
-    {
-      label: string;
-      description: string;
-      icon: string;
-    }
-  > = {
-    star: {
-      label: "STAR",
-      description: "Star Edition",
-      icon: elementOfMagic,
-    },
-    ccg: {
-      label: "MOON",
-      description: "Eternal Moon",
-      icon: elementOfKindness,
-    },
-    rainbow: {
-      label: "RAINBOW",
-      description: "Eternal Rainbow",
-      icon: elementOfLoyalty,
-    },
-    funmoments: {
-      label: "FUN MOMENTS",
-      description: "Fun Moments",
-      icon: elementOfGenerosity,
-    },
-    tcg: {
-      label: "TCG",
-      description: "Trading Card Game",
-      icon: elementOfHonesty,
-    },
-  };
-const activeConfig = categoryConfig[activeCategory];
-const visibleSets =
-    activeCategory === "tcg"
-      ? sets.filter((set) =>
-          [
-            "fantasywonderland",
-            "discord",
-            "friendshipsbegin",
-            "14",
-            "hearthswarming-eve",
-          ].includes(set.id)
-        )
-      : sets.filter((set) => {
-          if (activeCategory === "star") {
-            return ["4"].includes(set.id);
-          }
-          if (activeCategory === "ccg") {
-            return ["1", "2", "3", "13"].includes(set.id);
-          }
-          if (activeCategory === "rainbow") {
-            return ["5", "6"].includes(set.id);
-          }
-          if (activeCategory === "funmoments") {
-            return ["7", "8", "11"].includes(set.id);
-          }
-          return false;
-        });
-const CategoryButton = ({ category }: { category: Category }) => {
-const config = categoryConfig[category];
-const active = activeCategory === category;
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setLoadError(false);
+    const ids = Array.from(new Set([...Object.values(manualFirstFinishers).map(value => value.id), championId]));
+    const load = async () => {
+      try {
+        const { data, error } = await supabase.from("profiles").select("id, username, avatar_url").in("id", ids);
+        if (error) throw error;
+        if (active) setProfiles(Object.fromEntries((data || []).map(profile => [profile.id, profile])));
+      } catch {
+        if (active) setLoadError(true);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    void load();
+    return () => { active = false; };
+  }, [retry]);
+  const orderedSets = [...sets].sort((a, b) => collectionOrder.indexOf(a.id) - collectionOrder.indexOf(b.id));
+  const visibleSets = orderedSets.filter(set => (activeCategory === "all" || collectionPresentation[set.id]?.category === activeCategory) && `${set.name} ${collectionPresentation[set.id]?.title || ""}`.toLowerCase().includes(search.trim().toLowerCase()));
+  const champion = profiles[championId];
+  const championAssets = champion ? getProfileAssets(champion) : null;
+  const recordedFinishes = Object.keys(manualFirstFinishers).filter(id => sets.some(set => set.id === id)).length;
+  const selectedLabel = categories.find(category => category.id === activeCategory)?.label || "All collections";
   return (
-    <button
-      type="button"
-      onClick={() => setActiveCategory(category)}
-      className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-[20px] border px-3 py-3 text-left transition ${
-        active
-          ? isLightMode
-            ? "border-[#d6b43d]/60 bg-[#fff8d8] text-zinc-900"
-            : "border-[#FFD54A]/45 bg-[#FFD54A]/10 text-white"
-          : isLightMode
-          ? "border-black/10 bg-white text-zinc-700 hover:bg-zinc-50"
-          : "border-white/[0.08] bg-[#17191a] text-zinc-300 hover:bg-white/[0.05]"
-      }`}
-    >
-      <span
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
-          active
-            ? isLightMode
-              ? "border-[#d6b43d]/35 bg-[#f5e8a8]"
-              : "border-[#FFD54A]/20 bg-[#FFD54A]/12"
-            : isLightMode
-            ? "border-black/5 bg-zinc-100"
-            : "border-white/[0.06] bg-white/[0.05]"
-        }`}
-      >
-        <CardImage src={config.icon} alt="" className="h-6 w-6 object-contain" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold">{config.label}</span>
-        <span
-          className={`mt-0.5 block text-sm ${
-            isLightMode ? "text-zinc-500" : "text-zinc-400"
-          }`}
-        >
-          {config.description}
-        </span>
-      </span>
-      <span
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-          active
-            ? isLightMode
-              ? "bg-[#f0df8c] text-[#725700]"
-              : "bg-[#FFD54A]/12 text-[#FFE27A]"
-            : isLightMode
-            ? "bg-zinc-100 text-zinc-400"
-            : "bg-white/[0.04] text-zinc-500"
-        }`}
-      >
-        &#x2192;
-      </span>
-    </button>
-  );
-};
-const LeaderboardCard = ({ set }: { set: (typeof sets)[number] }) => {
-const winner = firstFinishers[String(set.id)];
-  return (
-    <button
-      type="button"
-      onClick={() => navigate(`/community/${set.id}`)}
-      className={`group relative min-h-[190px] overflow-hidden rounded-[24px] border p-5 text-left transition hover:-translate-y-0.5 ${
-        isLightMode
-          ? "border-black/10 bg-white hover:border-[#c9a62d]/45 hover:shadow-lg"
-          : "border-white/[0.08] bg-[#17191a] hover:border-[#FFD54A]/35 hover:bg-[#1b1d1e]"
-      }`}
-    >
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#FFD54A] via-[#E8C54A] to-transparent" />
-      <div
-        className={`pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl ${
-          isLightMode ? "bg-[#FFD54A]/12" : "bg-[#FFD54A]/7"
-        }`}
-      />
-      <div className="flex h-full gap-4">
-        <div className="min-w-0 flex-1 pr-2">
-          <div
-            className={`text-sm font-medium ${
-              isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
-            }`}
-          >
-            {activeCategory === "tcg" ? "Top Collector" : "Set Leaderboard"}
-          </div>
-          <h2 className="mt-3 text-lg font-semibold leading-snug">{set.name}</h2>
-          <div
-            className={`mt-3 text-sm leading-relaxed ${
-              isLightMode ? "text-zinc-500" : "text-zinc-400"
-            }`}
-          >
-          </div>
-          <div
-            className={`mt-5 inline-flex rounded-full px-3 py-1.5 text-sm ${
-              isLightMode
-                ? "bg-zinc-100 text-zinc-600"
-                : "bg-white/[0.05] text-zinc-300"
-            }`}
-          >
-            {set.total} cards
-          </div>
-          <span
-            className={`ml-2 text-sm font-medium ${
-              isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
-            }`}
-          >
-            Open &#x2192;
-          </span>
+    <div className="community-hub" data-mode={theme}>
+      <style>{communityStyles}</style>
+      <main className="ch-wrap">
+        <div className="ch-topline">
+          <span className="ch-kicker"><i />MLPEKAYOU / THE COMMUNITY</span>
+          <button type="button" className="ch-top-link" onClick={() => navigate("/collections")}>My collections<ArrowUpRight size={13} /></button>
         </div>
-        <div className="flex w-[92px] shrink-0 flex-col items-center justify-center text-center">
-          {winner ? (
-            <>
-              <div className="relative">
-                <ProfileAvatar
-                  profile={winner}
-                  src={getProfileAssets(winner).avatar}
-                  alt={winner.username}
-                  className="h-16 w-16 rounded-[22%] border-2 border-[#D8B83F] object-cover"
-                />
-                <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#FFD54A] px-1 text-sm font-bold text-black">
-                  &#x2605;
-                </span>
-              </div>
-              <div className="mt-2 max-w-[92px] truncate text-sm font-semibold">
-                {winner.username}
-              </div>
-              <div
-                className={`mt-0.5 text-sm ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
-                First finisher
-              </div>
-            </>
-          ) : (
-            <>
-              <div
-                className={`flex h-16 w-16 items-center justify-center rounded-full border-2 text-base font-bold ${
-                  isLightMode
-                    ? "border-[#d5bb55] bg-[#fff8d8] text-[#806100]"
-                    : "border-[#FFD54A]/35 bg-[#FFD54A]/10 text-[#FFE27A]"
-                }`}
-              >
-                &#x2605;
-              </div>
-              <div className="mt-2 text-sm font-semibold">Unclaimed</div>
-              <div
-                className={`mt-0.5 text-sm ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
-                Be first
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </button>
-  );
-};
-const ChampionPanel = ({ mobile = false }: { mobile?: boolean }) => {
-const assets = getProfileAssets(topCollector);
-  return (
-    <div
-      className={`relative overflow-hidden rounded-[26px] border ${
-        mobile ? "w-full" : "w-[280px]"
-      } ${
-        isLightMode
-          ? "border-[#d6b43d]/35 bg-[#fffdf5]"
-          : "border-[#FFD54A]/20 bg-[#17191a]"
-      }`}
-    >
-      <div className="absolute inset-x-0 top-0 h-1 bg-[#FFD54A]" />
-      <div className="p-5">
-        <div
-          className={`text-sm font-medium ${
-            isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
-          }`}
-        >
-          Community Champion
-        </div>
-        <h2 className="mt-1 text-xl font-semibold">Top Mastersetter</h2>
-        <div
-          className={`mt-5 rounded-[20px] border p-4 ${
-            isLightMode
-              ? "border-black/5 bg-white/80"
-              : "border-white/[0.07] bg-white/[0.03]"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-          <ProfileAvatar
-            profile={topCollector}
-            src={assets.avatar}
-            alt="Top Collector Avatar"
-            className="h-20 w-20 shrink-0 rounded-[22%] border-2 border-[#D8B83F] object-cover"
-          />
-          <div className="min-w-0">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <span className="truncate text-base font-semibold">
-                {topCollector?.username || "Loading..."}
-              </span>
-              {assets.verification && (
-                <CardImage
-                  src={assets.verification.badge}
-                  alt={assets.verification.label}
-                  title={assets.verification.label}
-                  className="h-5 w-5 shrink-0 object-contain"
-                />
-              )}
-            </div>
-            <div
-              className={`mt-1 text-sm ${
-                isLightMode ? "text-zinc-500" : "text-zinc-400"
-              }`}
-            >
-              Verified Top Member
+        <header className="ch-hero">
+          <div className="ch-intro">
+            <h1>Smaller Leaderboards.<br /><span>More Recognitions!</span></h1>
+            <p>Your place among the collectors. Explore each set's leaderboard, celebrate its first finisher, and see who is closest to completing the collection.</p>
+            <div className="ch-intro-facts">
+              <span className="ch-fact"><strong>{sets.length}</strong>collections</span>
+              <span className="ch-fact"><strong>{recordedFinishes}</strong>first finishes recorded</span>
             </div>
           </div>
-        </div>
-        </div>
-        <div
-          className={`mt-5 rounded-2xl p-3 text-sm leading-relaxed ${
-            isLightMode
-              ? "bg-[#fff6cb] text-[#6f5900]"
-              : "bg-[#FFD54A]/[0.08] text-[#F0D86F]"
-          }`}
-        >
-          Mari is a top supporter of MLPEKayou and a pillar of the community. She rules both the
-          TCG and CCG leaderboards and has been personally verified to be a North American-only
-          collector.
-        </div>
-      </div>
-    </div>
-  );
-};
-return (
-  <div
-    className={`min-h-screen pb-24 transition-colors ${
-      isLightMode
-        ? "bg-[#f6f4ef] text-zinc-900"
-        : "bg-[#0d0f10] text-zinc-100"
-    }`}
-  >
-    <div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6 lg:px-8">
-      <div className="mb-4 xl:hidden">
-        <ChampionPanel mobile />
-      </div>
-      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[250px_minmax(0,1fr)_280px]">
-        <aside className="xl:sticky xl:top-5">
-          <div
-            className={`rounded-[26px] border p-3 ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#131516]"
-            }`}
-          >
-            <div className="px-2 pb-3">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold">Categories</h2>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-sm ${
-                    isLightMode ? "bg-zinc-100 text-zinc-500" : "bg-white/[0.05] text-zinc-400"
-                  }`}
-                >
-                  5
-                </span>
-              </div>
-              <p
-                className={`mt-1 text-sm ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
-                Browse set leaderboards.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <CategoryButton category="star" />
-              <CategoryButton category="ccg" />
-              <CategoryButton category="rainbow" />
-              <CategoryButton category="funmoments" />
-              <CategoryButton category="tcg" />
-            </div>
-            <div
-              className={`mt-3 rounded-2xl border p-3 text-sm leading-relaxed ${
-                isLightMode
-                  ? "border-black/5 bg-[#faf8f1] text-zinc-600"
-                  : "border-white/[0.06] bg-white/[0.04] text-zinc-400"
-              }`}
-            >
-              <span className={isLightMode ? "font-medium text-[#806100]" : "font-medium text-[#E8CA55]"}>
-                Verification required.
-              </span>{" "}
-              Discord verification is needed for leaderboard placement and first-finisher claims.
-            </div>
-          </div>
-        </aside>
-        <main className="min-w-0">
-          <section
-            className={`relative mb-4 flex items-center justify-between gap-4 overflow-hidden rounded-[24px] border p-4 ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#131516]"
-            }`}
-          >
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#FFD54A] via-[#E8C54A] to-transparent" />
-            <div className="relative flex min-w-0 items-center gap-3">
-              <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
-                  isLightMode ? "bg-[#fff3b8]" : "bg-[#FFD54A]/10"
-                }`}
-              >
-                <CardImage
-                  src={activeConfig.icon}
-                  alt=""
-                  className="h-7 w-7 object-contain"
-                />
-              </span>
-              <div className="min-w-0">
-                <div className={isLightMode ? "text-sm font-medium text-[#806100]" : "text-sm font-medium text-[#E8CA55]"}>
-                  Active Category
-                </div>
-                <h1 className="mt-0.5 text-xl font-semibold">{activeConfig.label}</h1>
-                <div
-                  className={`mt-0.5 text-sm ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
-                  {activeConfig.description}
-                </div>
+          <section className="ch-spotlight" aria-label="Community champion">
+            <div className="ch-spotlight-label"><Crown size={15} />Community champion</div>
+            <div className="ch-spotlight-person">
+              {champion && championAssets ? <ProfileAvatar profile={champion} src={championAssets.avatar} alt={champion.username || "Community champion"} className="ch-champion-avatar" /> : <div className="ch-champion-avatar" aria-hidden="true" />}
+              <div style={{ minWidth: 0 }}>
+                <div className="ch-champion-name">{loading ? <span className="ch-skeleton" /> : <span>{champion?.username || "Mari"}</span>}{championAssets?.verification && <CardImage src={championAssets.verification.badge} alt={championAssets.verification.label} title={championAssets.verification.label} className="ch-verification" />}</div>
+                <p className="ch-champion-role">Top Mastersetter</p>
               </div>
             </div>
-            <div
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium ${
-                isLightMode
-                  ? "bg-zinc-100 text-zinc-600"
-                  : "bg-white/[0.05] text-zinc-300"
-              }`}
-            >
-              {visibleSets.length} {visibleSets.length === 1 ? "set" : "sets"}
-            </div>
+            <p className="ch-spotlight-note">Mari is a top supporter of MLPEKayou and a pillar of the community. She rules both the TCG and CCG leaderboards and has been personally verified to be a North American-only collector.</p>
           </section>
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
-            {visibleSets.map((set) => (
-              <LeaderboardCard key={set.id} set={set} /> 
-            ))}
+        </header>
+        <section className="ch-browse" aria-labelledby="ch-leaderboards-title">
+          <div className="ch-browse-top">
+            <div className="ch-section-title"><h2 id="ch-leaderboards-title">Set leaderboards</h2><span className="ch-count">{sets.length}</span></div>
+            <div className="ch-search"><Search size={15} aria-hidden="true" /><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Find a collection..." aria-label="Find a collection" />{search && <button type="button" aria-label="Clear collection search" onClick={() => setSearch("")}><X size={14} /></button>}</div>
           </div>
-        </main>
-        <aside className="hidden xl:block xl:sticky xl:top-5">
-          <ChampionPanel />
-        </aside>
-      </div>
+          <nav className="ch-tabs" aria-label="Collection category">{categories.map(category => <button type="button" className="ch-tab" key={category.id} aria-pressed={activeCategory === category.id} onClick={() => setActiveCategory(category.id)}>{category.icon ? <CardImage src={category.icon} alt="" /> : <Layers size={15} />}<span>{category.label}</span><b>{category.id === "all" ? sets.length : sets.filter(set => collectionPresentation[set.id]?.category === category.id).length}</b></button>)}</nav>
+          {loadError && <div className="ch-error" role="status"><span>Collector profiles could not be loaded. You can still open any leaderboard.</span><button type="button" onClick={() => setRetry(value => value + 1)}>Try again</button></div>}
+          <div className="ch-table-head" aria-hidden="true"><span>Collection</span><span>Set size</span><span>First finisher</span></div>
+          <div className="ch-rows" aria-label={`${selectedLabel} leaderboards`}>
+            {visibleSets.map((set, index) => {
+              const presentation = collectionPresentation[set.id];
+              const winnerId = manualFirstFinishers[set.id]?.id;
+              const winner = winnerId ? profiles[winnerId] : undefined;
+              const assets = winner ? getProfileAssets(winner) : null;
+              return <button type="button" className="ch-row" key={set.id} onClick={() => navigate(`/community/${set.id}`)} aria-label={`Open ${set.name} leaderboard`}>
+                <span className="ch-row-number">{String(index + 1).padStart(2, "0")}</span>
+                <span className="ch-set"><span className="ch-set-art"><CardImage src={presentation.image} alt="" /></span><span className="ch-set-copy"><span className="ch-set-family">{categories.find(category => category.id === presentation.category)?.label}</span><span className="ch-set-title">{presentation.title}</span><span className="ch-set-mobile-count">{set.total} cards in this set</span></span></span>
+                <span className="ch-total">{set.total}<span>cards to collect</span></span>
+                {loading && winnerId ? <span className="ch-finisher"><span className="ch-finisher-avatar" /><span><span className="ch-skeleton" /><span className="ch-skeleton ch-skeleton-small" /></span></span> : winner && assets ? <span className="ch-finisher"><ProfileAvatar profile={winner} src={assets.avatar} alt="" className="ch-finisher-avatar" /><span className="ch-finisher-copy"><span className="ch-finisher-name">{winner.username || "Collector"}</span><span className="ch-finisher-caption"><Trophy size={10} />First finisher</span></span></span> : <span className="ch-finisher ch-unclaimed"><span className="ch-open-icon"><Flag size={14} /></span><span className="ch-finisher-copy"><span className="ch-finisher-name">{winnerId ? "Finisher recorded" : "No finisher recorded"}</span><span className="ch-finisher-caption">{winnerId ? "View leaderboard" : "Explore the leaderboard"}</span></span></span>}
+                <span className="ch-arrow" aria-hidden="true"><ArrowUpRight size={15} /></span>
+              </button>;
+            })}
+          </div>
+          {visibleSets.length === 0 && <div className="ch-empty"><Search size={24} /><h3>No collections found</h3><p>Try a different name or browse all collections.</p><button type="button" className="ch-clear" onClick={() => { setSearch(""); setActiveCategory("all"); }}>Show all collections</button></div>}
+          <footer className="ch-footer"><div className="ch-footer-note"><ShieldCheck size={13} /><span>Discord verification is required for leaderboard placement and first-finisher claims.</span></div><span role="status" aria-live="polite">Showing {visibleSets.length} of {sets.length} collections</span></footer>
+        </section>
+      </main>
     </div>
-  </div>
-);
+  );
 };
 export default Community;

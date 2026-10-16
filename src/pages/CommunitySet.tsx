@@ -20,7 +20,7 @@ const sets: Record<string, { name: string; total: number }> = {
   fantasywonderland: { name: "Fantasy Wonderland", total: 191 },
   discord: { name: "Discord", total: 191 },
   "14": { name: "Nightmare Night", total: 190 },
-  "hearthswarming-eve": { name: "HeartsWarming Eve", total: 191 },
+  "hearthswarming-eve": { name: "HeartsWarming Eve", total: 197 },
 };
 const isoSets = [
   {
@@ -271,7 +271,7 @@ const isoSets = [
       PGR: 6,
       PSPR: 11,
       PCR: 12,
-      PRR: 6,
+      PRR: 6, TK: 6,
     },
   },
 ];

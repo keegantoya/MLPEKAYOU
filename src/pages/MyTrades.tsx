@@ -201,7 +201,7 @@ const collections = [
       title: "HeartsWarming Eve",
       setName: "TCG",
       imageUrl: "/thumbnails/hearthswarmingsetimage.png",
-      totalCards: 191,
+      totalCards: 197,
       category: "hearthswarming-eve",
     },
     {

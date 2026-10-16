@@ -7,7 +7,7 @@ export const cardImagePaths = {
   fantasyEmerald: (number: ImagePathPart) => `/fantasy-wonderland/SD01ER${number}.webp`,
   fantasyParallelEmerald: (number: ImagePathPart) => `/fantasy-wonderland/SD01PER${number}.webp`,
   fantasyWonderland: (key: ImagePathPart) => `/fantasy-wonderland/${key}.webp`,
-  hearthswarmingEve: (key: ImagePathPart) => `/cards/hearthswarming-eve/${String(key).replace(/^BP02-GR/, "BP04-GR")}.webp`,
+  hearthswarmingEve: (key: ImagePathPart) => /^BP04-TK0[1-6]$/.test(String(key)) ? `/cards/hearthswarming-eve/TK-${String(Number(String(key).slice(-2)) + 1).padStart(2, "0")}.webp` : `/cards/hearthswarming-eve/${String(key).replace(/^BP02-GR/, "BP04-GR")}.webp`,
   discord: (key: ImagePathPart) => `/cards/discord/${key}.webp`,
   moonFour: (key: ImagePathPart) => getMoonFourImagePath(String(key)),
   nightmareNight: (key: ImagePathPart) => `/cards/nightmare-night/${key}.webp`,
@@ -513,9 +513,12 @@ export const getDiscordFront = (key: string) => {
 };
 export const getHeartswarmingEveFront = (key: string) => cardImagePaths.hearthswarmingEve(key);
 export const getHeartswarmingEveBack = (key: string) => {
-    const match = key.match(/^(P?)BP0[24]-(SPR|SR|GR|CR|RR|ER|C|U)(\d{2})$/);
-    if (!match) return getDiscordBack("BP02-U01");
-    return getDiscordBack(`BP02-${match[1] ? "P" : ""}${match[2]}${match[3]}`);
+  const common = key.match(/^BP04-C(\d{2})$/);
+  if (common && Number(common[1]) >= 25 && Number(common[1]) <= 48) return `/card-backs/hearthswarming-eve/${key}.webp`;
+  if (/^BP04-RR0[1-6]$/.test(key)) return `/card-backs/hearthswarming-eve/${key}.webp`;
+  if (/^P?BP04-ER\d{2}$/.test(key)) return cardImagePaths.fixed.tcgCardBacksSCENECARDBACK;
+  if (/^PBP04-RR0[1-6]$/.test(key)) return cardImagePaths.parallelRubyBack(key.slice(-2));
+  return cardImagePaths.fixed.cardBacksTcgdefaultback;
 };
 export const getFantasyWonderlandBack = (key: string) => {
   if (key.startsWith("BP01PRR")) {

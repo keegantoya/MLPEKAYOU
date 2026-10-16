@@ -376,7 +376,7 @@ const rarityOrders: Record<string, string[]> = {
                     "\u203bRR",
                   ],
                   "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bSPR", "\u203bGR", "\u203bCR", "\u203bRR"],
-"hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bGR", "\u203bSPR", "\u203bCR", "\u203bRR"],
+"hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bGR", "\u203bSPR", "\u203bCR", "\u203bRR", "TK"],
                   tcgpromos: ["PR"],
                 };
 const currentOrder =

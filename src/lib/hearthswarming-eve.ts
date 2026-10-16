@@ -2,9 +2,10 @@ export const HEARTHSWARMING_EVE_ID = "hearthswarming-eve";
 export const HEARTHSWARMING_EVE_NAME = "HeartsWarming Eve";
 export const HEARTHSWARMING_EVE_RARITIES: Record<string, number> = {
   C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6,
-  PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6,
+  PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6, TK: 6,
 };
 export const getHeartswarmingEveRarity = (key: string) => {
+  if (/^BP04-TK0[1-6]$/.test(key)) return "TK";
   const match = key.match(/^(P?)BP0[24]-(SPR|SR|ER|GR|CR|RR|C|U)(\d{2})$/);
   return match ? `${match[1]}${match[2]}` : "";
 };
@@ -29,7 +30,7 @@ export const HEARTHSWARMING_EVE_CARDS = Object.entries(HEARTHSWARMING_EVE_RARITI
   return Array.from({ length: count }, (_, index) => {
     const number = index + 1;
     const key = `${prefix}-${code}${String(number).padStart(2, "0")}`;
-    return { key, rarity, number, characters: [] as string[], image: `/cards/hearthswarming-eve/${key.replace(/^BP02-GR/, "BP04-GR")}.webp` };
+    return { key, rarity, number, characters: [] as string[], image: rarity === "TK" ? `/cards/hearthswarming-eve/TK-${String(number + 1).padStart(2, "0")}.webp` : `/cards/hearthswarming-eve/${key.replace(/^BP02-GR/, "BP04-GR")}.webp` };
   });
 });
 export const HEARTHSWARMING_EVE_KEYS = HEARTHSWARMING_EVE_CARDS.map(card => card.key);

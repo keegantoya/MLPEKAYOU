@@ -50,8 +50,8 @@ const sets = [
 {
   id: "hearthswarming-eve",
   name: "HeartsWarming Eve",
-  total: 191,
-  rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6 },
+  total: 197,
+  rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6, TK: 6 },
   isNew: false,
 },
   {

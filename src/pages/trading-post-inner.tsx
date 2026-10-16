@@ -297,7 +297,7 @@ const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
 };
 
 const COLLECTION_SET_TOTALS: Record<string, number> = {
-  "hearthswarming-eve": 191,
+  "hearthswarming-eve": 197,
   "1": 186, "2": 189, "3": 290, "13": 162, "4": 105,
   "5": 146, "6": 170, "7": 127, "8": 136, "11": 148,
   "9": 14, SD: 68, friendshipsbegin: 68, FW: 191,

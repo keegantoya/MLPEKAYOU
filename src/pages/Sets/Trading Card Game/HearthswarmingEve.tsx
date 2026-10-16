@@ -2,7 +2,7 @@ import { isHeartswarmingEveOwned } from "@/lib/hearthswarming-eve";
 import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
 import { getHeartswarmingEveBack as getCardBack, getHeartswarmingEveFront as getCardFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
-import { useState, useEffect, useRef, useCallback, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useState, useEffect, useRef, useCallback, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -10,6 +10,12 @@ import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { ArrowLeft, Check, X, RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
 const getDisplayCardCode = getHeartswarmingEveDisplayCode;
 const rarityLabel = (rarity: string) => rarity.startsWith("P") ? `\u203b${rarity.slice(1)}` : rarity;
+const getBackStyle = (key: string, inspect = false): CSSProperties => {
+  const match = key.match(/^BP04-C(\d{2})$/);
+  const number = match ? Number(match[1]) : 0;
+  if (number >= 25 && number <= 48) return { objectFit: "cover", transform: inspect ? "none" : "scale(1.035)" };
+  return inspect ? { transform: /^PBP04-RR0[1-6]$/.test(key) ? "scale(1.07)" : "scale(1.035)" } : /^PBP04-RR0[1-6]$/.test(key) ? { transform: "scale(1.07)" } : {};
+};
 type Quaternion = [
     number,
     number,
@@ -233,7 +239,7 @@ const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.bac
             </div>
             <div className="hearthswarming-card-face hearthswarming-card-back">
               <div className="hearthswarming-back-art">
-              <CardImage key={`${card.back}-${imageRetry}`} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="hearthswarming-face-image hearthswarming-back-image" style={{ transform: "scale(1.035)" }} onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="hearthswarming-face-image hearthswarming-back-image" style={getBackStyle(card.key, true)} onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
               <div className="hearthswarming-card-sheen"/>
               </div>
             </div>
@@ -350,7 +356,7 @@ const set = {
     PGR: 6,
     PSPR: 11,
     PCR: 12,
-    PRR: 6,
+    PRR: 6, TK: 6,
   },
 };
 const rarityNames: Record<string, string> = {
@@ -367,6 +373,7 @@ const rarityNames: Record<string, string> = {
   PGR: "SHINING GOLD RARE",
   PCR: "SHINING COLORFUL RARE",
   PRR: "SHINING RUBY RARE",
+  TK: "TK",
 };
 const cards = HEARTHSWARMING_EVE_CARDS;
 const collected = cards.filter(card => flipped[card.key]).length;
@@ -417,7 +424,7 @@ const { data: saved, error: loadError } = await supabase
             if (loadError && loadError.code !== "PGRST116")
                 throw loadError;
             if (saved?.progress) {
-                const progress = Object.fromEntries(HEARTHSWARMING_EVE_CARDS.map(card => [card.key, isHeartswarmingEveOwned(saved.progress[card.key])]));
+const progress = Object.fromEntries(HEARTHSWARMING_EVE_CARDS.map(card => [card.key, isHeartswarmingEveOwned(saved.progress[card.key])]));
                 setFlipped(progress);
                 setLastSavedProgress(JSON.stringify(progress));
             }
@@ -478,7 +485,7 @@ const code = getDisplayCardCode(key);
               <button type="button" className="hearthswarming-card-button" onClick={() => toggleCard(key)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="hearthswarming-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
                   <div className="hearthswarming-grid-face"><CardImage src={getCardFront(key)} className="hearthswarming-grid-image" draggable={false} alt={code}/></div>
-                  <div className="hearthswarming-grid-face hearthswarming-grid-back"><div className="hearthswarming-back-art"><CardImage src={getCardBack(key)} className="hearthswarming-grid-image hearthswarming-grid-back-image" draggable={false} alt={`${code} back`}/></div></div>
+                  <div className="hearthswarming-grid-face hearthswarming-grid-back"><div className="hearthswarming-back-art"><CardImage src={getCardBack(key)} className="hearthswarming-grid-image hearthswarming-grid-back-image" style={getBackStyle(key)} draggable={false} alt={`${code} back`}/></div></div>
                 </div>
                 {owned && <span className="hearthswarming-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="hearthswarming-inspect-badge"><Box size={13}/>3D</span>}
