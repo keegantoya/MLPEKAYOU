@@ -1,6 +1,6 @@
 import { HEARTHSWARMING_EVE_RARITIES } from "@/lib/hearthswarming-eve";
 export const sets = [
-  { id: "hearthswarming-eve", title: "HeartsWarming Eve", setName: "TCG", folder: "hearthswarming-eve", prefix: "BP04", imageUrl: "/thumbnails/hearthswarmingsetimage.png", totalCards: 197, category: "tcg", rarities: HEARTHSWARMING_EVE_RARITIES },
+  { id: "hearthswarming-eve", title: "HearthsWarming Eve", setName: "TCG", folder: "hearthswarming-eve", prefix: "BP04", imageUrl: "/thumbnails/hearthswarmingsetimage.png", totalCards: 197, category: "tcg", rarities: HEARTHSWARMING_EVE_RARITIES },
   {
     id: "1",
     title: "Eternal Moon",

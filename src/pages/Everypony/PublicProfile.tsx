@@ -7,54 +7,65 @@ import { getProfileAssets } from "../Everypony/profile-assets";
 import NotFound from "../NotFound";
 import { usePublicProfileCards } from "@/lib/public-profile-cards";
 import { getTradeCardImage } from "@/lib/card-images";
+const publicProfileStyles = `
+.pp-upgrade{--pp-accent:#e7c84b;--pp-line:#ffffff15;--pp-panel:#181b1e;--pp-soft:#22262a;--pp-ink:#f4f4f5;--pp-muted:#9ca3af}.light .pp-upgrade,[data-theme="light"] .pp-upgrade{--pp-line:#19242d18;--pp-panel:#fff;--pp-soft:#f1f3f5;--pp-ink:#20262b;--pp-muted:#68727b}.spooky .pp-upgrade,[data-theme="spooky"] .pp-upgrade{--pp-accent:#be9af9}.pp-shell{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:20px;width:100%;max-width:none;margin:0}.pp-shell>section:first-of-type{grid-column:1;align-self:stretch;border-radius:22px}.pp-stats{grid-column:2;display:flex;flex-direction:column;justify-content:center;gap:0;background:var(--pp-panel);border:1px solid var(--pp-line);border-radius:22px;padding:22px;color:var(--pp-ink)}.pp-owned{padding-bottom:18px}.pp-owned>span{display:block;font-size:10px;letter-spacing:.09em;color:var(--pp-muted)}.pp-owned strong{display:block;font-size:42px;line-height:1.1;font-weight:700;letter-spacing:-.04em;margin:9px 0 6px;color:var(--pp-accent)}.pp-owned>span:last-child{font-size:12px;letter-spacing:0}.pp-metric{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--pp-line);font-size:12px;color:var(--pp-muted)}.pp-metric strong{font-size:15px;color:var(--pp-ink)}.pp-showcase{grid-column:1 / -1;min-width:0;margin-top:4px}.pp-showcase-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:4px 0 18px}.pp-eyebrow{font-size:10px;letter-spacing:.12em;color:var(--pp-accent);font-weight:650}.pp-showcase-heading h2{font-size:25px;font-weight:650;letter-spacing:-.03em;margin:5px 0 0;color:var(--pp-ink)}.pp-showcase-heading p{font-size:12px;color:var(--pp-muted);margin:0}.pp-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding:2px 2px 5px}.pp-tabs button{display:flex;align-items:center;gap:22px;justify-content:space-between;flex:1;min-width:135px;min-height:48px;padding:11px 16px;border:1px solid var(--pp-line);border-radius:12px;background:var(--pp-panel);font-size:13px;color:var(--pp-muted);cursor:pointer;transition:background .2s,transform .2s}.pp-tabs button>span:last-child{font-size:11px;opacity:.7}.pp-tabs button[aria-pressed="true"]{background:var(--pp-accent);border-color:var(--pp-accent);color:#19151f;font-weight:650}.pp-tabs button:hover{transform:translateY(-1px)}.pp-gallery{animation:pp-reveal .25s ease both}.pp-gallery>div:last-child:not(.text-center){gap:12px}.pp-upgrade button:focus-visible{outline:2px solid var(--pp-accent);outline-offset:3px}.pp-embedded{gap:14px}.pp-embedded .pp-owned strong{font-size:32px}@keyframes pp-reveal{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:850px){.pp-shell{grid-template-columns:1fr;gap:16px}.pp-shell>section:first-of-type{grid-column:1}.pp-stats{grid-column:1;display:grid;grid-template-columns:minmax(100px,1.3fr) repeat(3,minmax(0,1fr));padding:16px;gap:12px;border-radius:18px;align-items:center}.pp-owned{padding:0}.pp-owned strong{font-size:30px;margin:6px 0 4px}.pp-owned>span{font-size:8px}.pp-owned>span:last-child{font-size:10px}.pp-metric{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:0 0 0 12px;border-top:0;border-left:1px solid var(--pp-line);font-size:10px}.pp-metric strong{font-size:17px}.pp-showcase-heading{align-items:start;flex-direction:column;gap:8px;margin-bottom:14px}.pp-showcase-heading h2{font-size:23px}.pp-tabs{gap:7px;margin-bottom:12px}.pp-tabs button{flex:none;min-width:128px;min-height:44px;padding:10px 12px;font-size:12px;gap:18px}}
+@media(max-width:380px){.pp-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.pp-owned{grid-row:1 / span 2}.pp-metric:last-child{grid-column:2}}
+@media(prefers-reduced-motion:reduce){.pp-gallery{animation:none}.pp-tabs button{transition:none;transform:none}}
+
+.pp-shell{grid-template-columns:minmax(0,1fr) 280px;gap:16px}.pp-shell>section:first-of-type{align-self:start;border-radius:18px}.pp-stats{align-self:start;padding:16px 18px;border-radius:18px}.pp-owned{padding-bottom:10px}.pp-owned strong{font-size:29px;margin:5px 0}.pp-metric{padding:7px 0}.pp-metric strong{font-size:13px}.pp-identity{margin-top:8px}.pp-name{font-size:25px!important;line-height:1.2!important}.pp-avatar{width:72px!important;height:72px!important;border-radius:18px!important}.pp-showcase{margin-top:0}.pp-showcase-heading{margin:0 0 12px}.pp-showcase-heading h2{font-size:21px}.pp-showcase-heading>p{display:none}.pp-tabs{margin-bottom:12px}.pp-tabs button{min-height:42px;padding:9px 13px}.pp-gallery{padding:14px!important;border-radius:18px!important}.pp-preview-grid{grid-template-columns:repeat(auto-fill,minmax(110px,145px))!important;gap:12px!important;justify-content:start}.pp-gallery>div:first-child{margin-bottom:12px!important}.pp-preview-grid>div{min-width:0}
+@media(max-width:850px){.pp-shell{grid-template-columns:1fr;gap:12px}.pp-stats{grid-column:1;display:grid;grid-template-columns:1.3fr repeat(3,minmax(0,1fr));gap:10px;padding:12px 14px}.pp-owned{padding:0}.pp-owned strong{font-size:26px}.pp-metric{padding:0 0 0 10px}.pp-avatar{width:60px!important;height:60px!important}.pp-name{font-size:23px!important}.pp-preview-grid{grid-template-columns:repeat(auto-fill,minmax(100px,135px))!important}}
+@media(max-width:480px){.pp-preview-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}.pp-stats{grid-template-columns:1.2fr repeat(3,minmax(0,1fr));gap:8px}.pp-owned strong{font-size:24px}.pp-metric{grid-column:auto!important;grid-row:auto!important;font-size:9px;padding-left:8px}.pp-owned{grid-row:auto!important}.pp-tabs button{min-width:115px;font-size:11px}.pp-identity{align-items:flex-start;gap:12px}}
+`;
 export default function PublicProfile() {
-  const { username } = useParams();
-  const navigate = useNavigate();
-  const [loginRequired, setLoginRequired] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [profileNotFound, setProfileNotFound] = useState(false);
-  const [discord, setDiscord] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [showCollectionModal, setShowCollectionModal] = useState(false);
-  const [collectionMode, setCollectionMode] = useState<
+const { username } = useParams();
+const navigate = useNavigate();
+const [loginRequired, setLoginRequired] = useState(false);
+const [profile, setProfile] = useState<any>(null);
+const [profileLoading, setProfileLoading] = useState(true);
+const [profileNotFound, setProfileNotFound] = useState(false);
+const [discord, setDiscord] = useState("");
+const [copied, setCopied] = useState(false);
+const [activeShowcase, setActiveShowcase] = useState<"iso" | "wishlist" | "trade" | "sale">("iso");
+const [showCollectionModal, setShowCollectionModal] = useState(false);
+const [collectionMode, setCollectionMode] = useState<
     "iso" | "wishlist" | "trade" | "sale"
   >("iso");
-  const [marketListings, setMarketListings] = useState<any[]>([]);
-  const [selectedSet, setSelectedSet] = useState("1");
-  const [stats, setStats] = useState({
+const [marketListings, setMarketListings] = useState<any[]>([]);
+const [selectedSet, setSelectedSet] = useState("1");
+const [stats, setStats] = useState({
     owned: 0,
     trades: 0,
     sales: 0,
     wishlist: 0,
   });
-  const [hiddenIsoSets, setHiddenIsoSets] = useState<string[]>([]);
-  const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
-  const [isLightMode, setIsLightMode] = useState(
+const [hiddenIsoSets, setHiddenIsoSets] = useState<string[]>([]);
+const [lastActivityAt, setLastActivityAt] = useState<string | null>(null);
+const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
   );
-  const [currentUserId, setCurrentUserId] = useState("");
-  const [isFriend, setIsFriend] = useState(false);
-  const [requestPending, setRequestPending] = useState(false);
-  const [sendingRequest, setSendingRequest] = useState(false);
-  const isEmbedded =
+const [currentUserId, setCurrentUserId] = useState("");
+const [isFriend, setIsFriend] = useState(false);
+const [requestPending, setRequestPending] = useState(false);
+const [sendingRequest, setSendingRequest] = useState(false);
+const isEmbedded =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("embed") === "1";
   useEffect(() => {
     if (!showCollectionModal && !loginRequired) return;
-    const previousOverflow = document.body.style.overflow;
+const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [showCollectionModal, loginRequired]);
   useEffect(() => {
-    let cancelled = false;
-    const loadProfile = async () => {
+let cancelled = false;
+const loadProfile = async () => {
       setProfileLoading(true);
       setProfileNotFound(false);
       setProfile(null);
-      const {
+const {
         data: { session },
       } = await supabase.auth.getSession();
       if (cancelled) return;
@@ -71,7 +82,7 @@ export default function PublicProfile() {
         }
         return;
       }
-      const { data: profileData, error } = await supabase
+const { data: profileData, error } = await supabase
         .from("profiles")
         .select("*")
         .ilike("username", username)
@@ -84,8 +95,8 @@ export default function PublicProfile() {
         return;
       }
       setProfile(profileData);
-      const legacyHidden = profileData.iso_hidden_sets || [];
-      const hidden = [
+const legacyHidden = profileData.iso_hidden_sets || [];
+const hidden = [
         ...(profileData.iso_hidden_sets?.length
           ? profileData.iso_hidden_sets
           : legacyHidden),
@@ -94,7 +105,7 @@ export default function PublicProfile() {
           : legacyHidden),
       ];
       setHiddenIsoSets(hidden);
-      const { data: tradingProfile } = await supabase
+const { data: tradingProfile } = await supabase
         .from("trading_profiles")
         .select("discord_username")
         .eq("user_id", profileData.id)
@@ -105,7 +116,7 @@ export default function PublicProfile() {
         setCurrentUserId(session?.user?.id || "");
       }
       if (session?.user && session.user.id !== profileData.id) {
-        const [{ data: friendship }, { data: pendingRequest }] =
+const [{ data: friendship }, { data: pendingRequest }] =
           await Promise.all([
             supabase
               .from("friends")
@@ -129,7 +140,7 @@ export default function PublicProfile() {
         setIsFriend(false);
         setRequestPending(false);
       }
-      const { data: activityData } = await supabase
+const { data: activityData } = await supabase
         .from("user_activity")
         .select("last_activity_at")
         .eq("user_id", profileData.id)
@@ -145,16 +156,16 @@ export default function PublicProfile() {
     };
   }, [username]);
   useEffect(() => {
-    const loadStats = async () => {
+const loadStats = async () => {
       if (!profile?.id) return;
-      const { data: collection } = await supabase
+const { data: collection } = await supabase
         .from("collection_progress_raw")
         .select("set_id, progress")
         .eq("user_id", profile.id);
-      const filtered = (collection || []).filter(
+const filtered = (collection || []).filter(
         (row: any) => row.set_id !== "OTHERMERCH",
       );
-      let owned = 0;
+let owned = 0;
       filtered.forEach((row: any) => {
         owned += Object.values(row.progress || {}).filter(
           (value: any) =>
@@ -162,19 +173,19 @@ export default function PublicProfile() {
             (typeof value === "object" && value?.owned === true),
         ).length;
       });
-      const { data: listings } = await supabase
+const { data: listings } = await supabase
         .from("card_market_listings")
         .select(
           "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity, updated_at",
         )
         .eq("user_id", profile.id);
-      const activeListings = (listings || []).filter(
+const activeListings = (listings || []).filter(
         (card: any) =>
           (card.is_for_trade && Number(card.trade_quantity) > 0) ||
           (card.is_for_sale && Number(card.sale_quantity) > 0),
       );
       setMarketListings(activeListings);
-      const { count: wishlist } = await supabase
+const { count: wishlist } = await supabase
         .from("wishlists")
         .select("*", { count: "exact", head: true })
         .eq("user_id", profile.id);
@@ -187,11 +198,11 @@ export default function PublicProfile() {
     };
     loadStats();
   }, [profile]);
-  const { avatar } = getProfileAssets(profile);
-  const { isoCards, wishlistCards, loading } = usePublicProfileCards(
+const { avatar } = getProfileAssets(profile);
+const { isoCards, wishlistCards, loading } = usePublicProfileCards(
     profile?.id,
   );
-  const tradeCards = useMemo(() => {
+const tradeCards = useMemo(() => {
     return marketListings
       .filter(
         (card: any) => card.is_for_trade && Number(card.trade_quantity) > 0,
@@ -201,7 +212,7 @@ export default function PublicProfile() {
         type: "trade",
       }));
   }, [marketListings]);
-  const saleCards = useMemo(
+const saleCards = useMemo(
     () =>
       marketListings
         .filter(
@@ -210,8 +221,8 @@ export default function PublicProfile() {
         .map((card: any) => ({ ...card, type: "sale" })),
     [marketListings],
   );
-  const getSetName = (setId: string) => {
-    const names: Record<string, string> = {
+const getSetName = (setId: string) => {
+const names: Record<string, string> = {
       "1": "Moon One",
       "2": "Moon Two",
       "3": "Moon Three",
@@ -233,10 +244,10 @@ export default function PublicProfile() {
     };
     return names[String(setId)] ?? String(setId);
   };
-  const visibleIsoCards = useMemo(
+const visibleIsoCards = useMemo(
     () =>
       isoCards.filter((card: any) => {
-        const setId = String(card.set_id);
+const setId = String(card.set_id);
         if (hiddenIsoSets.includes(setId)) {
           return false;
         }
@@ -255,7 +266,7 @@ export default function PublicProfile() {
       }),
     [isoCards, hiddenIsoSets],
   );
-  const modalCards = useMemo(() => {
+const modalCards = useMemo(() => {
     switch (collectionMode) {
       case "wishlist":
         return wishlistCards;
@@ -267,13 +278,13 @@ export default function PublicProfile() {
         return visibleIsoCards;
     }
   }, [collectionMode, visibleIsoCards, wishlistCards, tradeCards, saleCards]);
-  const modalTabs = useMemo(() => {
+const modalTabs = useMemo(() => {
     return Array.from(new Set(modalCards.map((c: any) => String(c.set_id))));
   }, [modalCards]);
-  const filteredCards = modalCards.filter(
+const filteredCards = modalCards.filter(
     (c: any) => String(c.set_id) === selectedSet,
   );
-  const activityStatus = (() => {
+const activityStatus = (() => {
     if (!lastActivityAt) {
       return {
         label: "Inactive",
@@ -282,7 +293,7 @@ export default function PublicProfile() {
         dotClass: "bg-zinc-400",
       };
     }
-    const age = Date.now() - new Date(lastActivityAt).getTime();
+const age = Date.now() - new Date(lastActivityAt).getTime();
     if (age <= 24 * 60 * 60 * 1000) {
       return {
         label: "Active in the last 24 Hours",
@@ -309,22 +320,22 @@ export default function PublicProfile() {
     };
   })();
   useEffect(() => {
-    const syncTheme = () => {
+const syncTheme = () => {
       setIsLightMode(document.documentElement.dataset.theme === "light");
     };
     syncTheme();
-    const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
     });
     return () => observer.disconnect();
   }, []);
-  async function sendFriendRequest() {
+async function sendFriendRequest() {
     if (!currentUserId || !profile?.id || currentUserId === profile.id) return;
     if (isFriend || requestPending || sendingRequest) return;
     setSendingRequest(true);
-    const { data: targetProfile } = await supabase
+const { data: targetProfile } = await supabase
       .from("profiles")
       .select("allow_friend_requests")
       .eq("id", profile.id)
@@ -334,7 +345,7 @@ export default function PublicProfile() {
       setSendingRequest(false);
       return;
     }
-    const { error } = await supabase.from("friend_requests").insert({
+const { error } = await supabase.from("friend_requests").insert({
       sender_id: currentUserId,
       receiver_id: profile.id,
       status: "pending",
@@ -344,9 +355,9 @@ export default function PublicProfile() {
     }
     setSendingRequest(false);
   }
-  const CollectionModal = () => {
+const CollectionModal = () => {
     if (!showCollectionModal) return null;
-    const modeLabel =
+const modeLabel =
       collectionMode === "iso"
         ? "ISO"
         : collectionMode === "wishlist"
@@ -472,7 +483,7 @@ export default function PublicProfile() {
                   {filteredCards
                     .slice()
                     .sort((a: any, b: any) => {
-                      const rarityOrder: Record<string, string[]> = {
+const rarityOrder: Record<string, string[]> = {
                         "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
                         "2": [
                           "R",
@@ -607,7 +618,7 @@ export default function PublicProfile() {
                         ],
 "hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "PER", "PGR", "PSPR", "PCR", "PRR"],
                       };
-                      const getRarity = (card: any) => {
+const getRarity = (card: any) => {
                         if (String(card.set_id) === "13") return String(card.card_key).replace(/^SHINING ZR-/, "SZR-").split("-")[0];
                         if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveRarity(card.card_key);
                         if (card.set_id === "FW")
@@ -631,12 +642,12 @@ export default function PublicProfile() {
                           );
                         return card.card_key.split("-")[0];
                       };
-                      const getNumber = (card: any) => {
-                        const match = card.card_key.match(/(d+)$/);
+const getNumber = (card: any) => {
+const match = card.card_key.match(/(d+)$/);
                         return match ? parseInt(match[1], 10) : 0;
                       };
-                      const order = rarityOrder[String(a.set_id)] ?? [];
-                      const rarityDiff =
+const order = rarityOrder[String(a.set_id)] ?? [];
+const rarityDiff =
                         order.indexOf(getRarity(a)) -
                         order.indexOf(getRarity(b));
                       if (rarityDiff !== 0) return rarityDiff;
@@ -746,7 +757,6 @@ export default function PublicProfile() {
               </h1>
             </div>
           </div>
-
           <div
             className={`mt-5 rounded-2xl border px-4 py-4 text-sm leading-6 sm:px-5 ${
               isLightMode
@@ -767,7 +777,6 @@ export default function PublicProfile() {
               $250&#x2013;$300 each month because of this traffic.
             </p>
           </div>
-
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -801,15 +810,16 @@ export default function PublicProfile() {
   }
   return (
     <div
-      className={`min-h-screen pb-32 transition-colors duration-200 sm:pb-8 ${
+      className={`pp-upgrade min-h-screen pb-32 transition-colors duration-200 sm:pb-8 ${
         isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
       }`}
     >
+      <style>{publicProfileStyles}</style>
       <main
         className={
           isEmbedded
-            ? "mx-auto max-w-7xl px-3 py-3 sm:px-4 sm:py-4"
-            : "mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8"
+            ? "pp-shell pp-embedded px-3 py-3 sm:px-4 sm:py-4"
+            : "pp-shell px-4 py-5 sm:px-6 sm:py-8"
         }
       >
         <section
@@ -836,7 +846,7 @@ export default function PublicProfile() {
           />
           <div
             className={
-              isEmbedded ? "relative p-4 sm:p-5" : "relative p-5 sm:p-7"
+              isEmbedded ? "relative p-4" : "relative p-4 sm:p-5"
             }
           >
             <div
@@ -863,20 +873,20 @@ export default function PublicProfile() {
               className={
                 isEmbedded
                   ? "mt-3 flex items-center gap-3 sm:gap-4"
-                  : "mt-4 flex flex-col gap-5 sm:flex-row sm:items-center"
+                  : "pp-identity mt-2 flex items-center gap-4"
               }
             >
               <CardImage
                 src={avatar}
                 alt={profile?.username}
-                className={`${isEmbedded ? "h-16 w-16 sm:h-20 sm:w-20" : "h-24 w-24 sm:h-28 sm:w-28"} shrink-0 rounded-[24px] border object-cover ${
+                className={`pp-avatar ${isEmbedded ? "h-16 w-16" : "h-16 w-16 sm:h-20 sm:w-20"} shrink-0 rounded-[24px] border object-cover ${
                   isLightMode ? "border-black/10" : "border-white/10"
                 }`}
               />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1
-                    className={`break-words font-semibold tracking-tight ${
+                    className={`pp-name break-words font-semibold tracking-tight ${
                       isEmbedded
                         ? "text-xl sm:text-2xl"
                         : "text-3xl sm:text-4xl"
@@ -952,11 +962,11 @@ export default function PublicProfile() {
                   <button
                     type="button"
                     onClick={() => {
-                      const url = `https://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
+const url = `https\://www.mlpekayou.community/${encodeURIComponent(profile?.username ?? "")}`;
                       if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(url);
                       } else {
-                        const textArea = document.createElement("textarea");
+const textArea = document.createElement("textarea");
                         textArea.value = url;
                         textArea.style.position = "fixed";
                         textArea.style.left = "-999999px";
@@ -985,41 +995,20 @@ export default function PublicProfile() {
             </div>
           </div>
         </section>
-        <section className={isEmbedded ? "mt-3" : "mt-4"}>
-          <div
-            className={`rounded-2xl border ${
-              isEmbedded
-                ? "flex items-center justify-between px-4 py-3"
-                : "p-4 sm:p-5"
-            } ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
-            }`}
-          >
-            <div
-              className={`text-xs font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-            >
-              Owned Cards
-            </div>
-            <div
-              className={
-                isEmbedded
-                  ? "text-lg font-semibold"
-                  : "mt-1 text-2xl font-semibold sm:text-3xl"
-              }
-            >
-              {stats.owned.toLocaleString()}
-            </div>
-          </div>
-        </section>
-        <section
-          className={
-            isEmbedded
-              ? "mt-3 grid gap-3 lg:grid-cols-2 2xl:grid-cols-4"
-              : "mt-4 grid gap-4 xl:grid-cols-4"
-          }
-        >
+        <aside className="pp-stats" aria-label="Collection overview">
+          <div className="pp-owned"><span>COLLECTION SIZE</span><strong>{stats.owned.toLocaleString()}</strong><span>cards owned</span></div>
+          <div className="pp-metric"><span>Wishlist</span><strong>{stats.wishlist.toLocaleString()}</strong></div>
+          <div className="pp-metric"><span>For trade</span><strong>{tradeCards.length.toLocaleString()}</strong></div>
+          <div className="pp-metric"><span>For sale</span><strong>{stats.sales.toLocaleString()}</strong></div>
+        </aside>
+        <section className="pp-showcase">
+          <div className="pp-showcase-heading"><div><span className="pp-eyebrow">EXPLORE THE COLLECTION</span><h2>Collector's showcase</h2></div><p>Browse what they need, want, trade, and sell.</p></div>
+          <nav className="pp-tabs" aria-label="Collection category">{([
+            { mode: "iso", label: "Looking for", count: visibleIsoCards.length },
+            { mode: "wishlist", label: "Wishlist", count: stats.wishlist },
+            { mode: "trade", label: "For trade", count: tradeCards.length },
+            { mode: "sale", label: "For sale", count: stats.sales },
+          ] as const).map(tab => <button type="button" key={tab.mode} aria-pressed={activeShowcase === tab.mode} onClick={() => setActiveShowcase(tab.mode)}><span>{tab.label}</span><span>{tab.count.toLocaleString()}</span></button>)}</nav>
           {[
             {
               title: "ISO",
@@ -1045,10 +1034,10 @@ export default function PublicProfile() {
               mode: "sale" as const,
               count: stats.sales,
             },
-          ].map((section) => (
+          ].filter(section => section.mode === activeShowcase).map((section) => (
             <div
               key={section.title}
-              className={`rounded-[26px] border ${isEmbedded ? "p-3 sm:p-4" : "p-4 sm:p-5"} ${
+              className={`pp-gallery rounded-[26px] border ${isEmbedded ? "p-3 sm:p-4" : "p-4 sm:p-5"} ${
                 isLightMode
                   ? "border-black/10 bg-white"
                   : "border-white/[0.08] bg-[#151718]"
@@ -1111,11 +1100,11 @@ export default function PublicProfile() {
                 <div
                   className={
                     isEmbedded
-                      ? "grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6"
-                      : "grid grid-cols-4 gap-2 sm:gap-3"
+                      ? "pp-preview-grid grid gap-2"
+                      : "pp-preview-grid grid gap-3"
                   }
                 >
-                  {section.cards.slice(0, 8).map((card: any) => (
+                  {section.cards.slice(0, 12).map((card: any) => (
                     <div
                       key={`${card.set_id}-${card.card_key}`}
                       className={`relative overflow-hidden rounded-[10px] bg-transparent ${

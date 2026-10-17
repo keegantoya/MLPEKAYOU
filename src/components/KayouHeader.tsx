@@ -1,6 +1,7 @@
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
+import { createPortal } from "react-dom";
 import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
 import PinkieParty from "@/pages/Game/Pinkie-Party";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -138,6 +139,102 @@ const KayouHeader = () => {
   const canModerate =
     !!user && staffAccess?.userId === user.id && staffAccess.moderator;
   const canReviewLGS = user?.id === "17e57e39-bc0c-44e7-b373-ac34c6690185";
+  const [lgsIntroUserId, setLgsIntroUserId] = useState<string | null>(null);
+  const [lgsIntroLine, setLgsIntroLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const lgsIntroRef = useRef<HTMLDivElement>(null);
+  const lgsIntroShown = useRef(new Set<string>());
+  const lgsIntroVisible = lgsIntroUserId === user?.id && canUseLgs;
+  const saveLgsDiscovery = async (accountId: string, opened: boolean) => {
+    const stamp = new Date().toISOString();
+    try {
+      localStorage.setItem(`mlpekayou:lgs-intro:${accountId}`, stamp);
+      if (opened) localStorage.setItem(`mlpekayou:lgs-opened:${accountId}`, stamp);
+    } catch {}
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || data.user?.id !== accountId) return;
+      const metadata: Record<string, string> = { lgs_boards_intro_seen_at: stamp };
+      if (opened) metadata.lgs_boards_opened_at = stamp;
+      const result = await supabase.auth.updateUser({ data: metadata });
+      if (result.error) console.error("Unable to save LGS introduction preference:", result.error);
+    } catch (error) {
+      console.error("Unable to save LGS introduction preference:", error);
+    }
+  };
+  useEffect(() => {
+    setLgsIntroUserId(null);
+    if (!user?.id || !canUseLgs) return;
+    const accountId = user.id;
+    if (location.pathname === "/lgs-boards" || location.pathname.startsWith("/lgs-boards/")) {
+      lgsIntroShown.current.add(accountId);
+      void saveLgsDiscovery(accountId, true);
+      return;
+    }
+    let cancelled = false;
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const check = async () => {
+      if (!desktop.matches || lgsIntroShown.current.has(accountId)) return;
+      try {
+        if (localStorage.getItem(`mlpekayou:lgs-intro:${accountId}`) || localStorage.getItem(`mlpekayou:lgs-opened:${accountId}`)) return;
+      } catch {}
+      const { data, error } = await supabase.auth.getUser();
+      if (cancelled || error || data.user?.id !== accountId || !desktop.matches) return;
+      if (data.user.user_metadata?.lgs_boards_intro_seen_at || data.user.user_metadata?.lgs_boards_opened_at) return;
+      const target = headerStaffRef.current?.querySelector<HTMLElement>(".kayou-lgs-access");
+      if (!target || target.getBoundingClientRect().width === 0 || lgsIntroShown.current.has(accountId)) return;
+      lgsIntroShown.current.add(accountId);
+      setLgsIntroUserId(accountId);
+      void saveLgsDiscovery(accountId, false);
+    };
+    const timer = window.setTimeout(() => { void check().catch(console.error); }, 900);
+    const resized = () => {
+      if (!desktop.matches) setLgsIntroUserId(null);
+      else void check().catch(console.error);
+    };
+    desktop.addEventListener("change", resized);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      desktop.removeEventListener("change", resized);
+    };
+  }, [user?.id, canUseLgs, location.pathname]);
+  useEffect(() => {
+    if (!lgsIntroVisible) return;
+    const panel = lgsIntroRef.current;
+    const target = headerStaffRef.current?.querySelector<HTMLElement>(".kayou-lgs-access");
+    if (!panel || !target) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const update = () => {
+      const button = target.getBoundingClientRect();
+      const popup = panel.getBoundingClientRect();
+      setLgsIntroLine({ x1: Math.max(popup.left + 24, Math.min(popup.right - 24, button.left + button.width / 2)), y1: popup.top, x2: button.left + button.width / 2, y2: button.bottom + 6 });
+    };
+    update();
+    panel.querySelector<HTMLButtonElement>("button")?.focus();
+    const observer = new ResizeObserver(update);
+    observer.observe(panel);
+    observer.observe(target);
+    window.addEventListener("resize", update);
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); setLgsIntroUserId(null); }
+      if (event.key !== "Tab") return;
+      const buttons = panel.querySelectorAll<HTMLButtonElement>("button");
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener("keydown", keydown, true);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+      document.removeEventListener("keydown", keydown, true);
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [lgsIntroVisible]);
   useEffect(() => {
     let active = true;
     let request = 0;
@@ -799,7 +896,7 @@ const KayouHeader = () => {
         <div className="kayou-staff-lgs">
           <button
             type="button"
-            className="kayou-staff-button"
+            className="kayou-staff-button kayou-lgs-access"
             aria-label="LGS"
             title="LGS"
             aria-expanded={canReviewLGS ? showHeaderLgs : undefined}
@@ -821,7 +918,7 @@ const KayouHeader = () => {
                     requestNavigation("/lgs-boards");
                   }}
                 >
-                  LGS Boards
+                  LGS Game Center
                 </button>
               )}
               <button
@@ -855,12 +952,36 @@ const KayouHeader = () => {
     <div
       className={`kayou-header-scope ${isLightMode ? "kayou-header-light" : ""} ${isSpookyMode ? "kayou-header-spooky" : ""}`}
     >
+      {lgsIntroVisible && createPortal(
+        <div className={`kayou-lgs-intro ${isLightMode ? "kayou-lgs-intro-light" : ""} ${isSpookyMode ? "kayou-lgs-intro-spooky" : ""}`}>
+          <div className="kayou-lgs-intro-shade" aria-hidden="true" />
+          {lgsIntroLine && <svg className="kayou-lgs-intro-line" aria-hidden="true"><path d={`M ${lgsIntroLine.x1} ${lgsIntroLine.y1} C ${lgsIntroLine.x1} ${lgsIntroLine.y1 - 60}, ${lgsIntroLine.x2} ${lgsIntroLine.y2 + 60}, ${lgsIntroLine.x2} ${lgsIntroLine.y2}`} /><circle cx={lgsIntroLine.x2} cy={lgsIntroLine.y2} r="5" /></svg>}
+          <div className="kayou-lgs-intro-panel" ref={lgsIntroRef} role="dialog" aria-modal="true" aria-labelledby="kayou-lgs-intro-title" aria-describedby="kayou-lgs-intro-description">
+            <span className="kayou-lgs-intro-kicker"><Store size={19} aria-hidden="true" /> YOUR STORE HAS ACCESS</span>
+            <h2 id="kayou-lgs-intro-title">Your LGS Boards are ready.</h2>
+            <p id="kayou-lgs-intro-description">Run your store's events, check in players, track decks, and draw raffle winners. Open your boards anytime using the LGS button in the header.</p>
+            <p className="kayou-lgs-intro-mobile">On mobile, open your personal profile to access LGS Boards.</p>
+            <div className="kayou-lgs-intro-actions">
+              <button type="button" onClick={() => { setLgsIntroUserId(null); requestNavigation("/lgs-boards"); }}>Open LGS Boards <ArrowLeftRight size={16} aria-hidden="true" /></button>
+              <button type="button" onClick={() => setLgsIntroUserId(null)}>Got it</button>
+            </div>
+          </div>
+        </div>, document.body
+      )}
       <style>
         {`
+.kayou-lgs-intro{--intro-accent:#e7c84b;--intro-bg:#191c1e;--intro-ink:#f4f4f0;--intro-muted:#b7bfbb;position:fixed;inset:0;z-index:120000;isolation:isolate;color:var(--intro-ink);font-family:inherit}.kayou-lgs-intro-light{--intro-bg:#fff;--intro-ink:#242724;--intro-muted:#5c655e}.kayou-lgs-intro-spooky{--intro-accent:#c9acff}.kayou-lgs-intro-shade{position:absolute;inset:0;background:#06090bb3}.kayou-lgs-intro-line{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.kayou-lgs-intro-line path{fill:none;stroke:var(--intro-accent);stroke-width:2;filter:drop-shadow(0 0 5px var(--intro-accent))}.kayou-lgs-intro-line circle{fill:var(--intro-accent)}.kayou-lgs-intro-panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(480px,calc(100vw - 48px));max-height:calc(100dvh - 120px);overflow:auto;padding:30px;border:1px solid var(--intro-accent);border-radius:18px;background:var(--intro-bg);box-shadow:0 24px 90px #0006}.kayou-lgs-intro-kicker{display:flex;align-items:center;gap:9px;color:var(--intro-accent);font-size:10px;font-weight:700;letter-spacing:.12em}.kayou-lgs-intro-panel h2{font-size:27px;line-height:1.2;letter-spacing:-.025em;margin:17px 0 12px;font-weight:700}.kayou-lgs-intro-panel p{font-size:14px;line-height:1.7;color:var(--intro-muted);margin:0}.kayou-lgs-intro-panel .kayou-lgs-intro-mobile{margin-top:20px;padding-top:16px;border-top:1px solid #80808040;font-size:13px;color:var(--intro-ink)}.kayou-lgs-intro-actions{display:flex;gap:10px;margin-top:24px}.kayou-lgs-intro-actions button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 15px;border-radius:9px;border:1px solid #80808055;background:transparent;color:var(--intro-ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}.kayou-lgs-intro-actions button:first-child{flex:1;background:var(--intro-accent);border-color:transparent;color:#191b1c}.kayou-lgs-intro-actions button:focus-visible{outline:2px solid var(--intro-accent);outline-offset:4px}@media(max-width:767px){.kayou-lgs-intro{display:none}}
   .kayou-header-scope .kayou-staff-actions{display:flex;align-items:center;gap:6px}
   .kayou-staff-lgs{position:relative}
   .kayou-header-scope .kayou-staff-button{display:flex;align-items:center;justify-content:center;gap:6px;height:40px;min-width:40px;padding:0 10px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);color:#e7c84b;font-size:13px;cursor:pointer}
   .kayou-header-light .kayou-staff-button{background:#fffaf0;border-color:#e7c84b55;color:#6d5210}
+  .kayou-header-scope .kayou-lgs-access{--lgs-glow:231,200,75;border-color:rgba(var(--lgs-glow),.75);background:rgba(var(--lgs-glow),.12);box-shadow:0 0 0 1px rgba(var(--lgs-glow),.18),0 0 16px rgba(var(--lgs-glow),.3);animation:kayou-lgs-access-glow 3s ease-in-out infinite}
+  .kayou-header-light .kayou-lgs-access{background:#fff6cc}
+  .kayou-header-spooky .kayou-lgs-access{--lgs-glow:201,172,255;color:#d8c2ff}
+  .kayou-header-scope .kayou-lgs-access:hover{background:rgba(var(--lgs-glow),.22)}
+  .kayou-header-scope .kayou-lgs-access:focus-visible{outline-color:rgb(var(--lgs-glow))}
+  @keyframes kayou-lgs-access-glow{0%,100%{box-shadow:0 0 0 1px rgba(var(--lgs-glow),.18),0 0 12px rgba(var(--lgs-glow),.25)}50%{box-shadow:0 0 0 2px rgba(var(--lgs-glow),.32),0 0 23px rgba(var(--lgs-glow),.5)}}
+  @media(prefers-reduced-motion:reduce){.kayou-header-scope .kayou-lgs-access{animation:none}}
   .kayou-staff-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:190px;padding:6px;border-radius:14px;background:#17191b;box-shadow:0 12px 32px #0005;z-index:21000}
   .kayou-staff-menu button{display:block;width:100%;text-align:left;padding:12px;border-radius:9px;color:#f4f4f5;font-size:14px}
   .kayou-staff-menu button:hover{background:#ffffff12}
@@ -1166,7 +1287,6 @@ const KayouHeader = () => {
               : "0 10px 35px rgba(0,0,0,.45), inset 0 -1px 0 rgba(250,204,21,.10)",
         }}
       >
-        
         <div
           className={`pointer-events-none absolute inset-x-0 bottom-0 hidden h-px bg-gradient-to-r from-transparent to-transparent sm:block ${
             isLightMode
@@ -1186,7 +1306,6 @@ const KayouHeader = () => {
         <div
           className="kayou-header-row relative flex w-full items-center justify-between px-2 sm:px-4"
         >
-          
           <div className="flex items-center gap-3 min-w-[70px]">
             {!user && (
               <Button
@@ -1201,7 +1320,6 @@ const KayouHeader = () => {
                 Create account
               </Button>
             )}
-            
             <div
               className="kayou-header-mobile-actions absolute left-3 flex -translate-y-1/2 items-center gap-1.5 sm:hidden"
             >
@@ -1255,7 +1373,6 @@ const KayouHeader = () => {
                 </>
               )}
             </div>
-            
             {user && (
               <div className="hidden sm:flex items-center gap-5">
                 <Sheet modal={false} open={open} onOpenChange={setOpen}>
@@ -1308,7 +1425,6 @@ const KayouHeader = () => {
                     }`}
                   >
                     <div className="flex h-full flex-col">
-                      
                       <div className="border-b border-white/10 px-5 py-5">
                         <div className="flex items-center gap-2">
                           <div className="min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-white">
@@ -1324,7 +1440,6 @@ const KayouHeader = () => {
                           )}
                         </div>
                       </div>
-                      
                       <div className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
                         <button
                           onClick={() => {
@@ -1417,7 +1532,6 @@ const KayouHeader = () => {
                           </button>
                         </div>
                       </div>
-                      
                       <div className="border-t border-white/10 p-3">
                         <div className="mb-2 flex items-center gap-2 px-1">
                           <button
@@ -1512,7 +1626,6 @@ const KayouHeader = () => {
               </div>
             )}
           </div>
-          
           <CardImage
             src={
               isLightMode
@@ -1529,12 +1642,9 @@ const KayouHeader = () => {
               goHome();
             }}
           />
-          
           <div className="absolute left-1/2 hidden sm:flex -translate-x-1/2 items-center">
             <div className="relative flex items-center">
-              
               <div className="flex items-center gap-1.5">
-                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/support-mlpekayou")}
@@ -1554,7 +1664,6 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                
                 <div className="relative group">
                   <button
                     onClick={() => requireLogin("/explore")}
@@ -1574,7 +1683,6 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/collections")}
@@ -1594,7 +1702,6 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/leaderboard")}
@@ -1615,9 +1722,7 @@ const KayouHeader = () => {
                   </button>
                 </div>
               </div>
-              
               <div className="relative mx-4 flex items-center">
-                
                 <div className="mr-3 flex items-center gap-1">
                   <span className="h-px w-8 bg-gradient-to-r from-transparent to-yellow-400/50" />
                   <span className="h-1 w-1 bg-yellow-400 shadow-[0_0_7px_#facc15]" />
@@ -1642,15 +1747,12 @@ const KayouHeader = () => {
                     className={`relative z-10 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:translate-y-[1px] ${isSpookyMode ? "kayou-header-spooky-logo" : "h-[42px] w-auto translate-y-[1px] scale-[1.9] group-hover:scale-[1.96]"}`}
                   />
                 </button>
-                
                 <div className="ml-3 flex items-center gap-1">
                   <span className="h-1 w-1 bg-yellow-400 shadow-[0_0_7px_#facc15]" />
                   <span className="h-px w-8 bg-gradient-to-l from-transparent to-yellow-400/50" />
                 </div>
               </div>
-              
               <div className="flex items-center gap-1.5">
-                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/community")}
@@ -1670,7 +1772,6 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                
                 <div className="relative group">
                   <button
                     onClick={() => requireLogin("/trading-post")}
@@ -1690,7 +1791,6 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/selling")}
@@ -1710,7 +1810,6 @@ const KayouHeader = () => {
                     </span>
                   </button>
                 </div>
-                
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/faq")}
@@ -1733,7 +1832,6 @@ const KayouHeader = () => {
               </div>
             </div>
           </div>
-          
           <div className="hidden sm:flex items-center gap-2 min-w-[40px]">
             {staffButtons}
             <div ref={miniGamesRef} className="relative hidden lg:block">
@@ -1835,7 +1933,6 @@ const KayouHeader = () => {
             )}
           </div>
         </div>
-        
         <div
           className="kayou-header-mobile-actions absolute right-3 flex -translate-y-1/2 items-center gap-1.5 sm:hidden"
         >
@@ -1902,7 +1999,6 @@ const KayouHeader = () => {
           returnFocusRef={miniGameButtonRef}
         />
       )}
-      
       {showSignupSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-md">
           <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[#17191b]/95 p-7 text-center shadow-[0_30px_90px_rgba(0,0,0,.55),inset_0_1px_0_rgba(255,255,255,.06)]">
@@ -1940,7 +2036,6 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      
       {showForgotPassword && (
         <div
           className="
@@ -1971,7 +2066,6 @@ const KayouHeader = () => {
       "
             onClick={(e) => e.stopPropagation()}
           >
-            
             <div className="relative border-b border-[#30363A] bg-[#0D1113] px-6 py-5">
               <span className="absolute left-0 top-0 h-4 w-4 border-l-2 border-t-2 border-[#E7C84B]" />
               <span className="absolute right-0 top-0 h-4 w-4 border-r-2 border-t-2 border-[#E7C84B]/50" />
@@ -2014,7 +2108,6 @@ const KayouHeader = () => {
                 ></button>
               </div>
             </div>
-            
             <div className="p-6 sm:p-7">
               <div className="mb-6">
                 <div className="font-mono text-[8px] font-bold uppercase tracking-[0.25em] text-[#E7C84B]">
@@ -2028,7 +2121,6 @@ const KayouHeader = () => {
                   account.
                 </p>
               </div>
-              
               <div>
                 <label className="mb-2 block font-mono text-[7px] font-bold uppercase tracking-[0.25em] text-zinc-300">
                   EMAIL ADDRESS
@@ -2068,7 +2160,6 @@ const KayouHeader = () => {
                   </div>
                 )}
               </div>
-              
               <div className="mt-5 rounded-xl border border-[#E7C84B]/25 bg-[#E7C84B]/[0.05] p-4">
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10">
@@ -2083,7 +2174,6 @@ const KayouHeader = () => {
                   </p>
                 </div>
               </div>
-              
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
@@ -2154,7 +2244,6 @@ const KayouHeader = () => {
                 </Button>
               </div>
             </div>
-            
             <div className="border-t border-[#252A2D] bg-[#0D1113] px-6 py-3">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[6px] uppercase tracking-[0.25em] text-zinc-400">
@@ -2169,7 +2258,6 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      
       {showResetSent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
@@ -2220,7 +2308,6 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      
       {showBugReport && (
         <div
           className="fixed inset-0 z-[30000] flex items-center justify-center bg-transparent px-4 backdrop-blur-md"
@@ -2317,7 +2404,6 @@ const KayouHeader = () => {
       )}
       {showLoginRequired && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#050707]/95 px-4 backdrop-blur-md">
-          
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.3]"
             style={{
@@ -2326,13 +2412,9 @@ const KayouHeader = () => {
               backgroundSize: "44px 44px",
             }}
           />
-          
           <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,.025)_4px)]" />
-          
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FFD54A]/[0.025] blur-3xl" />
-          
           <div className="relative w-[92%] max-w-lg overflow-hidden border border-white/[0.10] bg-[#080b0b] shadow-[0_30px_100px_rgba(0,0,0,.8)]">
-            
             <div className="flex items-center justify-between border-b border-white/[0.07] bg-[#050707] px-4 py-2.5">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-red-400 shadow-[0_0_10px_rgba(248,113,113,.9)]" />
@@ -2344,21 +2426,17 @@ const KayouHeader = () => {
                 AUTH NODE
               </span>
             </div>
-            
             <div className="relative p-6 sm:p-8">
-              
               <div className="pointer-events-none absolute left-0 top-0 h-10 w-10 border-l border-t border-[#FFD54A]/50" />
               <div className="pointer-events-none absolute right-0 top-0 h-10 w-10 border-r border-t border-[#FFD54A]/25" />
               <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-10 border-b border-l border-[#FFD54A]/20" />
               <div className="pointer-events-none absolute bottom-0 right-0 h-10 w-10 border-b border-r border-[#FFD54A]/50" />
-              
               <div className="mx-auto flex h-16 w-16 items-center justify-center border border-[#FFD54A]/30 bg-[#FFD54A]/[0.06] shadow-[0_0_30px_rgba(255,212,74,.08)]">
                 <div className="relative flex h-8 w-8 items-center justify-center border border-[#FFD54A]/70">
                   <span className="absolute h-2 w-2 bg-[#FFD54A] shadow-[0_0_12px_#FFD54A]" />
                   <span className="absolute inset-1 border border-[#FFD54A]/20" />
                 </div>
               </div>
-              
               <div className="mt-6 text-center">
                 <div className="font-mono text-[6px] font-bold uppercase tracking-[0.35em] text-zinc-400">
                   COLLECTION SYSTEM
@@ -2368,7 +2446,6 @@ const KayouHeader = () => {
                 </h2>
                 <div className="mx-auto mt-3 h-px w-20 bg-gradient-to-r from-transparent via-[#FFD54A]/70 to-transparent" />
               </div>
-              
               <div className="mt-6 border border-white/[0.07] bg-[#050707] px-5 py-4 text-center">
                 <div className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-300">
                   Authorization Required
@@ -2378,7 +2455,6 @@ const KayouHeader = () => {
                   account.
                 </p>
               </div>
-              
               <Button
                 onClick={() => setShowLoginRequired(false)}
                 className="group relative mt-5 h-auto w-full overflow-hidden rounded-none border border-[#FFD54A]/60 bg-[#FFD54A] px-4 py-3 font-['Oxanium'] text-[10px] font-black uppercase tracking-[0.2em] text-[#090b0d] shadow-none transition-all duration-200 hover:bg-[#FFE27A] hover:text-[#090b0d] hover:shadow-[0_0_30px_rgba(255,212,74,.18)]"
@@ -2390,7 +2466,6 @@ const KayouHeader = () => {
                   <span className="text-sm transition-transform duration-200 group-hover:translate-x-1"></span>
                 </span>
               </Button>
-              
               <div className="mt-5 flex items-center justify-center gap-3">
                 <span className="h-px w-8 bg-white/[0.06]" />
                 <span className="font-mono text-[5px] uppercase tracking-[0.3em] text-zinc-400">
@@ -2399,7 +2474,6 @@ const KayouHeader = () => {
                 <span className="h-px w-8 bg-white/[0.06]" />
               </div>
             </div>
-            
             <div className="flex items-center justify-between border-t border-white/[0.06] bg-[#050707] px-4 py-2">
               <span className="font-mono text-[5px] uppercase tracking-[0.2em] text-zinc-400">
                 STATUS: UNAUTHORIZED
@@ -2411,7 +2485,6 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      
       {showUnconfirmedEmail && (
         <div
           className="fixed inset-0 z-[30010] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
@@ -2441,7 +2514,6 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      
       {showExistingAccount && (
         <div
           className="fixed inset-0 z-[30010] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
@@ -2485,7 +2557,6 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      
       {showLogin && (
         <div
           className="fixed inset-0 z-[30000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-md"
@@ -2642,7 +2713,6 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
-      
       <div
         className={`
     sm:hidden fixed z-[99999]
@@ -2667,7 +2737,6 @@ const KayouHeader = () => {
           WebkitTransform: "translateX(-50%)",
         }}
       >
-        
         <button
           onClick={() => {
             if (mobileNavCollapsed) {
@@ -2691,7 +2760,6 @@ const KayouHeader = () => {
         >
           <Home className="h-5 w-5" />
         </button>
-        
         <button
           onClick={() => {
             setShowMobileProgressMenu(false);
@@ -2715,7 +2783,6 @@ const KayouHeader = () => {
         >
           <Sparkles className="h-5 w-5" />
         </button>
-        
         <button
           onClick={() => {
             setShowMobileProgressMenu(false);
@@ -2739,7 +2806,6 @@ const KayouHeader = () => {
         >
           <Users className="h-5 w-5" />
         </button>
-        
         <button
           onClick={() => {
             setShowMobileProgressMenu(false);

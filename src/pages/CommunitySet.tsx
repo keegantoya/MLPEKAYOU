@@ -3,7 +3,7 @@ import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeft, Trophy, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Trophy, Users, ChevronDown, ChevronUp, X, ArrowUpRight, ShieldCheck, Search } from "lucide-react";
 import { getProfileAssets } from "./Everypony/profile-assets";
 const sets: Record<string, { name: string; total: number }> = {
   "1": { name: "Eternal Moon First Edition", total: 186 },
@@ -322,6 +322,12 @@ const { data, error } = await query(ids.slice(start, start + 100));
   }));
   return rows;
 }
+const communitySetStyles = `
+.cs-redesign{--cs-accent:#e7c84b;--cs-muted:#9ca3af;--cs-panel:#181b1e;--cs-soft:#202428;--cs-line:#ffffff15;--cs-text:#f4f4f5;color:var(--cs-text)}.light .cs-redesign,[data-theme="light"] .cs-redesign{--cs-muted:#64707a;--cs-panel:#fff;--cs-soft:#f1f3f5;--cs-line:#19242d18;--cs-text:#20262b}.spooky .cs-redesign,[data-theme="spooky"] .cs-redesign{--cs-accent:#be9af9}.cs-redesign *{box-sizing:border-box}.cs-redesign button:focus-visible,.cs-redesign input:focus-visible,.cs-redesign textarea:focus-visible{outline:2px solid var(--cs-accent);outline-offset:3px}.cs-heading{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:8px 0 26px}.cs-eyebrow{display:block;color:var(--cs-accent);font-size:10px;font-weight:700;letter-spacing:.13em}.cs-heading h1{font-size:clamp(26px,3vw,40px);font-weight:750;letter-spacing:-.04em;line-height:1.15;margin:8px 0 10px}.cs-heading p{font-size:13px;color:var(--cs-muted);line-height:1.65;margin:0}.cs-set-total{text-align:right;flex-shrink:0}.cs-set-total strong{display:block;font-size:42px;line-height:1.1;font-weight:700;letter-spacing:-.04em}.cs-set-total span{font-size:11px;color:var(--cs-muted)}.cs-section-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}.cs-section-heading h2{display:flex;align-items:center;gap:9px;font-size:22px;font-weight:650;margin:7px 0 0;letter-spacing:-.03em}.cs-section-heading h2 svg{color:var(--cs-accent)}.cs-muted{font-size:12px;color:var(--cs-muted)}.cs-finishers{border-top:1px solid var(--cs-line);padding:24px 0 28px}.cs-finisher-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.cs-finisher{display:flex;flex-direction:column;align-items:center;min-width:0;gap:12px;border:1px solid var(--cs-line);border-radius:19px;background:var(--cs-panel);padding:18px 22px 22px;position:relative;overflow:hidden;color:var(--cs-text);animation:cs-arrive .4s ease both;transition:transform .2s,border-color .2s;cursor:pointer}.cs-finisher:hover{transform:translateY(-3px);border-color:var(--cs-accent)}.cs-finisher-banner{display:flex;align-items:center;gap:7px;width:100%;color:var(--cs-accent);font-size:11px}.cs-finisher-banner svg:last-child{margin-left:auto}.cs-finisher-avatar{width:78px;height:78px;border-radius:21px;object-fit:cover;margin:6px 0}.cs-user-name{display:flex;align-items:center;gap:7px;min-width:0;overflow-wrap:anywhere;font-size:18px;font-weight:650;line-height:1.3}.cs-badge{width:18px;height:18px;object-fit:contain;flex-shrink:0}.cs-complete-line{height:3px;border-radius:4px;background:var(--cs-accent);width:100%;margin-top:5px}.cs-complete-label{color:var(--cs-accent);font-size:11px}.cs-more{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--cs-line);border-radius:11px;background:var(--cs-panel);padding:10px 16px;font-size:12px;color:var(--cs-text);margin:16px auto 0;cursor:pointer}.cs-collectors{border-top:1px solid var(--cs-line);padding-top:24px}.cs-search{display:flex;align-items:center;gap:8px;max-width:100%;width:260px;padding:0 12px;border:1px solid var(--cs-line);border-radius:11px;background:var(--cs-panel);color:var(--cs-muted)}.cs-search input{min-width:0;width:100%;border:0;background:none;color:var(--cs-text);font-size:16px;padding:10px 0;outline:none}.cs-search input::placeholder{font-size:12px}.cs-rank-head,.cs-rank-row{display:grid;grid-template-columns:48px minmax(160px,1fr) minmax(180px,1.1fr) 105px;gap:22px;align-items:center}.cs-rank-head{padding:0 18px 11px;color:var(--cs-muted);font-size:10px}.cs-rank-head span:last-child{text-align:right}.cs-rankings{display:grid;gap:9px}.cs-rank-row{width:100%;border:1px solid var(--cs-line);border-radius:14px;background:var(--cs-panel);color:var(--cs-text);padding:17px 18px;text-align:left;transition:border-color .2s,background .2s;cursor:pointer}.cs-rank-row:hover{border-color:var(--cs-accent);background:var(--cs-soft)}.cs-rank{color:var(--cs-muted);font-size:20px;font-variant-numeric:tabular-nums}.cs-collector-person{display:flex;align-items:center;gap:13px;min-width:0}.cs-collector-avatar{width:48px;height:48px;border-radius:14px;object-fit:cover;flex-shrink:0}.cs-collector-person .cs-user-name{font-size:16px}.cs-progress{display:block;min-width:0}.cs-progress-copy{display:flex;justify-content:space-between;gap:8px;font-size:11px;margin-bottom:8px;color:var(--cs-muted)}.cs-progress-copy strong{font-size:13px;color:var(--cs-text)}.cs-track{display:block;height:6px;background:var(--cs-soft);border-radius:8px;overflow:hidden}.cs-track>span{display:block;height:100%;border-radius:inherit;background:var(--cs-accent);transition:width .6s ease}.cs-remaining{text-align:right;position:relative;padding-right:20px}.cs-remaining strong{display:block;font-size:20px}.cs-remaining>span{font-size:10px;color:var(--cs-muted)}.cs-remaining svg{position:absolute;right:0;top:9px;color:var(--cs-accent)}.cs-empty{border:1px dashed var(--cs-line);border-radius:15px;padding:30px 16px;text-align:center;color:var(--cs-muted)}.cs-empty>svg{margin:auto;color:var(--cs-accent)}.cs-empty h3{font-size:16px;color:var(--cs-text);margin:12px 0 8px}.cs-empty p{font-size:12px}.cs-eligibility-note{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:20px 0 0;font-size:11px;color:var(--cs-muted)}.cs-eligibility-note svg{color:var(--cs-accent)}
+.cs-modal-overlay{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:18px;background:#0009;backdrop-filter:blur(7px)}.cs-modal{position:relative;width:100%;max-width:440px;max-height:85dvh;overflow-y:auto;padding:28px;border:1px solid var(--cs-line);border-radius:22px;background:var(--cs-panel);color:var(--cs-text);box-shadow:0 24px 80px #0005}.cs-modal-close{position:absolute;right:14px;top:14px;padding:8px;background:var(--cs-soft);border:0;border-radius:50%;color:var(--cs-text);cursor:pointer}.cs-modal-avatar{width:76px;height:76px;border-radius:21px;object-fit:cover}.cs-modal h2{font-size:24px;font-weight:700;margin:16px 0 12px;overflow-wrap:anywhere}.cs-profile-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border-radius:11px;border:1px solid var(--cs-line);background:var(--cs-soft);color:var(--cs-text);font-size:13px;cursor:pointer}.cs-moderation{border-top:1px solid var(--cs-line);margin-top:22px;padding-top:20px}.cs-moderation h3{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:650;margin:0 0 10px}.cs-moderation p{font-size:12px;line-height:1.7;color:var(--cs-muted)}.cs-moderation label{display:block;font-size:12px;margin:16px 0 8px}.cs-moderation textarea{display:block;width:100%;border:1px solid var(--cs-line);background:var(--cs-soft);border-radius:11px;padding:12px;font-size:16px;color:var(--cs-text);resize:vertical}.cs-revoke{width:100%;padding:12px;margin-top:14px;border-radius:11px;background:#be3541;border:0;color:#fff;font-size:13px;font-weight:600;cursor:pointer}.cs-revoke:disabled{opacity:.4;cursor:not-allowed}.cs-error{color:#ef8891!important}@keyframes cs-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:720px){.cs-heading{align-items:start;gap:14px;padding-bottom:22px}.cs-heading h1{font-size:27px}.cs-heading p{font-size:12px}.cs-set-total strong{font-size:30px}.cs-set-total span{font-size:9px}.cs-section-heading{align-items:start;flex-wrap:wrap;gap:12px}.cs-section-heading h2{font-size:20px}.cs-finishers{padding-top:20px}.cs-finisher-grid{grid-template-columns:1fr;gap:12px}.cs-finisher{display:grid;grid-template-columns:64px minmax(0,1fr);gap:7px 15px;padding:18px;text-align:left;align-items:center}.cs-finisher-banner{grid-column:1 / -1;margin-bottom:4px}.cs-finisher-avatar{grid-column:1;grid-row:2 / span 2;width:62px;height:62px;margin:0;border-radius:18px}.cs-finisher .cs-user-name{grid-column:2;grid-row:2;font-size:20px}.cs-finisher>.cs-muted{grid-column:2;grid-row:3}.cs-complete-line{grid-column:1 / -1;margin-top:10px}.cs-complete-label{grid-column:1 / -1;font-size:10px}.cs-search{width:100%}.cs-rank-head{display:none}.cs-rank-row{grid-template-columns:28px minmax(0,1fr) auto;gap:12px;padding:15px}.cs-rank{font-size:17px;grid-column:1;grid-row:1}.cs-collector-person{grid-column:2;grid-row:1;gap:10px}.cs-collector-avatar{width:42px;height:42px;border-radius:12px}.cs-collector-person .cs-user-name{font-size:15px}.cs-progress{grid-column:2 / -1;grid-row:2}.cs-remaining{grid-column:3;grid-row:1;padding-right:0}.cs-remaining strong{font-size:18px}.cs-remaining>span{font-size:9px}.cs-remaining svg{display:none}.cs-progress-copy{margin-bottom:6px}.cs-modal{padding:22px;max-height:82dvh}.cs-eligibility-note{align-items:start;line-height:1.7}}
+@media(prefers-reduced-motion:reduce){.cs-redesign *{animation:none!important;transition:none!important}.cs-finisher:hover{transform:none}}
+`;
 const CommunitySet = () => {
 const { id } = useParams();
 const navigate = useNavigate();
@@ -334,6 +340,52 @@ const [reloadVersion, setReloadVersion] = useState(0);
 const [collectors, setCollectors] = useState<any[]>([]);
 const [completed, setCompleted] = useState<any[]>([]);
 const [showAllFinishers, setShowAllFinishers] = useState(false);
+const [isModerator, setIsModerator] = useState(false);
+const [selectedUser, setSelectedUser] = useState<any | null>(null);
+const [moderationReason, setModerationReason] = useState("");
+const [moderationError, setModerationError] = useState("");
+const [revoking, setRevoking] = useState(false);
+const [collectorSearch, setCollectorSearch] = useState("");
+useEffect(() => {
+  let active = true;
+  const loadModerator = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    const { data, error } = await supabase.from("leaderboard_moderators").select("user_id").eq("user_id", session.user.id).maybeSingle();
+    if (active) setIsModerator(!error && !!data);
+  };
+  void loadModerator();
+  return () => { active = false; };
+}, []);
+useEffect(() => {
+  if (!selectedUser) return;
+  const previous = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+  const close = (event: KeyboardEvent) => { if (event.key === "Escape" && !revoking) setSelectedUser(null); };
+  window.addEventListener("keydown", close);
+  return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", close); };
+}, [selectedUser, revoking]);
+const openCollector = (user: any) => {
+  setModerationReason("");
+  setModerationError("");
+  setSelectedUser(user);
+};
+const revokeEligibility = async () => {
+  if (!isModerator || !selectedUser || revoking) return;
+  setRevoking(true);
+  setModerationError("");
+  try {
+    const { error } = await supabase.rpc("revoke_leaderboard_eligibility", { p_target_user_id: selectedUser.id, p_reason: moderationReason.trim() });
+    if (error) throw error;
+    setCollectors(previous => previous.filter(user => user.id !== selectedUser.id));
+    setCompleted(previous => previous.filter(user => user.id !== selectedUser.id));
+    setSelectedUser(null);
+    setReloadVersion(value => value + 1);
+  } catch (error: unknown) {
+    setModerationError(error instanceof Error ? error.message : String((error as { message?: string })?.message || "Unable to revoke eligibility."));
+  } finally { setRevoking(false); }
+};
+
 const [isLightMode, setIsLightMode] = useState(() => {
   if (typeof document === "undefined") return false;
 const root = document.documentElement;
@@ -594,7 +646,7 @@ return (
         : "bg-[#0d0f10] text-zinc-100"
     }`}
   >
-    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+    <div className="cs-redesign w-full px-4 py-5 sm:px-6 lg:px-8">
       <div className="mb-4 flex items-center justify-between">
         <button
           type="button"
@@ -609,38 +661,11 @@ return (
           Community
         </button>
       </div>
-      <section
-        className={`mb-4 overflow-hidden rounded-[26px] border ${
-          isLightMode
-            ? "border-black/10 bg-white"
-            : "border-white/[0.08] bg-[#151718]"
-        }`}
-      >
-        <div className="h-1 bg-[#FFD54A]" />
-        <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
-          <div>
-            <div
-              className={`text-sm font-medium ${
-                isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
-              }`}
-            >
-              Community Set
-            </div>
-            <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
-              {set.name}
-            </h1>
-          </div>
-          <div
-            className={`w-fit rounded-full px-3 py-1.5 text-sm ${
-              isLightMode
-                ? "bg-zinc-100 text-zinc-600"
-                : "bg-white/[0.05] text-zinc-300"
-            }`}
-          >
-            {set.total} cards
-          </div>
-        </div>
-      </section>
+      <style>{communitySetStyles}</style>
+      <header className="cs-heading">
+        <div><span className="cs-eyebrow">COLLECTION LEADERBOARD</span><h1>{set.name}</h1><p>Every collection tells a story. Meet the finishers and the collectors closing in.</p></div>
+        <div className="cs-set-total"><strong>{set.total}</strong><span>cards in this set</span></div>
+      </header>
       {isLoading && !loadError && (
         <section aria-label="Loading community rankings" aria-busy="true" className={`mb-4 overflow-hidden rounded-[26px] border px-5 py-8 sm:py-10 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
           <div className="mx-auto max-w-lg text-center">
@@ -675,305 +700,56 @@ return (
         </div>
       )}
       <div hidden={isLoading || !!loadError}>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.35fr)]">
-        <section
-          className={`overflow-hidden rounded-[26px] border ${
-            isLightMode
-              ? "border-black/10 bg-white"
-              : "border-white/[0.08] bg-[#151718]"
-          }`}
-        >
-          <div
-            className={`flex items-center justify-between border-b px-5 py-4 ${
-              isLightMode ? "border-black/10" : "border-white/[0.08]"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                  isLightMode ? "bg-[#fff3b8]" : "bg-[#FFD54A]/10"
-                }`}
-              >
-                <Trophy size={19} className="text-[#c29a00]" />
-              </span>
-              <div>
-                <h2 className="text-lg font-semibold">Finishers</h2>
-                <div
-                  className={`text-sm ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
-                  Verified completed collections
-                </div>
-              </div>
-            </div>
-            <span
-              className={`rounded-full px-3 py-1 text-sm ${
-                isLightMode
-                  ? "bg-zinc-100 text-zinc-600"
-                  : "bg-white/[0.05] text-zinc-300"
-              }`}
-            >
-              {completed.length}
-            </span>
-          </div>
-          <div className="p-3">
-            {completed.length > 0 ? (
-              <div className="space-y-2">
-                {(showAllFinishers ? completed : completed.slice(0, 3)).map(
-                  (user, index) => {
-const assets = getProfileAssets(user);
-const award = finisherAward;
-                    return (
-                      <div
-                        key={user.id || index}
-                        className={`flex items-center gap-3 rounded-2xl border p-3 ${
-                          isLightMode
-                            ? "border-black/10 bg-[#fafafa]"
-                            : "border-white/[0.07] bg-[#1a1c1d]"
-                        }`}
-                      >
-                        <span
-                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl ${
-                            isLightMode ? "bg-white" : "bg-white/[0.05]"
-                          }`}
-                          aria-label={award.label}
-                          title={award.label}
-                        >
-                          <Trophy size={22} className="text-[#c29a00]" aria-hidden="true" />
-                        </span>
-                        <ProfileAvatar
-                          profile={user}
-                          src={assets.avatar}
-                          alt={user.username}
-                          className={`h-11 w-11 shrink-0 rounded-[22%] border object-cover ${
-                            isLightMode ? "border-black/10" : "border-white/15"
-                          }`}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex min-w-0 items-center gap-1.5">
-                            <span className="truncate text-sm font-semibold">
-                              {user.username}
-                            </span>
-                            {assets.verification && (
-                              <CardImage
-                                src={assets.verification.badge}
-                                alt={assets.verification.label}
-                                title={assets.verification.label}
-                                className="h-4 w-4 shrink-0 object-contain"
-                              />
-                            )}
-                          </div>
-                          <div
-                            className={`mt-0.5 text-sm ${
-                              isLightMode ? "text-zinc-500" : "text-zinc-400"
-                            }`}
-                          >
-                            {award.label}
-                          </div>
-                        </div>
-                        <span
-                          className={`hidden rounded-full px-3 py-1 text-sm sm:inline-flex ${
-                            isLightMode
-                              ? "bg-[#fff3b8] text-[#755b00]"
-                              : "bg-[#FFD54A]/10 text-[#E8CA55]"
-                          }`}
-                        >
-                          Complete
-                        </span>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            ) : (
-              <div
-                className={`rounded-2xl p-8 text-center ${
-                  isLightMode ? "bg-zinc-50" : "bg-white/[0.03]"
-                }`}
-              >
-                <Trophy
-                  size={24}
-                  className={`mx-auto ${
-                    isLightMode ? "text-zinc-300" : "text-zinc-600"
-                  }`}
-                />
-                <div className="mt-3 text-sm font-semibold">No finishers yet</div>
-              </div>
-            )}
-            {completed.length > 3 && (
-              <button
-                type="button"
-                onClick={() => setShowAllFinishers(!showAllFinishers)}
-                className={`mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border py-2.5 text-sm font-medium transition ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
-                    : "border-white/[0.08] bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06]"
-                }`}
-              >
-                {showAllFinishers ? (
-                  <>
-                    Show less
-                    <ChevronUp size={15} />
-                  </>
-                ) : (
-                  <>
-                    View all {completed.length} finishers
-                    <ChevronDown size={15} />
-                  </>
-                )}
-              </button>
-            )}
-          </div>
+        <section className="cs-finishers" aria-labelledby="cs-finishers-title">
+          <div className="cs-section-heading"><div><span className="cs-eyebrow">THE FINISH LINE</span><h2 id="cs-finishers-title"><Trophy size={21} />Completed collections</h2></div><span className="cs-muted">{completed.length} finishers</span></div>
+          {completed.length > 0 ? <div className="cs-finisher-grid">{(showAllFinishers ? completed : completed.slice(0, 3)).map((user, index) => {
+            const assets = getProfileAssets(user);
+            return <button type="button" key={user.id} className="cs-finisher" style={{ animationDelay: `${index * 45}ms` }} onClick={() => openCollector(user)} aria-label={`View ${user.username}`}>
+              <div className="cs-finisher-banner"><Trophy size={17}/><span>{finisherAward.label}</span><ArrowUpRight size={17}/></div>
+              <ProfileAvatar profile={user} src={assets.avatar} alt="" className="cs-finisher-avatar"/>
+              <div className="cs-user-name">{user.username}{assets.verification && <CardImage src={assets.verification.badge} alt={assets.verification.label} className="cs-badge"/>}</div>
+              <span className="cs-muted">{set.total} / {set.total} cards</span>
+              <div className="cs-complete-line"/><span className="cs-complete-label">Collection complete</span>
+            </button>;
+          })}</div> : <div className="cs-empty"><Trophy size={28}/><h3>The first finish is still waiting.</h3><p>Complete your collection to join this set's finishers.</p></div>}
+          {completed.length > 3 && <button type="button" className="cs-more" onClick={() => setShowAllFinishers(value => !value)}>{showAllFinishers ? "Show fewer finishers" : `View all ${completed.length} finishers`}{showAllFinishers ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}</button>}
         </section>
-        <section
-          className={`overflow-hidden rounded-[26px] border ${
-            isLightMode
-              ? "border-black/10 bg-white"
-              : "border-white/[0.08] bg-[#151718]"
-          }`}
-        >
-          <div
-            className={`flex items-center justify-between border-b px-5 py-4 ${
-              isLightMode ? "border-black/10" : "border-white/[0.08]"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                  isLightMode ? "bg-zinc-100" : "bg-white/[0.05]"
-                }`}
-              >
-                <Users size={19} />
-              </span>
-              <div>
-                <h2 className="text-lg font-semibold">Still Collecting</h2>
-                <div
-                  className={`text-sm ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
-                  Closest to completing this set
-                </div>
-              </div>
-            </div>
-            <span
-              className={`rounded-full px-3 py-1 text-sm ${
-                isLightMode
-                  ? "bg-zinc-100 text-zinc-600"
-                  : "bg-white/[0.05] text-zinc-300"
-              }`}
-            >
-              {collectors.length}
-            </span>
-          </div>
-          <div className="p-3">
-            {collectors.length > 0 ? (
-              <div className="space-y-2">
-                {collectors.map((user, index) => {
-const assets = getProfileAssets(user);
-const percentage = completionPercentage(user.owned);
-                  return (
-                    <div
-                      key={user.id || index}
-                      className={`w-full rounded-2xl border p-2.5 sm:p-3 ${
-                        isLightMode
-                          ? "border-black/10 bg-[#fafafa]"
-                          : "border-white/[0.07] bg-[#1a1c1d]"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <ProfileAvatar
-                          profile={user}
-                          src={assets.avatar}
-                          alt={user.username}
-                          className={`h-11 w-11 shrink-0 rounded-[22%] border object-cover ${
-                            isLightMode ? "border-black/10" : "border-white/15"
-                          }`}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex min-w-0 items-center gap-1.5">
-                            <span className="truncate text-sm font-semibold">
-                              {user.username}
-                            </span>
-                            {assets.verification && (
-                              <CardImage
-                                src={assets.verification.badge}
-                                alt={assets.verification.label}
-                                title={assets.verification.label}
-                                className="h-4 w-4 shrink-0 object-contain"
-                              />
-                            )}
-                          </div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <div
-                              className={`h-2 flex-1 overflow-hidden rounded-full ${
-                                isLightMode ? "bg-zinc-200" : "bg-white/[0.08]"
-                              }`}
-                            >
-                              <div
-                                className="h-full rounded-full bg-[#D2AD28]"
-                                style={{ width: `${percentage.toFixed(1)}%` }}
-                              />
-                            </div>
-                            <span
-                              className={`hidden shrink-0 text-sm font-medium sm:inline ${
-                                isLightMode ? "text-zinc-600" : "text-zinc-300"
-                              }`}
-                            >
-                              {percentage.toFixed(1)}%
-                            </span>
-                          </div>
-                          <div
-                            className={`mt-1 text-sm sm:hidden ${
-                              isLightMode ? "text-zinc-500" : "text-zinc-400"
-                            }`}
-                          >
-                            {user.owned}/{set.total} cards
-                          </div>
-                        </div>
-                        <div className="hidden shrink-0 text-right sm:block">
-                          <div
-                            className={`text-sm font-semibold ${
-                              isLightMode ? "text-[#806100]" : "text-[#E8CA55]"
-                            }`}
-                          >
-                            {user.owned}/{set.total}
-                          </div>
-                          <div
-                            className={`text-sm ${
-                              isLightMode ? "text-zinc-400" : "text-zinc-500"
-                            }`}
-                          >
-                            cards
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div
-                className={`rounded-2xl p-8 text-center ${
-                  isLightMode ? "bg-zinc-50" : "bg-white/[0.03]"
-                }`}
-              >
-                <Users
-                  size={24}
-                  className={`mx-auto ${
-                    isLightMode ? "text-zinc-300" : "text-zinc-600"
-                  }`}
-                />
-                <div className="mt-3 text-sm font-semibold">
-                  No active collectors
-                </div>
-              </div>
-            )}
-          </div>
+        <section className="cs-collectors" aria-labelledby="cs-collectors-title">
+          <div className="cs-section-heading"><div><span className="cs-eyebrow">THE NEXT FINISHERS</span><h2 id="cs-collectors-title"><Users size={21}/>Still collecting</h2></div><label className="cs-search"><Search size={16}/><input type="search" value={collectorSearch} onChange={event => setCollectorSearch(event.target.value)} placeholder="Find a collector" aria-label="Find a collector"/></label></div>
+          <div className="cs-rank-head"><span>Rank</span><span>Collector</span><span>Collection progress</span><span>Remaining</span></div>
+          <div className="cs-rankings">{collectors.filter(user => String(user.username || "").toLowerCase().includes(collectorSearch.trim().toLowerCase())).map(user => {
+            const assets = getProfileAssets(user);
+            const percentage = completionPercentage(user.owned);
+            const rank = collectors.indexOf(user) + 1;
+            return <button type="button" key={user.id} className="cs-rank-row" onClick={() => openCollector(user)} aria-label={`View ${user.username}, ${percentage.toFixed(1)} percent complete`}>
+              <span className="cs-rank">{String(rank).padStart(2, "0")}</span>
+              <span className="cs-collector-person"><ProfileAvatar profile={user} src={assets.avatar} alt="" className="cs-collector-avatar"/><span className="cs-user-name">{user.username}{assets.verification && <CardImage src={assets.verification.badge} alt={assets.verification.label} className="cs-badge"/>}</span></span>
+              <span className="cs-progress"><span className="cs-progress-copy"><strong>{percentage.toFixed(1)}%</strong><span>{user.owned} / {set.total}</span></span><span className="cs-track"><span style={{ width: `${percentage}%` }}/></span></span>
+              <span className="cs-remaining"><strong>{Math.max(0, set.total - user.owned)}</strong><span>cards to go</span><ArrowUpRight size={16}/></span>
+            </button>;
+          })}</div>
+          {collectors.length === 0 ? <div className="cs-empty"><Users size={26}/><h3>No active collectors yet</h3></div> : !collectors.some(user => String(user.username || "").toLowerCase().includes(collectorSearch.trim().toLowerCase())) && <div className="cs-empty"><p>No collectors match this name.</p><button type="button" className="cs-more" onClick={() => setCollectorSearch("")}>Clear search</button></div>}
         </section>
+        <p className="cs-eligibility-note"><ShieldCheck size={15}/>Discord verification is required for leaderboard eligibility.{isModerator && <span> Select a collector to manage eligibility.</span>}</p>
       </div>
-      </div>
+      {selectedUser && <div className="cs-modal-overlay" onClick={event => { if (event.target === event.currentTarget && !revoking) setSelectedUser(null); }}>
+        <section className="cs-modal" role="dialog" aria-modal="true" aria-labelledby="cs-collector-title" onKeyDown={event => {
+          if (event.key !== "Tab") return;
+          const elements = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), textarea:not(:disabled), a[href], input:not(:disabled)'));
+          const first = elements[0];
+          const last = elements[elements.length - 1];
+          if (!first) { event.preventDefault(); return; }
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }}>
+          <button autoFocus type="button" className="cs-modal-close" disabled={revoking} onClick={() => setSelectedUser(null)} aria-label="Close collector"><X size={20}/></button>
+          <ProfileAvatar profile={selectedUser} src={getProfileAssets(selectedUser).avatar} alt="" className="cs-modal-avatar"/>
+          <h2 id="cs-collector-title">{selectedUser.username}</h2>
+          <button type="button" className="cs-profile-link" disabled={revoking} onClick={() => navigate(`/${encodeURIComponent(selectedUser.username)}`)}>Open public profile<ArrowUpRight size={17}/></button>
+          {isModerator && <div className="cs-moderation"><h3><ShieldCheck size={17}/>Leaderboard eligibility</h3><p>Revoking eligibility removes this collector from every set leaderboard. The reason and your moderator identity are recorded.</p><label htmlFor="cs-reason">Reason for revocation</label><textarea id="cs-reason" value={moderationReason} onChange={event => setModerationReason(event.target.value)} minLength={5} maxLength={1000} rows={3} disabled={revoking} placeholder="Explain the eligibility decision"/>{moderationError && <p role="alert" className="cs-error">{moderationError}</p>}<button type="button" className="cs-revoke" disabled={revoking || moderationReason.trim().length < 5} onClick={() => void revokeEligibility()}>{revoking ? "Revoking eligibility..." : "Revoke leaderboard eligibility"}</button></div>}
+        </section>
+      </div>}
+
     </div>
   </div>
 );

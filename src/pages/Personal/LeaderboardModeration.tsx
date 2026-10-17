@@ -18,6 +18,8 @@ import {
   Shield,
   UserX,
   X,
+  RefreshCw,
+  ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
@@ -25,6 +27,7 @@ type LeaderboardBan = {
   userId: string;
   username: string;
   createdAt: string;
+  reason?: string;
 };
 type ModerationHistoryItem = {
   id: number;
@@ -35,6 +38,7 @@ type ModerationHistoryItem = {
   action: string;
   actionLabel: string;
   createdAt: string;
+  details?: string;
 };
 type AccountReportGroup = {
   userId: string;
@@ -78,6 +82,9 @@ type CardPriceReport = {
 };
 const getHistoryActionTitle = (item: ModerationHistoryItem) => {
   const labels: Record<string, string> = {
+    leaderboard_eligibility_revoked: "Leaderboard eligibility revoked",
+    leaderboard_self_excluded: "Self-excluded from leaderboards",
+    leaderboard_user_banned: "Leaderboard eligibility revoked",
     leaderboard_user_unbanned: "Leaderboard ban lifted",
     leaderboard_ban_lifted: "Leaderboard ban lifted",
     trading_report_contacted: "Report author contacted",
@@ -149,6 +156,9 @@ const [unbanning, setUnbanning] = useState(false);
 const [errorMessage, setErrorMessage] = useState("");
 const [successMessage, setSuccessMessage] = useState("");
 const [searchQuery, setSearchQuery] = useState("");
+const [historyAction, setHistoryAction] = useState("all");
+const [banRefresh, setBanRefresh] = useState(0);
+const [reportRefresh, setReportRefresh] = useState(0);
 const [currentView, setCurrentView] = useState<
     "active" | "account_reports" | "strikes" | "history"
   >(() =>
@@ -439,7 +449,7 @@ const reportChannel = supabase
     return () => {
       supabase.removeChannel(reportChannel);
     };
-  }, [authorized]);
+  }, [authorized, reportRefresh]);
 const dismissReport = async () => {
     if (!dismissTarget || dismissing) return;
     setDismissing(true);
@@ -593,7 +603,7 @@ const { data: moderator, error: moderatorError } = await supabase
       if (active) setAuthorized(true);
 const { data: exclusionRows, error: exclusionsError } = await supabase
         .from("leaderboard_exclusions")
-        .select("user_id, created_at")
+        .select("user_id, reason, created_at")
         .order("created_at", { ascending: false });
       if (exclusionsError) {
         if (active) {
@@ -628,6 +638,7 @@ const combinedBans = (exclusionRows || []).map((row) => ({
         userId: row.user_id,
         username: usernameById.get(row.user_id) || "Deleted User",
         createdAt: row.created_at,
+        reason: row.reason || "",
       }));
       if (active) {
         setBans(combinedBans);
@@ -638,7 +649,7 @@ const combinedBans = (exclusionRows || []).map((row) => ({
     return () => {
       active = false;
     };
-  }, []);
+  }, [banRefresh]);
 const unbanUser = async () => {
     if (!selectedBan || unbanning) return;
     setUnbanning(true);
@@ -663,27 +674,20 @@ const { error } = await supabase.rpc("lift_leaderboard_ban", {
     setUnbanning(false);
     setHistoryLoaded(false);
   };
-const loadHistory = async () => {
-    if (historyLoaded || historyLoading) return;
+const loadHistory = async (force = false) => {
+    if ((!force && historyLoaded) || historyLoading) return;
     setHistoryLoading(true);
     setErrorMessage("");
-const { data: logRows, error: logError } = await supabase
-      .from("moderation_logs")
-      .select(
-        "id, moderator_user_id, moderator_username, target_user_id, target_username, action, created_at",
-      )
-      .in("action", [
-        "leaderboard_user_unbanned",
-        "leaderboard_ban_lifted",
-        "trading_report_contacted",
-        "trading_access_revoked",
-        "trading_access_restored",
-        "trading_access_restored_reports_cleared",
-        "trading_profile_report_dismissed",
-        "trading_card_report_dismissed",
-        "overpriced_listing_removed",
-      ])
-      .order("created_at", { ascending: false });
+const logRows: any[] = [];
+let logError: { message: string } | null = null;
+for (let offset = 0; ; offset += 500) {
+  const { data, error } = await supabase.from("moderation_logs")
+    .select("id, moderator_user_id, moderator_username, target_user_id, target_username, action, details, created_at")
+    .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 499);
+  if (error) { logError = error; break; }
+  logRows.push(...(data || []));
+  if (!data || data.length < 500) break;
+}
 const { data: strikeRows, error: strikeError } = await supabase
       .from("trade_offer_expiration_strikes")
       .select("id, recipient_user_id, expired_at")
@@ -728,6 +732,9 @@ const nextHistoryItems = (logRows || []).map((row) => {
 const moderatorProfile = profileById.get(row.moderator_user_id);
 const targetProfile = profileById.get(row.target_user_id);
 const actionLabels: Record<string, string> = {
+        leaderboard_eligibility_revoked: "revoked leaderboard eligibility for",
+        leaderboard_self_excluded: "self-excluded from leaderboards",
+        leaderboard_user_banned: "revoked leaderboard eligibility for",
         leaderboard_user_unbanned: "unbanned",
         leaderboard_ban_lifted: "unbanned",
         trading_report_contacted: "contacted report author",
@@ -741,7 +748,7 @@ const actionLabels: Record<string, string> = {
       };
       return {
         id: row.id,
-        moderatorUsername: row.moderator_username,
+        moderatorUsername: row.moderator_username || moderatorProfile?.username || "System",
         moderatorAvatar: row.moderator_username?.toLowerCase() === "system"
           ? rylandGraceAvatar
           : moderatorProfile ? getProfileAssets(moderatorProfile).avatar : fallbackAvatar,
@@ -752,6 +759,7 @@ const actionLabels: Record<string, string> = {
         action: row.action,
         actionLabel: actionLabels[row.action] || row.action,
         createdAt: row.created_at,
+        details: row.details || "",
       };
     });
     const strikeHistoryItems: ModerationHistoryItem[] = (strikeRows || []).map((row) => {
@@ -775,7 +783,7 @@ const actionLabels: Record<string, string> = {
 const openHistory = async () => {
     setCurrentView("history");
     setSearchQuery("");
-    await loadHistory();
+    await loadHistory(true);
   };
 const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, strikes: 1, history: 1 });
 const listPanelRef = useRef<HTMLDivElement>(null);
@@ -784,21 +792,23 @@ const normalizedSearch = searchQuery.trim().toLowerCase();
 const filteredBans = bans.filter((ban) =>
     ban.username.toLowerCase().includes(normalizedSearch),
   );
-const reportedAccounts = accountReports.filter((group) => group.reports.length > 0);
-const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0);
+const reportedAccounts = accountReports.filter((group) => group.reports.length > 0 && `${group.username} ${group.reports.map(report => report.comment).join(" ")}`.toLowerCase().includes(normalizedSearch));
+const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0 && group.username.toLowerCase().includes(normalizedSearch));
+const searchedCardReports = cardReports.filter(report => `${report.reportedUsername} ${report.reporterUsername} ${report.cardKey} ${report.setId}`.toLowerCase().includes(normalizedSearch));
+const filteredHistory = historyItems.filter(item => (historyAction === "all" || item.action === historyAction) && `${item.moderatorUsername} ${item.targetUsername} ${getHistoryActionTitle(item)} ${item.details || ""}`.toLowerCase().includes(normalizedSearch));
 const totalItems = currentView === "active" ? filteredBans.length
-  : currentView === "account_reports" ? cardReports.length + reportedAccounts.length
+  : currentView === "account_reports" ? searchedCardReports.length + reportedAccounts.length
   : currentView === "strikes" ? struckAccounts.length
-  : historyItems.length;
+  : filteredHistory.length;
 const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 const currentPage = Math.min(pageByView[currentView], totalPages);
 const pageStart = (currentPage - 1) * pageSize;
 const pageEnd = pageStart + pageSize;
 const pagedBans = filteredBans.slice(pageStart, pageEnd);
-const pagedCardReports = cardReports.slice(pageStart, pageEnd);
+const pagedCardReports = searchedCardReports.slice(pageStart, pageEnd);
 const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
-  : reportedAccounts.slice(Math.max(0, pageStart - cardReports.length), Math.max(0, pageEnd - cardReports.length));
-const pagedHistoryItems = historyItems.slice(pageStart, pageEnd);
+  : reportedAccounts.slice(Math.max(0, pageStart - searchedCardReports.length), Math.max(0, pageEnd - searchedCardReports.length));
+const pagedHistoryItems = filteredHistory.slice(pageStart, pageEnd);
 const pageLoading = currentView === "active" ? loading
   : currentView === "account_reports" || currentView === "strikes" ? reportsLoading : historyLoading;
 useEffect(() => {
@@ -809,6 +819,24 @@ const changePage = (nextPage: number) => {
   setPageByView((pages) => ({ ...pages, [currentView]: Math.max(1, Math.min(nextPage, totalPages)) }));
   listPanelRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
 };
+const refreshWorkspace = () => {
+  setErrorMessage("");
+  if (currentView === "history") void loadHistory(true);
+  else if (currentView === "active") { setLoading(true); setBanRefresh(value => value + 1); }
+  else { setReportsLoading(true); setReportRefresh(value => value + 1); }
+};
+useEffect(() => {
+  if (!authorized) return;
+  const shortcut = (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement;
+    if (event.key === "/" && !event.ctrlKey && !event.metaKey && !target?.closest("input, textarea, select, [contenteditable='true']")) {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>("[data-mc-search]")?.focus();
+    }
+  };
+  window.addEventListener("keydown", shortcut);
+  return () => window.removeEventListener("keydown", shortcut);
+}, [authorized]);
   if (authorized === false) {
     return (
       <div
@@ -855,6 +883,8 @@ const changePage = (nextPage: number) => {
       }`}
     >
       <style>{`
+.moderation-page{--mc-accent:#e7c84b;--mc-bg:#181b1e;--mc-soft:#22262a;--mc-line:#ffffff15;--mc-ink:#f4f4f5;--mc-muted:#9ca3af}.moderation-page[data-mobile-theme="light"]{--mc-bg:#fff;--mc-soft:#f0f2f4;--mc-line:#19242d18;--mc-ink:#20262b;--mc-muted:#68727b}.spooky .moderation-page,[data-theme="spooky"] .moderation-page{--mc-accent:#be9af9}.mc-shell{max-width:1440px!important;margin:0 auto!important}.mc-kicker{font-size:9px;letter-spacing:.1em;color:var(--mc-accent);font-weight:650}.mc-title{font-size:25px;font-weight:700;line-height:1.2;letter-spacing:-.03em;margin:4px 0}.mc-query-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mc-line);color:var(--mc-ink)}.mc-query-bar>label{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:0 10px;border:1px solid var(--mc-line);border-radius:9px;background:var(--mc-soft)}.mc-query-bar>label svg{flex-shrink:0;color:var(--mc-muted)}.mc-query-bar input{width:100%;min-width:0;border:0;background:none;color:var(--mc-ink);font-size:16px;padding:9px 0;outline:none}.mc-query-bar input::placeholder{font-size:12px}.mc-query-bar kbd{font:11px monospace;color:var(--mc-muted)}.mc-query-bar select{max-width:240px;background:var(--mc-soft);color:var(--mc-ink);border:1px solid var(--mc-line);border-radius:9px;padding:9px;font-size:12px;min-height:40px}.mc-query-bar>button{display:flex;align-items:center;gap:7px;border:1px solid var(--mc-line);background:var(--mc-bg);color:var(--mc-ink);padding:10px;border-radius:9px;font-size:11px;white-space:nowrap}.mc-query-bar>button:disabled{opacity:.4}.moderation-panel{scroll-margin-top:100px}.mc-shell button:focus-visible,.mc-shell select:focus-visible{outline:2px solid var(--mc-accent);outline-offset:3px}.mc-query-bar label:focus-within{border-color:var(--mc-accent)}
+@media(max-width:680px){.mc-title{font-size:22px}.mc-query-bar{flex-wrap:wrap;padding:12px;gap:8px}.mc-query-bar>label{flex-basis:100%}.mc-query-bar select{flex:1;max-width:none;min-width:0;font-size:16px}.mc-query-bar>button{margin-left:auto;min-height:42px}.mc-query-bar kbd{display:none}}
         .listing-warning-editor { display: flex; flex-direction: column; width: 100%; max-width: 448px; max-height: min(520px, calc(100dvh - 32px)); overflow: hidden; }
         .listing-warning-editor-heading { flex-shrink: 0; padding: 12px 14px 10px; border-bottom: 1px solid rgba(128,128,128,.2); }
         .listing-warning-editor-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px; }
@@ -959,8 +989,16 @@ const changePage = (nextPage: number) => {
           .moderation-modal-footer { flex-shrink: 0; padding: 12px 16px; border-top: 1px solid var(--moderation-line); display: grid; gap: 8px; }
           .moderation-modal-footer > button { margin-top: 0; min-height: 46px; font-size: 14px; line-height: 20px; }
         }
+.mr-case-list{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:18px}.mr-case{background:var(--mc-bg);border:1px solid var(--mc-line);border-radius:15px;overflow:hidden;min-width:0;color:var(--mc-ink)}.mr-case-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:19px 20px;border-bottom:1px solid var(--mc-line)}.mr-person{display:flex;align-items:center;gap:12px;min-width:0}.mr-person>img{width:46px;height:46px;border-radius:13px;object-fit:cover;flex-shrink:0}.mr-label{display:block;font-size:9px;letter-spacing:.1em;color:var(--mc-muted);font-weight:650}.mr-person h3{font-size:18px;font-weight:650;line-height:1.3;margin:5px 0 0;overflow-wrap:anywhere}.mr-status{flex-shrink:0;font-size:11px;background:var(--mc-soft);border:1px solid var(--mc-line);padding:7px 10px;border-radius:8px;color:var(--mc-muted)}.mr-revoked{color:#d7b1ff;border-color:#b892e94d;background:#b892e911}.mr-listing{display:flex;align-items:center;gap:20px;padding:20px}.mr-listing .moderation-card-preview{position:relative!important;inset:auto!important;float:none!important;width:74px!important;height:104px!important;flex:0 0 74px!important;margin:0!important}.mr-listing h4{font-size:15px;font-weight:600;margin:0 0 6px}.mr-listing code,.mr-evidence-item code{display:block;font-size:12px;overflow-wrap:anywhere;color:var(--mc-muted)}.mr-price{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-top:13px;font-size:20px;font-weight:650}.mr-price>span{font-size:11px;color:var(--mc-muted);font-weight:400}.mr-source{display:flex;align-items:center;gap:10px;padding:14px 20px;font-size:12px;color:var(--mc-muted);border-top:1px solid var(--mc-line)}.mr-source>img{width:30px;height:30px;border-radius:9px;object-fit:cover;flex-shrink:0}.mr-source>div{min-width:0;flex:1}.mr-source strong{font-weight:600;color:var(--mc-ink);overflow-wrap:anywhere}.mr-source time{display:block;font-size:10px;margin-top:4px;color:var(--mc-muted)}.mr-reference{font-size:10px;flex-shrink:0;color:var(--mc-muted)}.mr-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--mc-line);background:var(--mc-soft)}.mr-actions>span{margin-right:auto;font-size:11px;color:var(--mc-muted)}.mr-secondary,.mr-danger{border:1px solid var(--mc-line);border-radius:9px;padding:10px 13px;font-size:12px;font-weight:550;line-height:1.4;cursor:pointer}.mr-secondary{background:var(--mc-bg);color:var(--mc-ink)}.mr-danger{background:#b9323e;border-color:transparent;color:white}.mr-secondary:hover{border-color:var(--mc-accent)}.mr-danger:hover{background:#a52c37}.mr-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0;padding:18px 20px}.mr-facts>span{display:flex;flex-direction:column;gap:5px;color:var(--mc-muted);font-size:11px;border-right:1px solid var(--mc-line)}.mr-facts>span:last-child{border:0}.mr-facts strong{font-size:22px;font-weight:650;color:var(--mc-ink);font-variant-numeric:tabular-nums}.mr-context{margin:0;padding:0 20px 17px;font-size:12px;line-height:1.7;color:var(--mc-muted)}.mr-policy{display:block;margin:0 20px 15px;padding:0;background:none;border:0;font-size:11px;text-decoration:underline;text-underline-offset:3px;color:var(--mc-accent)}.mr-evidence{border-top:1px solid var(--mc-line)}.mr-evidence>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:15px 20px;font-size:12px;cursor:pointer}.mr-evidence>summary::-webkit-details-marker{display:none}.mr-evidence>summary>span:first-child{font-weight:600}.mr-evidence>summary>span:nth-child(2){margin-left:auto;font-size:11px;color:var(--mc-muted)}.mr-evidence>summary svg{color:var(--mc-muted);transition:transform .15s}.mr-evidence[open]>summary svg{transform:rotate(180deg)}.mr-evidence-list{padding:0 20px 16px;display:grid;gap:12px}.mr-evidence-item{padding:14px;border:1px solid var(--mc-line);background:var(--mc-bg);border-radius:11px}.mr-evidence-item .mr-source{border:0;padding:0}.mr-evidence-item>p{font-size:12px;line-height:1.7;margin:12px 0 5px;overflow-wrap:anywhere}.mr-comment{white-space:pre-wrap;color:var(--mc-ink)}.mr-contact-status{display:block;margin-top:9px;font-size:10px;color:var(--mc-accent)}.mr-evidence-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--mc-line)}.mr-ban-reason{max-width:850px;margin:10px 0 0;font-size:12px;line-height:1.7;color:var(--mc-muted);white-space:pre-wrap;overflow-wrap:anywhere}.mr-ban-reason strong{font-weight:550;color:var(--mc-ink)}.moderation-ban-list{display:grid!important;gap:12px;padding:16px}.moderation-ban-row{border:1px solid var(--mc-line)!important;border-radius:13px;padding:18px!important;background:var(--mc-bg);align-items:center!important}.moderation-ban-row>div{flex:1;min-width:0}.moderation-ban-row>button{width:auto!important;min-width:130px;align-self:center}.moderation-history-table{table-layout:fixed}.moderation-history-table th,.moderation-history-table td{padding:17px 18px!important;vertical-align:top!important}.moderation-history-table th:nth-child(1){width:22%}.moderation-history-table th:nth-child(2){width:38%}.moderation-history-table th:nth-child(3){width:23%}.moderation-history-table th:nth-child(4){width:17%}.moderation-history-table td:nth-child(2)>p{padding:10px;border-left:2px solid var(--mc-line);background:var(--mc-soft);border-radius:0 7px 7px 0}.moderation-history-action{font-size:11px!important;line-height:1.5!important}.moderation-history-person{align-items:start!important}.mr-case-list summary:focus-visible{outline:2px solid var(--mc-accent);outline-offset:-3px}
+@media(max-width:680px){.mr-case-list{padding:12px;gap:13px}.mr-case-heading{padding:16px;align-items:start}.mr-person{gap:10px}.mr-person>img{height:40px;width:40px;border-radius:11px}.mr-person h3{font-size:17px}.mr-status{font-size:10px;padding:6px 8px;max-width:115px;text-align:center}.mr-label{font-size:8px}.mr-listing{padding:16px;gap:14px}.mr-source{padding:13px 16px;align-items:start}.mr-source .mr-reference{font-size:9px}.mr-facts{padding:16px;gap:10px}.mr-facts>span{font-size:10px;line-height:1.5;padding-right:7px}.mr-facts strong{font-size:20px}.mr-context{padding:0 16px 15px;font-size:12px}.mr-evidence>summary{padding:15px 16px}.mr-evidence-list{padding:0 12px 12px}.mr-evidence-actions{display:grid;grid-template-columns:1fr}.mr-evidence-actions button{min-height:42px}.mr-actions{padding:13px 16px;flex-wrap:wrap}.mr-actions>span{width:100%;margin:0 0 3px}.mr-actions>button{flex:1;min-height:43px}.moderation-ban-list{padding:12px;gap:12px}.moderation-ban-row{padding:16px!important}.moderation-ban-row>button{align-self:stretch;width:100%!important}.moderation-history-entry{padding:16px!important}.moderation-history-entry>div:first-child{align-items:start}.moderation-history-entry>div:first-child p:last-child{font-size:12px;line-height:1.7}}
+@media(prefers-reduced-motion:reduce){.mr-evidence>summary svg{transition:none}}
+.mr-case-list{padding:12px;gap:10px}.mr-case{border-radius:12px}.mr-case-heading{padding:12px 15px;gap:12px}.mr-person{gap:10px}.mr-person>img{width:34px;height:34px;border-radius:10px}.mr-person h3{font-size:15px;margin-top:3px}.mr-label{font-size:8px;letter-spacing:.07em}.mr-status{font-size:10px;padding:5px 8px}.mr-facts{padding:11px 15px;gap:14px}.mr-facts>span{flex-direction:row;align-items:baseline;gap:6px;font-size:10px;line-height:1.5}.mr-facts strong{font-size:16px}.mr-context{font-size:11px;line-height:1.6;padding:0 15px 11px}.mr-policy{margin:0 15px 10px;font-size:10px}.mr-evidence>summary{padding:11px 15px;font-size:11px}.mr-evidence>summary>span:nth-child(2){font-size:10px}.mr-evidence-list{padding:0 12px 12px;gap:9px}.mr-evidence-item{padding:11px;border-radius:9px}.mr-source{padding:10px 15px;gap:8px;font-size:11px}.mr-source>img{height:26px;width:26px;border-radius:8px}.mr-source time{font-size:9px;margin-top:3px}.mr-evidence-item>p{font-size:11px;line-height:1.6;margin-top:9px}.mr-evidence-actions{margin-top:10px;padding-top:9px;gap:7px}.mr-actions{padding:10px 15px;gap:8px}.mr-secondary,.mr-danger{padding:8px 11px;font-size:11px;border-radius:8px}.mr-listing{padding:13px 15px;gap:14px}.mr-listing .moderation-card-preview{width:56px!important;height:78px!important;flex-basis:56px!important}.mr-listing h4{font-size:13px;margin-bottom:4px}.mr-listing code,.mr-evidence-item code{font-size:11px}.mr-price{font-size:17px;margin-top:8px;gap:7px}.mr-price>span{font-size:10px}.moderation-ban-list{padding:12px;gap:9px}.moderation-ban-row{padding:12px 15px!important;gap:12px!important}.mr-ban-reason{margin-top:6px;font-size:11px;line-height:1.6}.moderation-history-table th,.moderation-history-table td{padding:11px 13px!important}.moderation-history-avatar{width:27px!important;height:27px!important;flex-basis:27px!important}.moderation-history-table td:nth-child(2)>p{padding:7px;font-size:11px;line-height:1.6}.moderation-history-person{gap:8px!important}.moderation-history-entry{padding:12px!important}
+@media(max-width:680px){.mr-case-list{padding:10px;gap:10px}.mr-case-heading{padding:12px;gap:10px}.mr-person>img{width:34px;height:34px}.mr-person h3{font-size:15px}.mr-facts{padding:10px 12px;gap:8px}.mr-facts>span{flex-direction:column;gap:3px;font-size:9px}.mr-facts strong{font-size:16px}.mr-context{padding:0 12px 10px;font-size:11px}.mr-evidence>summary{padding:11px 12px;min-height:44px}.mr-policy{margin:0 12px 10px;min-height:30px}.mr-listing{padding:12px;gap:12px}.mr-source{padding:10px 12px}.mr-actions{padding:10px 12px}.mr-actions>span{font-size:10px;margin-bottom:0}.mr-actions>button,.mr-evidence-actions button{min-height:42px;padding:9px 11px}.mr-evidence-actions{display:flex;flex-wrap:wrap}.mr-evidence-actions>button{flex:1;min-width:125px}.moderation-ban-row{padding:12px!important}.moderation-history-entry{padding:12px!important}}
+/* Arrange related case information in shared rows instead of full-width bands. */
+.mr-case{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;padding:12px;gap:8px 16px}.mr-case-heading{grid-column:1;min-width:0;padding:0;border:0;align-items:center}.mr-facts{grid-column:2;grid-row:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 14px;padding:0;align-self:center}.mr-facts>span{flex-direction:row;gap:5px;border:0;padding:0;align-items:baseline;white-space:normal}.mr-context{grid-column:1/-1;padding:0;margin:0;line-height:1.5}.mr-policy{grid-column:1/-1;justify-self:start;margin:0;min-height:0;padding:3px 0}.mr-evidence{grid-column:1;min-width:0;border:0;align-self:center}.mr-evidence>summary{padding:7px 0;min-height:36px;justify-content:flex-start;gap:8px}.mr-evidence>summary>span:nth-child(2){margin-left:0}.mr-evidence-list{padding:8px 0 0;gap:8px}.mr-evidence[open]{grid-column:1/-1}.mr-actions{grid-column:2;justify-self:end;align-self:center;padding:0;border:0;background:none;gap:8px;flex-wrap:wrap}.mr-actions>span{display:none}.mr-actions>button{flex:0 1 auto;min-height:36px}.mr-listing{grid-column:1;grid-row:2;padding:0;gap:12px}.mr-case>.mr-source{grid-column:2;grid-row:2;padding:0;border:0;align-self:center;max-width:310px;flex-wrap:wrap}.mr-case>.mr-source .mr-reference{width:100%;padding-left:34px}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1/-1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1/-1}.mr-case-list{gap:8px;padding:10px}.mr-price{margin-top:4px}
+@media(max-width:900px){.mr-case{grid-template-columns:minmax(0,1fr);gap:8px;padding:12px}.mr-case-heading,.mr-facts,.mr-context,.mr-policy,.mr-evidence,.mr-actions,.mr-listing,.mr-case>.mr-source{grid-column:1;grid-row:auto}.mr-facts{justify-content:flex-start;gap:5px 14px}.mr-facts>span{flex-direction:row;gap:5px;font-size:10px}.mr-evidence>summary{min-height:40px}.mr-actions{justify-self:stretch;justify-content:flex-end}.mr-actions>button{flex:0 1 auto;min-height:42px}.mr-case>.mr-source{max-width:none;flex-wrap:nowrap}.mr-case>.mr-source .mr-reference{width:auto;padding:0}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1}}
       `}</style>
-      <div className={`moderation-shell mx-auto w-full px-3 pt-4 sm:px-6 lg:pt-6 ${currentView === "account_reports" || currentView === "strikes" ? "max-w-[1240px]" : "max-w-[1080px]"}`}>
+      <div className="moderation-shell mc-shell w-full px-3 pt-4 sm:px-6 lg:pt-6">
         <div className="moderation-heading flex items-center gap-3">
           <button
             type="button"
@@ -984,7 +1022,7 @@ const changePage = (nextPage: number) => {
             <Shield size={20} />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold leading-tight sm:text-2xl"><span className="lg:hidden">Moderation</span><span className="hidden lg:inline">Leaderboard Moderation</span></h1>
+            <span className="mc-kicker">MLPEKAYOU / STAFF OPERATIONS</span><h1 className="mc-title">Moderation console</h1>
             <p
               className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
             >
@@ -1044,9 +1082,9 @@ const changePage = (nextPage: number) => {
                     ? `${filteredBans.length} of ${bans.length} users`
                     : `${bans.length} ${bans.length === 1 ? "user" : "users"}`
                   : currentView === "account_reports"
-                    ? `${reportedAccounts.length + cardReports.length} ${reportedAccounts.length + cardReports.length === 1 ? "case" : "cases"}`
+                    ? `${reportedAccounts.length} reported accounts / ${searchedCardReports.length} listing reports`
                     : currentView === "strikes" ? `${struckAccounts.length} ${struckAccounts.length === 1 ? "account" : "accounts"}`
-                    : `${historyItems.length} ${historyItems.length === 1 ? "action" : "actions"}`}
+                    : `${filteredHistory.length} ${filteredHistory.length === 1 ? "action" : "actions"}`}
               </p>
             </div>
             <div className="moderation-tabs grid grid-cols-2 gap-2 sm:flex" aria-label="Moderation sections">
@@ -1062,9 +1100,13 @@ const changePage = (nextPage: number) => {
                   key={view}
                   aria-pressed={currentView === view}
                   type="button"
-                  onClick={() =>
-                    view === "history" ? openHistory() : setCurrentView(view)
-                  }
+                  onClick={() => {
+                    setSearchQuery("");
+                    setHistoryAction("all");
+                    setPageByView(pages => ({ ...pages, [view]: 1 }));
+                    if (view === "history") void openHistory();
+                    else setCurrentView(view);
+                  }}
                   className={`min-h-11 rounded-xl px-4 py-2 text-sm font-bold ${
                     currentView === view
                       ? "bg-[#FFD54A] text-black"
@@ -1078,34 +1120,9 @@ const changePage = (nextPage: number) => {
               ))}
             </div>
           </div>
+          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} placeholder={currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
           {currentView === "active" ? (
             <>
-              <div
-                className={`moderation-search border-b px-5 py-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"}`}
-              >
-                <label className="relative block lg:max-w-lg">
-                  <Search
-                    size={17}
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
-                  />
-                  <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(event) => {
-                      setSearchQuery(event.target.value);
-                      setPageByView((pages) => ({ ...pages, active: 1 }));
-                    }}
-                    aria-label="Search banned users"
-                    placeholder="Search by username..."
-                    autoComplete="off"
-                    className={`w-full rounded-xl border py-3 pl-10 pr-4 text-base outline-none transition-colors ${
-                      isLightMode
-                        ? "border-black/10 bg-zinc-50 text-zinc-900 placeholder:text-zinc-500 focus:border-[#8a6a00]/50 focus:bg-white"
-                        : "border-white/10 bg-white/[0.04] text-white placeholder:text-zinc-600 focus:border-[#FFD54A]/50 focus:bg-white/[0.06]"
-                    }`}
-                  />
-                </label>
-              </div>
               {loading ? (
                 <div
                   className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
@@ -1160,6 +1177,7 @@ const changePage = (nextPage: number) => {
                         <p className="mt-1 text-xs text-zinc-500">
                           Banned {new Date(ban.createdAt).toLocaleString()}
                         </p>
+                        <p className="mr-ban-reason"><strong>Reason: </strong>{ban.reason || "No reason was recorded for this exclusion."}</p>
                       </div>
                       <button
                         type="button"
@@ -1189,7 +1207,7 @@ const changePage = (nextPage: number) => {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading {currentView === "strikes" ? "strikes" : "reports"}...
               </div>
-            ) : (currentView === "strikes" ? struckAccounts.length === 0 : reportedAccounts.length === 0 && cardReports.length === 0) ? (
+            ) : (currentView === "strikes" ? struckAccounts.length === 0 : reportedAccounts.length === 0 && searchedCardReports.length === 0) ? (
               <div className="px-5 py-14 text-center">
                 <Shield
                   className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}
@@ -1201,230 +1219,23 @@ const changePage = (nextPage: number) => {
                 </p>
               </div>
             ) : (
-              <div className="moderation-report-list grid items-start gap-3 p-3 lg:grid-cols-2 lg:gap-5 lg:p-5">
-                {currentView === "account_reports" && pagedCardReports.map((report) => (
-                  <div
-                    key={`card-${report.id}`}
-                    className={`moderation-report-card moderation-price-card min-w-0 rounded-2xl border p-3 sm:p-5 ${isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]"}`}
-                  >
-                    <ReportedCardThumbnail setId={report.setId} cardKey={report.cardKey} />
-                    <div className="moderation-price-header flex items-center gap-3">
-                      <CardImage
-                        src={report.reportedAvatar}
-                        alt=""
-                        className="h-10 w-10 shrink-0 rounded-full object-cover"
-                      />
-                      <div className="min-w-0">
-                        <p className="break-words font-semibold">
-                          <span className="text-red-500 block lg:inline">
-                            Overpriced card report
-                          </span>{" "}
-                          <span className="hidden lg:inline">- </span>{report.reportedUsername}
-                        </p>
-                        <p
-                          className={`mt-0.5 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
-                        >
-                          <span className="block font-semibold break-words">{getModerationSetName(report.setId)}</span>
-                          <span className="block font-mono break-all">{getModerationCardCode(report.setId, report.cardKey)}</span>
-                          <span className="mt-2 inline-block rounded-lg bg-red-500/10 px-2.5 py-1 font-semibold text-red-500">Listed for ${report.reportedPrice.toFixed(2)}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 ${isLightMode ? "bg-zinc-50" : "bg-white/[0.04]"}`}
-                    >
-                      <CardImage
-                        src={report.reporterAvatar}
-                        alt=""
-                        className="h-8 w-8 shrink-0 rounded-full object-cover"
-                      />
-                      <p className="min-w-0 break-words text-sm leading-relaxed">
-                        <span className="break-words font-semibold">
-                          {report.reporterUsername}
-                        </span>{" "}
-                        <span
-                          className={
-                            isLightMode ? "text-zinc-600" : "text-zinc-400"
-                          }
-                        >
-                          reported {report.reportedUsername} on{" "}
-                          {new Date(report.createdAt).toLocaleString()}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="moderation-price-actions mt-4 grid gap-2">
-                      <button type="button" onClick={() => {
-                        setWarningTarget(report); setWarningMode("template"); setSuggestedPrice(""); setCustomExplanation(""); setWarningError("");
-                      }} className="w-full rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white">
-                        Remove listing and warn user
-                      </button>
-                    <button type="button" onClick={() => setDismissTarget({ kind: "card", id: report.id, username: report.reportedUsername })}
-                      className={`w-full rounded-xl px-4 py-3 text-sm font-bold ${isLightMode ? "bg-zinc-100 text-zinc-800" : "bg-white/[0.08] text-white"}`}>
-                      Dismiss
-                    </button>
-                    </div>
-                  </div>
-                ))}
-                {pagedAccountReports.map((report, index) => (
-                  <div
-                    key={report.userId}
-                    className={`moderation-report-card min-w-0 rounded-2xl border p-3 sm:p-5 ${report.tradeAccessRevoked ? (isLightMode ? "border-y border-violet-300 bg-violet-50" : "border-y border-violet-400/30 bg-violet-500/10") : report.reports.length >= 3 ? (isLightMode ? "border-y-2 border-red-500 bg-red-50" : "border-y-2 border-red-500/70 bg-red-500/10") : index !== pagedAccountReports.length - 1 ? (isLightMode ? "border-b border-black/[0.07]" : "border-b border-white/[0.07]") : ""}`}
-                  >
-                    <div className="moderation-account-header flex items-center gap-3">
-                      <CardImage
-                        src={report.avatar}
-                        alt=""
-                        className="h-10 w-10 shrink-0 rounded-full object-cover"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="break-words font-semibold">
-                          <span className="lg:hidden">{report.username}</span>
-                          <span className="hidden lg:inline">{currentView === "strikes"
-                            ? `${report.username} let ${report.expiredOffers.length} trade ${report.expiredOffers.length === 1 ? "offer" : "offers"} expire.`
-                            : `${report.username} has been reported ${report.reports.length} ${report.reports.length === 1 ? "time" : "times"}.`}</span>
-                          <span className="mt-1 block text-xs font-normal leading-5 lg:hidden">
-                            {currentView === "strikes" ? `${report.expiredOffers.length} expired ${report.expiredOffers.length === 1 ? "offer" : "offers"}` : `${report.reports.length} ${report.reports.length === 1 ? "report" : "reports"}`}
-                          </span>
-                        </p>
-                        <p
-                          className={`moderation-account-status mt-0.5 text-xs font-semibold ${report.tradeAccessRevoked ? "text-violet-500" : report.reports.length >= 3 || report.expiredOffers.length >= 3 ? "text-red-500" : "text-zinc-500"}`}
-                        >
-                          {report.tradeAccessRevoked
-                            ? "DISCORD USERNAME AND PUBLIC RIGHTS REVOKED"
-                            : currentView === "strikes"
-                              ? `${Math.max(0, 3 - report.expiredOffers.length)} ${Math.max(0, 3 - report.expiredOffers.length) === 1 ? "expiration" : "expirations"} remaining before automatic revocation.`
-                              : report.reports.length >= 3
-                                ? "THREE-REPORT RECOMMENDATION REACHED"
-                                : "Three reports are recommended before revocation."}
-                        </p>
-                      </div>
-                      {!report.tradeAccessRevoked &&
-                        report.reports.length >= 3 && (
-                          <div
-                            title="Three or more reports"
-                            className="moderation-report-alert flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-500 text-3xl font-black text-white shadow-[0_0_24px_rgba(239,68,68,.45)]"
-                          >
-                            !
-                          </div>
-                        )}
-                      {currentView === "strikes" && report.expiredOffers.length > 0 && (
-                        <div
-                          className={`moderation-strike-badge shrink-0 rounded-xl border px-3 py-2 text-center ${
-                            report.expiredOffers.length >= 3
-                              ? "border-red-500/30 bg-red-500/10 text-red-500"
-                              : report.expiredOffers.length === 2
-                                ? "border-orange-500/30 bg-orange-500/10 text-orange-500"
-                                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
-                          }`}
-                        >
-                          <div className="flex items-center justify-center gap-1.5">
-                            <span className="text-base font-black">
-                              {Math.min(report.expiredOffers.length, 3)}/3
-                            </span>
-                            <button
-                              type="button"
-                              aria-label="Learn about offer response strikes"
-                              onClick={() => setShowOfferStrikeInfo(true)}
-                              className="flex h-8 w-8 items-center justify-center rounded-full border border-current/30 text-[10px] font-black transition-colors hover:bg-current/10"
-                            >
-                              ?
-                            </button>
-                          </div>
-                          <div className="text-[10px] font-bold uppercase tracking-wide">
-                            {report.expiredOffers.length >= 3
-                              ? "Revoked"
-                              : report.expiredOffers.length === 2
-                                ? "Bad"
-                                : "Good"}
-                          </div>
-                        </div>
-                      )}
-                      {report.tradeAccessRevoked && (
-                        <Shield className="moderation-revoked-icon h-8 w-8 shrink-0 text-violet-500" />
-                      )}
-                    </div>
-                    <div className="moderation-report-details mt-4 space-y-2 lg:max-h-[420px] lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
-                      {currentView === "strikes" && report.expiredOffers.map((offer) => (
-                        <div
-                          key={`expired-${offer.id}`}
-                          className={`moderation-detail-row flex items-center gap-2 rounded-xl px-3 py-2 ${isLightMode ? "bg-amber-50" : "bg-amber-500/[0.08]"}`}
-                        >
-                          <CardImage
-                            src={offer.senderAvatar}
-                            alt=""
-                            className="h-8 w-8 shrink-0 rounded-full object-cover"
-                          />
-                          <p className="min-w-0 flex-1 break-words text-sm leading-relaxed">
-                            <span className="break-words font-semibold">
-                              Offer from {offer.senderUsername}
-                            </span>{" "}
-                            <span
-                              className={
-                                isLightMode ? "text-zinc-600" : "text-zinc-400"
-                              }
-                            >
-                              <span className="mt-1 block">{getModerationSetName(offer.targetSetId)}</span>
-                              <span className="block break-all font-mono">{getModerationCardCode(offer.targetSetId, offer.targetCardKey)}</span>
-                              <span className="mt-1 block text-xs">Expired unanswered - {new Date(offer.expiredAt).toLocaleString()}</span>
-                            </span>
-                          </p>
-                        </div>
-                      ))}
-                      {currentView === "account_reports" && report.reports.map((item) => (
-                        <div
-                          key={item.id}
-                          className={`moderation-detail-row flex items-center gap-2 rounded-xl px-3 py-2 ${
-                            isLightMode ? "bg-zinc-50" : "bg-white/[0.04]"
-                          }`}
-                        >
-                          <CardImage
-                            src={item.reporterAvatar}
-                            alt=""
-                            className="h-8 w-8 shrink-0 rounded-full object-cover"
-                          />
-                          <p className="min-w-0 flex-1 break-words text-sm leading-relaxed">
-                            <span className="break-words font-semibold">
-                              {item.reporterUsername}
-                            </span>{" "}
-                            <span
-                              className={
-                                isLightMode ? "text-zinc-600" : "text-zinc-400"
-                              }
-                            >
-                              reported on{" "}
-                              {new Date(item.createdAt).toLocaleString()}
-                            </span>
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedReportComment(item)}
-                            aria-label="View report comment"
-                            title="View report comment"
-                            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${isLightMode ? "bg-zinc-200 text-zinc-700" : "bg-white/[0.08] text-zinc-200"}`}
-                          >
-                            <MessageCircle size={17} />
-                            {(item.comment || item.wantsStaffContact) && (
-                              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
-                            )}
-                          </button>
-                          <button type="button" onClick={() => setDismissTarget({ kind: "profile", id: item.id, username: report.username })}
-                            className={`min-h-11 shrink-0 rounded-xl px-3 text-xs font-bold ${isLightMode ? "bg-zinc-200 text-zinc-800" : "bg-white/[0.08] text-white"}`}>
-                            Dismiss
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                      {(currentView === "account_reports" || report.tradeAccessRevoked) && (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedAccountReport(report)}
-                        className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold ${report.tradeAccessRevoked ? "bg-violet-500 text-white" : report.reports.length >= 3 ? "bg-red-500 text-white" : "bg-red-500/10 text-red-500"}`}
-                      >
-                        <span className="lg:hidden">{report.tradeAccessRevoked ? "Review reinstatement" : "Review account"}</span><span className="hidden lg:inline">MODERATION ACTIONS</span>
-                      </button>
-                    )}
-                  </div>
-                ))}
+              <div className="mr-case-list">
+                {currentView === "account_reports" && pagedCardReports.map(report => <article key={`card-${report.id}`} className="mr-case">
+                  <header className="mr-case-heading"><div className="mr-person"><CardImage src={report.reportedAvatar} alt=""/><div><span className="mr-label">LISTING REPORT</span><h3>{report.reportedUsername}</h3></div></div><span className="mr-status">Awaiting review</span></header>
+                  <div className="mr-listing"><ReportedCardThumbnail setId={report.setId} cardKey={report.cardKey}/><div><h4>{getModerationSetName(report.setId)}</h4><code>{getModerationCardCode(report.setId, report.cardKey)}</code><span className="mr-price">${report.reportedPrice.toFixed(2)}<span>reported listing price</span></span></div></div>
+                  <div className="mr-source"><CardImage src={report.reporterAvatar} alt=""/><div><span>Reported by <strong>{report.reporterUsername}</strong></span><time dateTime={report.createdAt}>{new Date(report.createdAt).toLocaleString()}</time></div><span className="mr-reference">Report #{report.id}</span></div>
+                  <footer className="mr-actions"><button type="button" className="mr-secondary" onClick={() => setDismissTarget({ kind: "card", id: report.id, username: report.reportedUsername })}>Dismiss report</button><button type="button" className="mr-danger" onClick={() => { setWarningTarget(report); setWarningMode("template"); setSuggestedPrice(""); setCustomExplanation(""); setWarningError(""); }}>Review removal and warning</button></footer>
+                </article>)}
+                {pagedAccountReports.map(report => <article key={report.userId} className="mr-case">
+                  <header className="mr-case-heading"><div className="mr-person"><CardImage src={report.avatar} alt=""/><div><span className="mr-label">{currentView === "strikes" ? "OFFER RESPONSE RECORD" : "ACCOUNT REPORTS"}</span><h3>{report.username}</h3></div></div><span className={`mr-status ${report.tradeAccessRevoked ? "mr-revoked" : ""}`}>{report.tradeAccessRevoked ? "Access revoked" : "Access active"}</span></header>
+                  <div className="mr-facts"><span><strong>{report.reports.length}</strong>account reports</span><span><strong>{report.expiredOffers.length}</strong>uncleared expirations</span><span><strong>{report.reports.filter(item => item.wantsStaffContact && !item.contactedAt).length}</strong>contact requests pending</span></div>
+                  <p className="mr-context">{report.tradeAccessRevoked ? "Trading and selling access is currently revoked. Review the evidence before considering reinstatement." : currentView === "strikes" ? `${report.expiredOffers.length} unanswered offer ${report.expiredOffers.length === 1 ? "expiration is" : "expirations are"} recorded. The current access status is shown above.` : report.reports.length >= 3 ? "Three or more reports are recorded. Review the individual evidence before deciding on access." : "Review each report on its merits. The report count alone does not establish misconduct."}</p>
+                  {currentView === "strikes" && <button type="button" className="mr-policy" onClick={() => setShowOfferStrikeInfo(true)}>How offer-response strikes work</button>}
+                  <details className="mr-evidence"><summary><span>Review evidence</span><span>{currentView === "strikes" ? `${report.expiredOffers.length} expired offers` : `${report.reports.length} reports`}</span><ChevronDown size={15}/></summary><div className="mr-evidence-list">
+                    {currentView === "strikes" ? report.expiredOffers.map(offer => <div key={offer.id} className="mr-evidence-item"><div className="mr-source"><CardImage src={offer.senderAvatar} alt=""/><div><strong>Offer from {offer.senderUsername}</strong><time dateTime={offer.expiredAt}>Expired {new Date(offer.expiredAt).toLocaleString()}</time></div><span className="mr-reference">#{offer.id}</span></div><p>{getModerationSetName(offer.targetSetId)}</p><code>{getModerationCardCode(offer.targetSetId, offer.targetCardKey)}</code></div>) : report.reports.map(item => <div key={item.id} className="mr-evidence-item"><div className="mr-source"><CardImage src={item.reporterAvatar} alt=""/><div><strong>{item.reporterUsername}</strong><time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString()}</time></div><span className="mr-reference">Report #{item.id}</span></div><p className="mr-comment">{item.comment || "No written comment supplied."}</p>{item.wantsStaffContact && <span className="mr-contact-status">{item.contactedAt ? `Staff contact recorded ${new Date(item.contactedAt).toLocaleString()}` : "Reporter requested staff contact"}</span>}<div className="mr-evidence-actions"><button type="button" className="mr-secondary" onClick={() => setSelectedReportComment(item)}>Full report and contact details</button><button type="button" className="mr-secondary" onClick={() => setDismissTarget({ kind: "profile", id: item.id, username: report.username })}>Dismiss this report</button></div></div>)}
+                  </div></details>
+                  {(currentView === "account_reports" || report.tradeAccessRevoked) && <footer className="mr-actions"><span>Account-level decision</span><button type="button" className={report.tradeAccessRevoked ? "mr-secondary" : "mr-danger"} onClick={() => setSelectedAccountReport(report)}>{report.tradeAccessRevoked ? "Review reinstatement" : "Review access action"}</button></footer>}
+                </article>)}
               </div>
             )
           ) : historyLoading ? (
@@ -1434,7 +1245,7 @@ const changePage = (nextPage: number) => {
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading moderation history...
             </div>
-          ) : historyItems.length === 0 ? (
+          ) : filteredHistory.length === 0 ? (
             <div className="px-5 py-14 text-center">
               <History
                 className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}
@@ -1442,7 +1253,7 @@ const changePage = (nextPage: number) => {
               <p
                 className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}
               >
-                No moderation history yet
+                {normalizedSearch || historyAction !== "all" ? "No actions match these filters" : "No moderation history yet"}
               </p>
             </div>
           ) : (
@@ -1476,9 +1287,10 @@ const changePage = (nextPage: number) => {
                           </div>
                         </td>
                         <td>
-                          <span className={`moderation-history-action ${item.action === "trading_access_revoked" ? (isLightMode ? "bg-red-50 text-red-700" : "bg-red-500/10 text-red-300") : (isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300")}`}>
+                          <span className={`moderation-history-action ${["trading_access_revoked", "leaderboard_eligibility_revoked", "leaderboard_user_banned"].includes(item.action) ? (isLightMode ? "bg-red-50 text-red-700" : "bg-red-500/10 text-red-300") : (isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300")}`}>
                             {getHistoryActionTitle(item)}
                           </span>
+                          {item.details && <p className="mt-2 max-w-md whitespace-pre-wrap break-words text-xs leading-5 opacity-80"><strong>Reason / details: </strong>{item.details}</p>}
                         </td>
                         <td>
                           <div className="moderation-history-person">
@@ -1513,6 +1325,7 @@ const changePage = (nextPage: number) => {
                           <Shield size={14} className={isLightMode ? "text-[#725700]" : "text-[#FFD54A]"} aria-label="Moderator" />
                         </p>
                         <p className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>{getHistoryActionTitle(item)}</p>
+                        {item.details && <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 opacity-80"><strong>Reason / details: </strong>{item.details}</p>}
                       </div>
                     </div>
                     <div className="mt-3 flex items-center gap-2 text-xs leading-5">

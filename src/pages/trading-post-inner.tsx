@@ -761,7 +761,7 @@ export default function TradingPostInner() {
     FW: "Fantasy Wonderland",
     "12": "Discord",
     "14": "Nightmare Night",
-    "hearthswarming-eve": "HeartsWarming Eve",
+    "hearthswarming-eve": "HearthsWarming Eve",
     tcgpromos: "TCG Promos",
   };
   const getOfferSetName = (offerSetId: string) => {

@@ -462,8 +462,8 @@ const saveTimer = window.setTimeout(saveProgress, 400);
       <main className="hearthswarming-main">
         <header className="hearthswarming-header">
           <button type="button" className="hearthswarming-icon-button" onClick={() => navigate("/collections")} aria-label="Back to collections"><ArrowLeft size={20}/></button>
-          <div className="hearthswarming-heading"><p className="hearthswarming-eyebrow">My Little Pony TCG</p><h1>HeartsWarming Eve</h1><p>{viewMode ? "Choose a card to explore its front and back in 3D." : "Tap a card to mark it owned or missing."}</p></div>
-          <div className="hearthswarming-total"><strong>{collected}<span> / {total}</span></strong><span>{total - collected} still to collect</span><div className="hearthswarming-progress-track" role="progressbar" aria-label="HeartsWarming Eve collection completion" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><div style={{ width: `${progress}%` }}/></div></div>
+          <div className="hearthswarming-heading"><p className="hearthswarming-eyebrow">My Little Pony TCG</p><h1>HearthsWarming Eve</h1><p>{viewMode ? "Choose a card to explore its front and back in 3D." : "Tap a card to mark it owned or missing."}</p></div>
+          <div className="hearthswarming-total"><strong>{collected}<span> / {total}</span></strong><span>{total - collected} still to collect</span><div className="hearthswarming-progress-track" role="progressbar" aria-label="HearthsWarming Eve collection completion" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><div style={{ width: `${progress}%` }}/></div></div>
           <div className="hearthswarming-mode" role="group" aria-label="Card interaction mode">
             <button type="button" aria-pressed={!viewMode} className={!viewMode ? "is-active" : ""} onClick={() => setViewMode(false)}><Check size={16}/>Collect</button>
             <button type="button" aria-pressed={viewMode} className={viewMode ? "is-active" : ""} onClick={() => setViewMode(true)}><Box size={16}/>Inspect in 3D</button>
