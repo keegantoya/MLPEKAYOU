@@ -1,5 +1,5 @@
 import { getCompletedISOSetIds } from "./iso-visibility";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOMOON from "./iso-moon";
 import ISOFUN from "./iso-fun";
@@ -55,6 +55,44 @@ const sections = [
   },
 ] as const;
 export default function ISO() {
+const pageRef = useRef<HTMLDivElement>(null);
+const [mobileHeaderGap, setMobileHeaderGap] = useState(0);
+useEffect(() => {
+  const page = pageRef.current;
+  if (!page) return;
+  const headers = Array.from(document.querySelectorAll<HTMLElement>("header, [role='banner']")).filter((element) => !page.contains(element));
+  const measure = () => {
+    if (window.innerWidth >= 768) {
+      setMobileHeaderGap(0);
+      return;
+    }
+    let headerBottom = 0;
+    for (const header of headers) {
+      let element: HTMLElement | null = header;
+      let overlaysPage = false;
+      while (element && element !== document.body) {
+        const position = getComputedStyle(element).position;
+        if (position === "fixed" || position === "sticky") overlaysPage = true;
+        element = element.parentElement;
+      }
+      const bounds = header.getBoundingClientRect();
+      if (overlaysPage && bounds.height > 0 && bounds.top < window.innerHeight / 2) headerBottom = Math.max(headerBottom, bounds.bottom);
+    }
+    const pageTop = page.getBoundingClientRect().top + window.scrollY;
+    setMobileHeaderGap(headerBottom > 0 ? Math.max(0, Math.ceil(headerBottom + 12 - pageTop)) : 12);
+  };
+  const observer = new ResizeObserver(measure);
+  headers.forEach((header) => observer.observe(header));
+  measure();
+  window.addEventListener("resize", measure);
+  window.visualViewport?.addEventListener("resize", measure);
+  return () => {
+    observer.disconnect();
+    window.removeEventListener("resize", measure);
+    window.visualViewport?.removeEventListener("resize", measure);
+  };
+}, []);
+
 const [selectedSection, setSelectedSection] =
     useState<Section>("moon");
 const [showControls, setShowControls] = useState(false);
@@ -259,7 +297,7 @@ const allSearchContent = (
     </>
   );
   return (
-    <div className={`min-h-screen transition-colors ${isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-zinc-100"}`}>
+    <div ref={pageRef} style={{ paddingTop: mobileHeaderGap }} className={`min-h-screen transition-colors ${isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-zinc-100"}`}>
       <div className="mx-auto flex max-w-[1600px]">
         <aside className={`hidden min-h-screen w-56 shrink-0 border-r p-3 md:block ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
           <div className="sticky top-0 py-2">
