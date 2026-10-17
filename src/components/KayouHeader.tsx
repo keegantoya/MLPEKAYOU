@@ -32,7 +32,7 @@ import {
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useRef } from "react";
 import { getProfileAssets } from "../pages/Everypony/profile-assets";
@@ -48,6 +48,66 @@ const KayouHeader = () => {
   const headerStaffRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const globalHeaderRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const header = globalHeaderRef.current;
+    if (!header) return;
+    const desktop = window.matchMedia("(min-width: 768px)");
+    let target: HTMLElement | null = null;
+    let originalPadding = "";
+    let originalPriority = "";
+    let added = 0;
+    let frame = 0;
+    const restore = () => {
+      if (!target) return;
+      if (originalPadding) target.style.setProperty("padding-top", originalPadding, originalPriority);
+      else target.style.removeProperty("padding-top");
+      added = 0;
+    };
+    const update = () => {
+      frame = 0;
+      if (desktop.matches) { restore(); return; }
+      const next = Array.from(document.querySelectorAll<HTMLElement>("main")).find(element =>
+        !element.closest(".kayou-header-scope, [role='dialog'], [aria-modal='true']") && element.getClientRects().length > 0
+      ) ?? null;
+      if (next !== target) {
+        restore();
+        target = next;
+        originalPadding = target?.style.getPropertyValue("padding-top") ?? "";
+        originalPriority = target?.style.getPropertyPriority("padding-top") ?? "";
+      }
+      if (!target) return;
+      const style = getComputedStyle(target);
+      const padding = parseFloat(style.paddingTop) || 0;
+      const border = parseFloat(style.borderTopWidth) || 0;
+      const naturalContentTop = target.getBoundingClientRect().top + window.scrollY + border + padding - added;
+      const required = Math.max(0, Math.ceil(header.getBoundingClientRect().bottom + 12 - naturalContentTop));
+      if (required === added) return;
+      const basePadding = padding - added;
+      added = required;
+      if (required === 0) restore();
+      else target.style.setProperty("padding-top", `${basePadding + required}px`, "important");
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const observer = new ResizeObserver(schedule);
+    observer.observe(header);
+    const mutations = new MutationObserver(schedule);
+    mutations.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("resize", schedule);
+    window.visualViewport?.addEventListener("resize", schedule);
+    desktop.addEventListener("change", schedule);
+    update();
+    return () => {
+      observer.disconnect();
+      mutations.disconnect();
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+      desktop.removeEventListener("change", schedule);
+      if (frame) cancelAnimationFrame(frame);
+      restore();
+    };
+  }, [location.pathname]);
+
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [inboxNotificationCount, setInboxNotificationCount] = useState(0);
@@ -1273,6 +1333,7 @@ const KayouHeader = () => {
 `}{" "}
       </style>
       <header
+        ref={globalHeaderRef}
         className="fixed left-0 right-0 top-0 z-[20000] text-[#E7C84B]"
         style={{
           background: isLightMode
