@@ -57,7 +57,7 @@ const sets = [
   {
   id: "tcgpromos",
   name: "TCG Promos",
-  total: 27,
+  total: 28,
   rarities: null,
   isNew: false,
 },
