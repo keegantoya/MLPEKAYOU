@@ -1,12 +1,150 @@
-import { funCatalog } from "@/lib/iso-card-catalog";
-const { sets, getDisplayCardCode, getRarityCode } = funCatalog;
-import { cardImagePaths } from "@/lib/card-images";
+import { isISOOwned, normalizeISOKey } from "./iso-visibility";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
 import { funCharacterMap } from "./Card Characters/card-characters-fun";
+const getRarityCode = (rarity: string) => {
+  return rarity;
+};
+const getDisplayCardCode = (
+  setId: string,
+  rarity: string,
+  number: number
+) => {
+const rarityCode = getRarityCode(rarity);
+const cardNumber = String(number).padStart(3, "0");
+const setCodeMap: Record<string, string> = {
+    "7": "FME01",
+    "8": "FME02",
+    "11": "FME03",
+  };
+  if (setId === "7" && rarity === "SN") {
+    return `FME01-\u25c7N-${cardNumber}`;
+  }
+  if (setId === "7" && rarity === "R") {
+    if (number <= 6) {
+      return `INT01-R-${cardNumber}`;
+    }
+    if (number <= 15) {
+      return `INT01-R-${String(number + 5).padStart(3, "0")}`;
+    }
+    return `INT02-R-${String(number - 15).padStart(3, "0")}`;
+  }
+  if (setId === "7" && rarity === "UR") {
+    if (number <= 6) {
+      return `INT02-UR-${cardNumber}`;
+    }
+const specialNumbers = [10, 11, 12, 14];
+    return `INT02-UR-${String(
+      specialNumbers[number - 7]
+    ).padStart(3, "0")}`;
+  }
+  if (setId === "8" && rarity === "SN") {
+    return `FME02-\u25c7N-${cardNumber}`;
+  }
+  if (setId === "8" && rarity === "R") {
+    if (number <= 20) {
+      return `INT03-R-${cardNumber}`;
+    }
+    if (number <= 27) {
+      return `INT02-R-${String(number - 20).padStart(3, "0")}`;
+    }
+    return `INT02-R-${String(number - 15).padStart(3, "0")}`;
+  }
+  if (setId === "8" && rarity === "UR") {
+    if (number <= 6) {
+      return `INT03-UR-${cardNumber}`;
+    }
+const specialNumbers = [12, 13, 14, 15];
+    return `INT03-UR-${String(
+      specialNumbers[number - 7]
+    ).padStart(3, "0")}`;
+  }
+  if (setId === "11" && rarity === "N") {
+    return `FME03-N-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "SN") {
+    return `FME03-\u25c7N-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "R") {
+    if (number <= 15) {
+      return `MLPME02-R-${cardNumber}`;
+    }
+    return `MLPME03-R-${String(number - 15).padStart(3, "0")}`;
+  }
+  if (setId === "11" && rarity === "SR") {
+    return `MLPME03-SR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "SSR") {
+    return `FME03-SSR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "UR") {
+    return `RBE02-UR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "UGR") {
+    return `FME03-UGR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "CR") {
+    return `FME03-CR-${cardNumber}`;
+  }
+  if (setId === "11" && rarity === "SCR") {
+    return `FME03-\u25c7CR-${cardNumber}`;
+  }
+const baseCode = setCodeMap[setId] || "";
+  return `${baseCode}-${rarityCode}-${cardNumber}`;
+};
+const sets = [
+  {
+    id: "7",
+    name: "Fun Moments First Edition",
+    folder: "fun-moments-one",
+    prefix: "FM1",
+    rarities: {
+      N: 20,
+      SN: 20,
+      R: 35,
+      SR: 15,
+      SSR: 15,
+      UR: 10,
+      CR: 12,
+    },
+  },
+  {
+    id: "8",
+    name: "Fun Moments Second Edition",
+    folder: "fun-moments-two",
+    prefix: "FM2",
+    rarities: {
+    N: 20,
+    SN: 20,
+    R: 35,
+    SR: 15,
+    SSR: 15,
+    UR: 10,
+    UGR: 9,
+    CR: 12,
+    },
+  },
+  {
+    id: "11",
+    name: "Fun Moments Third Edition",
+    folder: "fun-moments-three",
+    prefix: "FM3",
+    rarities: {
+    N: 20,
+    SN: 20,
+    R: 35,
+    SR: 15,
+    SSR: 15,
+    UR: 10,
+    UGR: 9,
+    CR: 12,
+    SCR: 12,
+    },
+  },
+];
 interface ISOFUNProps {
   cardCodeSearch: string;
   characterSearch: string;
@@ -40,7 +178,7 @@ const {
   }
   setUserId(session.user.id);
 const allOwned: Record<string, boolean> = {};
-for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
+for (const set of sets) {
 const { data: progress } = await supabase
     .from("collection_progress_raw")
     .select("progress")
@@ -48,8 +186,8 @@ const { data: progress } = await supabase
     .eq("set_id", set.id)
     .single();
   Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-    if (value) {
-      allOwned[`${set.id}-${key}`] = true;
+    if (isISOOwned(value)) {
+      allOwned[`${set.id}-${normalizeISOKey(set.id, key)}`] = true;
     }
   });
 }
@@ -57,11 +195,14 @@ setOwned(allOwned);
 setLoading(false);
 };
   load();
+  const refresh = () => { void load(); };
+  window.addEventListener("focus", refresh);
+  return () => window.removeEventListener("focus", refresh);
 }, []);
   useEffect(() => {
 if (loading || selectedSet === null) return;
 if (!selectableSets.some((set) => set.id === selectedSet)) setSelectedSet(null);
-}, [loading, owned, hiddenSets, selectedSet, wishlistMode]);
+}, [loading, owned, hiddenSets, selectedSet, wishlistMode, searchAllCards]);
 if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500">Loading...</div>;
   }
@@ -100,7 +241,7 @@ const character = characterSearch.trim().toLowerCase();
 const availableRarities = Object.keys(set.rarities).filter((rarity) => missing.some((card) => card.rarity === rarity));
 const selectedRarity = selectedRarities[set.id] && availableRarities.includes(selectedRarities[set.id]) ? selectedRarities[set.id] : "all";
 const visibleCards = selectedRarity === "all" ? missing : missing.filter((card) => card.rarity === selectedRarity);
-const displayRarity = (rarity: string) => rarity === "SCR" ? "◇CR" : rarity;
+const displayRarity = (rarity: string) => rarity === "SCR" ? "\u25c7CR" : rarity;
       return (
         <section id={`set-${set.id}`} key={set.id} className={`rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-[#17191a] sm:p-4 ${cardCodeSearch || characterSearch.trim() ? "mt-6" : ""}`}>
           <div className="mb-4 flex items-center justify-between gap-3">
@@ -120,7 +261,7 @@ const isWishlisted = wishlist.has(fullKey) || wishlist.has(`${set.id}:${card.rar
 const cardContent = (
                 <div className={searchAllCards ? "" : "cursor-pointer"}>
                   <div className={`relative aspect-[5/7] w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${isWishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}>
-                    <CardImage src={cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(card.rarity), String(card.number).padStart(3, "0"))} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="h-full w-full scale-[1.05] object-contain object-center" />
+                    <CardImage src={`/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`} alt={getDisplayCardCode(set.id, card.rarity, card.number)} className="h-full w-full scale-[1.05] object-contain object-center" />
                   </div>
                 </div>
               );

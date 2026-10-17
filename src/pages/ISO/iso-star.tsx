@@ -1,12 +1,44 @@
-import { starCatalog } from "@/lib/iso-card-catalog";
-const { sets, getDisplayCardCode, getRarityCode } = starCatalog;
-import { cardImagePaths } from "@/lib/card-images";
+import { isISOOwned, normalizeISOKey } from "./iso-visibility";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
 import { starCharacterMap } from "./Card Characters/card-characters-star";
+const getRarityCode = (rarity: string) => {
+  return rarity;
+};
+const getDisplayCardCode = (
+  setId: string,
+  rarity: string,
+  number: number
+) => {
+const rarityCode = getRarityCode(rarity);
+const cardNumber = String(number).padStart(3, "0");
+  if (setId === "4" && rarity === "SAR") {
+    return `MLPSE01-\u25c7AR-${cardNumber}`;
+  }
+const baseCode = "MLPSE01";
+  return `${baseCode}-${rarity === "SAR" ? "\u25c7AR" : rarityCode}-${cardNumber}`;
+};
+const sets = [
+  {
+    id: "4",
+    name: "Star First Edition",
+    folder: "star-one",
+    prefix: "S1",
+    rarities: {
+      SSR: 20,
+      SCR: 18,
+      UR: 18,
+      USR: 15,
+      AR: 9,
+      OR: 7,
+      BP: 9,
+      SAR: 9,
+    },
+  },
+];
 interface ISOSTARProps {
   cardCodeSearch: string;
   characterSearch: string;
@@ -54,7 +86,7 @@ const user = data.session?.user;
       }
       setUserId(user.id);
 const allOwned: Record<string, boolean> = {};
-      for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
+      for (const set of sets) {
 const { data: progress } = await supabase
           .from("collection_progress_raw")
           .select("progress")
@@ -62,8 +94,8 @@ const { data: progress } = await supabase
           .eq("set_id", set.id)
           .single();
         Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-          if (value) {
-            allOwned[`${set.id}-${key}`] = true;
+          if (isISOOwned(value)) {
+            allOwned[`${set.id}-${normalizeISOKey(set.id, key)}`] = true;
           }
         });
       }
@@ -71,13 +103,16 @@ const { data: progress } = await supabase
       setLoading(false);
     };
     load();
+    const refresh = () => { void load(); };
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
   }, []);
   useEffect(() => {
     if (loading || selectableSets.length === 0) return;
     if (!selectableSets.some((set) => set.id === selectedSet)) {
       setSelectedSet(selectableSets[0].id);
     }
-  }, [loading, owned, hiddenSets, selectedSet, wishlistMode]);
+  }, [loading, owned, hiddenSets, selectedSet, wishlistMode, searchAllCards]);
   if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500">Loading...</div>;
   }
@@ -153,7 +188,7 @@ const visibleCards =
               ? missing
               : missing.filter((card) => card.rarity === selectedRarity);
 const displayRarity = (rarity: string) =>
-            rarity === "SAR" ? "◇AR" : rarity;
+            rarity === "SAR" ? "\u25c7AR" : rarity;
           return (
             <section
               id={`set-${set.id}`}
@@ -206,9 +241,9 @@ const cardContent = (
                         }`}
                       >
                         <CardImage
-                          src={cardImagePaths.ccg(set.folder, set.prefix, getRarityCode(
+                          src={`/cards/${set.folder}/${set.prefix}${getRarityCode(
                             card.rarity
-                          ), String(card.number).padStart(3, "0"))}
+                          )}${String(card.number).padStart(3, "0")}.webp`}
                           alt={getDisplayCardCode(set.id, card.rarity, card.number)}
                           className="h-full w-full scale-[1.05] object-contain object-center"
                         />

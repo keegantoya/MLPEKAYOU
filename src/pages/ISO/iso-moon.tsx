@@ -1,5 +1,4 @@
-import { getMoonFourDisplayCode } from "@/lib/moon-four-catalog";
-import { getMoonFourFront } from "@/lib/card-images";
+import { isISOOwned, normalizeISOKey } from "./iso-visibility";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -15,7 +14,6 @@ const getDisplayCardCode = (
   rarity: string,
   number: number
 ) => {
-if (setId === "13") return getMoonFourDisplayCode(`${rarity}-${number}`);
 const rarityCode = getRarityCode(rarity);
 const cardNumber = String(number).padStart(3, "0");
   if (setId === "2" && rarity === "HR") {
@@ -27,13 +25,14 @@ const cardNumber = String(number).padStart(3, "0");
   ) {
     return `MLPME02-\u25c7ZR-${cardNumber}`;
   }
-  if (setId === "3" && rarity === "SZR") {
-    return `MLPME03-\u25c7ZR-${cardNumber}`;
+  if ((setId === "3" || setId === "13") && rarity === "SZR") {
+    return `MLPME${setId === "13" ? "04" : "03"}-\u25c7ZR-${cardNumber}`;
   }
 const setCodeMap: Record<string, string> = {
     "1": "MLPME01",
     "2": "MLPME02",
     "3": "MLPME03",
+    "13": "MLPME04",
   };
   return `${setCodeMap[setId]}-${rarityCode}-${cardNumber}`;
 };
@@ -90,7 +89,7 @@ const sets = [
       SZR: 3,
     },
   },
-{
+  {
     id: "13",
     name: "Moon Fourth Edition",
     folder: "fourth-edition-moon",
@@ -120,7 +119,7 @@ const [userId, setUserId] = useState("");
 const { wishlist, toggleWishlist } = useWishlist();
 const [selectedSet, setSelectedSet] = useState<string | null>(null);
 const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
-const getMissingCount = (set: (typeof sets)[number]) => Object.entries(set.rarities).reduce((total, [rarity, count]) => total + Array.from({ length: count as number }, (_, i) => `${set.id}-${rarity}-${i + 1}`).filter((key) => !owned[key]).length, 0);
+const getMissingCount = (set: (typeof sets)[number]) => Object.entries(set.rarities).reduce((total, [rarity, count]) => total + Array.from({ length: count as number }, (_, i) => `${set.id}-${normalizeISOKey(set.id, `${rarity}-${i + 1}`)}`).filter((key) => !owned[key]).length, 0);
 const selectableSets = sets.filter((set) => !hiddenSets.includes(set.id) && (searchAllCards || wishlistMode || getMissingCount(set) > 0));
   useEffect(() => {
 const load = async () => {
@@ -137,7 +136,7 @@ const {
 }
 setUserId(activeUserId);
 const allOwned: Record<string, boolean> = {};
-for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
+for (const set of sets) {
 const { data: progress } = await supabase
           .from("collection_progress_raw")
           .select("progress")
@@ -145,8 +144,8 @@ const { data: progress } = await supabase
           .eq("set_id", set.id)
           .single();
         Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-          if (value) {
-            allOwned[`${set.id}-${key}`] = true;
+          if (isISOOwned(value)) {
+            allOwned[`${set.id}-${normalizeISOKey(set.id, key)}`] = true;
           }
         });
       }
@@ -154,11 +153,14 @@ const { data: progress } = await supabase
       setLoading(false);
     };
     load();
-  }, []);
+    const refresh = () => { void load(); };
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [publicUserId]);
   useEffect(() => {
 if (loading || selectedSet === null) return;
 if (!selectableSets.some((set) => set.id === selectedSet)) setSelectedSet(null);
-}, [loading, owned, hiddenSets, selectedSet, wishlistMode]);
+}, [loading, owned, hiddenSets, selectedSet, wishlistMode, searchAllCards]);
 if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500">Loading...</div>;
   }
@@ -169,7 +171,7 @@ return (
 <div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">
 {selectableSets.map((set) => (
 <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${selectedSet === set.id ? "bg-[#FFD54A] text-zinc-900" : "bg-zinc-100 text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300"}`}>
-{set.id === "13" ? "Moon 4" : set.id === "1" ? "Moon 1" : set.id === "2" ? "Moon 2" : "Moon 3"}
+{set.id === "1" ? "Moon 1" : set.id === "2" ? "Moon 2" : set.id === "13" ? "Moon 4" : "Moon 3"}
 </button>
 ))}
 </div>
@@ -188,7 +190,7 @@ const cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
           Array.from({ length: count as number }, (_, i) => ({
             rarity,
             number: i + 1,
-            characters: moonCharacterMap[`${set.id}-${rarity}-${i + 1}`] ?? [],
+            characters: moonCharacterMap[`${set.id}-${normalizeISOKey(set.id, `${rarity}-${i + 1}`)}`] ?? [],
           }))
         );
 const missing = cards.filter((card) => {
@@ -204,7 +206,7 @@ const character = characterSearch.trim().toLowerCase();
           }
 const key = `${card.rarity}-${card.number}`;
           if (searchAllCards || wishlistMode) return true;
-          return !owned[`${set.id}-${key}`];
+          return !owned[`${set.id}-${normalizeISOKey(set.id, key)}`];
         });
         if (missing.length === 0) return null;
 const availableRarities = Object.keys(set.rarities).filter((rarity) =>
@@ -276,7 +278,7 @@ const cardContent = (
                       }`}
                     >
                       <CardImage
-                        src={set.id === "13" ? getMoonFourFront(`${card.rarity}-${card.number}`) : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(
+                        src={set.id === "13" ? `/cards/fourth-edition-moon/M4${getRarityCode(card.rarity)}${String(card.number).padStart(card.rarity === "SZR" ? 3 : 2, "0")}.webp` : `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(
                           card.number
                         ).padStart(3, "0")}.webp`}
                         alt={getDisplayCardCode(set.id, card.rarity, card.number)}

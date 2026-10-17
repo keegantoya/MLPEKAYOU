@@ -1,3 +1,4 @@
+import { getCompletedISOSetIds } from "./iso-visibility";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOMOON from "./iso-moon";
@@ -25,7 +26,7 @@ const sections = [
   {
     id: "moon",
     label: "Moon",
-    setIds: ["1", "2", "3"],
+    setIds: ["1", "2", "3", "13"],
   },
   {
     id: "fun",
@@ -45,7 +46,7 @@ const sections = [
   {
     id: "tcg",
     label: "TCG",
-    setIds: ["FW", "SD", "12", "14", "hearthswarming-eve"],
+    setIds: ["FW", "SD", "12", "14"],
   },
   {
     id: "promos",
@@ -112,22 +113,8 @@ const [
     .eq("user_id", user.id),
 ]);
 const p = profile as any;
-const hidden = (p?.iso_hidden_sets || []).map(String);
-const completed: string[] = [];
-    (progress || []).forEach((row: any) => {
-const setId = String(row.set_id);
-const owned = Object.values(row.progress || {}).filter(
-        (value) => value === true
-      ).length;
-const totalCards: Record<string, number> = {
-  "9": 12,
-  tcgpromos: 27,
-};
-const total = totalCards[setId];
-if (total && owned >= total) {
-  completed.push(setId);
-}
-    });
+const hidden = (p?.iso_hidden_sets || []).map((id: unknown) => String(id) === "friendshipsbegin" ? "SD" : String(id));
+const completed = getCompletedISOSetIds(progress || []);
 const inProgressExists = (isoStatus || []).some(
   (row: any) =>
     row.status === "purchase_in_progress" ||
@@ -139,6 +126,9 @@ setCompletedSets(completed);
 setHideISO(p?.hide_iso ?? false);
   };
   load();
+  const refresh = () => { void load(); };
+  window.addEventListener("focus", refresh);
+  return () => window.removeEventListener("focus", refresh);
 }, []);
 const toggleSet = async (setId: string) => {
   if (!userId) return;
@@ -166,7 +156,7 @@ const next = !hideISO;
 };
 const isSearching =
   cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
-const visibleHiddenSets = wishlistMode || searchAllCards ? [] : hiddenSets;
+const visibleHiddenSets = isSearching ? [] : Array.from(new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]));
 const visibleSections = sections.filter((section) => {
 // Wishlist is always available.
   if (section.id === "wishlist") {
@@ -178,7 +168,7 @@ const visibleSections = sections.filter((section) => {
   }
 // Wishlist Mode and View All Cards restore every card category.
   if (wishlistMode || searchAllCards) {
-    return true;
+    return section.setIds.some((setId) => !hiddenSets.includes(setId));
   }
 // In normal mode, a category remains visible if at least one underlying set is still active.
   return section.setIds.some(
@@ -187,6 +177,11 @@ const visibleSections = sections.filter((section) => {
       !completedSets.includes(setId)
   );
 });
+useEffect(() => {
+  if (!visibleSections.some((section) => section.id === selectedSection)) {
+    setSelectedSection((visibleSections.find((section) => section.id !== "wishlist")?.id ?? "wishlist") as Section);
+  }
+}, [hiddenSets, completedSets, wishlistMode, searchAllCards, hasInProgress, selectedSection]);
 const selectSection = (section: Section) => {
     setCardCodeSearch("");
     setCharacterSearch("");
@@ -194,7 +189,7 @@ const selectSection = (section: Section) => {
   };
 const sectionContent = (
     <>
-      {selectedSection === "wishlist" && <Wishlist />}
+      {selectedSection === "wishlist" && <Wishlist characterSearch={characterSearch} />}
       {selectedSection === "progress" && <InProgress />}
       {selectedSection === "moon" && (
         <ISOMOON
@@ -349,7 +344,7 @@ const active = selectedSection === item.id;
             </div>
           </header>
           <main className="px-3 py-4 sm:px-5 md:px-6 md:py-5">
-            {wishlistMode && (
+            {(wishlistMode || selectedSection === "wishlist") && (
               <div className="mb-4">
                 <ISOCONTROLS
                   cardCodeSearch={cardCodeSearch}
@@ -370,7 +365,7 @@ const active = selectedSection === item.id;
                 />
               </div>
             )}
-            {wishlistMode ? sectionContent : isSearching ? allSearchContent : sectionContent}
+            {selectedSection === "wishlist" || wishlistMode ? sectionContent : isSearching ? allSearchContent : sectionContent}
           </main>
         </div>
       </div>
@@ -387,7 +382,7 @@ const active = selectedSection === item.id;
               wishlistMode={wishlistMode}
               onWishlistModeChange={setWishlistMode}
               availableSets={[
-                { id: "moon", name: "Moon", children: [{ id: "1", name: "First Edition" }, { id: "2", name: "Second Edition" }, { id: "3", name: "Third Edition" }] },
+                { id: "moon", name: "Moon", children: [{ id: "1", name: "First Edition" }, { id: "2", name: "Second Edition" }, { id: "3", name: "Third Edition" }, { id: "13", name: "Fourth Edition" }] },
                 { id: "fun", name: "Fun Moments", children: [{ id: "7", name: "First Edition" }, { id: "8", name: "Second Edition" }, { id: "11", name: "Third Edition" }] },
                 { id: "rainbow", name: "Rainbow", children: [{ id: "5", name: "First Edition" }, { id: "6", name: "Second Edition" }] },
                 { id: "star", name: "Star", children: [{ id: "4", name: "First Edition" }] },

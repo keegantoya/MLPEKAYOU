@@ -1,5 +1,4 @@
-import { getHeartswarmingEveFront } from "@/lib/card-images";
-import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
+import { isISOOwned, normalizeISOKey } from "./iso-visibility";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -168,13 +167,6 @@ const sets = [
       PRR: 6,
     },
   },
-{
-    id: "hearthswarming-eve",
-    name: "HEARTSWARMING EVE",
-    folder: "hearthswarming-eve",
-    prefix: "BP04",
-    rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6, TK: 6 },
-  },
 ];
 interface ISOTCGProps {
   cardCodeSearch: string;
@@ -224,7 +216,7 @@ const user = data.session?.user;
       }
       setUserId(user.id);
 const allOwned: Record<string, boolean> = {};
-for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
+for (const set of sets) {
 const { data: progress } = await supabase
     .from("collection_progress_raw")
     .select("progress")
@@ -232,8 +224,8 @@ const { data: progress } = await supabase
     .eq("set_id", set.id)
     .single();
   Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-    if (value) {
-      allOwned[key] = true;
+    if (isISOOwned(value)) {
+      allOwned[normalizeISOKey(set.id, key)] = true;
       if (set.id === "SD" && key.startsWith("SD01")) {
         allOwned[`BONUS-${key}`] = true;
       }
@@ -258,6 +250,9 @@ setInProgress(activeInProgress);
 setLoading(false);
     };
     load();
+    const refresh = () => { void load(); };
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
   }, []);
   if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>;
@@ -272,7 +267,6 @@ return (
   { id: "FW", label: "Fantasy Wonderland" },
   { id: "12", label: "Discord" },
   { id: "14", label: "Nightmare Night" },
-{ id: "hearthswarming-eve", label: "HeartsWarming Eve" },
 ]
 .filter((item) => !hiddenSets.includes(item.id))
 .map((item) => (
@@ -389,7 +383,6 @@ const deckIndex =
   .map((set) => {
 const cards = Object.entries(set.rarities).flatMap(
   ([rarity, count]) => {
-    if (set.id === "hearthswarming-eve") return HEARTHSWARMING_EVE_CARDS.filter(card => card.rarity === rarity);
     if (set.id === "SD") {
       if (rarity === "PER") {
         return Array.from({ length: count as number }, (_, i) => ({
@@ -459,7 +452,6 @@ const cards = Object.entries(set.rarities).flatMap(
         characters: [],
       }));
     }
-
     if (set.id === "12") {
       if (rarity === "PER") {
         return Array.from({ length: 6 }, (_, i) => [
@@ -514,9 +506,7 @@ const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
 );
 const missing = cards.filter((card) => {
 let displayCode = "";
-  if (set.id === "hearthswarming-eve") {
-    displayCode = getHeartswarmingEveDisplayCode(card.key);
-  } else if (set.id === "SD") {
+  if (set.id === "SD") {
     if (card.rarity === "PER") {
 const num = parseInt(card.key.slice(-2), 10);
 const displayNum = Math.ceil((num - 6) / 2) + 6;
@@ -699,7 +689,6 @@ const displayNum = Math.ceil((num - 6) / 2) + 6;
             })()
           ) : (
             (() => {
-              if (set.id === "hearthswarming-eve") return getHeartswarmingEveDisplayCode(card.key);
               if (card.rarity === "ER") {
                 return `${set.id === "12" ? "BP02" : "BP01"}-ER${card.key.slice(-2)}`;
               }
@@ -766,9 +755,7 @@ const index = parseInt(card.key.slice(-2), 10) - 1;
     </div>
     <MissingImageCard
       src={
-        set.id === "hearthswarming-eve"
-          ? getHeartswarmingEveFront(card.key)
-          : set.id === "12"
+        set.id === "12"
           ? `/cards/discord/${card.key}.webp`
           : set.id === "14"
           ? `/cards/nightmare-night/${card.key}.webp`

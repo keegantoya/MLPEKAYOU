@@ -1,21 +1,82 @@
-import { promosCatalog } from "@/lib/iso-card-catalog";
-const { sets, getDisplayCardCode, getCardKey } = promosCatalog;
-import { cardImagePaths } from "@/lib/card-images";
+import { isISOOwned, normalizeISOKey } from "./iso-visibility";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
 import { supabase } from "@/lib/supabase";
 import { promoCharacterMap } from "./Card Characters/card-characters-promos";
+const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
+const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
+const getDisplayCardCode = (
+  setId: string,
+  number: number
+) => {
+  if (setId === "9") {
+// Standard CCG Promos
+    if (number <= 7) {
+      return `MLPE-PR-${String(number).padStart(3, "0")}`;
+    }
+// SDCC Promos
+    return `SDCC-${String(number - 7).padStart(3, "0")}`;
+  }
+  if (setId === "tcgpromos") {
+// RR-01 through RR-06
+    if (number <= 6) {
+      return `RR-${String(number).padStart(2, "0")}`;
+    }
+// BP01 CR-07 through CR-12
+    if (number <= 12) {
+      return `BP01-CR-${String(number).padStart(2, "0")}`;
+    }
+// BP02 CR-01 through CR-06
+    if (number <= 18) {
+      return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
+    }
+const newPromoNames: Record<number, string> = {
+      19: "TK-01",
+      20: "\u203bTK-01",
+      21: "\u203bTK-01",
+      22: "\u203bBP03-CR-01",
+      23: "\u203bBP03-CR-02",
+      24: "\u203bBP03-CR-03",
+      25: "\u203bBP01-CR-04",
+      26: "\u203bBP01-CR-05",
+      27: "\u203bBP01-CR-06",
+    };
+    return newPromoNames[number] || `RR-${String(number).padStart(2, "0")}`;
+  }
+  return `RR-${String(number).padStart(2, "0")}`;
+};
+const getCardKey = (
+  setId: string,
+  number: number
+) => {
+  if (setId === "9") {
+    return `PR-${number}`;
+  }
+  return `RR${String(number).padStart(2, "0")}`;
+};
 const getImage = (
   setId: string,
   number: number
 ) => {
   if (setId === "9") {
-    return cardImagePaths.ccgPromo(String(number).padStart(3, "0"));
+    return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
   }
-  return cardImagePaths.tcgRubyPromo(String(number).padStart(2, "0"));
+  return `/tcgpromos/RR${String(number).padStart(2, "0")}.webp`;
 };
+const sets = [
+  {
+    id: "9",
+    name: "CCG Promos",
+    cards: ccgCards,
+  },
+  {
+    id: "tcgpromos",
+    name: "TCG Promos",
+    cards: tcgCards,
+  },
+];
 interface ISOPROMOSProps {
   cardCodeSearch: string;
   characterSearch: string;
@@ -52,7 +113,7 @@ const user = data.session?.user;
         return;
       }
 const allOwned: Record<string, boolean> = {};
-      for (const set of sets.filter((s) => !hiddenSets.includes(s.id))) {
+      for (const set of sets) {
 const { data: progress } = await supabase
           .from("collection_progress_raw")
           .select("progress")
@@ -60,8 +121,8 @@ const { data: progress } = await supabase
           .eq("set_id", set.id)
           .maybeSingle();
         Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-          if (value) {
-            allOwned[key] = true;
+          if (isISOOwned(value)) {
+            allOwned[normalizeISOKey(set.id, key)] = true;
           }
         });
       }
@@ -69,13 +130,16 @@ const { data: progress } = await supabase
       setLoading(false);
     };
     load();
+    const refresh = () => { void load(); };
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
   }, [hiddenSets]);
   useEffect(() => {
     if (loading || selectedSet === null) return;
     if (!selectableSets.some((set) => set.id === selectedSet)) {
       setSelectedSet(null);
     }
-  }, [loading, owned, hiddenSets, selectedSet, wishlistMode]);
+  }, [loading, owned, hiddenSets, selectedSet, wishlistMode, searchAllCards]);
   if (loading) {
     return <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>;
   }
@@ -177,14 +241,11 @@ const cardContent = (
                         }`}
                       >
                         <CardImage
-                          imageSize={(set.id === "9" && [14, 15].includes(card.number)) || (set.id === "tcgpromos" && card.number === 28) ? "original" : "grid"}
                           src={getImage(set.id, card.number)}
                           alt={getDisplayCardCode(set.id, card.number)}
                           className={
-                            set.id === "9" && card.number === 15
-                              ? "h-full w-full scale-[1.025] object-contain object-center"
-                              : set.id === "9" && card.number === 1
-                                ? "h-full w-full scale-[1.02] object-contain object-center"
+                            set.id === "9" && card.number === 1
+                              ? "h-full w-full scale-[1.02] object-contain object-center"
                               : set.id === "9" && card.number === 7
                                 ? "h-full w-full scale-[1.06] object-contain object-center"
                                 : set.id === "9" && [2, 3, 4, 5].includes(card.number)

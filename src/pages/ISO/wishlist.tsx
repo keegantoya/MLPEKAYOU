@@ -1,3 +1,4 @@
+import { getWishlistCharacters } from "./wishlist-characters";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -7,22 +8,17 @@ type Card = {
   set_id: string;
   card_key: string;
 };
-const standardZoomSets = new Set(["1", "2", "3", "13", "4", "5", "6", "7", "8", "11"]);
-
+const standardZoomSets = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "11"]);
 const getCardNumber = (cardKey: string) => {
   const match = cardKey.match(/(\d+)$/);
   return match ? Number(match[1]) : null;
 };
-
 const getImageClassName = (card: Card) => {
   const base = "absolute inset-0 h-full w-full";
-
   if (standardZoomSets.has(card.set_id)) {
     return `${base} scale-[1.05] object-contain object-center`;
   }
-
   const cardNumber = getCardNumber(card.card_key);
-
   if (card.set_id === "9") {
     if (cardNumber === 1) {
       return `${base} scale-[1.02] object-contain object-center`;
@@ -35,7 +31,6 @@ const getImageClassName = (card: Card) => {
     }
     return `${base} scale-[1.08] object-contain object-center`;
   }
-
   if (card.set_id === "tcgpromos") {
     if (cardNumber === 11) {
       return `${base} translate-y-[2px] scale-[1.02] object-cover object-center`;
@@ -51,11 +46,9 @@ const getImageClassName = (card: Card) => {
     }
     return `${base} scale-[1.01] object-contain object-center`;
   }
-
-  const contained = ["SD", "FW", "12", "14", "hearthswarming-eve"].includes(card.set_id);
+  const contained = ["SD", "FW", "12", "14"].includes(card.set_id);
   return `${base} ${contained ? "object-contain object-center" : "object-cover object-center"}`;
 };
-
 const WishlistImage = ({ card }: { card: Card }) => {
   const isLandscape =
     card.set_id === "14" &&
@@ -67,7 +60,6 @@ const WishlistImage = ({ card }: { card: Card }) => {
       ? { transform: "translate(-50%, -50%) rotate(-90deg)" }
       : {}),
   };
-
   return (
     <CardImage
       src={getTradeCardImage(card)}
@@ -83,7 +75,7 @@ const WishlistImage = ({ card }: { card: Card }) => {
     />
   );
 };
-export default function Wishlist() {
+export default function Wishlist({ characterSearch = "" }: { characterSearch?: string } = {}) {
   const [cards, setCards] = useState<Card[]>([]);
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -129,6 +121,8 @@ export default function Wishlist() {
       )
     );
   };
+  const query = characterSearch.trim().toLowerCase();
+  const visibleCards = query ? cards.filter((card) => getWishlistCharacters(card.set_id, card.card_key).some((name) => name.toLowerCase().includes(query))) : cards;
   if (loading) {
     return (
       <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
@@ -147,18 +141,18 @@ export default function Wishlist() {
             </p>
           </div>
           <div className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-semibold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
-            {cards.length} {cards.length === 1 ? "card" : "cards"}
+            {visibleCards.length} {visibleCards.length === 1 ? "card" : "cards"}
           </div>
         </div>
       </section>
-      {cards.length === 0 ? (
+      {visibleCards.length === 0 ? (
         <section className="rounded-[24px] border border-black/10 bg-white px-6 py-12 text-center shadow-sm dark:border-white/[0.08] dark:bg-[#17191a]">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-pink-50 text-xl dark:bg-pink-400/[0.08]">
-            &#x2661;
+            &#9825;
           </div>
-          <h2 className="mt-4 text-base font-semibold">Your wishlist is empty</h2>
+          <h2 className="mt-4 text-base font-semibold">{cards.length === 0 ? "Your wishlist is empty" : "No matching wishlisted cards"}</h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Add cards from the ISO view and they will appear here.
+            {cards.length === 0 ? "Add cards from the ISO view and they will appear here." : "Try another character name or clear the search."}
           </p>
         </section>
       ) : (
@@ -170,7 +164,7 @@ export default function Wishlist() {
             </span>
           </div>
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
-            {cards.map((card) => {
+            {visibleCards.map((card) => {
               return (
                 <div
                   key={`${card.set_id}:${card.card_key}`}
