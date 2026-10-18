@@ -1,10 +1,76 @@
+import type { CSSProperties } from "react";
 import { getMoonFourDisplayCode } from "@/lib/moon-four-catalog";
 import { getMoonFourFront } from "@/lib/card-images";
-import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveRarityLabel, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
+import {
+  HEARTHSWARMING_EVE_CARDS,
+  getHeartswarmingEveRarityLabel,
+  getHeartswarmingEveDisplayCode,
+} from "@/lib/hearthswarming-eve";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+const CCG_CARD_ZOOM: Record<string, number> = {
+  "PR-1": 1.009,
+  "PR-2": 1.04,
+  "PR-3": 1.035,
+  "PR-4": 1.035,
+  "PR-5": 1.033,
+  "PR-7": 1.035,
+  "PR-14": 1.035,
+  "PR-8": 1.04,
+  "PR-9": 1.04,
+  "PR-10": 1.04,
+  "PR-11": 1.04,
+  "PR-12": 1.04,
+  "PR-13": 1.04,
+  "PR-15": 1.025,
+};
+const TCG_CARD_ZOOM: Record<string, number> = {
+  RR01: 0.99,
+  RR02: 0.99,
+  RR03: 0.99,
+  RR04: 0.99,
+  RR05: 0.99,
+  RR06: 0.99,
+  RR07: 0.99,
+  RR08: 0.99,
+  RR09: 1.035,
+  RR10: 1.025,
+  RR11: 1.025,
+  RR12: 1.025,
+  RR13: 0.99,
+  RR14: 0.99,
+  RR15: 0.99,
+  RR16: 0.99,
+  RR17: 0.99,
+  RR18: 0.99,
+  RR19: 0.99,
+  RR20: 0.99,
+  RR21: 0.99,
+  RR22: 0.99,
+  RR23: 0.99,
+  RR24: 0.99,
+  RR25: 0.99,
+  RR26: 0.99,
+  RR27: 0.99,
+  RR28: 0.99,
+};
+const getPromoFrontStyle = (key: string): CSSProperties => ({
+  display: "block",
+  width: "100%",
+  height: "100%",
+  margin: 0,
+  objectFit: "cover",
+  objectPosition: "50% 50%",
+  transformOrigin: "50% 50%",
+  backgroundColor: "transparent",
+  backgroundImage: "none",
+  transform:
+    key === "RR09"
+      ? "translateY(-0.75%) scale(1.035, 1.02)"
+      : `scale(${key.startsWith("PR-") ? (CCG_CARD_ZOOM[key] ?? 1) : (TCG_CARD_ZOOM[key] ?? 1)})`,
+});
 const sets = [
   {
     id: "1",
@@ -126,7 +192,7 @@ const sets = [
       SZR: 3,
     },
   },
-{
+  {
     id: "13",
     name: "Eternal Moon: Fourth Edition",
     folder: "fourth-edition-moon",
@@ -154,7 +220,7 @@ const sets = [
     name: "Promotional Cards",
     folder: "promos",
     prefix: "PR",
-    rarities: { PR: 12 },
+    rarities: { PR: 14 },
   },
   {
     id: "FW",
@@ -184,19 +250,34 @@ const sets = [
     prefix: "BP03",
     rarities: {},
   },
-{
+  {
     id: "hearthswarming-eve",
     name: "HearthsWarming Eve",
     folder: "hearthswarming-eve",
     prefix: "BP04",
-    rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 6, PSPR: 11, PCR: 12, PRR: 6, TK: 6 },
+    rarities: {
+      C: 48,
+      U: 18,
+      ER: 6,
+      SR: 14,
+      SPR: 28,
+      GR: 12,
+      CR: 12,
+      RR: 6,
+      PER: 12,
+      PGR: 6,
+      PSPR: 11,
+      PCR: 12,
+      PRR: 6,
+      TK: 6,
+    },
   },
   {
     id: "tcgpromos",
     name: "TCG Promos",
     folder: "tcgpromos",
     prefix: "RR",
-    rarities: { PR: 27 },
+    rarities: { PR: 28 },
   },
 ];
 const getDisplayCode = (card: any, currentSetId: string) => {
@@ -239,9 +320,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
     return key;
   }
   if (currentSetId === "friendshipsbegin") {
-    const match = key.match(
-      /^SD01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|SR|ER|U|C)(\d+)$/,
-    );
+    const match = key.match(/^SD01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|SR|ER|U|C)(\d+)$/);
     if (match) {
       const [, rarity, number] = match;
       const isReferenceRarity = rarity.startsWith("P");
@@ -251,9 +330,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
   }
   //  Fantasy Wonderland / BP01.
   if (currentSetId === "FW") {
-    const match = key.match(
-      /^BP01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)$/,
-    );
+    const match = key.match(/^BP01(PSPR|PCR|PGR|PER|PRR|SPR|GR|CR|RR|SR|ER|U|C)(\d+)$/);
     if (match) {
       const [, rarity, number] = match;
       const displayRarity =
@@ -268,9 +345,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
                 : rarity === "PRR"
                   ? "RR"
                   : rarity;
-      const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity)
-        ? "\u203B"
-        : "";
+      const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity) ? "\u203B" : "";
       return `${reference}BP01-${displayRarity}${number}`;
     }
   }
@@ -293,9 +368,7 @@ const getDisplayCode = (card: any, currentSetId: string) => {
                 : rarity === "PRR"
                   ? "RR"
                   : rarity;
-      const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity)
-        ? "\u203B"
-        : "";
+      const reference = ["PSPR", "PCR", "PGR", "PER", "PRR"].includes(rarity) ? "\u203B" : "";
       return `${reference}BP02-${displayRarity}${number}`;
     }
   }
@@ -329,12 +402,6 @@ const getDisplayCode = (card: any, currentSetId: string) => {
   }
   return key;
 };
-const isNonZoomTcgPromo = (card: any) => {
-  const match = String(card?.key || "").match(/^RR(\d+)$/);
-  if (!match) return false;
-  const number = Number(match[1]);
-  return number <= 8 || number === 13 || (number >= 14 && number <= 18) || (number >= 22 && number <= 24);
-};
 export default function MyTradesSets() {
   const { setId } = useParams();
   const navigate = useNavigate();
@@ -342,9 +409,7 @@ export default function MyTradesSets() {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
   };
-  const [collapsedRarities, setCollapsedRarities] = useState<
-    Record<string, boolean>
-  >({});
+  const [collapsedRarities, setCollapsedRarities] = useState<Record<string, boolean>>({});
   const [progressMap, setProgressMap] = useState<Record<string, any>>({});
   type MarketListing = {
     is_for_trade: boolean;
@@ -368,26 +433,19 @@ export default function MyTradesSets() {
     trade_quantity: 0,
     sale_quantity: 0,
   };
-  const [marketListings, setMarketListings] = useState<
-    Record<string, MarketListing>
-  >({});
+  const [marketListings, setMarketListings] = useState<Record<string, MarketListing>>({});
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [listingDraft, setListingDraft] = useState<ListingDraft | null>(null);
-  const [savedListingDraft, setSavedListingDraft] =
-    useState<ListingDraft | null>(null);
+  const [savedListingDraft, setSavedListingDraft] = useState<ListingDraft | null>(null);
   const [isSavingCard, setIsSavingCard] = useState(false);
   const [cardSaveError, setCardSaveError] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [savedQuantities, setSavedQuantities] = useState<
-    Record<string, number>
-  >({});
+  const [savedQuantities, setSavedQuantities] = useState<Record<string, number>>({});
   const [editMode, setEditMode] = useState(false);
   const [inventoryDirty, setInventoryDirty] = useState(false);
   const [showIntroPopup, setShowIntroPopup] = useState(false);
   const [showLeavePopup, setShowLeavePopup] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
-    null,
-  );
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const [activeDeck, setActiveDeck] = useState<number | null>(null);
   const inventoryDirtyRef = useRef(false);
   const navigationGuardRef = useRef(false);
@@ -442,9 +500,7 @@ export default function MyTradesSets() {
       // Load the richer trade and sale details without changing the existing tables.
       const { data: listings } = await supabase
         .from("card_market_listings")
-        .select(
-          "card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity",
-        )
+        .select("card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity")
         .eq("set_id", resolvedSetId)
         .eq("user_id", user.id);
       const listingMap: Record<string, MarketListing> = {};
@@ -452,8 +508,7 @@ export default function MyTradesSets() {
         listingMap[listing.card_key] = {
           is_for_trade: Boolean(listing.is_for_trade),
           is_for_sale: Boolean(listing.is_for_sale),
-          asking_price:
-            listing.asking_price === null ? null : Number(listing.asking_price),
+          asking_price: listing.asking_price === null ? null : Number(listing.asking_price),
           trade_quantity: Number(listing.trade_quantity || 0),
           sale_quantity: Number(listing.sale_quantity || 0),
         };
@@ -513,22 +568,14 @@ export default function MyTradesSets() {
       setPendingNavigation(destination);
       setShowLeavePopup(true);
     };
-    window.addEventListener(
-      "mlpekayou:before-navigation",
-      handleKayouHeaderNavigation,
-    );
+    window.addEventListener("mlpekayou:before-navigation", handleKayouHeaderNavigation);
     return () => {
-      window.removeEventListener(
-        "mlpekayou:before-navigation",
-        handleKayouHeaderNavigation,
-      );
+      window.removeEventListener("mlpekayou:before-navigation", handleKayouHeaderNavigation);
     };
   }, []);
   useEffect(() => {
     const originalPushState = window.history.pushState.bind(window.history);
-    const originalReplaceState = window.history.replaceState.bind(
-      window.history,
-    );
+    const originalReplaceState = window.history.replaceState.bind(window.history);
     const guardNavigation = (
       originalMethod: typeof window.history.pushState,
       state: any,
@@ -542,27 +589,17 @@ export default function MyTradesSets() {
         String(url) !== window.location.href
       ) {
         navigationGuardRef.current = true;
-        setPendingNavigation(
-          new URL(String(url), window.location.origin).pathname,
-        );
+        setPendingNavigation(new URL(String(url), window.location.origin).pathname);
         setShowLeavePopup(true);
         navigationGuardRef.current = false;
         return;
       }
       originalMethod(state, title, url);
     };
-    const guardedPushState: History["pushState"] = function (
-      state,
-      title,
-      url,
-    ) {
+    const guardedPushState: History["pushState"] = function (state, title, url) {
       guardNavigation(originalPushState, state, title, url);
     };
-    const guardedReplaceState: History["replaceState"] = function (
-      state,
-      title,
-      url,
-    ) {
+    const guardedReplaceState: History["replaceState"] = function (state, title, url) {
       guardNavigation(originalReplaceState, state, title, url);
     };
     window.history.pushState = guardedPushState;
@@ -596,8 +633,7 @@ export default function MyTradesSets() {
   }, [selectedCard]);
   useEffect(() => {
     if (!listingDraft || !savedListingDraft) return;
-    const dirty =
-      JSON.stringify(listingDraft) !== JSON.stringify(savedListingDraft);
+    const dirty = JSON.stringify(listingDraft) !== JSON.stringify(savedListingDraft);
     setInventoryDirty(dirty);
     inventoryDirtyRef.current = dirty;
   }, [listingDraft, savedListingDraft]);
@@ -617,10 +653,7 @@ export default function MyTradesSets() {
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
     if (!user) return false;
-    const keys = new Set([
-      ...Object.keys(savedQuantities),
-      ...Object.keys(quantities),
-    ]);
+    const keys = new Set([...Object.keys(savedQuantities), ...Object.keys(quantities)]);
     const changedKeys = Array.from(keys).filter(
       (key) => (quantities[key] || 1) !== (savedQuantities[key] || 1),
     );
@@ -671,8 +704,7 @@ export default function MyTradesSets() {
     return {
       isForTrade: listing.is_for_trade,
       isForSale: listing.is_for_sale,
-      askingPrice:
-        listing.asking_price === null ? "" : listing.asking_price.toFixed(2),
+      askingPrice: listing.asking_price === null ? "" : listing.asking_price.toFixed(2),
       personalQuantity: String(quantities[cardKey] || 1),
       tradeQuantity: String(listing.trade_quantity || 0),
       saleQuantity: String(listing.sale_quantity || 0),
@@ -686,16 +718,11 @@ export default function MyTradesSets() {
     setCardSaveError("");
   };
   const updateListingDraft = (changes: Partial<ListingDraft>) => {
-    setListingDraft((current) =>
-      current ? { ...current, ...changes } : current,
-    );
+    setListingDraft((current) => (current ? { ...current, ...changes } : current));
   };
   const saveCardDetails = async () => {
     if (!selectedCard || !listingDraft) return;
-    const personalQuantity = Math.max(
-      1,
-      Number(listingDraft.personalQuantity) || 1,
-    );
+    const personalQuantity = Math.max(1, Number(listingDraft.personalQuantity) || 1);
     const tradeQuantity = listingDraft.isForTrade
       ? Math.max(1, Number(listingDraft.tradeQuantity) || 1)
       : 0;
@@ -754,15 +781,9 @@ export default function MyTradesSets() {
             },
             { onConflict: "user_id,set_id,card_key" },
           );
-    const [quantityResult, listingResult] = await Promise.all([
-      quantityRequest,
-      listingRequest,
-    ]);
+    const [quantityResult, listingResult] = await Promise.all([quantityRequest, listingRequest]);
     if (quantityResult.error || listingResult.error) {
-      console.error(
-        "Failed to save card details:",
-        quantityResult.error || listingResult.error,
-      );
+      console.error("Failed to save card details:", quantityResult.error || listingResult.error);
       setCardSaveError("Your changes could not be saved. Please try again.");
       setIsSavingCard(false);
       return;
@@ -824,9 +845,7 @@ export default function MyTradesSets() {
             : "min-h-screen bg-[#0d0f10] text-zinc-400"
         }
       >
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-          Invalid set
-        </div>
+        <div className="mx-auto max-w-3xl px-4 py-16 text-center">Invalid set</div>
       </div>
     );
   }
@@ -906,22 +925,27 @@ export default function MyTradesSets() {
       }
     });
   } else if (set.id === "hearthswarming-eve") {
-    cards = HEARTHSWARMING_EVE_CARDS.map(card => ({ ...card, rarity: getHeartswarmingEveRarityLabel(card.key) }));
+    cards = HEARTHSWARMING_EVE_CARDS.map((card) => ({
+      ...card,
+      rarity: getHeartswarmingEveRarityLabel(card.key),
+    }));
   } else if (set.id === "14") {
     const nightmareKeys = [
       ...Array.from({ length: 48 }, (_, i) => `BP03-C${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 18 }, (_, i) => `BP03-U${String(i + 1).padStart(2, "0")}`),
-...["01", "02"].flatMap((n) =>
-  ["A", "B", "C"].map((v) => `BP03-ER${n}-${v}`),
-),
+      ...["01", "02"].flatMap((n) => ["A", "B", "C"].map((v) => `BP03-ER${n}-${v}`)),
       ...Array.from({ length: 14 }, (_, i) => `BP03-SR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 28 }, (_, i) => `BP03-SPR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 12 }, (_, i) => `BP03-GR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 12 }, (_, i) => `BP03-CR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 6 }, (_, i) => `BP03-RR${String(i + 1).padStart(2, "0")}`),
-      ...["01", "02"].flatMap((n) => ["A", "A2", "B", "B2", "C", "C2"].map((v) => `PBP03-ER${n}-${v}`)),
+      ...["01", "02"].flatMap((n) =>
+        ["A", "A2", "B", "B2", "C", "C2"].map((v) => `PBP03-ER${n}-${v}`),
+      ),
       ...["07", "08", "09", "11", "12"].map((n) => `PBP03-GR${n}`),
-      ...["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map((n) => `PBP03-SPR${n}`),
+      ...["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map(
+        (n) => `PBP03-SPR${n}`,
+      ),
       ...Array.from({ length: 12 }, (_, i) => `PBP03-CR${String(i + 1).padStart(2, "0")}`),
       ...Array.from({ length: 6 }, (_, i) => `PBP03-RR${String(i + 1).padStart(2, "0")}`),
     ];
@@ -990,7 +1014,7 @@ export default function MyTradesSets() {
       }
     });
   } else if (set.id === "tcgpromos") {
-    for (let i = 1; i <= 27; i++) {
+    for (let i = 1; i <= 28; i++) {
       const num = String(i).padStart(2, "0");
       cards.push({
         key: `RR${num}`,
@@ -998,9 +1022,16 @@ export default function MyTradesSets() {
       });
     }
   } else if (set.id === "13") {
-    cards = Object.entries(set.rarities).flatMap(([rarity, count]) => Array.from({ length: count as number }, (_, index) => ({ rarity, number: index + 1, key: `${rarity}-${index + 1}`, image: getMoonFourFront(`${rarity}-${index + 1}`) })));
+    cards = Object.entries(set.rarities).flatMap(([rarity, count]) =>
+      Array.from({ length: count as number }, (_, index) => ({
+        rarity,
+        number: index + 1,
+        key: `${rarity}-${index + 1}`,
+        image: getMoonFourFront(`${rarity}-${index + 1}`),
+      })),
+    );
   } else if (set.id === "9") {
-    cards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13].map((num) => ({
+    cards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].map((num) => ({
       rarity: "PR",
       number: num,
       key: `PR-${num}`,
@@ -1039,7 +1070,7 @@ export default function MyTradesSets() {
     "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
     "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
     "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
-"13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+    "13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
     //  Rainbow
     "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
     "6": ["BASE", "R", "SR", "ST", "TR", "TGR", "SSR", "FR", "UR", "USR", "XR"],
@@ -1064,8 +1095,36 @@ export default function MyTradesSets() {
     ],
     //  Friendships Begin
     friendshipsbegin: ["C", "U", "SR", "SPR", "GR", "CR", "ER", "\u203BER", "\u203BRR"],
-    "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203BER", "\u203BSPR", "\u203BGR", "\u203BCR", "\u203BRR"],
-"hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bGR", "\u203bSPR", "\u203bCR", "\u203bRR"],
+    "14": [
+      "C",
+      "U",
+      "ER",
+      "SR",
+      "SPR",
+      "GR",
+      "CR",
+      "RR",
+      "\u203BER",
+      "\u203BSPR",
+      "\u203BGR",
+      "\u203BCR",
+      "\u203BRR",
+    ],
+    "hearthswarming-eve": [
+      "C",
+      "U",
+      "ER",
+      "SR",
+      "SPR",
+      "GR",
+      "CR",
+      "RR",
+      "\u203bER",
+      "\u203bGR",
+      "\u203bSPR",
+      "\u203bCR",
+      "\u203bRR",
+    ],
     //  Promos
     "9": ["PR"],
     tcgpromos: ["PR"],
@@ -1090,9 +1149,7 @@ export default function MyTradesSets() {
           >
             <div
               className={`max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-[20px] shadow-2xl md:max-w-4xl md:rounded-[26px] ${
-                isLightMode
-                  ? "bg-white text-zinc-900"
-                  : "bg-[#17191a] text-white"
+                isLightMode ? "bg-white text-zinc-900" : "bg-[#17191a] text-white"
               }`}
               onMouseDown={(event) => event.stopPropagation()}
             >
@@ -1104,14 +1161,23 @@ export default function MyTradesSets() {
                 >
                   <div
                     className={`w-full ${
-                      set.id === "3" &&
-                      selectedCard.rarity === "SZR" &&
-                      selectedCard.number === 1
+                      set.id === "3" && selectedCard.rarity === "SZR" && selectedCard.number === 1
                         ? "aspect-[10/7] max-w-[170px] md:max-w-[520px]"
                         : "aspect-[5/7] max-w-[105px] md:max-w-[310px]"
                     } overflow-hidden rounded-xl md:rounded-2xl`}
                   >
                     <CardImage
+                      imageSize={
+                        (set.id === "9" && selectedCard.number === 14) ||
+                        (set.id === "tcgpromos" && selectedCard.key === "RR28")
+                          ? "original"
+                          : undefined
+                      }
+                      style={
+                        set.id === "9" || set.id === "tcgpromos"
+                          ? getPromoFrontStyle(selectedCard.key)
+                          : undefined
+                      }
                       src={
                         set.id === "9"
                           ? `/promo-cards/mlpepr${String(selectedCard.number).padStart(3, "0")}.webp`
@@ -1122,8 +1188,9 @@ export default function MyTradesSets() {
                       }
                       alt={getDisplayCode(selectedCard, set.id)}
                       className={`h-full w-full ${
-                        ["12", "14", "hearthswarming-eve", "FW", "friendshipsbegin", "FB"].includes(set.id) ||
-                        isNonZoomTcgPromo(selectedCard)
+                        ["12", "14", "hearthswarming-eve", "FW", "friendshipsbegin", "FB"].includes(
+                          set.id,
+                        )
                           ? "object-contain"
                           : "object-cover scale-[1.035]"
                       }`}
@@ -1153,8 +1220,7 @@ export default function MyTradesSets() {
                         updateListingDraft({
                           isForTrade: !listingDraft.isForTrade,
                           tradeQuantity:
-                            !listingDraft.isForTrade &&
-                            Number(listingDraft.tradeQuantity) < 1
+                            !listingDraft.isForTrade && Number(listingDraft.tradeQuantity) < 1
                               ? "1"
                               : listingDraft.tradeQuantity,
                         })
@@ -1167,9 +1233,7 @@ export default function MyTradesSets() {
                             : "bg-white/[0.08] text-zinc-200"
                       }`}
                     >
-                      {listingDraft.isForTrade
-                        ? "Actively up for trade"
-                        : "Mark for trade"}
+                      {listingDraft.isForTrade ? "Actively up for trade" : "Mark for trade"}
                     </button>
                     <button
                       type="button"
@@ -1177,8 +1241,7 @@ export default function MyTradesSets() {
                         updateListingDraft({
                           isForSale: !listingDraft.isForSale,
                           saleQuantity:
-                            !listingDraft.isForSale &&
-                            Number(listingDraft.saleQuantity) < 1
+                            !listingDraft.isForSale && Number(listingDraft.saleQuantity) < 1
                               ? "1"
                               : listingDraft.saleQuantity,
                         })
@@ -1191,9 +1254,7 @@ export default function MyTradesSets() {
                             : "bg-white/[0.08] text-zinc-200"
                       }`}
                     >
-                      {listingDraft.isForSale
-                        ? "Actively up for sale"
-                        : "Mark for sale"}
+                      {listingDraft.isForSale ? "Actively up for sale" : "Mark for sale"}
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 sm:mt-5 sm:space-y-3">
@@ -1208,9 +1269,7 @@ export default function MyTradesSets() {
                             : "bg-white/[0.025] text-zinc-600"
                       }`}
                     >
-                      <span className="text-xs font-semibold sm:text-sm">
-                        Looking for
-                      </span>
+                      <span className="text-xs font-semibold sm:text-sm">Looking for</span>
                       <div className="mt-1 flex items-center gap-2 sm:mt-2">
                         <span className="font-semibold">$</span>
                         <input
@@ -1307,9 +1366,7 @@ export default function MyTradesSets() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
             <div
               className={`w-full max-w-lg overflow-hidden rounded-[26px] border shadow-2xl ${
-                isLightMode
-                  ? "border-black/10 bg-white"
-                  : "border-white/10 bg-[#17191a]"
+                isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#17191a]"
               }`}
             >
               <div
@@ -1322,11 +1379,7 @@ export default function MyTradesSets() {
                     !
                   </div>
                   <div>
-                    <div
-                      className={`text-xs ${
-                        isLightMode ? "text-zinc-500" : "text-zinc-400"
-                      }`}
-                    >
+                    <div className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                       Inventory
                     </div>
                     <h2 className="text-lg font-semibold">Quick Start</h2>
@@ -1338,12 +1391,10 @@ export default function MyTradesSets() {
                   isLightMode ? "text-zinc-600" : "text-zinc-300"
                 }`}
               >
+                <p>Tap any card to open its inventory, trade, and sale details.</p>
                 <p>
-                  Tap any card to open its inventory, trade, and sale details.
-                </p>
-                <p>
-                  A card can be marked for trade, sale, or both. Sale prices and
-                  public quantities are saved with that card.
+                  A card can be marked for trade, sale, or both. Sale prices and public quantities
+                  are saved with that card.
                 </p>
                 <p>The card popup stays open until your changes are saved.</p>
               </div>
@@ -1356,10 +1407,7 @@ export default function MyTradesSets() {
                   type="button"
                   onClick={() => {
                     try {
-                      localStorage.setItem(
-                        "mlpekayou_inventory_intro_seen",
-                        "true",
-                      );
+                      localStorage.setItem("mlpekayou_inventory_intro_seen", "true");
                     } catch {}
                     setShowIntroPopup(false);
                   }}
@@ -1375,9 +1423,7 @@ export default function MyTradesSets() {
           <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
             <div
               className={`w-full max-w-lg overflow-hidden rounded-[26px] border shadow-2xl ${
-                isLightMode
-                  ? "border-black/10 bg-white"
-                  : "border-white/10 bg-[#17191a]"
+                isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#17191a]"
               }`}
             >
               <div
@@ -1385,23 +1431,13 @@ export default function MyTradesSets() {
                   isLightMode ? "border-black/10" : "border-white/10"
                 }`}
               >
-                <div
-                  className={`text-xs ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
+                <div className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                   Unsaved changes
                 </div>
-                <h2 className="mt-1 text-lg font-semibold">
-                  Save inventory changes?
-                </h2>
+                <h2 className="mt-1 text-lg font-semibold">Save inventory changes?</h2>
               </div>
               <div className="px-5 py-5">
-                <p
-                  className={`text-sm ${
-                    isLightMode ? "text-zinc-600" : "text-zinc-300"
-                  }`}
-                >
+                <p className={`text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
                   You changed one or more quantities. Save them before leaving?
                 </p>
                 <div className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -1473,51 +1509,39 @@ export default function MyTradesSets() {
               : "border-white/10 bg-[#151718] text-zinc-200 hover:bg-white/[0.06]"
           }`}
         >
-          &larr; Back to Inventory
+          &#8592; Back to Inventory
         </button>
         <section
           className={`rounded-[26px] border p-4 sm:p-5 ${
-            isLightMode
-              ? "border-black/10 bg-white"
-              : "border-white/[0.08] bg-[#151718]"
+            isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
           }`}
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div
-                className={`text-xs font-medium ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}
+                className={`text-xs font-medium ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
               >
                 {set.prefix}
               </div>
-              <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
-                {set.name}
-              </h1>
+              <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">{set.name}</h1>
               <div
                 className={`mt-2 flex flex-wrap gap-2 text-xs ${
                   isLightMode ? "text-zinc-500" : "text-zinc-400"
                 }`}
               >
                 <span>{ownedBonusCards.length} cards owned</span>
-                <span>&bull;</span>
+                <span>&#8226;</span>
                 <span>{activeListingsCount} listed</span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
               <div
                 className={`rounded-2xl border px-3 py-3 text-center ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/10 bg-white/[0.03]"
+                  isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.03]"
                 }`}
               >
                 <div className="text-sm font-semibold">Tap any card</div>
-                <div
-                  className={`mt-1 text-xs ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
+                <div className={`mt-1 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                   Edit its details
                 </div>
               </div>
@@ -1537,11 +1561,7 @@ export default function MyTradesSets() {
                 </div>
                 <div
                   className={`mt-1 text-xs ${
-                    editMode
-                      ? "text-black/70"
-                      : isLightMode
-                        ? "text-zinc-500"
-                        : "text-zinc-400"
+                    editMode ? "text-black/70" : isLightMode ? "text-zinc-500" : "text-zinc-400"
                   }`}
                 >
                   Personal inventory
@@ -1549,19 +1569,11 @@ export default function MyTradesSets() {
               </button>
               <div
                 className={`rounded-2xl border px-3 py-3 text-center ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/10 bg-white/[0.03]"
+                  isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.03]"
                 }`}
               >
-                <div className="text-sm font-semibold">
-                  {activeListingsCount}
-                </div>
-                <div
-                  className={`mt-1 text-xs ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
+                <div className="text-sm font-semibold">{activeListingsCount}</div>
+                <div className={`mt-1 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                   Listed
                 </div>
               </div>
@@ -1575,9 +1587,7 @@ export default function MyTradesSets() {
         ) ? (
           <section
             className={`mt-4 rounded-[24px] border p-10 text-center ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
+              isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
             }`}
           >
             <h2 className="text-xl font-semibold">Inventory Empty</h2>
@@ -1586,8 +1596,8 @@ export default function MyTradesSets() {
                 isLightMode ? "text-zinc-500" : "text-zinc-400"
               }`}
             >
-              You don't currently own any cards in this set. Add cards to your
-              collection first, then they'll appear here.
+              You don't currently own any cards in this set. Add cards to your collection first,
+              then they'll appear here.
             </p>
           </section>
         ) : (
@@ -1595,21 +1605,13 @@ export default function MyTradesSets() {
             {set.id === "friendshipsbegin" && (
               <section
                 className={`mt-4 rounded-[24px] border p-3 sm:p-4 ${
-                  isLightMode
-                    ? "border-black/10 bg-white"
-                    : "border-white/[0.08] bg-[#151718]"
+                  isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
                 }`}
               >
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-base font-semibold">Starter Decks</h2>
-                  <span
-                    className={`text-xs ${
-                      isLightMode ? "text-zinc-500" : "text-zinc-400"
-                    }`}
-                  >
-                    {activeDeck !== null
-                      ? `Deck ${activeDeck + 1}`
-                      : "Select a deck"}
+                  <span className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                    {activeDeck !== null ? `Deck ${activeDeck + 1}` : "Select a deck"}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -1651,24 +1653,16 @@ export default function MyTradesSets() {
                       const requiredCards: string[] = [];
                       const add = (rarity: string, count: number) => {
                         for (let i = 1; i <= count; i++) {
-                          requiredCards.push(
-                            `${deck.code}${rarity}${String(i).padStart(2, "0")}`,
-                          );
+                          requiredCards.push(`${deck.code}${rarity}${String(i).padStart(2, "0")}`);
                         }
                       };
                       add("C", 9);
                       add("U", 4);
                       add("SR", 2);
-                      requiredCards.push(
-                        `SD01ER${String(deckIndex).padStart(2, "0")}`,
-                      );
+                      requiredCards.push(`SD01ER${String(deckIndex).padStart(2, "0")}`);
                       add("SPR", 4);
-                      requiredCards.push(
-                        `SD01RR${String(deckIndex).padStart(2, "0")}`,
-                      );
-                      return requiredCards.every(
-                        (key) => progress[`STARTER-${key}`],
-                      );
+                      requiredCards.push(`SD01RR${String(deckIndex).padStart(2, "0")}`);
+                      return requiredCards.every((key) => progress[`STARTER-${key}`]);
                     })
                     .map((deck, i) => {
                       const isActive = activeDeck === i;
@@ -1705,27 +1699,19 @@ export default function MyTradesSets() {
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    changeQuantity(
-                                      deck.code,
-                                      (quantities[deck.code] || 1) - 1,
-                                    )
+                                    changeQuantity(deck.code, (quantities[deck.code] || 1) - 1)
                                   }
                                   className="px-1"
                                 >
-                                  &minus;
+                                  &#8722;
                                 </button>
                               )}
-                              <span className="px-1">
-                                {quantities[deck.code] || 1}
-                              </span>
+                              <span className="px-1">{quantities[deck.code] || 1}</span>
                               {editMode && (
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    changeQuantity(
-                                      deck.code,
-                                      (quantities[deck.code] || 1) + 1,
-                                    )
+                                    changeQuantity(deck.code, (quantities[deck.code] || 1) + 1)
                                   }
                                   className="px-1"
                                 >
@@ -1742,9 +1728,7 @@ export default function MyTradesSets() {
                             >
                               {deck.code}
                             </div>
-                            <div className="mt-0.5 text-sm font-semibold">
-                              {deck.name}
-                            </div>
+                            <div className="mt-0.5 text-sm font-semibold">{deck.name}</div>
                           </div>
                         </div>
                       );
@@ -1754,9 +1738,7 @@ export default function MyTradesSets() {
             )}
             <section
               className={`mt-4 rounded-[24px] border ${
-                isLightMode
-                  ? "border-black/10 bg-white"
-                  : "border-white/[0.08] bg-[#151718]"
+                isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
               }`}
             >
               <div
@@ -1767,18 +1749,12 @@ export default function MyTradesSets() {
                 <div>
                   <h2 className="text-base font-semibold">Cards</h2>
                   <p
-                    className={`mt-0.5 text-xs ${
-                      isLightMode ? "text-zinc-500" : "text-zinc-400"
-                    }`}
+                    className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
                   >
                     Tap a card to edit its quantity, trade, and sale details.
                   </p>
                 </div>
-                <span
-                  className={`text-sm ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
+                <span className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                   {activeListingsCount} listed
                 </span>
               </div>
@@ -1821,8 +1797,7 @@ export default function MyTradesSets() {
                         ? "\u25C7ZR"
                         : rarity === "SN"
                           ? "\u25C7N"
-                          : rarity === "SCR" &&
-                              ["7", "8", "11"].includes(set.id)
+                          : rarity === "SCR" && ["7", "8", "11"].includes(set.id)
                             ? "\u25C7CR"
                             : rarity;
                     return (
@@ -1843,18 +1818,12 @@ export default function MyTradesSets() {
                             }))
                           }
                           className={`flex w-full items-center justify-between px-3 py-3 text-left ${
-                            isLightMode
-                              ? "hover:bg-zinc-100"
-                              : "hover:bg-white/[0.04]"
+                            isLightMode ? "hover:bg-zinc-100" : "hover:bg-white/[0.04]"
                           }`}
                         >
-                          <span className="text-sm font-semibold">
-                            {rarityLabel}
-                          </span>
+                          <span className="text-sm font-semibold">{rarityLabel}</span>
                           <span
-                            className={`text-xs ${
-                              isLightMode ? "text-zinc-500" : "text-zinc-400"
-                            }`}
+                            className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
                           >
                             {rarityCards.length} cards {isCollapsed ? "+" : "-"}
                           </span>
@@ -1862,24 +1831,18 @@ export default function MyTradesSets() {
                         {!isCollapsed && (
                           <div
                             className={`grid grid-cols-3 gap-1.5 border-t p-2 sm:grid-cols-4 sm:gap-2 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-9 ${
-                              isLightMode
-                                ? "border-black/10"
-                                : "border-white/[0.08]"
+                              isLightMode ? "border-black/10" : "border-white/[0.08]"
                             }`}
                           >
                             {rarityCards.map((card) => {
                               const key = card.key;
                               const isLandscape =
-                                set.id === "14" &&
-                                /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(key);
+                                set.id === "14" && /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(key);
                               const listing = marketListings[key];
                               const isStarterDeck =
-                                set.id === "friendshipsbegin" &&
-                                key.includes("-");
+                                set.id === "friendshipsbegin" && key.includes("-");
                               const isDoubleCard =
-                                set.id === "3" &&
-                                card.rarity === "SZR" &&
-                                card.number === 1;
+                                set.id === "3" && card.rarity === "SZR" && card.number === 1;
                               return (
                                 <div
                                   key={key}
@@ -1887,25 +1850,20 @@ export default function MyTradesSets() {
                                   className={`group relative cursor-pointer overflow-hidden rounded-xl p-0.5 transition ${
                                     isStarterDeck
                                       ? isLightMode
-                                    ? "cursor-default"
-                                    : "cursor-default"
-                                  : isLightMode
+                                        ? "cursor-default"
+                                        : "cursor-default"
+                                      : isLightMode
                                         ? ""
                                         : ""
                                   } ${
-                                    listing?.is_for_trade &&
-                                    listing?.is_for_sale
+                                    listing?.is_for_trade && listing?.is_for_sale
                                       ? "border-violet-500"
                                       : listing?.is_for_trade
                                         ? "border-emerald-500"
                                         : listing?.is_for_sale
                                           ? "border-sky-500"
                                           : ""
-                                  } ${
-                                    isDoubleCard
-                                      ? "col-span-2 aspect-[10/7]"
-                                      : "aspect-[5/7]"
-                                  }`}
+                                  } ${isDoubleCard ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}
                                 >
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                     <CardImage
@@ -1917,16 +1875,22 @@ export default function MyTradesSets() {
                                             : card.image ||
                                               `/cards/${set.folder}/${set.prefix}${getRarityCode(card.rarity)}${String(card.number).padStart(3, "0")}.webp`
                                       }
+                                      imageSize={
+                                        (set.id === "9" && card.number === 14) ||
+                                        (set.id === "tcgpromos" && card.key === "RR28")
+                                          ? "original"
+                                          : undefined
+                                      }
                                       alt={key}
                                       className={`h-full w-full ${
                                         [
                                           "12",
-                                          "14", "hearthswarming-eve",
+                                          "14",
+                                          "hearthswarming-eve",
                                           "FW",
                                           "friendshipsbegin",
                                           "FB",
-                                        ].includes(set.id) ||
-                                        isNonZoomTcgPromo(card)
+                                        ].includes(set.id)
                                           ? "object-contain"
                                           : isLandscape
                                             ? "h-full w-full object-contain"
@@ -1934,10 +1898,10 @@ export default function MyTradesSets() {
                                       }`}
                                       style={
                                         isLandscape
-                                          ? {
-                                              transform: "rotate(-90deg) scale(1.4)",
-                                            }
-                                          : undefined
+                                          ? { transform: "rotate(-90deg) scale(1.4)" }
+                                          : set.id === "9" || set.id === "tcgpromos"
+                                            ? getPromoFrontStyle(card.key)
+                                            : undefined
                                       }
                                     />
                                   </div>
@@ -1981,26 +1945,19 @@ export default function MyTradesSets() {
                                                   ...prev,
                                                   [key]: value,
                                                 };
-                                                const dirty = Object.keys(
-                                                  updated,
-                                                ).some(
+                                                const dirty = Object.keys(updated).some(
                                                   (cardKey) =>
                                                     (updated[cardKey] ?? 1) !==
-                                                    (savedQuantities[cardKey] ??
-                                                      1),
+                                                    (savedQuantities[cardKey] ?? 1),
                                                 );
                                                 setInventoryDirty(dirty);
-                                                inventoryDirtyRef.current =
-                                                  dirty;
+                                                inventoryDirtyRef.current = dirty;
                                                 return updated;
                                               });
                                             }
                                           }}
                                           onBlur={() => {
-                                            const finalValue = Math.max(
-                                              1,
-                                              quantities[key] || 1,
-                                            );
+                                            const finalValue = Math.max(1, quantities[key] || 1);
                                             changeQuantity(key, finalValue);
                                           }}
                                           className="w-8 bg-transparent py-1 text-center outline-none"
@@ -2018,27 +1975,19 @@ export default function MyTradesSets() {
                                           <button
                                             type="button"
                                             onClick={() =>
-                                              changeQuantity(
-                                                key,
-                                                (quantities[key] || 1) - 1,
-                                              )
+                                              changeQuantity(key, (quantities[key] || 1) - 1)
                                             }
                                             className="px-1"
                                           >
-                                            &minus;
+                                            &#8722;
                                           </button>
                                         )}
-                                        <span className="px-1">
-                                          {quantities[key] || 1}
-                                        </span>
+                                        <span className="px-1">{quantities[key] || 1}</span>
                                         {editMode && (
                                           <button
                                             type="button"
                                             onClick={() =>
-                                              changeQuantity(
-                                                key,
-                                                (quantities[key] || 1) + 1,
-                                              )
+                                              changeQuantity(key, (quantities[key] || 1) + 1)
                                             }
                                             className="px-1"
                                           >
@@ -2048,12 +1997,10 @@ export default function MyTradesSets() {
                                       </div>
                                     )}
                                   </div>
-                                  {(listing?.is_for_trade ||
-                                    listing?.is_for_sale) && (
+                                  {(listing?.is_for_trade || listing?.is_for_sale) && (
                                     <div
                                       className={`absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white ${
-                                        listing.is_for_trade &&
-                                        listing.is_for_sale
+                                        listing.is_for_trade && listing.is_for_sale
                                           ? "bg-violet-500"
                                           : listing.is_for_trade
                                             ? "bg-emerald-500"

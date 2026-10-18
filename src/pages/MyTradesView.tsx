@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { getMoonFourFront } from "@/lib/card-images";
 import { getHeartswarmingEveRarityLabel } from "@/lib/hearthswarming-eve";
 import { getHeartswarmingEveFront } from "@/lib/card-images";
@@ -6,6 +7,67 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+const CCG_CARD_ZOOM: Record<string, number> = {
+  "PR-1": 1.009,
+  "PR-2": 1.04,
+  "PR-3": 1.035,
+  "PR-4": 1.035,
+  "PR-5": 1.033,
+  "PR-7": 1.035,
+  "PR-14": 1.035,
+  "PR-8": 1.04,
+  "PR-9": 1.04,
+  "PR-10": 1.04,
+  "PR-11": 1.04,
+  "PR-12": 1.04,
+  "PR-13": 1.04,
+  "PR-15": 1.025,
+};
+const TCG_CARD_ZOOM: Record<string, number> = {
+  RR01: 0.99,
+  RR02: 0.99,
+  RR03: 0.99,
+  RR04: 0.99,
+  RR05: 0.99,
+  RR06: 0.99,
+  RR07: 0.99,
+  RR08: 0.99,
+  RR09: 1.035,
+  RR10: 1.025,
+  RR11: 1.025,
+  RR12: 1.025,
+  RR13: 0.99,
+  RR14: 0.99,
+  RR15: 0.99,
+  RR16: 0.99,
+  RR17: 0.99,
+  RR18: 0.99,
+  RR19: 0.99,
+  RR20: 0.99,
+  RR21: 0.99,
+  RR22: 0.99,
+  RR23: 0.99,
+  RR24: 0.99,
+  RR25: 0.99,
+  RR26: 0.99,
+  RR27: 0.99,
+  RR28: 0.99,
+};
+const getPromoFrontStyle = (key: string): CSSProperties => ({
+  display: "block",
+  width: "100%",
+  height: "100%",
+  margin: 0,
+  objectFit: "cover",
+  objectPosition: "50% 50%",
+  transformOrigin: "50% 50%",
+  backgroundColor: "transparent",
+  backgroundImage: "none",
+  transform:
+    key === "RR09"
+      ? "translateY(-0.75%) scale(1.035, 1.02)"
+      : `scale(${key.startsWith("PR-") ? (CCG_CARD_ZOOM[key] ?? 1) : (TCG_CARD_ZOOM[key] ?? 1)})`,
+});
 type TradeCard = {
   user_id: string;
   set_id: string;
@@ -17,18 +79,18 @@ type TradeCard = {
   sale_quantity: number;
 };
 export default function MyTradesView() {
-const { setId } = useParams();
-const navigate = useNavigate();
-const [cards, setCards] = useState<TradeCard[]>([]);
-const [loading, setLoading] = useState(true);
-const [isLightMode, setIsLightMode] = useState(() => {
+  const { setId } = useParams();
+  const navigate = useNavigate();
+  const [cards, setCards] = useState<TradeCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isLightMode, setIsLightMode] = useState(() => {
     if (typeof document === "undefined") return false;
-const root = document.documentElement;
+    const root = document.documentElement;
     return root.dataset.theme === "light" || root.classList.contains("light");
   });
   useEffect(() => {
-const syncTheme = () => {
-const root = document.documentElement;
+    const syncTheme = () => {
+      const root = document.documentElement;
       setIsLightMode(
         root.dataset.theme === "light" ||
           root.classList.contains("light") ||
@@ -36,7 +98,7 @@ const root = document.documentElement;
       );
     };
     syncTheme();
-const observer = new MutationObserver(syncTheme);
+    const observer = new MutationObserver(syncTheme);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-theme"],
@@ -49,20 +111,20 @@ const observer = new MutationObserver(syncTheme);
   }, []);
   useEffect(() => {
     if (!setId) return;
-const load = async () => {
+    const load = async () => {
       setLoading(true);
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
       if (!user) return;
-const { data: trades } = await supabase
+      const { data: trades } = await supabase
         .from("card_market_listings")
         .select(
           "user_id, set_id, card_key, is_for_trade, is_for_sale, asking_price, trade_quantity, sale_quantity",
         )
         .eq("user_id", user.id);
-const filtered = (trades || []).filter((card) => {
+      const filtered = (trades || []).filter((card) => {
         if (!card.is_for_trade && !card.is_for_sale) return false;
-//  Friendships Begin (bonus + starters all live under same set_id)
+        //  Friendships Begin (bonus + starters all live under same set_id)
         if (setId === "SD_BONUS" || setId === "SD_STARTERS") {
           return card.set_id === "friendshipsbegin";
         }
@@ -73,17 +135,17 @@ const filtered = (trades || []).filter((card) => {
     };
     load();
   }, [setId]);
-const getRarityCode = (rarity: string) => {
+  const getRarityCode = (rarity: string) => {
     if (rarity === "SHINING ZR") return "SZR";
     return rarity;
   };
-const getCardImage = (card: TradeCard) => {
+  const getCardImage = (card: TradeCard) => {
     if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
     if (card.set_id === "friendshipsbegin") {
       return `/friendships-begin/${card.card_key}.webp`;
     }
     if (card.set_id === "FW") {
-const num = card.card_key.slice(-2);
+      const num = card.card_key.slice(-2);
       if (card.card_key.startsWith("BP01ER")) {
         return `/fantasy-wonderland/SD01ER${num}.webp`;
       }
@@ -92,8 +154,8 @@ const num = card.card_key.slice(-2);
       }
       return `/fantasy-wonderland/${card.card_key}.webp`;
     }
-
-  if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveFront(card.card_key);
+    if (String(card.set_id) === "hearthswarming-eve")
+      return getHeartswarmingEveFront(card.card_key);
     if (String(card.set_id) === "14") {
       return `/cards/nightmare-night/${card.card_key}.webp`;
     }
@@ -101,15 +163,15 @@ const num = card.card_key.slice(-2);
       return `/cards/discord/${card.card_key}.webp`;
     }
     if (card.set_id === "9") {
-const number = card.card_key.split("-")[1];
+      const number = card.card_key.split("-")[1];
       return `/promo-cards/mlpepr${String(number).padStart(3, "0")}.webp`;
     }
     if (card.set_id === "tcgpromos") {
       return `/tcgpromos/${card.card_key}.webp`;
     }
-const [rarityRaw, number] = card.card_key.split("-");
-const rarity = getRarityCode(rarityRaw);
-const config: any = {
+    const [rarityRaw, number] = card.card_key.split("-");
+    const rarity = getRarityCode(rarityRaw);
+    const config: any = {
       "1": { folder: "first-edition-moon", prefix: "M1" },
       "2": { folder: "second-edition-moon", prefix: "M2" },
       "3": { folder: "third-edition-moon", prefix: "M3" },
@@ -120,20 +182,16 @@ const config: any = {
       "8": { folder: "fun-moments-two", prefix: "FM2" },
       "11": { folder: "fun-moments-three", prefix: "FM3" },
     };
-const c = config[card.set_id];
+    const c = config[card.set_id];
     if (!c) return "";
     return `/cards/${c.folder}/${c.prefix}${rarity}${String(number).padStart(3, "0")}${
-      card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity)
-        ? ".webp"
-        : ".webp"
+      card.set_id === "6" && ["ST", "TR", "TGR"].includes(rarity) ? ".webp" : ".webp"
     }`;
   };
   return (
     <div
       className={`min-h-screen pb-24 transition-colors ${
-        isLightMode
-          ? "bg-[#f5f5f3] text-zinc-900"
-          : "bg-[#0d0f10] text-zinc-100"
+        isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-zinc-100"
       }`}
     >
       <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
@@ -151,63 +209,39 @@ const c = config[card.set_id];
         </button>
         <section
           className={`rounded-[26px] border p-4 sm:p-5 ${
-            isLightMode
-              ? "border-black/10 bg-white"
-              : "border-white/[0.08] bg-[#151718]"
+            isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
           }`}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div
-                className={`text-sm ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
-                Trade &amp; sale listings
+              <div className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                Trade & sale listings
               </div>
-              <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
-                My Trades
-              </h1>
-              <div
-                className={`mt-1 text-sm ${
-                  isLightMode ? "text-zinc-500" : "text-zinc-400"
-                }`}
-              >
+              <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">My Trades</h1>
+              <div className={`mt-1 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                 {setId || "Current set"}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 sm:min-w-[300px]">
               <div
                 className={`rounded-2xl border px-3 py-3 text-center ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/10 bg-white/[0.03]"
+                  isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.03]"
                 }`}
               >
                 <div className="text-xl font-semibold">{cards.length}</div>
-                <div
-                  className={`mt-1 text-sm ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
+                <div className={`mt-1 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                   Listed
                 </div>
               </div>
               <div
                 className={`rounded-2xl border px-3 py-3 text-center ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/10 bg-white/[0.03]"
+                  isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.03]"
                 }`}
               >
                 <div className="text-xl font-semibold">
                   {cards.filter((card) => card.is_for_sale).length}
                 </div>
-                <div
-                  className={`mt-1 text-sm ${
-                    isLightMode ? "text-zinc-500" : "text-zinc-400"
-                  }`}
-                >
+                <div className={`mt-1 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                   For sale
                 </div>
               </div>
@@ -217,28 +251,20 @@ const c = config[card.set_id];
         {loading && (
           <section
             className={`mt-4 rounded-[24px] border px-6 py-12 text-center ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
+              isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
             }`}
           >
-            <div className="text-base font-semibold">Loading trades&#x2026;</div>
+            <div className="text-base font-semibold">Loading trades&#8230;</div>
           </section>
         )}
         {!loading && cards.length === 0 && (
           <section
             className={`mt-4 rounded-[24px] border px-6 py-12 text-center ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
+              isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
             }`}
           >
             <h2 className="text-lg font-semibold">No listed cards</h2>
-            <p
-              className={`mt-2 text-sm ${
-                isLightMode ? "text-zinc-500" : "text-zinc-400"
-              }`}
-            >
+            <p className={`mt-2 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
               This set currently has no cards marked for trade or sale.
             </p>
           </section>
@@ -248,11 +274,13 @@ const c = config[card.set_id];
             {(
               Object.entries(
                 cards.reduce((acc: Record<string, TradeCard[]>, card) => {
-let rarity = card.card_key.split("-")[0];
+                  let rarity = card.card_key.split("-")[0];
                   if (String(card.set_id) === "hearthswarming-eve") {
                     rarity = getHeartswarmingEveRarityLabel(card.card_key);
                   } else if (String(card.set_id) === "14") {
-                    const match = card.card_key.match(/^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/);
+                    const match = card.card_key.match(
+                      /^(P?)BP03-(SPR|SR|ER|GR|CR|RR|C|U)\d{2}(?:-[ABC]2?)?$/,
+                    );
                     rarity = match ? `${match[1] ? "\u203b" : ""}${match[2]}` : "OTHER";
                   } else if (card.set_id === "tcgpromos") {
                     rarity = "PR";
@@ -261,7 +289,7 @@ let rarity = card.card_key.split("-")[0];
                     card.set_id === "12" ||
                     card.set_id === "friendshipsbegin"
                   ) {
-const match = card.card_key.match(
+                    const match = card.card_key.match(
                       /(PSPR|PCR|PGR|PER|PRR|SPR|SGR|LSR|SSR|SZR|GR|CR|RR|SR|ER|ZR|HR|UR|R|U|C)/,
                     );
                     rarity = match?.[0] || "OTHER";
@@ -278,59 +306,14 @@ const match = card.card_key.match(
               ) as [string, TradeCard[]][]
             )
               .sort(([a], [b]) => {
-const rarityOrders: Record<string, string[]> = {
+                const rarityOrders: Record<string, string[]> = {
                   "1": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"],
-                  "2": [
-                    "R",
-                    "SR",
-                    "SSR",
-                    "HR",
-                    "UR",
-                    "LSR",
-                    "SGR",
-                    "ZR",
-                    "SC",
-                    "SHINING ZR",
-                  ],
-                  "3": [
-                    "R",
-                    "SR",
-                    "SSR",
-                    "HR",
-                    "UR",
-                    "LSR",
-                    "SGR",
-                    "ZR",
-                    "SC",
-                    "SZR",
-                  ],
-"13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+                  "2": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SHINING ZR"],
+                  "3": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
+                  "13": ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "ZR", "SC", "SZR"],
                   "4": ["SSR", "SCR", "UR", "USR", "AR", "OR", "BP", "SAR"],
-                  "5": [
-                    "R",
-                    "SR",
-                    "FR",
-                    "TR",
-                    "TGR",
-                    "MTR",
-                    "SSR",
-                    "UR",
-                    "USR",
-                    "XR",
-                  ],
-                  "6": [
-                    "BASE",
-                    "R",
-                    "SR",
-                    "ST",
-                    "SSR",
-                    "FR",
-                    "TR",
-                    "TGR",
-                    "UR",
-                    "USR",
-                    "XR",
-                  ],
+                  "5": ["R", "SR", "FR", "TR", "TGR", "MTR", "SSR", "UR", "USR", "XR"],
+                  "6": ["BASE", "R", "SR", "ST", "SSR", "FR", "TR", "TGR", "UR", "USR", "XR"],
                   "7": ["N", "SN", "R", "SR", "SSR", "UR", "CR"],
                   "8": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR"],
                   "11": ["N", "SN", "R", "SR", "SSR", "UR", "UGR", "CR", "SCR"],
@@ -375,23 +358,48 @@ const rarityOrders: Record<string, string[]> = {
                     "\u203bER",
                     "\u203bRR",
                   ],
-                  "14": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bSPR", "\u203bGR", "\u203bCR", "\u203bRR"],
-"hearthswarming-eve": ["C", "U", "ER", "SR", "SPR", "GR", "CR", "RR", "\u203bER", "\u203bGR", "\u203bSPR", "\u203bCR", "\u203bRR", "TK"],
+                  "14": [
+                    "C",
+                    "U",
+                    "ER",
+                    "SR",
+                    "SPR",
+                    "GR",
+                    "CR",
+                    "RR",
+                    "\u203bER",
+                    "\u203bSPR",
+                    "\u203bGR",
+                    "\u203bCR",
+                    "\u203bRR",
+                  ],
+                  "hearthswarming-eve": [
+                    "C",
+                    "U",
+                    "ER",
+                    "SR",
+                    "SPR",
+                    "GR",
+                    "CR",
+                    "RR",
+                    "\u203bER",
+                    "\u203bGR",
+                    "\u203bSPR",
+                    "\u203bCR",
+                    "\u203bRR",
+                    "TK",
+                  ],
                   tcgpromos: ["PR"],
                 };
-const currentOrder =
-                  rarityOrders[
-                    String(setId) === "discord" ? "12" : String(setId)
-                  ] || [];
+                const currentOrder =
+                  rarityOrders[String(setId) === "discord" ? "12" : String(setId)] || [];
                 return currentOrder.indexOf(a) - currentOrder.indexOf(b);
               })
               .map(([rarity, rarityCards]) => (
                 <section
                   key={rarity}
                   className={`overflow-hidden rounded-[22px] border ${
-                    isLightMode
-                      ? "border-black/10 bg-white"
-                      : "border-white/[0.08] bg-[#151718]"
+                    isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"
                   }`}
                 >
                   <div
@@ -410,29 +418,33 @@ const currentOrder =
                               ? "\u25c7AR"
                               : rarity}
                     </h2>
-                    <span
-                      className={`text-sm ${
-                        isLightMode ? "text-zinc-500" : "text-zinc-400"
-                      }`}
-                    >
+                    <span className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                       {rarityCards.length}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4 sm:gap-2.5">
                     {rarityCards
                       .sort((a, b) => {
-if (String(a.set_id) === "hearthswarming-eve") return Number(a.card_key.match(/(\d{2})$/)?.[1]) - Number(b.card_key.match(/(\d{2})$/)?.[1]);
-const numA = parseInt(a.card_key.split("-")[1]);
-const numB = parseInt(b.card_key.split("-")[1]);
+                        if (String(a.set_id) === "hearthswarming-eve")
+                          return (
+                            Number(a.card_key.match(/(\d{2})$/)?.[1]) -
+                            Number(b.card_key.match(/(\d{2})$/)?.[1])
+                          );
+                        const promoOrder = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15];
+                        if (String(a.set_id) === "9")
+                          return (
+                            promoOrder.indexOf(Number(a.card_key.split("-")[1])) -
+                            promoOrder.indexOf(Number(b.card_key.split("-")[1]))
+                          );
+                        const numA = Number(a.card_key.match(/(\d+)$/)?.[1]);
+                        const numB = Number(b.card_key.match(/(\d+)$/)?.[1]);
                         return numA - numB;
                       })
                       .map((card) => {
-const [rarityCode, number] = card.card_key.split("-");
-const isDoubleCard =
-                          card.set_id === "3" &&
-                          rarityCode === "SZR" &&
-                          Number(number) === 1;
-const isLandscape =
+                        const [rarityCode, number] = card.card_key.split("-");
+                        const isDoubleCard =
+                          card.set_id === "3" && rarityCode === "SZR" && Number(number) === 1;
+                        const isLandscape =
                           String(card.set_id) === "14" &&
                           /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key);
                         return (
@@ -443,8 +455,7 @@ const isLandscape =
                             <div
                               className={`relative overflow-hidden rounded-xl ${isDoubleCard ? "aspect-[10/7]" : "aspect-[5/7]"}`}
                             >
-                              {card.set_id === "11" &&
-                              card.card_key === "N-10" ? (
+                              {card.set_id === "11" && card.card_key === "N-10" ? (
                                 <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-zinc-100 p-3 text-center">
                                   <p className="text-sm font-semibold leading-relaxed text-zinc-600">
                                     FME03-N-010
@@ -455,21 +466,33 @@ const isLandscape =
                               ) : (
                                 <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                   <CardImage
+                                    imageSize={
+                                      (String(card.set_id) === "9" && card.card_key === "PR-14") ||
+                                      (card.set_id === "tcgpromos" && card.card_key === "RR28")
+                                        ? "original"
+                                        : undefined
+                                    }
                                     src={getCardImage(card)}
                                     alt={card.card_key}
-                                    className={isLandscape
-                                      ? "absolute object-contain object-center"
-                                      : "h-full w-full object-cover object-center"}
-                                    style={isLandscape
-                                      ? {
-                                          left: "50%",
-                                          top: "50%",
-                                          width: "140%",
-                                          height: "71.4285714286%",
-                                          maxWidth: "none",
-                                          transform: "translate(-50%, -50%) rotate(-90deg)",
-                                        }
-                                      : { transform: "scale(1.035)" }}
+                                    className={
+                                      isLandscape
+                                        ? "absolute object-contain object-center"
+                                        : "h-full w-full object-cover object-center"
+                                    }
+                                    style={
+                                      isLandscape
+                                        ? {
+                                            left: "50%",
+                                            top: "50%",
+                                            width: "140%",
+                                            height: "71.4285714286%",
+                                            maxWidth: "none",
+                                            transform: "translate(-50%, -50%) rotate(-90deg)",
+                                          }
+                                        : String(card.set_id) === "9" || card.set_id === "tcgpromos"
+                                          ? getPromoFrontStyle(card.card_key)
+                                          : { transform: "scale(1.035)" }
+                                    }
                                   />
                                 </div>
                               )}
@@ -477,12 +500,13 @@ const isLandscape =
                             <div className="mt-1 flex min-h-5 flex-wrap items-center gap-1 px-0.5 text-[10px] font-semibold sm:text-xs">
                               {card.is_for_trade && (
                                 <span className="rounded-md bg-emerald-500/12 px-1.5 py-0.5 text-emerald-600 dark:text-emerald-400">
-                                  Trade &#xb7; {card.trade_quantity}
+                                  Trade &#183; {card.trade_quantity}
                                 </span>
                               )}
                               {card.is_for_sale && (
                                 <span className="rounded-md bg-sky-500/12 px-1.5 py-0.5 text-sky-600 dark:text-sky-400">
-                                  ${Number(card.asking_price || 0).toFixed(2)} &#xb7; {card.sale_quantity}
+                                  ${Number(card.asking_price || 0).toFixed(2)} &#183;{" "}
+                                  {card.sale_quantity}
                                 </span>
                               )}
                             </div>
