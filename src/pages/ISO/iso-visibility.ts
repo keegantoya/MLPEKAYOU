@@ -2,8 +2,8 @@ export const isISOOwned = (value: unknown): boolean => value === true || (typeof
 export const normalizeISOKey = (setId: string, key: string): string => {
   if (setId === "SD") return key.replace(/^BONUS-/, "");
   if (!["1", "2", "3", "13", "4", "5", "6", "7", "8", "11", "9"].includes(setId)) return key;
-  const stripped = key.replace(new RegExp("^" + setId + "[-:]"), "").replace(/^SHINING ZR-/, "SZR-");
-  const match = stripped.match(/^([A-Z]+)-(\d+)$/);
+const stripped = key.replace(new RegExp("^" + setId + "[-:]"), "").replace(/^SHINING ZR-/, "SZR-");
+const match = stripped.match(/^([A-Z]+)-(\d+)$/);
   return match ? match[1] + "-" + Number(match[2]) : stripped;
 };
 export const ISO_EXPECTED_KEYS: Record<string, string[]> = {
@@ -1379,12 +1379,14 @@ export const ISO_EXPECTED_KEYS: Record<string, string[]> = {
     "PR-4",
     "PR-5",
     "PR-7",
+    "PR-14",
     "PR-8",
     "PR-9",
     "PR-10",
     "PR-11",
     "PR-12",
-    "PR-13"
+    "PR-13",
+    "PR-15"
   ],
   "11": [
     "N-1",
@@ -2501,14 +2503,15 @@ export const ISO_EXPECTED_KEYS: Record<string, string[]> = {
     "RR24",
     "RR25",
     "RR26",
-    "RR27"
+    "RR27",
+    "RR28"
   ]
 };
 export const getCompletedISOSetIds = (rows: { set_id: string | number; progress: Record<string, unknown> | null }[]): string[] => {
-  const progressBySet: Record<string, Record<string, unknown>> = {};
+const progressBySet: Record<string, Record<string, unknown>> = {};
   for (const row of rows) {
-    const setId = String(row.set_id) === "friendshipsbegin" ? "SD" : String(row.set_id);
-    const progress = progressBySet[setId] ?? (progressBySet[setId] = {});
+const setId = String(row.set_id) === "friendshipsbegin" ? "SD" : String(row.set_id);
+const progress = progressBySet[setId] ?? (progressBySet[setId] = {});
     for (const [key, value] of Object.entries(row.progress || {})) progress[normalizeISOKey(setId, key)] = value;
   }
   return Object.entries(ISO_EXPECTED_KEYS).filter(([id, keys]) => keys.length > 0 && keys.every((key) => isISOOwned(progressBySet[id]?.[normalizeISOKey(id, key)]))).map(([id]) => id);

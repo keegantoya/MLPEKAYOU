@@ -5,30 +5,25 @@ import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
 import { supabase } from "@/lib/supabase";
 import { promoCharacterMap } from "./Card Characters/card-characters-promos";
-const ccgCards = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
-const tcgCards = Array.from({ length: 27 }, (_, i) => i + 1);
+const ccgCards = [1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15];
+const tcgCards = Array.from({ length: 28 }, (_, i) => i + 1);
 const getDisplayCardCode = (
   setId: string,
   number: number
 ) => {
   if (setId === "9") {
-// Standard CCG Promos
-    if (number <= 7) {
+    if (number <= 7 || number === 14 || number === 15) {
       return `MLPE-PR-${String(number).padStart(3, "0")}`;
     }
-// SDCC Promos
     return `SDCC-${String(number - 7).padStart(3, "0")}`;
   }
   if (setId === "tcgpromos") {
-// RR-01 through RR-06
     if (number <= 6) {
       return `RR-${String(number).padStart(2, "0")}`;
     }
-// BP01 CR-07 through CR-12
     if (number <= 12) {
       return `BP01-CR-${String(number).padStart(2, "0")}`;
     }
-// BP02 CR-01 through CR-06
     if (number <= 18) {
       return `BP02-CR-${String(number - 12).padStart(2, "0")}`;
     }
@@ -130,7 +125,7 @@ const { data: progress } = await supabase
       setLoading(false);
     };
     load();
-    const refresh = () => { void load(); };
+const refresh = () => { void load(); };
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
   }, [hiddenSets]);
@@ -241,10 +236,13 @@ const cardContent = (
                         }`}
                       >
                         <CardImage
-                          src={getImage(set.id, card.number)}
+                          imageSize={(set.id === "9" && card.number === 14) || (set.id === "tcgpromos" && card.number === 28) ? "original" : "grid"}
+                        src={getImage(set.id, card.number)}
                           alt={getDisplayCardCode(set.id, card.number)}
                           className={
-                            set.id === "9" && card.number === 1
+                            set.id === "9" && card.number === 15
+                            ? "h-full w-full scale-[1.025] object-contain object-center"
+                            : set.id === "9" && card.number === 1
                               ? "h-full w-full scale-[1.02] object-contain object-center"
                               : set.id === "9" && card.number === 7
                                 ? "h-full w-full scale-[1.06] object-contain object-center"
