@@ -89,7 +89,7 @@ const getCode = (card: FullISOCard) =>
         : getISOCardCode(card.set_id, card.card_key);
 const getSetName = (id: string) =>
   id === "13"
-    ? "Eternal Moon: Fourth Edition"
+    ? "Moon Fourth Edition"
     : id === "hearthswarming-eve"
       ? "Hearthswarming Eve"
       : getISOSetName(id);
