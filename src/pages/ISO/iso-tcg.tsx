@@ -1,3 +1,9 @@
+import {
+  HEARTHSWARMING_EVE_CARDS,
+  getHeartswarmingEveRarityLabel,
+  getHeartswarmingEveDisplayCode,
+} from "@/lib/hearthswarming-eve";
+import { getHeartswarmingEveFront } from "@/lib/card-images";
 import { isISOOwned, normalizeISOKey } from "./iso-visibility";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, type CSSProperties } from "react";
@@ -19,9 +25,7 @@ const MissingImageCard = ({
   const imageClass = landscape
     ? "absolute left-1/2 top-1/2 h-[71.4286%] w-[140%] max-w-none rounded-xl object-cover"
     : className;
-  const imageStyle = landscape
-    ? { transform: "translate(-50%, -50%) rotate(-90deg)" }
-    : style;
+  const imageStyle = landscape ? { transform: "translate(-50%, -50%) rotate(-90deg)" } : style;
   if (failed) {
     return (
       <div
@@ -34,14 +38,26 @@ const MissingImageCard = ({
       </div>
     );
   }
-  return (
-    landscape ? (
-      <div className={`${className.replace("landscape-card", "")} relative aspect-[5/7] overflow-hidden rounded-xl`}>
-        <CardImage src={src} className={imageClass} style={imageStyle} onError={() => setFailed(true)} alt="" />
-      </div>
-    ) : (
-      <CardImage src={src} className={className} style={style} onError={() => setFailed(true)} alt="" />
-    )
+  return landscape ? (
+    <div
+      className={`${className.replace("landscape-card", "")} relative aspect-[5/7] overflow-hidden rounded-xl`}
+    >
+      <CardImage
+        src={src}
+        className={imageClass}
+        style={imageStyle}
+        onError={() => setFailed(true)}
+        alt=""
+      />
+    </div>
+  ) : (
+    <CardImage
+      src={src}
+      className={className}
+      style={style}
+      onError={() => setFailed(true)}
+      alt=""
+    />
   );
 };
 const getRarityCode = (rarity: string) => {
@@ -50,13 +66,9 @@ const getRarityCode = (rarity: string) => {
 const getDisplayRarity = (rarity: string) => {
   return rarity.startsWith("P") ? `\u203b${rarity.slice(1)}` : rarity;
 };
-const getDisplayCardCode = (
-  setId: string,
-  rarity: string,
-  number: number
-) => {
-const rarityCode = getRarityCode(rarity);
-const cardNumber = String(number).padStart(2, "0");
+const getDisplayCardCode = (setId: string, rarity: string, number: number) => {
+  const rarityCode = getRarityCode(rarity);
+  const cardNumber = String(number).padStart(2, "0");
   if (setId === "SD" && rarity === "C") {
     return `SD01C${cardNumber}`;
   }
@@ -167,6 +179,17 @@ const sets = [
       PRR: 6,
     },
   },
+  {
+    id: "hearthswarming-eve",
+    name: "HEARTHSWARMING EVE",
+    folder: "hearthswarming-eve",
+    prefix: "BP04",
+    rarities: HEARTHSWARMING_EVE_CARDS.reduce<Record<string, number>>((counts, card) => {
+      const rarity = getHeartswarmingEveRarityLabel(card.key).replace("\u203b", "P");
+      counts[rarity] = (counts[rarity] || 0) + 1;
+      return counts;
+    }, {}),
+  },
 ];
 interface ISOTCGProps {
   cardCodeSearch: string;
@@ -182,523 +205,345 @@ export default function ISOTCG({
   hiddenSets,
   wishlistMode,
 }: ISOTCGProps) {
-const [owned, setOwned] = useState<Record<string, boolean>>({});
-const [inProgress, setInProgress] = useState<Set<string>>(new Set());
-const [loading, setLoading] = useState(true);
-const [userId, setUserId] = useState("");
-const { wishlist, toggleWishlist } = useWishlist();
-const [selectedSet, setSelectedSet] =
-  useState<string | null>(null);
-const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
-const starterDeckImages = [
-  "/starter-decks-boxes/SDTWILIGHT.webp",
-  "/starter-decks-boxes/SDFLUTTERSHY.webp",
-  "/starter-decks-boxes/SDPINKIEPIE.webp",
-  "/starter-decks-boxes/SDAPPLEJACK.webp",
-  "/starter-decks-boxes/SDRAINBOWDASH.webp",
-  "/starter-decks-boxes/SDRARITY.webp",
-];
-const starterDeckGroups = [
-  { name: "Twilight Sparkle", code: "SD01A" },
-  { name: "Fluttershy", code: "SD01B" },
-  { name: "Pinkie Pie", code: "SD01C" },
-  { name: "Applejack", code: "SD01D" },
-  { name: "Rainbow Dash", code: "SD01E" },
-  { name: "Rarity", code: "SD01F" },
-];
+  const [owned, setOwned] = useState<Record<string, boolean>>({});
+  const [inProgress, setInProgress] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState("");
+  const { wishlist, toggleWishlist } = useWishlist();
+  const [selectedSet, setSelectedSet] = useState<string | null>(null);
+  const [selectedRarities, setSelectedRarities] = useState<Record<string, string>>({});
+  const starterDeckImages = [
+    "/starter-decks-boxes/SDTWILIGHT.webp",
+    "/starter-decks-boxes/SDFLUTTERSHY.webp",
+    "/starter-decks-boxes/SDPINKIEPIE.webp",
+    "/starter-decks-boxes/SDAPPLEJACK.webp",
+    "/starter-decks-boxes/SDRAINBOWDASH.webp",
+    "/starter-decks-boxes/SDRARITY.webp",
+  ];
+  const starterDeckGroups = [
+    { name: "Twilight Sparkle", code: "SD01A" },
+    { name: "Fluttershy", code: "SD01B" },
+    { name: "Pinkie Pie", code: "SD01C" },
+    { name: "Applejack", code: "SD01D" },
+    { name: "Rainbow Dash", code: "SD01E" },
+    { name: "Rarity", code: "SD01F" },
+  ];
   useEffect(() => {
-const load = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
+    const load = async () => {
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
       if (!user) {
         setLoading(false);
         return;
       }
       setUserId(user.id);
-const allOwned: Record<string, boolean> = {};
-for (const set of sets) {
-const { data: progress } = await supabase
-    .from("collection_progress_raw")
-    .select("progress")
-    .eq("user_id", user.id)
-    .eq("set_id", set.id)
-    .single();
-  Object.entries(progress?.progress || {}).forEach(([key, value]) => {
-    if (isISOOwned(value)) {
-      allOwned[normalizeISOKey(set.id, key)] = true;
-      if (set.id === "SD" && key.startsWith("SD01")) {
-        allOwned[`BONUS-${key}`] = true;
+      const allOwned: Record<string, boolean> = {};
+      for (const set of sets) {
+        const { data: progress } = await supabase
+          .from("collection_progress_raw")
+          .select("progress")
+          .eq("user_id", user.id)
+          .eq("set_id", set.id)
+          .single();
+        Object.entries(progress?.progress || {}).forEach(([key, value]) => {
+          if (isISOOwned(value)) {
+            allOwned[normalizeISOKey(set.id, key)] = true;
+            if (set.id === "SD" && key.startsWith("SD01")) {
+              allOwned[`BONUS-${key}`] = true;
+            }
+          }
+        });
       }
-    }
-  });
-}
-setOwned(allOwned);
-const { data: statusRows } = await supabase
-  .from("iso_status")
-  .select("card_key, status")
-  .eq("user_id", user.id);
-const activeInProgress = new Set<string>();
-(statusRows ?? []).forEach((row: any) => {
-  if (
-    row.status === "purchase_in_progress" ||
-    row.status === "trade_in_progress"
-  ) {
-    activeInProgress.add(String(row.card_key));
-  }
-});
-setInProgress(activeInProgress);
-setLoading(false);
+      setOwned(allOwned);
+      const { data: statusRows } = await supabase
+        .from("iso_status")
+        .select("card_key, status")
+        .eq("user_id", user.id);
+      const activeInProgress = new Set<string>();
+      (statusRows ?? []).forEach((row: any) => {
+        if (row.status === "purchase_in_progress" || row.status === "trade_in_progress") {
+          activeInProgress.add(String(row.card_key));
+        }
+      });
+      setInProgress(activeInProgress);
+      setLoading(false);
     };
     load();
-    const refresh = () => { void load(); };
+    const refresh = () => {
+      void load();
+    };
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
   }, []);
   if (loading) {
-    return <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>;
+    return (
+      <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>
+    );
   }
-return (
-  <div className="space-y-6">
-    {!(cardCodeSearch || characterSearch.trim()) && (
-  <div className="sticky top-0 z-20 py-2">
-      <div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">
-{[
-  { id: "SD", label: "Friendships Begin" },
-  { id: "FW", label: "Fantasy Wonderland" },
-  { id: "12", label: "Discord" },
-  { id: "14", label: "Nightmare Night" },
-]
-.filter((item) => !hiddenSets.includes(item.id))
-.map((item) => (
-<button
-  key={item.id}
-onClick={() => {
-  setSelectedSet(item.id);
-}}
-className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${
-  selectedSet === item.id
-    ? "bg-[#FFD54A] text-zinc-900"
-    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-white/[0.06] dark:text-zinc-300 dark:hover:bg-white/[0.1]"
-}`}
-         >
-  <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-)}
-{!(cardCodeSearch || characterSearch.trim()) &&
-(selectedSet === null || selectedSet === "SD") &&
-!hiddenSets.includes("SD") &&
-(searchAllCards || wishlistMode || starterDeckGroups.some((deck) => {
-const deckCards = [];
-const add = (rarity: string, count: number) => {
-    for (let i = 1; i <= count; i++) {
-      deckCards.push(
-        `STARTER-${deck.code}${rarity}${String(i).padStart(2, "0")}`
-      );
-    }
-  };
-  add("C", 9);
-  add("U", 4);
-  add("SR", 2);
-const deckIndex = deck.code.slice(-1).charCodeAt(0) - 64;
-  deckCards.push(
-    `STARTER-SD01ER${String(deckIndex).padStart(2, "0")}`
-  );
-  add("SPR", 4);
-  deckCards.push(
-    `STARTER-SD01RR${String(deckIndex).padStart(2, "0")}`
-  );
- return deckCards.some((key) => !owned[key]);
-})) && (
-  <section
-    className="rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-[#17191a] sm:p-4"
-  >
-    <h2
-  className={`mb-6 text-2xl font-semibold ${
-    cardCodeSearch || characterSearch.trim()
-      ? "block"
-      : "hidden md:block"
-  }`}
->
-      Starter Decks
-    </h2>
-    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-      {starterDeckGroups
-  .filter((deck) => {
-const deckCards = [];
-const add = (rarity: string, count: number) => {
-      for (let i = 1; i <= count; i++) {
-        deckCards.push(
-          `STARTER-${deck.code}${rarity}${String(i).padStart(2, "0")}`
-        );
-      }
-    };
-    add("C", 9);
-    add("U", 4);
-    add("SR", 2);
-const deckIndex =
-      deck.code.slice(-1).charCodeAt(0) - 64;
-    deckCards.push(
-      `STARTER-SD01ER${String(deckIndex).padStart(2, "0")}`
-    );
-    add("SPR", 4);
-    deckCards.push(
-      `STARTER-SD01RR${String(deckIndex).padStart(2, "0")}`
-    );
-    return searchAllCards || wishlistMode || deckCards.some((key) => !owned[key]);
-  })
-  .map((deck, i) => (
-        <div key={deck.code}>
-          <div className="hidden">
-            {deck.code}
+  return (
+    <div className="space-y-6">
+      {!(cardCodeSearch || characterSearch.trim()) && (
+        <div className="sticky top-0 z-20 py-2">
+          <div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">
+            {[
+              { id: "SD", label: "Friendships Begin" },
+              { id: "FW", label: "Fantasy Wonderland" },
+              { id: "12", label: "Discord" },
+              { id: "14", label: "Nightmare Night" },
+              { id: "hearthswarming-eve", label: "Hearthswarming Eve" },
+            ]
+              .filter((item) => !hiddenSets.includes(item.id))
+              .map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setSelectedSet(item.id);
+                  }}
+                  className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${
+                    selectedSet === item.id
+                      ? "bg-[#FFD54A] text-zinc-900"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-white/[0.06] dark:text-zinc-300 dark:hover:bg-white/[0.1]"
+                  }`}
+                >
+                  <span>{item.label}</span>
+                </button>
+              ))}
           </div>
-          <CardImage
-  src={starterDeckImages[i]}
-  className="mx-auto w-full max-w-28 rounded-xl"
-/>
         </div>
-      ))}
-    </div>
-  </section>
-)}
-{sets
-.filter((set) => {
-  if (hiddenSets.includes(set.id)) return false;
-  return true;
-})
-.filter((set) => {
-  if ((cardCodeSearch || characterSearch.trim()) && set.id === "SD") {
-    return false;
-  }
-  return true;
-})
-.filter((set) => {
-  if (cardCodeSearch || characterSearch.trim()) {
-    return true;
-  }
-  return selectedSet === null || selectedSet === set.id;
-})
-  .map((set) => {
-const cards = Object.entries(set.rarities).flatMap(
-  ([rarity, count]) => {
-    if (set.id === "SD") {
-      if (rarity === "PER") {
-        return Array.from({ length: count as number }, (_, i) => ({
-          rarity,
-          key: `SD01PER${String(i + 7).padStart(2, "0")}`,
-          characters:
-            TCGCharacterMap[`SD-PER-${i + 7}`] ?? [],
-        }));
-      }
-      return Array.from({ length: count as number }, (_, i) => ({
-        rarity,
-        key: `SD01${rarity}${String(i + 1).padStart(2, "0")}`,
-        characters:
-          TCGCharacterMap[`SD-${rarity}-${i + 1}`] ?? [],
-      }));
-    }
-    if (set.id === "14") {
-      if (rarity === "ER") {
-        return ["01", "02"].flatMap((number) =>
-          ["AA", "BB", "CC"].map((variant) => ({
-            rarity,
-            key: `BP03-ER${number}-${variant}`,
-            characters: [],
-          })),
-        );
-      }
-      if (rarity === "PER") {
-        return ["01", "02"].flatMap((number) =>
-          ["A", "A2", "B", "B2", "C", "C2"].map((variant) => ({
-            rarity,
-            key: `PBP03-ER${number}-${variant}`,
-            characters: [],
-          })),
-        );
-      }
-      if (rarity === "PGR") {
-        return ["07", "08", "09", "11", "12"].map((number) => ({
-          rarity,
-          key: `PBP03-GR${number}`,
-          characters: [],
-        }));
-      }
-      if (rarity === "PSPR") {
-        return ["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map((number) => ({
-          rarity,
-          key: `PBP03-SPR${number}`,
-          characters: [],
-        }));
-      }
-      if (rarity === "PCR") {
-        return Array.from({ length: 12 }, (_, i) => ({
-          rarity,
-          key: `PBP03-CR${String(i + 1).padStart(2, "0")}`,
-          characters: [],
-        }));
-      }
-      if (rarity === "PRR") {
-        return Array.from({ length: 6 }, (_, i) => ({
-          rarity,
-          key: `PBP03-RR${String(i + 1).padStart(2, "0")}`,
-          characters: [],
-        }));
-      }
-      return Array.from({ length: count as number }, (_, i) => ({
-        rarity,
-        key: `BP03-${rarity}${String(i + 1).padStart(2, "0")}`,
-        characters: [],
-      }));
-    }
-    if (set.id === "12") {
-      if (rarity === "PER") {
-        return Array.from({ length: 6 }, (_, i) => [
-          {
-            rarity,
-            key: `BP02-PER${String(i + 1).padStart(2, "0")}-A2`,
-            characters:
-              TCGCharacterMap[`12-PER-${i * 2 + 1}`] ?? [],
-          },
-          {
-            rarity,
-            key: `BP02-PER${String(i + 1).padStart(2, "0")}-B2`,
-            characters:
-              TCGCharacterMap[`12-PER-${i * 2 + 2}`] ?? [],
-          },
-        ]).flat();
-      }
-const countNum = count as number;
-      return Array.from({ length: countNum }, (_, i) => ({
-        rarity,
-        key: `BP02-${rarity}${String(i + 1).padStart(2, "0")}`,
-        characters:
-  TCGCharacterMap[
-    `BP02-${rarity}${String(i + 1).padStart(2, "0")}`
-  ] ?? [],
-      }));
-    }
-    if (rarity === "ER") {
-      return Array.from({ length: 6 }, (_, i) => ({
-        rarity,
-        key: `BP01ER${String(i + 7).padStart(2, "0")}`,
-        characters:
-          TCGCharacterMap[`FW-ER-${i + 7}`] ?? [],
-      }));
-    }
-    if (rarity === "PSPR") {
-const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
-      return numbers.map((n, index) => ({
-        rarity,
-        key: `BP01PSPR${String(n).padStart(2, "0")}`,
-        characters:
-          TCGCharacterMap[`FW-PSPR-${index + 1}`] ?? [],
-      }));
-    }
-    return Array.from({ length: count as number }, (_, i) => ({
-      rarity,
-      key: `BP01${rarity}${String(i + 1).padStart(2, "0")}`,
-      characters:
-        TCGCharacterMap[`FW-${rarity}-${i + 1}`] ?? [],
-    }));
-  }
-);
-const missing = cards.filter((card) => {
-let displayCode = "";
-  if (set.id === "SD") {
-    if (card.rarity === "PER") {
-const num = parseInt(card.key.slice(-2), 10);
-const displayNum = Math.ceil((num - 6) / 2) + 6;
-      displayCode = `\u203bSD01-ER${String(displayNum).padStart(2, "0")}`;
-    } else if (card.rarity === "PRR") {
-      displayCode = `\u203bSD01-RR${card.key.slice(-2)}`;
-    } else {
-      displayCode = card.key.replace(/^SD01/, "SD01-");
-    }
-  } else if (set.id === "14") {
-    if (card.rarity === "PER") {
-      const match = card.key.match(/PBP03-ER(\d{2})/);
-      displayCode = match ? `\u203bBP03-ER${match[1]}` : card.key;
-    } else if (card.rarity === "PSPR") {
-      displayCode = `\u203bBP03-SPR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PGR") {
-      displayCode = `\u203bBP03-GR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PCR") {
-      displayCode = `\u203bBP03-CR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PRR") {
-      displayCode = `\u203bBP03-RR${card.key.slice(-2)}`;
-    } else {
-      displayCode = card.key.replace(/^BP03/, "BP03-");
-    }
-  } else if (set.id === "12") {
-    if (card.rarity === "PER") {
-const match = card.key.match(/PER(\d{2})/);
-      displayCode = match ? `\u203bBP02-ER${match[1]}` : card.key;
-    } else if (card.rarity === "PSPR") {
-const displayMap = [
-        "01","02","05","10","14","15",
-        "16","18","23","24","26",
-      ];
-const index = parseInt(card.key.match(/\d{2}/)?.[0] ?? "1", 10) - 1;
-      displayCode = `\u203bBP02-SPR${displayMap[index]}`;
-    } else if (card.rarity === "PGR") {
-      displayCode = `\u203bBP02-GR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PCR") {
-      displayCode = `\u203bBP02-CR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PRR") {
-      displayCode = `\u203bBP02-RR${card.key.slice(-2)}`;
-    } else {
-      displayCode = card.key.replace(/^BP02/, "BP02-");
-    }
-  } else {
-    if (card.rarity === "ER") {
-      displayCode = `BP01-ER${card.key.slice(-2)}`;
-    } else if (card.rarity === "PER") {
-const perMap = [
-        "01","02","02","02","03","03",
-        "04","04","05","05","06","06",
-      ];
-const index = parseInt(card.key.slice(-2), 10) - 1;
-      displayCode = `\u203bBP01-ER${perMap[index]}`;
-    } else if (card.rarity === "PSPR") {
-      displayCode = `\u203bBP01-SPR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PGR") {
-      displayCode = `\u203bBP01-GR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PCR") {
-      displayCode = `\u203bBP01-CR${card.key.slice(-2)}`;
-    } else if (card.rarity === "PRR") {
-      displayCode = `\u203bBP01-RR${card.key.slice(-2)}`;
-    } else {
-      displayCode = card.key.replace(/^BP01/, "BP01-");
-    }
-  }
-const search = cardCodeSearch.trim().toUpperCase();
-if (
-  search !== "" &&
-  !displayCode.toUpperCase().startsWith(search)
-) {
-  return false;
-}
-const character = characterSearch.trim().toLowerCase();
-if (
-  character !== "" &&
-  !card.characters.some((name) =>
-    name.toLowerCase().includes(character)
-  )
-) {
-  return false;
-}
-if (wishlistMode || searchAllCards) {
-  return true;
-}
-if (set.id === "SD") {
-const statusKey = `BONUS-${card.key}`;
-  return !owned[statusKey] && !inProgress.has(statusKey);
-}
-if (set.id === "FW") {
-  return !owned[card.key] && !inProgress.has(card.key);
-}
-const statusKey = `${set.id}-${card.key}`;
-return !owned[card.key] && !inProgress.has(statusKey);
-});
-        if (missing.length === 0) {
-  return cardCodeSearch ? (
-    <div data-iso-empty />
-  ) : null;
-}
-return (
-  <section
-    id={`set-${set.id}`}
-    key={set.id}
-    className={`rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-[#17191a] sm:p-4 ${
-      cardCodeSearch || characterSearch.trim() ? "mt-6" : ""
-    }`}
-  >
-    <div className="mb-4 flex items-center justify-between gap-3">
-<div className="min-w-0">
-<h2 className="truncate text-base font-semibold">{set.name}</h2>
-<p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{missing.length} {missing.length === 1 ? "card" : "cards"}</p>
-</div>
-{(() => {
-const availableRarities = Object.keys(set.rarities).filter((rarity) =>
-missing.some((card) => card.rarity === rarity)
-);
-const selectedRarity =
-selectedRarities[set.id] && availableRarities.includes(selectedRarities[set.id])
-? selectedRarities[set.id]
-: "all";
-return (
-<select
-value={selectedRarity}
-onChange={(event: { target: { value: string } }) =>
-setSelectedRarities((current) => ({
-...current,
-[set.id]: event.target.value,
-}))
-}
-aria-label={`Filter ${set.name} by rarity`}
-className="max-w-[160px] rounded-xl border border-black/10 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-700 outline-none dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200"
->
-<option value="all">All rarities</option>
-{availableRarities.map((rarity) => (
-<option key={rarity} value={rarity}>{getDisplayRarity(rarity)}</option>
-))}
-</select>
-);
-})()}
-</div>
-    <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
-              {missing.filter((card) => {
-const availableRarities = Object.keys(set.rarities).filter((rarity) =>
-missing.some((item) => item.rarity === rarity)
-);
-const selectedRarity =
-selectedRarities[set.id] && availableRarities.includes(selectedRarities[set.id])
-? selectedRarities[set.id]
-: "all";
-return selectedRarity === "all" || card.rarity === selectedRarity;
-}).map((card) => {
-const landscape =
-  set.id === "14" && /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.key);
-const fullKey =
-  set.id === "SD"
-    ? `${set.id}:BONUS-${card.key}`
-    : `${set.id}:${card.key}`;
-const isWishlisted = wishlist.has(fullKey);
-  wishlist.has(fullKey) ||
-  wishlist.has(
-    `${set.id}:${card.key.padStart?.(0) ?? card.key}`
-  );
-const cardContent = (
-  <>
-    <div className="hidden">
-      <div className="rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/[0.06]">
-        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
-          {set.id === "SD" ? (
-            (() => {
+      )}
+      {!(cardCodeSearch || characterSearch.trim()) &&
+        (selectedSet === null || selectedSet === "SD") &&
+        !hiddenSets.includes("SD") &&
+        (searchAllCards ||
+          wishlistMode ||
+          starterDeckGroups.some((deck) => {
+            const deckCards = [];
+            const add = (rarity: string, count: number) => {
+              for (let i = 1; i <= count; i++) {
+                deckCards.push(`STARTER-${deck.code}${rarity}${String(i).padStart(2, "0")}`);
+              }
+            };
+            add("C", 9);
+            add("U", 4);
+            add("SR", 2);
+            const deckIndex = deck.code.slice(-1).charCodeAt(0) - 64;
+            deckCards.push(`STARTER-SD01ER${String(deckIndex).padStart(2, "0")}`);
+            add("SPR", 4);
+            deckCards.push(`STARTER-SD01RR${String(deckIndex).padStart(2, "0")}`);
+            return deckCards.some((key) => !owned[key]);
+          })) && (
+          <section className="rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-[#17191a] sm:p-4">
+            <h2
+              className={`mb-6 text-2xl font-semibold ${
+                cardCodeSearch || characterSearch.trim() ? "block" : "hidden md:block"
+              }`}
+            >
+              Starter Decks
+            </h2>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {starterDeckGroups
+                .filter((deck) => {
+                  const deckCards = [];
+                  const add = (rarity: string, count: number) => {
+                    for (let i = 1; i <= count; i++) {
+                      deckCards.push(`STARTER-${deck.code}${rarity}${String(i).padStart(2, "0")}`);
+                    }
+                  };
+                  add("C", 9);
+                  add("U", 4);
+                  add("SR", 2);
+                  const deckIndex = deck.code.slice(-1).charCodeAt(0) - 64;
+                  deckCards.push(`STARTER-SD01ER${String(deckIndex).padStart(2, "0")}`);
+                  add("SPR", 4);
+                  deckCards.push(`STARTER-SD01RR${String(deckIndex).padStart(2, "0")}`);
+                  return searchAllCards || wishlistMode || deckCards.some((key) => !owned[key]);
+                })
+                .map((deck, i) => (
+                  <div key={deck.code}>
+                    <div className="hidden">{deck.code}</div>
+                    <CardImage
+                      src={starterDeckImages[i]}
+                      className="mx-auto w-full max-w-28 rounded-xl"
+                    />
+                  </div>
+                ))}
+            </div>
+          </section>
+        )}
+      {sets
+        .filter((set) => {
+          if (hiddenSets.includes(set.id)) return false;
+          return true;
+        })
+        .filter((set) => {
+          if ((cardCodeSearch || characterSearch.trim()) && set.id === "SD") {
+            return false;
+          }
+          return true;
+        })
+        .filter((set) => {
+          if (cardCodeSearch || characterSearch.trim()) {
+            return true;
+          }
+          return selectedSet === null || selectedSet === set.id;
+        })
+        .map((set) => {
+          const cards =
+            set.id === "hearthswarming-eve"
+              ? HEARTHSWARMING_EVE_CARDS.map((card) => ({
+                  key: card.key,
+                  rarity: getHeartswarmingEveRarityLabel(card.key).replace("\u203b", "P"),
+                  characters: TCGCharacterMap[card.key] ?? [],
+                }))
+              : Object.entries(set.rarities).flatMap(([rarity, count]) => {
+                  if (set.id === "SD") {
+                    if (rarity === "PER") {
+                      return Array.from({ length: count as number }, (_, i) => ({
+                        rarity,
+                        key: `SD01PER${String(i + 7).padStart(2, "0")}`,
+                        characters: TCGCharacterMap[`SD-PER-${i + 7}`] ?? [],
+                      }));
+                    }
+                    return Array.from({ length: count as number }, (_, i) => ({
+                      rarity,
+                      key: `SD01${rarity}${String(i + 1).padStart(2, "0")}`,
+                      characters: TCGCharacterMap[`SD-${rarity}-${i + 1}`] ?? [],
+                    }));
+                  }
+                  if (set.id === "14") {
+                    if (rarity === "ER") {
+                      return ["01", "02"].flatMap((number) =>
+                        ["AA", "BB", "CC"].map((variant) => ({
+                          rarity,
+                          key: `BP03-ER${number}-${variant}`,
+                          characters: [],
+                        })),
+                      );
+                    }
+                    if (rarity === "PER") {
+                      return ["01", "02"].flatMap((number) =>
+                        ["A", "A2", "B", "B2", "C", "C2"].map((variant) => ({
+                          rarity,
+                          key: `PBP03-ER${number}-${variant}`,
+                          characters: [],
+                        })),
+                      );
+                    }
+                    if (rarity === "PGR") {
+                      return ["07", "08", "09", "11", "12"].map((number) => ({
+                        rarity,
+                        key: `PBP03-GR${number}`,
+                        characters: [],
+                      }));
+                    }
+                    if (rarity === "PSPR") {
+                      return ["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map(
+                        (number) => ({
+                          rarity,
+                          key: `PBP03-SPR${number}`,
+                          characters: [],
+                        }),
+                      );
+                    }
+                    if (rarity === "PCR") {
+                      return Array.from({ length: 12 }, (_, i) => ({
+                        rarity,
+                        key: `PBP03-CR${String(i + 1).padStart(2, "0")}`,
+                        characters: [],
+                      }));
+                    }
+                    if (rarity === "PRR") {
+                      return Array.from({ length: 6 }, (_, i) => ({
+                        rarity,
+                        key: `PBP03-RR${String(i + 1).padStart(2, "0")}`,
+                        characters: [],
+                      }));
+                    }
+                    return Array.from({ length: count as number }, (_, i) => ({
+                      rarity,
+                      key: `BP03-${rarity}${String(i + 1).padStart(2, "0")}`,
+                      characters: [],
+                    }));
+                  }
+                  if (set.id === "12") {
+                    if (rarity === "PER") {
+                      return Array.from({ length: 6 }, (_, i) => [
+                        {
+                          rarity,
+                          key: `BP02-PER${String(i + 1).padStart(2, "0")}-A2`,
+                          characters: TCGCharacterMap[`12-PER-${i * 2 + 1}`] ?? [],
+                        },
+                        {
+                          rarity,
+                          key: `BP02-PER${String(i + 1).padStart(2, "0")}-B2`,
+                          characters: TCGCharacterMap[`12-PER-${i * 2 + 2}`] ?? [],
+                        },
+                      ]).flat();
+                    }
+                    const countNum = count as number;
+                    return Array.from({ length: countNum }, (_, i) => ({
+                      rarity,
+                      key: `BP02-${rarity}${String(i + 1).padStart(2, "0")}`,
+                      characters:
+                        TCGCharacterMap[`BP02-${rarity}${String(i + 1).padStart(2, "0")}`] ?? [],
+                    }));
+                  }
+                  if (rarity === "ER") {
+                    return Array.from({ length: 6 }, (_, i) => ({
+                      rarity,
+                      key: `BP01ER${String(i + 7).padStart(2, "0")}`,
+                      characters: TCGCharacterMap[`FW-ER-${i + 7}`] ?? [],
+                    }));
+                  }
+                  if (rarity === "PSPR") {
+                    const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
+                    return numbers.map((n, index) => ({
+                      rarity,
+                      key: `BP01PSPR${String(n).padStart(2, "0")}`,
+                      characters: TCGCharacterMap[`FW-PSPR-${index + 1}`] ?? [],
+                    }));
+                  }
+                  return Array.from({ length: count as number }, (_, i) => ({
+                    rarity,
+                    key: `BP01${rarity}${String(i + 1).padStart(2, "0")}`,
+                    characters: TCGCharacterMap[`FW-${rarity}-${i + 1}`] ?? [],
+                  }));
+                });
+          const missing = cards.filter((card) => {
+            let displayCode = "";
+            if (set.id === "hearthswarming-eve") {
+              displayCode = getHeartswarmingEveDisplayCode(card.key);
+            } else if (set.id === "SD") {
               if (card.rarity === "PER") {
-const num = parseInt(card.key.slice(-2), 10);
-const displayNum = Math.ceil((num - 6) / 2) + 6;
-                return `\u203bSD01-ER${String(displayNum).padStart(2, "0")}`;
+                const num = parseInt(card.key.slice(-2), 10);
+                const displayNum = Math.ceil((num - 6) / 2) + 6;
+                displayCode = `\u203bSD01-ER${String(displayNum).padStart(2, "0")}`;
+              } else if (card.rarity === "PRR") {
+                displayCode = `\u203bSD01-RR${card.key.slice(-2)}`;
+              } else {
+                displayCode = card.key.replace(/^SD01/, "SD01-");
               }
-              if (card.rarity === "PRR") {
-                return `\u203bSD01-RR${card.key.slice(-2)}`;
+            } else if (set.id === "14") {
+              if (card.rarity === "PER") {
+                const match = card.key.match(/PBP03-ER(\d{2})/);
+                displayCode = match ? `\u203bBP03-ER${match[1]}` : card.key;
+              } else if (card.rarity === "PSPR") {
+                displayCode = `\u203bBP03-SPR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PGR") {
+                displayCode = `\u203bBP03-GR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PCR") {
+                displayCode = `\u203bBP03-CR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PRR") {
+                displayCode = `\u203bBP03-RR${card.key.slice(-2)}`;
+              } else {
+                displayCode = card.key.replace(/^BP03/, "BP03-");
               }
-              return card.key.replace(/^SD01/, "SD01-");
-            })()
-          ) : (
-            (() => {
-              if (card.rarity === "ER") {
-                return `${set.id === "12" ? "BP02" : "BP01"}-ER${card.key.slice(-2)}`;
-              }
-              if (set.id === "12" && card.rarity === "PER") {
-const match = card.key.match(/PER(\d{2})/);
-                if (!match) return card.key;
-                return `\u203bBP02-ER${match[1]}`;
-              }
-              if (set.id === "12" && card.rarity === "PSPR") {
-const displayMap = [
+            } else if (set.id === "12") {
+              if (card.rarity === "PER") {
+                const match = card.key.match(/PER(\d{2})/);
+                displayCode = match ? `\u203bBP02-ER${match[1]}` : card.key;
+              } else if (card.rarity === "PSPR") {
+                const displayMap = [
                   "01",
                   "02",
                   "05",
@@ -711,11 +556,22 @@ const displayMap = [
                   "24",
                   "26",
                 ];
-const index = parseInt(card.key.slice(-2), 10) - 1;
-                return `\u203bBP02-SPR${displayMap[index]}`;
+                const index = parseInt(card.key.match(/\d{2}/)?.[0] ?? "1", 10) - 1;
+                displayCode = `\u203bBP02-SPR${displayMap[index]}`;
+              } else if (card.rarity === "PGR") {
+                displayCode = `\u203bBP02-GR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PCR") {
+                displayCode = `\u203bBP02-CR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PRR") {
+                displayCode = `\u203bBP02-RR${card.key.slice(-2)}`;
+              } else {
+                displayCode = card.key.replace(/^BP02/, "BP02-");
               }
-              if (card.rarity === "PER") {
-const perMap = [
+            } else {
+              if (card.rarity === "ER") {
+                displayCode = `BP01-ER${card.key.slice(-2)}`;
+              } else if (card.rarity === "PER") {
+                const perMap = [
                   "01",
                   "02",
                   "02",
@@ -729,101 +585,261 @@ const perMap = [
                   "06",
                   "06",
                 ];
-const index = parseInt(card.key.slice(-2), 10) - 1;
-                return `\u203bBP01-ER${perMap[index]}`;
+                const index = parseInt(card.key.slice(-2), 10) - 1;
+                displayCode = `\u203bBP01-ER${perMap[index]}`;
+              } else if (card.rarity === "PSPR") {
+                displayCode = `\u203bBP01-SPR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PGR") {
+                displayCode = `\u203bBP01-GR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PCR") {
+                displayCode = `\u203bBP01-CR${card.key.slice(-2)}`;
+              } else if (card.rarity === "PRR") {
+                displayCode = `\u203bBP01-RR${card.key.slice(-2)}`;
+              } else {
+                displayCode = card.key.replace(/^BP01/, "BP01-");
               }
-              if (card.rarity === "RR") {
-                return `${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
-              }
-              if (card.rarity === "PSPR") {
-                return `\u203bBP01-SPR${card.key.slice(-2)}`;
-              }
-              if (card.rarity === "PGR") {
-                return `\u203b${set.id === "12" ? "BP02" : "BP01"}-GR${card.key.slice(-2)}`;
-              }
-              if (card.rarity === "PCR") {
-                return `\u203b${set.id === "12" ? "BP02" : "BP01"}-CR${card.key.slice(-2)}`;
-              }
-              if (card.rarity === "PRR") {
-                return `\u203b${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
-              }
-              return card.key.replace(/^BP01/, "BP01-");
-            })()
-          )}
-        </span>
-      </div>
-    </div>
-    <MissingImageCard
-      src={
-        set.id === "12"
-          ? `/cards/discord/${card.key}.webp`
-          : set.id === "14"
-          ? `/cards/nightmare-night/${card.key}.webp`
-          : card.key.startsWith("BP01ER")
-          ? `/fantasy-wonderland/SD01ER${card.key.slice(-2)}.webp`
-          : card.key.startsWith("BP01PER")
-          ? `/fantasy-wonderland/SD01PER${card.key.slice(-2)}.webp`
-          : `/${set.folder}/${card.key}.webp`
-      }
-      className={`${landscape ? "landscape-card" : "aspect-[5/7] w-full"} rounded-xl object-cover ${
-isWishlisted
-? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]"
-: ""
-}`}
-    />
-  </>
-);
-return searchAllCards && !wishlistMode ? (
-  <div key={`${card.rarity}-${card.key}`}>
-    {cardContent}
-  </div>
-) : (
-  <ISOChecking
-    key={`${card.rarity}-${card.key}`}
-    userId={userId}
-    setId={set.id}
-cardKey={
-  set.id === "SD"
-    ? `BONUS-${card.key}`
-    : card.key
-}
-    wishlistMode={wishlistMode}
-    isWishlisted={isWishlisted}
-    toggleWishlist={toggleWishlist}
-    onStatusChange={(nextStatus) => {
-const statusKey =
-        set.id === "SD"
-          ? `BONUS-${card.key}`
-          : set.id === "FW"
-          ? card.key
-          : `${set.id}-${card.key}`;
-      setInProgress((prev) => {
-const next = new Set(prev);
-        if (nextStatus) {
-          next.add(statusKey);
-        } else {
-          next.delete(statusKey);
-        }
-        return next;
-      });
-    }}
-    onComplete={() =>
-      setOwned((prev) => ({
-        ...prev,
-        [set.id === "SD"
-          ? `BONUS-${card.key}`
-          : card.key]: true,
-      }))
-    }
-  >
-    {cardContent}
-  </ISOChecking>
-);
-})}
-            </div>
-          </section>
-        );
-      })}
+            }
+            const search = cardCodeSearch.trim().toUpperCase();
+            if (search !== "" && !displayCode.toUpperCase().startsWith(search)) {
+              return false;
+            }
+            const character = characterSearch.trim().toLowerCase();
+            if (
+              character !== "" &&
+              !card.characters.some((name) => name.toLowerCase().includes(character))
+            ) {
+              return false;
+            }
+            if (wishlistMode || searchAllCards) {
+              return true;
+            }
+            if (set.id === "SD") {
+              const statusKey = `BONUS-${card.key}`;
+              return !owned[statusKey] && !inProgress.has(statusKey);
+            }
+            if (set.id === "FW") {
+              return !owned[card.key] && !inProgress.has(card.key);
+            }
+            const statusKey = `${set.id}-${card.key}`;
+            return !owned[card.key] && !inProgress.has(statusKey);
+          });
+          if (missing.length === 0) {
+            return cardCodeSearch ? <div data-iso-empty /> : null;
+          }
+          return (
+            <section
+              id={`set-${set.id}`}
+              key={set.id}
+              className={`rounded-[24px] border border-black/10 bg-white p-3 shadow-sm dark:border-white/[0.08] dark:bg-[#17191a] sm:p-4 ${
+                cardCodeSearch || characterSearch.trim() ? "mt-6" : ""
+              }`}
+            >
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="truncate text-base font-semibold">{set.name}</h2>
+                  <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                    {missing.length} {missing.length === 1 ? "card" : "cards"}
+                  </p>
+                </div>
+                {(() => {
+                  const availableRarities = Object.keys(set.rarities).filter((rarity) =>
+                    missing.some((card) => card.rarity === rarity),
+                  );
+                  const selectedRarity =
+                    selectedRarities[set.id] && availableRarities.includes(selectedRarities[set.id])
+                      ? selectedRarities[set.id]
+                      : "all";
+                  return (
+                    <select
+                      value={selectedRarity}
+                      onChange={(event: { target: { value: string } }) =>
+                        setSelectedRarities((current) => ({
+                          ...current,
+                          [set.id]: event.target.value,
+                        }))
+                      }
+                      aria-label={`Filter ${set.name} by rarity`}
+                      className="max-w-[160px] rounded-xl border border-black/10 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-700 outline-none dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200"
+                    >
+                      <option value="all">All rarities</option>
+                      {availableRarities.map((rarity) => (
+                        <option key={rarity} value={rarity}>
+                          {getDisplayRarity(rarity)}
+                        </option>
+                      ))}
+                    </select>
+                  );
+                })()}
+              </div>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 md:gap-3">
+                {missing
+                  .filter((card) => {
+                    const availableRarities = Object.keys(set.rarities).filter((rarity) =>
+                      missing.some((item) => item.rarity === rarity),
+                    );
+                    const selectedRarity =
+                      selectedRarities[set.id] &&
+                      availableRarities.includes(selectedRarities[set.id])
+                        ? selectedRarities[set.id]
+                        : "all";
+                    return selectedRarity === "all" || card.rarity === selectedRarity;
+                  })
+                  .map((card) => {
+                    const landscape =
+                      set.id === "14" && /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.key);
+                    const fullKey =
+                      set.id === "SD" ? `${set.id}:BONUS-${card.key}` : `${set.id}:${card.key}`;
+                    const isWishlisted = wishlist.has(fullKey);
+                    wishlist.has(fullKey) ||
+                      wishlist.has(`${set.id}:${card.key.padStart?.(0) ?? card.key}`);
+                    const cardContent = (
+                      <>
+                        <div className="hidden">
+                          <div className="rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-white/[0.06]">
+                            <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                              {set.id === "hearthswarming-eve"
+                                ? getHeartswarmingEveDisplayCode(card.key)
+                                : set.id === "SD"
+                                  ? (() => {
+                                      if (card.rarity === "PER") {
+                                        const num = parseInt(card.key.slice(-2), 10);
+                                        const displayNum = Math.ceil((num - 6) / 2) + 6;
+                                        return `\u203bSD01-ER${String(displayNum).padStart(2, "0")}`;
+                                      }
+                                      if (card.rarity === "PRR") {
+                                        return `\u203bSD01-RR${card.key.slice(-2)}`;
+                                      }
+                                      return card.key.replace(/^SD01/, "SD01-");
+                                    })()
+                                  : (() => {
+                                      if (card.rarity === "ER") {
+                                        return `${set.id === "12" ? "BP02" : "BP01"}-ER${card.key.slice(-2)}`;
+                                      }
+                                      if (set.id === "12" && card.rarity === "PER") {
+                                        const match = card.key.match(/PER(\d{2})/);
+                                        if (!match) return card.key;
+                                        return `\u203bBP02-ER${match[1]}`;
+                                      }
+                                      if (set.id === "12" && card.rarity === "PSPR") {
+                                        const displayMap = [
+                                          "01",
+                                          "02",
+                                          "05",
+                                          "10",
+                                          "14",
+                                          "15",
+                                          "16",
+                                          "18",
+                                          "23",
+                                          "24",
+                                          "26",
+                                        ];
+                                        const index = parseInt(card.key.slice(-2), 10) - 1;
+                                        return `\u203bBP02-SPR${displayMap[index]}`;
+                                      }
+                                      if (card.rarity === "PER") {
+                                        const perMap = [
+                                          "01",
+                                          "02",
+                                          "02",
+                                          "02",
+                                          "03",
+                                          "03",
+                                          "04",
+                                          "04",
+                                          "05",
+                                          "05",
+                                          "06",
+                                          "06",
+                                        ];
+                                        const index = parseInt(card.key.slice(-2), 10) - 1;
+                                        return `\u203bBP01-ER${perMap[index]}`;
+                                      }
+                                      if (card.rarity === "RR") {
+                                        return `${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
+                                      }
+                                      if (card.rarity === "PSPR") {
+                                        return `\u203bBP01-SPR${card.key.slice(-2)}`;
+                                      }
+                                      if (card.rarity === "PGR") {
+                                        return `\u203b${set.id === "12" ? "BP02" : "BP01"}-GR${card.key.slice(-2)}`;
+                                      }
+                                      if (card.rarity === "PCR") {
+                                        return `\u203b${set.id === "12" ? "BP02" : "BP01"}-CR${card.key.slice(-2)}`;
+                                      }
+                                      if (card.rarity === "PRR") {
+                                        return `\u203b${set.id === "12" ? "BP02" : "BP01"}-RR${card.key.slice(-2)}`;
+                                      }
+                                      return card.key.replace(/^BP01/, "BP01-");
+                                    })()}
+                            </span>
+                          </div>
+                        </div>
+                        <MissingImageCard
+                          src={
+                            set.id === "hearthswarming-eve"
+                              ? getHeartswarmingEveFront(card.key)
+                              : set.id === "12"
+                                ? `/cards/discord/${card.key}.webp`
+                                : set.id === "14"
+                                  ? `/cards/nightmare-night/${card.key}.webp`
+                                  : card.key.startsWith("BP01ER")
+                                    ? `/fantasy-wonderland/SD01ER${card.key.slice(-2)}.webp`
+                                    : card.key.startsWith("BP01PER")
+                                      ? `/fantasy-wonderland/SD01PER${card.key.slice(-2)}.webp`
+                                      : `/${set.folder}/${card.key}.webp`
+                          }
+                          className={`${landscape ? "landscape-card" : "aspect-[5/7] w-full"} rounded-xl object-cover ${
+                            isWishlisted
+                              ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]"
+                              : ""
+                          }`}
+                        />
+                      </>
+                    );
+                    return searchAllCards && !wishlistMode ? (
+                      <div key={`${card.rarity}-${card.key}`}>{cardContent}</div>
+                    ) : (
+                      <ISOChecking
+                        key={`${card.rarity}-${card.key}`}
+                        userId={userId}
+                        setId={set.id}
+                        cardKey={set.id === "SD" ? `BONUS-${card.key}` : card.key}
+                        wishlistMode={wishlistMode}
+                        isWishlisted={isWishlisted}
+                        toggleWishlist={toggleWishlist}
+                        onStatusChange={(nextStatus) => {
+                          const statusKey =
+                            set.id === "SD"
+                              ? `BONUS-${card.key}`
+                              : set.id === "FW"
+                                ? card.key
+                                : `${set.id}-${card.key}`;
+                          setInProgress((prev) => {
+                            const next = new Set(prev);
+                            if (nextStatus) {
+                              next.add(statusKey);
+                            } else {
+                              next.delete(statusKey);
+                            }
+                            return next;
+                          });
+                        }}
+                        onComplete={() =>
+                          setOwned((prev) => ({
+                            ...prev,
+                            [set.id === "SD" ? `BONUS-${card.key}` : card.key]: true,
+                          }))
+                        }
+                      >
+                        {cardContent}
+                      </ISOChecking>
+                    );
+                  })}
+              </div>
+            </section>
+          );
+        })}
     </div>
   );
 }

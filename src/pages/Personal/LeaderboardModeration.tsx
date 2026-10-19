@@ -1,6 +1,8 @@
-import { cardImagePaths, getNightmareNightFront } from "@/lib/card-images";
+import { getMoonFourDisplayCode } from "@/lib/moon-four-catalog";
+import { getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
+import { cardImagePaths, getNightmareNightFront, getMoonFourFront, getHeartswarmingEveFront } from "@/lib/card-images";
 import { getISOSetId, funCatalog, moonCatalog, rainbowCatalog, starCatalog, tcgCatalog } from "@/lib/iso-card-catalog";
-import { getISOSetName as getModerationSetName, getISOCardCode as getModerationCardCode } from "@/lib/iso-card-catalog";
+import { getISOSetName as getCatalogSetName, getISOCardCode as getCatalogCardCode } from "@/lib/iso-card-catalog";
 import { buildListingWarningMessage } from "@/components/ListingModerationWarnings";
 import CardImage from "@/components/CardImage";
 import rylandGraceAvatar from "@/assets/avatars/rylandgrace.webp";
@@ -97,6 +99,23 @@ const getHistoryActionTitle = (item: ModerationHistoryItem) => {
   };
   return labels[item.action] || item.actionLabel;
 };
+const getModerationSetName = (setId: string) => {
+  const id = getISOSetId(setId);
+  if (id === "13") return "Eternal Moon: Fourth Edition";
+  if (id === "hearthswarming-eve") return "Hearthswarming Eve";
+  return getCatalogSetName(setId);
+};
+const getModerationCardCode = (setId: string, cardKey: string) => {
+  const id = getISOSetId(setId);
+  let key = cardKey;
+  for (const prefix of [`${setId}:`, `${id}:`, `${setId}-`, `${id}-`]) {
+    if (key.startsWith(prefix)) { key = key.slice(prefix.length); break; }
+  }
+  key = key.replace(/^BONUS-/, "");
+  if (id === "13") return getMoonFourDisplayCode(key);
+  if (id === "hearthswarming-eve") return getHeartswarmingEveDisplayCode(key);
+  return getCatalogCardCode(setId, cardKey);
+};
 const getReportedCardImage = (setId: string, cardKey: string): string => {
   const id = getISOSetId(setId);
   let key = cardKey;
@@ -104,6 +123,8 @@ const getReportedCardImage = (setId: string, cardKey: string): string => {
     if (key.startsWith(prefix)) { key = key.slice(prefix.length); break; }
   }
   key = key.replace(/^BONUS-/, "");
+  if (id === "13") return getMoonFourFront(key);
+  if (id === "hearthswarming-eve") return getHeartswarmingEveFront(key);
   if (id === "9" || id === "tcgpromos") {
     const match = key.match(id === "9" ? /^PR-?(\d+)$/ : /^RR-?(\d+)$/);
     if (!match) return "";

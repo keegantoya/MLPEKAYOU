@@ -11,15 +11,7 @@ import ISOPROMOS from "./iso-promos";
 import Wishlist from "./wishlist";
 import { useWishlist } from "./wishlist-in-iso";
 import InProgress from "./in-progress";
-type Section =
-  | "wishlist"
-  | "progress"
-  | "moon"
-  | "fun"
-  | "rainbow"
-  | "star"
-  | "tcg"
-  | "promos";
+type Section = "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos";
 const sections = [
   { id: "wishlist", label: "Wishlist", setIds: [] },
   { id: "progress", label: "In Progress", setIds: [] },
@@ -46,7 +38,7 @@ const sections = [
   {
     id: "tcg",
     label: "TCG",
-    setIds: ["FW", "SD", "12", "14"],
+    setIds: ["FW", "SD", "12", "14", "hearthswarming-eve"],
   },
   {
     id: "promos",
@@ -55,139 +47,188 @@ const sections = [
   },
 ] as const;
 export default function ISO() {
-const [selectedSection, setSelectedSection] =
-    useState<Section>("moon");
-const [showControls, setShowControls] = useState(false);
-const [cardCodeSearch, setCardCodeSearch] = useState("");
-const [characterSearch, setCharacterSearch] = useState("");
-const [searchAllCards, setSearchAllCards] = useState(false);
-const [wishlistMode, setWishlistMode] = useState(false);
-const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-const [completedSets, setCompletedSets] = useState<string[]>([]);
-const [hasInProgress, setHasInProgress] = useState(false);
-const [userId, setUserId] = useState<string | null>(null);
-const [hideISO, setHideISO] = useState(false);
-const [isLightMode, setIsLightMode] = useState(() => {
-  if (typeof document === "undefined") return false;
-const root = document.documentElement;
-  return root.dataset.theme === "light" || root.classList.contains("light") || !root.classList.contains("dark");
-});
-const { wishlist, toggleWishlist } = useWishlist();
-useEffect(() => {
-const syncTheme = () => {
-const root = document.documentElement;
-    setIsLightMode(root.dataset.theme === "light" || root.classList.contains("light") || !root.classList.contains("dark"));
+  const [selectedSection, setSelectedSection] = useState<Section>("moon");
+  const [showControls, setShowControls] = useState(false);
+  const [cardCodeSearch, setCardCodeSearch] = useState("");
+  const [characterSearch, setCharacterSearch] = useState("");
+  const [searchAllCards, setSearchAllCards] = useState(false);
+  const [wishlistMode, setWishlistMode] = useState(false);
+  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+  const [completedSets, setCompletedSets] = useState<string[]>([]);
+  const [hasInProgress, setHasInProgress] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [hideISO, setHideISO] = useState(false);
+  const [isLightMode, setIsLightMode] = useState(() => {
+    if (typeof document === "undefined") return false;
+    const root = document.documentElement;
+    return (
+      root.dataset.theme === "light" ||
+      root.classList.contains("light") ||
+      !root.classList.contains("dark")
+    );
+  });
+  const { wishlist, toggleWishlist } = useWishlist();
+  useEffect(() => {
+    const syncTheme = () => {
+      const root = document.documentElement;
+      setIsLightMode(
+        root.dataset.theme === "light" ||
+          root.classList.contains("light") ||
+          !root.classList.contains("dark"),
+      );
+    };
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"],
+    });
+    window.addEventListener("themechange", syncTheme);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("themechange", syncTheme);
+    };
+  }, []);
+  useEffect(() => {
+    let disposed = false;
+    let requestId = 0;
+    let statusRevision = 0;
+    let activeUserId: string | null = null;
+    const activeStatuses = new Map<string, string>();
+    const load = async () => {
+      const request = ++requestId;
+      const revision = statusRevision;
+      const { data } = await supabase.auth.getSession();
+      if (disposed || request !== requestId) return;
+      const user = data.session?.user;
+      if (!user) return;
+      activeUserId = user.id;
+      setUserId(user.id);
+      const [{ data: profile }, { data: progress }, { data: isoStatus, error: statusError }] =
+        await Promise.all([
+          supabase.from("profiles").select("iso_hidden_sets, hide_iso").eq("id", user.id).single(),
+          supabase
+            .from("collection_progress_raw")
+            .select("set_id, progress")
+            .eq("user_id", user.id),
+          supabase.from("iso_status").select("card_key, status").eq("user_id", user.id),
+        ]);
+      if (disposed || request !== requestId) return;
+      const p = profile as any;
+      const hidden = (p?.iso_hidden_sets || []).map((id: unknown) =>
+        String(id) === "friendshipsbegin" ? "SD" : String(id),
+      );
+      if (!statusError && revision === statusRevision) {
+        activeStatuses.clear();
+        for (const row of isoStatus || []) {
+          if (row.status === "purchase_in_progress" || row.status === "trade_in_progress") {
+            activeStatuses.set(String(row.card_key), row.status);
+          }
+        }
+        setHasInProgress(activeStatuses.size > 0);
+      }
+      setHiddenSets(hidden);
+      setCompletedSets(getCompletedISOSetIds(progress || []));
+      setHideISO(p?.hide_iso ?? false);
+    };
+    const refresh = () => {
+      void load();
+    };
+    const onStatusChange = (event: Event) => {
+      const detail = (
+        event as CustomEvent<{ userId: string; cardKey: string; status: string | null }>
+      ).detail;
+      if (!detail || detail.userId !== activeUserId) return;
+      statusRevision += 1;
+      if (detail.status === "purchase_in_progress" || detail.status === "trade_in_progress") {
+        activeStatuses.set(detail.cardKey, detail.status);
+      } else {
+        activeStatuses.delete(detail.cardKey);
+      }
+      setHasInProgress(activeStatuses.size > 0);
+      void load();
+    };
+    const onCollectionChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId: string }>).detail;
+      if (detail?.userId === activeUserId) refresh();
+    };
+    window.addEventListener("iso-status-changed", onStatusChange);
+    window.addEventListener("iso-collection-changed", onCollectionChange);
+    window.addEventListener("focus", refresh);
+    void load();
+    return () => {
+      disposed = true;
+      requestId += 1;
+      window.removeEventListener("iso-status-changed", onStatusChange);
+      window.removeEventListener("iso-collection-changed", onCollectionChange);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
+  const toggleSet = async (setId: string) => {
+    if (!userId) return;
+    const updated = hiddenSets.includes(setId)
+      ? hiddenSets.filter((id) => id !== setId)
+      : [...hiddenSets, setId];
+    setHiddenSets(updated);
+    await supabase
+      .from("profiles")
+      .update({
+        iso_hidden_sets: updated,
+      })
+      .eq("id", userId);
   };
-  syncTheme();
-const observer = new MutationObserver(syncTheme);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
-  window.addEventListener("themechange", syncTheme);
-  return () => {
-    observer.disconnect();
-    window.removeEventListener("themechange", syncTheme);
+  const toggleHideISO = async () => {
+    if (!userId) return;
+    const next = !hideISO;
+    setHideISO(next);
+    await supabase
+      .from("profiles")
+      .update({
+        hide_iso: next,
+      })
+      .eq("id", userId);
   };
-}, []);
-useEffect(() => {
-const load = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
-    if (!user) return;
-    setUserId(user.id);
-const [
-  { data: profile },
-  { data: progress },
-  { data: isoStatus },
-] = await Promise.all([
-  supabase
-    .from("profiles")
-    .select("iso_hidden_sets, hide_iso")
-    .eq("id", user.id)
-    .single(),
-  supabase
-    .from("collection_progress_raw")
-    .select("set_id, progress")
-    .eq("user_id", user.id),
-  supabase
-    .from("iso_status")
-    .select("card_key, status")
-    .eq("user_id", user.id),
-]);
-const p = profile as any;
-const hidden = (p?.iso_hidden_sets || []).map((id: unknown) => String(id) === "friendshipsbegin" ? "SD" : String(id));
-const completed = getCompletedISOSetIds(progress || []);
-const inProgressExists = (isoStatus || []).some(
-  (row: any) =>
-    row.status === "purchase_in_progress" ||
-    row.status === "trade_in_progress"
-);
-setHasInProgress(inProgressExists);
-setHiddenSets(hidden);
-setCompletedSets(completed);
-setHideISO(p?.hide_iso ?? false);
-  };
-  load();
-  const refresh = () => { void load(); };
-  window.addEventListener("focus", refresh);
-  return () => window.removeEventListener("focus", refresh);
-}, []);
-const toggleSet = async (setId: string) => {
-  if (!userId) return;
-const updated = hiddenSets.includes(setId)
-    ? hiddenSets.filter((id) => id !== setId)
-    : [...hiddenSets, setId];
-  setHiddenSets(updated);
-  await supabase
-    .from("profiles")
-    .update({
-      iso_hidden_sets: updated,
-    })
-    .eq("id", userId);
-};
-const toggleHideISO = async () => {
-  if (!userId) return;
-const next = !hideISO;
-  setHideISO(next);
-  await supabase
-    .from("profiles")
-    .update({
-      hide_iso: next,
-    })
-    .eq("id", userId);
-};
-const isSearching =
-  cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
-const visibleHiddenSets = isSearching ? [] : Array.from(new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]));
-const visibleSections = sections.filter((section) => {
-// Wishlist is always available.
-  if (section.id === "wishlist") {
-    return true;
-  }
-// In Progress only appears when there is at least one purchase/trade in progress.
-  if (section.id === "progress") {
-    return hasInProgress;
-  }
-// Wishlist Mode and View All Cards restore every card category.
-  if (wishlistMode || searchAllCards) {
-    return section.setIds.some((setId) => !hiddenSets.includes(setId));
-  }
-// In normal mode, a category remains visible if at least one underlying set is still active.
-  return section.setIds.some(
-    (setId) =>
-      !hiddenSets.includes(setId) &&
-      !completedSets.includes(setId)
-  );
-});
-useEffect(() => {
-  if (!visibleSections.some((section) => section.id === selectedSection)) {
-    setSelectedSection((visibleSections.find((section) => section.id !== "wishlist")?.id ?? "wishlist") as Section);
-  }
-}, [hiddenSets, completedSets, wishlistMode, searchAllCards, hasInProgress, selectedSection]);
-const selectSection = (section: Section) => {
+  const isSearching = cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
+  const isWishlistView = wishlistMode || selectedSection === "wishlist";
+  const visibleHiddenSets =
+    isWishlistView || isSearching
+      ? []
+      : Array.from(
+          new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]),
+        );
+  const visibleSections = sections.filter((section) => {
+    // Wishlist is always available.
+    if (section.id === "wishlist") {
+      return true;
+    }
+    // In Progress only appears when there is at least one purchase/trade in progress.
+    if (section.id === "progress") {
+      return hasInProgress;
+    }
+    // Wishlist Mode and View All Cards restore every card category.
+    if (isWishlistView) return true;
+    if (searchAllCards) {
+      return section.setIds.some((setId) => !hiddenSets.includes(setId));
+    }
+    // In normal mode, a category remains visible if at least one underlying set is still active.
+    return section.setIds.some(
+      (setId) => !hiddenSets.includes(setId) && !completedSets.includes(setId),
+    );
+  });
+  useEffect(() => {
+    if (!visibleSections.some((section) => section.id === selectedSection)) {
+      setSelectedSection(
+        (visibleSections.find((section) => section.id !== "wishlist")?.id ?? "wishlist") as Section,
+      );
+    }
+  }, [hiddenSets, completedSets, wishlistMode, searchAllCards, hasInProgress, selectedSection]);
+  const selectSection = (section: Section) => {
     setCardCodeSearch("");
     setCharacterSearch("");
+    if (section === "wishlist" || selectedSection === "wishlist") setWishlistMode(true);
     setSelectedSection(section);
   };
-const sectionContent = (
+  const sectionContent = (
     <>
       {selectedSection === "wishlist" && <Wishlist characterSearch={characterSearch} />}
       {selectedSection === "progress" && <InProgress />}
@@ -195,7 +236,7 @@ const sectionContent = (
         <ISOMOON
           cardCodeSearch={cardCodeSearch}
           characterSearch={characterSearch}
-          wishlistMode={wishlistMode}
+          wishlistMode={isWishlistView}
           searchAllCards={searchAllCards}
           hiddenSets={visibleHiddenSets}
         />
@@ -206,14 +247,14 @@ const sectionContent = (
           characterSearch={characterSearch}
           searchAllCards={searchAllCards}
           hiddenSets={visibleHiddenSets}
-          wishlistMode={wishlistMode}
+          wishlistMode={isWishlistView}
         />
       )}
       {selectedSection === "rainbow" && (
         <ISORAINBOW
           cardCodeSearch={cardCodeSearch}
           characterSearch={characterSearch}
-          wishlistMode={wishlistMode}
+          wishlistMode={isWishlistView}
           searchAllCards={searchAllCards}
           hiddenSets={visibleHiddenSets}
         />
@@ -222,7 +263,7 @@ const sectionContent = (
         <ISOSTAR
           cardCodeSearch={cardCodeSearch}
           characterSearch={characterSearch}
-          wishlistMode={wishlistMode}
+          wishlistMode={isWishlistView}
           searchAllCards={searchAllCards}
           hiddenSets={visibleHiddenSets}
         />
@@ -231,7 +272,7 @@ const sectionContent = (
         <ISOTCG
           cardCodeSearch={cardCodeSearch}
           characterSearch={characterSearch}
-          wishlistMode={wishlistMode}
+          wishlistMode={isWishlistView}
           searchAllCards={searchAllCards}
           hiddenSets={visibleHiddenSets}
         />
@@ -240,56 +281,102 @@ const sectionContent = (
         <ISOPROMOS
           cardCodeSearch={cardCodeSearch}
           characterSearch={characterSearch}
-          wishlistMode={wishlistMode}
+          wishlistMode={isWishlistView}
           searchAllCards={searchAllCards}
           hiddenSets={visibleHiddenSets}
         />
       )}
     </>
   );
-const allSearchContent = (
+  const allSearchContent = (
     <>
       {selectedSection === "progress" && <InProgress />}
-      <ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
-      <ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={wishlistMode} />
-      <ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
-      <ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
-      <ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
-      <ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={wishlistMode} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} />
+      <ISOMOON
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        wishlistMode={isWishlistView}
+        searchAllCards={searchAllCards}
+        hiddenSets={visibleHiddenSets}
+      />
+      <ISOFUN
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        searchAllCards={searchAllCards}
+        hiddenSets={visibleHiddenSets}
+        wishlistMode={isWishlistView}
+      />
+      <ISORAINBOW
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        wishlistMode={isWishlistView}
+        searchAllCards={searchAllCards}
+        hiddenSets={visibleHiddenSets}
+      />
+      <ISOSTAR
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        wishlistMode={isWishlistView}
+        searchAllCards={searchAllCards}
+        hiddenSets={visibleHiddenSets}
+      />
+      <ISOTCG
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        wishlistMode={isWishlistView}
+        searchAllCards={searchAllCards}
+        hiddenSets={visibleHiddenSets}
+      />
+      <ISOPROMOS
+        cardCodeSearch={cardCodeSearch}
+        characterSearch={characterSearch}
+        wishlistMode={isWishlistView}
+        searchAllCards={searchAllCards}
+        hiddenSets={visibleHiddenSets}
+      />
     </>
   );
   return (
-    <div className={`min-h-screen pt-2 md:pt-0 transition-colors ${isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-zinc-100"}`}>
+    <div
+      className={`min-h-screen pt-2 md:pt-0 transition-colors ${isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-zinc-100"}`}
+    >
       <div className="mx-auto flex max-w-[1600px]">
-        <aside className={`hidden min-h-screen w-56 shrink-0 border-r p-3 md:block ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
+        <aside
+          className={`hidden min-h-screen w-56 shrink-0 border-r p-3 md:block ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}
+        >
           <div className="sticky top-0 py-2">
             <div className="px-2 pb-4">
               <h1 className="text-xl font-semibold">Missing Cards</h1>
-              <p className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+              <p
+                className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
+              >
                 ISO, wishlist, and card search.
               </p>
             </div>
             <nav className="space-y-1.5">
-              {visibleSections.filter((item) => wishlistMode || item.id !== "wishlist").map((item) => {
-const active = selectedSection === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => selectSection(item.id as Section)}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold transition ${
-                      active
-                        ? "bg-[#FFD54A] text-zinc-900"
-                        : isLightMode
-                        ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-                        : "text-zinc-300 hover:bg-white/[0.06] hover:text-white"
-                    }`}
-                  >
-                    <span className={`h-2 w-2 shrink-0 rounded-full ${active ? "bg-zinc-900" : isLightMode ? "bg-zinc-300" : "bg-zinc-600"}`} />
-                    <span className="truncate">{item.label}</span>
-                  </button>
-                );
-              })}
+              {visibleSections
+                .filter((item) => isWishlistView || item.id !== "wishlist")
+                .map((item) => {
+                  const active = selectedSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => selectSection(item.id as Section)}
+                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold transition ${
+                        active
+                          ? "bg-[#FFD54A] text-zinc-900"
+                          : isLightMode
+                            ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                            : "text-zinc-300 hover:bg-white/[0.06] hover:text-white"
+                      }`}
+                    >
+                      <span
+                        className={`h-2 w-2 shrink-0 rounded-full ${active ? "bg-zinc-900" : isLightMode ? "bg-zinc-300" : "bg-zinc-600"}`}
+                      />
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
             </nav>
             <button
               type="button"
@@ -305,42 +392,50 @@ const active = selectedSection === item.id;
           </div>
         </aside>
         <div className="min-w-0 flex-1">
-          <header className={`border-b px-4 py-4 md:hidden ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
+          <header
+            className={`border-b px-4 py-4 md:hidden ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}
+          >
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h1 className="text-xl font-semibold">Missing Cards</h1>
-                <p className={`mt-0.5 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>ISO & wishlist</p>
+                <p className={`mt-0.5 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
+                  ISO & wishlist
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowControls(true)}
                 className={`rounded-2xl border px-3 py-2 text-sm font-semibold ${
-                  isLightMode ? "border-black/10 bg-zinc-50 text-zinc-700" : "border-white/[0.08] bg-white/[0.05] text-zinc-300"
+                  isLightMode
+                    ? "border-black/10 bg-zinc-50 text-zinc-700"
+                    : "border-white/[0.08] bg-white/[0.05] text-zinc-300"
                 }`}
               >
                 Controls
               </button>
             </div>
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {visibleSections.filter((item) => wishlistMode || item.id !== "wishlist").map((item) => {
-const active = selectedSection === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => selectSection(item.id as Section)}
-                    className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold ${
-                      active
-                        ? "bg-[#FFD54A] text-zinc-900"
-                        : isLightMode
-                        ? "bg-zinc-100 text-zinc-600"
-                        : "bg-white/[0.06] text-zinc-300"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
+              {visibleSections
+                .filter((item) => isWishlistView || item.id !== "wishlist")
+                .map((item) => {
+                  const active = selectedSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => selectSection(item.id as Section)}
+                      className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold ${
+                        active
+                          ? "bg-[#FFD54A] text-zinc-900"
+                          : isLightMode
+                            ? "bg-zinc-100 text-zinc-600"
+                            : "bg-white/[0.06] text-zinc-300"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
             </div>
           </header>
           <main className="px-3 py-4 sm:px-5 md:px-6 md:py-5">
@@ -353,7 +448,7 @@ const active = selectedSection === item.id;
                   onCharacterSearchChange={setCharacterSearch}
                   searchAllCards={searchAllCards}
                   onSearchAllCardsChange={setSearchAllCards}
-                  wishlistMode={wishlistMode}
+                  wishlistMode={isWishlistView}
                   onWishlistModeChange={setWishlistMode}
                   availableSets={[]}
                   hiddenSetIds={[]}
@@ -365,13 +460,21 @@ const active = selectedSection === item.id;
                 />
               </div>
             )}
-            {selectedSection === "wishlist" || wishlistMode ? sectionContent : isSearching ? allSearchContent : sectionContent}
+            {selectedSection === "wishlist" || wishlistMode
+              ? sectionContent
+              : isSearching
+                ? allSearchContent
+                : sectionContent}
           </main>
         </div>
       </div>
       {showControls && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}>
-          <div className={`relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[26px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}>
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}
+        >
+          <div
+            className={`relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[26px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}
+          >
             <ISOCONTROLS
               cardCodeSearch={cardCodeSearch}
               onCardCodeSearchChange={setCardCodeSearch}
@@ -379,15 +482,54 @@ const active = selectedSection === item.id;
               onCharacterSearchChange={setCharacterSearch}
               searchAllCards={searchAllCards}
               onSearchAllCardsChange={setSearchAllCards}
-              wishlistMode={wishlistMode}
+              wishlistMode={isWishlistView}
               onWishlistModeChange={setWishlistMode}
               availableSets={[
-                { id: "moon", name: "Moon", children: [{ id: "1", name: "First Edition" }, { id: "2", name: "Second Edition" }, { id: "3", name: "Third Edition" }, { id: "13", name: "Fourth Edition" }] },
-                { id: "fun", name: "Fun Moments", children: [{ id: "7", name: "First Edition" }, { id: "8", name: "Second Edition" }, { id: "11", name: "Third Edition" }] },
-                { id: "rainbow", name: "Rainbow", children: [{ id: "5", name: "First Edition" }, { id: "6", name: "Second Edition" }] },
+                {
+                  id: "moon",
+                  name: "Moon",
+                  children: [
+                    { id: "1", name: "First Edition" },
+                    { id: "2", name: "Second Edition" },
+                    { id: "3", name: "Third Edition" },
+                    { id: "13", name: "Fourth Edition" },
+                  ],
+                },
+                {
+                  id: "fun",
+                  name: "Fun Moments",
+                  children: [
+                    { id: "7", name: "First Edition" },
+                    { id: "8", name: "Second Edition" },
+                    { id: "11", name: "Third Edition" },
+                  ],
+                },
+                {
+                  id: "rainbow",
+                  name: "Rainbow",
+                  children: [
+                    { id: "5", name: "First Edition" },
+                    { id: "6", name: "Second Edition" },
+                  ],
+                },
                 { id: "star", name: "Star", children: [{ id: "4", name: "First Edition" }] },
-                { id: "tcg", name: "TCG", children: [{ id: "FW", name: "Fantasy Wonderland" }, { id: "SD", name: "Friendships Begin" }, { id: "12", name: "Discord" }] },
-                { id: "promos", name: "Promos", children: [{ id: "9", name: "Promotional Cards" }, { id: "tcgpromos", name: "TCG Promos" }] },
+                {
+                  id: "tcg",
+                  name: "TCG",
+                  children: [
+                    { id: "FW", name: "Fantasy Wonderland" },
+                    { id: "SD", name: "Friendships Begin" },
+                    { id: "12", name: "Discord" },
+                  ],
+                },
+                {
+                  id: "promos",
+                  name: "Promos",
+                  children: [
+                    { id: "9", name: "Promotional Cards" },
+                    { id: "tcgpromos", name: "TCG Promos" },
+                  ],
+                },
               ]}
               hiddenSetIds={hiddenSets}
               onHideSet={toggleSet}
