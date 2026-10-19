@@ -219,6 +219,7 @@ export default function FullISO({ cards, userId, wishlist, toggleWishlist }: Ful
                 </p>
                 <ISOChecking
                   className="!block leading-none"
+                  contentClassName="!rounded-none"
                   userId={userId}
                   setId={card.set_id}
                   cardKey={key}
@@ -226,7 +227,8 @@ export default function FullISO({ cards, userId, wishlist, toggleWishlist }: Ful
                   toggleWishlist={toggleWishlist}
                 >
                   <div
-                    className={`relative overflow-hidden rounded-xl ${wide ? "aspect-[10/7]" : "aspect-[5/7]"}`}
+                    className={`relative overflow-hidden ${wide ? "aspect-[10/7]" : "aspect-[5/7]"}`}
+                    style={{ borderRadius: "4% / 2.857%" }}
                   >
                     <CardImage
                       src={src}

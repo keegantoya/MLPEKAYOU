@@ -1,8 +1,4 @@
-import {
-  HEARTHSWARMING_EVE_CARDS,
-  getHeartswarmingEveRarityLabel,
-  getHeartswarmingEveDisplayCode,
-} from "@/lib/hearthswarming-eve";
+import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
 import { getHeartswarmingEveFront } from "@/lib/card-images";
 import { isISOOwned, normalizeISOKey } from "./iso-visibility";
 import CardImage from "@/components/CardImage";
@@ -185,7 +181,7 @@ const sets = [
     folder: "hearthswarming-eve",
     prefix: "BP04",
     rarities: HEARTHSWARMING_EVE_CARDS.reduce<Record<string, number>>((counts, card) => {
-      const rarity = getHeartswarmingEveRarityLabel(card.key).replace("\u203b", "P");
+      const rarity = card.rarity;
       counts[rarity] = (counts[rarity] || 0) + 1;
       return counts;
     }, {}),
@@ -247,6 +243,10 @@ export default function ISOTCG({
           .single();
         Object.entries(progress?.progress || {}).forEach(([key, value]) => {
           if (isISOOwned(value)) {
+            if (set.id === "hearthswarming-eve") {
+              allOwned[`${set.id}:${normalizeISOKey(set.id, key)}`] = true;
+              return;
+            }
             allOwned[normalizeISOKey(set.id, key)] = true;
             if (set.id === "SD" && key.startsWith("SD01")) {
               allOwned[`BONUS-${key}`] = true;
@@ -392,7 +392,7 @@ export default function ISOTCG({
             set.id === "hearthswarming-eve"
               ? HEARTHSWARMING_EVE_CARDS.map((card) => ({
                   key: card.key,
-                  rarity: getHeartswarmingEveRarityLabel(card.key).replace("\u203b", "P"),
+                  rarity: card.rarity,
                   characters: TCGCharacterMap[card.key] ?? [],
                 }))
               : Object.entries(set.rarities).flatMap(([rarity, count]) => {
@@ -613,6 +613,12 @@ export default function ISOTCG({
             if (wishlistMode || searchAllCards) {
               return true;
             }
+            if (set.id === "hearthswarming-eve") {
+              return (
+                !owned[`${set.id}:${normalizeISOKey(set.id, card.key)}`] &&
+                !inProgress.has(`${set.id}-${card.key}`)
+              );
+            }
             if (set.id === "SD") {
               const statusKey = `BONUS-${card.key}`;
               return !owned[statusKey] && !inProgress.has(statusKey);
@@ -828,7 +834,11 @@ export default function ISOTCG({
                         onComplete={() =>
                           setOwned((prev) => ({
                             ...prev,
-                            [set.id === "SD" ? `BONUS-${card.key}` : card.key]: true,
+                            [set.id === "hearthswarming-eve"
+                              ? `${set.id}:${normalizeISOKey(set.id, card.key)}`
+                              : set.id === "SD"
+                                ? `BONUS-${card.key}`
+                                : card.key]: true,
                           }))
                         }
                       >
