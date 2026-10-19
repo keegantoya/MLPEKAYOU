@@ -88,15 +88,6 @@ const collections: Collection[] = [
     released: true,
   },
   {
-    id: "13",
-    title: "Moon",
-    setName: "Four",
-    imageUrl: "/thumbnails/moonfoursetimage.webp",
-    totalCards: 162,
-    category: "eternal-moon",
-    released: true,
-  },
-  {
     id: "11",
     title: "Fun Moments",
     setName: "Three",
@@ -139,6 +130,15 @@ const collections: Collection[] = [
     imageUrl: "/thumbnails/nightmarenightsetimage.webp",
     totalCards: 190,
     category: "tcg",
+    released: true,
+  },
+  {
+    id: "13",
+    title: "Moon",
+    setName: "Four",
+    imageUrl: "/thumbnails/moonfoursetimage.webp",
+    totalCards: 162,
+    category: "eternal-moon",
     released: true,
   },
 {
