@@ -180,7 +180,9 @@ export default function ISOChecking({
     );
     onStatusChange?.(null);
     onComplete?.();
-    window.dispatchEvent(new CustomEvent("iso-collection-changed", { detail: { userId } }));
+    window.dispatchEvent(
+      new CustomEvent("iso-collection-changed", { detail: { userId, setId, cardKey } }),
+    );
   }
   async function removeStatus() {
     if (loading) return;

@@ -1,5 +1,10 @@
+import FullISO, {
+  buildFullISOCards,
+  type FullISOProgressRow,
+  type FullISOStatusRow,
+} from "./full-iso";
 import { getCompletedISOSetIds } from "./iso-visibility";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ISOMOON from "./iso-moon";
 import ISOFUN from "./iso-fun";
@@ -11,8 +16,10 @@ import ISOPROMOS from "./iso-promos";
 import Wishlist from "./wishlist";
 import { useWishlist } from "./wishlist-in-iso";
 import InProgress from "./in-progress";
-type Section = "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos";
+type Section =
+  "full" | "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos";
 const sections = [
+  { id: "full", label: "Full ISO", setIds: [] },
   { id: "wishlist", label: "Wishlist", setIds: [] },
   { id: "progress", label: "In Progress", setIds: [] },
   {
@@ -68,6 +75,13 @@ export default function ISO() {
     );
   });
   const { wishlist, toggleWishlist } = useWishlist();
+  const [fullISOProgress, setFullISOProgress] = useState<FullISOProgressRow[]>([]);
+  const [fullISOStatuses, setFullISOStatuses] = useState<FullISOStatusRow[]>([]);
+  const [fullISOLoaded, setFullISOLoaded] = useState(false);
+  const fullISOCards = useMemo(
+    () => buildFullISOCards(fullISOProgress, hiddenSets, fullISOStatuses),
+    [fullISOProgress, hiddenSets, fullISOStatuses],
+  );
   useEffect(() => {
     const syncTheme = () => {
       const root = document.documentElement;
@@ -104,15 +118,15 @@ export default function ISO() {
       if (!user) return;
       activeUserId = user.id;
       setUserId(user.id);
-      const [{ data: profile }, { data: progress }, { data: isoStatus, error: statusError }] =
-        await Promise.all([
-          supabase.from("profiles").select("iso_hidden_sets, hide_iso").eq("id", user.id).single(),
-          supabase
-            .from("collection_progress_raw")
-            .select("set_id, progress")
-            .eq("user_id", user.id),
-          supabase.from("iso_status").select("card_key, status").eq("user_id", user.id),
-        ]);
+      const [
+        { data: profile },
+        { data: progress, error: progressError },
+        { data: isoStatus, error: statusError },
+      ] = await Promise.all([
+        supabase.from("profiles").select("iso_hidden_sets, hide_iso").eq("id", user.id).single(),
+        supabase.from("collection_progress_raw").select("set_id, progress").eq("user_id", user.id),
+        supabase.from("iso_status").select("card_key, status").eq("user_id", user.id),
+      ]);
       if (disposed || request !== requestId) return;
       const p = profile as any;
       const hidden = (p?.iso_hidden_sets || []).map((id: unknown) =>
@@ -126,7 +140,12 @@ export default function ISO() {
           }
         }
         setHasInProgress(activeStatuses.size > 0);
+        setFullISOStatuses(
+          Array.from(activeStatuses, ([card_key, status]) => ({ card_key, status })),
+        );
       }
+      if (!progressError) setFullISOProgress(progress || []);
+      if (!progressError && !statusError && profile) setFullISOLoaded(true);
       setHiddenSets(hidden);
       setCompletedSets(getCompletedISOSetIds(progress || []));
       setHideISO(p?.hide_iso ?? false);
@@ -146,11 +165,24 @@ export default function ISO() {
         activeStatuses.delete(detail.cardKey);
       }
       setHasInProgress(activeStatuses.size > 0);
+      setFullISOStatuses(
+        Array.from(activeStatuses, ([card_key, status]) => ({ card_key, status })),
+      );
       void load();
     };
     const onCollectionChange = (event: Event) => {
-      const detail = (event as CustomEvent<{ userId: string }>).detail;
-      if (detail?.userId === activeUserId) refresh();
+      const detail = (event as CustomEvent<{ userId: string; setId?: string; cardKey?: string }>)
+        .detail;
+      if (detail?.userId !== activeUserId) return;
+      if (detail.setId && detail.cardKey) {
+        const setId = detail.setId;
+        const cardKey = detail.cardKey;
+        setFullISOProgress((previous) => [
+          ...previous,
+          { set_id: setId, progress: { [cardKey]: true } },
+        ]);
+      }
+      refresh();
     };
     window.addEventListener("iso-status-changed", onStatusChange);
     window.addEventListener("iso-collection-changed", onCollectionChange);
@@ -197,6 +229,7 @@ export default function ISO() {
           new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]),
         );
   const visibleSections = sections.filter((section) => {
+    if (section.id === "full") return fullISOLoaded && fullISOCards.length < 100;
     // Wishlist is always available.
     if (section.id === "wishlist") {
       return true;
@@ -221,7 +254,16 @@ export default function ISO() {
         (visibleSections.find((section) => section.id !== "wishlist")?.id ?? "wishlist") as Section,
       );
     }
-  }, [hiddenSets, completedSets, wishlistMode, searchAllCards, hasInProgress, selectedSection]);
+  }, [
+    hiddenSets,
+    completedSets,
+    wishlistMode,
+    searchAllCards,
+    hasInProgress,
+    selectedSection,
+    fullISOLoaded,
+    fullISOCards.length,
+  ]);
   const selectSection = (section: Section) => {
     setCardCodeSearch("");
     setCharacterSearch("");
@@ -230,6 +272,14 @@ export default function ISO() {
   };
   const sectionContent = (
     <>
+      {selectedSection === "full" && userId && (
+        <FullISO
+          cards={fullISOCards}
+          userId={userId}
+          wishlist={wishlist}
+          toggleWishlist={toggleWishlist}
+        />
+      )}
       {selectedSection === "wishlist" && <Wishlist characterSearch={characterSearch} />}
       {selectedSection === "progress" && <InProgress />}
       {selectedSection === "moon" && (
@@ -460,7 +510,7 @@ export default function ISO() {
                 />
               </div>
             )}
-            {selectedSection === "wishlist" || wishlistMode
+            {selectedSection === "full" || selectedSection === "wishlist" || wishlistMode
               ? sectionContent
               : isSearching
                 ? allSearchContent
