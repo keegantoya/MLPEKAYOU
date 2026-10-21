@@ -194,7 +194,6 @@ const specialNumbers = [12, 13, 14, 15];
 const baseCode = setCodeMap[setId] || "";
   return `${baseCode}-${rarity === "SCR" ? "\u25C7CR" : rarityCode}-${cardNumber}`;
 };
-
 const displayRainbowCode = (
   setId: string,
   rarity: string,
@@ -258,7 +257,6 @@ const setCodeMap: Record<string, string> = {
 const baseCode = setCodeMap[setId] || "";
   return `${baseCode}-${rarityCode}-${cardNumber}`;
 };
-
 const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
   const setId = String(card.set_id);
   const key = card.card_key.replace(/^(?:BONUS|STARTER|STARTERS)-/, "");
@@ -295,7 +293,6 @@ const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
   }
   return key;
 };
-
 const COLLECTION_SET_TOTALS: Record<string, number> = {
   "hearthswarming-eve": 197,
   "1": 186, "2": 189, "3": 290, "13": 162, "4": 105,
@@ -399,12 +396,23 @@ const comparePromoCards = (a: { card_key: string }, b: { card_key: string }) => 
   const indexB = CCG_PROMO_ORDER.indexOf(b.card_key);
   return (indexA < 0 ? CCG_PROMO_ORDER.length : indexA) - (indexB < 0 ? CCG_PROMO_ORDER.length : indexB);
 };
+const isFriendshipsBeginSet = (setId: string) =>
+  ["SD", "friendshipsbegin", "SD_STARTERS", "SD_BONUS"].includes(setId);
+const getOfferCollectionSet = (setId: string) =>
+  isFriendshipsBeginSet(setId) ? "SD" : setId;
+const getFriendshipsBeginImageKey = (cardKey: string) => {
+  const key = cardKey.trim().toUpperCase()
+    .replace(/^(?:(?:BONUS|STARTER|STARTERS)[-_ ])+/, "")
+    .replace(/\.(?:webp|png|jpe?g)$/i, "")
+    .replace(/[\s_-]+/g, "");
+  const match = key.match(/^(?:SD01)?(PER|PRR|SPR|SR|ER|GR|CR|RR|C|U)(\d+)$/);
+  return match ? `SD01${match[1]}${String(Number(match[2])).padStart(2, "0")}` : key;
+};
 const getCardImage = (card: TradeCard) => {
   if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
   const [rarity, number] = card.card_key.split("-");
-  if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
-    const imageKey = card.card_key.replace(/^(?:BONUS|STARTER|STARTERS)-/, "");
-    return cardImagePaths.friendshipsBegin(imageKey);
+  if (isFriendshipsBeginSet(String(card.set_id))) {
+    return cardImagePaths.friendshipsBegin(getFriendshipsBeginImageKey(card.card_key));
   }
   if (card.set_id === "FW") {
     const num = card.card_key.slice(-2);
@@ -470,6 +478,7 @@ const getOfferCardNumber = (cardKey: string) => {
 const getOfferImageClassName = (card: { set_id: string; card_key: string }) => {
   const base = "absolute inset-0 h-full w-full max-w-none";
   const offerSetId = String(card.set_id);
+  if (isFriendshipsBeginSet(offerSetId)) return `${base} object-contain object-center`;
   if (offerSetId === "13") return `${base} scale-[1.045] object-contain object-center`;
   if (standardOfferZoomSets.has(offerSetId)) {
     return `${base} scale-[1.06] object-contain object-center`;
@@ -532,7 +541,7 @@ function ListingCardImage({
     );
   }
   return (
-    <CardImage imageSize={imageSize ?? (((String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28")) ? "original" : undefined)}
+    <CardImage loading={offerMode ? "eager" : "lazy"} imageSize={(isFriendshipsBeginSet(String(card.set_id)) && offerMode) ? "original" : imageSize ?? (((String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28")) ? "original" : undefined)}
       src={src}
       alt={getListingDisplayCode(card)}
       onError={() => setFailedSrc(src)}
@@ -1237,7 +1246,7 @@ export default function TradingPostInner() {
       return;
     }
     const ownedCards = (data || []).flatMap((row: any) =>
-      OFFER_SET_ORDER.includes(String(row.set_id))
+      OFFER_SET_ORDER.includes(getOfferCollectionSet(String(row.set_id)))
         ? Object.entries(row.progress || {})
             .filter(([, value]) => {
               if (value === true) return true;
@@ -1256,11 +1265,11 @@ export default function TradingPostInner() {
     );
     ownedCards.sort(
       (a: InventoryCard, b: InventoryCard) =>
-        OFFER_SET_ORDER.indexOf(a.set_id) - OFFER_SET_ORDER.indexOf(b.set_id) ||
+        OFFER_SET_ORDER.indexOf(getOfferCollectionSet(a.set_id)) - OFFER_SET_ORDER.indexOf(getOfferCollectionSet(b.set_id)) ||
         (a.set_id === "9" ? comparePromoCards(a, b) : a.card_key.localeCompare(b.card_key, undefined, { numeric: true })),
     );
     setInventoryCards(ownedCards);
-    setOfferSet(ownedCards[0]?.set_id || "");
+    setOfferSet(getOfferCollectionSet(ownedCards[0]?.set_id || ""));
     setInventoryLoaded(true);
   };
   const toggleOfferCard = (card: InventoryCard) => {
@@ -1455,7 +1464,7 @@ export default function TradingPostInner() {
   const visibleListingCount = visibleUsers.reduce((count, [, cards]) => count + filterCardsForRarity(cards).length, 0);
   const resetFilters = () => { setSearch(""); setSelectedRarity(null); setListingType("iso"); setPage(0); };
   const getOfferRarity = (card: InventoryCard) =>
-    card.set_id === "tcgpromos" ? "PR" : inventoryRarity(card.card_key);
+    card.set_id === "tcgpromos" ? "PR" : inventoryRarity(isFriendshipsBeginSet(card.set_id) ? getFriendshipsBeginImageKey(card.card_key) : card.card_key);
   const getOfferRarityRank = (offerSetId: string, rarity: string) => {
     if (offerSetId === "hearthswarming-eve") return Object.keys(HEARTHSWARMING_EVE_RARITIES).indexOf(rarity);
     if (["SHINING ZR", "SZR"].includes(rarity)) return 1001;
@@ -1483,7 +1492,7 @@ export default function TradingPostInner() {
     return parallelLabels[rarity] || rarity;
   };
   const offerSetOptions = OFFER_SET_ORDER.filter((offerSetId) =>
-    inventoryCards.some((card) => card.set_id === offerSetId),
+    inventoryCards.some((card) => getOfferCollectionSet(card.set_id) === offerSetId),
   );
   const currentOfferSetIndex = Math.max(0, offerSetOptions.indexOf(offerSet));
   const changeOfferSet = (direction: -1 | 1) => {
@@ -1495,7 +1504,7 @@ export default function TradingPostInner() {
   const offerRarityOptions = Array.from(
     new Set(
       inventoryCards
-        .filter((card) => card.set_id === offerSet)
+        .filter((card) => getOfferCollectionSet(card.set_id) === offerSet)
         .map((card) => getOfferRarity(card)),
     ),
   ).sort(
@@ -1506,7 +1515,7 @@ export default function TradingPostInner() {
   const visibleOfferInventory = inventoryCards
     .filter((card) => {
       return (
-        card.set_id === offerSet &&
+        getOfferCollectionSet(card.set_id) === offerSet &&
         (offerRarity === "ALL" || getOfferRarity(card) === offerRarity)
       );
     })
@@ -1580,7 +1589,6 @@ export default function TradingPostInner() {
           <div className="tp-stat"><Handshake size={24} /><div><strong>{loading ? "--" : allListings.filter((card) => card.is_for_trade).length}</strong><span>Trade listings</span></div></div>
           <div className="tp-stat"><ShoppingBag size={24} /><div><strong>{loading ? "--" : allListings.filter((card) => card.is_for_sale).length}</strong><span>Sale listings</span></div></div>
         </div>
-
           </div>
           <section className="tp-collection" aria-label="Your collection in this set">
             <div className="tp-collection-heading"><span>Your collection</span><strong>{loading || isoError || loadError ? "--" : `${collectionPercent}%`}</strong></div>
@@ -1595,7 +1603,6 @@ export default function TradingPostInner() {
               <label className="tp-search"><Search size={19} /><input aria-label="Search collectors or Discord usernames" placeholder="Search collectors..." value={search} onChange={(event) => { setSearch(event.target.value); setPage(0); }} />{search && <button type="button" aria-label="Clear search" onClick={() => { setSearch(""); setPage(0); }}><X size={16} /></button>}</label>
               <div className="tp-sort-wrap" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setSortOpen(false); }}><button type="button" className="tp-sort" aria-label="Sort collectors" aria-expanded={sortOpen} aria-controls="tp-sort-options" onClick={() => setSortOpen((value) => !value)}>{sortBy === "cards" ? "Most matching cards" : "Collector name A-Z"}<ChevronDown size={16} /></button>{sortOpen && <div className="tp-sort-menu" id="tp-sort-options">{[{ value: "cards", label: "Most matching cards" }, { value: "name", label: "Collector name A-Z" }].map((option) => <button type="button" key={option.value} aria-pressed={sortBy === option.value} onClick={() => { setSortBy(option.value); setPage(0); setSortOpen(false); }}>{option.label}{sortBy === option.value && <Check size={14} />}</button>)}</div>}</div>
             </div>
-
         </section>
         <div className="tp-workspace">
           <aside className="tp-filters" aria-label="Listing filters">
