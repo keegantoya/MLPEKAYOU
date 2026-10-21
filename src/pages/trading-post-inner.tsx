@@ -403,7 +403,8 @@ const getCardImage = (card: TradeCard) => {
   if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
   const [rarity, number] = card.card_key.split("-");
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
-    return cardImagePaths.friendshipsBegin(card.card_key);
+    const imageKey = card.card_key.replace(/^(?:BONUS|STARTER|STARTERS)-/, "");
+    return cardImagePaths.friendshipsBegin(imageKey);
   }
   if (card.set_id === "FW") {
     const num = card.card_key.slice(-2);
