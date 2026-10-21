@@ -19,6 +19,7 @@ import KayouHeader from "@/components/KayouHeader";
 import Index from "./pages/Index";
 import KayouNews from "./pages/Main Pages/kayou-news";
 import Collections from "./pages/Collections";
+import CollectionsChinese from "./pages/Chinese Kayou/CollectionsChinese";
 import MyProgress from "./pages/MyProgress";
 import Community from "./pages/Community";
 import CommunitySet from "./pages/CommunitySet";
@@ -303,6 +304,7 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/collections" element={<Collections />} />
+    <Route path="/collections-chinese" element={<CollectionsChinese />} />
       <Route
         path="/moon-one"
         element={

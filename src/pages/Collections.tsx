@@ -377,7 +377,6 @@ const categoryDiff =
 const ccgSets = sets.filter(
     (set) =>
       set.released &&
-      (set.category !== "tcg" || set.id === "14" || set.id === "hearthswarming-eve") &&
       set.id !== "9" &&
       set.id !== "tcgpromos" &&
       !hiddenSets.includes(set.id),

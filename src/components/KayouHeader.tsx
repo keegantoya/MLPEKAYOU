@@ -32,7 +32,7 @@ import {
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useRef } from "react";
 import { getProfileAssets } from "../pages/Everypony/profile-assets";
@@ -107,7 +107,6 @@ const KayouHeader = () => {
       restore();
     };
   }, [location.pathname]);
-
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [inboxNotificationCount, setInboxNotificationCount] = useState(0);
@@ -117,6 +116,18 @@ const KayouHeader = () => {
   const [spookyUnlocked, setSpookyUnlocked] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [themeSaving, setThemeSaving] = useState(false);
+  const customLogoFilterId = useId().replace(/:/g, "");
+  const [customEnabled, setCustomEnabled] = useState(false);
+  const [customEditor, setCustomEditor] = useState(false);
+  const [customColor, setCustomColor] = useState({ h: 45, s: 77, l: 60, base: "dark" as "light" | "dark" });
+  const customLogoRgb = (() => {
+    const lightness = customColor.base === "light" ? Math.min(customColor.l, 36) : Math.max(customColor.l, 66);
+    const c = (1 - Math.abs(2 * lightness / 100 - 1)) * customColor.s / 100;
+    const x = c * (1 - Math.abs((customColor.h / 60) % 2 - 1));
+    const m = lightness / 100 - c / 2;
+    return (customColor.h < 60 ? [c,x,0] : customColor.h < 120 ? [x,c,0] : customColor.h < 180 ? [0,c,x] : customColor.h < 240 ? [0,x,c] : customColor.h < 300 ? [x,0,c] : [c,0,x]).map(v => v + m);
+  })();
+  const customBefore = useRef<{ enabled: boolean; color: typeof customColor; theme: "light" | "dark" | "spooky" } | null>(null);
   const [avatarSrc, setAvatarSrc] = useState<string | null>(() => {
     return sessionStorage.getItem("avatar");
   });
@@ -812,14 +823,76 @@ const KayouHeader = () => {
         ? "/website-assets/DarkMode.webp"
         : "/website-assets/darkmodeactual.webp";
   const applyTheme = (theme: "light" | "dark" | "spooky") => {
+    delete document.documentElement.dataset.customTheme;
     const lightMode = theme === "light";
     document.documentElement.classList.toggle("light", lightMode);
     document.documentElement.classList.toggle("dark", !lightMode);
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = lightMode ? "light" : "dark";
+    window.dispatchEvent(new Event("themechange"));
   };
+  const applyCustomColor = (color: typeof customColor) => {
+    const root = document.documentElement;
+    applyTheme(color.base);
+    root.dataset.customTheme = "true";
+    const hsl = `${color.h} ${color.s}% ${color.l}%`;
+    const textLightness = color.base === "light" ? Math.min(color.l, 36) : Math.max(color.l, 66);
+    const chroma = (1 - Math.abs(2 * color.l / 100 - 1)) * color.s / 100;
+    const x = chroma * (1 - Math.abs((color.h / 60) % 2 - 1));
+    const m = color.l / 100 - chroma / 2;
+    const rgb = (color.h < 60 ? [chroma,x,0] : color.h < 120 ? [x,chroma,0] : color.h < 180 ? [0,chroma,x] : color.h < 240 ? [0,x,chroma] : color.h < 300 ? [x,0,chroma] : [chroma,0,x]).map(v => Math.round((v + m) * 255));
+    const linear = rgb.map(v => v / 255 <= .04045 ? v / 255 / 12.92 : Math.pow((v / 255 + .055) / 1.055, 2.4));
+    const luminance = .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
+    root.style.setProperty("--kayou-custom-color", `hsl(${hsl})`);
+    root.style.setProperty("--kayou-custom-text", `hsl(${color.h} ${color.s}% ${textLightness}%)`);
+    root.style.setProperty("--kayou-custom-rgb", rgb.join(","));
+    root.style.setProperty("--kayou-custom-ink", luminance > .179 ? "#111315" : "#ffffff");
+    root.style.setProperty("--kayou-custom-hsl", hsl);
+    setIsLightMode(color.base === "light");
+    setIsSpookyMode(false);
+    window.dispatchEvent(new Event("themechange"));
+  };
+  const updateCustomColor = (patch: Partial<typeof customColor>) => {
+    const next = { ...customColor, ...patch };
+    setCustomColor(next);
+    applyCustomColor(next);
+  };
+  const openCustomEditor = () => {
+    customBefore.current = { enabled: customEnabled, color: customColor, theme: currentTheme };
+    setShowThemeMenu(false);
+    setCustomEditor(true);
+    applyCustomColor(customColor);
+  };
+  const closeCustomEditor = () => {
+    const before = customBefore.current;
+    if (before?.enabled) applyCustomColor(before.color);
+    else if (before) { applyTheme(before.theme); setIsLightMode(before.theme === "light"); setIsSpookyMode(before.theme === "spooky"); }
+    if (before) setCustomColor(before.color);
+    setCustomEditor(false);
+  };
+  const saveCustomColor = () => {
+    try { localStorage.setItem(`kayou-custom-theme:${user.id}`, JSON.stringify({ ...customColor, enabled: true })); }
+    catch { setCustomSaveError("Your browser could not save this theme. Allow site storage and try again."); return; }
+    setCustomEnabled(true);
+    setCustomEditor(false);
+    setCustomSaveError("");
+  };
+  const [customSaveError, setCustomSaveError] = useState("");
+  useEffect(() => {
+    if (!customEditor) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const key = (event: KeyboardEvent) => { if (event.key === "Escape") { event.preventDefault(); closeCustomEditor(); } };
+    document.addEventListener("keydown", key);
+    const frame = requestAnimationFrame(() => customDialogRef.current?.focus());
+    const priorFocus = document.activeElement as HTMLElement | null;
+    return () => { document.body.style.overflow = previous; document.removeEventListener("keydown", key); cancelAnimationFrame(frame); priorFocus?.focus(); };
+  }, [customEditor]);
+  const customDialogRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!user) {
+      setCustomEnabled(false);
+      setCustomEditor(false);
       setIsLightMode(false);
       setIsSpookyMode(false);
       setSpookyUnlocked(false);
@@ -859,6 +932,14 @@ const KayouHeader = () => {
       const allowSpooky = unlocked || new Date() < halloweenAccessEndsAt;
       const safeTheme = theme === "spooky" && !allowSpooky ? "dark" : theme;
       setSpookyUnlocked(unlocked);
+      try {
+        const saved = JSON.parse(localStorage.getItem(`kayou-custom-theme:${user.id}`) || "null");
+        if (saved?.enabled === true && [saved.h,saved.s,saved.l].every(v => typeof v === "number" && Number.isFinite(v)) && saved.h >= 0 && saved.h <= 360 && saved.s >= 0 && saved.s <= 100 && saved.l >= 5 && saved.l <= 95 && ["light","dark"].includes(saved.base)) {
+          const color = { h: saved.h, s: saved.s, l: saved.l, base: saved.base as "light" | "dark" };
+          setCustomColor(color); setCustomEnabled(true); applyCustomColor(color); return;
+        }
+      } catch {}
+      setCustomEnabled(false);
       setIsLightMode(safeTheme === "light");
       setIsSpookyMode(safeTheme === "spooky");
       applyTheme(safeTheme);
@@ -895,6 +976,8 @@ const KayouHeader = () => {
   const handleThemeSelect = async (theme: "light" | "dark" | "spooky") => {
     if (!user || themeSaving || (theme === "spooky" && !canChooseSpooky)) return;
     const previousTheme = currentTheme;
+    const previousCustom = customEnabled;
+    setCustomEnabled(false);
     const nextSpookyUnlocked = spookyUnlocked || theme === "spooky";
     setThemeSaving(true);
     setShowThemeMenu(false);
@@ -931,8 +1014,9 @@ const KayouHeader = () => {
       setIsLightMode(previousTheme === "light");
       setIsSpookyMode(previousTheme === "spooky");
       setSpookyUnlocked(spookyUnlocked);
-      applyTheme(previousTheme);
+      if (previousCustom) { setCustomEnabled(true); applyCustomColor(customColor); } else applyTheme(previousTheme);
     }
+    if (!preferenceError && !legacyError) { try { localStorage.setItem(`kayou-custom-theme:${user.id}`, JSON.stringify({ ...customColor, enabled: false })); } catch {} }
     setThemeSaving(false);
   };
   const handleLogout = async () => {
@@ -1012,6 +1096,34 @@ const KayouHeader = () => {
     <div
       className={`kayou-header-scope ${isLightMode ? "kayou-header-light" : ""} ${isSpookyMode ? "kayou-header-spooky" : ""}`}
     >
+      <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: "absolute", pointerEvents: "none" }}>
+        <defs><filter id={customLogoFilterId} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+          <feColorMatrix in="SourceGraphic" type="saturate" values="0" result="logo-gray" />
+          <feComponentTransfer in="logo-gray" result="logo-tinted">
+            <feFuncR type="linear" slope={customLogoRgb[0]} />
+            <feFuncG type="linear" slope={customLogoRgb[1]} />
+            <feFuncB type="linear" slope={customLogoRgb[2]} />
+            <feFuncA type="identity" />
+          </feComponentTransfer>
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 3 -3 0 0 0" result="logo-chroma-0" />
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -3 3 0 0 0" result="logo-chroma-1" />
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 3 0 -3 0 0" result="logo-chroma-2" />
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -3 0 3 0 0" result="logo-chroma-3" />
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 3 -3 0 0" result="logo-chroma-4" />
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 -3 3 0 0" result="logo-chroma-5" />
+          <feMerge result="logo-color-mask">
+            <feMergeNode in="logo-chroma-0" />
+            <feMergeNode in="logo-chroma-1" />
+            <feMergeNode in="logo-chroma-2" />
+            <feMergeNode in="logo-chroma-3" />
+            <feMergeNode in="logo-chroma-4" />
+            <feMergeNode in="logo-chroma-5" />
+          </feMerge>
+          <feComposite in="logo-tinted" in2="logo-color-mask" operator="in" result="logo-colored" />
+          <feComposite in="SourceGraphic" in2="logo-color-mask" operator="out" result="logo-neutral" />
+          <feComposite in="logo-colored" in2="logo-neutral" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+        </filter></defs>
+      </svg>
       {lgsIntroVisible && createPortal(
         <div className={`kayou-lgs-intro ${isLightMode ? "kayou-lgs-intro-light" : ""} ${isSpookyMode ? "kayou-lgs-intro-spooky" : ""}`}>
           <div className="kayou-lgs-intro-shade" aria-hidden="true" />
@@ -1266,9 +1378,211 @@ const KayouHeader = () => {
   .kayou-header-spooky [class*="border-yellow-400"] { border-color: rgba(177,139,255,.35) !important; }
   .kayou-header-spooky [class*="bg-[#E7C84B]"]:not([class*="bg-[#E7C84B]/"]) { background-color: #7544ad !important; }
   .kayou-header-spooky-logo { width: auto !important; height: 80px !important; max-width: none !important; max-height: none !important; transform: translateY(1px) scale(.65) !important; transform-origin: center center !important; object-fit: contain !important; }
+  html[data-custom-theme="true"] [class*="text-[#E7C84B]"],
+  html[data-custom-theme="true"] [class*="text-[#FFE477]"],
+  html[data-custom-theme="true"] [class*="text-yellow-"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-yellow-300"],
+  html[data-custom-theme="true"] [class*="text-[#FFE477]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="border-[#E7C84B]"],
+  html[data-custom-theme="true"] [class*="border-yellow-300"],
+  html[data-custom-theme="true"] [class*="border-yellow-400"],
+  html[data-custom-theme="true"] [class*="border-[#D6B84A]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#E7C84B]"]:not([class*="bg-[#E7C84B]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#FFE477]"]:not([class*="bg-[#FFE477]/"]),
+  html[data-custom-theme="true"] [class*="bg-yellow-400"]:not([class*="bg-yellow-400/"]),
+  html[data-custom-theme="true"] [class*="bg-yellow-500"]:not([class*="bg-yellow-500/"]) { background-color: var(--kayou-custom-color) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#E7C84B]/"],
+  html[data-custom-theme="true"] [class*="bg-[#FFE477]/"],
+  html[data-custom-theme="true"] [class*="bg-yellow-400/"],
+  html[data-custom-theme="true"] [class*="bg-yellow-500/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="from-yellow-400"],
+  html[data-custom-theme="true"] [class*="from-yellow-500"] { --tw-gradient-from: var(--kayou-custom-color) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(var(--kayou-custom-rgb),0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+  html[data-custom-theme="true"] [class*="via-yellow-400"],
+  html[data-custom-theme="true"] [class*="via-yellow-500"] { --tw-gradient-via: var(--kayou-custom-color) var(--tw-gradient-via-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important; }
+  html[data-custom-theme="true"] [class*="to-yellow-400"],
+  html[data-custom-theme="true"] [class*="to-yellow-500"] { --tw-gradient-to: var(--kayou-custom-color) var(--tw-gradient-to-position) !important; }
+  html[data-custom-theme="true"] [class*="shadow-"][class*="250,204,21"],
+  html[data-custom-theme="true"] [class*="shadow-"][class*="#facc15"],
+  html[data-custom-theme="true"] [class*="231,200,75"],
+  html[data-custom-theme="true"] [class*="rgba(231,200,75"],
+  html[data-custom-theme="true"] [class*="255,213,74"],
+  html[data-custom-theme="true"] [class*="255,226,122"],
+  html[data-custom-theme="true"] [class*="#ffd54a"],
+  html[data-custom-theme="true"] [class*="#ffe27a"] { box-shadow: 0 0 12px rgba(var(--kayou-custom-rgb),.82) !important; }
+  html[data-custom-theme="true"] .kayou-staff-button { color: var(--kayou-custom-text); border-color: rgba(var(--kayou-custom-rgb),.58); }
+  html[data-custom-theme="true"] .kayou-staff-button:hover { background: rgba(var(--kayou-custom-rgb),.14); }
+  html[data-custom-theme="true"] [class*="text-[#ffe06a]"],
+  html[data-custom-theme="true"] [class*="text-[#FFE06A]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="border-[#ffe06a]"],
+  html[data-custom-theme="true"] [class*="border-[#FFE06A]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#ffe06a]"]:not([class*="bg-[#ffe06a]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#FFE06A]"]:not([class*="bg-[#FFE06A]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#ffe06a]/"],
+  html[data-custom-theme="true"] [class*="bg-[#FFE06A]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] .tp-index { --index-accent: var(--kayou-custom-color) !important; }
+  html[data-custom-theme="true"] .tp-index .tp-index-filters button[aria-pressed="true"],
+  html[data-custom-theme="true"] .tp-index .tp-index-empty button { background: var(--kayou-custom-color) !important; border-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] .tp-index .tp-index-filters button:hover { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] .tp-index .tp-index-card:hover { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] .tp-market { --tp-accent: var(--kayou-custom-color) !important; --tp-action: var(--kayou-custom-color) !important; --tp-action-ink: #fff !important; --tp-glow-rgb: 201,172,255 !important; }
+  html[data-custom-theme="true"] .tp-market .tp-type button[aria-pressed="true"],
+  html[data-custom-theme="true"] .tp-market .tp-rarities button[aria-pressed="true"],
+  html[data-custom-theme="true"] .tp-market .tp-empty > button,
+  html[data-custom-theme="true"] .tp-market .tp-profile-btn:hover { background: var(--kayou-custom-color) !important; border-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] .tp-market .tp-collector-head { background: linear-gradient(90deg, rgba(var(--kayou-custom-rgb),.05), transparent) !important; }
+  html[data-custom-theme="true"] .tp-market .tp-card-tags span { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] .tp-market .tp-result-badge { background: rgba(var(--kayou-custom-rgb),.12) !important; border-color: rgba(var(--kayou-custom-rgb),.28) !important; }
+  html[data-custom-theme="true"] .tp-market .tp-strikes-warning { background: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] .tp-market .tp-load-track span,
+  html[data-custom-theme="true"] .tp-market .tp-collection-track span { background: linear-gradient(90deg, transparent, var(--kayou-custom-color), transparent) !important; }
+  html[data-custom-theme="true"] .m4-page,
+  html[data-custom-theme="true"] .m4-inspector-dialog { --m4-accent: var(--kayou-custom-color) !important; }
+  html[data-custom-theme="true"] .m4-page .m4-mode .is-active,
+  html[data-custom-theme="true"] .m4-page .m4-rarities .is-active,
+  html[data-custom-theme="true"] .m4-page .m4-empty button,
+  html[data-custom-theme="true"] .m4-inspector-dialog .m4-inspector-controls button[aria-pressed="true"] { background: var(--kayou-custom-color) !important; border-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] .m4-page .m4-rarities .is-active > span { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] .m4-page button:focus-visible,
+  html[data-custom-theme="true"] .m4-inspector-dialog button:focus-visible,
+  html[data-custom-theme="true"] .m4-inspector-stage:focus-visible { outline-color: var(--kayou-custom-color) !important; }
+  html[data-custom-theme="true"] .m4-inspector-stage { background: radial-gradient(ellipse at 50% 44%, rgba(var(--kayou-custom-rgb),.12), transparent 65%) !important; }
+  html[data-custom-theme="true"] [class*="-page"] {
+    --collection-accent: var(--kayou-custom-color) !important;
+    --set-accent: var(--kayou-custom-color) !important;
+    --m1-accent: var(--kayou-custom-color) !important;
+    --m2-accent: var(--kayou-custom-color) !important;
+    --m3-accent: var(--kayou-custom-color) !important;
+    --m4-accent: var(--kayou-custom-color) !important;
+    --s1-accent: var(--kayou-custom-color) !important;
+    --r1-accent: var(--kayou-custom-color) !important;
+    --r2-accent: var(--kayou-custom-color) !important;
+    --fm1-accent: var(--kayou-custom-color) !important;
+    --fm2-accent: var(--kayou-custom-color) !important;
+    --fm3-accent: var(--kayou-custom-color) !important;
+    --sd-accent: var(--kayou-custom-color) !important;
+    --fw-accent: var(--kayou-custom-color) !important;
+    --tcg-accent: var(--kayou-custom-color) !important;
+    --nn-accent: var(--kayou-custom-color) !important;
+  }
+  html[data-custom-theme="true"] [class*="-page"] [class*="-mode"] .is-active,
+  html[data-custom-theme="true"] [class*="-page"] [class*="-rarities"] .is-active,
+  html[data-custom-theme="true"] [class*="-page"] [class*="-controls"] button[aria-pressed="true"],
+  html[data-custom-theme="true"] [class*="-page"] [class*="-empty"] button,
+  html[data-custom-theme="true"] [class*="-inspector-dialog"] [class*="-inspector-controls"] button[aria-pressed="true"] { background: var(--kayou-custom-color) !important; border-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="-page"] [class*="-rarities"] .is-active > span { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="-page"] [class*="-progress-track"] > *,
+  html[data-custom-theme="true"] [class*="-page"] [class*="-progress"] > [style*="width"],
+  html[data-custom-theme="true"] [class*="-inspector-dialog"] [class*="-progress-track"] > * { background-color: var(--kayou-custom-color) !important; }
+  html[data-custom-theme="true"] [class*="-page"] input[type="range"],
+  html[data-custom-theme="true"] [class*="-inspector-dialog"] input[type="range"] { accent-color: var(--kayou-custom-color) !important; }
+  html[data-custom-theme="true"] [class*="-page"] button:focus-visible,
+  html[data-custom-theme="true"] [class*="-inspector-dialog"] button:focus-visible,
+  html[data-custom-theme="true"] [class*="-inspector-stage"]:focus-visible { outline-color: var(--kayou-custom-color) !important; }
+  html[data-custom-theme="true"] [class*="-page"] [class*="-inspector-stage"] { background-image: radial-gradient(ellipse at 50% 44%, rgba(var(--kayou-custom-rgb),.12), transparent 65%) !important; }
+  html[data-custom-theme="true"] [class*="-page"] .text-yellow-300,
+  html[data-custom-theme="true"] [class*="-page"] .text-yellow-400,
+  html[data-custom-theme="true"] [class*="-page"] .text-yellow-500,
+  html[data-custom-theme="true"] [class*="-page"] [class*="text-[#FFD54A]"],
+  html[data-custom-theme="true"] [class*="-page"] [class*="text-[#ffd54a]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="-page"] [class*="border-[#FFD54A]"],
+  html[data-custom-theme="true"] [class*="-page"] [class*="border-[#ffd54a]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="text-[#E8CA55]"],
+  html[data-custom-theme="true"] [class*="text-[#e8ca55]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#D9BC68]"],
+  html[data-custom-theme="true"] [class*="text-[#d9bc68]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#E6CD86]"],
+  html[data-custom-theme="true"] [class*="text-[#e6cd86]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#8A6B1B]"],
+  html[data-custom-theme="true"] [class*="text-[#8a6b1b]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#C9AC59]"],
+  html[data-custom-theme="true"] [class*="text-[#c9ac59]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#70551A]"],
+  html[data-custom-theme="true"] [class*="text-[#70551a]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#BFA865]"],
+  html[data-custom-theme="true"] [class*="text-[#bfa865]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#80621C]"],
+  html[data-custom-theme="true"] [class*="text-[#80621c]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#91752F]"],
+  html[data-custom-theme="true"] [class*="text-[#91752f]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#745A00]"],
+  html[data-custom-theme="true"] [class*="text-[#745a00]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#806100]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#725800]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#B18C00]"],
+  html[data-custom-theme="true"] [class*="text-[#b18c00]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="border-[#E8CA55]"],
+  html[data-custom-theme="true"] [class*="border-[#e8ca55]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="border-[#D9BC68]"],
+  html[data-custom-theme="true"] [class*="border-[#d9bc68]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="border-[#C9AC59]"],
+  html[data-custom-theme="true"] [class*="border-[#c9ac59]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="border-[#BCA04E]"],
+  html[data-custom-theme="true"] [class*="border-[#bca04e]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="border-[#D4B63D]"],
+  html[data-custom-theme="true"] [class*="border-[#d4b63d]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#E8CA55]"]:not([class*="bg-[#E8CA55]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#e8ca55]"]:not([class*="bg-[#e8ca55]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#E8CA55]/"],
+  html[data-custom-theme="true"] [class*="bg-[#e8ca55]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#D9BC68]"]:not([class*="bg-[#D9BC68]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#d9bc68]"]:not([class*="bg-[#d9bc68]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#D9BC68]/"],
+  html[data-custom-theme="true"] [class*="bg-[#d9bc68]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#D5AD16]"]:not([class*="bg-[#D5AD16]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#d5ad16]"]:not([class*="bg-[#d5ad16]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#D5AD16]/"],
+  html[data-custom-theme="true"] [class*="bg-[#d5ad16]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#EFE4C5]"]:not([class*="bg-[#EFE4C5]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#efe4c5]"]:not([class*="bg-[#efe4c5]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#EFE4C5]/"],
+  html[data-custom-theme="true"] [class*="bg-[#efe4c5]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFF6C9]"]:not([class*="bg-[#FFF6C9]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#fff6c9]"]:not([class*="bg-[#fff6c9]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFF6C9]/"],
+  html[data-custom-theme="true"] [class*="bg-[#fff6c9]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFF8D8]"]:not([class*="bg-[#FFF8D8]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#fff8d8]"]:not([class*="bg-[#fff8d8]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFF8D8]/"],
+  html[data-custom-theme="true"] [class*="bg-[#fff8d8]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFF1AD]"]:not([class*="bg-[#FFF1AD]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#fff1ad]"]:not([class*="bg-[#fff1ad]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFF1AD]/"],
+  html[data-custom-theme="true"] [class*="bg-[#fff1ad]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="ring-[#D9BC68]"],
+  html[data-custom-theme="true"] [class*="ring-[#d9bc68]"],
+  html[data-custom-theme="true"] [class*="ring-[#D9bc68]"] { --tw-ring-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] .kayou-staff-button:focus-visible,
+  html[data-custom-theme="true"] .kayou-staff-menu button:focus-visible { outline-color: var(--kayou-custom-color); }
+  html[data-custom-theme="true"] [class*="text-orange-"],
+  html[data-custom-theme="true"] [class*="text-[#F2A55E]"],
+  html[data-custom-theme="true"] [class*="text-[#f2a55e]"],
+  html[data-custom-theme="true"] [class*="text-[#FF9B5C]"],
+  html[data-custom-theme="true"] [class*="text-[#ff9b5c]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="border-orange-"],
+  html[data-custom-theme="true"] [class*="border-[#F2A55E]"],
+  html[data-custom-theme="true"] [class*="border-[#f2a55e]"] { border-color: rgba(var(--kayou-custom-rgb),.38) !important; }
+  html[data-custom-theme="true"] [class*="text-[#FFD54A]"],
+  html[data-custom-theme="true"] [class*="text-[#ffd54a]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="text-[#FFE27A]"],
+  html[data-custom-theme="true"] [class*="text-[#ffe27a]"] { color: var(--kayou-custom-text) !important; }
+  html[data-custom-theme="true"] [class*="border-[#FFD54A]"],
+  html[data-custom-theme="true"] [class*="border-[#ffd54a]"],
+  html[data-custom-theme="true"] [class*="border-[#FFE27A]"],
+  html[data-custom-theme="true"] [class*="border-[#ffe27a]"] { border-color: rgba(var(--kayou-custom-rgb),.58) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFD54A]"]:not([class*="bg-[#FFD54A]/"]),
+  html[data-custom-theme="true"] [class*="bg-[#ffd54a]"]:not([class*="bg-[#ffd54a]/"]) { background-color: var(--kayou-custom-color) !important; color: var(--kayou-custom-ink) !important; }
+  html[data-custom-theme="true"] [class*="bg-[#FFD54A]/"],
+  html[data-custom-theme="true"] [class*="bg-[#ffd54a]/"] { background-color: rgba(var(--kayou-custom-rgb),.12) !important; }
+  html[data-custom-theme="true"] [class*="from-[#FFD54A]"],
+  html[data-custom-theme="true"] [class*="from-[#ffd54a]"] { --tw-gradient-from: var(--kayou-custom-color) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(var(--kayou-custom-rgb),0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+  html[data-custom-theme="true"] [class*="via-[#FFD54A]"],
+  html[data-custom-theme="true"] [class*="via-[#ffd54a]"] { --tw-gradient-via: var(--kayou-custom-color) var(--tw-gradient-via-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important; }
+  html[data-custom-theme="true"] [class*="to-[#FFD54A]"],
+  html[data-custom-theme="true"] [class*="to-[#ffd54a]"] { --tw-gradient-to: var(--kayou-custom-color) var(--tw-gradient-to-position) !important; }
+html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--kayou-custom-hsl)}html[data-custom-theme="true"] .pp-upgrade{--pp-accent:var(--kayou-custom-text)!important}html[data-custom-theme="true"] .kayou-staff-button{color:var(--kayou-custom-text)}.kayou-theme-menu[data-open="true"]{width:350px}.kayou-custom-overlay{position:fixed;inset:0;z-index:100000;background:#0009;display:grid;place-items:center;padding:16px}.kayou-custom-dialog{width:min(440px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#17191b;color:#f4f4f5;border:1px solid #ffffff20;border-radius:20px;padding:24px;box-shadow:0 20px 80px #0006}.light .kayou-custom-dialog{background:#fff;color:#20262b;border-color:#0002}.kayou-custom-dialog h2{font-size:22px;font-weight:700;margin:0 0 6px}.kayou-custom-dialog p{font-size:13px;opacity:.7;margin-bottom:18px}.kayou-custom-dialog label{display:block;margin-top:18px;font-size:13px}.kayou-custom-dialog input[type=range]{width:100%;height:26px;margin-top:8px;appearance:none;-webkit-appearance:none;border-radius:12px;cursor:ew-resize;touch-action:pan-y;border:1px solid #8885}.kayou-custom-dialog input[type=range]::-webkit-slider-thumb{appearance:none;width:24px;height:32px;border:3px solid white;border-radius:8px;background:transparent;box-shadow:0 1px 6px #0008}.kayou-custom-dialog input[type=range]::-moz-range-thumb{width:18px;height:26px;border:3px solid white;border-radius:8px;background:transparent;box-shadow:0 1px 6px #0008}.kayou-custom-dialog button{min-height:44px;padding:9px 16px;border:1px solid #8886;border-radius:10px;font-size:14px}.kayou-custom-dialog button:focus-visible,.kayou-custom-dialog input:focus-visible{outline:2px solid var(--kayou-custom-text);outline-offset:4px}.kayou-custom-row{display:flex;gap:8px;margin-top:18px}.kayou-custom-row button{flex:1}.kayou-custom-row button[aria-pressed=true],.kayou-custom-save{background:var(--kayou-custom-color)!important;color:var(--kayou-custom-ink)!important;border-color:transparent!important}@media(max-width:639px){.kayou-theme-menu[data-open="true"]{width:170px;max-height:260px}.kayou-custom-dialog{padding:20px}.kayou-custom-dialog input{font-size:16px}}
   .kayou-theme-picker { position: relative; }
   .kayou-theme-menu { position: absolute; z-index: 25000; top: 0; left: calc(100% + 10px); display: flex; width: 0; overflow: hidden; gap: 8px; padding: 0; opacity: 0; pointer-events: none; border: 1px solid transparent; border-radius: 16px; background: #17191b; box-shadow: 0 14px 34px rgba(0,0,0,.42); transition: width .24s ease, max-height .24s ease, opacity .18s ease, padding .24s ease; }
-  .kayou-theme-menu[data-open="true"] { width: 270px; padding: 8px; opacity: 1; pointer-events: auto; border-color: rgba(255,255,255,.12); }
+  .kayou-theme-menu[data-open="true"] { width: 350px; padding: 8px; opacity: 1; pointer-events: auto; border-color: rgba(255,255,255,.12); }
   .kayou-theme-option { display: flex; min-width: 78px; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 9px 5px; color: #f4f4f5; font-size: 11px; font-weight: 700; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
   .kayou-theme-option:hover,.kayou-theme-option[aria-pressed="true"] { border-color: rgba(177,139,255,.55); background: rgba(177,139,255,.12); }
   .kayou-theme-option:active { transform: scale(.97); }
@@ -1281,7 +1595,7 @@ const KayouHeader = () => {
   @media(max-width:639px) {
     .kayou-header-spooky-logo { width: auto !important; height: 32px !important; max-width: none !important; max-height: none !important; transform: translate(-50%,0) !important; }
     .kayou-theme-menu { top: calc(100% + 8px); left: auto; right: 0; box-sizing: border-box; flex-direction: column; width: 0; max-width: calc(100vw - 24px); max-height: 0; gap: 4px; border-radius: 12px; }
-    .kayou-theme-menu[data-open="true"] { width: 150px; max-height: 210px; padding: 7px; }
+    .kayou-theme-menu[data-open="true"] { width: 170px; max-height: 260px; padding: 7px; }
     .kayou-theme-option { min-height: 38px; flex-direction: row; justify-content: flex-start; padding: 6px 8px; }
     .kayou-theme-option img { width: 20px; height: 20px; }
   }
@@ -1459,9 +1773,6 @@ const KayouHeader = () => {
                             : "border-white/10"
                         }`}
                       />
-                      <span
-                        className={`absolute bottom-1 right-1 z-20 h-3 w-3 rounded-full border-2 bg-[#a3e635] ${isLightMode ? "border-white" : "border-[#0d1113]"}`}
-                      />
                       {inboxNotificationCount > 0 && (
                         <span className="absolute -right-2 -top-2 z-30 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-red-600 px-1 text-[10px] font-bold leading-none text-white shadow-lg dark:border-[#0d1113]">
                           {notificationCountLabel}
@@ -1577,21 +1888,6 @@ const KayouHeader = () => {
                           <Heart className="h-[18px] w-[18px] text-zinc-400" />
                           <span>ISO / Wishlist</span>
                         </button>
-                        <div className="my-2 border-t border-white/10 pt-3">
-                          <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-[#E7C84B]">Mini games</p>
-                          <button onClick={() => { setShowPinkieParty(true); setOpen(false); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white">
-                            <Gamepad2 className="h-[18px] w-[18px] text-[#E7C84B]" aria-hidden="true" />
-                            <span>Pinkie Pie&apos;s Party</span>
-                          </button>
-                          <button onClick={() => { requestNavigation("/match-pairs"); setOpen(false); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white">
-                            <Gamepad2 className="h-[18px] w-[18px] text-[#E7C84B]" aria-hidden="true" />
-                            <span>Match Pairs</span>
-                          </button>
-                          <button onClick={() => { requestNavigation("/go-fish"); setOpen(false); }} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white">
-                            <Gamepad2 className="h-[18px] w-[18px] text-[#E7C84B]" aria-hidden="true" />
-                            <span>Go Fish</span>
-                          </button>
-                        </div>
                       </div>
                       <div className="border-t border-white/10 p-3">
                         <div className="mb-2 flex items-center gap-2 px-1">
@@ -1667,27 +1963,28 @@ const KayouHeader = () => {
                         : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08]"
                     }`}
                   >
-                    <CardImage src={themeIcon} alt="" aria-hidden="true" className="h-6 w-6 object-contain" />
+                    {customEnabled ? <span aria-hidden="true" className="text-xl font-bold">?</span> : <CardImage src={themeIcon} alt="" aria-hidden="true" className="h-6 w-6 object-contain" />}
                   </button>
                   <div className="kayou-theme-menu" data-open={showThemeMenu} role="group" aria-label="Theme choices">
-                    <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "light"} onClick={() => void handleThemeSelect("light")}>
+                    <button type="button" className="kayou-theme-option" aria-pressed={!customEnabled && currentTheme === "light"} onClick={() => void handleThemeSelect("light")}>
                       <CardImage src="/website-assets/LightMode.webp" alt="" aria-hidden="true" /> Light
                     </button>
-                    <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "dark"} onClick={() => void handleThemeSelect("dark")}>
+                    <button type="button" className="kayou-theme-option" aria-pressed={!customEnabled && currentTheme === "dark"} onClick={() => void handleThemeSelect("dark")}>
                       <CardImage src="/website-assets/darkmodeactual.webp" alt="" aria-hidden="true" /> Dark
                     </button>
                     {canChooseSpooky && (
-                      <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "spooky"} onClick={() => void handleThemeSelect("spooky")}>
+                      <button type="button" className="kayou-theme-option" aria-pressed={!customEnabled && currentTheme === "spooky"} onClick={() => void handleThemeSelect("spooky")}>
                         <CardImage src="/website-assets/DarkMode.webp" alt="" aria-hidden="true" /> Spooky
                       </button>
                     )}
+<button type="button" className="kayou-theme-option" aria-pressed={customEnabled} onClick={openCustomEditor}><span aria-hidden="true" className="text-xl font-bold">?</span> Custom</button>
                   </div>
                   {showThemeMenu && !canChooseSpooky && !spookyUnlocked && <span className="kayou-theme-menu-note">Halloween theme unavailable</span>}
                 </div>
               </div>
             )}
           </div>
-          <CardImage
+          <CardImage style={{ filter: customEnabled || customEditor ? `url("#${customLogoFilterId}")` : undefined }}
             src={
               isLightMode
                 ? "/website-assets/mlpekayouwiki4.webp"
@@ -1796,7 +2093,7 @@ const KayouHeader = () => {
                   }}
                   className="group relative flex h-[54px] w-[120px] items-center justify-center overflow-visible bg-transparent transition-all duration-200"
                 >
-                  <CardImage
+                  <CardImage style={{ filter: customEnabled || customEditor ? `url("#${customLogoFilterId}")` : undefined }}
                     src={
                       isLightMode
                         ? "/website-assets/mlpekayouwiki4.webp"
@@ -2012,12 +2309,13 @@ const KayouHeader = () => {
                     : "border-white/10 bg-white/[0.045] hover:bg-white/[0.08]"
                 }`}
               >
-                <CardImage src={themeIcon} alt="" aria-hidden="true" className="h-4 w-4 object-contain" />
+                {customEnabled ? <span aria-hidden="true" className="text-lg font-bold">?</span> : <CardImage src={themeIcon} alt="" aria-hidden="true" className="h-4 w-4 object-contain" />}
               </button>
               <div className="kayou-theme-menu" data-open={showThemeMenu} role="group" aria-label="Theme choices">
-                <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "light"} onClick={() => void handleThemeSelect("light")}><CardImage src="/website-assets/LightMode.webp" alt="" aria-hidden="true" /> Light</button>
-                <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "dark"} onClick={() => void handleThemeSelect("dark")}><CardImage src="/website-assets/darkmodeactual.webp" alt="" aria-hidden="true" /> Dark</button>
-                {canChooseSpooky && <button type="button" className="kayou-theme-option" aria-pressed={currentTheme === "spooky"} onClick={() => void handleThemeSelect("spooky")}><CardImage src="/website-assets/DarkMode.webp" alt="" aria-hidden="true" /> Spooky</button>}
+                <button type="button" className="kayou-theme-option" aria-pressed={!customEnabled && currentTheme === "light"} onClick={() => void handleThemeSelect("light")}><CardImage src="/website-assets/LightMode.webp" alt="" aria-hidden="true" /> Light</button>
+                <button type="button" className="kayou-theme-option" aria-pressed={!customEnabled && currentTheme === "dark"} onClick={() => void handleThemeSelect("dark")}><CardImage src="/website-assets/darkmodeactual.webp" alt="" aria-hidden="true" /> Dark</button>
+                {canChooseSpooky && <button type="button" className="kayou-theme-option" aria-pressed={!customEnabled && currentTheme === "spooky"} onClick={() => void handleThemeSelect("spooky")}><CardImage src="/website-assets/DarkMode.webp" alt="" aria-hidden="true" /> Spooky</button>}
+<button type="button" className="kayou-theme-option" aria-pressed={customEnabled} onClick={openCustomEditor}><span aria-hidden="true" className="text-xl font-bold">?</span> Custom</button>
               </div>
             </div>
           )}
@@ -2319,11 +2617,27 @@ const KayouHeader = () => {
           </div>
         </div>
       )}
+{customEditor && createPortal(<div className="kayou-custom-overlay" onClick={event => { if (event.target === event.currentTarget) closeCustomEditor(); }}><div ref={customDialogRef} tabIndex={-1} className="kayou-custom-dialog" role="dialog" aria-modal="true" aria-label="Custom color theme" onKeyDown={event => {
+ if (event.key !== "Tab") return;
+ const items = event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled])');
+ const first = items[0], last = items[items.length - 1];
+ if (event.shiftKey && (document.activeElement === first || document.activeElement === event.currentTarget)) { event.preventDefault(); last?.focus(); }
+ else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+}}>
+<h2>Make it yours</h2><p>Choose your accent color. Preview changes as you drag.</p>
+<div className="kayou-custom-row" role="group" aria-label="Theme background"><button type="button" aria-pressed={customColor.base === "light"} onClick={() => updateCustomColor({base:"light"})}>Light base</button><button type="button" aria-pressed={customColor.base === "dark"} onClick={() => updateCustomColor({base:"dark"})}>Dark base</button></div>
+<label>Hue <span>{customColor.h} degrees</span><input autoFocus type="range" min="0" max="360" step="1" value={customColor.h} onChange={event => updateCustomColor({h:Number(event.target.value)})} style={{background:"linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"}} /></label>
+<label>Saturation <span>{customColor.s}%</span><input type="range" min="0" max="100" value={customColor.s} onChange={event => updateCustomColor({s:Number(event.target.value)})} style={{background:`linear-gradient(90deg,hsl(${customColor.h} 0% ${customColor.l}%),hsl(${customColor.h} 100% ${customColor.l}%))`}} /></label>
+<label>Brightness <span>{customColor.l}%</span><input type="range" min="5" max="95" value={customColor.l} onChange={event => updateCustomColor({l:Number(event.target.value)})} style={{background:`linear-gradient(90deg,#000,hsl(${customColor.h} ${customColor.s}% 50%),#fff)`}} /></label>
+<p style={{marginTop:18}}>Your custom theme is saved on this device. Choose Light, Dark, or Spooky from the theme menu to return to a preset.</p>
+{customSaveError && <p role="alert">{customSaveError}</p>}
+<div className="kayou-custom-row"><button type="button" onClick={closeCustomEditor}>Cancel</button><button type="button" className="kayou-custom-save" onClick={saveCustomColor}>Save theme</button></div>
+</div></div>,document.body)}
       {showResetSent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className="relative w-[92%] max-w-2xl bg-white rounded-2xl shadow-2xl p-6 pt-6 pb-6 flex flex-col ">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <CardImage
+              <CardImage style={{ filter: customEnabled || customEditor ? `url("#${customLogoFilterId}")` : undefined }}
                 src={
                   isLightMode
                     ? "/website-assets/mlpekayouwiki4.webp"
