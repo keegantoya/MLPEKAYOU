@@ -873,6 +873,13 @@ const MobileProfile = () => {
 .mp-clean .mp-muted { color:var(--mp-muted); }
 .mp-clean .mp-edit-actions button { min-height:44px;margin:0;box-shadow:none;background:transparent;color:inherit;border-color:var(--mp-line); }
 .mp-clean .mp-edit-actions button:first-child { grid-column:1 / -1; }
+.mp-clean .mp-profile-editor{position:relative;display:flow-root;clear:both;isolation:isolate;box-sizing:border-box;width:100%;min-width:0;margin:0 0 16px;padding:16px 0;border-top:1px solid var(--mp-line);overflow-wrap:anywhere;scroll-margin-top:calc(var(--kayou-header-bottom,64px) + 12px)}
+.mp-clean .mp-profile-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.mp-clean .mp-profile-fields label{position:static;display:flex;min-width:0;flex-direction:column}
+.mp-clean .mp-profile-fields input{position:static;display:block;box-sizing:border-box;width:100%;min-width:0;min-height:44px;font-size:16px;line-height:1.5}
+.mp-clean .mp-profile-editor .mp-edit-actions{display:flex;flex-wrap:wrap;gap:8px}
+.mp-clean .mp-profile-editor .mp-edit-actions button{position:static;flex:1 1 140px;min-width:0;white-space:normal}
+.mp-clean .mp-profile-editor .mp-edit-actions button:first-child{flex-basis:100%}
 @media(prefers-reduced-motion:reduce){.mp-clean .mp-chevron{transition:none}}
 `}</style>
 <div className="w-full px-4 pb-6 sm:px-6">
@@ -886,26 +893,44 @@ const MobileProfile = () => {
   <div className="flex flex-wrap gap-2 pb-4">
     <button type="button" onClick={()=>navigate("/Personal/change-avatar")} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-xs font-medium"><Pencil size={13}/>Avatar</button>
     <button type="button" onClick={()=>navigate("/Personal/change-avatar?tab=frames")} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-xs font-medium"><Sparkles size={13}/>Frames</button>
-    <button type="button" ref={editProfileTrigger} disabled={editingProfile || savingProfile} aria-expanded={editingProfile} aria-controls={editingProfile ? "mp-profile-editor" : undefined} onClick={() => { setUsernameDraft(profile?.username || ""); setDiscordDraft(discord); setEditingProfile(true); }} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-3 text-xs font-semibold text-[hsl(var(--primary-foreground))]">Edit profile<ChevronRight size={13}/></button>
+    <button type="button" ref={editProfileTrigger} disabled={editingProfile || savingProfile} aria-expanded={editingProfile} aria-controls={editingProfile ? "mp-profile-editor" : undefined} onClick={() => { setPageChoice(null); setUsernameDraft(profile?.username || ""); setDiscordDraft(discord); setEditingProfile(true); }} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-3 text-xs font-semibold text-[hsl(var(--primary-foreground))]">Edit profile<ChevronRight size={13}/></button>
+<button type="button" disabled={!profile?.username}
+                onClick={() => {
+                  const url = `https://www.mlpekayou.community/${encodeURIComponent(
+                    profile?.username ?? "",
+                  )}`;
+                  if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(url);
+                  } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = url;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                      document.execCommand("copy");
+                    } finally {
+                      document.body.removeChild(textArea);
+                    }
+                  }
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 3000);
+                }}
+                className={`inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--mp-line)] px-3 text-xs font-medium transition-colors disabled:opacity-50 ${copied ? "text-emerald-600 dark:text-emerald-400" : "text-[hsl(var(--foreground))] hover:bg-[hsl(var(--muted))]"}`}
+              >
+                <span>{copied ? "Copied" : "Share Profile"}</span>
+              </button>
   </div>
-  <div className="grid grid-cols-3 border-t border-[var(--mp-line)] py-4">
-    {[["Cards Owned",stats.owned],["Chinese Cards",stats.chineseOwned],["Sets Mastered",stats.completed]].map(([label,value]) => <div key={label} className="min-w-0 px-1 text-center"><p className="text-xl font-semibold tabular-nums text-[hsl(var(--primary))]">{profileLoads.stats && !profileLoadErrors.stats ? Number(value).toLocaleString() : "--"}</p><p className="mp-muted mt-1 text-[10px] font-medium">{label}</p></div>)}
-  </div>
-</header>
-{(tradeAccessRevoked || (!loadingLeaderboardBan && leaderboardBanned)) && <section aria-label="Account restrictions" className={`my-4 border-y px-1 py-4 text-sm leading-6 ${isLightMode ? "border-red-300 text-red-800" : "border-red-500/30 text-red-200"}`}>
-{tradeAccessRevoked && <div><h2 className="font-semibold">Trading post access restricted</h2><p className="mt-1">{offerStrikeCount >= 3 ? "Your trading access was revoked after three unanswered offers expired." : "Your account cannot use the trading posts while this restriction is active."}</p></div>}
-{!loadingLeaderboardBan && leaderboardBanned && <div className={tradeAccessRevoked ? "mt-4" : undefined}><h2 className="font-semibold">English leaderboard access restricted</h2><p className="mt-1">Your account is currently excluded from the English leaderboards. This does not exclude you from the Chinese leaderboard.</p></div>}
-<p className="mt-3">For details or to appeal, open a ticket in the <a href="https://discord.gg/mlpekayou" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">MLPEKAYOU Discord server</a>.</p>
-</section>}
-<EnglishLeaderboardAppealForm restricted={leaderboardBanned} onReinstated={() => setLeaderboardBanned(false)}/>
-{editingProfile && <section id="mp-profile-editor" aria-labelledby="mp-edit-profile-heading" className="mt-4 border-t border-[var(--mp-line)] pt-4">
+{editingProfile && <section id="mp-profile-editor" aria-labelledby="mp-edit-profile-heading" className="mp-profile-editor">
 <div className="flex items-center justify-between gap-3"><h2 id="mp-edit-profile-heading" className="text-base font-semibold">Edit profile</h2><button type="button" disabled={savingProfile} onClick={() => { setUsernameDraft(profile?.username || ""); setDiscordDraft(discord); setEditingProfile(false); window.setTimeout(() => editProfileTrigger.current?.focus(), 0); }} className="mp-muted min-h-10 px-2 text-sm disabled:opacity-50">Cancel</button></div>
 <div className="pt-4">
 {editingProfile && (
                   <div
                     className="w-full"
                   >
-                    <div className="space-y-4">
+                    <div className="mp-profile-fields">
                       <label className="block">
                         <span
                           className={`mb-1.5 block text-sm font-medium ${isLightMode ? "text-zinc-800" : "text-zinc-200"}`}
@@ -915,7 +940,6 @@ const MobileProfile = () => {
                         <input
                           value={usernameDraft}
                           onChange={(e) => setUsernameDraft(e.target.value)}
-                          autoFocus
                           className="w-full rounded-xl border px-3 py-2.5 text-base font-medium outline-none transition-colors focus:border-[#8a6a00]/50"
                           placeholder="Your MLPEKAYOU username"
                         />
@@ -1057,39 +1081,18 @@ const MobileProfile = () => {
               </button>
 <button type="button" onClick={()=>navigate("/Personal/change-avatar")} className="rounded-xl border px-3 py-2 text-xs font-medium">Change avatar</button>
 <button type="button" onClick={()=>navigate("/Personal/change-avatar?tab=frames")} className="rounded-xl border px-3 py-2 text-xs font-medium">Choose frame</button>
-</div><div className="mp-edit-actions mt-2 grid grid-cols-1"><button
-                onClick={() => {
-                  const url = `https://www.mlpekayou.community/${encodeURIComponent(
-                    profile?.username ?? "",
-                  )}`;
-                  if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(url);
-                  } else {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = url;
-                    textArea.style.position = "fixed";
-                    textArea.style.left = "-999999px";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    try {
-                      document.execCommand("copy");
-                    } finally {
-                      document.body.removeChild(textArea);
-                    }
-                  }
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 3000);
-                }}
-                className={`group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
-                  copied
-                    ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-400"
-                    : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
-                }`}
-              >
-                <span>{copied ? "Copied" : "Share Profile"}</span>
-              </button></div>
+</div>
 </div></section>}
+  <div className="grid grid-cols-3 border-t border-[var(--mp-line)] py-4">
+    {[["Cards Owned",stats.owned],["Chinese Cards",stats.chineseOwned],["Sets Mastered",stats.completed]].map(([label,value]) => <div key={label} className="min-w-0 px-1 text-center"><p className="text-xl font-semibold tabular-nums text-[hsl(var(--primary))]">{profileLoads.stats && !profileLoadErrors.stats ? Number(value).toLocaleString() : "--"}</p><p className="mp-muted mt-1 text-[10px] font-medium">{label}</p></div>)}
+  </div>
+</header>
+{(tradeAccessRevoked || (!loadingLeaderboardBan && leaderboardBanned)) && <section aria-label="Account restrictions" className={`my-4 border-y px-1 py-4 text-sm leading-6 ${isLightMode ? "border-red-300 text-red-800" : "border-red-500/30 text-red-200"}`}>
+{tradeAccessRevoked && <div><h2 className="font-semibold">Trading post access restricted</h2><p className="mt-1">{offerStrikeCount >= 3 ? "Your trading access was revoked after three unanswered offers expired." : "Your account cannot use the trading posts while this restriction is active."}</p></div>}
+{!loadingLeaderboardBan && leaderboardBanned && <div className={tradeAccessRevoked ? "mt-4" : undefined}><h2 className="font-semibold">English leaderboard access restricted</h2><p className="mt-1">Your account is currently excluded from the English leaderboards. This does not exclude you from the Chinese leaderboard.</p></div>}
+<p className="mt-3">For details or to appeal, open a ticket in the <a href="https://discord.gg/mlpekayou" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">MLPEKAYOU Discord server</a>.</p>
+</section>}
+<EnglishLeaderboardAppealForm restricted={leaderboardBanned} onReinstated={() => setLeaderboardBanned(false)}/>
 <section aria-label="Profile pages">
   <div className="grid grid-cols-2 gap-3">
     {collectionPages.map(item => <button key={item.title} type="button" onClick={event => openPageChoice(item, event.currentTarget)} aria-haspopup="menu" aria-expanded={pageChoice?.title === item.title} aria-controls={pageChoice?.title === item.title ? "mp-page-language-menu" : undefined} className="mp-surface group flex min-h-[90px] flex-col items-start justify-center p-4 text-left transition-colors hover:border-[hsl(var(--primary))]/40">

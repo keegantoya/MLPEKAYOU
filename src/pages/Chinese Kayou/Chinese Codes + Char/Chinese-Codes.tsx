@@ -347,6 +347,7 @@ export const CHINESE_PROMOS_CODES: ChineseCardCode[] = [
     { key: "PR-D19", rarity: "PR", number: 19, code: "\u25C7YH-PR-019" },
     ...sequence("PR", 63, "YH-PR", 20, 19),
     ...sequence("TFXMLP", 2, "TFXMLP-PR"),
+    ...sequence("KB", 3, "YH-KB"),
 ];
 export const CHINESE_STARDUST_ONE_CODES: ChineseCardCode[] = [
     ...sequence("SR", 20, "YH-PL01"),

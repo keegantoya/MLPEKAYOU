@@ -1,4 +1,3 @@
-import { getISOSets, getISOSetLabel } from "./catalog-adapter";
 import { useState } from "react";
 interface ISOControlsProps {
     cardCodeSearch: string;
@@ -58,7 +57,7 @@ export default function ISOCONTROLS({ cardCodeSearch, onCardCodeSearchChange, ch
         </div>
       </div>);
     }
-    const setsForVisibility = (["moon", "fun", "rainbow", "star", "tcg", "promos"] as const).map(family => ({ id: family, name: availableSets.find(category => category.id === family)?.name ?? (family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1)), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }));
+    const setsForVisibility = availableSets;
     return (<>
       <aside className="mx-auto flex max-h-[72dvh] w-full flex-col overflow-y-auto rounded-[22px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-xl sm:max-h-none sm:overflow-hidden sm:rounded-[28px] dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
         <div className="shrink-0 px-3 pb-1 pt-2 sm:px-6 sm:pb-2 sm:pt-3">

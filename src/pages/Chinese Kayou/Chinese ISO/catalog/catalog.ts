@@ -252,6 +252,9 @@ function starThreeImageStyle(key: string): CSSProperties {
   return { transform: "none", transformOrigin: "center" };
 }
 function promosImageStyle(key: string): CSSProperties {
+  if (key === "PR-6") return { transform: "scale(1.035)", transformOrigin: "center" };
+  if (key === "KB-3") return { transform: "scale(1.035)", transformOrigin: "center" };
+  if (/^KB-[123]$/.test(key)) return { transform: "scale(1.025)", transformOrigin: "center" };
   if (key === "TFXMLP-1") return { position: "absolute", left: -2, top: -2, width: "calc(100% + 4px)", height: "calc(100% + 4px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
   if (key === "TFXMLP-2") return { transform: "scale(1.035)", transformOrigin: "center" };
 const scale = ["PR-35", "PR-76", "PR-50", "PR-24", "PR-20", "PR-4", "PR-5"].includes(key) ? 1.05 : key === "PR-26" ? 1.11 : key === "PR-81" ? 1.105 : key === "PR-72" ? 1.09 : key === "PR-82" ? 1.06 : ["PR-10", "PR-11", "PR-17", "PR-18", "PR-19", "PR-D19", "PR-23", "PR-25", "PR-27", "PR-47", "PR-48", "PR-69", "PR-70"].includes(key) ? 1.035 : 1;

@@ -310,7 +310,7 @@ export const CN_STAR_THREE_SET_ID = "cn-star-three";
 export const CN_STAR_THREE_CARDS = CHINESE_STAR_THREE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Star-Three-CN/CN-S3-${card.rarity}${card.number}.webp`)}?v=${CN_STAR_THREE_IMAGE_REVISION}` }));
 export const CN_PROMOS_IMAGE_REVISION = "20261022-pr-complete-83-v2";
 export const CN_PROMOS_SET_ID = "cn-promos";
-export const CN_PROMOS_CARDS = CHINESE_PROMOS_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Promotional-Cards/${card.rarity === "TFXMLP" ? `TFXMLP${card.number}` : `CN-PR-${card.key === "PR-D19" ? "D19" : String(card.number).padStart(3, "0")}`}.webp`)}?v=${CN_PROMOS_IMAGE_REVISION}` }));
+export const CN_PROMOS_CARDS = CHINESE_PROMOS_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Promotional-Cards/${card.rarity === "KB" ? card.code : card.rarity === "TFXMLP" ? `TFXMLP${card.number}` : `CN-PR-${card.key === "PR-D19" ? "D19" : String(card.number).padStart(3, "0")}`}.webp`)}?v=${CN_PROMOS_IMAGE_REVISION}` }));
 export const CN_STARDUST_ONE_IMAGE_REVISION = "20261023-sd1-lsr-replaced-v2";
 export const CN_STARDUST_ONE_SET_ID = "cn-stardust-one";
 export const CN_STARDUST_ONE_CARDS = CHINESE_STARDUST_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Stardust-One-CN/CN-SD1-${card.rarity}${card.number}.webp`)}?v=${CN_STARDUST_ONE_IMAGE_REVISION}` }));
