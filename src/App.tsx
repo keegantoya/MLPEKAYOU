@@ -449,6 +449,16 @@ const hideNavigation = normalizedPath === "/links" ||
         new URLSearchParams(search).has("embed");
 const standalone = window.matchMedia("(display-mode: standalone)").matches;
     return (<>
+      <style>{`
+        @media (max-width:767px) {
+          .cn-gallery .cn-grid { grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 8px; }
+          .cn-gallery .cn-grid > * { min-width:0; }
+          body:has(.cn-gallery) [role="dialog"]:has(input[type="range"]) { width:min(340px,calc(100% - 24px));max-width:340px;height:min(560px,80dvh);max-height:calc(100dvh - 24px);padding:12px;gap:8px; }
+        }
+        @media (max-width:767px) and (max-height:480px) {
+          body:has(.cn-gallery) [role="dialog"]:has(input[type="range"]) { height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);gap:6px; }
+        }
+      `}</style>
       <ScrollToTop />
       {!hideNavigation && <KayouHeader />}
       <div data-kayou-page-content="true" className={hideNavigation ? "min-h-screen" : "min-h-screen sm:pb-0"} style={hideNavigation ? undefined : { paddingTop: `var(--kayou-header-bottom, ${standalone ? "88px" : "64px"})` }}>
