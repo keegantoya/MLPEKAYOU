@@ -1,7 +1,7 @@
 import { chineseSets, chineseRarityLabel } from "../Chinese ISO/catalog/catalog";
 import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { RefreshCw, ArrowUpRight, ChevronRight } from "lucide-react";
+import { RefreshCw, ArrowUpRight, ChevronRight, Search, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 type ChineseCollection = {
   id: string;
@@ -23,6 +23,15 @@ const collections: ChineseCollection[] = chineseSets.map(set => ({
   rarities: Array.from(new Set(set.cards.map(card => chineseRarityLabel(card.rarity)))).join(" / "),
   catalogComplete: true,
 }));
+const normalizeCardCode = (value: string) => value.normalize("NFKC").toUpperCase().replace(/<>|[\u25C6\u2662]/g, "\u25C7").replace(/[\u2010-\u2015\u2212]/g, "-").replace(/\s+/g, "");
+const compactCardCode = (value: string) => value.replace(/[^A-Z0-9\u25C7]/g, "");
+const cardCodeMatches = (code: string, query: string) => {
+    const value = normalizeCardCode(code);
+    const search = normalizeCardCode(query);
+    if (!compactCardCode(search)) return false;
+    const unpadded = (text: string) => text.replace(/-(\d+)$/, (_, number: string) => `-${Number(number)}`);
+    return value.includes(search) || compactCardCode(value).includes(compactCardCode(search)) || unpadded(value) === unpadded(search);
+};
 const isOwned = (value: unknown): boolean => value === true || Boolean(value && typeof value === "object" && "owned" in value && value.owned === true);
 export default function CollectionsChinese() {
 const [notCollecting, setNotCollecting] = useState<string[]>([]);
@@ -30,6 +39,7 @@ const [counts, setCounts] = useState<Record<string, number>>({});
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState("");
 const [retry, setRetry] = useState(0);
+const [codeSearch, setCodeSearch] = useState("");
 const [category, setCategory] = useState("eternal-moon");
 const [hideMastered, setHideMastered] = useState(true);
 const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
@@ -113,7 +123,9 @@ const collectingSets = collections.filter(set => !notCollectingIds.has(set.id));
 const total = collectingSets.reduce((sum, set) => sum + set.cardKeys.length, 0);
 const owned = collectingSets.reduce((sum, set) => sum + (counts[set.id] ?? 0), 0);
 const percent = total ? Math.round(owned / total * 100) : 0;
-const visibleSets = collections.filter(set => category === "not-collecting"
+const searchingCode = compactCardCode(normalizeCardCode(codeSearch)).length > 0;
+const matchedCodes = new Map(chineseSets.map(set => [set.id, searchingCode ? [...new Set(set.cards.filter(card => cardCodeMatches(card.code, codeSearch)).map(card => card.code))] : []]));
+const visibleSets = searchingCode ? collections.filter(set => (matchedCodes.get(set.id)?.length ?? 0) > 0) : collections.filter(set => category === "not-collecting"
   ? notCollectingIds.has(set.id)
   : !notCollectingIds.has(set.id) && set.category === category && (!hideMastered || !set.catalogComplete || (counts[set.id] ?? 0) < set.cardKeys.length));
 const unknown = loading || Boolean(error);
@@ -152,16 +164,17 @@ const categoryOptions = [{ label: "Moon", value: "eternal-moon" }, { label: "Fun
             </nav>
           </aside>
           <div className="min-w-0 flex-1">
-            <div className="collections-results"><h2>{categoryOptions.find(item => item.value === activeCategory)?.label || "Collections"}</h2><span>{visibleSets.length} {visibleSets.length === 1 ? "set" : "sets"}</span></div>
+            <div className="cn-code-search" role="search" aria-label="Find the Chinese sets containing a card code"><label><Search size={15} aria-hidden="true"/><span className="sr-only">Search every Chinese set by card code, including hidden sets</span><input type="search" value={codeSearch} onChange={event => setCodeSearch(event.target.value)} onKeyDown={event => { if (event.key === "Escape") setCodeSearch(""); }} placeholder="Find a card code..." maxLength={120} autoCapitalize="characters" autoComplete="off" spellCheck={false}/></label>{codeSearch && <button type="button" onClick={() => setCodeSearch("")} aria-label="Clear card code search"><X size={15}/></button>}<span role="status" aria-live="polite">{searchingCode ? `${visibleSets.length} matching ${visibleSets.length === 1 ? "set" : "sets"} / all categories` : ""}</span></div>
+            <div className="collections-results"><h2>{searchingCode ? "Code matches" : categoryOptions.find(item => item.value === activeCategory)?.label || "Collections"}</h2><span>{visibleSets.length} {visibleSets.length === 1 ? "set" : "sets"}</span></div>
             {error && <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-500/30 p-4 text-sm"><span>{error}</span><button type="button" onClick={() => setRetry(value => value + 1)} className="inline-flex min-h-10 items-center gap-2 rounded-full border px-4"><RefreshCw size={14} /> Retry</button></div>}
             {loading && <p role="status" className="mb-4 text-sm text-zinc-500">Loading your collection progress...</p>}
-            {visibleSets.length === 0 ? <div className={`rounded-2xl border border-dashed p-10 text-center text-sm ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-500" : "border-white/10 bg-white/[0.03] text-zinc-400"}`}>{category === "not-collecting" ? "Sets marked as not collecting will appear here." : "No sets to show with the current filters."}</div> : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(auto-fill,minmax(165px,1fr))]">
+            {visibleSets.length === 0 ? <div className={`rounded-2xl border border-dashed p-10 text-center text-sm ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-500" : "border-white/10 bg-white/[0.03] text-zinc-400"}`}>{searchingCode ? "No Chinese sets contain that card code. Try a shorter code or check the spelling." : category === "not-collecting" ? "Sets marked as not collecting will appear here." : "No sets to show with the current filters."}</div> : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(auto-fill,minmax(165px,1fr))]">
               {visibleSets.map((set, index) => {
 const collected = counts[set.id] ?? 0;
 const setPercent = set.cardKeys.length ? Math.min(100, Math.floor(collected / set.cardKeys.length * 100)) : 0;
-                return <Link key={set.id} to={set.href} aria-label={`Open Chinese ${set.title} ${set.edition}`} className="collection-tile collection-grid-item" style={{ "--entry-delay": `${Math.min(index, 8) * 25}ms` } as CSSProperties}>
+                return <Link key={set.id} to={set.href} aria-label={`Open Chinese ${set.title} ${set.edition}`} className="collection-tile collection-grid-item" data-code-match={searchingCode ? "true" : undefined} style={{ "--entry-delay": `${Math.min(index, 8) * 25}ms` } as CSSProperties}>
                   <div className="collection-tile-body">
-                    <div className="collection-tile-title"><h2>{set.title} {set.edition}</h2></div>
+                    <div className="collection-tile-title"><h2>{set.title} {set.edition}</h2></div>{searchingCode && <div className="cn-code-match-detail"><p>{matchedCodes.get(set.id)?.slice(0, 2).join(" / ")}{(matchedCodes.get(set.id)?.length ?? 0) > 2 ? ` +${matchedCodes.get(set.id)!.length - 2} more` : ""}</p>{notCollectingIds.has(set.id) && <span>Not collecting</span>}</div>}
                     <div className="collection-tile-progress">
                       <div className="collection-tile-count"><span><strong>{unknown ? "--" : collected.toLocaleString()}</strong><span> / {set.cardKeys.length.toLocaleString()}</span></span><strong className="collection-tile-percent">{unknown ? "--" : `${setPercent}%`}</strong></div>
                       <div className="collection-tile-track" role="progressbar" aria-label={`${set.title} ${set.edition} collected`} aria-valuenow={unknown ? undefined : setPercent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${unknown ? 0 : setPercent}%` }} /></div>
@@ -177,7 +190,7 @@ const setPercent = set.cardKeys.length ? Math.min(100, Math.floor(collected / se
           <h2 id="cn-collection-faq-title">Chinese Collections FAQ</h2>
           <div className="cn-collection-faq-items">
             <details><summary>Why are the images in the sets so low quality?<span aria-hidden="true">+</span></summary><div><p>Older Kayou CN sets were not documented well and are nearly impossible to find. All of my images inside each set and representing each set generously came from HeiManTou's Dropbox with his last five years of tracking, data, and research.</p></div></details>
-            <details><summary>Well, now I know what cards are in each set. How do I find them?<span aria-hidden="true">+</span></summary><div><p>Do not use AliExpress. It is <strong>only</strong> resealed or fake product and nothing else. You will get nothing authentic unless it's a trick box, sent to you so that you tell everyone you found a trusted source on AliExpress. Kayou has <strong>no official presence</strong> in that cesspool.</p><p>I only get my Chinese products and singles from Amber and Hao, my beloved Chinese friends, who live in Shenzhen and run <a href="https://www.pakracards.com/" target="_blank" rel="noopener noreferrer">PakraCards</a>. They are an extremely reputable and highly trusted source... they also don't condone scammer pricing. Some cards are naturally higher because of their limited quantities or availability, but 99% of the singles on their website don't even break the 5-10 USD limit.</p></div></details>
+            <details><summary>Well, now I know what cards are in each set. How do I find them?<span aria-hidden="true">+</span></summary><div><p>Do not use AliExpress. It is <strong>only</strong> resealed or fake product and nothing else. You will get nothing authentic unless it's a trick box, sent to you so that you tell everyone you found a trusted source on AliExpress. Kayou has <strong>no official presence</strong> in that cesspool.</p><p>I only get my Chinese products and singles from Amber and Hao, my beloved Chinese friends, who live in Shenzhen and run <a href="https\://www.pakracards.com/" target="_blank" rel="noopener noreferrer">PakraCards</a>. They are an extremely reputable and highly trusted source... they also don't condone scammer pricing. Some cards are naturally higher because of their limited quantities or availability, but 99% of the singles on their website don't even break the 5-10 USD limit.</p></div></details>
             <details><summary>Why do some cards have the My Little Pony logo and others don't?<span aria-hidden="true">+</span></summary><div><p>Some of it is just a matter of whether or not that card was documented. Kayou CN MLP did not pick up popularity until it was a few sets in, therefore nobody was running any kind of documentation or databases.</p></div></details>
             <details><summary>Why did you add CN MLP to MLPEKAYOU?<span aria-hidden="true">+</span></summary><div><p>High demand. This will drastically increase website costs, but I did it in the hopes that you would be able to safely branch out.</p></div></details>
             <details><summary>How can we help offset website costs?<span aria-hidden="true">+</span></summary><div><p>Buy through <strong>StonesTradingCo</strong>!</p></div></details>
@@ -287,6 +300,7 @@ html[data-theme="light"] .collection-tile{background:#fff;color:#202226;border-c
 @media(hover:hover){.collection-tile:hover{border-color:var(--tile-accent);box-shadow:0 8px 25px #0002}.collection-tile:hover .collection-tile-image{transform:scale(1.035)}.collection-tile:hover .collection-tile-detail>span:last-child{color:var(--tile-accent)}}
 @media(max-width:480px){.collection-tile-body{padding:9px}.collection-tile-title h2{font-size:13px}.collection-tile-count>span>strong{font-size:17px}.collection-tile-detail{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.collection-tile,.collection-tile *{transition:none!important}}
+.cn-code-search{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-bottom:12px;min-width:0;color:hsl(var(--foreground))}.cn-code-search>label{display:flex;align-items:center;gap:8px;width:min(100%,320px);min-width:0;border-bottom:1px solid #80808040;color:var(--collections-muted)}.cn-code-search input{width:100%;min-width:0;min-height:40px;padding:6px 0;border:0;outline:none;background:transparent;color:inherit;font:inherit;font-size:16px}.cn-code-search input::placeholder{font-size:13px}.cn-code-search input::-webkit-search-cancel-button{-webkit-appearance:none}.cn-code-search label:focus-within{border-color:hsl(var(--primary));color:hsl(var(--primary))}.cn-code-search>button{display:flex;align-items:center;justify-content:center;min-height:40px;width:34px;border:0;background:transparent;color:var(--collections-muted);border-radius:6px}.cn-code-search>button:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:2px}.cn-code-search>span{font-size:11px;color:var(--collections-muted)}.collection-tile[data-code-match="true"]{border-color:hsl(var(--primary));box-shadow:0 0 0 1px hsl(var(--primary)/.35),0 0 22px hsl(var(--primary)/.2)}.cn-code-match-detail{margin-top:7px;font-size:10px;line-height:1.5;color:hsl(var(--primary));overflow-wrap:anywhere}.cn-code-match-detail p{margin:0}.cn-code-match-detail>span{display:block;margin-top:3px;color:var(--tile-muted);font-size:9px}
       `}</style>
     </div>
   );
