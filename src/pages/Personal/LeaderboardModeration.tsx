@@ -1,911 +1,826 @@
-import { getMoonFourDisplayCode } from "@/lib/moon-four-catalog";
-import { getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
-import { cardImagePaths, getNightmareNightFront, getMoonFourFront, getHeartswarmingEveFront } from "@/lib/card-images";
-import { getISOSetId, funCatalog, moonCatalog, rainbowCatalog, starCatalog, tcgCatalog } from "@/lib/iso-card-catalog";
-import { getISOSetName as getCatalogSetName, getISOCardCode as getCatalogCardCode } from "@/lib/iso-card-catalog";
+import { EnglishLeaderboardAppealQueue } from "@/components/EnglishLeaderboardAppeals";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { englishViewCard, englishViewName, englishViewCode, englishViewImage, englishViewStyle } from "@/lib/english-card-views";
 import { buildListingWarningMessage } from "@/components/ListingModerationWarnings";
 import CardImage from "@/components/CardImage";
 import rylandGraceAvatar from "@/assets/avatars/rylandgrace.webp";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  History,
-  Loader2,
-  MessageCircle,
-  MoreVertical,
-  Search,
-  Shield,
-  UserX,
-  X,
-  RefreshCw,
-  ChevronDown,
-} from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, History, Loader2, MoreVertical, Search, Shield, UserX, X, RefreshCw, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
+type AccessDirectoryRow = { user_id: string; username: string; discord_username: string | null; trade_access_revoked: boolean; frame_id: string | null; revoked_at: string | null; total_count: number | string };
+const frameNames: Record<string, string> = { frame001: "Star One", frame002: "500 cards", frame003: "PakraCards Supporter", frame004: "Rainbow One", frame005: "Nightmare Night", frame006: "Moon Three", frame007: "Moon One", frame008: "Moon Two", frame009: "Rainbow Two", frame010: "Pinkie Party" };
+const accessFrameLabel = (id: string | null) => id ? `${id}${frameNames[id] ? ` / ${frameNames[id]}` : ""}` : "Unknown frame";
+const collectionFrames = new Set(["frame001", "frame002", "frame004", "frame005", "frame006", "frame007", "frame008", "frame009"]);
+function ModerationFramePreview({ frameId, isLightMode }: { frameId: string | null; isLightMode: boolean }) {
+    const frame = getProfileAssets({ avatar_frame: frameId }).frame;
+    return <figure className="flex shrink-0 flex-col items-center gap-2"><div className="flex h-28 w-28 items-center justify-center">{frame ? <CardImage src={isLightMode && frame.lightImage ? frame.lightImage : frame.image} alt={frame.name} className="h-full w-full object-contain"/> : <span className="text-center text-xs text-muted-foreground">Frame preview unavailable</span>}</div><figcaption className="max-w-36 text-center text-xs font-semibold">{frame?.name ?? (frameId ? frameNames[frameId] ?? "Frame" : "Frame")}</figcaption></figure>;
+}
+function FrameRestrictionReason({ frameId }: { frameId: string | null }) {
+    return <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{frameId && collectionFrames.has(frameId) ? <><span className="font-semibold">Usual reason: </span>The collection met the frame requirement, then later dropped below it.</> : <><span className="font-semibold">Reason: </span>No individual revocation reason was recorded for this frame.</>}</p>;
+}
 type LeaderboardBan = {
-  userId: string;
-  username: string;
-  createdAt: string;
-  reason?: string;
+    userId: string;
+    username: string;
+    createdAt: string;
+    reason?: string;
 };
 type ModerationHistoryItem = {
-  id: number;
-  moderatorUsername: string;
-  moderatorAvatar: string;
-  targetUsername: string;
-  targetAvatar: string;
-  action: string;
-  actionLabel: string;
-  createdAt: string;
-  details?: string;
+    id: number;
+    moderatorUsername: string;
+    moderatorAvatar: string;
+    targetUsername: string;
+    targetAvatar: string;
+    action: string;
+    actionLabel: string;
+    createdAt: string;
+    details?: string;
 };
 type AccountReportGroup = {
-  userId: string;
-  username: string;
-  avatar: string;
-  tradeAccessRevoked: boolean;
-  reports: {
-    id: number;
-    reporterUserId: string;
-    reporterUsername: string;
-    reporterAvatar: string;
-    createdAt: string;
-    comment: string;
-    wantsStaffContact: boolean;
-    contactDiscordUsername: string;
-    contactedAt: string | null;
-    contactedBy: string | null;
-    contactedByUsername: string;
-    contactedByAvatar: string;
-  }[];
-  expiredOffers: {
-    id: number;
-    senderUsername: string;
-    senderAvatar: string;
-    targetSetId: string;
-    targetCardKey: string;
-    expiredAt: string;
-  }[];
+    userId: string;
+    username: string;
+    avatar: string;
+    tradeAccessRevoked: boolean;
+    reports: {
+        id: number;
+        reporterUserId: string;
+        reporterUsername: string;
+        reporterAvatar: string;
+        createdAt: string;
+        comment: string;
+        wantsStaffContact: boolean;
+        contactDiscordUsername: string;
+        contactedAt: string | null;
+        contactedBy: string | null;
+        contactedByUsername: string;
+        contactedByAvatar: string;
+    }[];
+    expiredOffers: {
+        id: number;
+        senderUsername: string;
+        senderAvatar: string;
+        targetSetId: string;
+        targetCardKey: string;
+        expiredAt: string;
+    }[];
 };
 type CardPriceReport = {
-  id: number;
-  setId: string;
-  cardKey: string;
-  reportedPrice: number;
-  createdAt: string;
-  reportedUserId: string;
-  reportedUsername: string;
-  reportedAvatar: string;
-  reporterUsername: string;
-  reporterAvatar: string;
+    id: number;
+    setId: string;
+    cardKey: string;
+    reportedPrice: number;
+    createdAt: string;
+    reportedUserId: string;
+    reportedUsername: string;
+    reportedAvatar: string;
+    reporterUsername: string;
+    reporterAvatar: string;
 };
 const getHistoryActionTitle = (item: ModerationHistoryItem) => {
-  const labels: Record<string, string> = {
-    leaderboard_eligibility_revoked: "Leaderboard eligibility revoked",
-    leaderboard_self_excluded: "Self-excluded from leaderboards",
-    leaderboard_user_banned: "Leaderboard eligibility revoked",
-    leaderboard_user_unbanned: "Leaderboard ban lifted",
-    leaderboard_ban_lifted: "Leaderboard ban lifted",
-    trading_report_contacted: "Report author contacted",
-    trading_access_revoked: "Trading access revoked",
-    trading_access_restored: "Trading access restored",
-    trading_access_restored_reports_cleared: "Access restored - Reports cleared",
-    trading_profile_report_dismissed: "Profile report dismissed",
-    trading_card_report_dismissed: "Card report dismissed",
-    overpriced_listing_removed: "Sale listing removed and user warned",
-  };
-  return labels[item.action] || item.actionLabel;
+    const labels: Record<string, string> = {
+        leaderboard_eligibility_revoked: "Leaderboard eligibility revoked",
+        leaderboard_self_excluded: "Self-excluded from leaderboards",
+        leaderboard_user_banned: "Leaderboard eligibility revoked",
+        leaderboard_user_unbanned: "Leaderboard ban lifted",
+        leaderboard_ban_lifted: "Leaderboard ban lifted",
+        trading_report_contacted: "Report author contacted",
+        trading_access_revoked: "Trading access revoked",
+        frame_access_reinstated: "Frame access reinstated",
+        english_appeal_approved: "English appeal approved",
+        english_appeal_declined: "English appeal declined",
+        english_appeal_response: "English appeal response",
+        trading_access_restored: "Trading access restored",
+        trading_access_restored_reports_cleared: "Access restored - Reports cleared",
+        trading_profile_report_dismissed: "Profile report dismissed",
+        trading_card_report_dismissed: "Card report dismissed",
+        overpriced_listing_removed: "Sale listing removed and user warned",
+    };
+    return labels[item.action] || item.actionLabel;
 };
-const getModerationSetName = (setId: string) => {
-  const id = getISOSetId(setId);
-  if (id === "13") return "Eternal Moon: Fourth Edition";
-  if (id === "hearthswarming-eve") return "Hearthswarming Eve";
-  return getCatalogSetName(setId);
-};
-const getModerationCardCode = (setId: string, cardKey: string) => {
-  const id = getISOSetId(setId);
-  let key = cardKey;
-  for (const prefix of [`${setId}:`, `${id}:`, `${setId}-`, `${id}-`]) {
-    if (key.startsWith(prefix)) { key = key.slice(prefix.length); break; }
-  }
-  key = key.replace(/^BONUS-/, "");
-  if (id === "13") return getMoonFourDisplayCode(key);
-  if (id === "hearthswarming-eve") return getHeartswarmingEveDisplayCode(key);
-  return getCatalogCardCode(setId, cardKey);
-};
-const getReportedCardImage = (setId: string, cardKey: string): string => {
-  const id = getISOSetId(setId);
-  let key = cardKey;
-  for (const prefix of [`${setId}:`, `${id}:`, `${setId}-`, `${id}-`]) {
-    if (key.startsWith(prefix)) { key = key.slice(prefix.length); break; }
-  }
-  key = key.replace(/^BONUS-/, "");
-  if (id === "13") return getMoonFourFront(key);
-  if (id === "hearthswarming-eve") return getHeartswarmingEveFront(key);
-  if (id === "9" || id === "tcgpromos") {
-    const match = key.match(id === "9" ? /^PR-?(\d+)$/ : /^RR-?(\d+)$/);
-    if (!match) return "";
-    return id === "9" ? cardImagePaths.ccgPromo(match[1].padStart(3, "0"))
-      : cardImagePaths.tcgRubyPromo(match[1].padStart(2, "0"));
-  }
-  for (const group of [funCatalog, moonCatalog, rainbowCatalog, starCatalog]) {
-    const set = group.sets.find((entry) => entry.id === id);
-    if (!set) continue;
-    const match = key.match(/^([A-Z ]+)-(\d+)$/);
-    return match ? cardImagePaths.ccg(set.folder, set.prefix, group.getRarityCode(match[1]), match[2].padStart(3, "0")) : "";
-  }
-  const set = tcgCatalog.sets.find((entry) => entry.id === id);
-  if (!set) return "";
-  if (id === "14") {
-    key = key.replace(/^(BP03-ER0[12])-([ABC])\2$/, "$1-$2");
-    return getNightmareNightFront(key);
-  }
-  if (id === "12") return cardImagePaths.discord(key);
-  if (key.startsWith("BP01ER")) return cardImagePaths.fantasyEmerald(key.slice(-2));
-  if (key.startsWith("BP01PER")) return cardImagePaths.fantasyParallelEmerald(key.slice(-2));
-  return cardImagePaths.byFolder(set.folder, key);
-};
-const ReportedCardThumbnail = ({ setId, cardKey }: { setId: string; cardKey: string }) => {
-  const src = getReportedCardImage(setId, cardKey);
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [src]);
-  const zoom = /\.png(?:[?#]|$)/i.test(src) ? 1 : 1.05;
-  return (
-    <div className="moderation-card-preview" aria-label={getModerationCardCode(setId, cardKey)}>
-      {src && !failed ? (
-        <div className="moderation-card-preview-crop">
-          <CardImage src={src} alt={getModerationCardCode(setId, cardKey)} onError={() => setFailed(true)}
-            className="h-full w-full object-cover object-center" style={{ transform: `scale(${zoom})` }} />
-        </div>
-      ) : <span className="text-center text-xs text-zinc-500">Image unavailable</span>}
-    </div>
-  );
+const getModerationSetName = englishViewName;
+const getModerationCardCode = (setId: string, cardKey: string) => englishViewCode({ set_id: setId, card_key: cardKey });
+const getReportedCardImage = (setId: string, cardKey: string) => englishViewImage({ set_id: setId, card_key: cardKey });
+const ReportedCardThumbnail = ({ setId, cardKey }: {
+    setId: string;
+    cardKey: string;
+}) => {
+    const src = getReportedCardImage(setId, cardKey);
+    const [failed, setFailed] = useState(false);
+    useEffect(() => setFailed(false), [src]);
+    const imageCard = { set_id: setId, card_key: cardKey };
+    return (<div className="moderation-card-preview" aria-label={getModerationCardCode(setId, cardKey)}>
+      {src && !failed ? (<div className="moderation-card-preview-crop">
+          <CardImage src={src} alt={getModerationCardCode(setId, cardKey)} onError={() => setFailed(true)} className="h-full w-full object-cover object-center" imageSize={englishViewCard(imageCard)?.original ? "original" : "grid"} style={englishViewStyle(imageCard)}/>
+        </div>) : <span className="text-center text-xs text-zinc-500">Image unavailable</span>}
+    </div>);
 };
 const LeaderboardModeration = () => {
-const navigate = useNavigate();
-const [isLightMode, setIsLightMode] = useState(
-    () => document.documentElement.dataset.theme === "light",
-  );
-const [authorized, setAuthorized] = useState<boolean | null>(null);
-const [bans, setBans] = useState<LeaderboardBan[]>([]);
-const [loading, setLoading] = useState(true);
-const [selectedBan, setSelectedBan] = useState<LeaderboardBan | null>(null);
-const [unbanning, setUnbanning] = useState(false);
-const [errorMessage, setErrorMessage] = useState("");
-const [successMessage, setSuccessMessage] = useState("");
-const [searchQuery, setSearchQuery] = useState("");
-const [historyAction, setHistoryAction] = useState("all");
-const [banRefresh, setBanRefresh] = useState(0);
-const [reportRefresh, setReportRefresh] = useState(0);
-const [currentView, setCurrentView] = useState<
-    "active" | "account_reports" | "strikes" | "history"
-  >(() =>
-    new URLSearchParams(window.location.search).get("view") ===
-    "account_reports"
-      ? "account_reports"
-      : new URLSearchParams(window.location.search).get("view") === "strikes" ? "strikes" : "active",
-  );
-const [historyItems, setHistoryItems] = useState<ModerationHistoryItem[]>([]);
-const [historyLoading, setHistoryLoading] = useState(false);
-const [historyLoaded, setHistoryLoaded] = useState(false);
-const [accountReports, setAccountReports] = useState<AccountReportGroup[]>(
-    [],
-  );
-const [cardReports, setCardReports] = useState<CardPriceReport[]>([]);
-const [reportsLoading, setReportsLoading] = useState(false);
-const [revokingUserId, setRevokingUserId] = useState<string | null>(null);
-const [selectedAccountReport, setSelectedAccountReport] =
-    useState<AccountReportGroup | null>(null);
-const [selectedReportComment, setSelectedReportComment] = useState<
-    AccountReportGroup["reports"][number] | null
-  >(null);
-const [markingContacted, setMarkingContacted] = useState(false);
-const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
-const [dismissTarget, setDismissTarget] = useState<{ kind: "profile" | "card"; id: number; username: string } | null>(null);
-const [dismissing, setDismissing] = useState(false);
-const [warningTarget, setWarningTarget] = useState<CardPriceReport | null>(null);
-const [warningMode, setWarningMode] = useState<"template" | "custom">("template");
-const [suggestedPrice, setSuggestedPrice] = useState("");
-const [customExplanation, setCustomExplanation] = useState("");
-const [warningError, setWarningError] = useState("");
-const [sendingWarning, setSendingWarning] = useState(false);
-const warningMessage = warningTarget && warningMode === "template"
-  ? buildListingWarningMessage(warningTarget.reportedUsername, getModerationCardCode(warningTarget.setId, warningTarget.cardKey), suggestedPrice.trim())
-  : customExplanation.trim();
-const removeListingAndWarn = async () => {
-  if (!warningTarget || sendingWarning) return;
-  if (!/^\$?\d+(?:\.\d{1,2})?(?:\s*-\s*\$?\d+(?:\.\d{1,2})?)?$/.test(suggestedPrice.trim()) || !warningMessage.trim()) {
-    setWarningError("Enter a price or range, such as $5.00 - $10.00, and a written explanation.");
-    return;
-  }
-  setSendingWarning(true);
-  setWarningError("");
-  try {
-    const { error } = await (supabase as any).rpc("remove_overpriced_listing_and_warn", {
-      p_report_id: warningTarget.id,
-      p_suggested_price: suggestedPrice.trim(),
-      p_explanation: warningMode === "custom" ? customExplanation.trim() : null,
-      p_card_code: getModerationCardCode(warningTarget.setId, warningTarget.cardKey),
-      p_use_template: warningMode === "template",
-    });
-    if (error) throw error;
-    setCardReports((current) => current.filter((item) => !(item.reportedUserId === warningTarget.reportedUserId && item.setId === warningTarget.setId && item.cardKey === warningTarget.cardKey)));
-    setSuccessMessage(`${warningTarget.reportedUsername}'s sale listing was removed and their warning was saved.`);
-    setWarningTarget(null);
-    setHistoryLoaded(false);
-  } catch (error: any) {
-    setWarningError(error.message || "Unable to remove the listing. Please try again.");
-  } finally {
-    setSendingWarning(false);
-  }
-};
-  const hasOpenDialog = Boolean(selectedBan || selectedAccountReport || selectedReportComment || showOfferStrikeInfo || dismissTarget || warningTarget);
-  useEffect(() => {
-    if (!hasOpenDialog) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
-  }, [hasOpenDialog]);
-  useEffect(() => {
-const syncTheme = () => {
-      setIsLightMode(document.documentElement.dataset.theme === "light");
-    };
-const observer = new MutationObserver(syncTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "data-theme"],
-    });
-    syncTheme();
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => {
-    if (!authorized) return;
-const loadAccountReports = async () => {
-      setReportsLoading(true);
-const [accountResult, cardResult, expirationResult] = await Promise.all([
-        supabase
-          .from("trading_post_user_reports")
-          .select(
-            "id, reporter_user_id, reported_user_id, created_at, reporter_comment, wants_staff_contact, contact_discord_username, contacted_at, contacted_by",
-          )
-          .is("resolved_at", null)
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("trading_post_card_reports")
-          .select(
-            "id, reporter_user_id, reported_user_id, set_id, card_key, reported_price, created_at",
-          )
-          .is("resolved_at", null)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("trade_offer_expiration_strikes")
-          .select(
-            "id, recipient_user_id, sender_user_id, target_set_id, target_card_key, expired_at",
-          )
-          .is("cleared_at", null)
-          .order("expired_at", { ascending: false }),
-      ]);
-      if (accountResult.error || cardResult.error || expirationResult.error) {
-        console.error(
-          "Unable to load reports:",
-          accountResult.error || cardResult.error || expirationResult.error,
-        );
-        setErrorMessage("Unable to load reports.");
-        setReportsLoading(false);
-        return;
-      }
-const accountRows = accountResult.data || [];
-const cardRows = cardResult.data || [];
-const expirationRows = expirationResult.data || [];
-const profileIds = Array.from(
-        new Set(
-          [
-            ...accountRows.flatMap((row) => [
-              row.reporter_user_id,
-              row.reported_user_id,
-              row.contacted_by,
-            ]),
-            ...cardRows.flatMap((row) => [
-              row.reporter_user_id,
-              row.reported_user_id,
-            ]),
-            ...expirationRows.flatMap((row) => [
-              row.recipient_user_id,
-              row.sender_user_id,
-            ]),
-          ].filter(Boolean),
-        ),
-      );
-const { data: profileRows } = profileIds.length
-        ? await supabase
-            .from("profiles")
-            .select("id, username, avatar_url")
-            .in("id", profileIds)
-        : { data: [] };
-const profileMap = new Map(
-        (profileRows || []).map((profile) => [profile.id, profile]),
-      );
-const targetIds = Array.from(
-        new Set([
-          ...accountRows.map((row) => row.reported_user_id),
-          ...expirationRows.map((row) => row.recipient_user_id),
-        ]),
-      );
-const { data: tradingRows } = targetIds.length
-        ? await supabase
-            .from("trading_profiles")
-            .select("user_id, trade_access_revoked")
-            .in("user_id", targetIds)
-        : { data: [] };
-const revokedByUser = new Map(
-        (tradingRows || []).map((row) => [
-          row.user_id,
-          Boolean(row.trade_access_revoked),
-        ]),
-      );
-const grouped = new Map<string, AccountReportGroup>();
-      accountRows.forEach((row) => {
-const target = profileMap.get(row.reported_user_id);
-const reporter = profileMap.get(row.reporter_user_id);
-const contactModerator = row.contacted_by
-          ? profileMap.get(row.contacted_by)
-          : null;
-        if (!grouped.has(row.reported_user_id)) {
-          grouped.set(row.reported_user_id, {
-            userId: row.reported_user_id,
-            username: target?.username || "Deleted User",
-            avatar: getProfileAssets(target).avatar,
-            tradeAccessRevoked:
-              revokedByUser.get(row.reported_user_id) || false,
-            reports: [],
-            expiredOffers: [],
-          });
+    const navigate = useNavigate();
+    const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
+    const [authorized, setAuthorized] = useState<boolean | null>(null);
+    const [bans, setBans] = useState<LeaderboardBan[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedBan, setSelectedBan] = useState<LeaderboardBan | null>(null);
+    const [unbanning, setUnbanning] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [historyAction, setHistoryAction] = useState("all");
+    const [banRefresh, setBanRefresh] = useState(0);
+    const [reportRefresh, setReportRefresh] = useState(0);
+    const [currentView, setCurrentView] = useState<"active" | "account_reports" | "strikes" | "history" | "discord" | "frames" | "appeals">(() => new URLSearchParams(window.location.search).get("view") ===
+        "account_reports"
+        ? "account_reports"
+        : new URLSearchParams(window.location.search).get("view") === "strikes" ? "strikes" : "active");
+    const [directoryResult, setDirectoryResult] = useState<{ key: string; rows: AccessDirectoryRow[]; total: number }>({ key: "", rows: [], total: 0 });
+    const [directoryLoading, setDirectoryLoading] = useState(false);
+    const [directoryError, setDirectoryError] = useState("");
+    const [directoryRefresh, setDirectoryRefresh] = useState(0);
+    const [directoryTarget, setDirectoryTarget] = useState<{ mode: "discord" | "frames"; row: AccessDirectoryRow } | null>(null);
+    const [directoryReason, setDirectoryReason] = useState("");
+    const [directorySaving, setDirectorySaving] = useState(false);
+    const [directoryActionError, setDirectoryActionError] = useState("");
+    const directorySaveLock = useRef(false);
+    const [appealRefresh, setAppealRefresh] = useState(0);
+    const [historyItems, setHistoryItems] = useState<ModerationHistoryItem[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyLoaded, setHistoryLoaded] = useState(false);
+    const [accountReports, setAccountReports] = useState<AccountReportGroup[]>([]);
+    const [cardReports, setCardReports] = useState<CardPriceReport[]>([]);
+    const [reportsLoading, setReportsLoading] = useState(false);
+    const [revokingUserId, setRevokingUserId] = useState<string | null>(null);
+    const [selectedAccountReport, setSelectedAccountReport] = useState<AccountReportGroup | null>(null);
+    const [selectedReportComment, setSelectedReportComment] = useState<AccountReportGroup["reports"][number] | null>(null);
+    const [markingContacted, setMarkingContacted] = useState(false);
+    const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
+    const [dismissTarget, setDismissTarget] = useState<{
+        kind: "profile" | "card";
+        id: number;
+        username: string;
+    } | null>(null);
+    const [dismissing, setDismissing] = useState(false);
+    const [warningTarget, setWarningTarget] = useState<CardPriceReport | null>(null);
+    const [warningMode, setWarningMode] = useState<"template" | "custom">("template");
+    const [suggestedPrice, setSuggestedPrice] = useState("");
+    const [customExplanation, setCustomExplanation] = useState("");
+    const [warningError, setWarningError] = useState("");
+    const [sendingWarning, setSendingWarning] = useState(false);
+    const warningMessage = warningTarget && warningMode === "template"
+        ? buildListingWarningMessage(warningTarget.reportedUsername, getModerationCardCode(warningTarget.setId, warningTarget.cardKey), suggestedPrice.trim())
+        : customExplanation.trim();
+    const removeListingAndWarn = async () => {
+        if (!warningTarget || sendingWarning)
+            return;
+        if (!/^\$?\d+(?:\.\d{1,2})?(?:\s*-\s*\$?\d+(?:\.\d{1,2})?)?$/.test(suggestedPrice.trim()) || !warningMessage.trim()) {
+            setWarningError("Enter a price or range, such as $5.00 - $10.00, and a written explanation.");
+            return;
         }
-        grouped.get(row.reported_user_id)?.reports.push({
-          id: row.id,
-          reporterUserId: row.reporter_user_id,
-          reporterUsername: reporter?.username || "Deleted User",
-          reporterAvatar: getProfileAssets(reporter).avatar,
-          createdAt: row.created_at,
-          comment: row.reporter_comment || "",
-          wantsStaffContact: Boolean(row.wants_staff_contact),
-          contactDiscordUsername: row.contact_discord_username || "",
-          contactedAt: row.contacted_at,
-          contactedBy: row.contacted_by,
-          contactedByUsername: contactModerator?.username || "",
-          contactedByAvatar: contactModerator
-            ? getProfileAssets(contactModerator).avatar
-            : "",
+        setSendingWarning(true);
+        setWarningError("");
+        try {
+            const { error } = await (supabase as any).rpc("remove_overpriced_listing_and_warn", {
+                p_report_id: warningTarget.id,
+                p_suggested_price: suggestedPrice.trim(),
+                p_explanation: warningMode === "custom" ? customExplanation.trim() : null,
+                p_card_code: getModerationCardCode(warningTarget.setId, warningTarget.cardKey),
+                p_use_template: warningMode === "template",
+            });
+            if (error)
+                throw error;
+            setCardReports((current) => current.filter((item) => !(item.reportedUserId === warningTarget.reportedUserId && item.setId === warningTarget.setId && item.cardKey === warningTarget.cardKey)));
+            setSuccessMessage(`${warningTarget.reportedUsername}'s sale listing was removed and their warning was saved.`);
+            setWarningTarget(null);
+            setHistoryLoaded(false);
+        }
+        catch (error: any) {
+            setWarningError(error.message || "Unable to remove the listing. Please try again.");
+        }
+        finally {
+            setSendingWarning(false);
+        }
+    };
+    const hasOpenDialog = Boolean(selectedBan || selectedAccountReport || selectedReportComment || showOfferStrikeInfo || dismissTarget || warningTarget);
+    useEffect(() => {
+        if (!hasOpenDialog)
+            return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => { document.body.style.overflow = previousOverflow; };
+    }, [hasOpenDialog]);
+    useEffect(() => {
+        const syncTheme = () => {
+            setIsLightMode(document.documentElement.dataset.theme === "light");
+        };
+        const observer = new MutationObserver(syncTheme);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class", "data-theme"],
         });
-      });
-      expirationRows.forEach((row) => {
-const target = profileMap.get(row.recipient_user_id);
-const sender = profileMap.get(row.sender_user_id);
-        if (!grouped.has(row.recipient_user_id)) {
-          grouped.set(row.recipient_user_id, {
-            userId: row.recipient_user_id,
-            username: target?.username || "Deleted User",
-            avatar: getProfileAssets(target).avatar,
-            tradeAccessRevoked:
-              revokedByUser.get(row.recipient_user_id) || false,
-            reports: [],
-            expiredOffers: [],
-          });
-        }
-        grouped.get(row.recipient_user_id)?.expiredOffers.push({
-          id: row.id,
-          senderUsername: sender?.username || "Deleted User",
-          senderAvatar: getProfileAssets(sender).avatar,
-          targetSetId: row.target_set_id,
-          targetCardKey: row.target_card_key,
-          expiredAt: row.expired_at,
+        syncTheme();
+        return () => observer.disconnect();
+    }, []);
+    useEffect(() => {
+        if (!authorized)
+            return;
+        const loadAccountReports = async () => {
+            setReportsLoading(true);
+            const [accountResult, cardResult, expirationResult] = await Promise.all([
+                supabase
+                    .from("trading_post_user_reports")
+                    .select("id, reporter_user_id, reported_user_id, created_at, reporter_comment, wants_staff_contact, contact_discord_username, contacted_at, contacted_by")
+                    .is("resolved_at", null)
+                    .order("created_at", { ascending: true }),
+                supabase
+                    .from("trading_post_card_reports")
+                    .select("id, reporter_user_id, reported_user_id, set_id, card_key, reported_price, created_at")
+                    .is("resolved_at", null)
+                    .order("created_at", { ascending: false }),
+                supabase
+                    .from("trade_offer_expiration_strikes")
+                    .select("id, recipient_user_id, sender_user_id, target_set_id, target_card_key, expired_at")
+                    .is("cleared_at", null)
+                    .order("expired_at", { ascending: false }),
+            ]);
+            if (accountResult.error || cardResult.error || expirationResult.error) {
+                console.error("Unable to load reports:", accountResult.error || cardResult.error || expirationResult.error);
+                setErrorMessage("Unable to load reports.");
+                setReportsLoading(false);
+                return;
+            }
+            const accountRows = accountResult.data || [];
+            const cardRows = cardResult.data || [];
+            const expirationRows = expirationResult.data || [];
+            const profileIds = Array.from(new Set([
+                ...accountRows.flatMap((row) => [
+                    row.reporter_user_id,
+                    row.reported_user_id,
+                    row.contacted_by,
+                ]),
+                ...cardRows.flatMap((row) => [
+                    row.reporter_user_id,
+                    row.reported_user_id,
+                ]),
+                ...expirationRows.flatMap((row) => [
+                    row.recipient_user_id,
+                    row.sender_user_id,
+                ]),
+            ].filter(Boolean)));
+            const { data: profileRows } = profileIds.length
+                ? await supabase
+                    .from("profiles")
+                    .select("id, username, avatar_url")
+                    .in("id", profileIds)
+                : { data: [] };
+            const profileMap = new Map((profileRows || []).map((profile) => [profile.id, profile]));
+            const targetIds = Array.from(new Set([
+                ...accountRows.map((row) => row.reported_user_id),
+                ...expirationRows.map((row) => row.recipient_user_id),
+            ]));
+            const { data: tradingRows } = targetIds.length
+                ? await supabase
+                    .from("trading_profiles")
+                    .select("user_id, trade_access_revoked")
+                    .in("user_id", targetIds)
+                : { data: [] };
+            const revokedByUser = new Map((tradingRows || []).map((row) => [
+                row.user_id,
+                Boolean(row.trade_access_revoked),
+            ]));
+            const grouped = new Map<string, AccountReportGroup>();
+            accountRows.forEach((row) => {
+                const target = profileMap.get(row.reported_user_id);
+                const reporter = profileMap.get(row.reporter_user_id);
+                const contactModerator = row.contacted_by
+                    ? profileMap.get(row.contacted_by)
+                    : null;
+                if (!grouped.has(row.reported_user_id)) {
+                    grouped.set(row.reported_user_id, {
+                        userId: row.reported_user_id,
+                        username: target?.username || "Deleted User",
+                        avatar: getProfileAssets(target).avatar,
+                        tradeAccessRevoked: revokedByUser.get(row.reported_user_id) || false,
+                        reports: [],
+                        expiredOffers: [],
+                    });
+                }
+                grouped.get(row.reported_user_id)?.reports.push({
+                    id: row.id,
+                    reporterUserId: row.reporter_user_id,
+                    reporterUsername: reporter?.username || "Deleted User",
+                    reporterAvatar: getProfileAssets(reporter).avatar,
+                    createdAt: row.created_at,
+                    comment: row.reporter_comment || "",
+                    wantsStaffContact: Boolean(row.wants_staff_contact),
+                    contactDiscordUsername: row.contact_discord_username || "",
+                    contactedAt: row.contacted_at,
+                    contactedBy: row.contacted_by,
+                    contactedByUsername: contactModerator?.username || "",
+                    contactedByAvatar: contactModerator
+                        ? getProfileAssets(contactModerator).avatar
+                        : "",
+                });
+            });
+            expirationRows.forEach((row) => {
+                const target = profileMap.get(row.recipient_user_id);
+                const sender = profileMap.get(row.sender_user_id);
+                if (!grouped.has(row.recipient_user_id)) {
+                    grouped.set(row.recipient_user_id, {
+                        userId: row.recipient_user_id,
+                        username: target?.username || "Deleted User",
+                        avatar: getProfileAssets(target).avatar,
+                        tradeAccessRevoked: revokedByUser.get(row.recipient_user_id) || false,
+                        reports: [],
+                        expiredOffers: [],
+                    });
+                }
+                grouped.get(row.recipient_user_id)?.expiredOffers.push({
+                    id: row.id,
+                    senderUsername: sender?.username || "Deleted User",
+                    senderAvatar: getProfileAssets(sender).avatar,
+                    targetSetId: row.target_set_id,
+                    targetCardKey: row.target_card_key,
+                    expiredAt: row.expired_at,
+                });
+            });
+            setAccountReports(Array.from(grouped.values()).sort((a, b) => {
+                const latest = (group: AccountReportGroup) => Math.max(0, ...group.reports.map((report) => new Date(report.createdAt).getTime()), ...group.expiredOffers.map((offer) => new Date(offer.expiredAt).getTime()));
+                return latest(b) - latest(a);
+            }));
+            setCardReports(cardRows.map((row) => {
+                const target = profileMap.get(row.reported_user_id);
+                const reporter = profileMap.get(row.reporter_user_id);
+                return {
+                    id: row.id,
+                    setId: row.set_id,
+                    cardKey: row.card_key,
+                    reportedPrice: Number(row.reported_price),
+                    createdAt: row.created_at,
+                    reportedUserId: row.reported_user_id,
+                    reportedUsername: target?.username || "Deleted User",
+                    reportedAvatar: getProfileAssets(target).avatar,
+                    reporterUsername: reporter?.username || "Deleted User",
+                    reporterAvatar: getProfileAssets(reporter).avatar,
+                };
+            }));
+            setReportsLoading(false);
+        };
+        loadAccountReports();
+        const reportChannel = supabase
+            .channel("moderation-account-reports")
+            .on("postgres_changes", { event: "*", schema: "public", table: "trading_post_user_reports" }, () => loadAccountReports())
+            .on("postgres_changes", { event: "*", schema: "public", table: "trading_post_card_reports" }, () => loadAccountReports())
+            .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "trade_offer_expiration_strikes",
+        }, () => loadAccountReports())
+            .on("postgres_changes", { event: "*", schema: "public", table: "trading_profiles" }, () => loadAccountReports())
+            .subscribe();
+        return () => {
+            supabase.removeChannel(reportChannel);
+        };
+    }, [authorized, reportRefresh]);
+    const dismissReport = async () => {
+        if (!dismissTarget || dismissing)
+            return;
+        setDismissing(true);
+        setErrorMessage("");
+        const { error } = await supabase.rpc("dismiss_moderation_report", {
+            p_report_type: dismissTarget.kind,
+            p_report_id: dismissTarget.id,
         });
-      });
-      setAccountReports(
-        Array.from(grouped.values()).sort((a, b) => {
-const latest = (group: AccountReportGroup) =>
-            Math.max(
-              0,
-              ...group.reports.map((report) =>
-                new Date(report.createdAt).getTime(),
-              ),
-              ...group.expiredOffers.map((offer) =>
-                new Date(offer.expiredAt).getTime(),
-              ),
-            );
-          return latest(b) - latest(a);
-        }),
-      );
-      setCardReports(
-        cardRows.map((row) => {
-const target = profileMap.get(row.reported_user_id);
-const reporter = profileMap.get(row.reporter_user_id);
-          return {
-            id: row.id,
-            setId: row.set_id,
-            cardKey: row.card_key,
-            reportedPrice: Number(row.reported_price),
-            createdAt: row.created_at,
-            reportedUserId: row.reported_user_id,
-            reportedUsername: target?.username || "Deleted User",
-            reportedAvatar: getProfileAssets(target).avatar,
-            reporterUsername: reporter?.username || "Deleted User",
-            reporterAvatar: getProfileAssets(reporter).avatar,
-          };
-        }),
-      );
-      setReportsLoading(false);
-    };
-    loadAccountReports();
-const reportChannel = supabase
-      .channel("moderation-account-reports")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "trading_post_user_reports" },
-        () => loadAccountReports(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "trading_post_card_reports" },
-        () => loadAccountReports(),
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "trade_offer_expiration_strikes",
-        },
-        () => loadAccountReports(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "trading_profiles" },
-        () => loadAccountReports(),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(reportChannel);
-    };
-  }, [authorized, reportRefresh]);
-const dismissReport = async () => {
-    if (!dismissTarget || dismissing) return;
-    setDismissing(true);
-    setErrorMessage("");
-    const { error } = await supabase.rpc("dismiss_moderation_report", {
-      p_report_type: dismissTarget.kind,
-      p_report_id: dismissTarget.id,
-    });
-    if (error) {
-      setErrorMessage(error.message || "Unable to dismiss the report.");
-      setDismissing(false);
-      return;
-    }
-    if (dismissTarget.kind === "card") {
-      setCardReports((current) => current.filter((item) => item.id !== dismissTarget.id));
-    } else {
-      setAccountReports((current) => current.map((group) => ({
-        ...group,
-        reports: group.reports.filter((item) => item.id !== dismissTarget.id),
-      })).filter((group) => group.reports.length > 0 || group.expiredOffers.length > 0));
-    }
-    setSuccessMessage(`${dismissTarget.username}'s report was dismissed.`);
-    setDismissTarget(null);
-    setHistoryLoaded(false);
-    setDismissing(false);
-  };
-const revokeTradingAccess = async (report: AccountReportGroup) => {
-    if (revokingUserId) return;
-    setRevokingUserId(report.userId);
-    setErrorMessage("");
-const { error } = await supabase.rpc("revoke_trading_access", {
-      target_user_id: report.userId,
-    });
-    if (error) {
-      console.error("Unable to revoke trading access:", error);
-      setErrorMessage(error.message || "Unable to revoke trading access.");
-      setRevokingUserId(null);
-      return;
-    }
-    setAccountReports((current) =>
-      current.map((item) =>
-        item.userId === report.userId
-          ? { ...item, tradeAccessRevoked: true }
-          : item,
-      ),
-    );
-    setSuccessMessage(
-      `${report.username}'s trade and sale access was revoked.`,
-    );
-    setRevokingUserId(null);
-    setHistoryLoaded(false);
-  };
-const restoreTradingAccess = async (report: AccountReportGroup) => {
-    if (revokingUserId) return;
-    setRevokingUserId(report.userId);
-    setErrorMessage("");
-const { error } = await supabase.rpc("restore_trading_access", {
-      target_user_id: report.userId,
-      new_discord_username: "",
-    });
-    if (error) {
-      setErrorMessage(error.message || "Unable to reinstate trading access.");
-      setRevokingUserId(null);
-      return;
-    }
-    setAccountReports((current) =>
-      current.filter((item) => item.userId !== report.userId),
-    );
-    setSelectedAccountReport(null);
-    setSuccessMessage(
-      `${report.username}'s trade and sale access was reinstated and their reports and expired-offer strikes were cleared.`,
-    );
-    setRevokingUserId(null);
-    setHistoryLoaded(false);
-  };
-const markReporterContacted = async () => {
-    if (
-      !selectedReportComment?.wantsStaffContact ||
-      selectedReportComment.contactedAt ||
-      markingContacted
-    )
-      return;
-    setMarkingContacted(true);
-    setErrorMessage("");
-const { error } = await supabase.rpc("mark_trading_report_contacted", {
-      report_id: selectedReportComment.id,
-    });
-    if (error) {
-      setErrorMessage(
-        error.message || "Unable to mark this reporter as contacted.",
-      );
-      setMarkingContacted(false);
-      return;
-    }
-const {
-      data: { session },
-    } = await supabase.auth.getSession();
-const { data: moderatorProfile } = session?.user
-      ? await supabase
-          .from("profiles")
-          .select("username, avatar_url")
-          .eq("id", session.user.id)
-          .maybeSingle()
-      : { data: null };
-const updated = {
-      ...selectedReportComment,
-      contactedAt: new Date().toISOString(),
-      contactedBy: session?.user.id || null,
-      contactedByUsername: moderatorProfile?.username || "Moderator",
-      contactedByAvatar: getProfileAssets(moderatorProfile).avatar,
-    };
-    setSelectedReportComment(updated);
-    setAccountReports((groups) =>
-      groups.map((group) => ({
-        ...group,
-        reports: group.reports.map((report) =>
-          report.id === updated.id ? updated : report,
-        ),
-      })),
-    );
-    setHistoryLoaded(false);
-    setMarkingContacted(false);
-  };
-  useEffect(() => {
-let active = true;
-const loadModerationPage = async () => {
-      setLoading(true);
-      setErrorMessage("");
-const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.user) {
-        if (active) {
-          setAuthorized(false);
-          setLoading(false);
+        if (error) {
+            setErrorMessage(error.message || "Unable to dismiss the report.");
+            setDismissing(false);
+            return;
         }
-        return;
-      }
-const { data: moderator, error: moderatorError } = await supabase
-        .from("leaderboard_moderators")
-        .select("user_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      if (moderatorError || !moderator) {
-        if (active) {
-          setAuthorized(false);
-          setLoading(false);
+        if (dismissTarget.kind === "card") {
+            setCardReports((current) => current.filter((item) => item.id !== dismissTarget.id));
         }
-        return;
-      }
-      if (active) setAuthorized(true);
-const { data: exclusionRows, error: exclusionsError } = await supabase
-        .from("leaderboard_exclusions")
-        .select("user_id, reason, created_at")
-        .order("created_at", { ascending: false });
-      if (exclusionsError) {
-        if (active) {
-          setErrorMessage("Unable to load leaderboard bans.");
-          setLoading(false);
+        else {
+            setAccountReports((current) => current.map((group) => ({
+                ...group,
+                reports: group.reports.filter((item) => item.id !== dismissTarget.id),
+            })).filter((group) => group.reports.length > 0 || group.expiredOffers.length > 0));
         }
-        return;
-      }
-const userIds = (exclusionRows || []).map((row) => row.user_id);
-      if (userIds.length === 0) {
-        if (active) {
-          setBans([]);
-          setLoading(false);
-        }
-        return;
-      }
-const { data: profileRows, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, username")
-        .in("id", userIds);
-      if (profilesError) {
-        if (active) {
-          setErrorMessage("Unable to load the banned users' names.");
-          setLoading(false);
-        }
-        return;
-      }
-const usernameById = new Map(
-        (profileRows || []).map((profile) => [profile.id, profile.username]),
-      );
-const combinedBans = (exclusionRows || []).map((row) => ({
-        userId: row.user_id,
-        username: usernameById.get(row.user_id) || "Deleted User",
-        createdAt: row.created_at,
-        reason: row.reason || "",
-      }));
-      if (active) {
-        setBans(combinedBans);
-        setLoading(false);
-      }
+        setSuccessMessage(`${dismissTarget.username}'s report was dismissed.`);
+        setDismissTarget(null);
+        setHistoryLoaded(false);
+        setDismissing(false);
     };
-    loadModerationPage();
-    return () => {
-      active = false;
+    const revokeTradingAccess = async (report: AccountReportGroup) => {
+        if (revokingUserId)
+            return;
+        setRevokingUserId(report.userId);
+        setErrorMessage("");
+        const { error } = await supabase.rpc("revoke_trading_access", {
+            target_user_id: report.userId,
+        });
+        if (error) {
+            console.error("Unable to revoke trading access:", error);
+            setErrorMessage(error.message || "Unable to revoke trading access.");
+            setRevokingUserId(null);
+            return;
+        }
+        setAccountReports((current) => current.map((item) => item.userId === report.userId
+            ? { ...item, tradeAccessRevoked: true }
+            : item));
+        setSuccessMessage(`${report.username}'s trade and sale access was revoked.`);
+        setRevokingUserId(null);
+        setHistoryLoaded(false);
     };
-  }, [banRefresh]);
-const unbanUser = async () => {
-    if (!selectedBan || unbanning) return;
-    setUnbanning(true);
-    setErrorMessage("");
-    setSuccessMessage("");
-const { error } = await supabase.rpc("lift_leaderboard_ban", {
-      target_user_id: selectedBan.userId,
-    });
-    if (error) {
-      console.error("Unable to unban leaderboard user:", error);
-      setErrorMessage(error.message || "Unable to unban this user.");
-      setUnbanning(false);
-      return;
-    }
-    setBans((currentBans) =>
-      currentBans.filter((ban) => ban.userId !== selectedBan.userId),
-    );
-    setSuccessMessage(
-      `${selectedBan.username} was unbanned from the leaderboard.`,
-    );
-    setSelectedBan(null);
-    setUnbanning(false);
-    setHistoryLoaded(false);
-  };
-const loadHistory = async (force = false) => {
-    if ((!force && historyLoaded) || historyLoading) return;
-    setHistoryLoading(true);
-    setErrorMessage("");
-const logRows: any[] = [];
-let logError: { message: string } | null = null;
-for (let offset = 0; ; offset += 500) {
-  const { data, error } = await supabase.from("moderation_logs")
-    .select("id, moderator_user_id, moderator_username, target_user_id, target_username, action, details, created_at")
-    .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 499);
-  if (error) { logError = error; break; }
-  logRows.push(...(data || []));
-  if (!data || data.length < 500) break;
-}
-const { data: strikeRows, error: strikeError } = await supabase
-      .from("trade_offer_expiration_strikes")
-      .select("id, recipient_user_id, expired_at")
-      .order("expired_at", { ascending: false });
-    if (logError || strikeError) {
-      console.error("Unable to load moderation history:", logError || strikeError);
-      setErrorMessage("Unable to load moderation history.");
-      setHistoryLoading(false);
-      return;
-    }
-const profileIds = Array.from(
-      new Set(
-        (logRows || []).flatMap((row) => [
-          row.moderator_user_id,
-          row.target_user_id,
-        ]).concat((strikeRows || []).map((row) => row.recipient_user_id)).filter(Boolean),
-      ),
-    );
-let profileById = new Map<string, any>();
-    if (profileIds.length > 0) {
-const { data: profileRows, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url")
-        .in("id", profileIds);
-      if (profileError) {
-        console.error(
-          "Unable to load moderation history profiles:",
-          profileError,
-        );
-        setErrorMessage(
-          "Unable to load profile pictures for moderation history.",
-        );
+    const restoreTradingAccess = async (report: AccountReportGroup) => {
+        if (revokingUserId)
+            return;
+        setRevokingUserId(report.userId);
+        setErrorMessage("");
+        const { error } = await supabase.rpc("restore_trading_access", {
+            target_user_id: report.userId,
+            new_discord_username: "",
+        });
+        if (error) {
+            setErrorMessage(error.message || "Unable to reinstate trading access.");
+            setRevokingUserId(null);
+            return;
+        }
+        setAccountReports((current) => current.filter((item) => item.userId !== report.userId));
+        setSelectedAccountReport(null);
+        setSuccessMessage(`${report.username}'s trade and sale access was reinstated and their reports and expired-offer strikes were cleared.`);
+        setRevokingUserId(null);
+        setHistoryLoaded(false);
+    };
+    const markReporterContacted = async () => {
+        if (!selectedReportComment?.wantsStaffContact ||
+            selectedReportComment.contactedAt ||
+            markingContacted)
+            return;
+        setMarkingContacted(true);
+        setErrorMessage("");
+        const { error } = await supabase.rpc("mark_trading_report_contacted", {
+            report_id: selectedReportComment.id,
+        });
+        if (error) {
+            setErrorMessage(error.message || "Unable to mark this reporter as contacted.");
+            setMarkingContacted(false);
+            return;
+        }
+        const { data: { session }, } = await supabase.auth.getSession();
+        const { data: moderatorProfile } = session?.user
+            ? await supabase
+                .from("profiles")
+                .select("username, avatar_url")
+                .eq("id", session.user.id)
+                .maybeSingle()
+            : { data: null };
+        const updated = {
+            ...selectedReportComment,
+            contactedAt: new Date().toISOString(),
+            contactedBy: session?.user.id || null,
+            contactedByUsername: moderatorProfile?.username || "Moderator",
+            contactedByAvatar: getProfileAssets(moderatorProfile).avatar,
+        };
+        setSelectedReportComment(updated);
+        setAccountReports((groups) => groups.map((group) => ({
+            ...group,
+            reports: group.reports.map((report) => report.id === updated.id ? updated : report),
+        })));
+        setHistoryLoaded(false);
+        setMarkingContacted(false);
+    };
+    useEffect(() => {
+        let active = true;
+        const loadModerationPage = async () => {
+            setLoading(true);
+            setErrorMessage("");
+            const { data: { session }, } = await supabase.auth.getSession();
+            if (!session?.user) {
+                if (active) {
+                    setAuthorized(false);
+                    setLoading(false);
+                }
+                return;
+            }
+            const { data: moderator, error: moderatorError } = await supabase
+                .from("leaderboard_moderators")
+                .select("user_id")
+                .eq("user_id", session.user.id)
+                .maybeSingle();
+            if (moderatorError || !moderator) {
+                if (active) {
+                    setAuthorized(false);
+                    setLoading(false);
+                }
+                return;
+            }
+            if (active)
+                setAuthorized(true);
+            const { data: exclusionRows, error: exclusionsError } = await supabase
+                .from("leaderboard_exclusions")
+                .select("user_id, reason, created_at")
+                .order("created_at", { ascending: false });
+            if (exclusionsError) {
+                if (active) {
+                    setErrorMessage("Unable to load leaderboard bans.");
+                    setLoading(false);
+                }
+                return;
+            }
+            const userIds = (exclusionRows || []).map((row) => row.user_id);
+            if (userIds.length === 0) {
+                if (active) {
+                    setBans([]);
+                    setLoading(false);
+                }
+                return;
+            }
+            const { data: profileRows, error: profilesError } = await supabase
+                .from("profiles")
+                .select("id, username")
+                .in("id", userIds);
+            if (profilesError) {
+                if (active) {
+                    setErrorMessage("Unable to load the banned users' names.");
+                    setLoading(false);
+                }
+                return;
+            }
+            const usernameById = new Map((profileRows || []).map((profile) => [profile.id, profile.username]));
+            const combinedBans = (exclusionRows || []).map((row) => ({
+                userId: row.user_id,
+                username: usernameById.get(row.user_id) || "Deleted User",
+                createdAt: row.created_at,
+                reason: row.reason || "",
+            }));
+            if (active) {
+                setBans(combinedBans);
+                setLoading(false);
+            }
+        };
+        loadModerationPage();
+        return () => {
+            active = false;
+        };
+    }, [banRefresh]);
+    const unbanUser = async () => {
+        if (!selectedBan || unbanning)
+            return;
+        setUnbanning(true);
+        setErrorMessage("");
+        setSuccessMessage("");
+        const { error } = await supabase.rpc("lift_leaderboard_ban", {
+            target_user_id: selectedBan.userId,
+        });
+        if (error) {
+            console.error("Unable to unban leaderboard user:", error);
+            setErrorMessage(error.message || "Unable to unban this user.");
+            setUnbanning(false);
+            return;
+        }
+        setBans((currentBans) => currentBans.filter((ban) => ban.userId !== selectedBan.userId));
+        setSuccessMessage(`${selectedBan.username} was reinstated on the English leaderboard.`);
+        setSelectedBan(null);
+        setUnbanning(false);
+        setHistoryLoaded(false);
+    };
+    const loadHistory = async (force = false) => {
+        if ((!force && historyLoaded) || historyLoading)
+            return;
+        setHistoryLoading(true);
+        setErrorMessage("");
+        const logRows: any[] = [];
+        let logError: {
+            message: string;
+        } | null = null;
+        for (let offset = 0;; offset += 500) {
+            const { data, error } = await supabase.from("moderation_logs")
+                .select("id, moderator_user_id, moderator_username, target_user_id, target_username, action, details, created_at")
+                .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 499);
+            if (error) {
+                logError = error;
+                break;
+            }
+            logRows.push(...(data || []));
+            if (!data || data.length < 500)
+                break;
+        }
+        const { data: strikeRows, error: strikeError } = await supabase
+            .from("trade_offer_expiration_strikes")
+            .select("id, recipient_user_id, expired_at")
+            .order("expired_at", { ascending: false });
+        if (logError || strikeError) {
+            console.error("Unable to load moderation history:", logError || strikeError);
+            setErrorMessage("Unable to load moderation history.");
+            setHistoryLoading(false);
+            return;
+        }
+        const profileIds = Array.from(new Set((logRows || []).flatMap((row) => [
+            row.moderator_user_id,
+            row.target_user_id,
+        ]).concat((strikeRows || []).map((row) => row.recipient_user_id)).filter(Boolean)));
+        let profileById = new Map<string, any>();
+        if (profileIds.length > 0) {
+            const { data: profileRows, error: profileError } = await supabase
+                .from("profiles")
+                .select("id, username, avatar_url")
+                .in("id", profileIds);
+            if (profileError) {
+                console.error("Unable to load moderation history profiles:", profileError);
+                setErrorMessage("Unable to load profile pictures for moderation history.");
+                setHistoryLoading(false);
+                return;
+            }
+            profileById = new Map((profileRows || []).map((profile) => [profile.id, profile]));
+        }
+        const fallbackAvatar = getProfileAssets(null).avatar;
+        const nextHistoryItems = (logRows || []).map((row) => {
+            const moderatorProfile = profileById.get(row.moderator_user_id);
+            const targetProfile = profileById.get(row.target_user_id);
+            const actionLabels: Record<string, string> = {
+                leaderboard_eligibility_revoked: "revoked leaderboard eligibility for",
+                leaderboard_self_excluded: "self-excluded from leaderboards",
+                leaderboard_user_banned: "revoked leaderboard eligibility for",
+                leaderboard_user_unbanned: "unbanned",
+                leaderboard_ban_lifted: "unbanned",
+                trading_report_contacted: "contacted report author",
+                trading_access_revoked: "revoked trade and sale rights for",
+                frame_access_reinstated: "reinstated frame access for",
+                english_appeal_approved: "approved an English appeal for",
+                english_appeal_declined: "declined an English appeal for",
+                english_appeal_response: "responded to an English appeal from",
+                trading_access_restored: "reinstated trade and sale rights for",
+                trading_access_restored_reports_cleared: "reinstated rights and cleared reports for",
+                trading_profile_report_dismissed: "dismissed a profile report for",
+                trading_card_report_dismissed: "dismissed a card report for",
+                overpriced_listing_removed: "removed an overpriced listing and warned",
+            };
+            return {
+                id: row.id,
+                moderatorUsername: row.moderator_username || moderatorProfile?.username || "System",
+                moderatorAvatar: row.moderator_username?.toLowerCase() === "system"
+                    ? rylandGraceAvatar
+                    : moderatorProfile ? getProfileAssets(moderatorProfile).avatar : fallbackAvatar,
+                targetUsername: row.target_username,
+                targetAvatar: targetProfile
+                    ? getProfileAssets(targetProfile).avatar
+                    : fallbackAvatar,
+                action: row.action,
+                actionLabel: actionLabels[row.action] || row.action,
+                createdAt: row.created_at,
+                details: row.details || "",
+            };
+        });
+        const strikeHistoryItems: ModerationHistoryItem[] = (strikeRows || []).map((row) => {
+            const targetProfile = profileById.get(row.recipient_user_id);
+            return {
+                id: -row.id,
+                moderatorUsername: "System",
+                moderatorAvatar: rylandGraceAvatar,
+                targetUsername: targetProfile?.username || "Deleted User",
+                targetAvatar: targetProfile ? getProfileAssets(targetProfile).avatar : fallbackAvatar,
+                action: "trade_offer_expiration_strike",
+                actionLabel: "received an expired-offer strike",
+                createdAt: row.expired_at,
+            };
+        });
+        setHistoryItems([...nextHistoryItems, ...strikeHistoryItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setHistoryLoaded(true);
         setHistoryLoading(false);
-        return;
-      }
-      profileById = new Map(
-        (profileRows || []).map((profile) => [profile.id, profile]),
-      );
-    }
-const fallbackAvatar = getProfileAssets(null).avatar;
-const nextHistoryItems = (logRows || []).map((row) => {
-const moderatorProfile = profileById.get(row.moderator_user_id);
-const targetProfile = profileById.get(row.target_user_id);
-const actionLabels: Record<string, string> = {
-        leaderboard_eligibility_revoked: "revoked leaderboard eligibility for",
-        leaderboard_self_excluded: "self-excluded from leaderboards",
-        leaderboard_user_banned: "revoked leaderboard eligibility for",
-        leaderboard_user_unbanned: "unbanned",
-        leaderboard_ban_lifted: "unbanned",
-        trading_report_contacted: "contacted report author",
-        trading_access_revoked: "revoked trade and sale rights for",
-        trading_access_restored: "reinstated trade and sale rights for",
-        trading_access_restored_reports_cleared:
-          "reinstated rights and cleared reports for",
-        trading_profile_report_dismissed: "dismissed a profile report for",
-        trading_card_report_dismissed: "dismissed a card report for",
-        overpriced_listing_removed: "removed an overpriced listing and warned",
-      };
-      return {
-        id: row.id,
-        moderatorUsername: row.moderator_username || moderatorProfile?.username || "System",
-        moderatorAvatar: row.moderator_username?.toLowerCase() === "system"
-          ? rylandGraceAvatar
-          : moderatorProfile ? getProfileAssets(moderatorProfile).avatar : fallbackAvatar,
-        targetUsername: row.target_username,
-        targetAvatar: targetProfile
-          ? getProfileAssets(targetProfile).avatar
-          : fallbackAvatar,
-        action: row.action,
-        actionLabel: actionLabels[row.action] || row.action,
-        createdAt: row.created_at,
-        details: row.details || "",
-      };
-    });
-    const strikeHistoryItems: ModerationHistoryItem[] = (strikeRows || []).map((row) => {
-      const targetProfile = profileById.get(row.recipient_user_id);
-      return {
-        id: -row.id,
-        moderatorUsername: "System",
-        moderatorAvatar: rylandGraceAvatar,
-        targetUsername: targetProfile?.username || "Deleted User",
-        targetAvatar: targetProfile ? getProfileAssets(targetProfile).avatar : fallbackAvatar,
-        action: "trade_offer_expiration_strike",
-        actionLabel: "received an expired-offer strike",
-        createdAt: row.expired_at,
-      };
-    });
-    setHistoryItems([...nextHistoryItems, ...strikeHistoryItems].sort((a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    setHistoryLoaded(true);
-    setHistoryLoading(false);
-  };
-const openHistory = async () => {
-    setCurrentView("history");
-    setSearchQuery("");
-    await loadHistory(true);
-  };
-const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, strikes: 1, history: 1 });
-const listPanelRef = useRef<HTMLDivElement>(null);
-const pageSize = 10;
-const normalizedSearch = searchQuery.trim().toLowerCase();
-const filteredBans = bans.filter((ban) =>
-    ban.username.toLowerCase().includes(normalizedSearch),
-  );
-const reportedAccounts = accountReports.filter((group) => group.reports.length > 0 && `${group.username} ${group.reports.map(report => report.comment).join(" ")}`.toLowerCase().includes(normalizedSearch));
-const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0 && group.username.toLowerCase().includes(normalizedSearch));
-const searchedCardReports = cardReports.filter(report => `${report.reportedUsername} ${report.reporterUsername} ${report.cardKey} ${report.setId}`.toLowerCase().includes(normalizedSearch));
-const filteredHistory = historyItems.filter(item => (historyAction === "all" || item.action === historyAction) && `${item.moderatorUsername} ${item.targetUsername} ${getHistoryActionTitle(item)} ${item.details || ""}`.toLowerCase().includes(normalizedSearch));
-const totalItems = currentView === "active" ? filteredBans.length
-  : currentView === "account_reports" ? searchedCardReports.length + reportedAccounts.length
-  : currentView === "strikes" ? struckAccounts.length
-  : filteredHistory.length;
-const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-const currentPage = Math.min(pageByView[currentView], totalPages);
-const pageStart = (currentPage - 1) * pageSize;
-const pageEnd = pageStart + pageSize;
-const pagedBans = filteredBans.slice(pageStart, pageEnd);
-const pagedCardReports = searchedCardReports.slice(pageStart, pageEnd);
-const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
-  : reportedAccounts.slice(Math.max(0, pageStart - searchedCardReports.length), Math.max(0, pageEnd - searchedCardReports.length));
-const pagedHistoryItems = filteredHistory.slice(pageStart, pageEnd);
-const pageLoading = currentView === "active" ? loading
-  : currentView === "account_reports" || currentView === "strikes" ? reportsLoading : historyLoading;
-useEffect(() => {
-  setPageByView((pages) => pages[currentView] > totalPages
-    ? { ...pages, [currentView]: totalPages } : pages);
-}, [currentView, totalPages]);
-const changePage = (nextPage: number) => {
-  setPageByView((pages) => ({ ...pages, [currentView]: Math.max(1, Math.min(nextPage, totalPages)) }));
-  listPanelRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
-};
-const refreshWorkspace = () => {
-  setErrorMessage("");
-  if (currentView === "history") void loadHistory(true);
-  else if (currentView === "active") { setLoading(true); setBanRefresh(value => value + 1); }
-  else { setReportsLoading(true); setReportRefresh(value => value + 1); }
-};
-useEffect(() => {
-  if (!authorized) return;
-  const shortcut = (event: KeyboardEvent) => {
-    const target = event.target as HTMLElement;
-    if (event.key === "/" && !event.ctrlKey && !event.metaKey && !target?.closest("input, textarea, select, [contenteditable='true']")) {
-      event.preventDefault();
-      document.querySelector<HTMLInputElement>("[data-mc-search]")?.focus();
-    }
-  };
-  window.addEventListener("keydown", shortcut);
-  return () => window.removeEventListener("keydown", shortcut);
-}, [authorized]);
-  if (authorized === false) {
-    return (
-      <div
-        className={`flex min-h-screen items-center justify-center px-6 ${
-          isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
-        }`}
-      >
-        <div
-          className={`w-full max-w-sm rounded-3xl border p-6 text-center ${
-            isLightMode
-              ? "border-red-600/20 bg-white shadow-lg"
-              : "border-red-500/20 bg-red-500/[0.05]"
-          }`}
-        >
-          <Shield
-            className={`mx-auto h-10 w-10 ${isLightMode ? "text-red-600" : "text-red-400"}`}
-          />
+    };
+    const openHistory = async () => {
+        setCurrentView("history");
+        setSearchQuery("");
+        await loadHistory(true);
+    };
+    const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, strikes: 1, history: 1, discord: 1, frames: 1, appeals: 1 });
+    const listPanelRef = useRef<HTMLDivElement>(null);
+    const pageSize = 10;
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+    const isDirectoryView = currentView === "discord" || currentView === "frames";
+    const directoryKey = `${currentView}:${normalizedSearch}:${pageByView[currentView]}`;
+    useEffect(() => {
+        if (!authorized || (currentView !== "discord" && currentView !== "frames")) return;
+        let cancelled = false;
+        setDirectoryLoading(true);
+        setDirectoryError("");
+        const timer = window.setTimeout(() => {
+            void (async () => {
+                try {
+                    const { data, error } = await (supabase as any).rpc("moderator_access_directory", { p_mode: currentView, p_query: normalizedSearch, p_limit: pageSize, p_offset: (pageByView[currentView] - 1) * pageSize });
+                    if (cancelled) return;
+                    if (error) throw error;
+                    const rows = (data ?? []) as AccessDirectoryRow[];
+                    setDirectoryResult({ key: directoryKey, rows, total: Number(rows[0]?.total_count ?? 0) });
+                } catch (cause) {
+                    if (!cancelled) {
+                        setDirectoryResult({ key: directoryKey, rows: [], total: 0 });
+                        const detail = cause as { code?: string; message?: string };
+                        setDirectoryError(detail.code === "PGRST202" || detail.code === "42883" ? "Run the moderator directory setup SQL, then refresh this section." : detail.message || "This directory could not be loaded.");
+                    }
+                } finally { if (!cancelled) setDirectoryLoading(false); }
+            })();
+        }, 250);
+        return () => { cancelled = true; window.clearTimeout(timer); };
+    }, [authorized, currentView, normalizedSearch, pageByView[currentView], directoryRefresh]);
+    const runDirectoryAction = async () => {
+        if (!directoryTarget || directorySaveLock.current || directoryReason.trim().length < 3) return;
+        directorySaveLock.current = true;
+        setDirectorySaving(true);
+        setDirectoryActionError("");
+        const { mode, row } = directoryTarget;
+        try {
+            const { error } = mode === "discord"
+                ? await (supabase as any).rpc("moderator_revoke_discord", { p_user_id: row.user_id, p_expected_discord: row.discord_username, p_reason: directoryReason.trim() })
+                : await (supabase as any).rpc("moderator_reinstate_frame", { p_user_id: row.user_id, p_frame_id: row.frame_id, p_expected_revoked_at: row.revoked_at, p_reason: directoryReason.trim() });
+            if (error) throw error;
+            setDirectoryResult(previous => ({ ...previous, rows: previous.rows.filter(item => mode === "discord" ? item.user_id !== row.user_id : item.user_id !== row.user_id || item.frame_id !== row.frame_id), total: Math.max(0, previous.total - 1) }));
+            setDirectoryTarget(null);
+            setDirectoryReason("");
+            setSuccessMessage(mode === "discord" ? `${row.username}'s Discord username was removed and trade and sale access was revoked.` : `${accessFrameLabel(row.frame_id)} access was reinstated for ${row.username}.`);
+            setDirectoryRefresh(value => value + 1);
+            setReportRefresh(value => value + 1);
+            setHistoryLoaded(false);
+        } catch (cause) { setDirectoryActionError((cause as { message?: string }).message || "The update could not be saved. Please retry."); }
+        finally { directorySaveLock.current = false; setDirectorySaving(false); }
+    };
+    const filteredBans = bans.filter((ban) => ban.username.toLowerCase().includes(normalizedSearch));
+    const reportedAccounts = accountReports.filter((group) => group.reports.length > 0 && `${group.username} ${group.reports.map(report => report.comment).join(" ")}`.toLowerCase().includes(normalizedSearch));
+    const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0 && group.username.toLowerCase().includes(normalizedSearch));
+    const searchedCardReports = cardReports.filter(report => `${report.reportedUsername} ${report.reporterUsername} ${report.cardKey} ${report.setId}`.toLowerCase().includes(normalizedSearch));
+    const filteredHistory = historyItems.filter(item => (historyAction === "all" || item.action === historyAction) && `${item.moderatorUsername} ${item.targetUsername} ${getHistoryActionTitle(item)} ${item.details || ""}`.toLowerCase().includes(normalizedSearch));
+    const totalItems = currentView === "appeals" ? 0 : isDirectoryView ? directoryResult.total : currentView === "active" ? filteredBans.length
+        : currentView === "account_reports" ? searchedCardReports.length + reportedAccounts.length
+            : currentView === "strikes" ? struckAccounts.length
+                : filteredHistory.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    const currentPage = Math.min(pageByView[currentView], totalPages);
+    const pageStart = (currentPage - 1) * pageSize;
+    const pageEnd = pageStart + pageSize;
+    const pagedBans = filteredBans.slice(pageStart, pageEnd);
+    const pagedCardReports = searchedCardReports.slice(pageStart, pageEnd);
+    const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
+        : reportedAccounts.slice(Math.max(0, pageStart - searchedCardReports.length), Math.max(0, pageEnd - searchedCardReports.length));
+    const pagedHistoryItems = filteredHistory.slice(pageStart, pageEnd);
+    const pageLoading = currentView === "appeals" ? false : isDirectoryView ? directoryLoading || directoryResult.key !== directoryKey : currentView === "active" ? loading
+        : currentView === "account_reports" || currentView === "strikes" ? reportsLoading : historyLoading;
+    useEffect(() => {
+        setPageByView((pages) => pages[currentView] > totalPages
+            ? { ...pages, [currentView]: totalPages } : pages);
+    }, [currentView, totalPages]);
+    const changePage = (nextPage: number) => {
+        setPageByView((pages) => ({ ...pages, [currentView]: Math.max(1, Math.min(nextPage, totalPages)) }));
+        listPanelRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+    };
+    const refreshWorkspace = () => {
+        setErrorMessage("");
+        if (currentView === "appeals") setAppealRefresh(value => value + 1);
+        else if (isDirectoryView) setDirectoryRefresh(value => value + 1);
+        else if (currentView === "history")
+            void loadHistory(true);
+        else if (currentView === "active") {
+            setLoading(true);
+            setBanRefresh(value => value + 1);
+        }
+        else {
+            setReportsLoading(true);
+            setReportRefresh(value => value + 1);
+        }
+    };
+    useEffect(() => {
+        if (!authorized)
+            return;
+        const shortcut = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement;
+            if (event.key === "/" && !event.ctrlKey && !event.metaKey && !target?.closest("input, textarea, select, [contenteditable='true']")) {
+                event.preventDefault();
+                document.querySelector<HTMLInputElement>("[data-mc-search]")?.focus();
+            }
+        };
+        window.addEventListener("keydown", shortcut);
+        return () => window.removeEventListener("keydown", shortcut);
+    }, [authorized]);
+    if (authorized === false) {
+        return (<div className={`flex min-h-screen items-center justify-center px-6 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+        <div className={`w-full max-w-sm rounded-3xl border p-6 text-center ${isLightMode
+                ? "border-red-600/20 bg-white shadow-lg"
+                : "border-red-500/20 bg-red-500/[0.05]"}`}>
+          <Shield className={`mx-auto h-10 w-10 ${isLightMode ? "text-red-600" : "text-red-400"}`}/>
           <h1 className="mt-4 text-xl font-bold">Access Denied</h1>
-          <p
-            className={`mt-2 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
-          >
+          <p className={`mt-2 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
             This page is only available to the leaderboard moderation team.
           </p>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className={`mt-5 rounded-xl px-5 py-2.5 text-sm font-bold ${
-              isLightMode
+          <button type="button" onClick={() => navigate(-1)} className={`mt-5 rounded-xl px-5 py-2.5 text-sm font-bold ${isLightMode
                 ? "bg-[#c89d13] text-white"
-                : "bg-[#FFD54A] text-black"
-            }`}
-          >
+                : "bg-[#FFD54A] text-black"}`}>
             Go Back
           </button>
         </div>
-      </div>
-    );
-  }
-  return (
-    <div
-      data-mobile-theme={isLightMode ? "light" : "dark"}
-      className={`moderation-page min-h-screen pb-12 ${
-        isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
-      }`}
-    >
+      </div>);
+    }
+    return (<div data-mobile-theme={isLightMode ? "light" : "dark"} className={`moderation-page min-h-screen pb-12 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <style>{`
-.moderation-page{--mc-accent:#e7c84b;--mc-bg:#181b1e;--mc-soft:#22262a;--mc-line:#ffffff15;--mc-ink:#f4f4f5;--mc-muted:#9ca3af}.moderation-page[data-mobile-theme="light"]{--mc-bg:#fff;--mc-soft:#f0f2f4;--mc-line:#19242d18;--mc-ink:#20262b;--mc-muted:#68727b}.spooky .moderation-page,[data-theme="spooky"] .moderation-page{--mc-accent:#be9af9}.mc-shell{max-width:1440px!important;margin:0 auto!important}.mc-kicker{font-size:9px;letter-spacing:.1em;color:var(--mc-accent);font-weight:650}.mc-title{font-size:25px;font-weight:700;line-height:1.2;letter-spacing:-.03em;margin:4px 0}.mc-query-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mc-line);color:var(--mc-ink)}.mc-query-bar>label{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:0 10px;border:1px solid var(--mc-line);border-radius:9px;background:var(--mc-soft)}.mc-query-bar>label svg{flex-shrink:0;color:var(--mc-muted)}.mc-query-bar input{width:100%;min-width:0;border:0;background:none;color:var(--mc-ink);font-size:16px;padding:9px 0;outline:none}.mc-query-bar input::placeholder{font-size:12px}.mc-query-bar kbd{font:11px monospace;color:var(--mc-muted)}.mc-query-bar select{max-width:240px;background:var(--mc-soft);color:var(--mc-ink);border:1px solid var(--mc-line);border-radius:9px;padding:9px;font-size:12px;min-height:40px}.mc-query-bar>button{display:flex;align-items:center;gap:7px;border:1px solid var(--mc-line);background:var(--mc-bg);color:var(--mc-ink);padding:10px;border-radius:9px;font-size:11px;white-space:nowrap}.mc-query-bar>button:disabled{opacity:.4}.moderation-panel{scroll-margin-top:100px}.mc-shell button:focus-visible,.mc-shell select:focus-visible{outline:2px solid var(--mc-accent);outline-offset:3px}.mc-query-bar label:focus-within{border-color:var(--mc-accent)}
-@media(max-width:680px){.mc-title{font-size:22px}.mc-query-bar{flex-wrap:wrap;padding:12px;gap:8px}.mc-query-bar>label{flex-basis:100%}.mc-query-bar select{flex:1;max-width:none;min-width:0;font-size:16px}.mc-query-bar>button{margin-left:auto;min-height:42px}.mc-query-bar kbd{display:none}}
+.moderation-page{--mc-accent:#e7c84b;--mc-bg:#181b1e;--mc-soft:#22262a;--mc-line:#ffffff15;--mc-ink:#f4f4f5;--mc-muted:#9ca3af}.moderation-page[data-mobile-theme="light"]{--mc-bg:#fff;--mc-soft:#f0f2f4;--mc-line:#19242d18;--mc-ink:#20262b;--mc-muted:#68727b}.spooky .moderation-page,[data-theme="spooky"] .moderation-page{--mc-accent:#be9af9}.mc-shell{max-width:none!important;margin:0!important}.mc-kicker{font-size:9px;letter-spacing:.1em;color:var(--mc-accent);font-weight:650}.mc-title{font-size:25px;font-weight:700;line-height:1.2;letter-spacing:-.03em;margin:4px 0}.mc-query-bar{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--mc-line);color:var(--mc-ink)}.mc-query-bar>label{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:0 10px;border:1px solid var(--mc-line);border-radius:9px;background:var(--mc-soft)}.mc-query-bar>label svg{flex-shrink:0;color:var(--mc-muted)}.mc-query-bar input{width:100%;min-width:0;border:0;background:none;color:var(--mc-ink);font-size:16px;padding:9px 0;outline:none}.mc-query-bar input::placeholder{font-size:12px}.mc-query-bar kbd{font:11px monospace;color:var(--mc-muted)}.mc-query-bar select{max-width:240px;background:var(--mc-soft);color:var(--mc-ink);border:1px solid var(--mc-line);border-radius:9px;padding:9px;font-size:12px;min-height:40px}.mc-query-bar>button{display:flex;align-items:center;gap:7px;border:1px solid var(--mc-line);background:var(--mc-bg);color:var(--mc-ink);padding:10px;border-radius:9px;font-size:11px;white-space:nowrap}.mc-query-bar>button:disabled{opacity:.4}.moderation-panel{scroll-margin-top:100px}.mc-shell button:focus-visible,.mc-shell select:focus-visible{outline:2px solid var(--mc-accent);outline-offset:3px}.mc-query-bar label:focus-within{border-color:var(--mc-accent)}
+@media(max-width:680px){.mc-title{font-size:22px}.mc-query-bar{flex-wrap:wrap;padding:12px 0;gap:8px}.mc-query-bar>label{flex-basis:100%}.mc-query-bar select{flex:1;max-width:none;min-width:0;font-size:16px}.mc-query-bar>button{margin-left:auto;min-height:42px}.mc-query-bar kbd{display:none}}
         .listing-warning-editor { display: flex; flex-direction: column; width: 100%; max-width: 448px; max-height: min(520px, calc(100dvh - 32px)); overflow: hidden; }
         .listing-warning-editor-heading { flex-shrink: 0; padding: 12px 14px 10px; border-bottom: 1px solid rgba(128,128,128,.2); }
         .listing-warning-editor-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px; }
@@ -931,7 +846,7 @@ useEffect(() => {
         .moderation-price-card > .moderation-price-header + div { grid-area: reporter; min-width: 0; }
         .moderation-price-card > .moderation-price-actions { grid-area: dismiss; width: 100%; }
         .moderation-card-preview { grid-area: preview; width: 116px; height: 163px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 9px; }
-        .moderation-card-preview-crop { width: 100%; height: 100%; overflow: hidden; border-radius: 9px; }
+        .moderation-card-preview-crop { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 9px; }
         @media (max-width: 639px) {
           .moderation-price-card { min-height: 0; grid-template-columns: minmax(0, 1fr) 96px; grid-template-areas: "header preview" "reporter reporter" "dismiss dismiss"; gap: 12px; }
           .moderation-price-card > .moderation-price-header { padding: 0; flex-direction: row; align-items: flex-start; gap: 8px; }
@@ -1015,184 +930,119 @@ useEffect(() => {
 @media(prefers-reduced-motion:reduce){.mr-evidence>summary svg{transition:none}}
 .mr-case-list{padding:12px;gap:10px}.mr-case{border-radius:12px}.mr-case-heading{padding:12px 15px;gap:12px}.mr-person{gap:10px}.mr-person>img{width:34px;height:34px;border-radius:10px}.mr-person h3{font-size:15px;margin-top:3px}.mr-label{font-size:8px;letter-spacing:.07em}.mr-status{font-size:10px;padding:5px 8px}.mr-facts{padding:11px 15px;gap:14px}.mr-facts>span{flex-direction:row;align-items:baseline;gap:6px;font-size:10px;line-height:1.5}.mr-facts strong{font-size:16px}.mr-context{font-size:11px;line-height:1.6;padding:0 15px 11px}.mr-policy{margin:0 15px 10px;font-size:10px}.mr-evidence>summary{padding:11px 15px;font-size:11px}.mr-evidence>summary>span:nth-child(2){font-size:10px}.mr-evidence-list{padding:0 12px 12px;gap:9px}.mr-evidence-item{padding:11px;border-radius:9px}.mr-source{padding:10px 15px;gap:8px;font-size:11px}.mr-source>img{height:26px;width:26px;border-radius:8px}.mr-source time{font-size:9px;margin-top:3px}.mr-evidence-item>p{font-size:11px;line-height:1.6;margin-top:9px}.mr-evidence-actions{margin-top:10px;padding-top:9px;gap:7px}.mr-actions{padding:10px 15px;gap:8px}.mr-secondary,.mr-danger{padding:8px 11px;font-size:11px;border-radius:8px}.mr-listing{padding:13px 15px;gap:14px}.mr-listing .moderation-card-preview{width:56px!important;height:78px!important;flex-basis:56px!important}.mr-listing h4{font-size:13px;margin-bottom:4px}.mr-listing code,.mr-evidence-item code{font-size:11px}.mr-price{font-size:17px;margin-top:8px;gap:7px}.mr-price>span{font-size:10px}.moderation-ban-list{padding:12px;gap:9px}.moderation-ban-row{padding:12px 15px!important;gap:12px!important}.mr-ban-reason{margin-top:6px;font-size:11px;line-height:1.6}.moderation-history-table th,.moderation-history-table td{padding:11px 13px!important}.moderation-history-avatar{width:27px!important;height:27px!important;flex-basis:27px!important}.moderation-history-table td:nth-child(2)>p{padding:7px;font-size:11px;line-height:1.6}.moderation-history-person{gap:8px!important}.moderation-history-entry{padding:12px!important}
 @media(max-width:680px){.mr-case-list{padding:10px;gap:10px}.mr-case-heading{padding:12px;gap:10px}.mr-person>img{width:34px;height:34px}.mr-person h3{font-size:15px}.mr-facts{padding:10px 12px;gap:8px}.mr-facts>span{flex-direction:column;gap:3px;font-size:9px}.mr-facts strong{font-size:16px}.mr-context{padding:0 12px 10px;font-size:11px}.mr-evidence>summary{padding:11px 12px;min-height:44px}.mr-policy{margin:0 12px 10px;min-height:30px}.mr-listing{padding:12px;gap:12px}.mr-source{padding:10px 12px}.mr-actions{padding:10px 12px}.mr-actions>span{font-size:10px;margin-bottom:0}.mr-actions>button,.mr-evidence-actions button{min-height:42px;padding:9px 11px}.mr-evidence-actions{display:flex;flex-wrap:wrap}.mr-evidence-actions>button{flex:1;min-width:125px}.moderation-ban-row{padding:12px!important}.moderation-history-entry{padding:12px!important}}
-/* Arrange related case information in shared rows instead of full-width bands. */
 .mr-case{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;padding:12px;gap:8px 16px}.mr-case-heading{grid-column:1;min-width:0;padding:0;border:0;align-items:center}.mr-facts{grid-column:2;grid-row:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 14px;padding:0;align-self:center}.mr-facts>span{flex-direction:row;gap:5px;border:0;padding:0;align-items:baseline;white-space:normal}.mr-context{grid-column:1/-1;padding:0;margin:0;line-height:1.5}.mr-policy{grid-column:1/-1;justify-self:start;margin:0;min-height:0;padding:3px 0}.mr-evidence{grid-column:1;min-width:0;border:0;align-self:center}.mr-evidence>summary{padding:7px 0;min-height:36px;justify-content:flex-start;gap:8px}.mr-evidence>summary>span:nth-child(2){margin-left:0}.mr-evidence-list{padding:8px 0 0;gap:8px}.mr-evidence[open]{grid-column:1/-1}.mr-actions{grid-column:2;justify-self:end;align-self:center;padding:0;border:0;background:none;gap:8px;flex-wrap:wrap}.mr-actions>span{display:none}.mr-actions>button{flex:0 1 auto;min-height:36px}.mr-listing{grid-column:1;grid-row:2;padding:0;gap:12px}.mr-case>.mr-source{grid-column:2;grid-row:2;padding:0;border:0;align-self:center;max-width:310px;flex-wrap:wrap}.mr-case>.mr-source .mr-reference{width:100%;padding-left:34px}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1/-1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1/-1}.mr-case-list{gap:8px;padding:10px}.mr-price{margin-top:4px}
 @media(max-width:900px){.mr-case{grid-template-columns:minmax(0,1fr);gap:8px;padding:12px}.mr-case-heading,.mr-facts,.mr-context,.mr-policy,.mr-evidence,.mr-actions,.mr-listing,.mr-case>.mr-source{grid-column:1;grid-row:auto}.mr-facts{justify-content:flex-start;gap:5px 14px}.mr-facts>span{flex-direction:row;gap:5px;font-size:10px}.mr-evidence>summary{min-height:40px}.mr-actions{justify-self:stretch;justify-content:flex-end}.mr-actions>button{flex:0 1 auto;min-height:42px}.mr-case>.mr-source{max-width:none;flex-wrap:nowrap}.mr-case>.mr-source .mr-reference{width:auto;padding:0}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1}}
+.moderation-panel{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}.moderation-panel .mr-case-list{gap:0;padding:0}.moderation-panel .mr-case{border:0;border-bottom:1px solid var(--mc-line);border-radius:0;background:transparent;box-shadow:none;padding:18px 0;overflow:visible}.moderation-panel .mr-case:last-child{border-bottom:0}.moderation-panel .moderation-ban-list{gap:0;padding:0}.moderation-panel .moderation-ban-row{border:0!important;border-bottom:1px solid var(--mc-line)!important;border-radius:0;background:transparent;box-shadow:none;padding:16px 0!important}.moderation-panel .moderation-ban-row:last-child{border-bottom:0!important}.moderation-panel .moderation-history-entry{background:transparent;border:0;border-bottom:1px solid var(--mc-line);border-radius:0;box-shadow:none;padding:16px 0!important}.moderation-panel .moderation-pagination{padding-left:0;padding-right:0}.moderation-panel .mr-evidence-item{background:var(--mc-soft)}@media(max-width:719px){.moderation-panel .mr-case{padding:16px 0}.moderation-panel .moderation-ban-row{padding:16px 0!important}}
       `}</style>
       <div className="moderation-shell mc-shell w-full px-3 pt-4 sm:px-6 lg:pt-6">
         <div className="moderation-heading flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            aria-label="Go back"
-            className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
-              isLightMode
-                ? "border-black/10 bg-white text-zinc-700 shadow-sm hover:bg-zinc-100"
-                : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.09]"
-            }`}
-          >
-            <ArrowLeft size={19} />
+          <button type="button" onClick={() => navigate(-1)} aria-label="Go back" className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${isLightMode
+            ? "border-black/10 bg-white text-zinc-700 shadow-sm hover:bg-zinc-100"
+            : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.09]"}`}>
+            <ArrowLeft size={19}/>
           </button>
-          <div
-            className={`moderation-heading-emblem flex h-10 w-10 items-center justify-center rounded-xl border ${
-              isLightMode
-                ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A]"
-            }`}
-          >
-            <Shield size={20} />
+          <div className={`moderation-heading-emblem flex h-10 w-10 items-center justify-center rounded-xl border ${isLightMode
+            ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
+            : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A]"}`}>
+            <Shield size={20}/>
           </div>
           <div className="min-w-0 flex-1">
             <span className="mc-kicker">MLPEKAYOU / STAFF OPERATIONS</span><h1 className="mc-title">Moderation console</h1>
-            <p
-              className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
-            >
+            <p className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
               <span className="lg:hidden">Reports, strikes, bans, and activity</span><span className="hidden lg:inline">Review reports, strikes, bans, and moderator activity</span>
             </p>
           </div>
         </div>
-        {successMessage && (
-          <div
-            className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${
-              isLightMode
+        {successMessage && (<div className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${isLightMode
                 ? "border-emerald-600/25 bg-emerald-50 text-emerald-700"
-                : "border-emerald-400/25 bg-emerald-400/[0.08] text-emerald-300"
-            }`}
-          >
+                : "border-emerald-400/25 bg-emerald-400/[0.08] text-emerald-300"}`}>
             {successMessage}
-          </div>
-        )}
-        {errorMessage && (
-          <div
-            className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${
-              isLightMode
+          </div>)}
+        {errorMessage && (<div className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${isLightMode
                 ? "border-red-600/25 bg-red-50 text-red-700"
-                : "border-red-400/25 bg-red-400/[0.08] text-red-300"
-            }`}
-          >
+                : "border-red-400/25 bg-red-400/[0.08] text-red-300"}`}>
             {errorMessage}
-          </div>
-        )}
-        <div
-          ref={listPanelRef}
-          className={`moderation-panel mt-6 overflow-hidden rounded-3xl border ${
-            isLightMode
-              ? "border-black/[0.08] bg-white shadow-[0_12px_36px_rgba(0,0,0,.08)]"
-              : "border-white/[0.08] bg-[#151718] shadow-[0_12px_36px_rgba(0,0,0,.22)]"
-          }`}
-        >
-          <div
-            className={`moderation-toolbar flex flex-col gap-3 border-b px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4 ${
-              isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"
-            }`}
-          >
+          </div>)}
+        <div ref={listPanelRef} className="moderation-panel mt-6 min-w-0">
+          <div className={`moderation-toolbar flex flex-col gap-3 border-b py-3 sm:flex-row sm:items-center sm:justify-between sm:py-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"}`}>
             <div>
               <h2 className="break-words font-semibold">
                 {currentView === "active"
-                  ? "Active Bans"
-                  : currentView === "account_reports"
-                    ? "Reports"
-                    : currentView === "strikes" ? "Strikes"
-                    : "Moderation History"}
+            ? "English leaderboard bans"
+            : currentView === "account_reports"
+                ? "Reports"
+                : currentView === "strikes" ? "Strikes"
+                    : currentView === "appeals" ? "English appeals" : currentView === "discord" ? "Discord users" : currentView === "frames" ? "Frame restrictions" : "Moderation History"}
               </h2>
-              <p
-                className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-500"}`}
-              >
-                {currentView === "active"
-                  ? normalizedSearch
-                    ? `${filteredBans.length} of ${bans.length} users`
-                    : `${bans.length} ${bans.length === 1 ? "user" : "users"}`
-                  : currentView === "account_reports"
-                    ? `${reportedAccounts.length} reported accounts / ${searchedCardReports.length} listing reports`
-                    : currentView === "strikes" ? `${struckAccounts.length} ${struckAccounts.length === 1 ? "account" : "accounts"}`
+              <p className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-500"}`}>
+                {currentView === "appeals" ? "Regional association reviews and responses" : isDirectoryView ? `${directoryResult.total} ${currentView === "frames" ? "frame restrictions" : "users with a Discord username"}` : currentView === "active"
+            ? normalizedSearch
+                ? `${filteredBans.length} of ${bans.length} users`
+                : `${bans.length} ${bans.length === 1 ? "user" : "users"}`
+            : currentView === "account_reports"
+                ? `${reportedAccounts.length} reported accounts / ${searchedCardReports.length} listing reports`
+                : currentView === "strikes" ? `${struckAccounts.length} ${struckAccounts.length === 1 ? "account" : "accounts"}`
                     : `${filteredHistory.length} ${filteredHistory.length === 1 ? "action" : "actions"}`}
               </p>
             </div>
-            <div className="moderation-tabs grid grid-cols-2 gap-2 sm:flex" aria-label="Moderation sections">
-              {(
-                [
-                  ["active", "Bans"],
-                  ["account_reports", "Reports"],
-                  ["strikes", "Strikes"],
-                  ["history", "History"],
-                ] as const
-              ).map(([view, label]) => (
-                <button
-                  key={view}
-                  aria-pressed={currentView === view}
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setHistoryAction("all");
-                    setPageByView(pages => ({ ...pages, [view]: 1 }));
-                    if (view === "history") void openHistory();
-                    else setCurrentView(view);
-                  }}
-                  className={`min-h-11 rounded-xl px-4 py-2 text-sm font-bold ${
-                    currentView === view
-                      ? "bg-[#FFD54A] text-black"
-                      : isLightMode
-                        ? "bg-zinc-100 text-zinc-600"
-                        : "bg-white/[0.06] text-zinc-300"
-                  }`}
-                >
+            <div className="moderation-tabs grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" aria-label="Moderation sections">
+              {([
+            ["active", "English bans"],
+            ["account_reports", "Reports"],
+            ["strikes", "Strikes"],
+            ["history", "History"],
+            ["discord", "Discord users"],
+            ["frames", "Frame restrictions"],
+            ["appeals", "English appeals"],
+        ] as const).map(([view, label]) => (<button key={view} aria-pressed={currentView === view} type="button" onClick={() => {
+                setSearchQuery("");
+                setHistoryAction("all");
+                setPageByView(pages => ({ ...pages, [view]: 1 }));
+                if (view === "history")
+                    void openHistory();
+                else
+                    setCurrentView(view);
+            }} className={`min-h-11 rounded-xl px-4 py-2 text-sm font-bold ${currentView === view
+                ? "bg-[#FFD54A] text-black"
+                : isLightMode
+                    ? "bg-zinc-100 text-zinc-600"
+                    : "bg-white/[0.06] text-zinc-300"}`}>
                   {label}
-                </button>
-              ))}
+                </button>))}
             </div>
           </div>
-          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} placeholder={currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
-          {currentView === "active" ? (
-            <>
-              {loading ? (
-                <div
-                  className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
-                >
-                  <Loader2 className="h-4 w-4 animate-spin" />
+          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
+          {currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={() => { setBanRefresh(value => value + 1); setHistoryLoaded(false); }}/> : isDirectoryView ? <div className="py-4">
+            <p className="mb-4 text-sm text-muted-foreground">{currentView === "discord" ? "Find any collector with a Discord username. Revoking removes the username and blocks trade and sale access until reinstated." : "Each row is one revoked frame. Reinstating restores only that frame and applies a moderator override."}</p>
+            {pageLoading ? <p role="status" className="py-10 text-center text-sm text-muted-foreground">Loading {currentView === "discord" ? "Discord users" : "frame restrictions"}...</p> : directoryError ? <p role="alert" className="py-6 text-sm text-red-500">{directoryError}<button type="button" onClick={() => setDirectoryRefresh(value => value + 1)} className="ml-2 underline">Retry</button></p> : directoryResult.rows.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">{normalizedSearch ? "No users match this search." : currentView === "frames" ? "No frame restrictions are active." : "No collectors have a Discord username."}</p> : <ul className="divide-y divide-current/10">{directoryResult.rows.map(row => <li key={`${row.user_id}:${row.frame_id ?? "discord"}`} className="flex flex-col items-start justify-between gap-3 py-4 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 flex-wrap items-center gap-4">{currentView === "frames" && <ModerationFramePreview frameId={row.frame_id} isLightMode={isLightMode}/>}<div className="min-w-0 flex-1"><h3 className="break-words text-base font-semibold">{row.username}</h3>{row.discord_username && <p className="mt-1 break-all text-sm text-muted-foreground">Discord: {row.discord_username}</p>}{currentView === "frames" && <><FrameRestrictionReason frameId={row.frame_id}/><p className="mt-2 text-xs text-muted-foreground">Revoked {row.revoked_at ? new Date(row.revoked_at).toLocaleString() : "date unavailable"}</p></>}</div></div>
+              <button type="button" disabled={directorySaving} onClick={() => { setDirectoryTarget({ mode: currentView as "discord" | "frames", row }); setDirectoryReason(""); setDirectoryActionError(""); }} className={`min-h-11 shrink-0 rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50 ${currentView === "discord" ? "border-red-500/30 text-red-500" : "border-current/20"}`}>{currentView === "discord" ? "Revoke Discord access" : "Reinstate frame"}</button>
+            </li>)}</ul>}
+          </div> : currentView === "active" ? (<>
+              {loading ? (<div className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                  <Loader2 className="h-4 w-4 animate-spin"/>
                   Loading leaderboard bans...
-                </div>
-              ) : bans.length === 0 ? (
-                <div className="px-5 py-14 text-center">
-                  <Shield
-                    className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}
-                  />
-                  <p
-                    className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}
-                  >
+                </div>) : bans.length === 0 ? (<div className="px-5 py-14 text-center">
+                  <Shield className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}/>
+                  <p className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}>
                     No active leaderboard bans
                   </p>
-                </div>
-              ) : filteredBans.length === 0 ? (
-                <div className="px-5 py-14 text-center">
-                  <Search
-                    className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}
-                  />
-                  <p
-                    className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}
-                  >
+                </div>) : filteredBans.length === 0 ? (<div className="px-5 py-14 text-center">
+                  <Search className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}/>
+                  <p className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}>
                     No matching usernames
                   </p>
                   <p className="mt-1 text-xs text-zinc-500">
                     Try a different search.
                   </p>
-                </div>
-              ) : (
-                <div className="moderation-ban-list">
-                  {pagedBans.map((ban, index) => (
-                    <div
-                      key={ban.userId}
-                      className={`moderation-ban-row flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${
-                        index !== pagedBans.length - 1
-                          ? isLightMode
+                </div>) : (<div className="moderation-ban-list">
+                  {pagedBans.map((ban, index) => (<div key={ban.userId} className={`moderation-ban-row flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between ${index !== pagedBans.length - 1
+                        ? isLightMode
                             ? "border-b border-black/[0.07]"
                             : "border-b border-white/[0.07]"
-                          : ""
-                      }`}
-                    >
+                        : ""}`}>
                       <div className="min-w-0">
-                        <p
-                          className={`truncate font-semibold ${isLightMode ? "text-zinc-900" : "text-white"}`}
-                        >
+                        <p className={`truncate font-semibold ${isLightMode ? "text-zinc-900" : "text-white"}`}>
                           {ban.username}
                         </p>
                         <p className="mt-1 text-xs text-zinc-500">
@@ -1200,47 +1050,26 @@ useEffect(() => {
                         </p>
                         <p className="mr-ban-reason"><strong>Reason: </strong>{ban.reason || "No reason was recorded for this exclusion."}</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setErrorMessage("");
-                          setSelectedBan(ban);
-                        }}
-                        className={`flex shrink-0 items-center justify-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-bold transition-colors ${
-                          isLightMode
-                            ? "border-[#8a6a00]/25 bg-[#c89d13]/10 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/20"
-                            : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/50 hover:bg-[#FFD54A]/15"
-                        }`}
-                      >
-                        <MoreVertical size={15} />
+                      <button type="button" onClick={() => {
+                        setErrorMessage("");
+                        setSelectedBan(ban);
+                    }} className={`flex shrink-0 items-center justify-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-bold transition-colors ${isLightMode
+                        ? "border-[#8a6a00]/25 bg-[#c89d13]/10 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/20"
+                        : "border-[#FFD54A]/25 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/50 hover:bg-[#FFD54A]/15"}`}>
+                        <MoreVertical size={15}/>
                         <span className="lg:hidden">Review ban</span><span className="hidden lg:inline">MODERATOR ACTIONS</span>
                       </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : currentView === "account_reports" || currentView === "strikes" ? (
-            reportsLoading ? (
-              <div
-                className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
-              >
-                <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>))}
+                </div>)}
+            </>) : currentView === "account_reports" || currentView === "strikes" ? (reportsLoading ? (<div className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+                <Loader2 className="h-4 w-4 animate-spin"/>
                 Loading {currentView === "strikes" ? "strikes" : "reports"}...
-              </div>
-            ) : (currentView === "strikes" ? struckAccounts.length === 0 : reportedAccounts.length === 0 && searchedCardReports.length === 0) ? (
-              <div className="px-5 py-14 text-center">
-                <Shield
-                  className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}
-                />
-                <p
-                  className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}
-                >
+              </div>) : (currentView === "strikes" ? struckAccounts.length === 0 : reportedAccounts.length === 0 && searchedCardReports.length === 0) ? (<div className="px-5 py-14 text-center">
+                <Shield className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}/>
+                <p className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}>
                   {currentView === "strikes" ? "No active strikes" : "No unresolved reports"}
                 </p>
-              </div>
-            ) : (
-              <div className="mr-case-list">
+              </div>) : (<div className="mr-case-list">
                 {currentView === "account_reports" && pagedCardReports.map(report => <article key={`card-${report.id}`} className="mr-case">
                   <header className="mr-case-heading"><div className="mr-person"><CardImage src={report.reportedAvatar} alt=""/><div><span className="mr-label">LISTING REPORT</span><h3>{report.reportedUsername}</h3></div></div><span className="mr-status">Awaiting review</span></header>
                   <div className="mr-listing"><ReportedCardThumbnail setId={report.setId} cardKey={report.cardKey}/><div><h4>{getModerationSetName(report.setId)}</h4><code>{getModerationCardCode(report.setId, report.cardKey)}</code><span className="mr-price">${report.reportedPrice.toFixed(2)}<span>reported listing price</span></span></div></div>
@@ -1257,36 +1086,23 @@ useEffect(() => {
                   </div></details>
                   {(currentView === "account_reports" || report.tradeAccessRevoked) && <footer className="mr-actions"><span>Account-level decision</span><button type="button" className={report.tradeAccessRevoked ? "mr-secondary" : "mr-danger"} onClick={() => setSelectedAccountReport(report)}>{report.tradeAccessRevoked ? "Review reinstatement" : "Review access action"}</button></footer>}
                 </article>)}
-              </div>
-            )
-          ) : historyLoading ? (
-            <div
-              className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}
-            >
-              <Loader2 className="h-4 w-4 animate-spin" />
+              </div>)) : historyLoading ? (<div className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
+              <Loader2 className="h-4 w-4 animate-spin"/>
               Loading moderation history...
-            </div>
-          ) : filteredHistory.length === 0 ? (
-            <div className="px-5 py-14 text-center">
-              <History
-                className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}
-              />
-              <p
-                className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}
-              >
+            </div>) : filteredHistory.length === 0 ? (<div className="px-5 py-14 text-center">
+              <History className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}/>
+              <p className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}>
                 {normalizedSearch || historyAction !== "all" ? "No actions match these filters" : "No moderation history yet"}
               </p>
-            </div>
-          ) : (
-            <div>
+            </div>) : (<div>
               <div className="moderation-history-desktop">
                 <table className="moderation-history-table">
                   <caption className="sr-only">Moderation history, most recent first</caption>
                   <colgroup>
-                    <col style={{ width: "25%" }} />
-                    <col style={{ width: "29%" }} />
-                    <col style={{ width: "25%" }} />
-                    <col style={{ width: "21%" }} />
+                    <col style={{ width: "25%" }}/>
+                    <col style={{ width: "29%" }}/>
+                    <col style={{ width: "25%" }}/>
+                    <col style={{ width: "21%" }}/>
                   </colgroup>
                   <thead className={isLightMode ? "bg-zinc-50 text-zinc-600" : "bg-white/[0.025] text-zinc-400"}>
                     <tr>
@@ -1297,12 +1113,11 @@ useEffect(() => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pagedHistoryItems.map((item) => (
-                      <tr key={item.id} className={isLightMode ? "border-t border-black/[0.07]" : "border-t border-white/[0.07]"}>
+                    {pagedHistoryItems.map((item) => (<tr key={item.id} className={isLightMode ? "border-t border-black/[0.07]" : "border-t border-white/[0.07]"}>
                         <td>
                           <div className="moderation-history-person">
                             <div className="moderation-history-avatar">
-                              <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                              <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover"/>
                             </div>
                             <span className="min-w-0 break-words font-semibold">{item.targetUsername}</span>
                           </div>
@@ -1316,10 +1131,10 @@ useEffect(() => {
                         <td>
                           <div className="moderation-history-person">
                             <div className="moderation-history-avatar">
-                              <CardImage src={item.moderatorAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                              <CardImage src={item.moderatorAvatar} alt="" className="h-full w-full rounded-full object-cover"/>
                             </div>
                             <span className="min-w-0 break-words font-medium">{item.moderatorUsername}</span>
-                            <Shield size={14} className={`shrink-0 ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`} aria-label="Moderator" />
+                            <Shield size={14} className={`shrink-0 ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`} aria-label="Moderator"/>
                           </div>
                         </td>
                         <td>
@@ -1328,22 +1143,20 @@ useEffect(() => {
                             <span className={`block ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>{new Date(item.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span>
                           </time>
                         </td>
-                      </tr>
-                    ))}
+                      </tr>))}
                   </tbody>
                 </table>
               </div>
               <div className="moderation-history-mobile">
-                {pagedHistoryItems.map((item) => (
-                  <article key={item.id} className={`moderation-history-entry px-4 py-4 ${isLightMode ? "border-t border-black/[0.07]" : "border-t border-white/[0.07]"}`}>
+                {pagedHistoryItems.map((item) => (<article key={item.id} className={`moderation-history-entry px-4 py-4 ${isLightMode ? "border-t border-black/[0.07]" : "border-t border-white/[0.07]"}`}>
                     <div className="moderation-history-person">
                       <div className="moderation-history-avatar">
-                        <CardImage src={item.moderatorAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                        <CardImage src={item.moderatorAvatar} alt="" className="h-full w-full rounded-full object-cover"/>
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
                           <span className="break-words">{item.moderatorUsername}</span>
-                          <Shield size={14} className={isLightMode ? "text-[#725700]" : "text-[#FFD54A]"} aria-label="Moderator" />
+                          <Shield size={14} className={isLightMode ? "text-[#725700]" : "text-[#FFD54A]"} aria-label="Moderator"/>
                         </p>
                         <p className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>{getHistoryActionTitle(item)}</p>
                         {item.details && <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 opacity-80"><strong>Reason / details: </strong>{item.details}</p>}
@@ -1351,7 +1164,7 @@ useEffect(() => {
                     </div>
                     <div className="mt-3 flex items-center gap-2 text-xs leading-5">
                       <div className="moderation-history-avatar">
-                        <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover" />
+                        <CardImage src={item.targetAvatar} alt="" className="h-full w-full rounded-full object-cover"/>
                       </div>
                       <span className="min-w-0 flex-1 break-words font-semibold">{item.targetUsername}</span>
                       <time dateTime={item.createdAt} className={`shrink-0 text-right ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
@@ -1359,60 +1172,30 @@ useEffect(() => {
                         <span className="block">{new Date(item.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span>
                       </time>
                     </div>
-                  </article>
-                ))}
+                  </article>))}
               </div>
-            </div>
-          )}
-          {!pageLoading && totalItems > 0 && (
-            <nav aria-label="List pagination" className={`moderation-pagination border-t ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+            </div>)}
+          {!pageLoading && totalItems > 0 && (<nav aria-label="List pagination" className={`moderation-pagination border-t ${isLightMode ? "border-black/10" : "border-white/10"}`}>
               <p aria-live="polite" className={`moderation-pagination-summary text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
                 Showing {pageStart + 1}-{Math.min(pageEnd, totalItems)} of {totalItems}
               </p>
               <div className="moderation-pagination-controls">
-                <button
-                  type="button"
-                  onClick={() => changePage(currentPage - 1)}
-                  disabled={currentPage <= 1}
-                  aria-label="Previous page"
-                  className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-200"}`}
-                >
-                  <ChevronLeft size={16} aria-hidden="true" /> Previous
+                <button type="button" onClick={() => changePage(currentPage - 1)} disabled={currentPage <= 1} aria-label="Previous page" className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-200"}`}>
+                  <ChevronLeft size={16} aria-hidden="true"/> Previous
                 </button>
                 <span className="whitespace-nowrap text-xs tabular-nums">Page {currentPage} of {totalPages}</span>
-                <button
-                  type="button"
-                  onClick={() => changePage(currentPage + 1)}
-                  disabled={currentPage >= totalPages}
-                  aria-label="Next page"
-                  className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-200"}`}
-                >
-                  Next <ChevronRight size={16} aria-hidden="true" />
+                <button type="button" onClick={() => changePage(currentPage + 1)} disabled={currentPage >= totalPages} aria-label="Next page" className={`flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-200"}`}>
+                  Next <ChevronRight size={16} aria-hidden="true"/>
                 </button>
               </div>
-            </nav>
-          )}
+            </nav>)}
         </div>
       </div>
-      {selectedReportComment && (
-        <div
-          className="moderation-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
-          onClick={() => !markingContacted && setSelectedReportComment(null)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="report-comment-title"
-            onClick={(event) => event.stopPropagation()}
-            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
-          >
+      {selectedReportComment && (<div className="moderation-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" onClick={() => !markingContacted && setSelectedReportComment(null)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="report-comment-title" onClick={(event) => event.stopPropagation()} className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
             <div className="moderation-modal-body">
             <div className="flex items-center gap-3">
-              <CardImage
-                src={selectedReportComment.reporterAvatar}
-                alt=""
-                className="h-10 w-10 shrink-0 rounded-full object-cover"
-              />
+              <CardImage src={selectedReportComment.reporterAvatar} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover"/>
               <div className="min-w-0">
                 <p className="truncate font-bold">
                   {selectedReportComment.reporterUsername}
@@ -1426,90 +1209,47 @@ useEffect(() => {
             <h2 id="report-comment-title" className="mt-5 text-lg font-bold">
               Reporter comment
             </h2>
-            <div
-              className={`mt-2 whitespace-pre-wrap break-words rounded-xl px-4 py-3 text-sm leading-relaxed ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.05] text-zinc-300"}`}
-            >
+            <div className={`mt-2 whitespace-pre-wrap break-words rounded-xl px-4 py-3 text-sm leading-relaxed ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.05] text-zinc-300"}`}>
               {selectedReportComment.comment ||
                 "No comment was included with this report."}
             </div>
-            {selectedReportComment.wantsStaffContact && (
-              <div
-                className={`mt-4 rounded-xl border px-4 py-3 ${isLightMode ? "border-[#5865F2]/20 bg-[#5865F2]/[0.07]" : "border-[#5865F2]/30 bg-[#5865F2]/10"}`}
-              >
+            {selectedReportComment.wantsStaffContact && (<div className={`mt-4 rounded-xl border px-4 py-3 ${isLightMode ? "border-[#5865F2]/20 bg-[#5865F2]/[0.07]" : "border-[#5865F2]/30 bg-[#5865F2]/10"}`}>
                 <p className="text-sm font-semibold">
                   This reporter asked to be contacted on Discord.
                 </p>
                 <p className="mt-1 text-base font-bold text-[#5865F2]">
                   {selectedReportComment.contactDiscordUsername}
                 </p>
-                {selectedReportComment.contactedAt ? (
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                {selectedReportComment.contactedAt ? (<div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
                     <span>Contacted by</span>
-                    {selectedReportComment.contactedByAvatar && (
-                      <CardImage
-                        src={selectedReportComment.contactedByAvatar}
-                        alt=""
-                        className="h-7 w-7 rounded-full object-cover"
-                      />
-                    )}
+                    {selectedReportComment.contactedByAvatar && (<CardImage src={selectedReportComment.contactedByAvatar} alt="" className="h-7 w-7 rounded-full object-cover"/>)}
                     <span className="break-words font-semibold">
                       {selectedReportComment.contactedByUsername || "Moderator"}
                     </span>
                     <span className="text-zinc-500">
                       on{" "}
-                      {new Date(
-                        selectedReportComment.contactedAt,
-                      ).toLocaleString()}
+                      {new Date(selectedReportComment.contactedAt).toLocaleString()}
                     </span>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={markReporterContacted}
-                    disabled={markingContacted}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-bold text-white disabled:opacity-60"
-                  >
-                    {markingContacted && (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    )}
+                  </div>) : (<button type="button" onClick={markReporterContacted} disabled={markingContacted} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-bold text-white disabled:opacity-60">
+                    {markingContacted && (<Loader2 className="h-4 w-4 animate-spin"/>)}
                     Has this user been contacted?
-                  </button>
-                )}
-              </div>
-            )}
+                  </button>)}
+              </div>)}
             </div>
             <div className="moderation-modal-footer">
-            <button
-              type="button"
-              onClick={() => setSelectedReportComment(null)}
-              disabled={markingContacted}
-              className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-semibold ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300"}`}
-            >
+            <button type="button" onClick={() => setSelectedReportComment(null)} disabled={markingContacted} className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-semibold ${isLightMode ? "bg-zinc-100 text-zinc-700" : "bg-white/[0.06] text-zinc-300"}`}>
               Close
             </button>
             </div>
           </div>
-        </div>
-      )}
-      {selectedAccountReport && (
-        <div className="moderation-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Account moderation actions"
-            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${
-              isLightMode
+        </div>)}
+      {selectedAccountReport && (<div className="moderation-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div role="dialog" aria-modal="true" aria-label="Account moderation actions" className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${isLightMode
                 ? "border-black/10 bg-white"
-                : "border-white/10 bg-[#151718]"
-            }`}
-          >
+                : "border-white/10 bg-[#151718]"}`}>
             <div className="moderation-modal-body">
             <div className="flex items-center gap-3">
-              <CardImage
-                src={selectedAccountReport.avatar}
-                alt=""
-                className="h-12 w-12 rounded-full object-cover"
-              />
+              <CardImage src={selectedAccountReport.avatar} alt="" className="h-12 w-12 rounded-full object-cover"/>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-500">
                   Moderator Actions
@@ -1519,63 +1259,43 @@ useEffect(() => {
                 </h2>
               </div>
             </div>
-            <p
-              className={`mt-4 text-sm leading-relaxed ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
-            >
+            <p className={`mt-4 text-sm leading-relaxed ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
               {selectedAccountReport.tradeAccessRevoked
                 ? "Reinstating this user restores trading and sale access, unlocks their Discord username, and clears account reports and expired-offer strikes."
                 : "Three reports are recommended, but moderators may act earlier when the report details justify it. Revoking removes their Discord username, removes them from all public views, and prevents them from editing their Discord username until a moderator restores access."}
             </p>
             </div>
             <div className="moderation-modal-footer">
-            <button
-              type="button"
-              onClick={async () => {
+            <button type="button" onClick={async () => {
                 if (selectedAccountReport.tradeAccessRevoked) {
-                  await restoreTradingAccess(selectedAccountReport);
-                } else {
-                  await revokeTradingAccess(selectedAccountReport);
-                  setSelectedAccountReport(null);
+                    await restoreTradingAccess(selectedAccountReport);
                 }
-              }}
-              disabled={Boolean(revokingUserId)}
-              className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white disabled:opacity-60 ${selectedAccountReport.tradeAccessRevoked ? "bg-violet-500" : "bg-red-500"}`}
-            >
-              {revokingUserId ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <UserX size={17} />
-              )}
+                else {
+                    await revokeTradingAccess(selectedAccountReport);
+                    setSelectedAccountReport(null);
+                }
+            }} disabled={Boolean(revokingUserId)} className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white disabled:opacity-60 ${selectedAccountReport.tradeAccessRevoked ? "bg-violet-500" : "bg-red-500"}`}>
+              {revokingUserId ? (<Loader2 className="h-4 w-4 animate-spin"/>) : (<UserX size={17}/>)}
               {selectedAccountReport.tradeAccessRevoked
                 ? "REINSTATE PUBLIC ACCESS"
                 : "REVOKE PUBLIC ACCESS"}
             </button>
-            <button
-              type="button"
-              onClick={() => setSelectedAccountReport(null)}
-              disabled={Boolean(revokingUserId)}
-              className={`mt-2 w-full rounded-xl px-4 py-3 text-sm font-semibold ${
-                isLightMode
-                  ? "bg-zinc-100 text-zinc-700"
-                  : "bg-white/[0.06] text-zinc-300"
-              }`}
-            >
+            <button type="button" onClick={() => setSelectedAccountReport(null)} disabled={Boolean(revokingUserId)} className={`mt-2 w-full rounded-xl px-4 py-3 text-sm font-semibold ${isLightMode
+                ? "bg-zinc-100 text-zinc-700"
+                : "bg-white/[0.06] text-zinc-300"}`}>
               Cancel
             </button>
             </div>
           </div>
-        </div>
-      )}
-      {warningTarget && (
-        <div className="moderation-modal-overlay listing-warning-overlay fixed inset-0 z-[75] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
-          <form onSubmit={(event) => { event.preventDefault(); void removeListingAndWarn(); }} role="dialog" aria-modal="true" aria-labelledby="listing-warning-title"
-            className={`listing-warning-editor w-full max-w-md rounded-2xl border shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
+        </div>)}
+      {warningTarget && (<div className="moderation-modal-overlay listing-warning-overlay fixed inset-0 z-[75] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm">
+          <form onSubmit={(event) => { event.preventDefault(); void removeListingAndWarn(); }} role="dialog" aria-modal="true" aria-labelledby="listing-warning-title" className={`listing-warning-editor w-full max-w-md rounded-2xl border shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
             <div className="listing-warning-editor-heading">
               <h2 id="listing-warning-title" className="text-base font-bold">Remove listing and warn user</h2>
             </div>
             <div className="listing-warning-editor-body">
               <div className="listing-warning-card-summary flex items-center gap-3">
-                <ReportedCardThumbnail setId={warningTarget.setId} cardKey={warningTarget.cardKey} />
+                <ReportedCardThumbnail setId={warningTarget.setId} cardKey={warningTarget.cardKey}/>
                 <div className="min-w-0 break-words text-sm">
                   <p className="font-semibold">{warningTarget.reportedUsername}</p>
                   <p className="break-all font-mono text-xs sm:text-sm">{getModerationCardCode(warningTarget.setId, warningTarget.cardKey)}</p>
@@ -1583,15 +1303,14 @@ useEffect(() => {
                 </div>
               </div>
               <label className="mt-3 block text-xs font-semibold" htmlFor="suggested-card-price">Typical price or range (USD)</label>
-              <input id="suggested-card-price" value={suggestedPrice} onChange={(event) => setSuggestedPrice(event.target.value)} disabled={sendingWarning} required maxLength={100}
-                placeholder="$5.00 - $10.00" className="mt-1.5 w-full rounded-xl border border-zinc-500/30 bg-transparent px-3 py-2 text-base" />
+              <input id="suggested-card-price" value={suggestedPrice} onChange={(event) => setSuggestedPrice(event.target.value)} disabled={sendingWarning} required maxLength={100} placeholder="$5.00 - $10.00" className="mt-1.5 w-full rounded-xl border border-zinc-500/30 bg-transparent px-3 py-2 text-base"/>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("template")} aria-pressed={warningMode === "template"} className={`rounded-xl border px-2 py-2 text-xs font-semibold ${warningMode === "template" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Prewritten message</button>
                 <button type="button" disabled={sendingWarning} onClick={() => setWarningMode("custom")} aria-pressed={warningMode === "custom"} className={`rounded-xl border px-2 py-2 text-xs font-semibold ${warningMode === "custom" ? "border-red-500 bg-red-500/10" : "border-zinc-500/30"}`}>Write my own</button>
               </div>
               {warningMode === "custom" ? <>
                 <label htmlFor="listing-warning-explanation" className="mt-3 block text-xs font-semibold sm:text-sm">Explanation of the card's true price range</label>
-                <textarea id="listing-warning-explanation" required maxLength={5000} rows={3} disabled={sendingWarning} value={customExplanation} onChange={(event) => setCustomExplanation(event.target.value)} className="listing-warning-custom-message mt-1.5 w-full rounded-xl border border-zinc-500/30 bg-transparent p-3 text-base" />
+                <textarea id="listing-warning-explanation" required maxLength={5000} rows={3} disabled={sendingWarning} value={customExplanation} onChange={(event) => setCustomExplanation(event.target.value)} className="listing-warning-custom-message mt-1.5 w-full rounded-xl border border-zinc-500/30 bg-transparent p-3 text-base"/>
               </> : <div className="mt-3">
                 <p className="mb-1.5 text-xs font-semibold opacity-70">Message preview</p>
                 <div tabIndex={0} role="region" aria-label="Prewritten warning message preview" className="listing-warning-message-preview whitespace-pre-wrap break-words rounded-xl bg-red-500/10 p-3">{warningMessage}</div>
@@ -1604,62 +1323,37 @@ useEffect(() => {
               <button type="submit" disabled={sendingWarning || !suggestedPrice.trim() || !warningMessage.trim()} className="rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{sendingWarning ? "Removing..." : "Remove and warn"}</button>
             </div>
           </form>
-        </div>
-      )}
-      {dismissTarget && (
-        <div className="moderation-modal-overlay fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div role="alertdialog" aria-modal="true" aria-labelledby="dismiss-report-title"
-            className={`moderation-modal-panel w-full max-w-md rounded-2xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}>
+        </div>)}
+      {dismissTarget && (<div className="moderation-modal-overlay fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="dismiss-report-title" className={`moderation-modal-panel w-full max-w-md rounded-2xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]"}`}>
             <h2 id="dismiss-report-title" className="text-xl font-bold">Are you sure you want to dismiss this?</h2>
             <p className={`mt-3 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
               This {dismissTarget.kind === "profile" ? "profile" : "card"} report for {dismissTarget.username} will leave the active reports list. The dismissal will appear in History.
             </p>
             <div className="mt-5 flex gap-2">
-              <button type="button" disabled={dismissing} onClick={() => setDismissTarget(null)}
-                className={`min-h-11 flex-1 rounded-xl px-4 font-semibold ${isLightMode ? "bg-zinc-100 text-zinc-800" : "bg-white/[0.08] text-white"}`}>Cancel</button>
-              <button type="button" disabled={dismissing} onClick={dismissReport}
-                className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-500 px-4 font-bold text-white disabled:opacity-60">
-                {dismissing && <Loader2 className="h-4 w-4 animate-spin" />}Dismiss
+              <button type="button" disabled={dismissing} onClick={() => setDismissTarget(null)} className={`min-h-11 flex-1 rounded-xl px-4 font-semibold ${isLightMode ? "bg-zinc-100 text-zinc-800" : "bg-white/[0.08] text-white"}`}>Cancel</button>
+              <button type="button" disabled={dismissing} onClick={dismissReport} className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-500 px-4 font-bold text-white disabled:opacity-60">
+                {dismissing && <Loader2 className="h-4 w-4 animate-spin"/>}Dismiss
               </button>
             </div>
           </div>
-        </div>
-      )}
-      {showOfferStrikeInfo && (
-        <div
-          className="moderation-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setShowOfferStrikeInfo(false);
-            }
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="moderation-offer-strikes-title"
-            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
-          >
+        </div>)}
+      {showOfferStrikeInfo && (<div className="moderation-modal-overlay fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" onMouseDown={(event) => {
+                if (event.target === event.currentTarget) {
+                    setShowOfferStrikeInfo(false);
+                }
+            }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="moderation-offer-strikes-title" className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl border p-5 shadow-2xl ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}>
             <div className="moderation-modal-body">
             <div className="flex items-start justify-between gap-4">
-              <h2
-                id="moderation-offer-strikes-title"
-                className="text-xl font-bold"
-              >
+              <h2 id="moderation-offer-strikes-title" className="text-xl font-bold">
                 Offer response strikes
               </h2>
-              <button
-                type="button"
-                onClick={() => setShowOfferStrikeInfo(false)}
-                aria-label="Close offer strike explanation"
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${isLightMode ? "border-black/10 text-zinc-600 hover:bg-zinc-100" : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"}`}
-              >
-                <X size={18} />
+              <button type="button" onClick={() => setShowOfferStrikeInfo(false)} aria-label="Close offer strike explanation" className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${isLightMode ? "border-black/10 text-zinc-600 hover:bg-zinc-100" : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"}`}>
+                <X size={18}/>
               </button>
             </div>
-            <div
-              className={`mt-3 space-y-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
-            >
+            <div className={`mt-3 space-y-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
               <p>
                 A user gains a strike when they receive a trade offer and do not
                 accept or decline it within the seven days provided.
@@ -1678,86 +1372,54 @@ useEffect(() => {
             </div>
             </div>
             <div className="moderation-modal-footer">
-            <button
-              type="button"
-              onClick={() => setShowOfferStrikeInfo(false)}
-              className="mt-5 w-full rounded-xl bg-[#FFD54A] px-4 py-3 text-sm font-bold text-black hover:bg-[#FFE27A]"
-            >
+            <button type="button" onClick={() => setShowOfferStrikeInfo(false)} className="mt-5 w-full rounded-xl bg-[#FFD54A] px-4 py-3 text-sm font-bold text-black hover:bg-[#FFE27A]">
               Done
             </button>
             </div>
           </div>
-        </div>
-      )}
-      {selectedBan && (
-        <div
-          className="moderation-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
-          onClick={() => !unbanning && setSelectedBan(null)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="moderator-actions-title"
-            className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${
-              isLightMode
+        </div>)}
+      {selectedBan && (<div className="moderation-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" onClick={() => !unbanning && setSelectedBan(null)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="moderator-actions-title" className={`moderation-modal-panel max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border p-4 sm:p-6 shadow-2xl ${isLightMode
                 ? "border-black/10 bg-white"
-                : "border-white/10 bg-[#151718]"
-            }`}
-            onClick={(event) => event.stopPropagation()}
-          >
+                : "border-white/10 bg-[#151718]"}`} onClick={(event) => event.stopPropagation()}>
             <div className="moderation-modal-body">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p
-                  className={`text-xs font-bold uppercase tracking-[0.16em] ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`}
-                >
+                <p className={`text-xs font-bold uppercase tracking-[0.16em] ${isLightMode ? "text-[#725700]" : "text-[#FFD54A]"}`}>
                   Moderator Actions
                 </p>
-                <h2
-                  id="moderator-actions-title"
-                  className={`mt-1 text-xl font-bold ${isLightMode ? "text-zinc-900" : "text-white"}`}
-                >
+                <h2 id="moderator-actions-title" className={`mt-1 text-xl font-bold ${isLightMode ? "text-zinc-900" : "text-white"}`}>
                   {selectedBan.username}
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedBan(null)}
-                disabled={unbanning}
-                aria-label="Close moderator actions"
-                className={`flex h-11 w-11 items-center justify-center rounded-xl border ${
-                  isLightMode
-                    ? "border-black/10 text-zinc-600 hover:bg-zinc-100"
-                    : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"
-                }`}
-              >
-                <X size={18} />
+              <button type="button" onClick={() => setSelectedBan(null)} disabled={unbanning} aria-label="Close moderator actions" className={`flex h-11 w-11 items-center justify-center rounded-xl border ${isLightMode
+                ? "border-black/10 text-zinc-600 hover:bg-zinc-100"
+                : "border-white/10 text-zinc-400 hover:bg-white/[0.06]"}`}>
+                <X size={18}/>
               </button>
             </div>
             </div>
             <div className="moderation-modal-footer">
-            <button
-              type="button"
-              onClick={unbanUser}
-              disabled={unbanning}
-              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-base font-black transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-                isLightMode
-                  ? "border-red-600/30 bg-red-50 text-red-700 hover:bg-red-100"
-                  : "border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"
-              }`}
-            >
-              {unbanning ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <UserX size={17} />
-              )}
-              UNBAN USER
+            <button type="button" onClick={unbanUser} disabled={unbanning} className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-base font-black transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${isLightMode
+                ? "border-red-600/30 bg-red-50 text-red-700 hover:bg-red-100"
+                : "border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20"}`}>
+              {unbanning ? (<Loader2 className="h-4 w-4 animate-spin"/>) : (<UserX size={17}/>)}
+              REINSTATE ENGLISH ACCESS
             </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        </div>)}
+      <Dialog open={!!directoryTarget} onOpenChange={open => { if (!open && !directorySaveLock.current) setDirectoryTarget(null); }}>
+        <DialogContent className="z-[120020] max-h-[90dvh] w-[calc(100%-1.5rem)] max-w-lg overflow-y-auto border-border bg-background text-foreground [&>button]:hidden" onEscapeKeyDown={event => { if (directorySaveLock.current) event.preventDefault(); }} onPointerDownOutside={event => { if (directorySaveLock.current) event.preventDefault(); }}>
+          <DialogTitle>{directoryTarget?.mode === "discord" ? "Revoke Discord and trading access?" : "Reinstate this frame?"}</DialogTitle>
+          <DialogDescription>{directoryTarget?.row.username}{directoryTarget?.row.discord_username ? ` / ${directoryTarget.row.discord_username}` : ""}</DialogDescription>
+          {directoryTarget?.mode === "frames" && <div className="flex flex-wrap items-center gap-4"><ModerationFramePreview frameId={directoryTarget.row.frame_id} isLightMode={isLightMode}/><FrameRestrictionReason frameId={directoryTarget.row.frame_id}/></div>}
+          <p className="break-words text-sm leading-6">{directoryTarget?.mode === "discord" ? `This removes ${directoryTarget.row.discord_username} and revokes this collector's trade and sale access. Their collection stays saved.` : `This restores access to this frame and prevents collection thresholds from automatically revoking it again. Other frames are unchanged.`}</p>
+          <label className="block text-sm font-semibold">Reason for the moderation log<textarea value={directoryReason} onChange={event => setDirectoryReason(event.target.value)} minLength={3} maxLength={1000} disabled={directorySaving} rows={3} className="mt-2 w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-base font-normal"/></label>
+          {directoryActionError && <p role="alert" className="text-sm text-red-500">{directoryActionError}</p>}
+          <div className="flex flex-wrap justify-end gap-2"><button type="button" disabled={directorySaving} onClick={() => setDirectoryTarget(null)} className="min-h-11 rounded-xl border border-border px-4 text-sm">Cancel</button><button type="button" disabled={directorySaving || directoryReason.trim().length < 3} onClick={() => void runDirectoryAction()} className="min-h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{directorySaving ? "Saving..." : directoryTarget?.mode === "discord" ? "Revoke access" : "Reinstate frame"}</button></div>
+        </DialogContent>
+      </Dialog>
+    </div>);
 };
 export default LeaderboardModeration;

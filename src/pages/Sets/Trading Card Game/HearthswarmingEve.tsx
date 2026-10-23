@@ -1,21 +1,14 @@
+import { getEnglishSet, getEnglishCards, getEnglishCard, getEnglishCollectionImageProps, getEnglishRarityNames, getEnglishRarityLabel } from "@/lib/english-card-catalog";
 import { isHeartswarmingEveOwned } from "@/lib/hearthswarming-eve";
-import { HEARTHSWARMING_EVE_CARDS, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
-import { getHeartswarmingEveBack as getCardBack, getHeartswarmingEveFront as getCardFront } from "@/lib/card-images";
+import { HEARTHSWARMING_EVE_CARDS } from "@/lib/hearthswarming-eve";
 import CardImage from "@/components/CardImage";
-import { useState, useEffect, useRef, useCallback, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useState, useEffect, useRef, useCallback, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { ArrowLeft, Check, X, RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
-const getDisplayCardCode = getHeartswarmingEveDisplayCode;
-const rarityLabel = (rarity: string) => rarity.startsWith("P") ? `\u203b${rarity.slice(1)}` : rarity;
-const getBackStyle = (key: string, inspect = false): CSSProperties => {
-  const match = key.match(/^BP04-C(\d{2})$/);
-  const number = match ? Number(match[1]) : 0;
-  if (number >= 25 && number <= 48) return { objectFit: "cover", transform: inspect ? "none" : "scale(1.035)" };
-  return inspect ? { transform: /^PBP04-RR0[1-6]$/.test(key) ? "scale(1.07)" : "scale(1.035)" } : /^PBP04-RR0[1-6]$/.test(key) ? { transform: "scale(1.07)" } : {};
-};
+const rarityLabel = (rarity: string) => getEnglishRarityLabel("hearthswarming-eve", rarity);
 type Quaternion = [
     number,
     number,
@@ -29,15 +22,15 @@ type InspectCard = {
     back: string;
 };
 const multiplyRotation = (a: Quaternion, b: Quaternion): Quaternion => {
-const [x, y, z, w] = a;
-const [u, v, t, s] = b;
-const q: Quaternion = [w * u + x * s + y * t - z * v, w * v - x * t + y * s + z * u, w * t + x * v - y * u + z * s, w * s - x * u - y * v - z * t];
-const length = Math.hypot(...q) || 1;
+    const [x, y, z, w] = a;
+    const [u, v, t, s] = b;
+    const q: Quaternion = [w * u + x * s + y * t - z * v, w * v - x * t + y * s + z * u, w * t + x * v - y * u + z * s, w * s - x * u - y * v - z * t];
+    const length = Math.hypot(...q) || 1;
     return q.map(value => value / length) as Quaternion;
 };
 const axisRotation = (x: number, y: number, z: number, angle: number): Quaternion => {
-const length = Math.hypot(x, y, z) || 1;
-const sine = Math.sin(angle / 2) / length;
+    const length = Math.hypot(x, y, z) || 1;
+    const sine = Math.sin(angle / 2) / length;
     return [x * sine, y * sine, z * sine, Math.cos(angle / 2)];
 };
 const rotationMatrix = ([x, y, z, w]: Quaternion) => `matrix3d(${[
@@ -47,8 +40,8 @@ const rotationMatrix = ([x, y, z, w]: Quaternion) => `matrix3d(${[
     0, 0, 0, 1
 ].join(",")})`;
 const getInspectorCardHeight = (width: number, height: number, aspect: number) => {
-const limit = Math.max(0, Math.min(width, height) / 2 - 12);
-const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
+    const limit = Math.max(0, Math.min(width, height) / 2 - 12);
+    const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
     return Math.min(440, 2 * Math.sqrt(Math.max(0, radius * radius - .25)) / Math.hypot(1, aspect));
 };
 function CardInspector({ card, onClose, onPrevious, onNext }: {
@@ -57,58 +50,60 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
     onPrevious: () => void;
     onNext: () => void;
 }) {
-const aspect = 5 / 7;
-const pan = useRef({ x: 0, y: 0 });
-const rotation = useRef<Quaternion>([0, 0, 0, 1]);
-const model = useRef<HTMLDivElement>(null);
-const stage = useRef<HTMLDivElement>(null);
-const dialog = useRef<HTMLDivElement>(null);
-const pointer = useRef<{
+    const aspect = 5 / 7;
+    const pan = useRef({ x: 0, y: 0 });
+    const rotation = useRef<Quaternion>([0, 0, 0, 1]);
+    const model = useRef<HTMLDivElement>(null);
+    const stage = useRef<HTMLDivElement>(null);
+    const dialog = useRef<HTMLDivElement>(null);
+    const pointer = useRef<{
         id: number;
         action: "rotate" | "move";
         x: number;
         y: number;
     } | null>(null);
-const [dragging, setDragging] = useState(false);
-const [zoom, setZoom] = useState(1);
-const [dragMode, setDragMode] = useState<"rotate" | "move">("rotate");
-const [imageStatus, setImageStatus] = useState<Record<string, "loaded" | "error">>({});
-const [imageRetry, setImageRetry] = useState(0);
-const applyRotation = (next: Quaternion) => {
+    const [dragging, setDragging] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [dragMode, setDragMode] = useState<"rotate" | "move">("rotate");
+    const [imageStatus, setImageStatus] = useState<Record<string, "loaded" | "error">>({});
+    const [imageRetry, setImageRetry] = useState(0);
+    const applyRotation = (next: Quaternion) => {
         rotation.current = next;
         if (model.current) {
             model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(next)}`;
         }
     };
-const moveCard = (dx: number, dy: number) => {
+    const moveCard = (dx: number, dy: number) => {
         pan.current = { x: pan.current.x + dx, y: pan.current.y + dy };
         applyRotation(rotation.current);
     };
-const resetView = () => {
+    const resetView = () => {
         pan.current = { x: 0, y: 0 };
         setZoom(1);
         setDragMode("rotate");
         applyRotation([0, 0, 0, 1]);
     };
-const changeZoom = (next: number) => {
-const value = Math.max(1, Math.min(4, next));
+    const changeZoom = (next: number) => {
+        const value = Math.max(1, Math.min(4, next));
         pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
         setZoom(value);
-        if (value > 1) setDragMode("move");
+        if (value > 1)
+            setDragMode("move");
         applyRotation(rotation.current);
     };
-const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
-const finishDrag = () => { pointer.current = null; setDragging(false); };
+    const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
+    const finishDrag = () => { pointer.current = null; setDragging(false); };
     useEffect(() => {
-const updateSize = () => {
+        const updateSize = () => {
             if (model.current && stage.current) {
-const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect) * zoom);
+                const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect) * zoom);
                 model.current.style.height = `${height}px`;
                 model.current.style.width = `${height * aspect}px`;
             }
         };
-const observer = new ResizeObserver(updateSize);
-        if (stage.current) observer.observe(stage.current);
+        const observer = new ResizeObserver(updateSize);
+        if (stage.current)
+            observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
     }, [aspect, zoom]);
@@ -117,14 +112,15 @@ const observer = new ResizeObserver(updateSize);
         finishDrag();
     }, [card.key]);
     useEffect(() => {
-const hiddenNavigation = new Set<HTMLElement>();
-const markNavigation = () => {
-const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
+        const hiddenNavigation = new Set<HTMLElement>();
+        const markNavigation = () => {
+            const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
             controls.forEach(control => {
-                if (dialog.current?.contains(control)) return;
-let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
+                if (dialog.current?.contains(control))
+                    return;
+                let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
                 while (element && element !== document.body) {
-const bounds = element.getBoundingClientRect();
+                    const bounds = element.getBoundingClientRect();
                     if (getComputedStyle(element).position === "fixed" && bounds.top > window.innerHeight / 2) {
                         element.setAttribute("data-hearthswarming-inspector-navigation", "");
                         hiddenNavigation.add(element);
@@ -135,7 +131,7 @@ const bounds = element.getBoundingClientRect();
             });
         };
         markNavigation();
-const observer = new MutationObserver(markNavigation);
+        const observer = new MutationObserver(markNavigation);
         observer.observe(document.body, { childList: true, subtree: true });
         window.addEventListener("resize", markNavigation);
         return () => {
@@ -145,20 +141,20 @@ const observer = new MutationObserver(markNavigation);
         };
     }, []);
     useEffect(() => {
-const previousFocus = document.activeElement as HTMLElement | null;
-const previousOverflow = document.body.style.overflow;
+        const previousFocus = document.activeElement as HTMLElement | null;
+        const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
         document.body.classList.add("hearthswarming-inspector-open");
         stage.current?.focus();
-const onKey = (event: KeyboardEvent) => {
+        const onKey = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 event.preventDefault();
                 onClose();
             }
             if (event.key === "Tab") {
-const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]') || []);
-const first = controls[0];
-const last = controls[controls.length - 1];
+                const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]') || []);
+                const first = controls[0];
+                const last = controls[controls.length - 1];
                 if (event.shiftKey && (document.activeElement === first || !dialog.current?.contains(document.activeElement))) {
                     event.preventDefault();
                     last?.focus();
@@ -172,31 +168,34 @@ const last = controls[controls.length - 1];
         document.addEventListener("keydown", onKey);
         return () => { document.body.classList.remove("hearthswarming-inspector-open"); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); previousFocus?.focus(); };
     }, [onClose]);
-const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-const drag = pointer.current;
+    const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+        const drag = pointer.current;
         if (!drag || drag.id !== event.pointerId)
             return;
-const dx = event.clientX - drag.x;
-const dy = event.clientY - drag.y;
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
-        if (drag.action === "move") { moveCard(dx, dy); return; }
-const distance = Math.hypot(dx, dy);
+        if (drag.action === "move") {
+            moveCard(dx, dy);
+            return;
+        }
+        const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
-const sensitivity = Math.PI / Math.max(180, Math.min(event.currentTarget.clientWidth, event.currentTarget.clientHeight));
+        const sensitivity = Math.PI / Math.max(180, Math.min(event.currentTarget.clientWidth, event.currentTarget.clientHeight));
         if (event.shiftKey)
             turn(0, 0, 1, dx * sensitivity);
         else
             turn(-dy, dx, 0, distance * sensitivity);
     };
-const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
         if (dragMode === "move" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
             moveCard(event.key === "ArrowLeft" ? -24 : event.key === "ArrowRight" ? 24 : 0, event.key === "ArrowUp" ? -24 : event.key === "ArrowDown" ? 24 : 0);
             event.preventDefault();
             return;
         }
-const amount = Math.PI / 12;
+        const amount = Math.PI / 12;
         if (event.key === "ArrowLeft")
             event.shiftKey ? turn(0, 0, 1, -amount) : turn(0, 1, 0, -amount);
         else if (event.key === "ArrowRight")
@@ -205,16 +204,19 @@ const amount = Math.PI / 12;
             turn(1, 0, 0, amount);
         else if (event.key === "ArrowDown")
             turn(1, 0, 0, -amount);
-        else if (event.key.toLowerCase() === "r")
-            { resetView(); }
+        else if (event.key.toLowerCase() === "r") {
+            resetView();
+        }
         else
             return;
         event.preventDefault();
     };
-const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
-const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
-    return createPortal(<div className="hearthswarming-inspector-overlay" onClick={event => { if (event.target === event.currentTarget)
-        onClose(); }}>
+    const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
+    const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
+    return createPortal(<div className="hearthswarming-inspector-overlay" onClick={event => {
+            if (event.target === event.currentTarget)
+                onClose();
+        }}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="hearthswarming-inspector-title" className="hearthswarming-inspector-dialog">
         <header className="hearthswarming-inspector-header">
           <div><p className="hearthswarming-eyebrow">3D card inspector</p><h2 id="hearthswarming-inspector-title">{card.code}</h2></div>
@@ -227,19 +229,25 @@ const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.bac
             event.currentTarget.setPointerCapture(event.pointerId);
             pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
-        }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }}>
+        }} onPointerMove={handleMove} onPointerUp={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onPointerCancel={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onLostPointerCapture={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }}>
           <div className="hearthswarming-card-ground"/>
           <div ref={model} className="hearthswarming-card-model">
             <div className="hearthswarming-card-face hearthswarming-card-front">
-              <CardImage key={`${card.front}-${imageRetry}`} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="hearthswarming-face-image hearthswarming-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
+              <CardImage key={`${card.front}-${imageRetry}`} loading="eager" draggable={false} alt={`${card.code} front`} className="hearthswarming-face-image hearthswarming-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))} {...getEnglishCollectionImageProps("hearthswarming-eve", card.key, "front", true)}/>
               <div className="hearthswarming-card-sheen"/>
             </div>
             <div className="hearthswarming-card-face hearthswarming-card-back">
               <div className="hearthswarming-back-art">
-              <CardImage key={`${card.back}-${imageRetry}`} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="hearthswarming-face-image hearthswarming-back-image" style={getBackStyle(card.key, true)} onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} loading="eager" draggable={false} alt={`${card.code} back`} className="hearthswarming-face-image hearthswarming-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))} {...getEnglishCollectionImageProps("hearthswarming-eve", card.key, "back", true)}/>
               <div className="hearthswarming-card-sheen"/>
               </div>
             </div>
@@ -317,83 +325,48 @@ const hearthswarmingStyles = `
 @media(prefers-reduced-motion:reduce){.hearthswarming-page *{transition:none!important}.hearthswarming-card-button:hover,.hearthswarming-rarities button:hover{transform:none}}
 `;
 const HeartswarmingEve = () => {
-const navigate = useNavigate();
-const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-const [loaded, setLoaded] = useState(false);
-const pageRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+    const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+    const [loaded, setLoaded] = useState(false);
+    const pageRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-const update = () => {
+        const update = () => {
             if (pageRef.current)
                 pageRef.current.style.setProperty("--hearthswarming-page-top", `${pageRef.current.getBoundingClientRect().top + window.scrollY}px`);
         };
         update();
-const observer = new ResizeObserver(update);
+        const observer = new ResizeObserver(update);
         if (pageRef.current?.parentElement)
             observer.observe(pageRef.current.parentElement);
         window.addEventListener("resize", update);
         window.visualViewport?.addEventListener("resize", update);
         return () => { observer.disconnect(); window.removeEventListener("resize", update); window.visualViewport?.removeEventListener("resize", update); };
     }, [loaded]);
-const [loadingFailed, setLoadingFailed] = useState(false);
-const [lastSavedProgress, setLastSavedProgress] = useState("");
-const [viewMode, setViewMode] = useState(false);
-const [selectedRarity, setSelectedRarity] = useState("C");
-const [inspectKey, setInspectKey] = useState<string | null>(null);
-const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
-const set = {
-  folder: "hearthswarming-eve",
-  setId: "hearthswarming-eve",
-  rarities: {
-    C: 48,
-    U: 18,
-    ER: 6,
-    SR: 14,
-    SPR: 28,
-    GR: 12,
-    CR: 12,
-    RR: 6,
-    PER: 12,
-    PGR: 6,
-    PSPR: 11,
-    PCR: 12,
-    PRR: 6, TK: 6,
-  },
-};
-const rarityNames: Record<string, string> = {
-  C: "COMMON",
-  U: "UNCOMMON",
-  ER: "EMERALD RARE",
-  SR: "SILVER RARE",
-  SPR: "SAPPHIRE RARE",
-  GR: "GOLD RARE",
-  CR: "COLORFUL RARE",
-  RR: "RUBY RARE",
-  PER: "SHINING EMERALD RARE",
-  PSPR: "SHINING SAPPHIRE RARE",
-  PGR: "SHINING GOLD RARE",
-  PCR: "SHINING COLORFUL RARE",
-  PRR: "SHINING RUBY RARE",
-  TK: "TK",
-};
-const cards = HEARTHSWARMING_EVE_CARDS;
-const collected = cards.filter(card => flipped[card.key]).length;
-const total = cards.length;
-const progress = Math.round(collected / total * 100);
-const rarityCards = cards.filter(card => card.rarity === selectedRarity);
-const rarityCollected = rarityCards.filter(card => flipped[card.key]).length;
-const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[card.key] : !flipped[card.key]));
-const closeInspector = useCallback(() => setInspectKey(null), []);
-const getInspection = (key: string): InspectCard => {
-        return { key, code: getDisplayCardCode(key), front: getCardFront(key), back: getCardBack(key) };
-    };
-const stepInspection = (direction: number) => {
-const keys = visibleCards.map(card => card.key);
+    const [loadingFailed, setLoadingFailed] = useState(false);
+    const [lastSavedProgress, setLastSavedProgress] = useState("");
+    const [viewMode, setViewMode] = useState(false);
+    const [selectedRarity, setSelectedRarity] = useState("C");
+    const [inspectKey, setInspectKey] = useState<string | null>(null);
+    const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
+    const set = getEnglishSet("hearthswarming-eve")!;
+    const rarityNames: Record<string, string> = getEnglishRarityNames("hearthswarming-eve");
+    const cards = getEnglishCards("hearthswarming-eve");
+    const collected = cards.filter(card => flipped[card.key]).length;
+    const total = cards.length;
+    const progress = Math.round(collected / total * 100);
+    const rarityCards = cards.filter(card => card.rarity === selectedRarity);
+    const rarityCollected = rarityCards.filter(card => flipped[card.key]).length;
+    const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[card.key] : !flipped[card.key]));
+    const closeInspector = useCallback(() => setInspectKey(null), []);
+    const getInspection = (key: string): InspectCard => { const card = getEnglishCard("hearthswarming-eve", key)!; return { key, code: card.checklistCode, front: card.front, back: card.back }; };
+    const stepInspection = (direction: number) => {
+        const keys = visibleCards.map(card => card.key);
         if (!keys.length)
             return;
-const current = keys.indexOf(inspectKey || "");
+        const current = keys.indexOf(inspectKey || "");
         setInspectKey(keys[(current + direction + keys.length) % keys.length]);
     };
-const toggleCard = (key: string) => {
+    const toggleCard = (key: string) => {
         if (viewMode) {
             setInspectKey(key);
             return;
@@ -401,19 +374,19 @@ const toggleCard = (key: string) => {
         setFlipped(previous => ({ ...previous, [key]: !previous[key] }));
     };
     useEffect(() => {
-let active = true;
-const loadProgress = async () => {
-const { data, error: sessionError } = await supabase.auth.getSession();
+        let active = true;
+        const loadProgress = async () => {
+            const { data, error: sessionError } = await supabase.auth.getSession();
             if (sessionError)
                 throw sessionError;
-const user = data.session?.user;
+            const user = data.session?.user;
             if (!active)
                 return;
             if (!user) {
                 setLoaded(true);
                 return;
             }
-const { data: saved, error: loadError } = await supabase
+            const { data: saved, error: loadError } = await supabase
                 .from("collection_progress_raw")
                 .select("progress")
                 .eq("user_id", user.id)
@@ -424,35 +397,37 @@ const { data: saved, error: loadError } = await supabase
             if (loadError && loadError.code !== "PGRST116")
                 throw loadError;
             if (saved?.progress) {
-const progress = Object.fromEntries(HEARTHSWARMING_EVE_CARDS.map(card => [card.key, isHeartswarmingEveOwned(saved.progress[card.key])]));
+                const progress = Object.fromEntries(HEARTHSWARMING_EVE_CARDS.map(card => [card.key, isHeartswarmingEveOwned(saved.progress[card.key])]));
                 setFlipped(progress);
                 setLastSavedProgress(JSON.stringify(progress));
             }
             setLoaded(true);
         };
-        void loadProgress().catch(() => { if (active)
-            setLoadingFailed(true); });
+        void loadProgress().catch(() => {
+            if (active)
+                setLoadingFailed(true);
+        });
         return () => { active = false; };
     }, []);
     useEffect(() => {
         if (!loaded)
             return;
-const current = JSON.stringify(flipped);
+        const current = JSON.stringify(flipped);
         if (current === lastSavedProgress)
             return;
-const saveProgress = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
+        const saveProgress = async () => {
+            const { data } = await supabase.auth.getSession();
+            const user = data.session?.user;
             if (!user)
                 return;
-const saveError = await saveCollectionProgress(set.setId, flipped);
+            const saveError = await saveCollectionProgress(set.setId, flipped);
             if (saveError) {
                 console.error("Unable to save collection progress:", saveError);
                 return;
             }
             setLastSavedProgress(current);
         };
-const saveTimer = window.setTimeout(saveProgress, 400);
+        const saveTimer = window.setTimeout(saveProgress, 400);
         return () => window.clearTimeout(saveTimer);
     }, [flipped, loaded, lastSavedProgress]);
     if (!loaded)
@@ -471,21 +446,21 @@ const saveTimer = window.setTimeout(saveProgress, 400);
         </header>
         <nav className="hearthswarming-rarities" aria-label="Card rarity">
           {Object.entries(set.rarities).map(([rarity, count]) => {
-const owned = cards.filter(card => card.rarity === rarity && flipped[card.key]).length;
+            const owned = cards.filter(card => card.rarity === rarity && flipped[card.key]).length;
             return <button type="button" key={rarity} aria-pressed={selectedRarity === rarity} className={`${selectedRarity === rarity ? "is-active" : ""} ${owned === count ? "is-complete" : ""}`} onClick={() => setSelectedRarity(rarity)}><strong>{rarityLabel(rarity)}</strong><span>{owned}/{count}</span>{owned === count && <Check size={13}/>}</button>;
         })}
         </nav>
         <section className="hearthswarming-catalog" aria-label={`${selectedRarity} cards`}>
           <div className="hearthswarming-catalog-header"><div><h2>{rarityNames[selectedRarity]}<span>{rarityLabel(selectedRarity)}</span></h2><p>{rarityCollected} of {rarityCards.length} collected</p></div><div className="hearthswarming-filters" role="group" aria-label="Filter cards">{(["all", "missing", "owned"] as const).map(value => <button type="button" key={value} aria-pressed={filter === value} className={filter === value ? "is-active" : ""} onClick={() => setFilter(value)}>{value === "all" ? "All cards" : value === "owned" ? "Owned" : "Missing"}</button>)}</div></div>
           {visibleCards.length === 0 ? <div className="hearthswarming-empty"><Check size={24}/><h3>{filter === "missing" ? "This rarity is complete" : "No owned cards here yet"}</h3><p>{filter === "missing" ? "Every card in this rarity is in your collection." : "Switch to All cards to start tracking your collection."}</p><button type="button" onClick={() => setFilter("all")}>Show all cards</button></div> : <div className="hearthswarming-card-grid">{visibleCards.map(card => {
-const key = card.key;
-const owned = !!flipped[key];
-const code = getDisplayCardCode(key);
+                const key = card.key;
+                const owned = !!flipped[key];
+                const code = getEnglishCard("hearthswarming-eve", key)!.checklistCode;
                 return <article key={key} className={`hearthswarming-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="hearthswarming-card-button" onClick={() => toggleCard(key)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="hearthswarming-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="hearthswarming-grid-face"><CardImage src={getCardFront(key)} className="hearthswarming-grid-image" draggable={false} alt={code}/></div>
-                  <div className="hearthswarming-grid-face hearthswarming-grid-back"><div className="hearthswarming-back-art"><CardImage src={getCardBack(key)} className="hearthswarming-grid-image hearthswarming-grid-back-image" style={getBackStyle(key)} draggable={false} alt={`${code} back`}/></div></div>
+                  <div className="hearthswarming-grid-face"><CardImage className="hearthswarming-grid-image" draggable={false} alt={code} {...getEnglishCollectionImageProps("hearthswarming-eve", key, "front", false)}/></div>
+                  <div className="hearthswarming-grid-face hearthswarming-grid-back"><div className="hearthswarming-back-art"><CardImage className="hearthswarming-grid-image hearthswarming-grid-back-image" draggable={false} alt={`${code} back`} {...getEnglishCollectionImageProps("hearthswarming-eve", key, "back", false)}/></div></div>
                 </div>
                 {owned && <span className="hearthswarming-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="hearthswarming-inspect-badge"><Box size={13}/>3D</span>}

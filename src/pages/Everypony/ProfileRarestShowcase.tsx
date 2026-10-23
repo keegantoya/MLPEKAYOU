@@ -1,35 +1,21 @@
+import { englishViewEligible, englishViewImage, englishViewStyle, englishViewDetails } from "@/lib/english-card-views";
 import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import CardImage from "@/components/CardImage";
+import { getChineseCard, isWideChineseCard } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
+import ChineseISOImage from "@/pages/Chinese Kayou/Chinese ISO/components/card-image";
 import { supabase } from "@/lib/supabase";
-import { getISOCardCode, getISOSetName } from "@/lib/iso-card-catalog";
-import { getMoonFourDisplayCode } from "@/lib/moon-four-catalog";
-import { getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
-import { getTradeCardImage, getMoonOneBack, getMoonTwoBack, getMoonThreeBack, getRainbowOneBack, getRainbowTwoBack, getStarOneBack, getFunMomentsOneBack, getFunMomentsTwoBack, getFunMomentsThreeBack, getPromotionalCardsBack, getFantasyWonderlandBack, getDiscordBack, getNightmareNightBack, getHeartswarmingEveBack, getFriendshipsBeginBack, cardImagePaths } from "@/lib/card-images";
-export type ShowcaseCard = { set_id: string; card_key: string; owner_count: number };
-export const getShowcaseDetails = (card: ShowcaseCard) => {
-  const set = String(card.set_id);
-  const match = card.card_key.match(/^([A-Z ]+)-(\d+)$/);
-  const rarity = (match?.[1] || "").replace("SHINING ZR", "SZR");
-  const number = Number(match?.[2] || card.card_key.match(/(\d+)$/)?.[1] || 0);
-  const getters: Record<string, (rarity: string, number: number) => string> = { "1": getMoonOneBack, "2": getMoonTwoBack, "3": getMoonThreeBack, "4": getStarOneBack, "5": getRainbowOneBack, "6": getRainbowTwoBack, "7": getFunMomentsOneBack, "8": getFunMomentsTwoBack, "11": getFunMomentsThreeBack };
-  let back = "";
-  if (set === "13") {
-    const base = "/card-backs/moon-four/";
-    back = base + (rarity === "ZR" && number === 7 ? "M4ZRBACKSIDEWAYS" : `M4${rarity}BACK`) + ".webp";
-  } else if (getters[set]) back = getters[set](set === "2" && rarity === "SZR" ? "SHINING ZR" : rarity, number);
-  else if (set === "9") back = getPromotionalCardsBack(number);
-  else if (set === "tcgpromos") back = cardImagePaths.fixed.cardBacksTcgdefaultback;
-  else if (set === "FW") back = getFantasyWonderlandBack(card.card_key);
-  else if (set === "12") back = getDiscordBack(card.card_key);
-  else if (set === "14") back = getNightmareNightBack(card.card_key);
-  else if (set === "hearthswarming-eve") back = getHeartswarmingEveBack(card.card_key);
-  else if (set === "SD") back = getFriendshipsBeginBack(card.card_key);
-  const stamp = set === "1" ? rarity === "SC" : ["2", "3", "13"].includes(set) ? ["SC", "ZR", "SZR"].includes(rarity) : set === "4" ? ["BP", "SAR"].includes(rarity) : ["5", "6"].includes(set) ? ["XR", "USR"].includes(rarity) : ["7", "8", "11"].includes(set) ? ["CR", "SCR"].includes(rarity) : false;
-  const sideways = set === "13" ? rarity === "ZR" && number === 7 : set === "3" ? rarity === "SC" && number === 7 || rarity === "ZR" && number === 14 : set === "2" ? rarity === "SC" && number === 7 || rarity === "SZR" : set === "1" ? rarity === "SC" && number === 7 : set === "6" ? rarity === "XR" && number === 8 : ["7", "8", "11"].includes(set) && rarity === "CR" && number >= 10;
-  const wide = set === "3" && rarity === "SZR" && number === 1 || set === "4" && rarity === "SAR" && number === 1;
-  return { rarity, number, back, stamp, sideways, wide, stampCenter: set === "4" && rarity === "SAR", code: set === "13" ? getMoonFourDisplayCode(card.card_key) : set === "hearthswarming-eve" ? getHeartswarmingEveDisplayCode(card.card_key) : getISOCardCode(set, card.card_key), name: set === "13" ? "Eternal Moon Four" : set === "hearthswarming-eve" ? "Hearthswarming Eve" : getISOSetName(set) };
+export type ShowcaseCard = {
+    set_id: string;
+    card_key: string;
+    owner_count: number;
 };
-function CertificateSeal({ sideways = false }: { sideways?: boolean }) {
+export const getShowcaseDetails = (card: ShowcaseCard) => {
+    const chinese = getChineseCard(card.set_id, card.card_key);
+    return chinese ? { rarity: chinese.rarity, number: chinese.number, code: chinese.code, name: chinese.setName, wide: isWideChineseCard(chinese), back: chinese.image, stamp: false, sideways: false, stampCenter: false } : englishViewDetails(card);
+};
+function CertificateSeal({ sideways = false }: {
+    sideways?: boolean;
+}) {
     const id = useId().replace(/:/g, "");
     return <span className={`ps-certificate-seal${sideways ? " ps-seal-sideways" : ""}`} aria-hidden="true">
         <span className="ps-seal-foil"/>
@@ -69,62 +55,111 @@ function CertificateSeal({ sideways = false }: { sideways?: boolean }) {
         <span className="ps-seal-glint"/>
     </span>;
 }
-export function ShowcaseSpinner({ card, index }: { card: ShowcaseCard; index: number }) {
-  const details = getShowcaseDetails(card);
-  const [rotation, setRotation] = useState({ x: -7, y: index ? -12 : 12 });
-  const [failedFront, setFailedFront] = useState(false);
-  const [failedBack, setFailedBack] = useState(false);
-  const drag = useRef<{ id: number; x: number; y: number; rx: number; ry: number } | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const [retried, setRetried] = useState(0);
-  const variables = { "--ps-foil-x": `${50 + Math.sin(rotation.y * Math.PI / 180) * 45}%`, "--ps-foil-y": `${50 + Math.sin(rotation.x * Math.PI / 180) * 45}%`, "--ps-foil-angle": `${115 + rotation.y % 120}deg`, "--ps-foil-hue": rotation.y % 180, "--ps-collection-opacity": Math.abs(Math.sin(rotation.y * Math.PI / 180)), "--ps-cert-opacity": .35 + Math.abs(Math.sin(rotation.x * Math.PI / 180)) * .65 } as CSSProperties;
-  const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (drag.current?.id !== event.pointerId) return;
-    drag.current = null;
-    setDragging(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-  };
-  useEffect(() => { setFailedFront(false); setFailedBack(false); setRotation({ x: -7, y: index ? -12 : 12 }); }, [card.set_id, card.card_key, index]);
-  return <article className={`ps-feature-card ps-feature-${index} ${details.wide ? "ps-is-wide" : ""}`}>
-    <div className={`ps-spin-stage ${dragging ? "ps-is-dragging" : ""}`} role="group" tabIndex={0} aria-label={`${details.code}. Drag left or right to spin; use arrow keys to rotate.`}
-      onPointerDown={event => { if (event.pointerType === "mouse" && event.button !== 0) return; drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, rx: rotation.x, ry: rotation.y }; setDragging(true); event.currentTarget.setPointerCapture(event.pointerId); }}
-      onPointerMove={event => { const current = drag.current; if (!current || current.id !== event.pointerId) return; setRotation({ x: Math.max(-65, Math.min(65, current.rx - (event.clientY - current.y) * .22)), y: current.ry + (event.clientX - current.x) * .7 }); }}
-      onPointerUp={endDrag} onPointerCancel={endDrag} onLostPointerCapture={() => { drag.current = null; setDragging(false); }}
-      onKeyDown={event => { const direction = event.key === "ArrowLeft" ? -20 : event.key === "ArrowRight" ? 20 : 0; if (direction) { event.preventDefault(); setRotation(previous => ({ ...previous, y: previous.y + direction })); } else if (event.key === "ArrowUp" || event.key === "ArrowDown") { event.preventDefault(); setRotation(previous => ({ ...previous, x: Math.max(-65, Math.min(65, previous.x + (event.key === "ArrowUp" ? -10 : 10))) })); } else if (event.key.toLowerCase() === "r") setRotation({ x: -7, y: index ? -12 : 12 }); }}>
+export function ShowcaseSpinner({ card, index }: {
+    card: ShowcaseCard;
+    index: number;
+}) {
+    const details = getShowcaseDetails(card);
+    const chinese = getChineseCard(card.set_id, card.card_key);
+    const [rotation, setRotation] = useState({ x: -7, y: index ? -12 : 12 });
+    const [failedFront, setFailedFront] = useState(false);
+    const [failedBack, setFailedBack] = useState(false);
+    const drag = useRef<{
+        id: number;
+        x: number;
+        y: number;
+        rx: number;
+        ry: number;
+    } | null>(null);
+    const [dragging, setDragging] = useState(false);
+    const [retried, setRetried] = useState(0);
+    const variables = { "--ps-foil-x": `${50 + Math.sin(rotation.y * Math.PI / 180) * 45}%`, "--ps-foil-y": `${50 + Math.sin(rotation.x * Math.PI / 180) * 45}%`, "--ps-foil-angle": `${115 + rotation.y % 120}deg`, "--ps-foil-hue": rotation.y % 180, "--ps-collection-opacity": Math.abs(Math.sin(rotation.y * Math.PI / 180)), "--ps-cert-opacity": .35 + Math.abs(Math.sin(rotation.x * Math.PI / 180)) * .65 } as CSSProperties;
+    const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+        if (drag.current?.id !== event.pointerId)
+            return;
+        drag.current = null;
+        setDragging(false);
+        if (event.currentTarget.hasPointerCapture(event.pointerId))
+            event.currentTarget.releasePointerCapture(event.pointerId);
+    };
+    useEffect(() => { setFailedFront(false); setFailedBack(false); setRotation({ x: -7, y: index ? -12 : 12 }); }, [card.set_id, card.card_key, index]);
+    return <article className={`ps-feature-card ps-feature-${index} ${details.wide ? "ps-is-wide" : ""}`}>
+    <div className={`ps-spin-stage ${dragging ? "ps-is-dragging" : ""}`} role="group" tabIndex={0} aria-label={`${details.code}. Drag left or right to spin; use arrow keys to rotate.`} onPointerDown={event => {
+            if (event.pointerType === "mouse" && event.button !== 0)
+                return;
+            drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, rx: rotation.x, ry: rotation.y };
+            setDragging(true);
+            event.currentTarget.setPointerCapture(event.pointerId);
+        }} onPointerMove={event => {
+            const current = drag.current;
+            if (!current || current.id !== event.pointerId)
+                return;
+            setRotation({ x: Math.max(-65, Math.min(65, current.rx - (event.clientY - current.y) * .22)), y: current.ry + (event.clientX - current.x) * .7 });
+        }} onPointerUp={endDrag} onPointerCancel={endDrag} onLostPointerCapture={() => { drag.current = null; setDragging(false); }} onKeyDown={event => {
+            const direction = event.key === "ArrowLeft" ? -20 : event.key === "ArrowRight" ? 20 : 0;
+            if (direction) {
+                event.preventDefault();
+                setRotation(previous => ({ ...previous, y: previous.y + direction }));
+            }
+            else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                event.preventDefault();
+                setRotation(previous => ({ ...previous, x: Math.max(-65, Math.min(65, previous.x + (event.key === "ArrowUp" ? -10 : 10))) }));
+            }
+            else if (event.key.toLowerCase() === "r")
+                setRotation({ x: -7, y: index ? -12 : 12 });
+        }}>
       <div className="ps-card-model" style={{ ...variables, aspectRatio: details.wide ? "10/7" : "5/7", transform: `rotateZ(${index ? 2 : -2}deg) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}>
         <div className="ps-card-face ps-card-front">
-          {failedFront ? <div className="ps-image-missing">Front unavailable</div> : <CardImage key={`front-${retried}`} src={getTradeCardImage(card)} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${details.code} front`} className="ps-face-image" style={{ transform: card.set_id === "9" && card.card_key === "PR-15" ? "scale(1.025)" : ["1", "2", "3", "13", "4", "5", "6", "7", "8", "11"].includes(card.set_id) ? "scale(1.035)" : undefined }} onError={() => setFailedFront(true)} />}
+          {chinese ? <ChineseISOImage key={`chinese-front-${retried}`} card={chinese} /> : failedFront ? <div className="ps-image-missing">Front unavailable</div> : <CardImage key={`front-${retried}`} src={englishViewImage(card)} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${details.code} front`} className="ps-face-image" style={englishViewStyle(card, { inspect: true })} onError={() => setFailedFront(true)}/>}
           <span className="ps-card-sheen"/>
         </div>
         <div className={`ps-card-face ps-card-back ${details.stampCenter ? "ps-stamp-center" : ""} ${details.wide ? "ps-wide-back" : ""} ps-stamp-set-${card.set_id}`}>
-          {failedBack || !details.back ? <div className="ps-image-missing">Back unavailable</div> : <CardImage key={`back-${retried}`} src={details.back} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${details.code} back`} className="ps-face-image" style={{ transform: card.set_id === "2" && details.sideways ? "rotate(180deg) scale(1.035)" : "scale(1.035)" }} onError={() => setFailedBack(true)}/>}
+          {chinese ? <ChineseISOImage key={`chinese-back-${retried}`} card={chinese} /> : failedBack || !details.back ? <div className="ps-image-missing">Back unavailable</div> : <CardImage key={`back-${retried}`} src={details.back} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${details.code} back`} className="ps-face-image" style={englishViewStyle(card, { side: "back", inspect: true })} onError={() => setFailedBack(true)}/>}
           {details.stamp && !failedBack && details.back && <CertificateSeal sideways={details.sideways}/>}
           <span className="ps-card-sheen"/>
         </div>
       </div>
     </div>
-    <div className="ps-card-caption"><strong>{details.code}</strong><span>{details.name}</span><small>{card.owner_count.toLocaleString()} {card.owner_count === 1 ? "collector owns" : "collectors own"} this card</small></div>
+    <div className="ps-card-caption"><strong>{details.code}</strong><span>{details.name}{chinese ? " / Chinese" : " / English"}</span><small>{card.owner_count.toLocaleString()} {card.owner_count === 1 ? "collector owns" : "collectors own"} this card</small></div>
     <div className="ps-card-controls"><button type="button" onClick={() => setRotation(previous => ({ ...previous, y: previous.y + 180 }))} aria-label={`Flip ${details.code}`}>Flip card</button>{(failedFront || failedBack) && <button type="button" onClick={() => { setFailedFront(false); setFailedBack(false); setRetried(previous => previous + 1); }}>Retry image</button>}</div>
   </article>;
 }
-export default function ProfileRarestShowcase({ profileId }: { profileId?: string }) {
-  const [result, setResult] = useState<{ profileId?: string; cards: ShowcaseCard[]; status: "loading" | "ready" | "error" }>({ cards: [], status: "loading" });
-  const [retry, setRetry] = useState(0);
-  useEffect(() => {
-    let active = true;
-    if (!profileId) return;
-    setResult({ profileId, cards: [], status: "loading" });
-    const load = async () => {
-      const { data, error } = await supabase.rpc("get_profile_showcase", { p_profile_id: profileId });
-      if (!active) return;
-      if (error) { setResult({ profileId, cards: [], status: "error" }); return; }
-      setResult({ profileId, cards: (data || []).map((card: { set_id: string; card_key: string; owner_count: number | string }) => ({ ...card, owner_count: Number(card.owner_count) })), status: "ready" });
-    };
-    void load().catch(() => { if (active) setResult({ profileId, cards: [], status: "error" }); });
-    return () => { active = false; };
-  }, [profileId, retry]);
-  const current = result.profileId === profileId ? result : { cards: [], status: "loading" };
-  return <aside className="ps-rarest-showcase" aria-label="Rarest owned cards">
+export default function ProfileRarestShowcase({ profileId }: {
+    profileId?: string;
+}) {
+    const [result, setResult] = useState<{
+        profileId?: string;
+        cards: ShowcaseCard[];
+        status: "loading" | "ready" | "error";
+    }>({ cards: [], status: "loading" });
+    const [retry, setRetry] = useState(0);
+    useEffect(() => {
+        let active = true;
+        if (!profileId)
+            return;
+        setResult({ profileId, cards: [], status: "loading" });
+        const load = async () => {
+            const { data, error } = await supabase.rpc("get_profile_showcase", { p_profile_id: profileId });
+            if (!active)
+                return;
+            if (error) {
+                setResult({ profileId, cards: [], status: "error" });
+                return;
+            }
+            setResult({ profileId, cards: (data || []).filter((card: ShowcaseCard) => !!getChineseCard(card.set_id, card.card_key) || englishViewEligible(card)).map((card: {
+                    set_id: string;
+                    card_key: string;
+                    owner_count: number | string;
+                }) => ({ ...card, owner_count: Number(card.owner_count) })), status: "ready" });
+        };
+        void load().catch(() => {
+            if (active)
+                setResult({ profileId, cards: [], status: "error" });
+        });
+        return () => { active = false; };
+    }, [profileId, retry]);
+    const current = result.profileId === profileId ? result : { cards: [], status: "loading" };
+    return <aside className="ps-rarest-showcase" aria-label="Rarest owned cards">
     <div className="ps-rarest-heading"><span>Rarest cards</span></div>
     {current.status === "loading" ? <div className="ps-rarest-empty" role="status"><span className="ps-loading-dot"/>Finding their rarest pulls...</div> : current.status === "error" ? <div className="ps-rarest-empty"><p>Rarest cards could not be loaded.</p><button type="button" onClick={() => setRetry(previous => previous + 1)}>Try again</button></div> : current.cards.length ? <><div className="ps-rarest-pair">{current.cards.map((card, index) => <ShowcaseSpinner key={`${card.set_id}:${card.card_key}`} card={card} index={index}/>)}</div></> : <div className="ps-rarest-empty">Their rarest pulls will appear here as they collect top hits.</div>}
   </aside>;

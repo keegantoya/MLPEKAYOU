@@ -7,10 +7,10 @@ export type Card = {
   listing_type?: "trade" | "purchase";
 };
 export function usePublicProfileCards(userId?: string) {
-  const [isoCards, setIsoCards] = useState<Card[]>([]);
-  const [wishlistCards, setWishlistCards] = useState<Card[]>([]);
-  const [tradeCards, setTradeCards] = useState<Card[]>([]);
-  const [loading, setLoading] = useState(true);
+const [isoCards, setIsoCards] = useState<Card[]>([]);
+const [wishlistCards, setWishlistCards] = useState<Card[]>([]);
+const [tradeCards, setTradeCards] = useState<Card[]>([]);
+const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!userId) {
       setIsoCards([]);
@@ -19,10 +19,10 @@ export function usePublicProfileCards(userId?: string) {
       setLoading(false);
       return;
     }
-    const load = async () => {
+const load = async () => {
       setLoading(true);
-      // ISO
-      const generatedSets = [
+// ISO
+const generatedSets = [
         {
           id: "1",
           rarities: {
@@ -154,29 +154,29 @@ export function usePublicProfileCards(userId?: string) {
           },
         },
       ];
-      const { data: collection } = await supabase
+const { data: collection } = await supabase
         .from("collection_progress_raw")
         .select("set_id, progress")
         .eq("user_id", userId);
-      const progressMap: Record<string, any> = {};
+const progressMap: Record<string, any> = {};
       (collection ?? []).forEach((row: any) => {
         progressMap[String(row.set_id)] = row.progress || {};
       });
-      const { data: profile } = await supabase
+const { data: profile } = await supabase
         .from("profiles")
         .select("hide_iso, iso_hidden_sets")
         .eq("id", userId)
         .maybeSingle();
       if (profile?.hide_iso) {
-        const { data: wishlist } = await supabase
+const { data: wishlist } = await supabase
           .from("wishlists")
           .select("card_key")
           .eq("user_id", userId);
-        const wishlistCards: Card[] = (wishlist ?? []).map((row: any) => {
-          const [set_id, card_key] = String(row.card_key).split(":");
+const wishlistCards: Card[] = (wishlist ?? []).map((row: any) => {
+const [set_id, card_key] = String(row.card_key).split(":");
           return { set_id, card_key };
         });
-        const { data: trades } = await supabase
+const { data: trades } = await supabase
           .from("card_market_listings")
           .select("set_id, card_key")
           .eq("user_id", userId)
@@ -192,12 +192,12 @@ export function usePublicProfileCards(userId?: string) {
         setLoading(false);
         return;
       }
-      const hiddenSets = [...(profile?.iso_hidden_sets ?? [])];
-      const { data: isoStatuses } = await supabase
+const hiddenSets = [...(profile?.iso_hidden_sets ?? [])];
+const { data: isoStatuses } = await supabase
         .from("iso_status")
         .select("card_key, status")
         .eq("user_id", userId);
-      const hiddenIsoCards = new Set(
+const hiddenIsoCards = new Set(
         (isoStatuses ?? [])
           .filter(
             (row: any) =>
@@ -205,20 +205,20 @@ export function usePublicProfileCards(userId?: string) {
               row.status === "purchase_in_progress",
           )
           .flatMap((row: any) => {
-            const cardKey = String(row.card_key);
+const cardKey = String(row.card_key);
             if (cardKey.startsWith("BONUS-")) {
               return [cardKey, `SD-${cardKey}`];
             }
             return [cardKey];
           }),
       );
-      const iso: Card[] = [];
+const iso: Card[] = [];
       generatedSets.forEach((set) => {
         Object.entries(set.rarities).forEach(([rarity, count]) => {
           for (let i = 1; i <= Number(count); i++) {
-            const key = `${rarity}-${i}`;
-            const value = progressMap[set.id]?.[key];
-            const owned =
+const key = `${rarity}-${i}`;
+const value = progressMap[set.id]?.[key];
+const owned =
               value === true ||
               (typeof value === "object" &&
                 value !== null &&
@@ -246,8 +246,8 @@ export function usePublicProfileCards(userId?: string) {
         "PR-12",
         "PR-13",
       ]) {
-        const value = progressMap["9"]?.[cardKey];
-        const owned =
+const value = progressMap["9"]?.[cardKey];
+const owned =
           value === true ||
           (typeof value === "object" && value !== null && value.owned === true);
         if (!owned) {
@@ -258,9 +258,9 @@ export function usePublicProfileCards(userId?: string) {
         }
       }
       for (let i = 1; i <= 27; i++) {
-        const cardKey = `RR${String(i).padStart(2, "0")}`;
-        const value = progressMap["tcgpromos"]?.[cardKey];
-        const owned =
+const cardKey = `RR${String(i).padStart(2, "0")}`;
+const value = progressMap["tcgpromos"]?.[cardKey];
+const owned =
           value === true ||
           (typeof value === "object" && value !== null && value.owned === true);
         if (!owned) {
@@ -270,9 +270,9 @@ export function usePublicProfileCards(userId?: string) {
           });
         }
       }
-      // Fantasy Wonderland (FW)
-      const fwProgress = progressMap["FW"] || {};
-      const FW_STRUCTURE = [
+// Fantasy Wonderland (FW)
+const fwProgress = progressMap["FW"] || {};
+const FW_STRUCTURE = [
         { prefix: "BP01C", count: 48 },
         { prefix: "BP01U", count: 18 },
         { prefix: "BP01ER", count: 6 },
@@ -289,18 +289,18 @@ export function usePublicProfileCards(userId?: string) {
       ];
       FW_STRUCTURE.forEach(({ prefix, count }) => {
         for (let i = 0; i < count; i++) {
-          let num = i + 1;
+let num = i + 1;
           if (prefix === "BP01ER") {
             num = i + 7;
           }
           if (prefix === "BP01PSPR") {
-            const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
+const PSPR_NUMBERS = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
             num = PSPR_NUMBERS[i];
             if (!num) continue;
           }
-          const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
-          const value = fwProgress[cardKey];
-          const owned =
+const cardKey = `${prefix}${String(num).padStart(2, "0")}`;
+const value = fwProgress[cardKey];
+const owned =
             value === true ||
             (typeof value === "object" &&
               value !== null &&
@@ -313,9 +313,9 @@ export function usePublicProfileCards(userId?: string) {
           }
         }
       });
-      // Discord (Set 12)
-      const discordProgress = progressMap["12"] || {};
-      const DISCORD_STRUCTURE = [
+// Discord (Set 12)
+const discordProgress = progressMap["12"] || {};
+const DISCORD_STRUCTURE = [
         { prefix: "BP02-C", count: 48 },
         { prefix: "BP02-U", count: 18 },
         { prefix: "BP02-ER", count: 6 },
@@ -332,16 +332,16 @@ export function usePublicProfileCards(userId?: string) {
       ];
       DISCORD_STRUCTURE.forEach(({ prefix, count }) => {
         for (let i = 0; i < count; i++) {
-          let cardKey = "";
+let cardKey = "";
           if (prefix === "BP02-PER") {
-            const num = Math.floor(i / 2) + 1;
-            const side = i % 2 === 0 ? "A2" : "B2";
+const num = Math.floor(i / 2) + 1;
+const side = i % 2 === 0 ? "A2" : "B2";
             cardKey = `${prefix}${String(num).padStart(2, "0")}-${side}`;
           } else {
             cardKey = `${prefix}${String(i + 1).padStart(2, "0")}`;
           }
-          const value = discordProgress[cardKey];
-          const owned =
+const value = discordProgress[cardKey];
+const owned =
             value === true ||
             (typeof value === "object" &&
               value !== null &&
@@ -354,9 +354,9 @@ export function usePublicProfileCards(userId?: string) {
           }
         }
       });
-      // Nightmare Night (Set 14)
-      const nightmareNightProgress = progressMap["14"] || {};
-      const nightmareNightKeys = [
+// Nightmare Night (Set 14)
+const nightmareNightProgress = progressMap["14"] || {};
+const nightmareNightKeys = [
         ...Array.from(
           { length: 48 },
           (_, i) => `BP03-C${String(i + 1).padStart(2, "0")}`,
@@ -417,8 +417,8 @@ export function usePublicProfileCards(userId?: string) {
         ),
       ];
       nightmareNightKeys.forEach((cardKey) => {
-        const value = nightmareNightProgress[cardKey];
-        const owned =
+const value = nightmareNightProgress[cardKey];
+const owned =
           value === true ||
           (typeof value === "object" && value !== null && value.owned === true);
         if (!owned) {
@@ -431,9 +431,9 @@ export function usePublicProfileCards(userId?: string) {
       HEARTHSWARMING_EVE_KEYS.forEach(cardKey => {
         if (!isHeartswarmingEveOwned(progressMap["hearthswarming-eve"]?.[cardKey])) iso.push({ set_id: "hearthswarming-eve", card_key: cardKey });
       });
-      // Everything else (Rainbow, Fun, Star, Promos, etc.)
+// Everything else (Rainbow, Fun, Star, Promos, etc.)
       (collection ?? []).forEach((row: any) => {
-        const setId = String(row.set_id);
+const setId = String(row.set_id);
         if (
           [
             "1",
@@ -455,7 +455,7 @@ export function usePublicProfileCards(userId?: string) {
         )
           return;
         Object.entries(row.progress || {}).forEach(([cardKey, value]) => {
-          const owned =
+const owned =
             value === true ||
             (typeof value === "object" &&
               value !== null &&
@@ -468,20 +468,20 @@ export function usePublicProfileCards(userId?: string) {
           }
         });
       });
-      // Wishlist
-      const { data: wishlist } = await supabase
+// Wishlist
+const { data: wishlist } = await supabase
         .from("wishlists")
         .select("card_key")
         .eq("user_id", userId);
-      const wishlistCards: Card[] = (wishlist ?? []).map((row: any) => {
-        const [set_id, card_key] = String(row.card_key).split(":");
+const wishlistCards: Card[] = (wishlist ?? []).map((row: any) => {
+const [set_id, card_key] = String(row.card_key).split(":");
         return {
           set_id,
           card_key,
         };
       });
-      // Trades
-      const { data: trades } = await supabase
+// Trades
+const { data: trades } = await supabase
         .from("card_market_listings")
         .select("set_id, card_key")
         .eq("user_id", userId)
@@ -490,6 +490,7 @@ export function usePublicProfileCards(userId?: string) {
         iso.filter(
           (card) =>
             !hiddenIsoCards.has(`${card.set_id}-${card.card_key}`) &&
+            !(card.set_id === "FW" && hiddenIsoCards.has(card.card_key)) &&
             !hiddenSets.includes(String(card.set_id)),
         ),
       );

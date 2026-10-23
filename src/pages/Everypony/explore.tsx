@@ -1,8 +1,7 @@
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import PinkieParty from "@/pages/Game/Pinkie-Party";
-import { Search, Users, ArrowUpRight, X } from "lucide-react";
+import { Search, ArrowUpRight, X, ChevronDown, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import ExploreProfile from "./explore-profile";
 import { getProfileAssets } from "./profile-assets";
@@ -10,6 +9,9 @@ import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 import ownerBadge from "/website-assets/OwnerBadge.webp";
 const Explore = () => {
+const searchRequest = useRef(0);
+const profileRequest = useRef(0);
+  useEffect(() => () => { searchRequest.current++; profileRequest.current++; }, []);
 const [collectorCount, setCollectorCount] = useState(0);
 const [userSearch, setUserSearch] = useState("");
 const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -17,8 +19,6 @@ const [searchingUsers, setSearchingUsers] = useState(false);
 const [selectedUser, setSelectedUser] = useState<any>(null);
 const [selectedUserTradingProfile, setSelectedUserTradingProfile] = useState<any>(null);
 const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
-const [showPinkieParty, setShowPinkieParty] = useState(false);
-const pinkiePartyButtonRef = useRef<HTMLButtonElement>(null);
     useEffect(() => {
 const loadStats = async () => {
 const { count: collectors } = await supabase
@@ -98,9 +98,11 @@ const previousBodyBackground = document.body.style.backgroundColor;
         };
     }, [isLightMode]);
 async function searchUsers(query: string) {
+const request = ++searchRequest.current;
         setUserSearch(query);
 const trimmedQuery = query.trim();
         if (!trimmedQuery) {
+           setSearchingUsers(false);
             setSearchResults([]);
             return;
         }
@@ -110,7 +112,8 @@ const { data: profileMatches, error: profileError } = await supabase
             .select("id, username, avatar_url, vacation_mode")
             .ilike("username", `${trimmedQuery}%`)
             .limit(100);
-        if (profileError) {
+        if (request !== searchRequest.current) return;
+       if (profileError) {
             console.error(profileError);
             setSearchResults([]);
             setSearchingUsers(false);
@@ -127,7 +130,8 @@ const { data: tradingProfiles, error: tradingError } = await supabase
             .from("trading_profiles")
             .select("user_id, discord_username")
             .in("user_id", candidateIds);
-        if (tradingError) {
+        if (request !== searchRequest.current) return;
+       if (tradingError) {
             console.error(tradingError);
             setSearchResults([]);
             setSearchingUsers(false);
@@ -152,205 +156,58 @@ const q = trimmedQuery.toLowerCase();
         setSearchResults(sorted);
         setSearchingUsers(false);
     }
-    return (<div className={`min-h-screen transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="flex flex-col gap-6">
-          <section className={`relative overflow-hidden rounded-[32px] border ${isLightMode
-            ? "border-black/10 bg-white shadow-[0_18px_50px_rgba(0,0,0,.06)]"
-            : "border-white/[0.08] bg-[#151718] shadow-[0_18px_50px_rgba(0,0,0,.20)]"}`}>
-            <div className={`absolute inset-0 bg-cover bg-center sm:bg-[center_42%] lg:inset-y-0 lg:left-auto lg:right-0 lg:w-[48%] lg:bg-center ${isLightMode
-            ? "opacity-[0.14] sm:opacity-[0.16] lg:opacity-[0.20]"
-            : "opacity-[0.12] sm:opacity-[0.14] lg:opacity-[0.16]"}`} style={{ backgroundImage: "url('/website-assets/exploreequestria.webp')" }}/>
-            <div className={`absolute inset-0 ${isLightMode
-            ? "bg-gradient-to-b from-white/90 via-white/82 to-white/92 lg:bg-gradient-to-r lg:from-white lg:via-white/95 lg:to-white/40"
-            : "bg-gradient-to-b from-[#151718]/90 via-[#151718]/82 to-[#151718]/92 lg:bg-gradient-to-r lg:from-[#151718] lg:via-[#151718]/95 lg:to-[#151718]/35"}`}/>
-            <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end lg:p-10">
-              <div className="max-w-3xl">
-                <div className={`mb-3 text-sm font-semibold ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>
-                  MLPEKAYOU Community
-                </div>
-                <h1 className={`text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl ${isLightMode ? "text-zinc-950" : "text-white"}`}>
-                  Explore Equestria
-                </h1>
-                <p className={`mt-3 max-w-2xl text-sm leading-6 sm:text-base ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
-                  To reduce the amount of inactive users
-                  populated upon search, you must have your Discord username set in order to appear here.
-                  If you don't want to set your Discord username, your profile is still fully shareable, you just won't
-                  be found upon search.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {["Find collectors", "Discover trades", "View public profiles"].map((label) => (<span key={label} className={`rounded-full border px-3 py-1.5 text-sm font-medium ${isLightMode
-                ? "border-black/10 bg-black/[0.03] text-zinc-700"
-                : "border-white/10 bg-white/[0.05] text-zinc-300"}`}>
-                      {label}
-                    </span>))}
-                </div>
-              </div>
-              <div className="lg:min-w-[320px]">
-                <div className={`rounded-2xl border p-5 backdrop-blur-sm ${isLightMode ? "border-black/10 bg-white/85" : "border-white/10 bg-black/20"}`}>
-                  <div className="flex items-center gap-2">
-                    <Users size={18} className={isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}/>
-                    <span className={`text-sm font-medium ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                      Superfans
-                    </span>
-                  </div>
-                  <div className="mt-2 text-4xl font-semibold tracking-tight">
-                    {collectorCount.toLocaleString()}
-                  </div>
-                </div>
-              </div>
+  return (
+    <div className={`min-h-screen transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+      <main className="w-full min-w-0 px-3 pb-24 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-10">
+        {selectedUser ? <header className={`mb-5 flex flex-wrap items-end justify-between gap-3 border-b pb-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}><div><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Explore Equestria</h1><p className="mt-1 text-sm text-muted-foreground">{collectorCount.toLocaleString()} collectors on MLPEKAYOU</p></div></header> : <header className="grid overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(0,.9fr)]">
+          <div className="flex min-w-0 flex-col justify-center py-5 sm:py-7 lg:py-8 lg:pr-10">
+            <p className="mb-3 text-xs font-semibold tracking-[.12em] text-primary">MLPEKAYOU COMMUNITY</p>
+            <h1 className="text-3xl font-semibold leading-[1.1] tracking-tight sm:text-4xl xl:text-5xl">Explore Equestria</h1>
+            <p className={`mt-4 max-w-xl text-sm leading-6 sm:text-base sm:leading-7 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>Find another collector, browse their cards, and see what they have available for trade or sale.</p>
+            <div className={`mt-6 flex items-baseline gap-3 border-t pt-4 sm:mt-8 ${isLightMode ? "border-black/10" : "border-white/10"}`}><strong className="text-3xl font-semibold tabular-nums tracking-tight text-primary">{collectorCount.toLocaleString()}</strong><span className="text-sm text-muted-foreground">collectors on MLPEKAYOU</span></div>
+          </div>
+          <div className="relative min-w-0 overflow-hidden"><img src="/website-assets/exploreequestria.webp" alt="" draggable={false} className="block h-44 w-full object-cover object-[center_45%] sm:h-56 lg:absolute lg:inset-0 lg:h-full lg:min-h-[300px]" /><div aria-hidden="true" className={`pointer-events-none absolute inset-0 transition-colors duration-200 ${isLightMode ? "bg-[#f5f5f3]/65" : "bg-[#0d0f10]/65"}`} /><div aria-hidden="true" className={`pointer-events-none absolute inset-0 bg-gradient-to-b to-transparent to-70% lg:bg-gradient-to-r ${isLightMode ? "from-[#f5f5f3]" : "from-[#0d0f10]"}`} /></div>
+        </header>}
+        <section aria-labelledby="explore-search-heading" className="mt-6 py-2 sm:mt-8">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-4"><div className="min-w-0"><h2 id="explore-search-heading" className="text-lg font-semibold sm:text-xl">Find a collector</h2><p className="mt-1 text-sm text-muted-foreground">Search by their MLPEKAYOU username.</p></div><details className="group shrink-0 lg:hidden"><summary className="flex min-h-11 cursor-pointer list-none items-center justify-end gap-1.5 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">Games<ChevronDown size={14} aria-hidden="true" className="transition-transform group-open:rotate-180 motion-reduce:transition-none" /></summary><nav aria-label="Mini games" className="flex flex-col items-end gap-1 pb-1"><Link to="/match-pairs" className="flex min-h-10 items-center gap-2 whitespace-nowrap text-sm transition-colors hover:text-primary">Match Pairs<ArrowUpRight size={13} aria-hidden="true" /></Link><Link to="/go-fish" className="flex min-h-10 items-center gap-2 whitespace-nowrap text-sm transition-colors hover:text-primary">Go Fish<ArrowUpRight size={13} aria-hidden="true" /></Link></nav></details></div>
+            <p className="text-xs leading-5 text-muted-foreground">To appear in search, add your Discord username to your profile. Profiles without one can still be shared directly.</p>
+            <div className="min-w-0 w-full"><label htmlFor="explore-collector-search" className="sr-only">MLPEKAYOU username</label>
+            <div className={`flex min-h-14 items-center gap-3 rounded-lg border px-4 transition-colors focus-within:border-primary ${isLightMode ? "border-black/15 bg-white" : "border-white/15 bg-black/20"}`}>
+              <Search size={18} className="shrink-0 text-primary" aria-hidden="true" />
+              <input id="explore-collector-search" type="search" value={userSearch} onChange={event => void searchUsers(event.target.value)} placeholder="MLPEKAYOU username" spellCheck={false} autoComplete="off" className={`h-14 min-w-0 flex-1 bg-transparent text-base outline-none [&::-webkit-search-cancel-button]:appearance-none ${isLightMode ? "text-zinc-900 placeholder:text-zinc-500" : "text-white placeholder:text-zinc-500"}`} />
+              {userSearch && <button type="button" onClick={() => { searchRequest.current++; setSearchingUsers(false); setUserSearch(""); setSearchResults([]); }} aria-label="Clear search" className="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"><X size={17} /></button>}
             </div>
-          </section>
-          <section aria-labelledby="explore-games-heading" className={`rounded-[28px] border p-4 sm:p-5 lg:hidden ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
-            <p className={`text-xs font-semibold uppercase tracking-wider ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}>Mini games</p>
-            <h2 id="explore-games-heading" className="mt-1 text-lg font-semibold">Play from your phone</h2>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <button ref={pinkiePartyButtonRef} type="button" aria-haspopup="dialog" onClick={() => setShowPinkieParty(true)} className="min-h-14 rounded-xl bg-[#E7C84B] px-4 py-3 text-left text-sm font-bold text-[#111111] transition-colors hover:bg-[#FFE477]">
-                Pinkie Pie&apos;s Party
-              </button>
-              <Link to="/match-pairs" className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${isLightMode ? "border-[#E7C84B]/50 bg-[#E7C84B]/10 text-zinc-900 hover:bg-[#E7C84B]/20" : "border-[#E7C84B]/35 bg-[#E7C84B]/[0.08] text-white hover:bg-[#E7C84B]/[0.14]"}`}>
-                Match Pairs
-              </Link>
-              <Link to="/go-fish" className={`flex min-h-14 items-center rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors ${isLightMode ? "border-[#E7C84B]/50 bg-[#E7C84B]/10 text-zinc-900 hover:bg-[#E7C84B]/20" : "border-[#E7C84B]/35 bg-[#E7C84B]/[0.08] text-white hover:bg-[#E7C84B]/[0.14]"}`}>
-                Go Fish
-              </Link>
             </div>
-          </section>
-          <section>
-            <div className="mb-3">
-              <h2 className={`text-xl font-semibold tracking-tight ${isLightMode ? "text-zinc-950" : "text-white"}`}>
-                Find a collector
-              </h2>
-              <p className={`mt-1 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                Search by MLPEKAYOU username.
-              </p>
-            </div>
-            <div className={`relative mb-4 flex flex-wrap items-center gap-2 rounded-2xl border p-2.5 ${isLightMode
-            ? "border-black/[0.08] bg-white"
-            : "border-white/[0.08] bg-[#151718]"}`}>
-              <span className={`w-full px-1 text-xs font-semibold uppercase tracking-wider sm:w-auto ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                Badge Key
-              </span>
-              {[
-            {
-                badge: verifiedBadge,
-                label: "Moderator",
-                tooltip: "Has special permissions both in the Discord server and on the website to help moderate",
-            },
-            {
-                badge: elementOfLaughter,
-                label: "Top Supporter",
-                tooltip: "Has spent $1000 or more at StonesTradingCo",
-            },
-            {
-                badge: ownerBadge,
-                label: "MLPEKAYOU Owner",
-                tooltip: "Developer and owner of MLPEKAYOU and the Discord server",
-            },
-        ].map(({ badge, label, tooltip }) => (<button key={label} type="button" aria-label={`${label}: ${tooltip}`} className={`group static flex min-h-11 max-w-full items-center gap-2 rounded-full border px-3 py-1.5 sm:relative sm:min-h-0 ${isLightMode
-                ? "border-black/[0.07] bg-zinc-50 text-zinc-700"
-                : "border-white/[0.07] bg-white/[0.04] text-zinc-200"}`}>
-                  <CardImage src={badge} alt={label} className="h-5 w-5 shrink-0 object-contain"/>
-                  <span className="text-xs font-medium">{label}</span>
-                  <span role="tooltip" className={`pointer-events-none invisible absolute left-2 right-2 top-full z-[70] mt-2 w-auto max-w-none translate-x-0 whitespace-normal break-words rounded-xl border px-3 py-2 text-left text-xs font-normal leading-5 opacity-0 shadow-xl transition-opacity group-hover:visible group-hover:opacity-100 group-focus:visible group-focus:opacity-100 sm:bottom-full sm:left-1/2 sm:right-auto sm:top-auto sm:mb-2 sm:mt-0 sm:w-64 sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 ${isLightMode
-                ? "border-black/10 bg-zinc-950 text-white"
-                : "border-white/10 bg-white text-zinc-900"}`}>
-                    {tooltip}
-                  </span>
-                </button>))}
-            </div>
-            <div className="relative">
-              <div className={`flex items-center gap-3 rounded-2xl border px-4 transition-colors ${isLightMode
-            ? "border-black/10 bg-white focus-within:border-[#8a6a00]/30"
-            : "border-white/[0.10] bg-[#151718] focus-within:border-[#FFD54A]/30"}`}>
-                <Search size={19} className={isLightMode ? "text-zinc-500" : "text-zinc-400"}/>
-                <input value={userSearch} onChange={(e) => searchUsers(e.target.value)} placeholder="Search by username" spellCheck={false} autoComplete="off" className={`h-16 w-full bg-transparent text-base outline-none ${isLightMode
-            ? "text-zinc-900 placeholder:text-zinc-400"
-            : "text-white placeholder:text-zinc-500"}`}/>
-                {userSearch && (<button type="button" onClick={() => {
-                setUserSearch("");
-                setSearchResults([]);
-            }} className={`flex h-9 w-9 items-center justify-center rounded-full ${isLightMode
-                ? "text-zinc-500 hover:bg-black/[0.05] hover:text-zinc-800"
-                : "text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-200"}`} aria-label="Clear search">
-                    <X size={16}/>
-                  </button>)}
-              </div>
-              {(userSearch.trim() || searchResults.length > 0) && (<div className={`absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border shadow-[0_20px_50px_rgba(0,0,0,.20)] ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.10] bg-[#151718]"}`}>
-                  {searchingUsers ? (<div className={`px-5 py-5 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                      Searching...
-                    </div>) : searchResults.length > 0 ? (<div className="max-h-[420px] overflow-y-auto">
-                      {searchResults.map((user) => (<button key={user.id} type="button" onClick={async () => {
-                        setSelectedUser(user);
-const { data: tradingProfile } = await supabase
-                            .from("trading_profiles")
-                            .select("*")
-                            .eq("user_id", user.id)
-                            .single();
-                        setSelectedUserTradingProfile(tradingProfile || null);
-                        setSearchResults([]);
-                        setUserSearch("");
-                    }} className={`flex w-full items-center gap-3 border-b px-4 py-3 text-left transition-colors last:border-b-0 ${isLightMode
-                        ? "border-black/[0.06] hover:bg-zinc-50"
-                        : "border-white/[0.06] hover:bg-white/[0.04]"}`}>
-                          <CardImage src={getProfileAssets(user).avatar} alt={user.username} className={`h-12 w-12 rounded-2xl border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}/>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="truncate text-sm font-semibold">{user.username}</span>
-                              {getProfileAssets(user).verification && (<CardImage src={getProfileAssets(user).verification!.badge} alt={getProfileAssets(user).verification!.label} title={getProfileAssets(user).verification!.label} className="h-4 w-4 shrink-0"/>)}
-                            </div>
-                            <div className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
-                            </div>
-                          </div>
-                          <ArrowUpRight size={16} className={isLightMode ? "text-zinc-400" : "text-zinc-500"}/>
-                        </button>))}
-                    </div>) : (<div className={`px-5 py-6 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
-                      No collectors found.
-                    </div>)}
-                </div>)}
-            </div>
-          </section>
-          {selectedUser ? (<section className={`rounded-[28px] border p-3 sm:p-5 ${isLightMode
-                ? "border-black/10 bg-white shadow-[0_12px_35px_rgba(0,0,0,.05)]"
-                : "border-white/[0.08] bg-[#151718]"}`}>
-              <ExploreProfile user={selectedUser} tradingProfile={selectedUserTradingProfile} onClose={() => {
-                setSelectedUser(null);
-                setSelectedUserTradingProfile(null);
-            }}/>
-            </section>) : (<section className={`rounded-[28px] border p-6 sm:p-8 ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}>
-              <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
-                <div>
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${isLightMode
-                ? "bg-[#c89d13]/10 text-[#725700]"
-                : "bg-[#FFD54A]/10 text-[#FFE27A]"}`}>
-                    <Search size={21}/>
-                  </div>
-                  <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-                    Our Community is Here!
-                  </h2>
-                  <p className={`mt-2 max-w-xl text-sm leading-6 sm:text-base ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-                    Search for another collector to see their public profile, Discord information when available, and the trading details they have chosen to share.
-                  </p>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                  {[
-                ["Search", "Find someone by their MLPEKAYOU username."],
-                ["Explore", "Open their public collector profile."],
-                ["Connect", "Use shared trading information to reach out."],
-            ].map(([title, description]) => (<div key={title} className={`rounded-2xl border p-4 ${isLightMode
-                    ? "border-black/[0.08] bg-zinc-50"
-                    : "border-white/[0.07] bg-white/[0.03]"}`}>
-                      <div className="text-sm font-semibold">{title}</div>
-                      <div className={`mt-1 text-xs leading-5 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                        {description}
-                      </div>
-                    </div>))}
-                </div>
-              </div>
-            </section>)}
-        </div>
+          </div>
+        {(userSearch.trim() || searchResults.length > 0) && <section aria-label="Collector search results" aria-live="polite" className={`mt-2 border-t pt-1 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+          {searchingUsers ? <p role="status" className="py-4 text-sm text-muted-foreground">Searching...</p> : searchResults.length ? <div className="max-h-[min(360px,50dvh)] overflow-y-auto overscroll-contain">{searchResults.map(user => <button key={user.id} type="button" onClick={async () => {
+const request = ++profileRequest.current;
+            searchRequest.current++;
+            setSearchResults([]); setUserSearch(""); setSearchingUsers(false);
+            setSelectedUser(user);
+            setSelectedUserTradingProfile(null);
+const { data: tradingProfile } = await supabase.from("trading_profiles").select("*").eq("user_id", user.id).single();
+            if (request !== profileRequest.current) return;
+            setSelectedUserTradingProfile(tradingProfile || null);
+            setSearchResults([]);
+            setUserSearch("");
+          }} className={`group flex min-h-16 w-full min-w-0 items-center gap-3 border-b px-3 py-2.5 text-left transition-colors last:border-b-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isLightMode ? "border-black/10 hover:bg-black/[0.025]" : "border-white/10 hover:bg-white/[0.025]"}`}>
+            <CardImage src={getProfileAssets(user).avatar} alt="" className={`h-10 w-10 shrink-0 rounded-md border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`} />
+            <span className="flex min-w-0 flex-1 items-center gap-2"><span className="truncate text-sm font-semibold">{user.username}</span>{getProfileAssets(user).verification && <CardImage src={getProfileAssets(user).verification!.badge} alt={getProfileAssets(user).verification!.label} title={getProfileAssets(user).verification!.label} className="h-4 w-4 shrink-0 object-contain" />}</span>
+            <span className="hidden text-xs text-muted-foreground transition-colors group-hover:text-primary sm:block">View profile</span><ChevronRight size={15} className="shrink-0 text-muted-foreground transition-colors group-hover:text-primary" aria-hidden="true" />
+          </button>)}</div> : <p className="py-4 text-sm text-muted-foreground">No collectors found.</p>}
+        </section>}
+        </section>
+        {selectedUser && <section className="min-w-0 pt-5 sm:pt-6" aria-label={`${selectedUser.username}'s profile`}><ExploreProfile user={selectedUser} tradingProfile={selectedUserTradingProfile} lightMode={isLightMode} onClose={() => { profileRequest.current++; setSelectedUser(null); setSelectedUserTradingProfile(null); }} /></section>}
+        <section aria-labelledby="explore-badges-heading" className={`mt-6 border-y py-5 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
+          <h2 id="explore-badges-heading" className="mb-4 text-sm font-semibold">You miiiight see these badges around... here's what they mean!</h2>
+          <dl className="grid gap-5 sm:grid-cols-3 sm:gap-6">
+            {[{ badge: verifiedBadge, label: "Moderator", description: "Helps moderate the website and Discord server." }, { badge: elementOfLaughter, label: "Top Supporter", description: "Has spent $1000 or more at StonesTradingCo." }, { badge: ownerBadge, label: "MLPEKAYOU Owner", description: "Developer and owner of MLPEKAYOU and its Discord server." }].map(item => <div key={item.label} className="flex min-w-0 items-start gap-3"><CardImage src={item.badge} alt="" className="h-9 w-9 shrink-0 object-contain" /><div><dt className="text-sm font-semibold">{item.label}</dt><dd className="mt-1 text-xs leading-5 text-muted-foreground">{item.description}</dd></div></div>)}
+          </dl>
+        </section>
       </main>
-      {showPinkieParty && <PinkieParty isLightMode={isLightMode} onClose={() => setShowPinkieParty(false)} returnFocusRef={pinkiePartyButtonRef} />}
-    </div>);
+    </div>
+  );
 };
 export default Explore;

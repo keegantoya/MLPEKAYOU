@@ -1,11 +1,10 @@
-import FullISO, {
-  buildFullISOCards,
-  type FullISOProgressRow,
-  type FullISOStatusRow,
-} from "./full-iso";
+import { getISOSets, getISOSetLabel, fetchISOStatuses, parseISOStatusKey, normalizeEnglishSetId } from "./catalog-adapter";
+import FullISO, { buildFullISOCards, type FullISOProgressRow, type FullISOStatusRow, } from "./full-iso";
 import { getCompletedISOSetIds } from "./iso-visibility";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { Link } from "react-router-dom";
+import { ArrowLeft, SlidersHorizontal } from "lucide-react";
 import ISOMOON from "./iso-moon";
 import ISOFUN from "./iso-fun";
 import ISORAINBOW from "./iso-rainbow";
@@ -16,580 +15,388 @@ import ISOPROMOS from "./iso-promos";
 import Wishlist from "./wishlist";
 import { useWishlist } from "./wishlist-in-iso";
 import InProgress from "./in-progress";
-type Section =
-  "full" | "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos";
-const sections = [
-  { id: "full", label: "Full ISO", setIds: [] },
-  { id: "wishlist", label: "Wishlist", setIds: [] },
-  { id: "progress", label: "In Progress", setIds: [] },
-  {
-    id: "moon",
-    label: "Moon",
-    setIds: ["1", "2", "3", "13"],
-  },
-  {
-    id: "fun",
-    label: "Fun Moments",
-    setIds: ["7", "8", "11"],
-  },
-  {
-    id: "rainbow",
-    label: "Rainbow",
-    setIds: ["5", "6"],
-  },
-  {
-    id: "star",
-    label: "Star",
-    setIds: ["4"],
-  },
-  {
-    id: "tcg",
-    label: "TCG",
-    setIds: ["FW", "SD", "12", "14", "hearthswarming-eve"],
-  },
-  {
-    id: "promos",
-    label: "Promos",
-    setIds: ["9", "tcgpromos"],
-  },
-] as const;
-export default function ISO() {
-  const [selectedSection, setSelectedSection] = useState<Section>("moon");
-  const [showControls, setShowControls] = useState(false);
-  const [cardCodeSearch, setCardCodeSearch] = useState("");
-  const [characterSearch, setCharacterSearch] = useState("");
-  const [searchAllCards, setSearchAllCards] = useState(false);
-  const [wishlistMode, setWishlistMode] = useState(false);
-  const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-  const [completedSets, setCompletedSets] = useState<string[]>([]);
-  const [hasInProgress, setHasInProgress] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [hideISO, setHideISO] = useState(false);
-  const [isLightMode, setIsLightMode] = useState(() => {
-    if (typeof document === "undefined") return false;
-    const root = document.documentElement;
-    return (
-      root.dataset.theme === "light" ||
-      root.classList.contains("light") ||
-      !root.classList.contains("dark")
-    );
-  });
-  const { wishlist, toggleWishlist } = useWishlist();
-  const [fullISOProgress, setFullISOProgress] = useState<FullISOProgressRow[]>([]);
-  const [fullISOStatuses, setFullISOStatuses] = useState<FullISOStatusRow[]>([]);
-  const [fullISOLoaded, setFullISOLoaded] = useState(false);
-  const fullISOCards = useMemo(
-    () => buildFullISOCards(fullISOProgress, hiddenSets, fullISOStatuses),
-    [fullISOProgress, hiddenSets, fullISOStatuses],
-  );
-  useEffect(() => {
-    const syncTheme = () => {
-      const root = document.documentElement;
-      setIsLightMode(
-        root.dataset.theme === "light" ||
-          root.classList.contains("light") ||
-          !root.classList.contains("dark"),
-      );
-    };
-    syncTheme();
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "data-theme"],
+type Section = "full" | "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos";
+const sections = [{ id: "full", label: "Full ISO", setIds: [] }, { id: "wishlist", label: "Wishlist", setIds: [] }, { id: "progress", label: "In Progress", setIds: [] }, ...([{ id: "moon", label: "Moon" }, { id: "fun", label: "Fun Moments" }, { id: "rainbow", label: "Rainbow" }, { id: "star", label: "Star" }, { id: "tcg", label: "TCG" }, { id: "promos", label: "Promos" }] as const).map(section => ({ ...section, setIds: getISOSets(section.id).map(set => set.id) }))];
+function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { onDeactivate: () => void; activationBusy: boolean; activationError: string }) {
+    const [selectedSection, setSelectedSection] = useState<Section>("moon");
+    const [showControls, setShowControls] = useState(false);
+    const [cardCodeSearch, setCardCodeSearch] = useState("");
+    const [characterSearch, setCharacterSearch] = useState("");
+    const [searchAllCards, setSearchAllCards] = useState(false);
+    const [wishlistMode, setWishlistMode] = useState(false);
+    const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+    const [completedSets, setCompletedSets] = useState<string[]>([]);
+    const [hasInProgress, setHasInProgress] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [hideISO, setHideISO] = useState(false);
+    const [isLightMode, setIsLightMode] = useState(() => {
+        if (typeof document === "undefined")
+            return false;
+        const root = document.documentElement;
+        return (root.dataset.theme === "light" ||
+            root.classList.contains("light") ||
+            !root.classList.contains("dark"));
     });
-    window.addEventListener("themechange", syncTheme);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("themechange", syncTheme);
+    const { wishlist, toggleWishlist } = useWishlist();
+    const [fullISOProgress, setFullISOProgress] = useState<FullISOProgressRow[]>([]);
+    const [fullISOStatuses, setFullISOStatuses] = useState<FullISOStatusRow[]>([]);
+    const [fullISOLoaded, setFullISOLoaded] = useState(false);
+    const [fullISOError, setFullISOError] = useState("");
+    const fullISOCards = useMemo(() => buildFullISOCards(fullISOProgress, hiddenSets, fullISOStatuses), [fullISOProgress, hiddenSets, fullISOStatuses]);
+    const emptyISOSections = useMemo(() => {
+        if (!fullISOLoaded)
+            return new Set<string>();
+        const allSetIds = sections.flatMap((section) => [...section.setIds]);
+        return new Set<string>(sections.filter((section) => {
+            const setIds: readonly string[] = section.setIds;
+            if (setIds.length === 0)
+                return false;
+            const excludedSets = [...hiddenSets, ...allSetIds.filter((setId) => !setIds.includes(setId))];
+            return buildFullISOCards(fullISOProgress, excludedSets, fullISOStatuses).length === 0;
+        }).map((section) => section.id));
+    }, [fullISOLoaded, fullISOProgress, hiddenSets, fullISOStatuses]);
+    useEffect(() => {
+        const syncTheme = () => {
+            const root = document.documentElement;
+            setIsLightMode(root.dataset.theme === "light" ||
+                root.classList.contains("light") ||
+                !root.classList.contains("dark"));
+        };
+        syncTheme();
+        const observer = new MutationObserver(syncTheme);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class", "data-theme"],
+        });
+        window.addEventListener("themechange", syncTheme);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("themechange", syncTheme);
+        };
+    }, []);
+    useEffect(() => {
+        let disposed = false;
+        let requestId = 0;
+        let statusRevision = 0;
+        let activeUserId: string | null = null;
+        const activeStatuses = new Map<string, string>();
+        const load = async () => {
+            const request = ++requestId;
+            const revision = statusRevision;
+            const { data } = await supabase.auth.getSession();
+            if (disposed || request !== requestId)
+                return;
+            const user = data.session?.user;
+            if (!user)
+                return;
+            activeUserId = user.id;
+            setUserId(user.id);
+            const [{ data: profile }, { data: progress, error: progressError }, { data: isoStatus, error: statusError },] = await Promise.all([
+                supabase.from("profiles").select("iso_hidden_sets, hide_iso").eq("id", user.id).single(),
+                supabase.from("collection_progress_raw").select("set_id, progress").eq("user_id", user.id),
+                fetchISOStatuses(user.id),
+            ]);
+            if (disposed || request !== requestId)
+                return;
+            if (progressError || statusError || !profile) {
+                setFullISOError("Your ISO could not be loaded. Please refresh and try again.");
+                return;
+            }
+            setFullISOError("");
+            const p = profile as any;
+            const hidden = (p?.iso_hidden_sets || []).map((id: unknown) => normalizeEnglishSetId(String(id)));
+            if (!statusError && revision === statusRevision) {
+                activeStatuses.clear();
+                for (const row of isoStatus || []) {
+                    if (parseISOStatusKey(String(row.card_key)) && (row.status === "purchase_in_progress" || row.status === "trade_in_progress")) {
+                        activeStatuses.set(String(row.card_key), row.status);
+                    }
+                }
+                setHasInProgress(activeStatuses.size > 0);
+                setFullISOStatuses(Array.from(activeStatuses, ([card_key, status]) => ({ card_key, status })));
+            }
+            if (!progressError)
+                setFullISOProgress(progress || []);
+            if (!progressError && !statusError && profile)
+                setFullISOLoaded(true);
+            setHiddenSets(hidden);
+            setCompletedSets(getCompletedISOSetIds(progress || []));
+            setHideISO(p?.hide_iso ?? false);
+        };
+        const refresh = () => {
+            void load().catch(() => {
+                if (!disposed)
+                    setFullISOError("Your ISO could not be loaded. Please refresh and try again.");
+            });
+        };
+        const onStatusChange = (event: Event) => {
+            const detail = (event as CustomEvent<{
+                userId: string;
+                cardKey: string;
+                status: string | null;
+            }>).detail;
+            if (!detail || detail.userId !== activeUserId || !parseISOStatusKey(detail.cardKey))
+                return;
+            statusRevision += 1;
+            if (detail.status === "purchase_in_progress" || detail.status === "trade_in_progress") {
+                activeStatuses.set(detail.cardKey, detail.status);
+            }
+            else {
+                activeStatuses.delete(detail.cardKey);
+            }
+            setHasInProgress(activeStatuses.size > 0);
+            setFullISOStatuses(Array.from(activeStatuses, ([card_key, status]) => ({ card_key, status })));
+            void load().catch(() => {
+                if (!disposed)
+                    setFullISOError("Your ISO could not be loaded. Please refresh and try again.");
+            });
+        };
+        const onCollectionChange = (event: Event) => {
+            const detail = (event as CustomEvent<{
+                userId: string;
+                setId?: string;
+                cardKey?: string;
+            }>)
+                .detail;
+            if (detail?.userId !== activeUserId)
+                return;
+            if (detail.setId && detail.cardKey) {
+                const setId = detail.setId;
+                const cardKey = detail.cardKey;
+                setFullISOProgress((previous) => [
+                    ...previous,
+                    { set_id: setId, progress: { [cardKey]: true } },
+                ]);
+            }
+            refresh();
+        };
+        window.addEventListener("iso-status-changed", onStatusChange);
+        window.addEventListener("iso-collection-changed", onCollectionChange);
+        window.addEventListener("focus", refresh);
+        void load().catch(() => {
+            if (!disposed)
+                setFullISOError("Your ISO could not be loaded. Please refresh and try again.");
+        });
+        return () => {
+            disposed = true;
+            requestId += 1;
+            window.removeEventListener("iso-status-changed", onStatusChange);
+            window.removeEventListener("iso-collection-changed", onCollectionChange);
+            window.removeEventListener("focus", refresh);
+        };
+    }, []);
+    const toggleSet = async (setId: string) => {
+        if (!userId)
+            return;
+        const updated = hiddenSets.includes(setId)
+            ? hiddenSets.filter((id) => id !== setId)
+            : [...hiddenSets, setId];
+        setHiddenSets(updated);
+        await supabase
+            .from("profiles")
+            .update({
+            iso_hidden_sets: updated,
+        })
+            .eq("id", userId);
     };
-  }, []);
-  useEffect(() => {
-    let disposed = false;
-    let requestId = 0;
-    let statusRevision = 0;
-    let activeUserId: string | null = null;
-    const activeStatuses = new Map<string, string>();
-    const load = async () => {
-      const request = ++requestId;
-      const revision = statusRevision;
-      const { data } = await supabase.auth.getSession();
-      if (disposed || request !== requestId) return;
-      const user = data.session?.user;
-      if (!user) return;
-      activeUserId = user.id;
-      setUserId(user.id);
-      const [
-        { data: profile },
-        { data: progress, error: progressError },
-        { data: isoStatus, error: statusError },
-      ] = await Promise.all([
-        supabase.from("profiles").select("iso_hidden_sets, hide_iso").eq("id", user.id).single(),
-        supabase.from("collection_progress_raw").select("set_id, progress").eq("user_id", user.id),
-        supabase.from("iso_status").select("card_key, status").eq("user_id", user.id),
-      ]);
-      if (disposed || request !== requestId) return;
-      const p = profile as any;
-      const hidden = (p?.iso_hidden_sets || []).map((id: unknown) =>
-        String(id) === "friendshipsbegin" ? "SD" : String(id),
-      );
-      if (!statusError && revision === statusRevision) {
-        activeStatuses.clear();
-        for (const row of isoStatus || []) {
-          if (row.status === "purchase_in_progress" || row.status === "trade_in_progress") {
-            activeStatuses.set(String(row.card_key), row.status);
-          }
+    const toggleHideISO = async () => {
+        if (!userId)
+            return;
+        const next = !hideISO;
+        setHideISO(next);
+        await supabase
+            .from("profiles")
+            .update({
+            hide_iso: next,
+        })
+            .eq("id", userId);
+    };
+    const isSearching = cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
+    const isWishlistView = wishlistMode || selectedSection === "wishlist";
+    const visibleHiddenSets = isWishlistView || isSearching
+        ? []
+        : Array.from(new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]));
+    const visibleSections = sections.filter((section) => {
+        if (section.id === "full")
+            return fullISOLoaded && fullISOCards.length < 100;
+        if (section.id === "wishlist") {
+            return true;
         }
-        setHasInProgress(activeStatuses.size > 0);
-        setFullISOStatuses(
-          Array.from(activeStatuses, ([card_key, status]) => ({ card_key, status })),
-        );
-      }
-      if (!progressError) setFullISOProgress(progress || []);
-      if (!progressError && !statusError && profile) setFullISOLoaded(true);
-      setHiddenSets(hidden);
-      setCompletedSets(getCompletedISOSetIds(progress || []));
-      setHideISO(p?.hide_iso ?? false);
+        if (section.id === "progress") {
+            return hasInProgress;
+        }
+        if (isWishlistView)
+            return true;
+        if (searchAllCards) {
+            return section.setIds.some((setId) => !hiddenSets.includes(setId));
+        }
+        if (emptyISOSections.has(section.id))
+            return false;
+        return section.setIds.some((setId) => !hiddenSets.includes(setId) && !completedSets.includes(setId));
+    });
+    useEffect(() => {
+        if (!visibleSections.some((section) => section.id === selectedSection)) {
+            setSelectedSection((visibleSections.find((section) => section.id !== "wishlist")?.id ?? "wishlist") as Section);
+        }
+    }, [
+        hiddenSets,
+        completedSets,
+        wishlistMode,
+        searchAllCards,
+        hasInProgress,
+        selectedSection,
+        fullISOLoaded,
+        fullISOCards.length,
+        emptyISOSections,
+    ]);
+    const selectSection = (section: Section) => {
+        setCardCodeSearch("");
+        setCharacterSearch("");
+        if (section === "wishlist" || selectedSection === "wishlist")
+            setWishlistMode(true);
+        setSelectedSection(section);
     };
-    const refresh = () => {
-      void load();
-    };
-    const onStatusChange = (event: Event) => {
-      const detail = (
-        event as CustomEvent<{ userId: string; cardKey: string; status: string | null }>
-      ).detail;
-      if (!detail || detail.userId !== activeUserId) return;
-      statusRevision += 1;
-      if (detail.status === "purchase_in_progress" || detail.status === "trade_in_progress") {
-        activeStatuses.set(detail.cardKey, detail.status);
-      } else {
-        activeStatuses.delete(detail.cardKey);
-      }
-      setHasInProgress(activeStatuses.size > 0);
-      setFullISOStatuses(
-        Array.from(activeStatuses, ([card_key, status]) => ({ card_key, status })),
-      );
-      void load();
-    };
-    const onCollectionChange = (event: Event) => {
-      const detail = (event as CustomEvent<{ userId: string; setId?: string; cardKey?: string }>)
-        .detail;
-      if (detail?.userId !== activeUserId) return;
-      if (detail.setId && detail.cardKey) {
-        const setId = detail.setId;
-        const cardKey = detail.cardKey;
-        setFullISOProgress((previous) => [
-          ...previous,
-          { set_id: setId, progress: { [cardKey]: true } },
-        ]);
-      }
-      refresh();
-    };
-    window.addEventListener("iso-status-changed", onStatusChange);
-    window.addEventListener("iso-collection-changed", onCollectionChange);
-    window.addEventListener("focus", refresh);
-    void load();
-    return () => {
-      disposed = true;
-      requestId += 1;
-      window.removeEventListener("iso-status-changed", onStatusChange);
-      window.removeEventListener("iso-collection-changed", onCollectionChange);
-      window.removeEventListener("focus", refresh);
-    };
-  }, []);
-  const toggleSet = async (setId: string) => {
-    if (!userId) return;
-    const updated = hiddenSets.includes(setId)
-      ? hiddenSets.filter((id) => id !== setId)
-      : [...hiddenSets, setId];
-    setHiddenSets(updated);
-    await supabase
-      .from("profiles")
-      .update({
-        iso_hidden_sets: updated,
-      })
-      .eq("id", userId);
-  };
-  const toggleHideISO = async () => {
-    if (!userId) return;
-    const next = !hideISO;
-    setHideISO(next);
-    await supabase
-      .from("profiles")
-      .update({
-        hide_iso: next,
-      })
-      .eq("id", userId);
-  };
-  const isSearching = cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
-  const isWishlistView = wishlistMode || selectedSection === "wishlist";
-  const visibleHiddenSets =
-    isWishlistView || isSearching
-      ? []
-      : Array.from(
-          new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]),
-        );
-  const visibleSections = sections.filter((section) => {
-    if (section.id === "full") return fullISOLoaded && fullISOCards.length < 100;
-    // Wishlist is always available.
-    if (section.id === "wishlist") {
-      return true;
-    }
-    // In Progress only appears when there is at least one purchase/trade in progress.
-    if (section.id === "progress") {
-      return hasInProgress;
-    }
-    // Wishlist Mode and View All Cards restore every card category.
-    if (isWishlistView) return true;
-    if (searchAllCards) {
-      return section.setIds.some((setId) => !hiddenSets.includes(setId));
-    }
-    // In normal mode, a category remains visible if at least one underlying set is still active.
-    return section.setIds.some(
-      (setId) => !hiddenSets.includes(setId) && !completedSets.includes(setId),
-    );
-  });
-  useEffect(() => {
-    if (!visibleSections.some((section) => section.id === selectedSection)) {
-      setSelectedSection(
-        (visibleSections.find((section) => section.id !== "wishlist")?.id ?? "wishlist") as Section,
-      );
-    }
-  }, [
-    hiddenSets,
-    completedSets,
-    wishlistMode,
-    searchAllCards,
-    hasInProgress,
-    selectedSection,
-    fullISOLoaded,
-    fullISOCards.length,
-  ]);
-  const selectSection = (section: Section) => {
-    setCardCodeSearch("");
-    setCharacterSearch("");
-    if (section === "wishlist" || selectedSection === "wishlist") setWishlistMode(true);
-    setSelectedSection(section);
-  };
-  const sectionContent = (
-    <>
-      {selectedSection === "full" && userId && (
-        <FullISO
-          cards={fullISOCards}
-          userId={userId}
-          wishlist={wishlist}
-          toggleWishlist={toggleWishlist}
-        />
-      )}
-      {selectedSection === "wishlist" && <Wishlist characterSearch={characterSearch} />}
+    const sectionContent = (<>
+      {selectedSection === "full" && fullISOError && <p role="alert" className="py-8 text-sm text-red-600 dark:text-red-400">{fullISOError}</p>}
+    {selectedSection === "full" && !fullISOError && (!userId || !fullISOLoaded) && <p role="status" className="py-8 text-sm text-muted-foreground">Loading English ISO...</p>}
+        {selectedSection === "full" && !fullISOError && fullISOLoaded && userId && (<FullISO cards={fullISOCards} userId={userId} wishlist={wishlist} toggleWishlist={toggleWishlist}/>)}
+      {selectedSection === "wishlist" && <Wishlist characterSearch={characterSearch}/>}
       {selectedSection === "progress" && <InProgress />}
-      {selectedSection === "moon" && (
-        <ISOMOON
-          cardCodeSearch={cardCodeSearch}
-          characterSearch={characterSearch}
-          wishlistMode={isWishlistView}
-          searchAllCards={searchAllCards}
-          hiddenSets={visibleHiddenSets}
-        />
-      )}
-      {selectedSection === "fun" && (
-        <ISOFUN
-          cardCodeSearch={cardCodeSearch}
-          characterSearch={characterSearch}
-          searchAllCards={searchAllCards}
-          hiddenSets={visibleHiddenSets}
-          wishlistMode={isWishlistView}
-        />
-      )}
-      {selectedSection === "rainbow" && (
-        <ISORAINBOW
-          cardCodeSearch={cardCodeSearch}
-          characterSearch={characterSearch}
-          wishlistMode={isWishlistView}
-          searchAllCards={searchAllCards}
-          hiddenSets={visibleHiddenSets}
-        />
-      )}
-      {selectedSection === "star" && (
-        <ISOSTAR
-          cardCodeSearch={cardCodeSearch}
-          characterSearch={characterSearch}
-          wishlistMode={isWishlistView}
-          searchAllCards={searchAllCards}
-          hiddenSets={visibleHiddenSets}
-        />
-      )}
-      {selectedSection === "tcg" && (
-        <ISOTCG
-          cardCodeSearch={cardCodeSearch}
-          characterSearch={characterSearch}
-          wishlistMode={isWishlistView}
-          searchAllCards={searchAllCards}
-          hiddenSets={visibleHiddenSets}
-        />
-      )}
-      {selectedSection === "promos" && (
-        <ISOPROMOS
-          cardCodeSearch={cardCodeSearch}
-          characterSearch={characterSearch}
-          wishlistMode={isWishlistView}
-          searchAllCards={searchAllCards}
-          hiddenSets={visibleHiddenSets}
-        />
-      )}
-    </>
-  );
-  const allSearchContent = (
-    <>
+      {selectedSection === "moon" && (<ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "fun" && (<ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={isWishlistView}/>)}
+      {selectedSection === "rainbow" && (<ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "star" && (<ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "tcg" && (<ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "promos" && (<ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+    </>);
+    const allSearchContent = (<>
       {selectedSection === "progress" && <InProgress />}
-      <ISOMOON
-        cardCodeSearch={cardCodeSearch}
-        characterSearch={characterSearch}
-        wishlistMode={isWishlistView}
-        searchAllCards={searchAllCards}
-        hiddenSets={visibleHiddenSets}
-      />
-      <ISOFUN
-        cardCodeSearch={cardCodeSearch}
-        characterSearch={characterSearch}
-        searchAllCards={searchAllCards}
-        hiddenSets={visibleHiddenSets}
-        wishlistMode={isWishlistView}
-      />
-      <ISORAINBOW
-        cardCodeSearch={cardCodeSearch}
-        characterSearch={characterSearch}
-        wishlistMode={isWishlistView}
-        searchAllCards={searchAllCards}
-        hiddenSets={visibleHiddenSets}
-      />
-      <ISOSTAR
-        cardCodeSearch={cardCodeSearch}
-        characterSearch={characterSearch}
-        wishlistMode={isWishlistView}
-        searchAllCards={searchAllCards}
-        hiddenSets={visibleHiddenSets}
-      />
-      <ISOTCG
-        cardCodeSearch={cardCodeSearch}
-        characterSearch={characterSearch}
-        wishlistMode={isWishlistView}
-        searchAllCards={searchAllCards}
-        hiddenSets={visibleHiddenSets}
-      />
-      <ISOPROMOS
-        cardCodeSearch={cardCodeSearch}
-        characterSearch={characterSearch}
-        wishlistMode={isWishlistView}
-        searchAllCards={searchAllCards}
-        hiddenSets={visibleHiddenSets}
-      />
-    </>
-  );
-  return (
-    <div
-      className={`min-h-screen pt-2 md:pt-0 transition-colors ${isLightMode ? "bg-[#f6f4ef] text-zinc-900" : "bg-[#0f1112] text-zinc-100"}`}
-    >
-      <div className="mx-auto flex max-w-[1600px]">
-        <aside
-          className={`hidden min-h-screen w-56 shrink-0 border-r p-3 md:block ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}
-        >
-          <div className="sticky top-0 py-2">
-            <div className="px-2 pb-4">
-              <h1 className="text-xl font-semibold">Missing Cards</h1>
-              <p
-                className={`mt-1 text-sm leading-5 ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}
-              >
-                ISO, wishlist, and card search.
-              </p>
-            </div>
-            <nav className="space-y-1.5">
-              {visibleSections
-                .filter((item) => isWishlistView || item.id !== "wishlist")
-                .map((item) => {
-                  const active = selectedSection === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => selectSection(item.id as Section)}
-                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold transition ${
-                        active
-                          ? "bg-[#FFD54A] text-zinc-900"
-                          : isLightMode
-                            ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-                            : "text-zinc-300 hover:bg-white/[0.06] hover:text-white"
-                      }`}
-                    >
-                      <span
-                        className={`h-2 w-2 shrink-0 rounded-full ${active ? "bg-zinc-900" : isLightMode ? "bg-zinc-300" : "bg-zinc-600"}`}
-                      />
-                      <span className="truncate">{item.label}</span>
-                    </button>
-                  );
-                })}
-            </nav>
-            <button
-              type="button"
-              onClick={() => setShowControls(true)}
-              className={`mt-4 w-full rounded-2xl border px-3 py-2.5 text-sm font-semibold transition ${
-                isLightMode
-                  ? "border-black/10 bg-zinc-50 text-zinc-700 hover:bg-zinc-100"
-                  : "border-white/[0.08] bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08]"
-              }`}
-            >
-              ISO Controls
-            </button>
-          </div>
-        </aside>
-        <div className="min-w-0 flex-1">
-          <header
-            className={`border-b px-4 py-4 md:hidden ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.08] bg-[#151718]"}`}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h1 className="text-xl font-semibold">Missing Cards</h1>
-                <p className={`mt-0.5 text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                  ISO & wishlist
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowControls(true)}
-                className={`rounded-2xl border px-3 py-2 text-sm font-semibold ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50 text-zinc-700"
-                    : "border-white/[0.08] bg-white/[0.05] text-zinc-300"
-                }`}
-              >
-                Controls
-              </button>
-            </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {visibleSections
-                .filter((item) => isWishlistView || item.id !== "wishlist")
-                .map((item) => {
-                  const active = selectedSection === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => selectSection(item.id as Section)}
-                      className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold ${
-                        active
-                          ? "bg-[#FFD54A] text-zinc-900"
-                          : isLightMode
-                            ? "bg-zinc-100 text-zinc-600"
-                            : "bg-white/[0.06] text-zinc-300"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-            </div>
-          </header>
-          <main className="px-3 py-4 sm:px-5 md:px-6 md:py-5">
-            {(wishlistMode || selectedSection === "wishlist") && (
-              <div className="mb-4">
-                <ISOCONTROLS
-                  cardCodeSearch={cardCodeSearch}
-                  onCardCodeSearchChange={setCardCodeSearch}
-                  characterSearch={characterSearch}
-                  onCharacterSearchChange={setCharacterSearch}
-                  searchAllCards={searchAllCards}
-                  onSearchAllCardsChange={setSearchAllCards}
-                  wishlistMode={isWishlistView}
-                  onWishlistModeChange={setWishlistMode}
-                  availableSets={[]}
-                  hiddenSetIds={[]}
-                  onHideSet={() => {}}
-                  wishlistCharacterOnly
-                  hideISO={hideISO}
-                  onToggleHideISO={toggleHideISO}
-                  onClose={() => setShowControls(false)}
-                />
-              </div>
-            )}
+      <ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={isWishlistView}/>
+      <ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+    </>);
+    const navigation = <nav aria-label="English ISO sections" className="flex gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible">
+    {visibleSections.filter(item => isWishlistView || item.id !== "wishlist").map(item => <button key={item.id} type="button" aria-pressed={selectedSection === item.id} onClick={() => selectSection(item.id as Section)} className={`flex min-h-11 shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-colors motion-reduce:transition-none ${selectedSection === item.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}><span>{item.label}</span></button>)}
+  </nav>;
+    return (<div className="min-h-screen bg-background text-foreground">
+      <div className="w-full px-3 py-3 sm:px-5 md:px-6">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0"><h1 className="text-xl font-semibold tracking-tight sm:text-2xl">English ISO</h1><Link to="/collections" className="inline-flex min-h-8 items-center gap-1.5 text-xs text-muted-foreground"><ArrowLeft size={13}/>English checklists</Link></div>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2"><button type="button" disabled={activationBusy} onClick={onDeactivate} className="min-h-10 rounded-xl px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50">{activationBusy ? "Saving..." : "Deactivate English"}</button><button type="button" onClick={() => setShowControls(true)} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 text-sm"><SlidersHorizontal size={16}/><span>Controls</span></button></div>
+        </header>
+        {activationError && <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">{activationError}</p>}
+        <div className="flex gap-6">
+          <aside className="hidden w-48 shrink-0 md:block"><div className="sticky top-[calc(var(--kayou-header-bottom,64px)+1rem)]">{navigation}</div></aside>
+          <main className="min-w-0 flex-1">
+            <div className="mb-3 md:hidden">{navigation}</div>
+            {(wishlistMode || selectedSection === "wishlist") && (<div className="mb-4">
+                <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={setSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={setWishlistMode} availableSets={[]} hiddenSetIds={[]} onHideSet={() => { }} wishlistCharacterOnly hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
+              </div>)}
             {selectedSection === "full" || selectedSection === "wishlist" || wishlistMode
-              ? sectionContent
-              : isSearching
+            ? sectionContent
+            : isSearching
                 ? allSearchContent
                 : sectionContent}
           </main>
         </div>
       </div>
-      {showControls && (
-        <div
-          className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}
-        >
-          <div
-            className={`relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[26px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}
-          >
-            <ISOCONTROLS
-              cardCodeSearch={cardCodeSearch}
-              onCardCodeSearchChange={setCardCodeSearch}
-              characterSearch={characterSearch}
-              onCharacterSearchChange={setCharacterSearch}
-              searchAllCards={searchAllCards}
-              onSearchAllCardsChange={setSearchAllCards}
-              wishlistMode={isWishlistView}
-              onWishlistModeChange={setWishlistMode}
-              availableSets={[
-                {
-                  id: "moon",
-                  name: "Moon",
-                  children: [
-                    { id: "1", name: "First Edition" },
-                    { id: "2", name: "Second Edition" },
-                    { id: "3", name: "Third Edition" },
-                    { id: "13", name: "Fourth Edition" },
-                  ],
-                },
-                {
-                  id: "fun",
-                  name: "Fun Moments",
-                  children: [
-                    { id: "7", name: "First Edition" },
-                    { id: "8", name: "Second Edition" },
-                    { id: "11", name: "Third Edition" },
-                  ],
-                },
-                {
-                  id: "rainbow",
-                  name: "Rainbow",
-                  children: [
-                    { id: "5", name: "First Edition" },
-                    { id: "6", name: "Second Edition" },
-                  ],
-                },
-                { id: "star", name: "Star", children: [{ id: "4", name: "First Edition" }] },
-                {
-                  id: "tcg",
-                  name: "TCG",
-                  children: [
-                    { id: "FW", name: "Fantasy Wonderland" },
-                    { id: "SD", name: "Friendships Begin" },
-                    { id: "12", name: "Discord" },
-                  ],
-                },
-                {
-                  id: "promos",
-                  name: "Promos",
-                  children: [
-                    { id: "9", name: "Promotional Cards" },
-                    { id: "tcgpromos", name: "TCG Promos" },
-                  ],
-                },
-              ]}
-              hiddenSetIds={hiddenSets}
-              onHideSet={toggleSet}
-              hideISO={hideISO}
-              onToggleHideISO={toggleHideISO}
-              onClose={() => setShowControls(false)}
-            />
+      {showControls && (<div className={`fixed inset-0 z-[120000] flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}>
+          <div className={`relative max-h-[90dvh] w-full max-w-4xl overflow-y-auto rounded-[24px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}>
+            <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={setSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={setWishlistMode} availableSets={(["moon", "fun", "rainbow", "star", "tcg", "promos"] as const).map(family => ({ id: family, name: family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }))} hiddenSetIds={hiddenSets} onHideSet={toggleSet} hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        </div>)}
+    </div>);
+}
+type EnglishActivation = { english_cards_enabled: boolean; english_cards_prompt_seen: boolean };
+const activationColumns = "english_cards_enabled, english_cards_prompt_seen";
+function activationErrorMessage(cause: unknown): string {
+    const error = cause as { code?: string; message?: string } | null;
+    return error && ["42703", "PGRST204"].includes(error.code ?? "") ? "Run the English activation setup SQL first, then retry." : "Your English card setting could not be saved or loaded. Please retry.";
+}
+export default function ISO() {
+    const [account, setAccount] = useState<{ ready: boolean; id: string | null }>({ ready: false, id: null });
+    const [activation, setActivation] = useState<(EnglishActivation & { owner: string }) | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
+    const [reload, setReload] = useState(0);
+    const request = useRef(0);
+    const savingRequest = useRef<number | null>(null);
+    useEffect(() => {
+        let disposed = false;
+        let authRevision = 0;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            authRevision += 1;
+            if (!disposed) setAccount(current => current.ready && current.id === (session?.user.id ?? null) ? current : { ready: true, id: session?.user.id ?? null });
+        });
+        const revision = authRevision;
+        void supabase.auth.getSession().then(({ data, error: sessionError }) => {
+            if (disposed || revision !== authRevision) return;
+            if (sessionError) { setError("Your account could not be loaded. Please sign in again."); setLoading(false); return; }
+            setAccount({ ready: true, id: data.session?.user.id ?? null });
+        }).catch(() => { if (!disposed && revision === authRevision) { setError("Your account could not be loaded. Please sign in again."); setLoading(false); } });
+        return () => { disposed = true; subscription.unsubscribe(); };
+    }, []);
+    useEffect(() => {
+        const currentRequest = ++request.current;
+        savingRequest.current = null;
+        setSaving(false);
+        setActivation(null);
+        if (!account.ready) return;
+        setError("");
+        if (!account.id) { setLoading(false); return; }
+        setLoading(true);
+        void (async () => {
+            try {
+                const { data, error: loadError } = await supabase.from("profiles").select(activationColumns).eq("id", account.id).single();
+                if (currentRequest !== request.current) return;
+                if (loadError) throw loadError;
+                if (!data) throw new Error("Profile not found");
+                setActivation({ owner: account.id!, english_cards_enabled: data.english_cards_enabled !== false, english_cards_prompt_seen: data.english_cards_prompt_seen === true });
+            } catch (cause) {
+                if (currentRequest === request.current) setError(activationErrorMessage(cause));
+            } finally {
+                if (currentRequest === request.current) setLoading(false);
+            }
+        })();
+        return () => { request.current += 1; };
+    }, [account.ready, account.id, reload]);
+    const saveActivation = async (enabled: boolean) => {
+        if (!account.id || !activation || activation.owner !== account.id || savingRequest.current !== null) return;
+        const currentRequest = request.current;
+        savingRequest.current = currentRequest;
+        setSaving(true);
+        setError("");
+        try {
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            if (currentRequest !== request.current) return;
+            if (sessionError || sessionData.session?.user.id !== account.id) throw new Error("Your account changed. Please retry.");
+            const { data, error: saveError } = await supabase.from("profiles").update({ english_cards_enabled: enabled, english_cards_prompt_seen: true }).eq("id", account.id).select(activationColumns).single();
+            if (currentRequest !== request.current) return;
+            if (saveError) throw saveError;
+            if (!data || data.english_cards_enabled !== enabled || data.english_cards_prompt_seen !== true) throw new Error("Your setting was not saved");
+            setActivation({ owner: account.id, english_cards_enabled: data.english_cards_enabled, english_cards_prompt_seen: true });
+            window.dispatchEvent(new CustomEvent("english-card-settings-changed", { detail: { userId: account.id, enabled } }));
+        } catch (cause) {
+            if (currentRequest === request.current) setError(activationErrorMessage(cause));
+        } finally {
+            if (savingRequest.current === currentRequest) { savingRequest.current = null; setSaving(false); }
+        }
+    };
+    const current = activation?.owner === account.id ? activation : null;
+    if (loading || !account.ready && !error || account.id && !current && !error) return <main className="w-full px-4 py-6 text-foreground"><p role="status" className="text-sm text-muted-foreground">Loading English ISO...</p></main>;
+    if (current?.english_cards_enabled && current.english_cards_prompt_seen) return <EnglishISOContent key={current.owner} onDeactivate={() => void saveActivation(false)} activationBusy={saving} activationError={error}/>;
+    return <main className="mx-auto w-full max-w-2xl px-4 py-6 text-foreground sm:px-6 sm:py-10">
+        <Link to="/collections" className="inline-flex min-h-10 items-center gap-2 text-sm text-muted-foreground"><ArrowLeft size={16}/>English checklists</Link>
+        {!current ? <section className="mt-5 border-t border-border pt-6"><h1 className="text-2xl font-semibold">English ISO</h1>{error && <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}{account.id ? <button type="button" onClick={() => setReload(value => value + 1)} className="mt-4 min-h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">Retry</button> : <p className="mt-3 text-sm text-muted-foreground">Sign in to manage your English ISO.</p>}</section> : <section className="mt-5 border-t border-border pt-6">
+            <h1 className="text-2xl font-semibold tracking-tight">{current.english_cards_enabled ? "Do you collect English cards?" : "English cards are deactivated"}</h1>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{current.english_cards_enabled ? "You can keep your English ISO, wishlist, and cards in progress, or deactivate them if you only collect Chinese cards." : "Activate your English ISO, wishlist, and cards in progress whenever you want to use them again."}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">Your collection progress, wishlist, and in-progress statuses stay saved. You can change this choice at any time from English ISO.</p>
+            {error && <p role="alert" className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
+            <div className="mt-6 flex flex-wrap gap-3"><button type="button" disabled={saving} onClick={() => void saveActivation(true)} className="min-h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{saving ? "Saving..." : current.english_cards_enabled ? "Keep English activated" : "Activate English cards"}</button>{current.english_cards_enabled && <button type="button" disabled={saving} onClick={() => void saveActivation(false)} className="min-h-11 rounded-xl border border-border px-4 text-sm font-semibold disabled:opacity-50">Deactivate English cards</button>}<Link to="/iso-chinese" className="inline-flex min-h-11 items-center px-1 text-sm font-medium text-muted-foreground hover:text-foreground">Chinese ISO</Link></div>
+        </section>}
+    </main>;
 }

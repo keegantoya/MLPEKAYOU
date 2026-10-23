@@ -1,4 +1,4 @@
-import { getMoonOneBack as getCardBack, cardImagePaths } from "@/lib/card-images";
+import { getEnglishSet, getEnglishCards, getEnglishCard, getEnglishCardStamp, getEnglishCollectionImageProps, getEnglishRarityNames } from "@/lib/english-card-catalog";
 import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect, useRef, useCallback, useId, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
@@ -63,7 +63,9 @@ const getInspectorCardHeight = (width: number, height: number) => {
     const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
     return Math.min(440, 2 * Math.sqrt(Math.max(0, radius * radius - .25)) / Math.hypot(1, 5 / 7));
 };
-function CertificateSeal({ sideways = false }: { sideways?: boolean }) {
+function CertificateSeal({ sideways = false }: {
+    sideways?: boolean;
+}) {
     const id = useId().replace(/:/g, "");
     return <span className={`m1-certificate-seal${sideways ? " m1-seal-sideways" : ""}`} aria-hidden="true">
         <span className="m1-seal-foil"/>
@@ -153,7 +155,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const value = Math.max(1, Math.min(4, next));
         pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
         setZoom(value);
-        if (value > 1) setDragMode("move");
+        if (value > 1)
+            setDragMode("move");
         applyRotation(rotation.current);
     };
     const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
@@ -167,7 +170,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             }
         };
         const observer = new ResizeObserver(updateSize);
-        if (stage.current) observer.observe(stage.current);
+        if (stage.current)
+            observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
     }, [zoom]);
@@ -180,7 +184,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const markNavigation = () => {
             const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
             controls.forEach(control => {
-                if (dialog.current?.contains(control)) return;
+                if (dialog.current?.contains(control))
+                    return;
                 let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
                 while (element && element !== document.body) {
                     const bounds = element.getBoundingClientRect();
@@ -239,7 +244,10 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
-        if (drag.action === "move") { moveCard(dx, dy); return; }
+        if (drag.action === "move") {
+            moveCard(dx, dy);
+            return;
+        }
         const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
@@ -272,8 +280,10 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
     };
     const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
     const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
-    return createPortal(<div className="m1-inspector-overlay" onClick={event => { if (event.target === event.currentTarget)
-        onClose(); }}>
+    return createPortal(<div className="m1-inspector-overlay" onClick={event => {
+            if (event.target === event.currentTarget)
+                onClose();
+        }}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="m1-inspector-title" className="m1-inspector-dialog">
         <header className="m1-inspector-header">
           <div><p className="m1-eyebrow">3D card inspector</p><h2 id="m1-inspector-title">{card.code}</h2></div>
@@ -286,20 +296,26 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             event.currentTarget.setPointerCapture(event.pointerId);
             pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
-        }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }}>
+        }} onPointerMove={handleMove} onPointerUp={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onPointerCancel={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onLostPointerCapture={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }}>
           <div className="m1-card-ground"/>
           <div ref={model} className="m1-card-model">
             <div className="m1-card-face m1-card-front">
-              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="m1-face-image m1-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
+              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} front`} className="m1-face-image m1-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))} {...getEnglishCollectionImageProps("1", card.key, "front", true)}/>
               <div className="m1-card-sheen"/>
             </div>
             <div className="m1-card-face m1-card-back">
-              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="m1-face-image m1-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} back`} className="m1-face-image m1-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))} {...getEnglishCollectionImageProps("1", card.key, "back", true)}/>
               <div className="m1-card-sheen"/>
-              {card.key.startsWith("SC-") && <CertificateSeal sideways={card.key === "SC-7"}/>}
+              {getEnglishCardStamp(getEnglishCard("1", card.key)!).silver && <CertificateSeal sideways={getEnglishCardStamp(getEnglishCard("1", card.key)!).sideways}/>}
             </div>
           </div>
         </div>
@@ -363,7 +379,6 @@ const moonOneStyles = `
 .m1-inspector-controls button[aria-pressed="true"]{background:var(--m1-accent);color:#27230f}
 .m1-inspector-zoom{display:flex;align-items:center;justify-content:center;gap:10px;flex-basis:100%;min-height:28px;font-size:11px;color:var(--m1-muted)}.m1-inspector-zoom input{width:min(220px,50%);accent-color:var(--m1-accent);cursor:pointer;touch-action:pan-x}.m1-inspector-zoom output{min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
 .m1-inspector-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--m1-border);padding:6px 16px}.m1-inspector-footer>span{font-size:11px;color:var(--m1-muted)}.m1-inspector-footer button{display:flex;align-items:center;gap:4px;min-height:40px;border-radius:11px;background:var(--m1-subtle);padding:8px 10px;font-size:11px}
-
 .m1-certificate-seal{position:absolute;right:6%;bottom:7.5%;width:10.5%;aspect-ratio:1;border-radius:14%;overflow:hidden;isolation:isolate;background:#bbc2c8;box-shadow:0 .3px .8px #00000075;pointer-events:none}
 .m1-certificate-seal.m1-seal-sideways{right:auto;left:7.5%;top:6%;bottom:auto;transform:rotate(180deg)}
 .m1-seal-foil{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7%,#e4f4ff65 7.3% 8.3%,transparent 8.6% 19%),repeating-linear-gradient(125deg,#f5f6f875 0 .8px,#7f8c9930 .8px 1.6px),linear-gradient(var(--m1-foil-angle,115deg),#d3d9dd 0%,#fafcfc 12%,#77838e 23%,#c1cbd3 33%,#eef4f7 41%,#505a66 49%,#c6d0d7 60%,#f5f8fa 68%,#88929b 80%,#dce1e5 92%,#f7f8f8 100%);background-size:100% 100%,100% 100%,240% 240%;background-position:center,center,var(--m1-foil-x,50%) var(--m1-foil-y,50%)}
@@ -372,7 +387,6 @@ const moonOneStyles = `
 .m1-seal-collection{opacity:var(--m1-collection-opacity,0)}
 .m1-seal-certificate{opacity:var(--m1-cert-opacity,.55)}
 .m1-seal-glint{position:absolute;inset:0;background:linear-gradient(var(--m1-foil-angle,115deg),transparent 25%,#c6efff18 36%,#ffffff60 48%,#ffe1ff16 57%,transparent 68%);background-size:230% 230%;background-position:var(--m1-foil-x,50%) var(--m1-foil-y,50%);opacity:.2}
-
 @media(max-width:639px){body.m1-inspector-open [data-m1-inspector-navigation]{display:none!important}}
 @media(max-width:600px){.m1-card-button{perspective:none;background:transparent;overflow:hidden;-webkit-mask-image:linear-gradient(#fff,#fff)}.m1-grid-model{transform:none!important;transform-style:flat;transition:none}.m1-grid-face{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible;-webkit-mask-image:linear-gradient(#fff,#fff)}.m1-grid-back{display:none;transform:none}.m1-grid-model[data-show-back="true"]>.m1-grid-face:first-child{display:none}.m1-grid-model[data-show-back="true"]>.m1-grid-back{display:block}.m1-grid-back-image{left:-1px;width:calc(100% + 2px)}}
 @media(hover:hover){.m1-card-button:hover{transform:translateY(-3px);box-shadow:0 7px 18px #00000018}.m1-rarities button:hover{transform:translateY(-1px)}.m1-icon-button:hover,.m1-inspector-controls button:hover{filter:brightness(.95)}}
@@ -382,6 +396,7 @@ const moonOneStyles = `
 @media(max-height:600px){.m1-inspector-overlay{--m1-inspector-top:66px}.m1-inspector-header{padding:7px 12px}.m1-inspector-header .m1-eyebrow{display:none}.m1-inspector-header h2{font-size:14px}.m1-inspector-header .m1-icon-button{height:34px;width:34px}.m1-inspector-status{min-height:23px;font-size:10px;padding:2px 10px}.m1-inspector-controls{padding:3px 12px 6px}.m1-inspector-controls button{min-height:36px;min-width:36px;padding:7px 12px}.m1-inspector-footer{padding:3px 12px}.m1-inspector-footer button{min-height:34px;padding:5px 9px}}
 @media(max-width:359px){.m1-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.m1-card-caption{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.m1-page *{transition:none!important}.m1-card-button:hover,.m1-rarities button:hover{transform:none}}
+@media(max-width:600px){.m1-grid-back-image{--english-back-left:-1px;--english-back-width:calc(100% + 2px)}}
 `;
 const MoonOne = () => {
     const navigate = useNavigate();
@@ -407,9 +422,9 @@ const MoonOne = () => {
     const [selectedRarity, setSelectedRarity] = useState("R");
     const [inspectKey, setInspectKey] = useState<string | null>(null);
     const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
-    const set = { folder: "first-edition-moon", prefix: "M1", setId: "1", rarities: { R: 30, SR: 20, SSR: 54, HR: 36, UR: 16, LSR: 15, SGR: 8, SC: 7 } };
-    const rarityNames: Record<string, string> = { R: "Rare", SR: "Super Rare", SSR: "Super Spark Rare", HR: "Holographic Rare", UR: "Ultra Rare", LSR: "Limited Secret Rare", SGR: "Super Golden Rare", SC: "Secret Card" };
-    const cards = Object.entries(set.rarities).flatMap(([rarity, count]) => Array.from({ length: count }, (_, index) => ({ rarity, number: index + 1 })));
+    const set = getEnglishSet("1")!;
+    const rarityNames: Record<string, string> = getEnglishRarityNames("1");
+    const cards = getEnglishCards("1");
     const collected = cards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
     const total = cards.length;
     const progress = Math.round(collected / total * 100);
@@ -417,11 +432,7 @@ const MoonOne = () => {
     const rarityCollected = rarityCards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
     const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[`${card.rarity}-${card.number}`] : !flipped[`${card.rarity}-${card.number}`]));
     const closeInspector = useCallback(() => setInspectKey(null), []);
-    const getInspection = (key: string): InspectCard => {
-        const [rarity, numberText] = key.split("-");
-        const number = Number(numberText);
-        return { key, code: `MLPME01-${rarity}-${String(number).padStart(3, "0")}`, front: cardImagePaths.ccg(set.folder, set.prefix, rarity, String(number).padStart(3, "0")), back: getCardBack(rarity, number) };
-    };
+    const getInspection = (key: string): InspectCard => { const card = getEnglishCard("1", key)!; return { key, code: card.checklistCode, front: card.front, back: card.back }; };
     const stepInspection = (direction: number) => {
         const keys = visibleCards.map(card => `${card.rarity}-${card.number}`);
         if (!keys.length)
@@ -465,8 +476,10 @@ const MoonOne = () => {
             }
             setLoaded(true);
         };
-        void loadProgress().catch(() => { if (active)
-            setLoadingFailed(true); });
+        void loadProgress().catch(() => {
+            if (active)
+                setLoadingFailed(true);
+        });
         return () => { active = false; };
     }, []);
     useEffect(() => {
@@ -515,12 +528,12 @@ const MoonOne = () => {
           {visibleCards.length === 0 ? <div className="m1-empty"><Check size={24}/><h3>{filter === "missing" ? "This rarity is complete" : "No owned cards here yet"}</h3><p>{filter === "missing" ? "Every card in this rarity is in your collection." : "Switch to All cards to start tracking your collection."}</p><button type="button" onClick={() => setFilter("all")}>Show all cards</button></div> : <div className="m1-card-grid">{visibleCards.map(card => {
                 const key = `${card.rarity}-${card.number}`;
                 const owned = !!flipped[key];
-                const code = `MLPME01-${card.rarity}-${String(card.number).padStart(3, "0")}`;
+                const code = getEnglishCard("1", key)!.checklistCode;
                 return <article key={key} className={`m1-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="m1-card-button" onClick={() => toggleCard(key)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="m1-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="m1-grid-face"><CardImage visible={loaded && (viewMode || !owned)} src={cardImagePaths.ccg(set.folder, set.prefix, card.rarity, String(card.number).padStart(3, "0"))} className="m1-grid-image" draggable={false} alt={code}/></div>
-                  <div className="m1-grid-face m1-grid-back"><CardImage visible={loaded && !viewMode && owned} src={getCardBack(card.rarity, card.number)} className="m1-grid-image m1-grid-back-image" draggable={false} alt={`${code} back`}/>{card.rarity === "SC" && <CertificateSeal sideways={card.number === 7}/>}</div>
+                  <div className="m1-grid-face"><CardImage visible={loaded && (viewMode || !owned)} className="m1-grid-image" draggable={false} alt={code} {...getEnglishCollectionImageProps("1", key, "front", false)}/></div>
+                  <div className="m1-grid-face m1-grid-back"><CardImage visible={loaded && !viewMode && owned} className="m1-grid-image m1-grid-back-image" draggable={false} alt={`${code} back`} {...getEnglishCollectionImageProps("1", key, "back", false)}/>{getEnglishCardStamp(getEnglishCard("1", key)!).silver && <CertificateSeal sideways={getEnglishCardStamp(getEnglishCard("1", key)!).sideways}/>}</div>
                 </div>
                 {owned && <span className="m1-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="m1-inspect-badge"><Box size={13}/>3D</span>}

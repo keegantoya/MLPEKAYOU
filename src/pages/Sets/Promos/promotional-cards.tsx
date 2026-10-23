@@ -1,126 +1,22 @@
-import { getPromotionalCardsBack as getCardBack, cardImagePaths } from "@/lib/card-images";
+import { getEnglishCards, getEnglishCollectionImageProps, isEnglishEventPromo } from "@/lib/english-card-catalog";
 import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
-import { useState, useEffect, useRef, useCallback, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useState, useEffect, useRef, useCallback, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { ArrowLeft, Check, X, RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
-const CCG_PROMO_SOURCES: Record<string, string> = {
-  "PR-1": "Thailand Exclusive",
-  "PR-2": "Moon One 24-Pack Box",
-  "PR-3": "Rainbow One Box",
-  "PR-4": "Fun Moments One Box",
-  "PR-5": "Moon Two 12-Pack Box",
-  "PR-7": "Rainbow Two Box",
-  "PR-14": "Moon Four 12-Pack Box",
-  "PR-15": "New York Comic-Con 2026",
-  "PR-8": "San Diego Comic-Con 2026",
-  "PR-9": "San Diego Comic-Con 2026",
-  "PR-10": "San Diego Comic-Con 2026",
-  "PR-11": "San Diego Comic-Con 2026",
-  "PR-12": "San Diego Comic-Con 2026",
-  "PR-13": "San Diego Comic-Con 2026",
+type PromoCard = {
+    key: string;
+    category: "CCG" | "TCG";
+    front: string;
+    back: string;
+    source: string;
+    original: boolean;
 };
-const TCG_PROMO_SOURCES: Record<string, string> = {
-  RR01: "Tournament Prize",
-  RR02: "Tournament Prize",
-  RR03: "Tournament Prize",
-  RR04: "Tournament Prize",
-  RR05: "Tournament Prize",
-  RR06: "Tournament Prize",
-  RR07: "Anime Expo 2026",
-  RR08: "Anime Expo 2026",
-  RR09: "Anime Expo 2026",
-  RR10: "Anime Expo 2026",
-  RR11: "Anime Expo 2026",
-  RR12: "Anime Expo 2026",
-  RR13: "Discord Box",
-  RR14: "Discord Box",
-  RR15: "Discord Box",
-  RR16: "Discord Box",
-  RR17: "Discord Box",
-  RR18: "Discord Box",
-  RR19: "Nightmare Night Box",
-  RR20: "Nightmare Night Box",
-  RR21: "Nightmare Night Box",
-  RR22: "Nightmare Night Binder Set",
-  RR23: "Nightmare Night Binder Set",
-  RR24: "Nightmare Night Binder Set",
-  RR25: "Nightmare Night Binder Set",
-  RR26: "Nightmare Night Binder Set",
-  RR27: "Nightmare Night Binder Set",
-  RR28: "NYCC 2026",
-};
-const CCG_CARD_ZOOM: Record<string, number> = {
-  "PR-1": 1.009,
-  "PR-2": 1.04,
-  "PR-3": 1.035,
-  "PR-4": 1.035,
-  "PR-5": 1.033,
-  "PR-7": 1.035,
-  "PR-14": 1.035,
-  "PR-8": 1.04,
-  "PR-9": 1.04,
-  "PR-10": 1.04,
-  "PR-11": 1.04,
-  "PR-12": 1.04,
-  "PR-13": 1.04,
-  "PR-15": 1.02,
-};
-const TCG_CARD_ZOOM: Record<string, number> = {
-  RR01: 0.99,
-  RR02: 0.99,
-  RR03: 0.99,
-  RR04: 0.99,
-  RR05: 0.99,
-  RR06: 0.99,
-  RR07: 0.99,
-  RR08: 0.99,
-  RR09: 1.035,
-  RR10: 1.025,
-  RR11: 1.025,
-  RR12: 1.025,
-  RR13: 0.99,
-  RR14: 0.99,
-  RR15: 0.99,
-  RR16: 0.99,
-  RR17: 0.99,
-  RR18: 0.99,
-  RR19: 0.99,
-  RR20: 0.99,
-  RR21: 0.99,
-  RR22: 0.99,
-  RR23: 0.99,
-  RR24: 0.99,
-  RR25: 0.99,
-  RR26: 0.99,
-  RR27: 0.99,
-  RR28: 0.99,
-};
-const getPromoFrontStyle = (key: string): CSSProperties => ({
-    backgroundColor: "transparent",
-    backgroundImage: "none",
-    transform: key === "RR09" ? "translateY(-0.75%) scale(1.035, 1.02)" : `scale(${key.startsWith("PR-") ? CCG_CARD_ZOOM[key] ?? 1 : TCG_CARD_ZOOM[key] ?? 1})`
-});
-type PromoCard = { key: string; category: "CCG" | "TCG"; front: string; back: string; source: string; original: boolean };
-const isEventCCGPromo = (key: string) => ["PR-1", "PR-8", "PR-9", "PR-10", "PR-11", "PR-12", "PR-13", "PR-15"].includes(key);
-const promoCards: PromoCard[] = [
-    ...[1, 2, 3, 4, 5, 7, 14, 8, 9, 10, 11, 12, 13, 15].map(number => ({
-      key: `PR-${number}`,
-      category: "CCG" as const,
-      front: cardImagePaths.ccgPromo(String(number).padStart(3, "0")),
-      back: getCardBack(number),
-      source: CCG_PROMO_SOURCES[`PR-${number}`],
-      original: number === 14
-    })),
-    ...Array.from({ length: 28 }, (_, index) => {
-const number = index + 1;
-const key = `RR${String(number).padStart(2, "0")}`;
-        return { key, category: "TCG" as const, front: cardImagePaths.tcgPromo(key), back: cardImagePaths.fixed.cardBacksTcgdefaultback, source: TCG_PROMO_SOURCES[key], original: number === 28 };
-    })
-];
+const isEventCCGPromo = isEnglishEventPromo;
+const promoCards: PromoCard[] = [...getEnglishCards("9"), ...getEnglishCards("tcgpromos")].map(card => ({ key: card.key, category: card.setId === "9" ? "CCG" as const : "TCG" as const, front: card.front, back: card.back, source: card.source || "Promotional card", original: card.original }));
 type Quaternion = [
     number,
     number,
@@ -134,15 +30,15 @@ type InspectCard = {
     back: string;
 };
 const multiplyRotation = (a: Quaternion, b: Quaternion): Quaternion => {
-const [x, y, z, w] = a;
-const [u, v, t, s] = b;
-const q: Quaternion = [w * u + x * s + y * t - z * v, w * v - x * t + y * s + z * u, w * t + x * v - y * u + z * s, w * s - x * u - y * v - z * t];
-const length = Math.hypot(...q) || 1;
+    const [x, y, z, w] = a;
+    const [u, v, t, s] = b;
+    const q: Quaternion = [w * u + x * s + y * t - z * v, w * v - x * t + y * s + z * u, w * t + x * v - y * u + z * s, w * s - x * u - y * v - z * t];
+    const length = Math.hypot(...q) || 1;
     return q.map(value => value / length) as Quaternion;
 };
 const axisRotation = (x: number, y: number, z: number, angle: number): Quaternion => {
-const length = Math.hypot(x, y, z) || 1;
-const sine = Math.sin(angle / 2) / length;
+    const length = Math.hypot(x, y, z) || 1;
+    const sine = Math.sin(angle / 2) / length;
     return [x * sine, y * sine, z * sine, Math.cos(angle / 2)];
 };
 const rotationMatrix = ([x, y, z, w]: Quaternion) => `matrix3d(${[
@@ -152,8 +48,8 @@ const rotationMatrix = ([x, y, z, w]: Quaternion) => `matrix3d(${[
     0, 0, 0, 1
 ].join(",")})`;
 const getInspectorCardHeight = (width: number, height: number, aspect: number) => {
-const limit = Math.max(0, Math.min(width, height) / 2 - 12);
-const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
+    const limit = Math.max(0, Math.min(width, height) / 2 - 12);
+    const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
     return Math.min(440, 2 * Math.sqrt(Math.max(0, radius * radius - .25)) / Math.hypot(1, aspect));
 };
 function CardInspector({ card, onClose, onPrevious, onNext }: {
@@ -162,58 +58,60 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
     onPrevious: () => void;
     onNext: () => void;
 }) {
-const aspect = 5 / 7;
-const pan = useRef({ x: 0, y: 0 });
-const rotation = useRef<Quaternion>([0, 0, 0, 1]);
-const model = useRef<HTMLDivElement>(null);
-const stage = useRef<HTMLDivElement>(null);
-const dialog = useRef<HTMLDivElement>(null);
-const pointer = useRef<{
+    const aspect = 5 / 7;
+    const pan = useRef({ x: 0, y: 0 });
+    const rotation = useRef<Quaternion>([0, 0, 0, 1]);
+    const model = useRef<HTMLDivElement>(null);
+    const stage = useRef<HTMLDivElement>(null);
+    const dialog = useRef<HTMLDivElement>(null);
+    const pointer = useRef<{
         id: number;
         action: "rotate" | "move";
         x: number;
         y: number;
     } | null>(null);
-const [dragging, setDragging] = useState(false);
-const [zoom, setZoom] = useState(1);
-const [dragMode, setDragMode] = useState<"rotate" | "move">("rotate");
-const [imageStatus, setImageStatus] = useState<Record<string, "loaded" | "error">>({});
-const [imageRetry, setImageRetry] = useState(0);
-const applyRotation = (next: Quaternion) => {
+    const [dragging, setDragging] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [dragMode, setDragMode] = useState<"rotate" | "move">("rotate");
+    const [imageStatus, setImageStatus] = useState<Record<string, "loaded" | "error">>({});
+    const [imageRetry, setImageRetry] = useState(0);
+    const applyRotation = (next: Quaternion) => {
         rotation.current = next;
         if (model.current) {
             model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(next)}`;
         }
     };
-const moveCard = (dx: number, dy: number) => {
+    const moveCard = (dx: number, dy: number) => {
         pan.current = { x: pan.current.x + dx, y: pan.current.y + dy };
         applyRotation(rotation.current);
     };
-const resetView = () => {
+    const resetView = () => {
         pan.current = { x: 0, y: 0 };
         setZoom(1);
         setDragMode("rotate");
         applyRotation([0, 0, 0, 1]);
     };
-const changeZoom = (next: number) => {
-const value = Math.max(1, Math.min(4, next));
+    const changeZoom = (next: number) => {
+        const value = Math.max(1, Math.min(4, next));
         pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
         setZoom(value);
-        if (value > 1) setDragMode("move");
+        if (value > 1)
+            setDragMode("move");
         applyRotation(rotation.current);
     };
-const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
-const finishDrag = () => { pointer.current = null; setDragging(false); };
+    const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
+    const finishDrag = () => { pointer.current = null; setDragging(false); };
     useEffect(() => {
-const updateSize = () => {
+        const updateSize = () => {
             if (model.current && stage.current) {
-const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect) * zoom);
+                const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect) * zoom);
                 model.current.style.height = `${height}px`;
                 model.current.style.width = `${height * aspect}px`;
             }
         };
-const observer = new ResizeObserver(updateSize);
-        if (stage.current) observer.observe(stage.current);
+        const observer = new ResizeObserver(updateSize);
+        if (stage.current)
+            observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
     }, [aspect, zoom]);
@@ -222,14 +120,15 @@ const observer = new ResizeObserver(updateSize);
         finishDrag();
     }, [card.key]);
     useEffect(() => {
-const hiddenNavigation = new Set<HTMLElement>();
-const markNavigation = () => {
-const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
+        const hiddenNavigation = new Set<HTMLElement>();
+        const markNavigation = () => {
+            const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
             controls.forEach(control => {
-                if (dialog.current?.contains(control)) return;
-let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
+                if (dialog.current?.contains(control))
+                    return;
+                let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
                 while (element && element !== document.body) {
-const bounds = element.getBoundingClientRect();
+                    const bounds = element.getBoundingClientRect();
                     if (getComputedStyle(element).position === "fixed" && bounds.top > window.innerHeight / 2) {
                         element.setAttribute("data-promo-inspector-navigation", "");
                         hiddenNavigation.add(element);
@@ -240,7 +139,7 @@ const bounds = element.getBoundingClientRect();
             });
         };
         markNavigation();
-const observer = new MutationObserver(markNavigation);
+        const observer = new MutationObserver(markNavigation);
         observer.observe(document.body, { childList: true, subtree: true });
         window.addEventListener("resize", markNavigation);
         return () => {
@@ -250,20 +149,20 @@ const observer = new MutationObserver(markNavigation);
         };
     }, []);
     useEffect(() => {
-const previousFocus = document.activeElement as HTMLElement | null;
-const previousOverflow = document.body.style.overflow;
+        const previousFocus = document.activeElement as HTMLElement | null;
+        const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
         document.body.classList.add("promo-inspector-open");
         stage.current?.focus();
-const onKey = (event: KeyboardEvent) => {
+        const onKey = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 event.preventDefault();
                 onClose();
             }
             if (event.key === "Tab") {
-const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]') || []);
-const first = controls[0];
-const last = controls[controls.length - 1];
+                const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]') || []);
+                const first = controls[0];
+                const last = controls[controls.length - 1];
                 if (event.shiftKey && (document.activeElement === first || !dialog.current?.contains(document.activeElement))) {
                     event.preventDefault();
                     last?.focus();
@@ -277,31 +176,34 @@ const last = controls[controls.length - 1];
         document.addEventListener("keydown", onKey);
         return () => { document.body.classList.remove("promo-inspector-open"); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); previousFocus?.focus(); };
     }, [onClose]);
-const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-const drag = pointer.current;
+    const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+        const drag = pointer.current;
         if (!drag || drag.id !== event.pointerId)
             return;
-const dx = event.clientX - drag.x;
-const dy = event.clientY - drag.y;
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
-        if (drag.action === "move") { moveCard(dx, dy); return; }
-const distance = Math.hypot(dx, dy);
+        if (drag.action === "move") {
+            moveCard(dx, dy);
+            return;
+        }
+        const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
-const sensitivity = Math.PI / Math.max(180, Math.min(event.currentTarget.clientWidth, event.currentTarget.clientHeight));
+        const sensitivity = Math.PI / Math.max(180, Math.min(event.currentTarget.clientWidth, event.currentTarget.clientHeight));
         if (event.shiftKey)
             turn(0, 0, 1, dx * sensitivity);
         else
             turn(-dy, dx, 0, distance * sensitivity);
     };
-const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
         if (dragMode === "move" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
             moveCard(event.key === "ArrowLeft" ? -24 : event.key === "ArrowRight" ? 24 : 0, event.key === "ArrowUp" ? -24 : event.key === "ArrowDown" ? 24 : 0);
             event.preventDefault();
             return;
         }
-const amount = Math.PI / 12;
+        const amount = Math.PI / 12;
         if (event.key === "ArrowLeft")
             event.shiftKey ? turn(0, 0, 1, -amount) : turn(0, 1, 0, -amount);
         else if (event.key === "ArrowRight")
@@ -310,16 +212,19 @@ const amount = Math.PI / 12;
             turn(1, 0, 0, amount);
         else if (event.key === "ArrowDown")
             turn(1, 0, 0, -amount);
-        else if (event.key.toLowerCase() === "r")
-            { resetView(); }
+        else if (event.key.toLowerCase() === "r") {
+            resetView();
+        }
         else
             return;
         event.preventDefault();
     };
-const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
-const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
-    return createPortal(<div className="promo-inspector-overlay" onClick={event => { if (event.target === event.currentTarget)
-        onClose(); }}>
+    const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
+    const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
+    return createPortal(<div className="promo-inspector-overlay" onClick={event => {
+            if (event.target === event.currentTarget)
+                onClose();
+        }}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="promo-inspector-title" className="promo-inspector-dialog">
         <header className="promo-inspector-header">
           <div><p className="promo-eyebrow">3D card inspector</p><h2 id="promo-inspector-title">{card.code}</h2></div>
@@ -332,19 +237,25 @@ const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.bac
             event.currentTarget.setPointerCapture(event.pointerId);
             pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
-        }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }}>
+        }} onPointerMove={handleMove} onPointerUp={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onPointerCancel={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onLostPointerCapture={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }}>
           <div className="promo-card-ground"/>
           <div ref={model} className="promo-card-model">
             <div className="promo-card-face promo-card-front">
-              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="promo-face-image promo-front-image" style={getPromoFrontStyle(card.key)} onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
+              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} front`} className="promo-face-image promo-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))} {...getEnglishCollectionImageProps((card.key.startsWith("PR-") ? "9" : "tcgpromos"), card.key, "front", true)}/>
               <div className="promo-card-sheen"/>
             </div>
             <div className="promo-card-face promo-card-back">
               <div className="promo-back-art">
-              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="promo-face-image promo-back-image" style={{ transform: "scale(1.035)" }} onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} back`} className="promo-face-image promo-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))} {...getEnglishCollectionImageProps((card.key.startsWith("PR-") ? "9" : "tcgpromos"), card.key, "back", true)}/>
               <div className="promo-card-sheen"/>
               </div>
             </div>
@@ -423,131 +334,141 @@ const promotionalStyles = `
 @media(prefers-reduced-motion:reduce){.promo-page *{transition:none!important}.promo-card-button:hover,.promo-rarities button:hover{transform:none}}
 `;
 const PromotionalCards = () => {
-const navigate = useNavigate();
-const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-const [loaded, setLoaded] = useState(false);
-const pageRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+    const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+    const [loaded, setLoaded] = useState(false);
+    const pageRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-const update = () => {
+        const update = () => {
             if (pageRef.current)
                 pageRef.current.style.setProperty("--promo-page-top", `${pageRef.current.getBoundingClientRect().top + window.scrollY}px`);
         };
         update();
-const observer = new ResizeObserver(update);
+        const observer = new ResizeObserver(update);
         if (pageRef.current?.parentElement)
             observer.observe(pageRef.current.parentElement);
         window.addEventListener("resize", update);
         window.visualViewport?.addEventListener("resize", update);
         return () => { observer.disconnect(); window.removeEventListener("resize", update); window.visualViewport?.removeEventListener("resize", update); };
     }, [loaded]);
-const [loadingFailed, setLoadingFailed] = useState(false);
-const [lastSavedProgress, setLastSavedProgress] = useState("");
-const [viewMode, setViewMode] = useState(false);
-const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-const [selectedCategory, setSelectedCategory] = useState<"CCG" | "TCG">("CCG");
-const [inspectKey, setInspectKey] = useState<string | null>(null);
-const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
-const collected = promoCards.filter(card => flipped[card.key]).length;
-const total = promoCards.length;
-const progress = Math.round(collected / total * 100);
-const categoryCards = promoCards.filter(card => card.category === selectedCategory);
-const categoryCollected = categoryCards.filter(card => flipped[card.key]).length;
-const visibleCards = categoryCards.filter(card => filter === "all" || (filter === "owned" ? flipped[card.key] : !flipped[card.key]));
-const categoryHidden = hiddenSets.includes(selectedCategory === "CCG" ? "9" : "tcgpromos");
-const closeInspector = useCallback(() => setInspectKey(null), []);
-const getInspection = (key: string): InspectCard => {
-const card = promoCards.find(card => card.key === key)!;
+    const [loadingFailed, setLoadingFailed] = useState(false);
+    const [lastSavedProgress, setLastSavedProgress] = useState("");
+    const [viewMode, setViewMode] = useState(false);
+    const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<"CCG" | "TCG">("CCG");
+    const [inspectKey, setInspectKey] = useState<string | null>(null);
+    const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
+    const collected = promoCards.filter(card => flipped[card.key]).length;
+    const total = promoCards.length;
+    const progress = Math.round(collected / total * 100);
+    const categoryCards = promoCards.filter(card => card.category === selectedCategory);
+    const categoryCollected = categoryCards.filter(card => flipped[card.key]).length;
+    const visibleCards = categoryCards.filter(card => filter === "all" || (filter === "owned" ? flipped[card.key] : !flipped[card.key]));
+    const categoryHidden = hiddenSets.includes(selectedCategory === "CCG" ? "9" : "tcgpromos");
+    const closeInspector = useCallback(() => setInspectKey(null), []);
+    const getInspection = (key: string): InspectCard => {
+        const card = promoCards.find(card => card.key === key)!;
         return { key: card.key, code: card.source || "Promotional card", front: card.front, back: card.back };
     };
-const stepInspection = (direction: number) => {
-const keys = visibleCards.map(card => card.key);
-        if (!keys.length) return;
-const current = keys.indexOf(inspectKey || "");
+    const stepInspection = (direction: number) => {
+        const keys = visibleCards.map(card => card.key);
+        if (!keys.length)
+            return;
+        const current = keys.indexOf(inspectKey || "");
         setInspectKey(keys[(current + direction + keys.length) % keys.length]);
     };
-const toggleCard = (key: string) => {
-        if (categoryHidden) return;
-        if (viewMode) { setInspectKey(key); return; }
+    const toggleCard = (key: string) => {
+        if (categoryHidden)
+            return;
+        if (viewMode) {
+            setInspectKey(key);
+            return;
+        }
         setFlipped(previous => ({ ...previous, [key]: !previous[key] }));
     };
-  useEffect(() => {
-const loadProgress = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
-      if (!user) {
-        setLoaded(true);
-        return;
-      }
-const { data: profile } = await supabase
-        .from("profiles")
-        .select("iso_hidden_sets")
-        .eq("id", user.id)
-        .maybeSingle();
-const hidden = (profile?.iso_hidden_sets || []).map((id: string) => {
-        switch (id) {
-          case "TCG_PROMOS":
-            return "tcgpromos";
-          default:
-            return id;
-        }
-      });
-      setHiddenSets(hidden);
-const [{ data: ccg }, { data: tcg }] = await Promise.all([
-        supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", user.id)
-          .eq("set_id", "9")
-          .maybeSingle(),
-        supabase
-          .from("collection_progress_raw")
-          .select("progress")
-          .eq("user_id", user.id)
-          .eq("set_id", "tcgpromos")
-          .maybeSingle(),
-      ]);
-const merged = {
-        ...(ccg?.progress || {}),
-        ...(tcg?.progress || {}),
-      };
-      setFlipped(merged);
-      setLastSavedProgress(JSON.stringify(merged));
-      setLoaded(true);
-    };
-    void loadProgress().catch(() => setLoadingFailed(true));
-  }, []);
-  useEffect(() => {
-    if (!loaded) return;
-const current = JSON.stringify(flipped);
-    if (current === lastSavedProgress) return;
-const saveProgress = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
-      if (!user) return;
-const ccgProgress: Record<string, boolean> = {};
-const tcgProgress: Record<string, boolean> = {};
-      Object.entries(flipped).forEach(([key, value]) => {
-        if (key.startsWith("PR-")) {
-          ccgProgress[key] = value;
-        } else if (key.startsWith("RR")) {
-          tcgProgress[key] = value;
-        }
-      });
-const saveErrors = await Promise.all([
-        saveCollectionProgress("9", ccgProgress),
-        saveCollectionProgress("tcgpromos", tcgProgress),
-      ]);
-const saveError = saveErrors.find(Boolean);
-      if (saveError) {
-        console.error("Unable to save promotional progress:", saveError);
-        return;
-      }
-      setLastSavedProgress(JSON.stringify(flipped));
-    };
-const saveTimer = window.setTimeout(saveProgress, 400);
-    return () => window.clearTimeout(saveTimer);
-  }, [flipped, loaded, lastSavedProgress]);
-    if (!loaded) return <CollectionLoading failed={loadingFailed}/>;
+    useEffect(() => {
+        const loadProgress = async () => {
+            const { data } = await supabase.auth.getSession();
+            const user = data.session?.user;
+            if (!user) {
+                setLoaded(true);
+                return;
+            }
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("iso_hidden_sets")
+                .eq("id", user.id)
+                .maybeSingle();
+            const hidden = (profile?.iso_hidden_sets || []).map((id: string) => {
+                switch (id) {
+                    case "TCG_PROMOS":
+                        return "tcgpromos";
+                    default:
+                        return id;
+                }
+            });
+            setHiddenSets(hidden);
+            const [{ data: ccg }, { data: tcg }] = await Promise.all([
+                supabase
+                    .from("collection_progress_raw")
+                    .select("progress")
+                    .eq("user_id", user.id)
+                    .eq("set_id", "9")
+                    .maybeSingle(),
+                supabase
+                    .from("collection_progress_raw")
+                    .select("progress")
+                    .eq("user_id", user.id)
+                    .eq("set_id", "tcgpromos")
+                    .maybeSingle(),
+            ]);
+            const merged = {
+                ...(ccg?.progress || {}),
+                ...(tcg?.progress || {}),
+            };
+            setFlipped(merged);
+            setLastSavedProgress(JSON.stringify(merged));
+            setLoaded(true);
+        };
+        void loadProgress().catch(() => setLoadingFailed(true));
+    }, []);
+    useEffect(() => {
+        if (!loaded)
+            return;
+        const current = JSON.stringify(flipped);
+        if (current === lastSavedProgress)
+            return;
+        const saveProgress = async () => {
+            const { data } = await supabase.auth.getSession();
+            const user = data.session?.user;
+            if (!user)
+                return;
+            const ccgProgress: Record<string, boolean> = {};
+            const tcgProgress: Record<string, boolean> = {};
+            Object.entries(flipped).forEach(([key, value]) => {
+                if (key.startsWith("PR-")) {
+                    ccgProgress[key] = value;
+                }
+                else if (key.startsWith("RR")) {
+                    tcgProgress[key] = value;
+                }
+            });
+            const saveErrors = await Promise.all([
+                saveCollectionProgress("9", ccgProgress),
+                saveCollectionProgress("tcgpromos", tcgProgress),
+            ]);
+            const saveError = saveErrors.find(Boolean);
+            if (saveError) {
+                console.error("Unable to save promotional progress:", saveError);
+                return;
+            }
+            setLastSavedProgress(JSON.stringify(flipped));
+        };
+        const saveTimer = window.setTimeout(saveProgress, 400);
+        return () => window.clearTimeout(saveTimer);
+    }, [flipped, loaded, lastSavedProgress]);
+    if (!loaded)
+        return <CollectionLoading failed={loadingFailed}/>;
     return <div ref={pageRef} className="promo-page">
       <style>{promotionalStyles}</style>
       <main className="promo-main">
@@ -562,10 +483,10 @@ const saveTimer = window.setTimeout(saveProgress, 400);
         </header>
         <nav className="promo-rarities" aria-label="Promo category">
           {(["CCG", "TCG"] as const).map(category => {
-const cards = promoCards.filter(card => card.category === category);
-const count = cards.filter(card => flipped[card.key]).length;
+            const cards = promoCards.filter(card => card.category === category);
+            const count = cards.filter(card => flipped[card.key]).length;
             return <button type="button" key={category} aria-pressed={selectedCategory === category} className={`${selectedCategory === category ? "is-active" : ""} ${count === cards.length ? "is-complete" : ""}`} onClick={() => setSelectedCategory(category)}><strong>{category}</strong><span>{count}/{cards.length}</span>{count === cards.length && <Check size={13}/>}</button>;
-          })}
+        })}
         </nav>
         <section className="promo-catalog" aria-label={`${selectedCategory} promos`} style={{ position: "relative" }}>
           {categoryHidden && <div className="promo-hidden-overlay"><div><strong>{selectedCategory} Promos are hidden</strong><p>This set is hidden in your ISO settings.</p></div></div>}
@@ -574,22 +495,22 @@ const count = cards.filter(card => flipped[card.key]).length;
           {visibleCards.length === 0 ? <div className="promo-empty"><Check size={24}/><h3>{filter === "missing" ? "This category is complete" : "No owned cards here yet"}</h3><p>{filter === "missing" ? "Every card in this category is in your collection." : "Switch to All cards to start tracking your collection."}</p><button type="button" disabled={categoryHidden} onClick={() => setFilter("all")}>Show all cards</button></div> : (selectedCategory === "CCG" ? [
             { label: "Event Promos", cards: visibleCards.filter(card => isEventCCGPromo(card.key)) },
             { label: "Box Toppers", cards: visibleCards.filter(card => !isEventCCGPromo(card.key)) }
-          ] : [{ label: "", cards: visibleCards }]).filter(group => group.cards.length > 0).map(group => <section className="promo-subgroup" key={group.label || "tcg-promos"}>
+        ] : [{ label: "", cards: visibleCards }]).filter(group => group.cards.length > 0).map(group => <section className="promo-subgroup" key={group.label || "tcg-promos"}>
             {group.label && <div className="promo-subgroup-heading"><h3>{group.label}</h3><span>{group.cards.length} cards</span></div>}
             <div className="promo-card-grid">{group.cards.map(card => {
-const owned = !!flipped[card.key];
-            return <article key={card.key} className={`promo-grid-card ${owned ? "is-owned" : ""}`}>
+                const owned = !!flipped[card.key];
+                return <article key={card.key} className={`promo-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="promo-card-button" disabled={categoryHidden} onClick={() => toggleCard(card.key)} aria-label={viewMode ? `Inspect ${card.source || "Promotional card"} in 3D` : `${card.source || "Promotional card"}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="promo-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="promo-grid-face"><CardImage imageSize={card.original ? "original" : "grid"} visible={loaded && (viewMode || !owned)} src={card.front} className="promo-grid-image" style={getPromoFrontStyle(card.key)} draggable={false} alt={card.source || "Promotional card"}/></div>
-                  <div className="promo-grid-face promo-grid-back"><CardImage visible={loaded && !viewMode && owned} src={card.back} className="promo-grid-image promo-grid-back-image" style={{ transform: "scale(1.035)" }} draggable={false} alt={`${card.source || "Promotional card"} back`}/></div>
+                  <div className="promo-grid-face"><CardImage imageSize={card.original ? "original" : "grid"} visible={loaded && (viewMode || !owned)} className="promo-grid-image" draggable={false} alt={card.source || "Promotional card"} {...getEnglishCollectionImageProps((card.key.startsWith("PR-") ? "9" : "tcgpromos"), card.key, "front", false)}/></div>
+                  <div className="promo-grid-face promo-grid-back"><CardImage visible={loaded && !viewMode && owned} className="promo-grid-image promo-grid-back-image" draggable={false} alt={`${card.source || "Promotional card"} back`} {...getEnglishCollectionImageProps((card.key.startsWith("PR-") ? "9" : "tcgpromos"), card.key, "back", false)}/></div>
                 </div>
                 {owned && <span className="promo-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="promo-inspect-badge"><Box size={13}/>3D</span>}
               </button>
               <p className="promo-promo-source">{card.source || "Source not added yet"}</p>
             </article>;
-          })}</div>
+            })}</div>
           </section>)}
           </div>
         </section>

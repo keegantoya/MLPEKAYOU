@@ -1,6 +1,4 @@
-import { tcgCatalog } from "@/lib/iso-card-catalog";
-import { getFriendshipsBeginBack as getCardBack, getFriendshipsBeginFront as getCardFront } from "@/lib/card-images";
-import { cardImagePaths } from "@/lib/card-images";
+import { getEnglishSet, getEnglishCards, getEnglishCard, getEnglishCollectionImageProps, getEnglishRarityNames, getEnglishRarityLabel, englishStarterDecks, getEnglishStarterDeckCards } from "@/lib/english-card-catalog";
 import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect, useRef, useCallback, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
@@ -9,57 +7,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { ArrowLeft, Check, X, RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
-const getFallbackDisplayCardCode = (key: string) => {
-const deckMatch = key.match(/^(SD01[A-F])(C|U|SR|SPR)(\d{2})$/);
-  if (deckMatch) {
-const [, deck, rarity, number] = deckMatch;
-    return `${deck}-${rarity}${number}`;
-  }
-const specialMatch = key.match(/^SD01(ER|RR)(\d{2})$/);
-  if (specialMatch) {
-const [, rarity, number] = specialMatch;
-const deckLetter = String.fromCharCode(64 + Number(number));
-    return `${"SD01" + deckLetter}-${rarity}${number}`;
-  }
-const match = key.match(/^SD01(C|U|SR|SPR|GR|CR|ER|RR|PER|PRR)(\d{2})$/);
-  if (!match) return key;
-const [, rarity, number] = match;
-  if (rarity === "PRR") {
-    return `\u203bSD01-RR${number}`;
-  }
-  if (rarity === "PER") {
-const sourceNumber = Number(number);
-const displayNumber = Math.ceil(sourceNumber / 2);
-    return `\u203bSD01-ER${String(displayNumber).padStart(2, "0")}`;
-  }
-  return `SD01-${rarity}${number}`;
+const rarityLabel = (rarity: string) => getEnglishRarityLabel("SD", rarity);
+type CollectionCard = {
+    key: string;
+    stateKey: string;
+    rarity: string;
+    front: string;
+    back: string;
 };
-const getDeckCards = (deckCode: string) => {
-const cards: string[] = [];
-const deckLetter = deckCode.slice(-1);
-const deckIndex = deckLetter.charCodeAt(0) - 64;
-const add = (rarity: string, count: number) => {
-    for (let i = 1; i <= count; i++) {
-      cards.push(`${deckCode}${rarity}${String(i).padStart(2, "0")}`);
-    }
-  };
-  add("C", 9);
-  add("U", 4);
-  add("SR", 2);
-  cards.push(`SD01ER${String(deckIndex).padStart(2, "0")}`);
-  add("SPR", 4);
-  cards.push(`SD01RR${String(deckIndex).padStart(2, "0")}`);
-  return cards;
-};
-const friendshipsCatalogSet = tcgCatalog.sets.find(set => set.id === "SD");
-const friendshipsCatalogCards = friendshipsCatalogSet ? tcgCatalog.getCards(friendshipsCatalogSet, {}) : [];
-const getDisplayCardCode = (key: string) => {
-    const card = friendshipsCatalogCards.find(card => card.key === key);
-    return card ? tcgCatalog.getDisplayCardCode("SD", card) : getFallbackDisplayCardCode(key);
-};
-const rarityLabel = (rarity: string) => rarity === "STARTER" ? "Starter Decks" : tcgCatalog.getDisplayRarity(rarity);
-type CollectionCard = { key: string; stateKey: string; rarity: string; front: string; back: string };
-const getStarterBack = (key: string) => key.includes("C06") || key.includes("C07") || key.includes("C08") || key.includes("C09") ? cardImagePaths.tcgBack(key) : key.startsWith("SD01RR") ? cardImagePaths.starterRubyBack(key.slice(-2)) : key.includes("ER") && !key.includes("PER") ? cardImagePaths.fixed.tcgCardBacksSCENECARDBACK : cardImagePaths.fixed.cardBacksTcgdefaultback;
 type Quaternion = [
     number,
     number,
@@ -122,7 +77,6 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         rotation.current = next;
         if (model.current) {
             model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(next)}`;
-
         }
     };
     const moveCard = (dx: number, dy: number) => {
@@ -139,7 +93,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const value = Math.max(1, Math.min(4, next));
         pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
         setZoom(value);
-        if (value > 1) setDragMode("move");
+        if (value > 1)
+            setDragMode("move");
         applyRotation(rotation.current);
     };
     const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
@@ -153,7 +108,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             }
         };
         const observer = new ResizeObserver(updateSize);
-        if (stage.current) observer.observe(stage.current);
+        if (stage.current)
+            observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
     }, [aspect, zoom]);
@@ -166,7 +122,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const markNavigation = () => {
             const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
             controls.forEach(control => {
-                if (dialog.current?.contains(control)) return;
+                if (dialog.current?.contains(control))
+                    return;
                 let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
                 while (element && element !== document.body) {
                     const bounds = element.getBoundingClientRect();
@@ -225,7 +182,10 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
-        if (drag.action === "move") { moveCard(dx, dy); return; }
+        if (drag.action === "move") {
+            moveCard(dx, dy);
+            return;
+        }
         const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
@@ -250,16 +210,19 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             turn(1, 0, 0, amount);
         else if (event.key === "ArrowDown")
             turn(1, 0, 0, -amount);
-        else if (event.key.toLowerCase() === "r")
-            { resetView(); }
+        else if (event.key.toLowerCase() === "r") {
+            resetView();
+        }
         else
             return;
         event.preventDefault();
     };
     const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
     const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
-    return createPortal(<div className="friendships-inspector-overlay" onClick={event => { if (event.target === event.currentTarget)
-        onClose(); }}>
+    return createPortal(<div className="friendships-inspector-overlay" onClick={event => {
+            if (event.target === event.currentTarget)
+                onClose();
+        }}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="friendships-inspector-title" className="friendships-inspector-dialog">
         <header className="friendships-inspector-header">
           <div><p className="friendships-eyebrow">3D card inspector</p><h2 id="friendships-inspector-title">{card.code}</h2></div>
@@ -272,19 +235,25 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             event.currentTarget.setPointerCapture(event.pointerId);
             pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
-        }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }}>
+        }} onPointerMove={handleMove} onPointerUp={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onPointerCancel={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onLostPointerCapture={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }}>
           <div className="friendships-card-ground"/>
           <div ref={model} className="friendships-card-model">
             <div className="friendships-card-face friendships-card-front">
-              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="friendships-face-image friendships-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
+              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} front`} className="friendships-face-image friendships-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))} {...getEnglishCollectionImageProps("SD", card.key, "front", true)}/>
               <div className="friendships-card-sheen"/>
             </div>
             <div className="friendships-card-face friendships-card-back">
               <div className="friendships-back-art">
-              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="friendships-face-image friendships-back-image" style={{ transform: "scale(1.035)" }} onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} back`} className="friendships-face-image friendships-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))} {...getEnglishCollectionImageProps("SD", card.key, "back", true)}/>
               <div className="friendships-card-sheen"/>
               </div>
             </div>
@@ -351,8 +320,6 @@ const friendshipsStyles = `
 .friendships-inspector-controls button[aria-pressed="true"]{background:var(--friendships-accent);color:#27230f}
 .friendships-inspector-zoom{display:flex;align-items:center;justify-content:center;gap:10px;flex-basis:100%;min-height:28px;font-size:11px;color:var(--friendships-muted)}.friendships-inspector-zoom input{width:min(220px,50%);accent-color:var(--friendships-accent);cursor:pointer;touch-action:pan-x}.friendships-inspector-zoom output{min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
 .friendships-inspector-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--friendships-border);padding:6px 16px}.friendships-inspector-footer>span{font-size:11px;color:var(--friendships-muted)}.friendships-inspector-footer button{display:flex;align-items:center;gap:4px;min-height:40px;border-radius:11px;background:var(--friendships-subtle);padding:8px 10px;font-size:11px}
-
-
 @media(max-width:639px){body.friendships-inspector-open [data-friendships-inspector-navigation]{display:none!important}}
 @media(max-width:600px){.friendships-card-button{perspective:none;background:transparent;overflow:hidden;-webkit-mask-image:linear-gradient(#fff,#fff)}.friendships-grid-model{transform:none!important;transform-style:flat;transition:none}.friendships-grid-face{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible;-webkit-mask-image:linear-gradient(#fff,#fff)}.friendships-grid-back{display:none;transform:none}.friendships-grid-model[data-show-back="true"]>.friendships-grid-face:first-child{display:none}.friendships-grid-model[data-show-back="true"]>.friendships-grid-back{display:block}.friendships-grid-back-image{left:0;width:100%}}
 @media(hover:hover){.friendships-card-button:hover{transform:translateY(-3px);box-shadow:0 7px 18px #00000018}.friendships-rarities button:hover{transform:translateY(-1px)}.friendships-icon-button:hover,.friendships-inspector-controls button:hover{filter:brightness(.95)}}
@@ -389,62 +356,12 @@ const FriendshipsBegin = () => {
     const [activeDeck, setActiveDeck] = useState<number | null>(null);
     const [inspectKey, setInspectKey] = useState<string | null>(null);
     const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
-const set = {
-  folder: "friendships-begin",
-  setId: "SD",
-  rarities: {
-    C: 9,
-    U: 7,
-    SR: 6,
-    SPR: 10,
-    GR: 6,
-    CR: 6,
-    ER: 6,
-    PER: 12,
-    PRR: 6,
-  },
-};
-const starterDeckImages = [
-  "/starter-decks-boxes/SDTWILIGHT.webp",
-  "/starter-decks-boxes/SDFLUTTERSHY.webp",
-  "/starter-decks-boxes/SDPINKIEPIE.webp",
-  "/starter-decks-boxes/SDAPPLEJACK.webp",
-  "/starter-decks-boxes/SDRAINBOWDASH.webp",
-  "/starter-decks-boxes/SDRARITY.webp",
-];
-const starterDeckGroups = [
-  { name: "Twilight Sparkle", code: "SD01A" },
-  { name: "Fluttershy", code: "SD01B" },
-  { name: "Pinkie Pie", code: "SD01C" },
-  { name: "Applejack", code: "SD01D" },
-  { name: "Rainbow Dash", code: "SD01E" },
-  { name: "Rarity", code: "SD01F" },
-];
-const rarityNames: Record<string, string> = {
-  C: "COMMON",
-  U: "UNCOMMON",
-  SR: "SILVER RARE",
-  SPR: "SAPPHIRE RARE",
-  GR: "GOLD RARE",
-  CR: "COLORFUL RARE",
-  ER: "EMERALD RARE",
-  PER: "SHINING EMERALD RARE",
-  PRR: "SHINING RUBY RARE",
-};
-const bonusCards = Object.entries(set.rarities).flatMap(([rarity, count]) => {
-  if (rarity === "PER") {
-    return Array.from({ length: 12 }, (_, i) => ({
-      rarity,
-      key: `SD01PER${String(i + 7).padStart(2, "0")}`,
-    }));
-  }
-  return Array.from({ length: count }, (_, i) => ({
-    rarity,
-    key: `SD01${rarity}${String(i + 1).padStart(2, "0")}`,
-  }));
-});
-    const bonusCollectionCards: CollectionCard[] = bonusCards.map(card => ({ ...card, stateKey: `BONUS-${card.key}`, front: getCardFront(card.key), back: getCardBack(card.key) }));
-    const deckCards: CollectionCard[][] = starterDeckGroups.map(deck => getDeckCards(deck.code).map(key => ({ key, stateKey: `STARTER-${key}`, rarity: "STARTER", front: cardImagePaths.friendshipsBegin(key), back: getStarterBack(key) })));
+    const set = getEnglishSet("SD")!;
+    const starterDeckImages = englishStarterDecks.map(deck => deck.image);
+    const starterDeckGroups = englishStarterDecks;
+    const rarityNames: Record<string, string> = getEnglishRarityNames("SD");
+    const bonusCollectionCards: CollectionCard[] = getEnglishCards("SD");
+    const deckCards: CollectionCard[][] = englishStarterDecks.map(deck => getEnglishStarterDeckCards(deck.code));
     const allCards = [...bonusCollectionCards, ...deckCards.flat()];
     const collected = allCards.filter(card => flipped[card.stateKey]).length;
     const total = allCards.length;
@@ -453,10 +370,7 @@ const bonusCards = Object.entries(set.rarities).flatMap(([rarity, count]) => {
     const rarityCollected = rarityCards.filter(card => flipped[card.stateKey]).length;
     const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[card.stateKey] : !flipped[card.stateKey]));
     const closeInspector = useCallback(() => setInspectKey(null), []);
-    const getInspection = (key: string): InspectCard => {
-        const card = allCards.find(card => card.stateKey === key)!;
-        return { key: card.stateKey, code: getDisplayCardCode(card.key), front: card.front, back: card.back };
-    };
+    const getInspection = (key: string): InspectCard => { const card = getEnglishCard("SD", key)!; return { key, code: card.checklistCode, front: card.front, back: card.back }; };
     const stepInspection = (direction: number) => {
         const keys = visibleCards.map(card => card.stateKey);
         if (!keys.length)
@@ -500,8 +414,10 @@ const bonusCards = Object.entries(set.rarities).flatMap(([rarity, count]) => {
             }
             setLoaded(true);
         };
-        void loadProgress().catch(() => { if (active)
-            setLoadingFailed(true); });
+        void loadProgress().catch(() => {
+            if (active)
+                setLoadingFailed(true);
+        });
         return () => { active = false; };
     }, []);
     useEffect(() => {
@@ -550,36 +466,36 @@ const bonusCards = Object.entries(set.rarities).flatMap(([rarity, count]) => {
           {selectedRarity === "STARTER" && activeDeck === null ? <>
             <div className="friendships-catalog-header"><div><h2>Character Starter Decks</h2><p>Choose a deck to view and inspect its cards.</p></div></div>
             <div className="friendships-deck-grid">{starterDeckGroups.map((deck, index) => {
-              const owned = deckCards[index].filter(card => flipped[card.stateKey]).length;
-              return <button type="button" key={deck.code} className="friendships-deck-button" onClick={() => { setActiveDeck(index); setFilter("all"); }} aria-label={`Open ${deck.name} starter deck`}><CardImage src={starterDeckImages[index]} alt={deck.name} className="friendships-deck-image"/><strong>{deck.name}</strong><span>{owned}/{deckCards[index].length} collected</span></button>;
+                const owned = deckCards[index].filter(card => flipped[card.stateKey]).length;
+                return <button type="button" key={deck.code} className="friendships-deck-button" onClick={() => { setActiveDeck(index); setFilter("all"); }} aria-label={`Open ${deck.name} starter deck`}><CardImage src={starterDeckImages[index]} alt={deck.name} className="friendships-deck-image"/><strong>{deck.name}</strong><span>{owned}/{deckCards[index].length} collected</span></button>;
             })}</div>
           </> : <>
           {selectedRarity === "STARTER" && activeDeck !== null && <div className="friendships-deck-toolbar"><button type="button" onClick={() => setActiveDeck(null)}><ArrowLeft size={16}/>All decks</button><button type="button" onClick={() => {
-            const keys = deckCards[activeDeck].map(card => card.stateKey);
-            setFlipped(previous => {
-              const complete = keys.every(key => previous[key]);
-              const next = { ...previous };
-              keys.forEach(key => { next[key] = !complete; });
-              return next;
-            });
-          }}>Toggle full deck</button></div>}
+                    const keys = deckCards[activeDeck].map(card => card.stateKey);
+                    setFlipped(previous => {
+                        const complete = keys.every(key => previous[key]);
+                        const next = { ...previous };
+                        keys.forEach(key => { next[key] = !complete; });
+                        return next;
+                    });
+                }}>Toggle full deck</button></div>}
           <div className="friendships-catalog-header"><div><h2>{selectedRarity === "STARTER" && activeDeck !== null ? starterDeckGroups[activeDeck].name : rarityNames[selectedRarity]}<span>{rarityLabel(selectedRarity)}</span></h2><p>{rarityCollected} of {rarityCards.length} collected</p></div><div className="friendships-filters" role="group" aria-label="Filter cards">{(["all", "missing", "owned"] as const).map(value => <button type="button" key={value} aria-pressed={filter === value} className={filter === value ? "is-active" : ""} onClick={() => setFilter(value)}>{value === "all" ? "All cards" : value === "owned" ? "Owned" : "Missing"}</button>)}</div></div>
           {visibleCards.length === 0 ? <div className="friendships-empty"><Check size={24}/><h3>{filter === "missing" ? "This rarity is complete" : "No owned cards here yet"}</h3><p>{filter === "missing" ? "Every card in this rarity is in your collection." : "Switch to All cards to start tracking your collection."}</p><button type="button" onClick={() => setFilter("all")}>Show all cards</button></div> : <div className="friendships-card-grid">{visibleCards.map(card => {
-                const key = card.key;
-                const owned = !!flipped[card.stateKey];
-                const code = getDisplayCardCode(key);
-                return <article key={key} className={`friendships-grid-card ${owned ? "is-owned" : ""}`}>
+                    const key = card.key;
+                    const owned = !!flipped[card.stateKey];
+                    const code = getEnglishCard("SD", card.stateKey)!.checklistCode;
+                    return <article key={key} className={`friendships-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="friendships-card-button" onClick={() => toggleCard(card.stateKey)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="friendships-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="friendships-grid-face"><CardImage visible={loaded && (viewMode || !owned)} src={card.front} className="friendships-grid-image" draggable={false} alt={code}/></div>
-                  <div className="friendships-grid-face friendships-grid-back"><div className="friendships-back-art"><CardImage visible={loaded && !viewMode && owned} src={card.back} className="friendships-grid-image friendships-grid-back-image" style={{ transform: "scale(1.035)" }} draggable={false} alt={`${code} back`}/></div></div>
+                  <div className="friendships-grid-face"><CardImage visible={loaded && (viewMode || !owned)} className="friendships-grid-image" draggable={false} alt={code} {...getEnglishCollectionImageProps("SD", card.stateKey, "front", false)}/></div>
+                  <div className="friendships-grid-face friendships-grid-back"><div className="friendships-back-art"><CardImage visible={loaded && !viewMode && owned} className="friendships-grid-image friendships-grid-back-image" draggable={false} alt={`${code} back`} {...getEnglishCollectionImageProps("SD", card.stateKey, "back", false)}/></div></div>
                 </div>
                 {owned && <span className="friendships-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="friendships-inspect-badge"><Box size={13}/>3D</span>}
               </button>
               <div className="friendships-card-caption"><span>{code}</span><span className={owned ? "friendships-owned-dot" : "friendships-missing-dot"} aria-label={owned ? "Owned" : "Missing"}/></div>
             </article>;
-            })}</div>}
+                })}</div>}
           </>}
         </section>
       </main>

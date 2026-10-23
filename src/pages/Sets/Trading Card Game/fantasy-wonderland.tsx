@@ -1,5 +1,4 @@
-import { tcgCatalog } from "@/lib/iso-card-catalog";
-import { getFantasyWonderlandBack as getCardBack, getFantasyWonderlandFront as getCardFront } from "@/lib/card-images";
+import { getEnglishSet, getEnglishCards, getEnglishCard, getEnglishCollectionImageProps, getEnglishRarityNames, getEnglishRarityLabel } from "@/lib/english-card-catalog";
 import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect, useRef, useCallback, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
@@ -8,13 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { ArrowLeft, Check, X, RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
-const fantasyCatalogSet = tcgCatalog.sets.find(set => set.id === "FW");
-const fantasyCatalogCards = fantasyCatalogSet ? tcgCatalog.getCards(fantasyCatalogSet, {}) : [];
-const getDisplayCardCode = (key: string) => {
-    const card = fantasyCatalogCards.find(card => card.key === key);
-    return card ? tcgCatalog.getDisplayCardCode("FW", card) : key;
-};
-const rarityLabel = (rarity: string) => tcgCatalog.getDisplayRarity(rarity);
+const rarityLabel = (rarity: string) => getEnglishRarityLabel("FW", rarity);
 type Quaternion = [
     number,
     number,
@@ -77,7 +70,6 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         rotation.current = next;
         if (model.current) {
             model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(next)}`;
-
         }
     };
     const moveCard = (dx: number, dy: number) => {
@@ -94,7 +86,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const value = Math.max(1, Math.min(4, next));
         pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
         setZoom(value);
-        if (value > 1) setDragMode("move");
+        if (value > 1)
+            setDragMode("move");
         applyRotation(rotation.current);
     };
     const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
@@ -108,7 +101,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             }
         };
         const observer = new ResizeObserver(updateSize);
-        if (stage.current) observer.observe(stage.current);
+        if (stage.current)
+            observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
     }, [aspect, zoom]);
@@ -121,7 +115,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const markNavigation = () => {
             const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
             controls.forEach(control => {
-                if (dialog.current?.contains(control)) return;
+                if (dialog.current?.contains(control))
+                    return;
                 let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
                 while (element && element !== document.body) {
                     const bounds = element.getBoundingClientRect();
@@ -180,7 +175,10 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
-        if (drag.action === "move") { moveCard(dx, dy); return; }
+        if (drag.action === "move") {
+            moveCard(dx, dy);
+            return;
+        }
         const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
@@ -205,16 +203,19 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             turn(1, 0, 0, amount);
         else if (event.key === "ArrowDown")
             turn(1, 0, 0, -amount);
-        else if (event.key.toLowerCase() === "r")
-            { resetView(); }
+        else if (event.key.toLowerCase() === "r") {
+            resetView();
+        }
         else
             return;
         event.preventDefault();
     };
     const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
     const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
-    return createPortal(<div className="fw-inspector-overlay" onClick={event => { if (event.target === event.currentTarget)
-        onClose(); }}>
+    return createPortal(<div className="fw-inspector-overlay" onClick={event => {
+            if (event.target === event.currentTarget)
+                onClose();
+        }}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="fw-inspector-title" className="fw-inspector-dialog">
         <header className="fw-inspector-header">
           <div><p className="fw-eyebrow">3D card inspector</p><h2 id="fw-inspector-title">{card.code}</h2></div>
@@ -227,19 +228,25 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             event.currentTarget.setPointerCapture(event.pointerId);
             pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
-        }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }}>
+        }} onPointerMove={handleMove} onPointerUp={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onPointerCancel={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onLostPointerCapture={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }}>
           <div className="fw-card-ground"/>
           <div ref={model} className="fw-card-model">
             <div className="fw-card-face fw-card-front">
-              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="fw-face-image fw-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
+              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} front`} className="fw-face-image fw-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))} {...getEnglishCollectionImageProps("FW", card.key, "front", true)}/>
               <div className="fw-card-sheen"/>
             </div>
             <div className="fw-card-face fw-card-back">
               <div className="fw-back-art">
-              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="fw-face-image fw-back-image" style={{ transform: "scale(1.035)" }} onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} back`} className="fw-face-image fw-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))} {...getEnglishCollectionImageProps("FW", card.key, "back", true)}/>
               <div className="fw-card-sheen"/>
               </div>
             </div>
@@ -306,8 +313,6 @@ const fantasyWonderlandStyles = `
 .fw-inspector-controls button[aria-pressed="true"]{background:var(--fw-accent);color:#27230f}
 .fw-inspector-zoom{display:flex;align-items:center;justify-content:center;gap:10px;flex-basis:100%;min-height:28px;font-size:11px;color:var(--fw-muted)}.fw-inspector-zoom input{width:min(220px,50%);accent-color:var(--fw-accent);cursor:pointer;touch-action:pan-x}.fw-inspector-zoom output{min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
 .fw-inspector-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--fw-border);padding:6px 16px}.fw-inspector-footer>span{font-size:11px;color:var(--fw-muted)}.fw-inspector-footer button{display:flex;align-items:center;gap:4px;min-height:40px;border-radius:11px;background:var(--fw-subtle);padding:8px 10px;font-size:11px}
-
-
 @media(max-width:639px){body.fw-inspector-open [data-fw-inspector-navigation]{display:none!important}}
 @media(max-width:600px){.fw-card-button{perspective:none;background:transparent;overflow:hidden;-webkit-mask-image:linear-gradient(#fff,#fff)}.fw-grid-model{transform:none!important;transform-style:flat;transition:none}.fw-grid-face{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible;-webkit-mask-image:linear-gradient(#fff,#fff)}.fw-grid-back{display:none;transform:none}.fw-grid-model[data-show-back="true"]>.fw-grid-face:first-child{display:none}.fw-grid-model[data-show-back="true"]>.fw-grid-back{display:block}.fw-grid-back-image{left:0;width:100%}}
 @media(hover:hover){.fw-card-button:hover{transform:translateY(-3px);box-shadow:0 7px 18px #00000018}.fw-rarities button:hover{transform:translateY(-1px)}.fw-icon-button:hover,.fw-inspector-controls button:hover{filter:brightness(.95)}}
@@ -342,59 +347,9 @@ const FantasyWonderland = () => {
     const [selectedRarity, setSelectedRarity] = useState("C");
     const [inspectKey, setInspectKey] = useState<string | null>(null);
     const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
-const set = {
-  folder: "fantasy-wonderland",
-  setId: "FW",
-  rarities: {
-    C: 48,
-    U: 18,
-    ER: 6,
-    SR: 14,
-    SPR: 28,
-    GR: 12,
-    CR: 12,
-    RR: 6,
-    PER: 12,
-    PSPR: 11,
-    PGR: 6,
-    PCR: 12,
-    PRR: 6,
-  },
-};
-const rarityNames: Record<string, string> = {
-  C: "COMMON",
-  U: "UNCOMMON",
-  ER: "EMERALD RARE",
-  SR: "SILVER RARE",
-  SPR: "SAPPHIRE RARE",
-  GR: "GOLD RARE",
-  CR: "COLORFUL RARE",
-  RR: "RUBY RARE",
-  PER: "SHINING EMERALD RARE",
-  PSPR: "SHINING SAPPHIRE RARE",
-  PGR: "SHINING GOLD RARE",
-  PCR: "SHINING COLORFUL RARE",
-  PRR: "SHINING RUBY RARE",
-};
-const cards = Object.entries(set.rarities).flatMap(([rarity, count]) => {
-  if (rarity === "ER") {
-    return Array.from({ length: 6 }, (_, i) => ({
-      rarity,
-      key: `BP01ER${String(i + 7).padStart(2, "0")}`,
-    }));
-  }
-  if (rarity === "PSPR") {
-const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
-    return numbers.map((n) => ({
-      rarity,
-      key: `BP01PSPR${String(n).padStart(2, "0")}`,
-    }));
-  }
-  return Array.from({ length: count }, (_, i) => ({
-    rarity,
-    key: `BP01${rarity}${String(i + 1).padStart(2, "0")}`,
-  }));
-});
+    const set = getEnglishSet("FW")!;
+    const rarityNames: Record<string, string> = getEnglishRarityNames("FW");
+    const cards = getEnglishCards("FW");
     const collected = cards.filter(card => flipped[card.key]).length;
     const total = cards.length;
     const progress = Math.round(collected / total * 100);
@@ -402,9 +357,7 @@ const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
     const rarityCollected = rarityCards.filter(card => flipped[card.key]).length;
     const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[card.key] : !flipped[card.key]));
     const closeInspector = useCallback(() => setInspectKey(null), []);
-    const getInspection = (key: string): InspectCard => {
-        return { key, code: getDisplayCardCode(key), front: getCardFront(key), back: getCardBack(key) };
-    };
+    const getInspection = (key: string): InspectCard => { const card = getEnglishCard("FW", key)!; return { key, code: card.checklistCode, front: card.front, back: card.back }; };
     const stepInspection = (direction: number) => {
         const keys = visibleCards.map(card => card.key);
         if (!keys.length)
@@ -448,8 +401,10 @@ const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
             }
             setLoaded(true);
         };
-        void loadProgress().catch(() => { if (active)
-            setLoadingFailed(true); });
+        void loadProgress().catch(() => {
+            if (active)
+                setLoadingFailed(true);
+        });
         return () => { active = false; };
     }, []);
     useEffect(() => {
@@ -498,12 +453,12 @@ const numbers = [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21];
           {visibleCards.length === 0 ? <div className="fw-empty"><Check size={24}/><h3>{filter === "missing" ? "This rarity is complete" : "No owned cards here yet"}</h3><p>{filter === "missing" ? "Every card in this rarity is in your collection." : "Switch to All cards to start tracking your collection."}</p><button type="button" onClick={() => setFilter("all")}>Show all cards</button></div> : <div className="fw-card-grid">{visibleCards.map(card => {
                 const key = card.key;
                 const owned = !!flipped[key];
-                const code = getDisplayCardCode(key);
+                const code = getEnglishCard("FW", key)!.checklistCode;
                 return <article key={key} className={`fw-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="fw-card-button" onClick={() => toggleCard(key)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="fw-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="fw-grid-face"><CardImage visible={loaded && (viewMode || !owned)} src={getCardFront(key)} className="fw-grid-image" draggable={false} alt={code}/></div>
-                  <div className="fw-grid-face fw-grid-back"><div className="fw-back-art"><CardImage visible={loaded && !viewMode && owned} src={getCardBack(key)} className="fw-grid-image fw-grid-back-image" style={{ transform: "scale(1.035)" }} draggable={false} alt={`${code} back`}/></div></div>
+                  <div className="fw-grid-face"><CardImage visible={loaded && (viewMode || !owned)} className="fw-grid-image" draggable={false} alt={code} {...getEnglishCollectionImageProps("FW", key, "front", false)}/></div>
+                  <div className="fw-grid-face fw-grid-back"><div className="fw-back-art"><CardImage visible={loaded && !viewMode && owned} className="fw-grid-image fw-grid-back-image" draggable={false} alt={`${code} back`} {...getEnglishCollectionImageProps("FW", key, "back", false)}/></div></div>
                 </div>
                 {owned && <span className="fw-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="fw-inspect-badge"><Box size={13}/>3D</span>}

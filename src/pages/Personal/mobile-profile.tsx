@@ -1,28 +1,25 @@
+import { EnglishLeaderboardAppealForm } from "@/components/EnglishLeaderboardAppeals";
+import { isISOOwned, normalizeISOKey } from "@/pages/ISO/iso-visibility";
+import { chineseSets } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { getProfileAssets } from "../Everypony/profile-assets";
 import LGSApproveDeny from "@/pages/Pop-Ups/LGSApproveDeny";
 import { supabase } from "@/lib/supabase";
 import {
   ChevronRight,
   Bell,
-  Trophy,
   Shield,
   LogOut,
   Pencil,
   Inbox,
   Store,
-  HandHeart,
   Bug,
-  LibraryBig,
-  Boxes,
-  Search,
-  Images,
   Sparkles,
-  Newspaper,
 } from "lucide-react";
 const PUSH_PUBLIC_KEY =
   "BMd3JmZpZQ2g4-wuBUeuUEMGJAuoaW8E2qTJkzOFWGh8G2tWg7SYca6wIACs_Nbd3JunbUFBHww91hfHQ6PM2xE";
@@ -30,6 +27,38 @@ const PUSH_SERVICE_WORKER = "/push-sw.js";
 const PUSH_SCOPE = "/push-notifications/";
 const MobileProfile = () => {
   const navigate = useNavigate();
+  const pageChoiceTrigger = useRef<HTMLButtonElement | null>(null);
+  const editProfileTrigger = useRef<HTMLButtonElement | null>(null);
+  const [pageChoice, setPageChoice] = useState<{ title: string; english: string; chinese: string } | null>(null);
+  const pageChoiceMenu = useRef<HTMLDivElement | null>(null);
+  const [pageChoicePosition, setPageChoicePosition] = useState({ left: 0, top: 0, origin: "left center" });
+  const openPageChoice = (page: { title: string; english: string; chinese: string }, trigger: HTMLButtonElement) => {
+    if (pageChoice?.title === page.title) { setPageChoice(null); return; }
+    pageChoiceTrigger.current = trigger;
+    const rect = trigger.getBoundingClientRect(), width = 156, height = 108, gap = 8, margin = 12;
+    const rightFits = window.innerWidth - rect.right >= width + gap + margin;
+    const leftFits = rect.left >= width + gap + margin;
+    const left = rightFits ? rect.right + gap : leftFits ? rect.left - width - gap : Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin));
+    const preferredTop = rightFits || leftFits ? rect.top + rect.height / 2 - height / 2 : rect.bottom + gap;
+    setPageChoicePosition({ left, top: Math.max(margin, Math.min(preferredTop, window.innerHeight - height - margin)), origin: rightFits ? "left center" : leftFits ? "right center" : "top center" });
+    setPageChoice(page);
+  };
+  useEffect(() => {
+    if (!pageChoice) return;
+    pageChoiceMenu.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    const dismiss = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!pageChoiceMenu.current?.contains(target) && !pageChoiceTrigger.current?.contains(target)) setPageChoice(null);
+    };
+    const close = () => setPageChoice(null);
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); setPageChoice(null); pageChoiceTrigger.current?.focus(); }
+      if (event.key === "Tab") setPageChoice(null);
+    };
+    document.addEventListener("pointerdown", dismiss); document.addEventListener("keydown", key);
+    window.addEventListener("resize", close); window.addEventListener("scroll", close, true);
+    return () => { document.removeEventListener("pointerdown", dismiss); document.removeEventListener("keydown", key); window.removeEventListener("resize", close); window.removeEventListener("scroll", close, true); };
+  }, [pageChoice]);
   const loadCounts = useRef<Record<string, number>>({});
   const [profileLoads, setProfileLoads] = useState<Record<string, boolean>>({
     profile: false,
@@ -91,14 +120,11 @@ const MobileProfile = () => {
   const [showLGSReview, setShowLGSReview] = useState(false);
   const [lgsAccess, setLgsAccess] = useState<string | null>(null);
   const [leaderboardBanned, setLeaderboardBanned] = useState(false);
-  const [manuallyBannedFromLeaderboard, setManuallyBannedFromLeaderboard] = useState(false);
   const [loadingLeaderboardBan, setLoadingLeaderboardBan] = useState(true);
-  const [showLeaderboardBanInfo, setShowLeaderboardBanInfo] = useState(false);
-  const [showLeaderboardBanConfirm, setShowLeaderboardBanConfirm] =
-    useState(false);
   const [showBugReport, setShowBugReport] = useState(false);
   const [stats, setStats] = useState({
     owned: 0,
+    chineseOwned: 0,
     completed: 0,
   });
   useEffect(() => {
@@ -212,10 +238,6 @@ const MobileProfile = () => {
           console.error("Leaderboard ban status error:", leaderboardBanError);
         }
         setLeaderboardBanned(!!leaderboardBan);
-        setManuallyBannedFromLeaderboard(
-          leaderboardBan?.reason === "Excluded from leaderboard" ||
-            leaderboardBan?.reason === "Excluded from leaderboard and community set pages",
-        );
         setLoadingLeaderboardBan(false);
       });
     };
@@ -338,33 +360,6 @@ const MobileProfile = () => {
       observer.disconnect();
     };
   }, [trackProfileLoad]);
-  async function selfBanFromLeaderboard() {
-    if (leaderboardBanned) return;
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.user) {
-      console.error("Leaderboard self-ban: no authenticated session.");
-      return;
-    }
-    setLeaderboardBanned(true);
-    setManuallyBannedFromLeaderboard(false);
-    setLoadingLeaderboardBan(false);
-    const { error } = await supabase.from("leaderboard_exclusions").upsert(
-      {
-        user_id: session.user.id,
-        reason:
-          "Self-banned from leaderboard because user collects non-North American cards",
-      },
-      { onConflict: "user_id" },
-    );
-    if (error) {
-      console.error("Leaderboard self-ban error:", error);
-      setLeaderboardBanned(false);
-      return;
-    }
-    setLeaderboardBanned(true);
-  }
   async function toggleVacationMode() {
     if (!profile?.id || !vacationLoaded || vacationBusy) return;
     setVacationBusy(true);
@@ -538,8 +533,9 @@ const MobileProfile = () => {
               .select("set_id, progress")
               .eq("user_id", session.user.id),
           );
+          const chineseOwned = (collection || []).filter((row: any) => String(row.set_id).toLowerCase().startsWith("cn-")).reduce((total: number, row: any) => total + Object.values(row.progress || {}).filter((value: any) => value === true || (typeof value === "object" && value?.owned === true)).length, 0);
           const filtered = (collection || []).filter(
-            (row: any) => row.set_id !== "OTHERMERCH",
+            (row: any) => row.set_id !== "OTHERMERCH" && !String(row.set_id).toLowerCase().startsWith("cn-"),
           );
           let owned = 0;
           filtered.forEach((row: any) => {
@@ -549,17 +545,24 @@ const MobileProfile = () => {
                 (typeof value === "object" && value?.owned === true),
             ).length;
           });
-          const { data: progress } = await checkedProfileRequest(
-            supabase
-              .from("collection_progress")
-              .select("set_id, progress")
-              .eq("user_id", session.user.id),
-          );
-          let completed = 0;
-          const progressMap = new Map(
-            (progress || []).map((row: any) => [String(row.set_id), row]),
-          );
+          const progressMap = new Map<string, Record<string, unknown>>();
+          for (const row of collection || []) {
+            const setId = String(row.set_id) === "friendshipsbegin" ? "SD" : String(row.set_id);
+            const values = progressMap.get(setId) ?? {};
+            for (const [key, value] of Object.entries(row.progress || {})) {
+              values[normalizeISOKey(setId, key)] = value;
+            }
+            progressMap.set(setId, values);
+          }
           const sets = [
+            {
+              id: "14",
+              rarities: { C: 48, U: 18, ER: 6, SR: 14, SPR: 28, GR: 12, CR: 12, RR: 6, PER: 12, PGR: 5, PSPR: 11, PCR: 12, PRR: 6 },
+            },
+            {
+              id: "13",
+              rarities: { R: 30, SR: 20, SSR: 26, HR: 30, LSR: 16, UR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 },
+            },
             {
               id: "1",
               rarities: {
@@ -737,76 +740,39 @@ const MobileProfile = () => {
               },
             },
           ];
+          let completed = 0;
           sets.forEach((set) => {
-            const found = progressMap.get(set.id);
-            if (!found?.progress) return;
-            let owned = 0;
-            let total = 0;
-            Object.entries(set.rarities).forEach(([rarity, count]) => {
-              total += count;
-              for (let i = 1; i <= count; i++) {
-                const key = `${rarity}-${i}`;
-                if (found.progress[key]) {
-                  owned++;
-                }
+            const progress = progressMap.get(set.id);
+            if (!progress) return;
+            const keys = Object.entries(set.rarities).flatMap(([rarity, count]) => {
+              if (set.id === "14") {
+                if (rarity === "ER") return ["01", "02"].flatMap(n => ["A", "B", "C"].map(v => `BP03-ER${n}-${v}`));
+                if (rarity === "PER") return ["01", "02"].flatMap(n => ["A", "A2", "B", "B2", "C", "C2"].map(v => `PBP03-ER${n}-${v}`));
+                if (rarity === "PGR") return ["07", "08", "09", "11", "12"].map(n => `PBP03-GR${n}`);
+                if (rarity === "PSPR") return ["03", "04", "06", "08", "11", "16", "17", "19", "20", "23", "25"].map(n => `PBP03-SPR${n}`);
+                return Array.from({ length: count }, (_, i) => `${rarity.startsWith("P") ? "PBP03-" + rarity.slice(1) : "BP03-" + rarity}${String(i + 1).padStart(2, "0")}`);
               }
+              if (set.id === "12") {
+                if (rarity === "PER") return Array.from({ length: 6 }, (_, i) => ["A2", "B2"].map(v => `BP02-PER${String(i + 1).padStart(2, "0")}-${v}`)).flat();
+                return Array.from({ length: count }, (_, i) => `BP02-${rarity}${String(i + 1).padStart(2, "0")}`);
+              }
+              if (set.id === "FW") {
+                if (rarity === "PSPR") return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(n => `BP01PSPR${String(n).padStart(2, "0")}`);
+                return Array.from({ length: count }, (_, i) => `BP01${rarity}${String(i + (rarity === "ER" ? 7 : 1)).padStart(2, "0")}`);
+              }
+              if (set.id === "SD") return Array.from({ length: count }, (_, i) => `SD01${rarity}${String(i + (rarity === "PER" ? 7 : 1)).padStart(2, "0")}`);
+              return Array.from({ length: count }, (_, i) => normalizeISOKey(set.id, `${rarity}-${i + 1}`));
             });
-            if (total > 0 && owned === total) {
-              completed++;
-            }
+            if (keys.length > 0 && keys.every(key => isISOOwned(progress[key]))) completed++;
           });
-          const { data: fwProgress } = await checkedProfileRequest(
-            supabase
-              .from("collection_progress_raw")
-              .select("progress")
-              .eq("user_id", session.user.id)
-              .eq("set_id", "FW"),
-          );
-          const fwRow = fwProgress?.[0];
-          if (fwRow) {
-            const STRUCTURE = [
-              { prefix: "BP01C", count: 48 },
-              { prefix: "BP01U", count: 18 },
-              { prefix: "BP01ER", count: 6 },
-              { prefix: "BP01SR", count: 14 },
-              { prefix: "BP01SPR", count: 28 },
-              { prefix: "BP01GR", count: 12 },
-              { prefix: "BP01CR", count: 12 },
-              { prefix: "BP01RR", count: 6 },
-              { prefix: "BP01PER", count: 12 },
-              { prefix: "BP01PSPR", count: 11 },
-              { prefix: "BP01PGR", count: 6 },
-              { prefix: "BP01PCR", count: 12 },
-              { prefix: "BP01PRR", count: 6 },
-            ];
-            const validKeys = new Set(
-              STRUCTURE.flatMap(({ prefix, count }) => {
-                if (prefix === "BP01ER") {
-                  return Array.from(
-                    { length: 6 },
-                    (_, i) => `BP01ER${String(i + 7).padStart(2, "0")}`,
-                  );
-                }
-                if (prefix === "BP01PSPR") {
-                  return [1, 2, 3, 5, 7, 8, 9, 12, 13, 18, 21].map(
-                    (n) => `BP01PSPR${String(n).padStart(2, "0")}`,
-                  );
-                }
-                return Array.from(
-                  { length: count },
-                  (_, i) => `${prefix}${String(i + 1).padStart(2, "0")}`,
-                );
-              }),
-            );
-            const ownedFW = Object.entries(fwRow.progress || {}).filter(
-              ([key, val]) => val && validKeys.has(key),
-            ).length;
-            if (ownedFW === validKeys.size) {
-              completed++;
-            }
+          for (const set of chineseSets) {
+            if (set.family === "promos" || set.cards.length === 0) continue;
+            const progress = progressMap.get(set.id);
+            if (progress && set.cards.every(card => isISOOwned(progress[card.key]))) completed++;
           }
           setStats({
             owned,
+            chineseOwned,
             completed,
           });
         } catch (error) {
@@ -827,49 +793,10 @@ const MobileProfile = () => {
         : offerStrikeCount === 2
           ? "Bad"
           : "Access revoked";
-  const menuSections = [
-    {
-      title: "Collection",
-      items: [
-        {
-          title: "CCG Progress",
-          subtitle: "Track your CCG collection",
-          onClick: () => navigate("/my-progress"),
-          icon: <LibraryBig size={17} />,
-        },
-        {
-          title: "TCG Progress",
-          subtitle: "Track your TCG collection",
-          onClick: () => navigate("/progress-tcg"),
-          icon: <Trophy size={17} />,
-        },
-        {
-          title: "Inventory",
-          subtitle: "Set your inventory and trades/sales",
-          onClick: () => navigate("/inventory"),
-          icon: <Boxes size={17} />,
-        },
-        {
-          title: "Wishlist & ISO",
-          subtitle: "Missing cards & wishlisted cards",
-          onClick: () => navigate("/iso"),
-          icon: <Search size={17} />,
-        },
-        {
-          title: "Binders",
-          subtitle: "Browse your binders",
-          onClick: () => navigate("/binders"),
-          icon: <Images size={17} />,
-        },
-        {
-          title: "Report a Bug",
-          subtitle: "Tell us when something isn't working",
-          onClick: () => setShowBugReport(true),
-          danger: true,
-          icon: <Bug size={17} />,
-        },
-      ],
-    },
+  const collectionPages = [
+    { title: "Inventory", subtitle: "Set your inventory and trades/sales", english: "/inventory", chinese: "/inventory-chinese" },
+    { title: "Wishlist & ISO", subtitle: "Missing cards & wishlisted cards", english: "/iso", chinese: "/iso-chinese" },
+    { title: "Binders", subtitle: "Browse your binders", english: "/binders", chinese: "/binders-chinese" },
   ];
   const essentialProfileLoaded = profileLoads.profile && profileLoads.theme;
   const essentialProfileFailed =
@@ -879,14 +806,15 @@ const MobileProfile = () => {
   if (essentialProfileFailed || !profile)
     return <ProfileLoadingScreen light={isLightMode} spooky={isSpookyMode} failed />;
   return (
-    <div
-      className={`mobile-profile-scope relative overflow-hidden transition-colors duration-200 ${
-        isLightMode
-          ? "mobile-profile-light bg-[#f5f5f3] text-zinc-900"
-          : "bg-[#0d0f10] text-white"
-      }`}
-    >
-      <style>{`
+    <main className={`mobile-profile-scope mp-clean min-h-screen pb-24 font-['Oxanium'] ${isLightMode ? "mobile-profile-light bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+<style>{`
+.mp-page-language-menu{position:fixed;z-index:120100;box-sizing:border-box;width:156px;padding:6px;border:1px solid #ffffff24;border-radius:12px;background:#1b1d20;color:#f4f4f5;box-shadow:0 8px 24px #0004;font-family:"Oxanium",sans-serif;animation:mp-page-language-in .16s ease-out both}
+.mp-page-language-menu-light{background:#fff;color:#202124;border-color:#00000020;box-shadow:0 8px 24px #0002}
+.mp-page-language-menu button{display:block;width:100%;min-height:46px;padding:10px 12px;text-align:left;font:inherit;font-size:13px;font-weight:600;color:inherit;border:0;border-radius:7px;background:none;cursor:pointer}
+.mp-page-language-menu button:hover,.mp-page-language-menu button:focus-visible{background:hsl(var(--primary)/.10);color:hsl(var(--primary))}
+.mp-page-language-menu button:focus-visible{outline:1px solid hsl(var(--primary));outline-offset:-1px}
+@keyframes mp-page-language-in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.mp-page-language-menu{animation:none}}
         .mobile-profile-light [class*="bg-[#0"],
         .mobile-profile-light [class*="bg-[#1"] {
           background-color: #ffffff !important;
@@ -931,94 +859,51 @@ const MobileProfile = () => {
           border-color: rgba(138, 106, 0, 0.28) !important;
         }
       `}</style>
-      
-      <div
-        className={`sticky top-0 z-20 backdrop-blur-md ${
-          isLightMode ? "bg-[#f5f5f3]/98" : "bg-[#0d0f10]/98"
-        }`}
-      >
-        <div className="px-5 py-1"></div>
-      </div>
-      
-      <div className="px-5 pt-6">
-        <div
-          className={`relative overflow-hidden rounded-3xl border bg-[#151718] ${
-            isLightMode
-              ? "border-black/[0.06] shadow-[0_6px_18px_rgba(0,0,0,.05)]"
-              : "border-white/[0.06] shadow-[0_6px_18px_rgba(0,0,0,.14)]"
-          }`}
-        >
-          <div className="relative z-10 p-5">
-            {!editingProfile && (
-              <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigate("/inbox")}
-                  aria-label={
-                    inboxNotificationCount > 0
-                      ? `Open inbox, ${inboxNotificationCount} unread`
-                      : "Open inbox"
-                  }
-                  title="Inbox & Friends"
-                  className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
-                    isLightMode
-                      ? "border-black/10 bg-black/[0.03] text-zinc-700 hover:bg-black/[0.07]"
-                      : "border-white/[0.10] bg-white/[0.05] text-zinc-200 hover:border-white/20 hover:bg-white/[0.10]"
-                  }`}
-                >
-                  <Inbox size={18} />
-                  {inboxNotificationCount > 0 && (
-                    <span className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-[#151718]">
-                      {inboxNotificationCount > 9
-                        ? "9+"
-                        : inboxNotificationCount}
-                    </span>
-                  )}
-                </button>
-                {isModerator && (
-                  <button
-                    type="button"
-                    onClick={() => navigate("/leaderboard-moderation")}
-                    aria-label="Open leaderboard moderation"
-                    title="Leaderboard Moderation"
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
-                      isLightMode
-                        ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700] hover:border-[#8a6a00]/50 hover:bg-[#c89d13]/25"
-                        : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A] hover:border-[#FFD54A]/60 hover:bg-[#FFD54A]/20"
-                    }`}
-                  >
-                    <Shield size={18} />
-                  </button>
-                )}
-              </div>
-            )}
-            
-            <div
-              className={
-                editingProfile
-                  ? ""
-                  : `flex items-start gap-4 ${isModerator ? "pr-20" : "pr-10"}`
-              }
-            >
-              {!editingProfile && (
-                <div className="relative shrink-0">
-                  <ProfileAvatar
-                    profile={profile}
-                    src={avatar}
-                    alt=""
-                    className="h-24 w-24 rounded-2xl border border-white/[0.10] bg-[#191a1b] object-cover shadow-[0_8px_24px_rgba(0,0,0,.28)]"
-                  />
-                </div>
-              )}
-              <div className={editingProfile ? "w-full" : "min-w-0 flex-1"}>
-                
-                {editingProfile ? (
+<style>{`
+.mp-clean { --mp-panel:#151718; --mp-line:rgba(255,255,255,.08); --mp-muted:#a1a1aa; --mp-hover:rgba(255,255,255,.04); }
+.mp-clean.mobile-profile-light { --mp-panel:#fff; --mp-line:rgba(24,24,27,.10); --mp-muted:#71717a; --mp-hover:rgba(24,24,27,.035); }
+.mp-surface { background:var(--mp-panel);border:1px solid var(--mp-line);border-radius:20px; }
+.mp-clean details > summary { list-style:none;cursor:pointer; }
+.mp-clean details > summary::-webkit-details-marker { display:none; }
+.mp-clean details[open] > summary .mp-chevron { transform:rotate(90deg); }
+.mp-clean .mp-chevron { transition:transform .15s; }
+.mp-clean .mp-row { display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:12px 16px;text-align:left;border-bottom:1px solid var(--mp-line); }
+.mp-clean .mp-row:last-child { border-bottom:0; }
+.mp-clean .mp-row:hover { background:var(--mp-hover); }
+.mp-clean .mp-muted { color:var(--mp-muted); }
+.mp-clean .mp-edit-actions button { min-height:44px;margin:0;box-shadow:none;background:transparent;color:inherit;border-color:var(--mp-line); }
+.mp-clean .mp-edit-actions button:first-child { grid-column:1 / -1; }
+@media(prefers-reduced-motion:reduce){.mp-clean .mp-chevron{transition:none}}
+`}</style>
+<div className="w-full px-4 pb-6 sm:px-6">
+<header className="pt-4 sm:pt-6">
+<div className="text-[10px] font-semibold uppercase tracking-[.18em] text-[hsl(var(--primary))]">Reminder that i love and appreciate you! -keegan</div>
+  <div className="flex items-center gap-4 py-5 sm:py-6">
+    <ProfileAvatar profile={profile} src={avatar} alt="Your avatar" className="h-24 w-24 shrink-0 rounded-2xl border border-white/10 object-cover shadow-lg" />
+    <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><h1 className="truncate text-2xl font-semibold tracking-tight">{displayName}</h1>{verification && <CardImage src={verification.badge} alt={verification.label} title={verification.label} className="h-5 w-5 shrink-0" />}</div><p className="mp-muted mt-1 truncate text-xs">{discord ? `@${discord}` : "No Discord username set"}</p>{vacationMode && <p className="mt-1 text-xs text-[hsl(var(--primary))]">Vacation mode on</p>}</div>
+    <button type="button" onClick={() => navigate("/inbox")} aria-label={`Open inbox, ${inboxNotificationCount} unread`} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10"><Inbox size={19} />{inboxNotificationCount > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">{inboxNotificationCount > 9 ? "9+" : inboxNotificationCount}</span>}</button>
+  </div>
+  <div className="flex flex-wrap gap-2 pb-4">
+    <button type="button" onClick={()=>navigate("/Personal/change-avatar")} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-xs font-medium"><Pencil size={13}/>Avatar</button>
+    <button type="button" onClick={()=>navigate("/Personal/change-avatar?tab=frames")} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-xs font-medium"><Sparkles size={13}/>Frames</button>
+    <button type="button" ref={editProfileTrigger} disabled={editingProfile || savingProfile} aria-expanded={editingProfile} aria-controls={editingProfile ? "mp-profile-editor" : undefined} onClick={() => { setUsernameDraft(profile?.username || ""); setDiscordDraft(discord); setEditingProfile(true); }} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-3 text-xs font-semibold text-[hsl(var(--primary-foreground))]">Edit profile<ChevronRight size={13}/></button>
+  </div>
+  <div className="grid grid-cols-3 border-t border-[var(--mp-line)] py-4">
+    {[["Cards Owned",stats.owned],["Chinese Cards",stats.chineseOwned],["Sets Mastered",stats.completed]].map(([label,value]) => <div key={label} className="min-w-0 px-1 text-center"><p className="text-xl font-semibold tabular-nums text-[hsl(var(--primary))]">{profileLoads.stats && !profileLoadErrors.stats ? Number(value).toLocaleString() : "--"}</p><p className="mp-muted mt-1 text-[10px] font-medium">{label}</p></div>)}
+  </div>
+</header>
+{(tradeAccessRevoked || (!loadingLeaderboardBan && leaderboardBanned)) && <section aria-label="Account restrictions" className={`my-4 border-y px-1 py-4 text-sm leading-6 ${isLightMode ? "border-red-300 text-red-800" : "border-red-500/30 text-red-200"}`}>
+{tradeAccessRevoked && <div><h2 className="font-semibold">Trading post access restricted</h2><p className="mt-1">{offerStrikeCount >= 3 ? "Your trading access was revoked after three unanswered offers expired." : "Your account cannot use the trading posts while this restriction is active."}</p></div>}
+{!loadingLeaderboardBan && leaderboardBanned && <div className={tradeAccessRevoked ? "mt-4" : undefined}><h2 className="font-semibold">English leaderboard access restricted</h2><p className="mt-1">Your account is currently excluded from the English leaderboards. This does not exclude you from the Chinese leaderboard.</p></div>}
+<p className="mt-3">For details or to appeal, open a ticket in the <a href="https://discord.gg/mlpekayou" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">MLPEKAYOU Discord server</a>.</p>
+</section>}
+<EnglishLeaderboardAppealForm restricted={leaderboardBanned} onReinstated={() => setLeaderboardBanned(false)}/>
+{editingProfile && <section id="mp-profile-editor" aria-labelledby="mp-edit-profile-heading" className="mt-4 border-t border-[var(--mp-line)] pt-4">
+<div className="flex items-center justify-between gap-3"><h2 id="mp-edit-profile-heading" className="text-base font-semibold">Edit profile</h2><button type="button" disabled={savingProfile} onClick={() => { setUsernameDraft(profile?.username || ""); setDiscordDraft(discord); setEditingProfile(false); window.setTimeout(() => editProfileTrigger.current?.focus(), 0); }} className="mp-muted min-h-10 px-2 text-sm disabled:opacity-50">Cancel</button></div>
+<div className="pt-4">
+{editingProfile && (
                   <div
-                    className={`rounded-2xl border p-4 ${
-                      isLightMode
-                        ? "border-black/10 bg-zinc-50"
-                        : "border-white/[0.08] bg-[#101213]"
-                    }`}
+                    className="w-full"
                   >
                     <div className="space-y-4">
                       <label className="block">
@@ -1045,7 +930,7 @@ const MobileProfile = () => {
                           value={discordDraft}
                           onChange={(e) => setDiscordDraft(e.target.value)}
                           disabled={tradeAccessRevoked}
-                          className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#8a6a00]/50"
+                          className="w-full rounded-xl border px-3 py-2.5 text-base outline-none transition-colors focus:border-[#8a6a00]/50"
                           placeholder={
                             tradeAccessRevoked
                               ? "Trading access revoked"
@@ -1055,98 +940,9 @@ const MobileProfile = () => {
                       </label>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <h2 className="truncate text-xl font-semibold tracking-tight text-white">
-                        {displayName}
-                      </h2>
-                      {verification && (
-                        <CardImage
-                          src={verification.badge}
-                          alt={verification.label}
-                          title={verification.label}
-                          className="h-5 w-5 shrink-0"
-                        />
-                      )}
-                    </div>
-                    <p className="mt-1 text-sm text-zinc-300">
-                      @{discord || "No Discord username set"}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-medium ${
-                          isLightMode
-                            ? "border-emerald-600/20 bg-emerald-600/[0.08] text-emerald-700"
-                            : "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300"
-                        }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${isLightMode ? "bg-emerald-600" : "bg-emerald-400"}`}
-                        />
-                        Active
-                      </span>
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2 py-1 text-[11px] font-semibold ${
-                          isLightMode
-                            ? "border-[#8a6a00]/25 bg-[#c89d13]/15 text-[#725700]"
-                            : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.08] text-[#FFE27A]"
-                        }`}
-                      >
-                        SuperFan
-                      </span>
-                    </div>
-                  </>
                 )}
-                {tradeAccessRevoked && (
-                  <div
-                    className={`mt-4 rounded-xl border px-3 py-3 text-sm leading-relaxed ${isLightMode ? "border-red-200 bg-red-50 text-red-800" : "border-red-400/20 bg-red-400/[0.08] text-red-200"}`}
-                  >
-                    {offerStrikeCount >= 3 ? (
-                      <>
-                        Your Discord username and trade and sale rights were
-                        revoked after three unanswered offers expired. You must
-                        appeal in the{" "}
-                        <a
-                          href="https://discord.gg/mlpekayou"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold underline"
-                        >
-                          MLPEKAYOU Discord server
-                        </a>{" "}
-                        and prove to a moderator that your account is active.
-                      </>
-                    ) : (
-                      <>
-                        Your trade and sale rights have been revoked based on
-                        community reports. You can appeal by emailing{" "}
-                        <a
-                          href="mailto:mlpekayou@gmail.com"
-                          className="font-semibold underline"
-                        >
-                          mlpekayou@gmail.com
-                        </a>{" "}
-                        or opening a ticket in the{" "}
-                        <a
-                          href="https://discord.gg/mlpekayou"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold underline"
-                        >
-                          MLPEKAYOU Discord server
-                        </a>
-                        .
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              
-              <button
+<div className="mp-edit-actions mt-3 grid grid-cols-2 gap-2">
+<button type="button" disabled={savingProfile}
                 className={`group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
                   editingProfile
                     ? "border-[#FFD54A] bg-[#FFD54A] text-black shadow-[0_0_18px_rgba(255,213,74,0.18)]"
@@ -1259,24 +1055,9 @@ const MobileProfile = () => {
                     : "Edit Names"}
                 </span>
               </button>
-              
-              <button
-                onClick={() => navigate("/Personal/change-avatar")}
-                className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-3 py-2.5 text-xs font-semibold text-black transition-all duration-200 hover:bg-[#FFE27A] active:scale-[0.97]"
-              >
-                <Pencil size={14} className="relative" />
-                <span className="relative">Edit Avatar</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/Personal/change-avatar?tab=frames")}
-                className="group relative flex items-center justify-center gap-2 rounded-xl border border-[#FFD54A]/30 bg-[#FFD54A] px-3 py-2.5 text-xs font-semibold text-black transition-all duration-200 hover:bg-[#FFE27A] active:scale-[0.97]"
-              >
-                <Sparkles size={14} />
-                <span>Frames</span>
-              </button>
-              
-              <button
+<button type="button" onClick={()=>navigate("/Personal/change-avatar")} className="rounded-xl border px-3 py-2 text-xs font-medium">Change avatar</button>
+<button type="button" onClick={()=>navigate("/Personal/change-avatar?tab=frames")} className="rounded-xl border px-3 py-2 text-xs font-medium">Choose frame</button>
+</div><div className="mp-edit-actions mt-2 grid grid-cols-1"><button
                 onClick={() => {
                   const url = `https://www.mlpekayou.community/${encodeURIComponent(
                     profile?.username ?? "",
@@ -1300,309 +1081,44 @@ const MobileProfile = () => {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 3000);
                 }}
-                className={`group relative col-span-3 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
+                className={`group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
                   copied
                     ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-400"
                     : "border-[#FFD54A]/20 bg-[#191a1b] text-zinc-300 hover:border-[#FFD54A]/60 hover:bg-[#202122] hover:text-white"
                 }`}
               >
                 <span>{copied ? "Copied" : "Share Profile"}</span>
-              </button>
-            </div>
-            <button
-              type="button"
-              disabled={pushBusy}
-              onClick={() =>
-                void (pushEnabled
-                  ? disablePushNotifications()
-                  : enablePushNotifications())
-              }
-              className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-all active:scale-[0.99] disabled:cursor-wait disabled:opacity-60 ${
-                pushEnabled
-                  ? isLightMode
-                    ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
-                    : "border-red-400/25 bg-red-400/[0.08] text-red-300 hover:bg-red-400/[0.14]"
-                  : "border-[#FFD54A]/30 bg-[#FFD54A] text-black hover:bg-[#FFE27A]"
-              }`}
-            >
-              <Bell size={17} aria-hidden="true" />
-              {pushBusy
-                ? pushEnabled
-                  ? "Turning Off..."
-                  : "Turning On..."
-                : pushEnabled
-                  ? "Turn Off Notifications"
-                  : "Enable Notifications"}
-            </button>
-            {pushStatusMessage && (
-              <p
-                role="status"
-                className={`mt-3 text-center text-xs leading-5 ${
-                  isLightMode ? "text-zinc-600" : "text-zinc-400"
-                }`}
-              >
-                {pushStatusMessage}
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => void toggleVacationMode()}
-              disabled={!vacationLoaded || vacationBusy}
-              aria-pressed={vacationMode}
-              className={`mt-3 flex w-full items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition-colors disabled:cursor-wait disabled:opacity-60 ${isLightMode ? "border-black/10 bg-white text-zinc-900 hover:bg-zinc-100" : "border-white/10 bg-[#191a1b] text-white hover:bg-[#202122]"}`}
-            >
-              {vacationBusy ? "Saving..." : vacationMode ? "Turn Off Vacation Mode" : "Turn On Vacation Mode"}
-            </button>
-            <p className={`mt-2 text-center text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
-              {vacationMode ? "Your trade and sale cards are hidden. Turn this off to show them again." : "Hide your trade and sale cards until you return."}
-            </p>
-            {vacationError && <p role="alert" className="mt-2 text-center text-xs text-red-400">{vacationError}</p>}
-            
-            {profile?.bio && (
-              <p className="mt-5 border-t border-zinc-800/80 pt-4 text-sm leading-relaxed text-zinc-400">
-                {profile.bio}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      <div
-        className={`relative mx-5 mt-4 overflow-hidden rounded-2xl border p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)] ${
-          offerStrikeCount >= 3
-            ? isLightMode
-              ? "border-red-500/25 bg-red-50"
-              : "border-red-400/25 bg-red-500/[0.08]"
-            : offerStrikeCount === 2
-              ? isLightMode
-                ? "border-orange-500/25 bg-orange-50"
-                : "border-orange-400/25 bg-orange-500/[0.08]"
-              : isLightMode
-                ? "border-emerald-600/20 bg-emerald-50"
-                : "border-emerald-400/20 bg-emerald-400/[0.06]"
-        }`}
-      >
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-bold">Offer response strikes</p>
-              <button
-                type="button"
-                aria-label="Learn about offer response strikes"
-                onClick={() => setShowOfferStrikeInfo(true)}
-                className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-black transition-colors ${
-                  isLightMode
-                    ? "border-black/15 bg-white/70 text-zinc-700 hover:bg-white"
-                    : "border-white/15 bg-white/[0.06] text-zinc-300 hover:bg-white/[0.12] hover:text-white"
-                }`}
-              >
-                ?
-              </button>
-            </div>
-            <p className="mt-0.5 text-xs text-zinc-500">{offerStrikeLabel}</p>
-          </div>
-          <span
-            className={`text-xl font-black ${
-              offerStrikeCount >= 3
-                ? "text-red-500"
-                : offerStrikeCount === 2
-                  ? "text-orange-500"
-                  : "text-emerald-500"
-            }`}
-          >
-            {offerStrikeCount}/3
-          </span>
-        </div>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {[1, 2, 3].map((strike) => (
-            <span
-              key={strike}
-              className={`h-2 rounded-full ${
-                strike <= offerStrikeCount
-                  ? offerStrikeCount >= 3
-                    ? "bg-red-500"
-                    : offerStrikeCount === 2
-                      ? "bg-orange-500"
-                      : "bg-emerald-500"
-                  : isLightMode
-                    ? "bg-black/10"
-                    : "bg-white/10"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-      
-      <div className="mx-5 mt-4">
-        <div className="mb-2.5 flex items-center justify-between px-1">
-          <h3 className="text-sm font-semibold text-zinc-300">Quick Access</h3>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
-            Important
-          </span>
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] shadow-[0_10px_28px_rgba(0,0,0,.18)]">
-          <button
-            type="button"
-            onClick={() => navigate("/support-mlpekayou")}
-            className={`group flex w-full items-center gap-3.5 px-4 py-4 text-left transition-all active:bg-[#202122] ${
-              isLightMode
-                ? "bg-gradient-to-r from-[#fff7cf] to-white"
-                : "bg-gradient-to-r from-[#27210e] to-[#151718]"
-            } border-b border-zinc-800`}
-          >
-            <span
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
-                isLightMode
-                  ? "border-[#8a6a00]/20 bg-[#c89d13]/15 text-[#725700]"
-                  : "border-[#FFD54A]/30 bg-[#FFD54A]/10 text-[#FFD54A]"
-              }`}
-            >
-              <HandHeart size={21} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-bold text-white">
-                Support MLPEKAYOU
-              </span>
-              <span className="mt-1 block text-sm leading-5 text-zinc-300">
-                Shop through StonesTradingCo to help keep the site running and
-                free.
-              </span>
-            </span>
-            <ChevronRight
-              size={18}
-              className="shrink-0 text-[#FFD54A] transition-transform group-hover:translate-x-1"
-            />
-          </button>
-          {lgsAccess !== null && (
-            <button
-              type="button"
-              onClick={() => navigate("/lgs-boards")}
-              className={`group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-all hover:bg-[#191a1b] ${
-                canReviewLGS ? "border-b border-zinc-800" : ""
-              }`}
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD54A]/25 bg-[#FFD54A]/[0.07] text-[#FFD54A]">
-                <Store size={19} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold text-white">
-                  LGS Boards
-                </span>
-                <span className="mt-0.5 block truncate text-sm text-zinc-300">
-                  {lgsAccess === "ALLGS"
-                    ? "All stores - View-only access"
-                    : "Your store's events and attendance"}
-                </span>
-              </span>
-              <ChevronRight
-                size={18}
-                className="shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-[#FFD54A]"
-              />
-            </button>
-          )}
-          {canReviewLGS && (
-            <button
-              type="button"
-              onClick={() => setShowLGSReview(true)}
-              className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-all hover:bg-[#191a1b]"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#FFD54A]/25 bg-[#FFD54A]/[0.07] text-[#FFD54A]">
-                <Shield size={19} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold text-white">
-                  LGS Applications
-                </span>
-                <span className="mt-0.5 block truncate text-sm text-zinc-300">
-                  Review applications and decision history
-                </span>
-              </span>
-              <ChevronRight
-                size={18}
-                className="shrink-0 text-zinc-600 transition-transform group-hover:translate-x-1 group-hover:text-[#FFD54A]"
-              />
-            </button>
-          )}
-        </div>
-      </div>
-      
-      <div className="relative mt-3 grid grid-cols-2 gap-3 px-5">
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
-          <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {profileLoads.stats ? stats.owned.toLocaleString() : "-"}
-          </div>
-          <div className="mt-1 text-xs font-medium text-zinc-400">
-            Cards Owned
-          </div>
-        </div>
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_10px_28px_rgba(0,0,0,.20)]">
-          <div className="mt-2 text-3xl font-bold tracking-tight text-[#FFD54A]">
-            {profileLoads.stats ? stats.completed : "-"}
-          </div>
-          <div className="mt-1 text-xs font-medium text-zinc-400">
-            Sets Mastered
-          </div>
-        </div>
-      </div>
-      {loadingLeaderboardBan ? null : manuallyBannedFromLeaderboard ? (
-        <div role="status" className={`mx-5 mt-4 rounded-2xl border p-5 text-sm font-semibold leading-6 shadow-[0_10px_28px_rgba(0,0,0,.20)] sm:mx-auto sm:max-w-xl ${isLightMode ? "border-red-300 bg-red-50 text-red-800" : "border-red-500/40 bg-red-500/10 text-red-200"}`}>
-          You have been banned from the leaderboard. This is likely due to your conduct on or off website.
-        </div>
-      ) : (
-      <div className="relative mx-5 mt-4 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] p-5 shadow-[0_10px_28px_rgba(0,0,0,.20)] sm:mx-auto sm:max-w-xl sm:p-6">
-        <div className="flex items-start justify-between gap-5">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <div className="text-sm font-semibold text-white">
-                Regional Association
-              </div>
-              <button
-                type="button"
-                aria-label="Leaderboard eligibility information"
-                onClick={() => setShowLeaderboardBanInfo(true)}
-                className="flex h-6 w-6 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.05] text-xs font-semibold text-zinc-300 transition-colors hover:bg-white/[0.10] hover:text-white"
-              >
-                ?
-              </button>
-            </div>
-            <p className="mt-2 max-w-md text-sm leading-6 text-zinc-400">
-              If you are using this website to track MLP Kayou cards in regions
-              outside of North American cards, click this toggle.
-            </p>
-          </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={leaderboardBanned}
-            disabled={leaderboardBanned}
-            onClick={() => setShowLeaderboardBanConfirm(true)}
-            className={`relative mt-1 flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition-colors ${
-              leaderboardBanned
-                ? isLightMode
-                  ? "cursor-not-allowed bg-zinc-300 opacity-60"
-                  : "cursor-not-allowed bg-zinc-700 opacity-60"
-                : isLightMode
-                  ? "cursor-pointer bg-zinc-300 hover:bg-zinc-400"
-                  : "cursor-pointer bg-zinc-700 hover:bg-zinc-600"
-            }`}
-          >
-            <span
-              className={`h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${
-                leaderboardBanned ? "translate-x-6" : "translate-x-0"
-              }`}
-            />
-          </button>
-        </div>
-        <div className="mt-4">
-          {leaderboardBanned && (
-            <div className="mt-2 text-xs text-zinc-500">
-              Leaderboard exclusion is active. Contact Keegan to undo it.
-            </div>
-          )}
-        </div>
-      </div>
-      )}
-      {showOfferStrikeInfo && (
+              </button></div>
+</div></section>}
+<section aria-label="Profile pages">
+  <div className="grid grid-cols-2 gap-3">
+    {collectionPages.map(item => <button key={item.title} type="button" onClick={event => openPageChoice(item, event.currentTarget)} aria-haspopup="menu" aria-expanded={pageChoice?.title === item.title} aria-controls={pageChoice?.title === item.title ? "mp-page-language-menu" : undefined} className="mp-surface group flex min-h-[90px] flex-col items-start justify-center p-4 text-left transition-colors hover:border-[hsl(var(--primary))]/40">
+      <span className="text-sm font-semibold">{item.title}</span><span className="mp-muted mt-1 text-[11px] leading-5">{item.subtitle}</span>
+    </button>)}
+    <button type="button" onClick={() => navigate("/support-mlpekayou")} className="mp-surface group flex min-h-[90px] flex-col items-start justify-center p-4 text-left transition-colors hover:border-[hsl(var(--primary))]/40"><span className="text-sm font-semibold">Support MLPEKAYOU</span><span className="mp-muted mt-1 text-[11px] leading-5">Shop partners and upcoming rewards</span></button>
+  </div>
+</section>
+{pageChoice && createPortal(<div ref={pageChoiceMenu} id="mp-page-language-menu" role="menu" aria-label={`${pageChoice.title}: choose a language`} className={`mp-page-language-menu ${isLightMode ? "mp-page-language-menu-light" : ""}`} style={{ left: pageChoicePosition.left, top: pageChoicePosition.top, transformOrigin: pageChoicePosition.origin }} onKeyDown={event => {
+  if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  const options = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
+  const current = options.indexOf(document.activeElement as HTMLButtonElement);
+  const next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : (current + (event.key === "ArrowUp" ? -1 : 1) + options.length) % options.length;
+  options[next]?.focus();
+}}>{[{ label: "English", path: pageChoice.english }, { label: "Chinese", path: pageChoice.chinese }].map(option => <button key={option.path} type="button" role="menuitem" onClick={() => { setPageChoice(null); pageChoiceTrigger.current?.focus(); navigate(option.path); }}>{option.label}</button>)}</div>, document.body)}
+<details className="mp-surface mt-3 overflow-hidden"><summary className="flex min-h-14 items-center justify-between gap-3 px-4 py-4"><span><span className="block text-sm font-semibold">Preferences &amp; trading</span><span className="mp-muted mt-1 block text-xs">Notifications, vacation mode, and account standing</span></span><ChevronRight size={16} className="mp-chevron mp-muted" aria-hidden="true" /></summary><div className="border-t border-white/[0.08]">
+<button type="button" disabled={pushBusy} onClick={()=>void(pushEnabled?disablePushNotifications():enablePushNotifications())} className="mp-row disabled:opacity-50"><Bell size={17} className="mp-muted"/><span className="flex-1 text-sm">Notifications</span><span className="text-xs font-medium text-[hsl(var(--primary))]">{pushBusy?"Updating...":pushEnabled?"On":"Off"}</span></button>
+{pushStatusMessage && <p role="status" className="mp-muted px-4 py-3 text-xs leading-5">{pushStatusMessage}</p>}
+<button type="button" disabled={!vacationLoaded||vacationBusy} onClick={()=>void toggleVacationMode()} aria-pressed={vacationMode} className="mp-row disabled:opacity-50"><span className="flex-1 text-sm">Vacation mode</span><span className="text-xs font-medium text-[hsl(var(--primary))]">{vacationBusy?"Saving...":vacationMode?"On":"Off"}</span></button>
+<p className="mp-muted px-4 py-2 text-xs leading-5">Hide your trade and sale cards while you are away.</p>{vacationError && <p role="alert" className="px-4 py-2 text-xs text-red-400">{vacationError}</p>}
+<button type="button" onClick={()=>setShowOfferStrikeInfo(true)} className="mp-row"><span className="flex-1 text-sm">Offer response strikes</span><span className={`text-xs font-semibold ${offerStrikeCount>=2?"text-red-400":"mp-muted"}`}>{offerStrikeCount}/3</span><ChevronRight size={15} className="mp-muted"/></button>
+</div></details>
+{offerStrikeCount>=2 && <button type="button" onClick={()=>setShowOfferStrikeInfo(true)} className="mt-3 w-full rounded-xl border border-red-500/25 px-4 py-3 text-left text-xs text-red-400">You have {offerStrikeCount}/3 offer response strikes. Tap for details.</button>}
+{(lgsAccess!==null||canReviewLGS||isModerator) && <section className="mp-surface mt-4 overflow-hidden" aria-label="Staff tools">{lgsAccess!==null && <button type="button" onClick={()=>navigate("/lgs-boards")} className="mp-row"><Store size={17} className="mp-muted"/><span className="flex-1 text-sm">LGS Boards</span><ChevronRight size={16} className="mp-muted"/></button>}{canReviewLGS && <button type="button" onClick={()=>setShowLGSReview(true)} className="mp-row"><Shield size={17} className="mp-muted"/><span className="flex-1 text-sm">LGS Applications</span><ChevronRight size={16} className="mp-muted"/></button>}{isModerator && <button type="button" onClick={()=>navigate("/leaderboard-moderation")} className="mp-row"><Shield size={17} className="mp-muted"/><span className="flex-1 text-sm">Leaderboard Moderation</span><ChevronRight size={16} className="mp-muted"/></button>}</section>}
+<details className="mp-surface mt-3 overflow-hidden"><summary className="flex min-h-14 items-center justify-between gap-3 px-4 py-4"><span><span className="block text-sm font-semibold">Help &amp; account</span><span className="mp-muted mt-1 block text-xs">Bug reports and account controls</span></span><ChevronRight size={16} className="mp-chevron mp-muted" aria-hidden="true" /></summary><div className="border-t border-white/[0.08]"><button type="button" onClick={()=>setShowBugReport(true)} className="mp-row"><Bug size={17} className="text-red-400"/><span className="flex-1 text-sm">Report a bug</span><ChevronRight size={16} className="mp-muted"/></button><button type="button" onClick={async()=>{await supabase.auth.signOut({scope:"local"});navigate("/");}} className="mp-row"><LogOut size={17} className="mp-muted"/><span className="text-sm">Log out</span></button><div className="border-t border-white/[0.08] px-4 py-3"><button type="button" disabled={deletionRequested} onClick={()=>setShowDeletionModal(true)} className="min-h-11 text-xs font-medium text-red-400 disabled:opacity-50">{deletionRequested?"Deletion request pending":"Request account deletion"}</button></div></div></details>
+{profile?.bio && <p className="mp-muted mt-5 px-1 text-xs leading-6">{profile.bio}</p>}
+</div>
+{showOfferStrikeInfo && (
         <div
           className={`fixed inset-0 z-[140] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/30" : "bg-black/80"}`}
           onMouseDown={(event) => {
@@ -1662,278 +1178,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      
-      {showLeaderboardBanConfirm && (
-        <div
-          className={`fixed inset-0 z-[115] flex items-center justify-center p-4 backdrop-blur-md ${
-            isLightMode ? "bg-white/20" : "bg-black/80"
-          }`}
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowLeaderboardBanConfirm(false);
-            }
-          }}
-        >
-          <div
-            className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${
-              isLightMode
-                ? "border-black/10 bg-white text-zinc-900"
-                : "border-white/[0.10] bg-[#151718] text-white"
-            }`}
-          >
-            <h2 className="text-xl font-semibold tracking-tight">
-              Do not activate this toggle if you only collect American Cards
-              using this app.
-            </h2>
-            <p
-              className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
-            >
-              Turn this on only if you collect cards outside the North American
-              English release, and if you are using this app to track them.
-            </p>
-            <p
-              className={`mt-3 text-sm font-medium ${isLightMode ? "text-[#725700]" : "text-[#FFE27A]"}`}
-            >
-              This includes SEA, Chinese, Japanese, and other regional or
-              language cards. This app is only made for North American releases.
-            </p>
-            <div className="mt-6 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowLeaderboardBanConfirm(false)}
-                className={`flex-1 rounded-xl border px-4 py-3 text-sm font-semibold ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                    : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
-                }`}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  setShowLeaderboardBanConfirm(false);
-                  await selfBanFromLeaderboard();
-                }}
-                className="flex-1 rounded-xl bg-[#FFD54A] px-4 py-3 text-sm font-semibold text-black hover:bg-[#FFE27A]"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {showLeaderboardBanInfo && (
-        <div
-          className={`fixed inset-0 z-[110] flex items-center justify-center p-4 backdrop-blur-md ${
-            isLightMode ? "bg-white/20" : "bg-black/80"
-          }`}
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowLeaderboardBanInfo(false);
-            }
-          }}
-        >
-          <div
-            className={`w-full max-w-md rounded-3xl border p-6 shadow-[0_24px_70px_rgba(0,0,0,.35)] ${
-              isLightMode
-                ? "border-black/10 bg-white text-zinc-900"
-                : "border-white/[0.10] bg-[#151718] text-white"
-            }`}
-          >
-            <h2 className="text-xl font-semibold tracking-tight">
-              Regional Association
-            </h2>
-            {leaderboardBanned ? (
-              <div
-                className={`mt-3 space-y-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
-              >
-                <p>
-                  Your account is currently excluded from all leaderboards. This
-                  is due to the unfair advantage provided to other regions
-                  regarding release dates.
-                </p>
-                <p>
-                  If this was a mistake, contact Keegan in the MLPEKAYOU Discord
-                  server. You will be required to open a ticket and provide
-                  proof that your cards are North American only.
-                </p>
-              </div>
-            ) : (
-              <p
-                className={`mt-3 text-sm leading-6 ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}
-              >
-                Use this setting if you collect cards from outside the North
-                American English release, including SEA, Chinese, or Japanese
-                cards.
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => setShowLeaderboardBanInfo(false)}
-              className={`mt-6 w-full rounded-xl border px-4 py-3 text-sm font-semibold ${
-                isLightMode
-                  ? "border-black/10 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
-                  : "border-white/10 bg-white/[0.05] text-zinc-300 hover:bg-white/[0.08]"
-              }`}
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
-      
-      <div className="mt-4 space-y-4 px-5">
-        {menuSections.map((section) => (
-          <div key={section.title}>
-            <div className="mb-2.5 flex items-center justify-between px-1">
-              <h3 className="text-sm font-semibold text-zinc-300">
-                Your Personal Pages
-              </h3>
-              {section.title === "Collection" && (
-                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                </span>
-              )}
-            </div>
-            <div
-              className={
-                section.title === "Collection"
-                  ? "grid grid-cols-2 gap-2"
-                  : "overflow-hidden rounded-2xl border border-white/[0.08] bg-[#151718] shadow-[0_10px_28px_rgba(0,0,0,.18)]"
-              }
-            >
-              {section.items.map((item, index) => (
-                <button
-                  key={item.title}
-                  onClick={item.onClick}
-                  className={`group w-full text-left transition-all duration-200 active:scale-[0.98] ${
-                    section.title === "Collection"
-                      ? "flex min-h-[112px] flex-col items-start rounded-2xl border border-white/[0.08] bg-[#151718] p-4 shadow-[0_8px_22px_rgba(0,0,0,.14)] hover:border-[#FFD54A]/25 hover:bg-[#191a1b]"
-                      : `flex items-center justify-between px-3.5 py-3.5 ${item.danger
-                      ? "bg-red-500/[0.035] hover:bg-red-500/[0.07]"
-                      : "hover:bg-[#191a1b]"
-                    } ${
-                      index !== section.items.length - 1
-                        ? "border-b border-zinc-800"
-                        : ""
-                    }`
-                  }`}
-                >
-                  <div
-                    className={
-                      section.title === "Collection"
-                        ? "flex min-w-0 flex-1 flex-col items-start"
-                        : "flex min-w-0 items-center gap-3"
-                    }
-                  >
-                    <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border bg-white/[0.035] transition-colors ${
-                        item.danger
-                          ? "border-red-500/30 text-red-400 group-hover:border-red-500/60"
-                          : "border-white/[0.08] text-[#FFD54A] group-hover:border-[#FFD54A]/40"
-                      }`}
-                    >
-                      {item.icon}
-                    </div>
-                    <div
-                      className={
-                        section.title === "Collection"
-                          ? "mt-3 min-w-0"
-                          : "min-w-0"
-                      }
-                    >
-                      <div
-                        className={`font-semibold ${
-                          item.danger
-                            ? isLightMode
-                              ? "text-red-700"
-                              : "text-red-300"
-                            : "text-white"
-                        }`}
-                      >
-                        {item.title}
-                      </div>
-                      <div
-                        className={`mt-1 text-sm leading-5 ${
-                          item.danger
-                            ? isLightMode
-                              ? "text-red-600"
-                              : "text-red-300/80"
-                            : "text-zinc-300"
-                        }`}
-                      >
-                        {item.subtitle}
-                      </div>
-                    </div>
-                  </div>
-                  {section.title !== "Collection" && (
-                    <div className="flex shrink-0 items-center gap-2.5">
-                      <ChevronRight
-                        size={18}
-                        className={`shrink-0 transition-all duration-200 group-hover:translate-x-1 ${
-                          item.danger
-                            ? "text-red-500/50 group-hover:text-red-400"
-                            : "text-zinc-700 group-hover:text-[#FFD54A]"
-                        }`}
-                      />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      <div className="mt-8 px-5">
-        <div className="relative overflow-hidden rounded-2xl border border-red-500/20 bg-[#151718]">
-          <div className="p-5">
-            <h3
-              className={`mt-1 font-['Oxanium'] text-base font-black uppercase tracking-[0.04em] ${isLightMode ? "text-zinc-900" : "text-white"}`}
-            >
-              Account Deletion
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-zinc-300">
-              Request permanent deletion of your MLPEKAYOU account. Your account
-              will remain active until the request is manually reviewed and
-              fulfilled. If you change your mind, reach out to staff in the
-              MLPEKAYOU Discord server as soon as possible.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowDeletionModal(true)}
-              disabled={deletionRequested}
-              className={`mt-5 w-full rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-200 ${
-                deletionRequested
-                  ? "cursor-default border-zinc-700 bg-[#171717] text-zinc-600"
-                  : isLightMode
-                    ? "border-red-700/25 bg-red-700/[0.04] text-red-700 active:bg-red-700/[0.08]"
-                    : "border-red-500/30 bg-[#151515] text-red-400 active:bg-red-500/10"
-              }`}
-            >
-              {deletionRequested
-                ? "Request Pending"
-                : "Request Account Deletion"}
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-10 px-5">
-        <button
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/[0.06] py-3.5 text-sm font-semibold text-red-400 transition-all duration-200 hover:border-red-500/40 hover:bg-red-500/10"
-          onClick={async () => {
-            await supabase.auth.signOut({ scope: "local" });
-            navigate("/");
-          }}
-        >
-          <LogOut size={18} />
-          Log Out
-        </button>
-      </div>
-      
-      {showBugReport && (
+{showBugReport && (
         <div
           className={`fixed inset-0 z-[30000] flex items-center justify-center px-4 backdrop-blur-md ${
             isLightMode ? "bg-white/15" : "bg-black/55"
@@ -2008,8 +1253,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      
-      {showUsernameTakenModal && (
+{showUsernameTakenModal && (
         <div
           className={`fixed inset-0 z-[130] flex items-center justify-center p-4 backdrop-blur-md ${isLightMode ? "bg-white/25" : "bg-black/80"}`}
           onMouseDown={(e) => {
@@ -2040,8 +1284,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      
-      {showPushEnabledModal && (
+{showPushEnabledModal && (
         <div
           className={`fixed inset-0 z-[135] flex items-center justify-center p-4 backdrop-blur-md ${
             isLightMode ? "bg-white/25" : "bg-black/80"
@@ -2092,8 +1335,7 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      
-      {showDeletionModal && (
+{showDeletionModal && (
         <div
           className={`fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md ${
             isLightMode ? "bg-white/20" : "bg-black/80"
@@ -2156,13 +1398,13 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      {canReviewLGS && showLGSReview && (
+{canReviewLGS && showLGSReview && (
         <LGSApproveDeny
           isLightMode={isLightMode}
           onClose={() => setShowLGSReview(false)}
         />
       )}
-    </div>
+</main>
   );
 };
 function StatCard({ value, label }: { value: number; label: string }) {

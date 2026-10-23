@@ -1,0 +1,1 @@
+export { getChineseISOImageStyle } from "./catalog";

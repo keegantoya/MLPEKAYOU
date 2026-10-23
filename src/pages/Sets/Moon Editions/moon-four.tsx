@@ -1,4 +1,4 @@
-import { getMoonFourFront } from "@/lib/card-images";
+import { getEnglishSet, getEnglishCards, getEnglishCard, getEnglishCardStamp, getEnglishCollectionImageProps, getEnglishRarityNames, getEnglishRarityLabel } from "@/lib/english-card-catalog";
 import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect, useRef, useCallback, useId, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
@@ -7,18 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { ArrowLeft, Check, X, RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
-const getDisplayRarityCode = (rarity: string) => rarity === "SHINING ZR" || rarity === "SZR" ? "\u25c7ZR" : rarity;
-const hasSilverStamp = (key: string) => key.startsWith("ZR-") || key.startsWith("SC-") || key.startsWith("SZR-");
-const hasSidewaysStamp = (key: string) => key === "ZR-7";
-const getCardBack = (rarity: string, number: number) => {
-    const folder = "/card-backs/moon-four";
-    if (rarity === "R") return `${folder}/M4R${String(number).padStart(2, "0")}BACK.webp`;
-    if (rarity === "SR") return `${folder}/M4SR22BACK.webp`;
-    if (rarity === "SSR") return `${folder}/M4SSRBACK.webp`;
-    if (rarity === "HR") return `${folder}/${number <= 22 ? "M4HRSIDEWAYSBACK" : "M4HRBACK"}.webp`;
-    if (rarity === "ZR") return `${folder}/${number === 7 ? "M4ZRBACKSIDEWAYS" : "M4ZRBACK"}.webp`;
-    return `${folder}/M4${rarity}BACK.webp`;
-};
+const getDisplayRarityCode = (rarity: string) => getEnglishRarityLabel("13", rarity);
+const hasSilverStamp = (key: string) => getEnglishCardStamp(getEnglishCard("13", key)!).silver;
+const hasSidewaysStamp = (key: string) => getEnglishCardStamp(getEnglishCard("13", key)!).sideways;
 type Quaternion = [
     number,
     number,
@@ -75,7 +66,9 @@ const getInspectorCardHeight = (width: number, height: number, aspect: number) =
     const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
     return Math.min(440, 2 * Math.sqrt(Math.max(0, radius * radius - .25)) / Math.hypot(1, aspect));
 };
-function CertificateSeal({ sideways = false }: { sideways?: boolean }) {
+function CertificateSeal({ sideways = false }: {
+    sideways?: boolean;
+}) {
     const id = useId().replace(/:/g, "");
     return <span className={`m4-certificate-seal${sideways ? " m4-seal-sideways" : ""}`} aria-hidden="true">
         <span className="m4-seal-foil"/>
@@ -166,7 +159,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const value = Math.max(1, Math.min(4, next));
         pan.current = { x: pan.current.x * value / zoom, y: pan.current.y * value / zoom };
         setZoom(value);
-        if (value > 1) setDragMode("move");
+        if (value > 1)
+            setDragMode("move");
         applyRotation(rotation.current);
     };
     const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
@@ -180,7 +174,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             }
         };
         const observer = new ResizeObserver(updateSize);
-        if (stage.current) observer.observe(stage.current);
+        if (stage.current)
+            observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
     }, [aspect, zoom]);
@@ -193,7 +188,8 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const markNavigation = () => {
             const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
             controls.forEach(control => {
-                if (dialog.current?.contains(control)) return;
+                if (dialog.current?.contains(control))
+                    return;
                 let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
                 while (element && element !== document.body) {
                     const bounds = element.getBoundingClientRect();
@@ -252,7 +248,10 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
         const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
-        if (drag.action === "move") { moveCard(dx, dy); return; }
+        if (drag.action === "move") {
+            moveCard(dx, dy);
+            return;
+        }
         const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
@@ -277,16 +276,19 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             turn(1, 0, 0, amount);
         else if (event.key === "ArrowDown")
             turn(1, 0, 0, -amount);
-        else if (event.key.toLowerCase() === "r")
-            { resetView(); }
+        else if (event.key.toLowerCase() === "r") {
+            resetView();
+        }
         else
             return;
         event.preventDefault();
     };
     const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
     const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
-    return createPortal(<div className="m4-inspector-overlay" onClick={event => { if (event.target === event.currentTarget)
-        onClose(); }}>
+    return createPortal(<div className="m4-inspector-overlay" onClick={event => {
+            if (event.target === event.currentTarget)
+                onClose();
+        }}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="m4-inspector-title" className="m4-inspector-dialog">
         <header className="m4-inspector-header">
           <div><p className="m4-eyebrow">3D card inspector</p><h2 id="m4-inspector-title">{card.code}</h2></div>
@@ -299,19 +301,25 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
             event.currentTarget.setPointerCapture(event.pointerId);
             pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
-        }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }}>
+        }} onPointerMove={handleMove} onPointerUp={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onPointerCancel={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onLostPointerCapture={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }}>
           <div className="m4-card-ground"/>
           <div ref={model} className="m4-card-model">
             <div className="m4-card-face m4-card-front">
-              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="m4-face-image m4-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
+              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} front`} className="m4-face-image m4-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))} {...getEnglishCollectionImageProps("13", card.key, "front", true)}/>
               <div className="m4-card-sheen"/>
             </div>
             <div className="m4-card-face m4-card-back">
               <div className="m4-back-art">
-              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="m4-face-image m4-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} back`} className="m4-face-image m4-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))} {...getEnglishCollectionImageProps("13", card.key, "back", true)}/>
               <div className="m4-card-sheen"/>
               </div>
               {hasSilverStamp(card.key) && <CertificateSeal sideways={hasSidewaysStamp(card.key)}/>}
@@ -379,7 +387,6 @@ const moonFourStyles = `
 .m4-inspector-controls button[aria-pressed="true"]{background:var(--m4-accent);color:#27230f}
 .m4-inspector-zoom{display:flex;align-items:center;justify-content:center;gap:10px;flex-basis:100%;min-height:28px;font-size:11px;color:var(--m4-muted)}.m4-inspector-zoom input{width:min(220px,50%);accent-color:var(--m4-accent);cursor:pointer;touch-action:pan-x}.m4-inspector-zoom output{min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
 .m4-inspector-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--m4-border);padding:6px 16px}.m4-inspector-footer>span{font-size:11px;color:var(--m4-muted)}.m4-inspector-footer button{display:flex;align-items:center;gap:4px;min-height:40px;border-radius:11px;background:var(--m4-subtle);padding:8px 10px;font-size:11px}
-
 .m4-certificate-seal{position:absolute;right:6%;bottom:7.5%;width:10.5%;aspect-ratio:1;border-radius:14%;overflow:hidden;isolation:isolate;background:#bbc2c8;box-shadow:0 .3px .8px #00000075;pointer-events:none}
 .m4-certificate-seal.m4-seal-sideways{right:auto;left:7.5%;top:6%;bottom:auto;transform:rotate(180deg)}
 .m4-seal-foil{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7%,#e4f4ff65 7.3% 8.3%,transparent 8.6% 19%),repeating-linear-gradient(125deg,#f5f6f875 0 .8px,#7f8c9930 .8px 1.6px),linear-gradient(var(--m4-foil-angle,115deg),#d3d9dd 0%,#fafcfc 12%,#77838e 23%,#c1cbd3 33%,#eef4f7 41%,#505a66 49%,#c6d0d7 60%,#f5f8fa 68%,#88929b 80%,#dce1e5 92%,#f7f8f8 100%);background-size:100% 100%,100% 100%,240% 240%;background-position:center,center,var(--m4-foil-x,50%) var(--m4-foil-y,50%)}
@@ -388,7 +395,6 @@ const moonFourStyles = `
 .m4-seal-collection{opacity:var(--m4-collection-opacity,0)}
 .m4-seal-certificate{opacity:var(--m4-cert-opacity,.55)}
 .m4-seal-glint{position:absolute;inset:0;background:linear-gradient(var(--m4-foil-angle,115deg),transparent 25%,#c6efff18 36%,#ffffff60 48%,#ffe1ff16 57%,transparent 68%);background-size:230% 230%;background-position:var(--m4-foil-x,50%) var(--m4-foil-y,50%);opacity:.2}
-
 @media(max-width:639px){body.m4-inspector-open [data-m4-inspector-navigation]{display:none!important}}
 @media(max-width:600px){.m4-card-button{perspective:none;background:transparent;overflow:hidden;-webkit-mask-image:linear-gradient(#fff,#fff)}.m4-grid-model{transform:none!important;transform-style:flat;transition:none}.m4-grid-face{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible;-webkit-mask-image:linear-gradient(#fff,#fff)}.m4-grid-back{display:none;transform:none}.m4-grid-model[data-show-back="true"]>.m4-grid-face:first-child{display:none}.m4-grid-model[data-show-back="true"]>.m4-grid-back{display:block}.m4-grid-back-image{left:0;width:100%}}
 @media(hover:hover){.m4-card-button:hover{transform:translateY(-3px);box-shadow:0 7px 18px #00000018}.m4-rarities button:hover{transform:translateY(-1px)}.m4-icon-button:hover,.m4-inspector-controls button:hover{filter:brightness(.95)}}
@@ -424,9 +430,9 @@ const MoonFour = () => {
     const [selectedRarity, setSelectedRarity] = useState("R");
     const [inspectKey, setInspectKey] = useState<string | null>(null);
     const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
-    const set = { folder: "fourth-edition-moon", prefix: "M4", setId: "13", rarities: { R: 30, SR: 20, SSR: 26, HR: 30, LSR: 16, UR: 16, SGR: 8, ZR: 7, SC: 7, SZR: 2 } };
-    const rarityNames: Record<string, string> = { R: "Rare", SR: "Super Rare", SSR: "Super Spark Rare", HR: "Holographic Rare", UR: "Ultra Rare", LSR: "Limited Super Rare", SGR: "Super Golden Rare", ZR: "Zenith Rare", SC: "Secret Card", SZR: "Shining Zenith Rare" };
-    const cards = Object.entries(set.rarities).flatMap(([rarity, count]) => Array.from({ length: count }, (_, index) => ({ rarity, number: index + 1 })));
+    const set = getEnglishSet("13")!;
+    const rarityNames: Record<string, string> = getEnglishRarityNames("13");
+    const cards = getEnglishCards("13");
     const collected = cards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
     const total = cards.length;
     const progress = Math.round(collected / total * 100);
@@ -434,11 +440,7 @@ const MoonFour = () => {
     const rarityCollected = rarityCards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
     const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[`${card.rarity}-${card.number}`] : !flipped[`${card.rarity}-${card.number}`]));
     const closeInspector = useCallback(() => setInspectKey(null), []);
-    const getInspection = (key: string): InspectCard => {
-        const [rarity, numberText] = key.split("-");
-        const number = Number(numberText);
-        return { key, code: `MLPME04-${getDisplayRarityCode(rarity)}-${String(number).padStart(3, "0")}`, front: getMoonFourFront(key), back: getCardBack(rarity, number) };
-    };
+    const getInspection = (key: string): InspectCard => { const card = getEnglishCard("13", key)!; return { key, code: card.checklistCode, front: card.front, back: card.back }; };
     const stepInspection = (direction: number) => {
         const keys = visibleCards.map(card => `${card.rarity}-${card.number}`);
         if (!keys.length)
@@ -482,8 +484,10 @@ const MoonFour = () => {
             }
             setLoaded(true);
         };
-        void loadProgress().catch(() => { if (active)
-            setLoadingFailed(true); });
+        void loadProgress().catch(() => {
+            if (active)
+                setLoadingFailed(true);
+        });
         return () => { active = false; };
     }, []);
     useEffect(() => {
@@ -532,12 +536,12 @@ const MoonFour = () => {
           {visibleCards.length === 0 ? <div className="m4-empty"><Check size={24}/><h3>{filter === "missing" ? "This rarity is complete" : "No owned cards here yet"}</h3><p>{filter === "missing" ? "Every card in this rarity is in your collection." : "Switch to All cards to start tracking your collection."}</p><button type="button" onClick={() => setFilter("all")}>Show all cards</button></div> : <div className="m4-card-grid">{visibleCards.map(card => {
                 const key = `${card.rarity}-${card.number}`;
                 const owned = !!flipped[key];
-                const code = `MLPME04-${getDisplayRarityCode(card.rarity)}-${String(card.number).padStart(3, "0")}`;
+                const code = getEnglishCard("13", key)!.checklistCode;
                 return <article key={key} className={`m4-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="m4-card-button" onClick={() => toggleCard(key)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="m4-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="m4-grid-face"><CardImage visible={loaded && (viewMode || !owned)} src={getMoonFourFront(key)} className="m4-grid-image" draggable={false} alt={code}/></div>
-                  <div className="m4-grid-face m4-grid-back"><div className="m4-back-art"><CardImage visible={loaded && !viewMode && owned} src={getCardBack(card.rarity, card.number)} className="m4-grid-image m4-grid-back-image" draggable={false} alt={`${code} back`}/></div>{hasSilverStamp(key) && <CertificateSeal sideways={hasSidewaysStamp(key)}/>}</div>
+                  <div className="m4-grid-face"><CardImage visible={loaded && (viewMode || !owned)} className="m4-grid-image" draggable={false} alt={code} {...getEnglishCollectionImageProps("13", key, "front", false)}/></div>
+                  <div className="m4-grid-face m4-grid-back"><div className="m4-back-art"><CardImage visible={loaded && !viewMode && owned} className="m4-grid-image m4-grid-back-image" draggable={false} alt={`${code} back`} {...getEnglishCollectionImageProps("13", key, "back", false)}/></div>{hasSilverStamp(key) && <CertificateSeal sideways={hasSidewaysStamp(key)}/>}</div>
                 </div>
                 {owned && <span className="m4-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="m4-inspect-badge"><Box size={13}/>3D</span>}

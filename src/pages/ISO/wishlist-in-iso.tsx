@@ -1,125 +1,92 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-const normalizeWishlistKey = (key: string) =>
-  key.replace(/-(\d+)$/, (_, number) => `-${Number(number)}`);
-const getWishlistKeyVariants = (setId: string, cardKey: string) => {
-  const fullKey = `${setId}:${cardKey}`;
-  const normalizedKey = normalizeWishlistKey(fullKey);
-  const paddedCardKey = cardKey.replace(
-    /-(\d+)$/,
-    (_, number) => `-${String(Number(number)).padStart(3, "0")}`
-  );
-  return {
-    fullKey,
-    normalizedKey,
-    variants: Array.from(
-      new Set([fullKey, normalizedKey, `${setId}:${paddedCardKey}`])
-    ),
-  };
-};
+import { fetchEnglishWishlist, buildEnglishWishlistCards, getWishlistIdentity, getWishlistVariants } from "./catalog-adapter";
 export function useWishlist() {
-  const [wishlist, setWishlist] = useState<Set<string>>(new Set());
-  const wishlistRef = useRef<Set<string>>(new Set());
-  const pendingKeysRef = useRef<Set<string>>(new Set());
-  const updateWishlist = (updater: (current: Set<string>) => Set<string>) => {
-    setWishlist((current) => {
-      const next = updater(current);
-      wishlistRef.current = next;
-      return next;
-    });
-  };
-  useEffect(() => {
-    const loadWishlist = async () => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) return;
-      const { data: items, error } = await supabase
-        .from("wishlists")
-        .select("card_key")
-        .eq("user_id", user.id);
-      if (error) {
-        console.error(error);
-        return;
-      }
-      const loadedWishlist = new Set(
-        (items || []).map((item) => normalizeWishlistKey(item.card_key))
-      );
-      wishlistRef.current = loadedWishlist;
-      setWishlist(loadedWishlist);
+    const [wishlist, setWishlist] = useState<Set<string>>(new Set());
+    const wishlistRef = useRef<Set<string>>(new Set());
+    const pending = useRef(new Set<string>());
+    const activeUser = useRef("");
+    useEffect(() => {
+        let disposed = false, requestId = 0;
+        const load = async () => {
+            const request = ++requestId;
+            try {
+                const { data } = await supabase.auth.getSession();
+                if (disposed || request !== requestId)
+                    return;
+                const user = data.session?.user;
+                if (!user) {
+                    activeUser.current = "";
+                    wishlistRef.current = new Set();
+                    setWishlist(new Set());
+                    return;
+                }
+                if (activeUser.current !== user.id) {
+                    activeUser.current = user.id;
+                    wishlistRef.current = new Set();
+                    setWishlist(new Set());
+                }
+                const { data: rows, error } = await fetchEnglishWishlist(user.id);
+                if (error)
+                    throw error;
+                if (disposed || request !== requestId || activeUser.current !== user.id)
+                    return;
+                const next = new Set(buildEnglishWishlistCards(rows ?? []).map(card => getWishlistIdentity(card.set_id, card.card_key)));
+                wishlistRef.current = next;
+                setWishlist(next);
+            }
+            catch (cause) {
+                console.error(cause);
+            }
+        };
+        const refresh = () => { void load(); };
+        window.addEventListener("focus", refresh);
+        window.addEventListener("iso-wishlist-changed", refresh);
+        void load();
+        return () => { disposed = true; requestId++; window.removeEventListener("focus", refresh); window.removeEventListener("iso-wishlist-changed", refresh); };
+    }, []);
+    const toggleWishlist = async (setId: string, cardKey: string) => {
+        const { data } = await supabase.auth.getSession();
+        const user = data.session?.user;
+        if (!user)
+            return;
+        if (activeUser.current !== user.id) {
+            activeUser.current = user.id;
+            wishlistRef.current = new Set();
+            setWishlist(new Set());
+        }
+        const identity = getWishlistIdentity(setId, cardKey);
+        if (pending.current.has(identity))
+            return;
+        pending.current.add(identity);
+        try {
+            const variants = getWishlistVariants(setId, cardKey);
+            let removed = false;
+            if (wishlistRef.current.has(identity)) {
+                const { error } = await supabase.from("wishlists").delete().eq("user_id", user.id).in("card_key", variants);
+                if (error)
+                    throw error;
+                removed = true;
+            }
+            else {
+                const { error } = await supabase.from("wishlists").upsert({ user_id: user.id, card_key: identity }, { onConflict: "user_id,card_key", ignoreDuplicates: true });
+                if (error)
+                    throw error;
+            }
+            if (activeUser.current !== user.id)
+                return;
+            const next = new Set(wishlistRef.current);
+            if (removed)
+                next.delete(identity);
+            else
+                next.add(identity);
+            wishlistRef.current = next;
+            setWishlist(next);
+            window.dispatchEvent(new CustomEvent("iso-wishlist-changed", { detail: { userId: user.id, setId, cardKey, removed } }));
+        }
+        finally {
+            pending.current.delete(identity);
+        }
     };
-    loadWishlist();
-  }, []);
-  const toggleWishlist = async (setId: string, cardKey: string) => {
-    const { data } = await supabase.auth.getSession();
-    const user = data.session?.user;
-    if (!user) return;
-    const { fullKey, normalizedKey, variants } = getWishlistKeyVariants(
-      setId,
-      cardKey
-    );
-    if (pendingKeysRef.current.has(normalizedKey)) return;
-    pendingKeysRef.current.add(normalizedKey);
-    try {
-      if (wishlistRef.current.has(normalizedKey)) {
-        const { error } = await supabase
-          .from("wishlists")
-          .delete()
-          .eq("user_id", user.id)
-          .in("card_key", variants);
-        if (error) {
-          console.error(error);
-          return;
-        }
-        updateWishlist((current) => {
-          const next = new Set(current);
-          next.delete(normalizedKey);
-          return next;
-        });
-        return;
-      }
-      const { data: existingItems, error: lookupError } = await supabase
-        .from("wishlists")
-        .select("card_key")
-        .eq("user_id", user.id)
-        .in("card_key", variants)
-        .limit(1);
-      if (lookupError) {
-        console.error(lookupError);
-        return;
-      }
-      if (existingItems && existingItems.length > 0) {
-        updateWishlist((current) => {
-          const next = new Set(current);
-          next.add(normalizedKey);
-          return next;
-        });
-        return;
-      }
-      const { error } = await supabase.from("wishlists").upsert(
-        {
-          user_id: user.id,
-          card_key: fullKey,
-        },
-        {
-          onConflict: "user_id,card_key",
-          ignoreDuplicates: true,
-        }
-      );
-      if (error) {
-        console.error(error);
-        return;
-      }
-      updateWishlist((current) => {
-        const next = new Set(current);
-        next.add(normalizedKey);
-        return next;
-      });
-    } finally {
-      pendingKeysRef.current.delete(normalizedKey);
-    }
-  };
-  return {
-    wishlist,
-    toggleWishlist,
-  };
+    return { wishlist, toggleWishlist };
 }

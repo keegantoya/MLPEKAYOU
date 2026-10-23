@@ -326,11 +326,14 @@ export default function MyCollectionBinder() {
     };
   }, []);
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!viewingUserId && user) {
+      const targetUserId = viewingUserId ?? user?.id;
+      if (cancelled || !targetUserId || !user) return;
+      {
         const { data: profile } = await supabase
           .from("profiles")
           .select(
@@ -341,8 +344,10 @@ export default function MyCollectionBinder() {
     iso_hidden_sets
   `,
           )
-          .eq("id", user.id)
+          .eq("id", targetUserId)
           .single();
+        if (cancelled) return;
+        setHiddenCCGSets([]);
         if (profile) {
           setViewingProfile(profile);
           setViewingUsername(profile.username);
@@ -361,10 +366,6 @@ export default function MyCollectionBinder() {
           setHiddenCCGSets(mappedHidden);
         }
       }
-      const targetUserId = viewingUserId ?? user?.id;
-      if (!targetUserId) return;
-      if (!user) return;
-      if (!user) return;
       const { data: progress } = await supabase
         .from("collection_progress")
         .select("set_id, progress")
@@ -373,6 +374,7 @@ export default function MyCollectionBinder() {
         .from("collection_progress_raw")
         .select("set_id, progress")
         .eq("user_id", targetUserId);
+      if (cancelled) return;
       const map: Record<string, any> = {};
       [...(progress || []), ...(rawProgress || [])].forEach((row: any) => {
         map[row.set_id] = {
@@ -383,6 +385,7 @@ export default function MyCollectionBinder() {
       setProgressMap(map);
     };
     load();
+    return () => { cancelled = true; };
   }, [viewingUserId]);
   const defaultCCGOrder = ["1", "5", "7", "2", "8", "3", "13", "11", "4", "6"];
   const [hiddenCCGSets, setHiddenCCGSets] = useState<string[]>([]);

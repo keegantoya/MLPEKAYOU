@@ -1,4 +1,4 @@
-import { getStarOneBack as getCardBack, cardImagePaths } from "@/lib/card-images";
+import { getEnglishSet, getEnglishCards, getEnglishCard, getEnglishCardStamp, getEnglishCollectionImageProps, getEnglishRarityNames, getEnglishRarityLabel } from "@/lib/english-card-catalog";
 import CollectionLoading from "@/components/CollectionLoading";
 import CardImage from "@/components/CardImage";
 import { useState, useEffect, useRef, useCallback, useId, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 import { ArrowLeft, Check, X, RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
-const getDisplayRarityCode = (rarity: string) => rarity === "SAR" ? "\u25c7AR" : rarity;
-const hasSilverStamp = (key: string) => key.startsWith("BP-") || key.startsWith("SAR-");
-const hasCenteredStamp = (key: string) => key.startsWith("SAR-");
+const getDisplayRarityCode = (rarity: string) => getEnglishRarityLabel("4", rarity);
+const hasSilverStamp = (key: string) => getEnglishCardStamp(getEnglishCard("4", key)!).silver;
+const hasCenteredStamp = (key: string) => getEnglishCardStamp(getEnglishCard("4", key)!).centered;
 type Quaternion = [
     number,
     number,
@@ -23,15 +23,15 @@ type InspectCard = {
     back: string;
 };
 const multiplyRotation = (a: Quaternion, b: Quaternion): Quaternion => {
-const [x, y, z, w] = a;
-const [u, v, t, s] = b;
-const q: Quaternion = [w * u + x * s + y * t - z * v, w * v - x * t + y * s + z * u, w * t + x * v - y * u + z * s, w * s - x * u - y * v - z * t];
-const length = Math.hypot(...q) || 1;
+    const [x, y, z, w] = a;
+    const [u, v, t, s] = b;
+    const q: Quaternion = [w * u + x * s + y * t - z * v, w * v - x * t + y * s + z * u, w * t + x * v - y * u + z * s, w * s - x * u - y * v - z * t];
+    const length = Math.hypot(...q) || 1;
     return q.map(value => value / length) as Quaternion;
 };
 const axisRotation = (x: number, y: number, z: number, angle: number): Quaternion => {
-const length = Math.hypot(x, y, z) || 1;
-const sine = Math.sin(angle / 2) / length;
+    const length = Math.hypot(x, y, z) || 1;
+    const sine = Math.sin(angle / 2) / length;
     return [x * sine, y * sine, z * sine, Math.cos(angle / 2)];
 };
 const rotationMatrix = ([x, y, z, w]: Quaternion) => `matrix3d(${[
@@ -41,16 +41,16 @@ const rotationMatrix = ([x, y, z, w]: Quaternion) => `matrix3d(${[
     0, 0, 0, 1
 ].join(",")})`;
 const getSealLighting = ([x, y, z, w]: Quaternion) => {
-const nx = -2 * (x * z + y * w);
-const ny = -2 * (y * z - x * w);
-const nz = -1 + 2 * (x * x + y * y);
-const spectralAngle = nx * 2.4 + ny * 1.7;
-const tiltEnergy = nx * nx + ny * ny;
-const verticalWeight = tiltEnergy > .001 ? ny * ny / tiltEnergy : 0;
-const horizontalWeight = tiltEnergy > .001 ? nx * nx / tiltEnergy : 0;
-const verticalReveal = Math.pow(Math.sin(ny * 4.2), 2) * verticalWeight;
-const horizontalReveal = Math.pow(Math.sin(nx * 4.2), 2) * horizontalWeight;
-const facing = Math.max(0, nz);
+    const nx = -2 * (x * z + y * w);
+    const ny = -2 * (y * z - x * w);
+    const nz = -1 + 2 * (x * x + y * y);
+    const spectralAngle = nx * 2.4 + ny * 1.7;
+    const tiltEnergy = nx * nx + ny * ny;
+    const verticalWeight = tiltEnergy > .001 ? ny * ny / tiltEnergy : 0;
+    const horizontalWeight = tiltEnergy > .001 ? nx * nx / tiltEnergy : 0;
+    const verticalReveal = Math.pow(Math.sin(ny * 4.2), 2) * verticalWeight;
+    const horizontalReveal = Math.pow(Math.sin(nx * 4.2), 2) * horizontalWeight;
+    const facing = Math.max(0, nz);
     return {
         x: 50 + nx * 48,
         y: 50 + ny * 48,
@@ -62,11 +62,15 @@ const facing = Math.max(0, nz);
     };
 };
 const getPremiumCardEdges = (height: number, aspect: number) => {
-    if (height <= 0) return [];
-const width = height * aspect;
-const radius = height * .032;
-const points: { x: number; y: number }[] = [];
-const corners = [
+    if (height <= 0)
+        return [];
+    const width = height * aspect;
+    const radius = height * .032;
+    const points: {
+        x: number;
+        y: number;
+    }[] = [];
+    const corners = [
         { x: width - radius, y: radius, angle: -Math.PI / 2 },
         { x: width - radius, y: height - radius, angle: 0 },
         { x: radius, y: height - radius, angle: Math.PI / 2 },
@@ -74,14 +78,14 @@ const corners = [
     ];
     for (const corner of corners) {
         for (let step = 0; step <= 4; step++) {
-const angle = corner.angle + step * Math.PI / 8;
+            const angle = corner.angle + step * Math.PI / 8;
             points.push({ x: corner.x + Math.cos(angle) * radius, y: corner.y + Math.sin(angle) * radius });
         }
     }
     return points.map((point, index) => {
-const next = points[(index + 1) % points.length];
-const dx = next.x - point.x;
-const dy = next.y - point.y;
+        const next = points[(index + 1) % points.length];
+        const dx = next.x - point.x;
+        const dy = next.y - point.y;
         return {
             left: `${(point.x + next.x) / 2}px`,
             top: `${(point.y + next.y) / 2}px`,
@@ -91,12 +95,14 @@ const dy = next.y - point.y;
     });
 };
 const getInspectorCardHeight = (width: number, height: number, aspect: number) => {
-const limit = Math.max(0, Math.min(width, height) / 2 - 12);
-const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
+    const limit = Math.max(0, Math.min(width, height) / 2 - 12);
+    const radius = limit / Math.sqrt(1 + (limit / 1000) ** 2);
     return Math.min(440, 2 * radius / Math.hypot(1, aspect, .022));
 };
-function CertificateSeal({ centered = false }: { centered?: boolean }) {
-const id = useId().replace(/:/g, "");
+function CertificateSeal({ centered = false }: {
+    centered?: boolean;
+}) {
+    const id = useId().replace(/:/g, "");
     return <span className={`s1-certificate-seal${centered ? " s1-seal-centered" : ""}`} aria-hidden="true">
         <span className="s1-seal-foil"/>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="s1-seal-art" focusable="false">
@@ -141,81 +147,85 @@ function CardInspector({ card, onClose, onPrevious, onNext }: {
     onPrevious: () => void;
     onNext: () => void;
 }) {
-const aspect = 5 / 7;
-const [baseHeight, setBaseHeight] = useState(0);
-const zoomRef = useRef(1);
-const renderFrame = useRef<number | null>(null);
+    const aspect = 5 / 7;
+    const [baseHeight, setBaseHeight] = useState(0);
+    const zoomRef = useRef(1);
+    const renderFrame = useRef<number | null>(null);
     useEffect(() => () => {
-        if (renderFrame.current !== null) cancelAnimationFrame(renderFrame.current);
+        if (renderFrame.current !== null)
+            cancelAnimationFrame(renderFrame.current);
         renderFrame.current = null;
     }, []);
-const pan = useRef({ x: 0, y: 0 });
-const rotation = useRef<Quaternion>([0, 0, 0, 1]);
-const model = useRef<HTMLDivElement>(null);
-const stage = useRef<HTMLDivElement>(null);
-const dialog = useRef<HTMLDivElement>(null);
-const pointer = useRef<{
+    const pan = useRef({ x: 0, y: 0 });
+    const rotation = useRef<Quaternion>([0, 0, 0, 1]);
+    const model = useRef<HTMLDivElement>(null);
+    const stage = useRef<HTMLDivElement>(null);
+    const dialog = useRef<HTMLDivElement>(null);
+    const pointer = useRef<{
         id: number;
         action: "rotate" | "move";
         x: number;
         y: number;
     } | null>(null);
-const [dragging, setDragging] = useState(false);
-const [zoom, setZoom] = useState(1);
-const [dragMode, setDragMode] = useState<"rotate" | "move">("rotate");
-const [imageStatus, setImageStatus] = useState<Record<string, "loaded" | "error">>({});
-const [imageRetry, setImageRetry] = useState(0);
-const applyRotation = (next: Quaternion) => {
+    const [dragging, setDragging] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [dragMode, setDragMode] = useState<"rotate" | "move">("rotate");
+    const [imageStatus, setImageStatus] = useState<Record<string, "loaded" | "error">>({});
+    const [imageRetry, setImageRetry] = useState(0);
+    const applyRotation = (next: Quaternion) => {
         rotation.current = next;
-        if (renderFrame.current !== null) return;
+        if (renderFrame.current !== null)
+            return;
         renderFrame.current = requestAnimationFrame(() => {
             renderFrame.current = null;
-        if (model.current) {
-            model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(rotation.current)} scale3d(${zoomRef.current},${zoomRef.current},${zoomRef.current})`;
-const light = getSealLighting(rotation.current);
-            model.current.style.setProperty("--s1-foil-x", `${light.x}%`);
-            model.current.style.setProperty("--s1-foil-y", `${light.y}%`);
-            model.current.style.setProperty("--s1-foil-angle", `${light.angle}deg`);
-            model.current.style.setProperty("--s1-foil-hue", String(light.hue));
-            model.current.style.setProperty("--s1-cert-opacity", String(light.certificate));
-            model.current.style.setProperty("--s1-collection-opacity", String(light.collection));
-            model.current.style.setProperty("--s1-silver-brightness", String(light.brightness));
-        }
+            if (model.current) {
+                model.current.style.transform = `translate3d(${pan.current.x}px,${pan.current.y}px,0) ${rotationMatrix(rotation.current)} scale3d(${zoomRef.current},${zoomRef.current},${zoomRef.current})`;
+                const light = getSealLighting(rotation.current);
+                model.current.style.setProperty("--s1-foil-x", `${light.x}%`);
+                model.current.style.setProperty("--s1-foil-y", `${light.y}%`);
+                model.current.style.setProperty("--s1-foil-angle", `${light.angle}deg`);
+                model.current.style.setProperty("--s1-foil-hue", String(light.hue));
+                model.current.style.setProperty("--s1-cert-opacity", String(light.certificate));
+                model.current.style.setProperty("--s1-collection-opacity", String(light.collection));
+                model.current.style.setProperty("--s1-silver-brightness", String(light.brightness));
+            }
         });
     };
-const moveCard = (dx: number, dy: number) => {
+    const moveCard = (dx: number, dy: number) => {
         pan.current = { x: pan.current.x + dx, y: pan.current.y + dy };
         applyRotation(rotation.current);
     };
-const resetView = () => {
+    const resetView = () => {
         pan.current = { x: 0, y: 0 };
         zoomRef.current = 1;
         setZoom(1);
         setDragMode("rotate");
         applyRotation([0, 0, 0, 1]);
     };
-const changeZoom = (next: number) => {
-const value = Math.max(1, Math.min(4, next));
+    const changeZoom = (next: number) => {
+        const value = Math.max(1, Math.min(4, next));
         pan.current = { x: pan.current.x * value / zoomRef.current, y: pan.current.y * value / zoomRef.current };
         zoomRef.current = value;
         setZoom(value);
-        if (value > 1) setDragMode("move");
+        if (value > 1)
+            setDragMode("move");
         applyRotation(rotation.current);
     };
-const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
-const finishDrag = () => { pointer.current = null; setDragging(false); };
+    const turn = (x: number, y: number, z: number, angle: number) => applyRotation(multiplyRotation(axisRotation(x, y, z, angle), rotation.current));
+    const finishDrag = () => { pointer.current = null; setDragging(false); };
     useEffect(() => {
-const updateSize = () => {
+        const updateSize = () => {
             if (model.current && stage.current) {
-const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect));
+                const height = Math.floor(getInspectorCardHeight(stage.current.clientWidth, stage.current.clientHeight, aspect));
                 model.current.style.height = `${height}px`;
                 model.current.style.width = `${height * aspect}px`;
                 model.current.style.setProperty("--s1-card-depth", `${height * .022}px`);
                 setBaseHeight(previous => previous === height ? previous : height);
             }
         };
-const observer = new ResizeObserver(updateSize);
-        if (stage.current) observer.observe(stage.current);
+        const observer = new ResizeObserver(updateSize);
+        if (stage.current)
+            observer.observe(stage.current);
         updateSize();
         return () => observer.disconnect();
     }, [aspect]);
@@ -224,14 +234,15 @@ const observer = new ResizeObserver(updateSize);
         finishDrag();
     }, [card.key]);
     useEffect(() => {
-const hiddenNavigation = new Set<HTMLElement>();
-const markNavigation = () => {
-const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
+        const hiddenNavigation = new Set<HTMLElement>();
+        const markNavigation = () => {
+            const controls = document.querySelectorAll<HTMLElement>('svg.lucide-home, svg.lucide-house, [aria-label="Home"], [aria-label="Go home"], [title="Home"]');
             controls.forEach(control => {
-                if (dialog.current?.contains(control)) return;
-let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
+                if (dialog.current?.contains(control))
+                    return;
+                let element: HTMLElement | null = control.closest<HTMLElement>("button, a") || control;
                 while (element && element !== document.body) {
-const bounds = element.getBoundingClientRect();
+                    const bounds = element.getBoundingClientRect();
                     if (getComputedStyle(element).position === "fixed" && bounds.top > window.innerHeight / 2) {
                         element.setAttribute("data-s1-inspector-navigation", "");
                         hiddenNavigation.add(element);
@@ -242,7 +253,7 @@ const bounds = element.getBoundingClientRect();
             });
         };
         markNavigation();
-const observer = new MutationObserver(markNavigation);
+        const observer = new MutationObserver(markNavigation);
         observer.observe(document.body, { childList: true, subtree: true });
         window.addEventListener("resize", markNavigation);
         return () => {
@@ -252,20 +263,20 @@ const observer = new MutationObserver(markNavigation);
         };
     }, []);
     useEffect(() => {
-const previousFocus = document.activeElement as HTMLElement | null;
-const previousOverflow = document.body.style.overflow;
+        const previousFocus = document.activeElement as HTMLElement | null;
+        const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
         document.body.classList.add("s1-inspector-open");
         stage.current?.focus();
-const onKey = (event: KeyboardEvent) => {
+        const onKey = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 event.preventDefault();
                 onClose();
             }
             if (event.key === "Tab") {
-const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]') || []);
-const first = controls[0];
-const last = controls[controls.length - 1];
+                const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]') || []);
+                const first = controls[0];
+                const last = controls[controls.length - 1];
                 if (event.shiftKey && (document.activeElement === first || !dialog.current?.contains(document.activeElement))) {
                     event.preventDefault();
                     last?.focus();
@@ -279,31 +290,34 @@ const last = controls[controls.length - 1];
         document.addEventListener("keydown", onKey);
         return () => { document.body.classList.remove("s1-inspector-open"); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); previousFocus?.focus(); };
     }, [onClose]);
-const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-const drag = pointer.current;
+    const handleMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+        const drag = pointer.current;
         if (!drag || drag.id !== event.pointerId)
             return;
-const dx = event.clientX - drag.x;
-const dy = event.clientY - drag.y;
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
         drag.x = event.clientX;
         drag.y = event.clientY;
-        if (drag.action === "move") { moveCard(dx, dy); return; }
-const distance = Math.hypot(dx, dy);
+        if (drag.action === "move") {
+            moveCard(dx, dy);
+            return;
+        }
+        const distance = Math.hypot(dx, dy);
         if (!distance)
             return;
-const sensitivity = Math.PI / Math.max(180, Math.min(event.currentTarget.clientWidth, event.currentTarget.clientHeight));
+        const sensitivity = Math.PI / Math.max(180, Math.min(event.currentTarget.clientWidth, event.currentTarget.clientHeight));
         if (event.shiftKey)
             turn(0, 0, 1, dx * sensitivity);
         else
             turn(-dy, dx, 0, distance * sensitivity);
     };
-const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
         if (dragMode === "move" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
             moveCard(event.key === "ArrowLeft" ? -24 : event.key === "ArrowRight" ? 24 : 0, event.key === "ArrowUp" ? -24 : event.key === "ArrowDown" ? 24 : 0);
             event.preventDefault();
             return;
         }
-const amount = Math.PI / 12;
+        const amount = Math.PI / 12;
         if (event.key === "ArrowLeft")
             event.shiftKey ? turn(0, 0, 1, -amount) : turn(0, 1, 0, -amount);
         else if (event.key === "ArrowRight")
@@ -312,16 +326,19 @@ const amount = Math.PI / 12;
             turn(1, 0, 0, amount);
         else if (event.key === "ArrowDown")
             turn(1, 0, 0, -amount);
-        else if (event.key.toLowerCase() === "r")
-            { resetView(); }
+        else if (event.key.toLowerCase() === "r") {
+            resetView();
+        }
         else
             return;
         event.preventDefault();
     };
-const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
-const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
-    return createPortal(<div className="s1-inspector-overlay" onClick={event => { if (event.target === event.currentTarget)
-        onClose(); }}>
+    const imageFailed = imageStatus[card.front] === "error" || imageStatus[card.back] === "error";
+    const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.back] === "loaded";
+    return createPortal(<div className="s1-inspector-overlay" onClick={event => {
+            if (event.target === event.currentTarget)
+                onClose();
+        }}>
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="s1-inspector-title" className="s1-inspector-dialog">
         <header className="s1-inspector-header">
           <div><p className="s1-eyebrow">3D card inspector</p><h2 id="s1-inspector-title">{card.code}</h2></div>
@@ -334,20 +351,26 @@ const imagesReady = imageStatus[card.front] === "loaded" && imageStatus[card.bac
             event.currentTarget.setPointerCapture(event.pointerId);
             pointer.current = { id: event.pointerId, action: dragMode, x: event.clientX, y: event.clientY };
             setDragging(true);
-        }} onPointerMove={handleMove} onPointerUp={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onPointerCancel={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }} onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId)
-        finishDrag(); }}>
+        }} onPointerMove={handleMove} onPointerUp={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onPointerCancel={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }} onLostPointerCapture={event => {
+            if (pointer.current?.id === event.pointerId)
+                finishDrag();
+        }}>
           <div className="s1-card-ground"/>
           <div ref={model} className="s1-card-model">
             {getPremiumCardEdges(baseHeight, aspect).map((edge, index) => <div key={index} aria-hidden="true" className="s1-card-edge" style={edge}/>)}
             <div className="s1-card-face s1-card-front">
-              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.front} draggable={false} alt={`${card.code} front`} className="s1-face-image s1-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))}/>
+              <CardImage key={`${card.front}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} front`} className="s1-face-image s1-front-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.front]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.front]: "error" }))} {...getEnglishCollectionImageProps("4", card.key, "front", true)}/>
               <div className="s1-card-sheen"/>
             </div>
             <div className="s1-card-face s1-card-back">
               <div className="s1-back-art">
-              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" src={card.back} draggable={false} alt={`${card.code} back`} className="s1-face-image s1-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))}/>
+              <CardImage key={`${card.back}-${imageRetry}`} imageSize="original" visible={true} loading="eager" draggable={false} alt={`${card.code} back`} className="s1-face-image s1-back-image" onLoad={() => setImageStatus(previous => ({ ...previous, [card.back]: "loaded" }))} onError={() => setImageStatus(previous => ({ ...previous, [card.back]: "error" }))} {...getEnglishCollectionImageProps("4", card.key, "back", true)}/>
               <div className="s1-card-sheen"/>
               </div>
               {hasSilverStamp(card.key) && <CertificateSeal centered={hasCenteredStamp(card.key)}/>}
@@ -438,52 +461,48 @@ const starOneStyles = `
 @media(hover:none) and (pointer:coarse){.s1-card-face{box-shadow:none;-webkit-mask-image:none;clip-path:none}.s1-card-ground{filter:none;background:transparent}.s1-inspector-overlay{backdrop-filter:none;-webkit-backdrop-filter:none}.s1-card-button{perspective:none;background:transparent;overflow:hidden}.s1-grid-model{transform:none!important;transform-style:flat;transition:none}.s1-grid-face{transform:none;backface-visibility:visible;-webkit-backface-visibility:visible}.s1-grid-back{display:none;transform:none}.s1-grid-model[data-show-back="true"]>.s1-grid-face:first-child{display:none}.s1-grid-model[data-show-back="true"]>.s1-grid-back{display:block}}
 `;
 const StarOne = () => {
-const navigate = useNavigate();
-const [flipped, setFlipped] = useState<Record<string, boolean>>({});
-const [loaded, setLoaded] = useState(false);
-const pageRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+    const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+    const [loaded, setLoaded] = useState(false);
+    const pageRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-const update = () => {
+        const update = () => {
             if (pageRef.current)
                 pageRef.current.style.setProperty("--s1-page-top", `${pageRef.current.getBoundingClientRect().top + window.scrollY}px`);
         };
         update();
-const observer = new ResizeObserver(update);
+        const observer = new ResizeObserver(update);
         if (pageRef.current?.parentElement)
             observer.observe(pageRef.current.parentElement);
         window.addEventListener("resize", update);
         window.visualViewport?.addEventListener("resize", update);
         return () => { observer.disconnect(); window.removeEventListener("resize", update); window.visualViewport?.removeEventListener("resize", update); };
     }, [loaded]);
-const [loadingFailed, setLoadingFailed] = useState(false);
-const [lastSavedProgress, setLastSavedProgress] = useState("");
-const [viewMode, setViewMode] = useState(false);
-const [selectedRarity, setSelectedRarity] = useState("SSR");
-const [inspectKey, setInspectKey] = useState<string | null>(null);
-const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
-const set = { folder: "star-one", prefix: "S1", setId: "4", rarities: { SSR: 20, SCR: 18, UR: 18, USR: 15, AR: 9, OR: 7, BP: 9, SAR: 9 } };
-const rarityNames: Record<string, string> = { SSR: "Super Spark Rare", SCR: "Sketch Rare", UR: "Ultra Rare", USR: "Ultra Special Rare", AR: "Art Rare", OR: "Origin Rare", BP: "Brilliant Print", SAR: "Shining Art Rare" };
-const cards = Object.entries(set.rarities).flatMap(([rarity, count]) => Array.from({ length: count }, (_, index) => ({ rarity, number: index + 1 })));
-const collected = cards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
-const total = cards.length;
-const progress = Math.round(collected / total * 100);
-const rarityCards = cards.filter(card => card.rarity === selectedRarity);
-const rarityCollected = rarityCards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
-const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[`${card.rarity}-${card.number}`] : !flipped[`${card.rarity}-${card.number}`]));
-const closeInspector = useCallback(() => setInspectKey(null), []);
-const getInspection = (key: string): InspectCard => {
-const [rarity, numberText] = key.split("-");
-const number = Number(numberText);
-        return { key, code: `MLPSE01-${getDisplayRarityCode(rarity)}-${String(number).padStart(3, "0")}`, front: cardImagePaths.ccg(set.folder, set.prefix, rarity, String(number).padStart(3, "0")), back: getCardBack(rarity, number) };
-    };
-const stepInspection = (direction: number) => {
-const keys = visibleCards.map(card => `${card.rarity}-${card.number}`);
+    const [loadingFailed, setLoadingFailed] = useState(false);
+    const [lastSavedProgress, setLastSavedProgress] = useState("");
+    const [viewMode, setViewMode] = useState(false);
+    const [selectedRarity, setSelectedRarity] = useState("SSR");
+    const [inspectKey, setInspectKey] = useState<string | null>(null);
+    const [filter, setFilter] = useState<"all" | "owned" | "missing">("all");
+    const set = getEnglishSet("4")!;
+    const rarityNames: Record<string, string> = getEnglishRarityNames("4");
+    const cards = getEnglishCards("4");
+    const collected = cards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
+    const total = cards.length;
+    const progress = Math.round(collected / total * 100);
+    const rarityCards = cards.filter(card => card.rarity === selectedRarity);
+    const rarityCollected = rarityCards.filter(card => flipped[`${card.rarity}-${card.number}`]).length;
+    const visibleCards = rarityCards.filter(card => filter === "all" || (filter === "owned" ? flipped[`${card.rarity}-${card.number}`] : !flipped[`${card.rarity}-${card.number}`]));
+    const closeInspector = useCallback(() => setInspectKey(null), []);
+    const getInspection = (key: string): InspectCard => { const card = getEnglishCard("4", key)!; return { key, code: card.checklistCode, front: card.front, back: card.back }; };
+    const stepInspection = (direction: number) => {
+        const keys = visibleCards.map(card => `${card.rarity}-${card.number}`);
         if (!keys.length)
             return;
-const current = keys.indexOf(inspectKey || "");
+        const current = keys.indexOf(inspectKey || "");
         setInspectKey(keys[(current + direction + keys.length) % keys.length]);
     };
-const toggleCard = (key: string) => {
+    const toggleCard = (key: string) => {
         if (viewMode) {
             setInspectKey(key);
             return;
@@ -491,19 +510,19 @@ const toggleCard = (key: string) => {
         setFlipped(previous => ({ ...previous, [key]: !previous[key] }));
     };
     useEffect(() => {
-let active = true;
-const loadProgress = async () => {
-const { data, error: sessionError } = await supabase.auth.getSession();
+        let active = true;
+        const loadProgress = async () => {
+            const { data, error: sessionError } = await supabase.auth.getSession();
             if (sessionError)
                 throw sessionError;
-const user = data.session?.user;
+            const user = data.session?.user;
             if (!active)
                 return;
             if (!user) {
                 setLoaded(true);
                 return;
             }
-const { data: saved, error: loadError } = await supabase
+            const { data: saved, error: loadError } = await supabase
                 .from("collection_progress_raw")
                 .select("progress")
                 .eq("user_id", user.id)
@@ -519,29 +538,31 @@ const { data: saved, error: loadError } = await supabase
             }
             setLoaded(true);
         };
-        void loadProgress().catch(() => { if (active)
-            setLoadingFailed(true); });
+        void loadProgress().catch(() => {
+            if (active)
+                setLoadingFailed(true);
+        });
         return () => { active = false; };
     }, []);
     useEffect(() => {
         if (!loaded)
             return;
-const current = JSON.stringify(flipped);
+        const current = JSON.stringify(flipped);
         if (current === lastSavedProgress)
             return;
-const saveProgress = async () => {
-const { data } = await supabase.auth.getSession();
-const user = data.session?.user;
+        const saveProgress = async () => {
+            const { data } = await supabase.auth.getSession();
+            const user = data.session?.user;
             if (!user)
                 return;
-const saveError = await saveCollectionProgress(set.setId, flipped);
+            const saveError = await saveCollectionProgress(set.setId, flipped);
             if (saveError) {
                 console.error("Unable to save collection progress:", saveError);
                 return;
             }
             setLastSavedProgress(current);
         };
-const saveTimer = window.setTimeout(saveProgress, 400);
+        const saveTimer = window.setTimeout(saveProgress, 400);
         return () => window.clearTimeout(saveTimer);
     }, [flipped, loaded, lastSavedProgress]);
     if (!loaded)
@@ -560,21 +581,21 @@ const saveTimer = window.setTimeout(saveProgress, 400);
         </header>
         <nav className="s1-rarities" aria-label="Card rarity">
           {Object.entries(set.rarities).map(([rarity, count]) => {
-const owned = cards.filter(card => card.rarity === rarity && flipped[`${rarity}-${card.number}`]).length;
+            const owned = cards.filter(card => card.rarity === rarity && flipped[`${rarity}-${card.number}`]).length;
             return <button type="button" key={rarity} aria-pressed={selectedRarity === rarity} className={`${selectedRarity === rarity ? "is-active" : ""} ${owned === count ? "is-complete" : ""}`} onClick={() => setSelectedRarity(rarity)}><strong>{getDisplayRarityCode(rarity)}</strong><span>{owned}/{count}</span>{owned === count && <Check size={13}/>}</button>;
         })}
         </nav>
         <section className="s1-catalog" aria-label={`${selectedRarity} cards`}>
           <div className="s1-catalog-header"><div><h2>{rarityNames[selectedRarity]}<span>{getDisplayRarityCode(selectedRarity)}</span></h2><p>{rarityCollected} of {rarityCards.length} collected</p></div><div className="s1-filters" role="group" aria-label="Filter cards">{(["all", "missing", "owned"] as const).map(value => <button type="button" key={value} aria-pressed={filter === value} className={filter === value ? "is-active" : ""} onClick={() => setFilter(value)}>{value === "all" ? "All cards" : value === "owned" ? "Owned" : "Missing"}</button>)}</div></div>
           {visibleCards.length === 0 ? <div className="s1-empty"><Check size={24}/><h3>{filter === "missing" ? "This rarity is complete" : "No owned cards here yet"}</h3><p>{filter === "missing" ? "Every card in this rarity is in your collection." : "Switch to All cards to start tracking your collection."}</p><button type="button" onClick={() => setFilter("all")}>Show all cards</button></div> : <div className="s1-card-grid">{visibleCards.map(card => {
-const key = `${card.rarity}-${card.number}`;
-const owned = !!flipped[key];
-const code = `MLPSE01-${getDisplayRarityCode(card.rarity)}-${String(card.number).padStart(3, "0")}`;
+                const key = `${card.rarity}-${card.number}`;
+                const owned = !!flipped[key];
+                const code = getEnglishCard("4", key)!.checklistCode;
                 return <article key={key} className={`s1-grid-card ${owned ? "is-owned" : ""}`}>
               <button type="button" className="s1-card-button" onClick={() => toggleCard(key)} aria-label={viewMode ? `Inspect ${code} in 3D` : `${code}, ${owned ? "owned. Mark missing" : "missing. Mark owned"}`} aria-pressed={viewMode ? undefined : owned}>
                 <div className="s1-grid-model" data-show-back={!viewMode && owned} style={{ transform: !viewMode && owned ? "rotateY(180deg)" : "rotateY(0deg)" }}>
-                  <div className="s1-grid-face"><CardImage visible={loaded && (viewMode || !owned)} src={cardImagePaths.ccg(set.folder, set.prefix, card.rarity, String(card.number).padStart(3, "0"))} className="s1-grid-image" draggable={false} alt={code}/></div>
-                  <div className="s1-grid-face s1-grid-back"><div className="s1-back-art"><CardImage visible={loaded && !viewMode && owned} src={getCardBack(card.rarity, card.number)} className="s1-grid-image s1-grid-back-image" draggable={false} alt={`${code} back`}/></div>{hasSilverStamp(key) && <CertificateSeal centered={hasCenteredStamp(key)}/>}</div>
+                  <div className="s1-grid-face"><CardImage visible={loaded && (viewMode || !owned)} className="s1-grid-image" draggable={false} alt={code} {...getEnglishCollectionImageProps("4", key, "front", false)}/></div>
+                  <div className="s1-grid-face s1-grid-back"><div className="s1-back-art"><CardImage visible={loaded && !viewMode && owned} className="s1-grid-image s1-grid-back-image" draggable={false} alt={`${code} back`} {...getEnglishCollectionImageProps("4", key, "back", false)}/></div>{hasSilverStamp(key) && <CertificateSeal centered={hasCenteredStamp(key)}/>}</div>
                 </div>
                 {owned && <span className="s1-owned-badge"><Check size={13}/><span className="sr-only">Owned</span></span>}
                 {viewMode && <span className="s1-inspect-badge"><Box size={13}/>3D</span>}

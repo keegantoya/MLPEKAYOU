@@ -1,6 +1,8 @@
 import { getMoonFourFront } from "@/lib/card-images";
 import { getHeartswarmingEveFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
+import { getChineseCard, isWideChineseCard } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
+import ChineseISOImage from "@/pages/Chinese Kayou/Chinese ISO/components/card-image";
 import { useEffect, useState } from "react";
 import {
   Bell,
@@ -97,6 +99,7 @@ const OFFER_SET_NAMES: Record<string, string> = {
   tcgpromos: "TCG Promos",
 };
 const getOfferCardImage = (card: OfferCardRef) => {
+  if (String(card.set_id).startsWith("cn-")) return getChineseCard(card.set_id, card.card_key)?.image ?? "";
   const [rarity, number] = card.card_key.split("-");
   if (card.set_id === "SD" || card.set_id === "friendshipsbegin") {
     return `/friendships-begin/${card.card_key}.webp`;
@@ -111,7 +114,6 @@ const getOfferCardImage = (card: OfferCardRef) => {
     }
     return `/fantasy-wonderland/${card.card_key}.webp`;
   }
-
   if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
   if (String(card.set_id) === "hearthswarming-eve") return getHeartswarmingEveFront(card.card_key);
   if (card.set_id === "14") {
@@ -150,6 +152,8 @@ function OfferCardThumbnail({ card }: { card: OfferCardRef }) {
   const isLandscape =
     card.set_id === "14" &&
     /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key);
+  const chineseCard = getChineseCard(card.set_id, card.card_key);
+  if (chineseCard) return <ChineseISOImage key={chineseCard.identity} card={chineseCard} />;
   if (!src || failed) {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-zinc-300 px-1 text-center text-[9px] font-bold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100">
@@ -181,6 +185,20 @@ function OfferCardThumbnail({ card }: { card: OfferCardRef }) {
       }
     />
   );
+}
+function OfferCardPreview({ card }: { card: OfferCardRef }) {
+  const chineseCard = getChineseCard(card.set_id, card.card_key);
+  const isChinese = String(card.set_id).startsWith("cn-");
+  const wide = !!chineseCard && isWideChineseCard(chineseCard);
+  const code = chineseCard?.code ?? card.card_key;
+  const setName = chineseCard?.setName ?? OFFER_SET_NAMES[card.set_id] ?? card.set_id;
+  return <div className="shrink-0" title={`${setName}: ${code}`}>
+    <div className="mb-1.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">{isChinese ? "Chinese" : "English"}</div>
+    <div className={`relative overflow-hidden rounded-[6px] ${wide ? "aspect-[10/7] w-48 sm:w-56" : "aspect-[5/7] w-24 sm:w-28"}`}>
+      <OfferCardThumbnail card={card} />
+    </div>
+    <div className={`mt-1 truncate text-center text-[10px] font-semibold ${wide ? "max-w-48 sm:max-w-56" : "max-w-24 sm:max-w-28"}`}>{code}</div>
+  </div>;
 }
 export default function Inbox() {
   const [activeTab, setActiveTab] = useState<
@@ -850,35 +868,15 @@ export default function Inbox() {
   }
   return (
     <div
-      className={`min-h-screen px-3 py-4 transition-colors duration-200 sm:px-6 sm:py-8 ${
+      className={`min-h-screen px-3 pb-4 transition-colors duration-200 sm:px-6 sm:py-8 ${
         isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"
       }`}
     >
-      <div className="mx-auto max-w-6xl">
-        <div className="h-2 sm:hidden" />
+      <div className="w-full min-w-0">
         <section
-          className={`relative overflow-hidden rounded-[30px] border ${
-            isLightMode
-              ? "border-black/10 bg-white shadow-[0_14px_36px_rgba(0,0,0,.05)]"
-              : "border-white/[0.08] bg-[#151718]"
-          }`}
+          className="relative border-b border-current/10 pb-5"
         >
-          <div
-            className={`absolute inset-0 bg-cover bg-center ${
-              isLightMode ? "opacity-[0.07]" : "opacity-[0.06]"
-            }`}
-            style={{
-              backgroundImage: "url('/website-assets/exploreequestria.webp')",
-            }}
-          />
-          <div
-            className={`absolute inset-0 ${
-              isLightMode
-                ? "bg-gradient-to-r from-white via-white/95 to-white/75"
-                : "bg-gradient-to-r from-[#151718] via-[#151718]/95 to-[#151718]/75"
-            }`}
-          />
-          <div className="relative p-6 sm:p-8">
+          <div className="relative py-2">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div
@@ -904,13 +902,9 @@ export default function Inbox() {
                   from your connections.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:min-w-[300px]">
+              <div className="flex shrink-0 gap-8 sm:gap-10">
                 <div
-                  className={`rounded-2xl border p-4 ${
-                    isLightMode
-                      ? "border-black/10 bg-white/85"
-                      : "border-white/10 bg-black/20"
-                  }`}
+                  className="min-w-0 py-1"
                 >
                   <div
                     className={`text-xs font-medium ${
@@ -924,11 +918,7 @@ export default function Inbox() {
                   </div>
                 </div>
                 <div
-                  className={`rounded-2xl border p-4 ${
-                    isLightMode
-                      ? "border-black/10 bg-white/85"
-                      : "border-white/10 bg-black/20"
-                  }`}
+                  className="min-w-0 py-1"
                 >
                   <div
                     className={`text-xs font-medium ${
@@ -946,24 +936,13 @@ export default function Inbox() {
           </div>
         </section>
         <div
-          className={`mt-4 grid grid-cols-3 rounded-2xl border p-1 ${
-            isLightMode
-              ? "border-black/10 bg-white"
-              : "border-white/[0.08] bg-[#151718]"
-          }`}
+          className="mt-5 grid grid-cols-3 border-b border-current/10"
         >
           <button
             type="button"
             onClick={() => setActiveTab("notifications")}
-            className={`relative flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors ${
-              activeTab === "notifications"
-                ? isLightMode
-                  ? "bg-[#c89d13]/12 text-[#725700]"
-                  : "bg-[#FFD54A]/10 text-[#FFE27A]"
-                : isLightMode
-                  ? "text-zinc-500 hover:bg-zinc-50"
-                  : "text-zinc-500 hover:bg-white/[0.04]"
-            }`}
+            aria-pressed={activeTab === "notifications"}
+            className={`relative flex min-h-[48px] min-w-0 items-center justify-center gap-1.5 border-b-2 px-1 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 sm:text-sm ${activeTab === "notifications" ? "border-[hsl(var(--primary))] text-[hsl(var(--primary))]" : "border-transparent text-zinc-500 hover:text-current"}`}
           >
             <Bell size={16} />
             Requests
@@ -976,15 +955,8 @@ export default function Inbox() {
           <button
             type="button"
             onClick={() => setActiveTab("friends")}
-            className={`flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors ${
-              activeTab === "friends"
-                ? isLightMode
-                  ? "bg-[#c89d13]/12 text-[#725700]"
-                  : "bg-[#FFD54A]/10 text-[#FFE27A]"
-                : isLightMode
-                  ? "text-zinc-500 hover:bg-zinc-50"
-                  : "text-zinc-500 hover:bg-white/[0.04]"
-            }`}
+            aria-pressed={activeTab === "friends"}
+            className={`relative flex min-h-[48px] min-w-0 items-center justify-center gap-1.5 border-b-2 px-1 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 sm:text-sm ${activeTab === "friends" ? "border-[hsl(var(--primary))] text-[hsl(var(--primary))]" : "border-transparent text-zinc-500 hover:text-current"}`}
           >
             <Users size={16} />
             Friends
@@ -992,15 +964,8 @@ export default function Inbox() {
           <button
             type="button"
             onClick={() => setActiveTab("offers")}
-            className={`relative flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors ${
-              activeTab === "offers"
-                ? isLightMode
-                  ? "bg-[#c89d13]/12 text-[#725700]"
-                  : "bg-[#FFD54A]/10 text-[#FFE27A]"
-                : isLightMode
-                  ? "text-zinc-500 hover:bg-zinc-50"
-                  : "text-zinc-500 hover:bg-white/[0.04]"
-            }`}
+            aria-pressed={activeTab === "offers"}
+            className={`relative flex min-h-[48px] min-w-0 items-center justify-center gap-1.5 border-b-2 px-1 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 sm:text-sm ${activeTab === "offers" ? "border-[hsl(var(--primary))] text-[hsl(var(--primary))]" : "border-transparent text-zinc-500 hover:text-current"}`}
           >
             <Handshake size={16} />
             Offers BETA
@@ -1013,11 +978,7 @@ export default function Inbox() {
         </div>
         {activeTab === "notifications" && (
           <section
-            className={`mt-4 rounded-[26px] border p-4 sm:p-5 ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
-            }`}
+            className="mt-6 min-w-0"
           >
             <div className="mb-4 flex items-center gap-2">
               <UserPlus
@@ -1037,11 +998,7 @@ export default function Inbox() {
             </div>
             {loading ? (
               <div
-                className={`rounded-2xl border p-8 text-center text-sm ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50 text-zinc-500"
-                    : "border-white/[0.07] bg-white/[0.03] text-zinc-400"
-                }`}
+                className="py-10 text-center text-sm text-zinc-500"
               >
                 Loading requests...
               </div>
@@ -1050,11 +1007,7 @@ export default function Inbox() {
                 {pendingSentRequests.map((request) => (
                   <div
                     key={request.id}
-                    className={`flex flex-col gap-3 rounded-2xl border p-3 sm:flex-row sm:items-center sm:p-4 ${
-                      isLightMode
-                        ? "border-[#8a6a00]/20 bg-[#c89d13]/[0.06]"
-                        : "border-[#FFD54A]/15 bg-[#FFD54A]/[0.05]"
-                    }`}
+                    className="flex flex-col gap-3 border-b border-current/10 py-4 sm:flex-row sm:items-center"
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-3">
                       <CardImage
@@ -1127,11 +1080,7 @@ export default function Inbox() {
                 ))}
                 {pendingSentRequests.length === 0 && history.length === 0 && (
                   <div
-                    className={`rounded-2xl border px-5 py-4 ${
-                      isLightMode
-                        ? "border-black/10 bg-zinc-50"
-                        : "border-white/[0.07] bg-white/[0.03]"
-                    }`}
+                    className="py-6"
                   >
                     <div className="flex items-center gap-3">
                       <Bell
@@ -1166,11 +1115,7 @@ export default function Inbox() {
                       {history.map((item) => (
                         <div
                           key={item.id}
-                          className={`flex items-center gap-3 rounded-2xl border p-3 sm:p-4 ${
-                            isLightMode
-                              ? "border-black/10 bg-zinc-50"
-                              : "border-white/[0.07] bg-white/[0.03]"
-                          }`}
+                          className="flex items-center gap-3 border-b border-current/10 py-4"
                         >
                           <CardImage
                             src={getProfileAssets(item).avatar}
@@ -1276,11 +1221,7 @@ export default function Inbox() {
                 {requests.map((request) => (
                   <div
                     key={request.id}
-                    className={`rounded-2xl border p-4 sm:p-5 ${
-                      isLightMode
-                        ? "border-black/10 bg-zinc-50"
-                        : "border-white/[0.07] bg-white/[0.03]"
-                    }`}
+                    className="relative min-w-0 border-b border-current/10 py-5"
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-4">
@@ -1335,11 +1276,7 @@ export default function Inbox() {
         )}
         {activeTab === "offers" && (
           <section
-            className={`mt-4 rounded-[26px] border p-4 sm:p-5 ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
-            }`}
+            className="mt-6 min-w-0"
           >
             <div className="mb-4 flex items-center">
               <div>
@@ -1365,11 +1302,7 @@ export default function Inbox() {
               </div>
             ) : offers.length === 0 ? (
               <div
-                className={`rounded-2xl border p-8 text-center ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/[0.07] bg-white/[0.03]"
-                }`}
+                className="py-12 text-center"
               >
                 <Handshake size={26} className="mx-auto text-zinc-400" />
                 <div className="mt-3 font-semibold">No offers yet</div>
@@ -1409,11 +1342,7 @@ export default function Inbox() {
                   return (
                     <article
                       key={offer.id}
-                      className={`rounded-2xl border p-4 ${
-                        isLightMode
-                          ? "border-black/10 bg-zinc-50"
-                          : "border-white/[0.07] bg-white/[0.03]"
-                      }`}
+                      className="relative min-w-0 border-b border-current/10 py-5"
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
@@ -1473,16 +1402,7 @@ export default function Inbox() {
                       <div className="mt-4 flex items-center gap-3 overflow-x-auto pb-1">
                         <div className="flex shrink-0 gap-2">
                           {offer.offered_cards.map((card, index) => (
-                            <div
-                              key={`${card.set_id}-${card.card_key}-${index}`}
-                            >
-                              <div className="relative aspect-[5/7] w-24 overflow-hidden rounded-[6px] sm:w-28">
-                                <OfferCardThumbnail card={card} />
-                              </div>
-                              <div className="mt-1 max-w-28 truncate text-center text-[10px] font-semibold">
-                                {card.card_key}
-                              </div>
-                            </div>
+                            <OfferCardPreview key={`${card.set_id}-${card.card_key}-${index}`} card={card} />
                           ))}
                         </div>
                         <div
@@ -1494,14 +1414,7 @@ export default function Inbox() {
                         >
                           for
                         </div>
-                        <div className="shrink-0">
-                          <div className="relative aspect-[5/7] w-24 overflow-hidden rounded-[6px] sm:w-28">
-                            <OfferCardThumbnail card={targetCard} />
-                          </div>
-                          <div className="mt-1 max-w-28 truncate text-center text-[10px] font-bold">
-                            {offer.target_card_key}
-                          </div>
-                        </div>
+                        <OfferCardPreview card={targetCard} />
                       </div>
                       <div
                         className={`mt-3 rounded-xl px-3 py-2 text-sm ${
@@ -1617,11 +1530,7 @@ export default function Inbox() {
         )}
         {activeTab === "friends" && (
           <section
-            className={`mt-4 rounded-[26px] border p-4 sm:p-5 ${
-              isLightMode
-                ? "border-black/10 bg-white"
-                : "border-white/[0.08] bg-[#151718]"
-            }`}
+            className="mt-6 min-w-0"
           >
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -1636,11 +1545,7 @@ export default function Inbox() {
                 </p>
               </div>
               <div
-                className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-3 sm:min-w-[300px] ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/[0.07] bg-white/[0.03]"
-                }`}
+                className="flex items-center justify-between gap-4 py-2 sm:min-w-[280px]"
               >
                 <div>
                   <div className="text-sm font-semibold">Friend Requests</div>
@@ -1678,11 +1583,7 @@ export default function Inbox() {
               <div className="mb-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div
-                    className={`relative flex-1 rounded-2xl border ${
-                      isLightMode
-                        ? "border-black/10 bg-zinc-50"
-                        : "border-white/[0.07] bg-white/[0.03]"
-                    }`}
+                    className="relative min-w-0 flex-1 border-b border-current/20 focus-within:border-[hsl(var(--primary))]"
                   >
                     <Search
                       size={17}
@@ -1735,21 +1636,13 @@ export default function Inbox() {
             )}
             {loading ? (
               <div
-                className={`rounded-2xl border p-8 text-center text-sm ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50 text-zinc-500"
-                    : "border-white/[0.07] bg-white/[0.03] text-zinc-400"
-                }`}
+                className="py-10 text-center text-sm text-zinc-500"
               >
                 Loading friends...
               </div>
             ) : friends.length === 0 ? (
               <div
-                className={`rounded-2xl border p-10 text-center ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/[0.07] bg-white/[0.03]"
-                }`}
+                className="py-12 text-center"
               >
                 <Users
                   className={`mx-auto mb-3 ${
@@ -1768,11 +1661,7 @@ export default function Inbox() {
               </div>
             ) : filteredFriends.length === 0 ? (
               <div
-                className={`rounded-2xl border p-10 text-center ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50"
-                    : "border-white/[0.07] bg-white/[0.03]"
-                }`}
+                className="py-12 text-center"
               >
                 <Search
                   className={`mx-auto mb-3 ${
@@ -1791,21 +1680,13 @@ export default function Inbox() {
               </div>
             ) : (
               <>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid min-w-0 gap-x-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {visibleFriends.map((friend) => (
                     <article
                       key={friend.id}
-                      className={`relative rounded-2xl border p-4 transition-colors sm:p-5 ${
-                        friend.favorite
-                          ? isLightMode
-                            ? "border-[#8a6a00]/25 bg-[#c89d13]/[0.06]"
-                            : "border-[#FFD54A]/20 bg-[#FFD54A]/[0.05]"
-                          : isLightMode
-                            ? "border-black/10 bg-zinc-50"
-                            : "border-white/[0.07] bg-white/[0.03]"
-                      }`}
+                      className="relative min-w-0 border-b border-current/10 py-5"
                     >
-                      <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
+                      <div className="absolute right-0 top-5 z-20 flex items-center gap-2">
                         {friend.favorite && (
                           <span
                             className={`flex h-9 w-9 items-center justify-center rounded-full border ${isLightMode ? "border-[#8a6a00]/20 bg-[#fff8dc] text-[#8a6a00]" : "border-[#FFD54A]/20 bg-[#2a271b] text-[#FFE27A]"}`}
@@ -1829,7 +1710,7 @@ export default function Inbox() {
                           )}
                         </button>
                       </div>
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-4 pr-20">
                         <button
                           type="button"
                           onClick={() => openFriendProfile(friend.username)}
@@ -1981,11 +1862,7 @@ export default function Inbox() {
                       </div>
                       {editingNickname !== friend.id && (
                         <div
-                          className={`mt-5 grid grid-cols-[1fr_auto] gap-2 border-t pt-4 ${
-                            isLightMode
-                              ? "border-black/[0.08]"
-                              : "border-white/[0.07]"
-                          }`}
+                          className="mt-4 grid grid-cols-[1fr_auto] gap-2"
                         >
                           <button
                             type="button"
