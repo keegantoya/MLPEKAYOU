@@ -101,7 +101,7 @@ export default function Wishlist({ characterSearch = "" }: {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold sm:text-2xl">Wishlist</h1>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Cards you want to find.</p>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Hehe hi. This your wishlist.</p>
           </div>
           <div className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-semibold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
             {visibleCards.length} {visibleCards.some(card => resolveISOCard(card.set_id, card.card_key)?.family === "merch") ? (visibleCards.length === 1 ? "item" : "items") : (visibleCards.length === 1 ? "card" : "cards")}
@@ -122,7 +122,7 @@ export default function Wishlist({ characterSearch = "" }: {
           </p>
         </section>) : (<section className="min-w-0">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold">Wishlisted cards</h2>
+            <h2 className="text-base font-semibold">Wishlisted Items</h2>
             <span className="text-sm text-zinc-500 dark:text-zinc-400">
               Tap a card to manage it
             </span>
