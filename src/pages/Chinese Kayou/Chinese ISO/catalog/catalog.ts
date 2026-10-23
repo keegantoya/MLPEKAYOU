@@ -80,8 +80,8 @@ function moonThreeImageStyle(key: string): CSSProperties {
 const code = chineseSets.find(set => set.id === "cn-moon-three")!.cards.find(card => card.key === key)?.code ?? "";
 const scale = ["YH-T03-031", "YH-T03-032"].includes(code) ? 1.08 : key.startsWith("HR-") ? 1.05 : /^YH-UR-03[7-9]$/.test(code) ? 1.06 : /^SC-[2-6]$/.test(key) ? 1.1 : 1;
   if (code === "YH-UR-032") return { position: "absolute", left: -2, top: -2, width: "calc(100% + 4px)", height: "calc(100% + 4px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
-  if (key === "HR-17") return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: `translate(-50%, -50%) rotate(-90deg) scale(${scale})`, transformOrigin: "center" };
-  if (/^HR-(?:17|2[5-9]|30)$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", transform: `translate(-50%, -50%) rotate(-90deg) scale(${scale})`, transformOrigin: "center" };
+  if (key === "HR-16") return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: `translate(-50%, -50%) rotate(-90deg) scale(${scale})`, transformOrigin: "center" };
+  if (/^HR-(?:16|2[4-9])$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", transform: `translate(-50%, -50%) rotate(-90deg) scale(${scale})`, transformOrigin: "center" };
   return { transform: scale === 1 ? "none" : `scale(${scale})`, transformOrigin: "center" };
 }
 const MOON_FOUR_SSR_ZOOM_CODES = new Set(["YH-T04-042", "YH-T04-045", "YH-T04-049", "YH-T04-050", "YH-T04-051", "YH-T04-053", "YH-T04-054"]);

@@ -96,7 +96,8 @@ export const cardImagePathsCN = {
         const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon Three card code.");
-        return `${getChineseCardImage(`Chinese Sets/Moon-Three-CN/CN-M3-${code}${index}.webp`)}?v=${CN_MOON_THREE_IMAGE_REVISION}`;
+        const imageIndex = code === "HR" && index >= 15 && index <= 30 ? index + 1 : index;
+        return `${getChineseCardImage(`Chinese Sets/Moon-Three-CN/CN-M3-${code}${imageIndex}.webp`)}?v=${CN_MOON_THREE_IMAGE_REVISION}`;
     },
     moonOne: (rarity: string, number: number | string): string => {
         const code = rarity.trim().toUpperCase();

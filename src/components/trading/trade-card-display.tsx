@@ -1,3 +1,5 @@
+import { merchandiseSets, ENGLISH_MERCHANDISE_SET_ID } from "@/lib/english-merchandise-catalog";
+import { profileViewCard, profileViewCode, profileViewImage, profileViewStyle, profileViewSquare, profileViewGroup, profileViewName } from "@/lib/english-card-views";
 import { useState } from "react";
 import CardImage from "@/components/CardImage";
 import { cardImagePaths, getMoonFourFront, getHeartswarmingEveFront } from "@/lib/card-images";
@@ -44,6 +46,7 @@ export const OFFER_SET_ORDER = [
   "14",
   "hearthswarming-eve",
   "tcgpromos",
+  ENGLISH_MERCHANDISE_SET_ID,
 ];
 export const OFFER_RARITY_ORDER = [
   "BASE",
@@ -239,6 +242,7 @@ const baseCode = setCodeMap[setId] || "";
 };
 export const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
   const setId = String(card.set_id);
+  if (setId === ENGLISH_MERCHANDISE_SET_ID) return `${profileViewName(profileViewGroup(card))} - ${profileViewCode(card)}`;
   if (setId.startsWith("cn-")) return getChineseCard(setId, card.card_key)?.code ?? card.card_key;
   const key = card.card_key.replace(/^(?:BONUS|STARTER|STARTERS)-/, "");
   if (setId === "hearthswarming-eve") return getHeartswarmingEveDisplayCode(key);
@@ -300,6 +304,8 @@ export const randomHeroCards = (cards: TradeCard[]) => {
 export const offerKeyFor = (recipientId: string, setId: string, cardKey: string) =>
   [recipientId, setId, cardKey].join("-");
 export const inventoryRarity = (cardKey: string) => {
+  const item = profileViewCard({ set_id: ENGLISH_MERCHANDISE_SET_ID, card_key: cardKey });
+  if (item?.merchandiseSetId) return item.merchandiseSetId;
   const key = cardKey.toUpperCase().replace(/\u203B/g, "");
   if (/^P?BP04-/.test(key)) return getHeartswarmingEveRarity(key);
   const nightmareParallel = key.match(/^PBP03-(ER|SPR|GR|CR|RR)\d{2}(?:-[ABC]2?)?$/);
@@ -390,6 +396,7 @@ export const getFriendshipsBeginImageKey = (cardKey: string) => {
   return match ? `SD01${match[1]}${String(Number(match[2])).padStart(2, "0")}` : key;
 };
 export const getCardImage = (card: TradeCard) => {
+  if (card.set_id === ENGLISH_MERCHANDISE_SET_ID) return profileViewCard(card) ? profileViewImage(card) : "";
   if (card.set_id.startsWith("cn-")) return getChineseCard(card.set_id, card.card_key)?.image ?? "";
   if (String(card.set_id) === "13") return getMoonFourFront(card.card_key);
   const [rarity, number] = card.card_key.split("-");
@@ -524,6 +531,7 @@ export function ListingCardImage({
       </div>
     );
   }
+  if (card.set_id === ENGLISH_MERCHANDISE_SET_ID) return <CardImage src={src} alt={getListingDisplayCode(card)} publicProfile imageSize="original" loading={offerMode ? "eager" : "lazy"} draggable={false} style={profileViewStyle(card)} onError={() => setFailedSrc(src)} />;
   return (
     <CardImage loading={offerMode ? "eager" : "lazy"} imageSize={(isFriendshipsBeginSet(String(card.set_id)) && offerMode) ? "original" : imageSize ?? (((String(card.set_id) === "9" && card.card_key === "PR-14") || (String(card.set_id) === "tcgpromos" && card.card_key === "RR28")) ? "original" : undefined)}
       src={src}
@@ -579,6 +587,9 @@ export function InventoryCardImage({
     />
   );
 }
+rarityMap[ENGLISH_MERCHANDISE_SET_ID] = merchandiseSets.map(set => set.id);
+COLLECTION_SET_TOTALS[ENGLISH_MERCHANDISE_SET_ID] = merchandiseSets.reduce((total, set) => total + set.items.length, 0);
+export const isSquareTradeCard = (card: { set_id: string; card_key: string }) => card.set_id === ENGLISH_MERCHANDISE_SET_ID && profileViewSquare(card);
 for (const set of chineseSets) {
   rarityMap[set.id] = Array.from(new Set(set.cards.map(card => card.rarity)));
   COLLECTION_SET_TOTALS[set.id] = set.cards.length;
@@ -588,6 +599,7 @@ export const isWideTradeCard = (card: { set_id: string; card_key: string }) => {
   return chineseCard ? isWideChineseCard(chineseCard) : card.set_id === "3" && /^SZR-0*1$/.test(card.card_key);
 };
 export const getOfferRarityLabel = (offerSetId: string, rarity: string) => {
+    if (offerSetId === ENGLISH_MERCHANDISE_SET_ID) return rarity === "ALL" ? "All collections" : profileViewName(rarity);
     if (rarity === "DN") return "\u25C7N";
     if (rarity === "DAR") return "\u25C7AR";
     if (rarity === "DCR") return "\u25C7CR";
@@ -609,4 +621,4 @@ export const getOfferRarityLabel = (offerSetId: string, rarity: string) => {
     };
     return parallelLabels[rarity] || rarity;
   };
-export const getOfferSetName = (id: string) => chineseSets.find(set => set.id === id)?.name ?? ({ "1": "Moon One", "2": "Moon Two", "3": "Moon Three", "13": "Moon Four", "4": "Star One", "5": "Rainbow One", "6": "Rainbow Two", "7": "Fun Moments One", "8": "Fun Moments Two", "11": "Fun Moments Three", "9": "CCG Promos", SD: "Friendships Begin", friendshipsbegin: "Friendships Begin", FW: "Fantasy Wonderland", "12": "Discord", "14": "Nightmare Night", "hearthswarming-eve": "HeartsWarming Eve", tcgpromos: "TCG Promos" } as Record<string, string>)[id] ?? id;
+export const getOfferSetName = (id: string) => id === ENGLISH_MERCHANDISE_SET_ID ? "Merchandise" : chineseSets.find(set => set.id === id)?.name ?? ({ "1": "Moon One", "2": "Moon Two", "3": "Moon Three", "13": "Moon Four", "4": "Star One", "5": "Rainbow One", "6": "Rainbow Two", "7": "Fun Moments One", "8": "Fun Moments Two", "11": "Fun Moments Three", "9": "CCG Promos", SD: "Friendships Begin", friendshipsbegin: "Friendships Begin", FW: "Fantasy Wonderland", "12": "Discord", "14": "Nightmare Night", "hearthswarming-eve": "HeartsWarming Eve", tcgpromos: "TCG Promos" } as Record<string, string>)[id] ?? id;

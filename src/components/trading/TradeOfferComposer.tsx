@@ -1,10 +1,12 @@
+import { ENGLISH_MERCHANDISE_SET_ID } from "@/lib/english-merchandise-catalog";
+import { profileViewCard } from "@/lib/english-card-views";
 import { useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Root as Dialog, Portal as DialogPortal, Overlay as DialogOverlay, Content as DialogContent, Title as DialogTitle, Description as DialogDescription } from "@radix-ui/react-dialog";
 import { chineseSets, getChineseCard } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import { HEARTHSWARMING_EVE_RARITIES } from "@/lib/hearthswarming-eve";
-import { TradeCard, InventoryCard, OFFER_SET_ORDER, OFFER_RARITY_ORDER, getListingDisplayCode, isOwnedProgress, inventoryRarity, rarityMap, comparePromoCards, isFriendshipsBeginSet, getOfferCollectionSet, getFriendshipsBeginImageKey, InventoryCardImage, isWideTradeCard, getOfferRarityLabel, getOfferSetName } from "@/components/trading/trade-card-display";
+import { TradeCard, InventoryCard, OFFER_SET_ORDER, OFFER_RARITY_ORDER, getListingDisplayCode, isOwnedProgress, inventoryRarity, rarityMap, comparePromoCards, isFriendshipsBeginSet, getOfferCollectionSet, getFriendshipsBeginImageKey, InventoryCardImage, isWideTradeCard, isSquareTradeCard, getOfferRarityLabel, getOfferSetName } from "@/components/trading/trade-card-display";
 export function buildOfferInventory(rows: { set_id: string; progress: Record<string, unknown> | null }[]): InventoryCard[] {
   const cards = new Map<string, InventoryCard>();
   for (const row of rows) {
@@ -13,6 +15,7 @@ export function buildOfferInventory(rows: { set_id: string; progress: Record<str
     if (!OFFER_SET_ORDER.includes(setId) && !savedSetId.startsWith("cn-")) continue;
     for (const [savedKey, value] of Object.entries(row.progress ?? {})) {
       if (!isOwnedProgress(value)) continue;
+      if (savedSetId === ENGLISH_MERCHANDISE_SET_ID && !profileViewCard({ set_id: savedSetId, card_key: savedKey })) continue;
       if (savedSetId.startsWith("cn-") && !getChineseCard(savedSetId, savedKey)) continue;
       const key = isFriendshipsBeginSet(savedSetId) ? getFriendshipsBeginImageKey(savedKey) : savedKey;
       const databaseSet = isFriendshipsBeginSet(savedSetId) ? "friendshipsbegin" : savedSetId;
@@ -78,7 +81,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
         return current.filter((selected) => selected.id !== card.id);
       }
       if (current.length >= 10) {
-        setOfferError("You can include a maximum of 10 cards.");
+        setOfferError("You can include a maximum of 10 items.");
         return current;
       }
       return [...current, card];
@@ -87,7 +90,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
   const reviewOffer = () => {
     const discordUsername = offerContact.trim();
     if (selectedOfferCards.length === 0) {
-      setOfferError("Choose at least one card from your inventory.");
+      setOfferError("Choose at least one item from your inventory.");
       return;
     }
     if (!discordUsername) {
@@ -105,7 +108,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
     if (!offerTarget || !currentUserId || sendingRef.current) return;
     const contact = offerContact.trim();
     if (selectedOfferCards.length === 0) {
-      setOfferError("Choose at least one card from your inventory.");
+      setOfferError("Choose at least one item from your inventory.");
       return;
     }
     if (!contact) {
@@ -137,12 +140,12 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
         error.message?.includes("offer_recipient_active_limit")
           ? "You already have 2 active offers sent to this user."
           : error.message?.includes("offer_attempt_limit_reached")
-            ? "You have used both offers for this card."
+            ? "You have used both offers for this item."
             : error.message?.includes("offer_retry_requires_decline") ||
                 error.code === "23505"
               ? "You can only offer again after the first offer is declined."
               : error.code === "42501"
-                ? "This card is no longer available for trade."
+                ? "This item is no longer available for trade."
                 : "Your offer could not be sent. Please try again.",
       );
       setOfferStep("compose");
@@ -240,14 +243,14 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                   className="mt-0.5 truncate text-lg font-bold"
                 >
                   {offerStep === "compose"
-                    ? "Choose your cards"
+                    ? "Choose your items"
                     : offerStep === "review"
                       ? "Are you sure you want to send this?"
                       : "Offer sent"}
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-xs text-zinc-500">
                   {offerStep === "compose"
-                    ? "Choose up to 10 cards. This offer expires after 7 days."
+                    ? "Choose up to 10 items. This offer expires after 7 days."
                     : offerStep === "review"
                       ? "Review both sides of the trade before confirming."
                       : "The collector will see your offer in their inbox."}
@@ -280,7 +283,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                         <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                           You want
                         </div>
-                        <div className={`relative mx-auto mt-2 ${isWideTradeCard(offerTarget) ? "aspect-[10/7]" : "aspect-[5/7]"} w-full max-w-[112px] overflow-hidden rounded-[6px]`}>
+                        <div className={`relative mx-auto mt-2 ${isSquareTradeCard(offerTarget) ? "aspect-square" : isWideTradeCard(offerTarget) ? "aspect-[10/7]" : "aspect-[5/7]"} w-full max-w-[112px] overflow-hidden rounded-[6px]`}>
                           <InventoryPreview card={offerTarget} />
                         </div>
                         <div className="mt-1 text-center text-xs text-zinc-500">
@@ -319,7 +322,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                         <div>
                           <h3 className="font-semibold">Your inventory</h3>
                           <p className="text-sm text-zinc-500">
-                            {selectedOfferCards.length} of 10 cards selected
+                            {selectedOfferCards.length} of 10 items selected
                           </p>
                         </div>
                       </div>
@@ -419,7 +422,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                         <div role="status" className="tp-inventory-loading">
                           <div className="tp-loading-bars" aria-hidden="true" style={{ marginLeft: 0 }}><i /><i /><i /></div>
                           <strong>Opening your collection</strong>
-                          <p>Finding owned cards you can include in this offer.</p>
+                          <p>Finding owned items you can include in this offer.</p>
                           <div className="tp-load-track"><span /></div>
                         </div>
                       ) : visibleOfferInventory.length === 0 ? (
@@ -430,7 +433,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                               : "border-white/[0.08] bg-white/[0.03] text-zinc-400"
                           }`}
                         >
-                          You do not own any cards in this set and rarity.
+                          You do not own any items in this collection and filter.
                         </div>
                       ) : (
                         <div className="mt-2.5 grid max-h-[230px] grid-cols-5 gap-2 overflow-y-auto pr-1 sm:grid-cols-6">
@@ -454,7 +457,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                                       : "hover:ring-2 hover:ring-[#FFD54A]/30"
                                 } disabled:opacity-35`}
                               >
-                                <span className={`relative block ${isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
+                                <span className={`relative block ${isSquareTradeCard(card) ? "aspect-square" : isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
                                   <InventoryPreview card={card} />
                                 </span>
                                 {selected && (
@@ -469,7 +472,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                       )}
                     </div>
                   </div>
-                  {offerStep === "compose" && inventoryPageCount > 1 && <nav aria-label="Inventory card pages" className="flex items-center justify-center gap-4 py-3"><button type="button" disabled={safeInventoryPage === 0} onClick={() => setInventoryPage(value => Math.max(0, value - 1))}>Previous</button><span className="text-xs">{safeInventoryPage + 1} / {inventoryPageCount}</span><button type="button" disabled={safeInventoryPage + 1 >= inventoryPageCount} onClick={() => setInventoryPage(value => value + 1)}>Next</button></nav>}
+                  {offerStep === "compose" && inventoryPageCount > 1 && <nav aria-label="Inventory item pages" className="flex items-center justify-center gap-4 py-3"><button type="button" disabled={safeInventoryPage === 0} onClick={() => setInventoryPage(value => Math.max(0, value - 1))}>Previous</button><span className="text-xs">{safeInventoryPage + 1} / {inventoryPageCount}</span><button type="button" disabled={safeInventoryPage + 1 >= inventoryPageCount} onClick={() => setInventoryPage(value => value + 1)}>Next</button></nav>}
                   {selectedOfferCards.length > 0 && (
                     <div
                       className={`mt-2.5 rounded-xl border p-2 ${
@@ -479,7 +482,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                       }`}
                     >
                       <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                        Cards in your offer
+                        Items in your offer
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {selectedOfferCards.map((card) => (
@@ -488,7 +491,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                             type="button"
                             onClick={() => toggleOfferCard(card)}
                             aria-label={`Remove ${getListingDisplayCode(card)} from your offer`}
-                            className={`relative h-12 ${isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px] border border-[#FFD54A]/40`}
+                            className={`relative h-12 ${isSquareTradeCard(card) ? "aspect-square" : isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px] border border-[#FFD54A]/40`}
                           >
                             <InventoryPreview card={card} />
                             <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/75 text-white">
@@ -552,7 +555,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                           {selectedOfferCards.map((card) => (
                             <div
                               key={card.id}
-                              className={`relative h-32 ${isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}
+                              className={`relative h-32 ${isSquareTradeCard(card) ? "aspect-square" : isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}
                             >
                               <InventoryPreview card={card} />
                             </div>
@@ -560,7 +563,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                         </div>
                         <div className="mt-2 text-sm font-bold">
                           {selectedOfferCards.length}{" "}
-                          {selectedOfferCards.length === 1 ? "card" : "cards"}
+                          {selectedOfferCards.length === 1 ? "item" : "items"}
                         </div>
                       </div>
                     </div>
@@ -578,7 +581,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                         You want
                       </div>
                       <div className="flex flex-1 flex-col items-center justify-center">
-                        <div className={`relative h-32 ${isWideTradeCard(offerTarget) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
+                        <div className={`relative h-32 ${isSquareTradeCard(offerTarget) ? "aspect-square" : isWideTradeCard(offerTarget) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
                           <InventoryPreview card={offerTarget} />
                         </div>
                         <div className="mt-2 text-sm font-bold">
@@ -648,7 +651,7 @@ export default function TradeOfferComposer({ target: offerTarget, currentUserId,
                     {selectedOfferCards.map((card) => (
                       <div
                         key={card.id}
-                        className={`relative h-20 ${isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}
+                        className={`relative h-20 ${isSquareTradeCard(card) ? "aspect-square" : isWideTradeCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}
                       >
                         <InventoryPreview card={card} />
                       </div>

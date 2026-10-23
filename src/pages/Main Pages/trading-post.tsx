@@ -1,3 +1,4 @@
+import { merchandiseSets, ENGLISH_MERCHANDISE_SET_ID } from "@/lib/english-merchandise-catalog";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -122,6 +123,7 @@ const setButtons = [
     to: "/trading-post/tcgpromos",
     image: "/thumbnails/tcgpromossetimage.webp",
   },
+  { title: "Merchandise", subtitle: `${merchandiseSets.reduce((total, set) => total + set.items.length, 0)} Items`, group: "Merchandise", to: `/trading-post/${ENGLISH_MERCHANDISE_SET_ID}`, image: "/thumbnails/penssetimage.webp" },
 ];
 const groups = [
   "All",
@@ -131,6 +133,7 @@ const groups = [
   "Fun Moments",
   "TCG",
   "Promos",
+  "Merchandise",
 ];
 type SetButton = (typeof setButtons)[number];
 function SetPreview({ set }: { set: SetButton }) {
@@ -207,7 +210,7 @@ const visibleSets = setButtons.filter((set) => (activeGroup === "All" || set.gro
       `}</style>
       <main className="tp-index-main">
         <header className="tp-index-header">
-          <div><div className="tp-index-title-line"><h1>Trading Post</h1><span className="tp-index-set-count">{setButtons.length} sets</span></div><p>Choose a set to find cards for trade or sale. Your ISO appears first.</p></div>
+          <div><div className="tp-index-title-line"><h1>Trading Post</h1><span className="tp-index-set-count">{setButtons.length} sets</span></div><p>Choose a collection to find cards or merchandise for trade or sale. Your ISO appears first.</p></div>
           <label className="tp-index-search"><Search size={18} /><input aria-label="Find a set" placeholder="Find a set..." value={search} onChange={(event) => setSearch(event.target.value)} />{search && <button type="button" onClick={() => setSearch("")} aria-label="Clear set search"><X size={14} /></button>}</label>
         </header>
         <nav className="tp-index-filters" aria-label="Set categories">{groups.map((group) => <button type="button" key={group} aria-pressed={activeGroup === group} onClick={() => setActiveGroup(group)}>{group}<span>{group === "All" ? setButtons.length : setButtons.filter((set) => set.group === group).length}</span></button>)}</nav>
