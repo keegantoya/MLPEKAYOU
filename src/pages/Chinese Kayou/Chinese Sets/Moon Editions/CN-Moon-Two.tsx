@@ -5,7 +5,7 @@ import { ArrowLeft, ScanSearch } from "lucide-react";
 import { CN_MOON_TWO_SET_ID, getChineseMoonTwoFront, getChineseCardImage, useChineseCardImage } from "../../card-images-cn";
 import { CHINESE_MOON_TWO_CODES, CHINESE_MOON_TWO_UR_CODES } from "../../Chinese Codes + Char/Chinese-Codes";
 const CN_MOON_TWO_CARDS = ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"].flatMap(rarity => {
-  if (rarity === "UR") return CHINESE_MOON_TWO_UR_CODES.map(card => ({ ...card, image: getChineseMoonTwoFront(card.number - 18, "HR") }));
+  if (rarity === "UR") return CHINESE_MOON_TWO_UR_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-UR${card.number - 18}.webp`)}?v=20261023-m2-ur-own-images-v1` }));
   return CHINESE_MOON_TWO_CODES.filter(card => card.rarity === rarity && (["HR", "LSR", "SGR", "SC"].includes(rarity) || (rarity === "R" && /^YH-T02-00[1-8]$/.test(card.code)) || (rarity === "SR" && /^YH-T02-0(?:09|1[0-6])$/.test(card.code)) || (rarity === "SSR" && /^YH-T02-0(?:1[7-9]|2[0-8])$/.test(card.code)))).map(card => ({ ...card, image: card.rarity === "HR" ? `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-HR${card.number}.webp`)}?v=20261022-m2-hr-direct-30-v3` : getChineseMoonTwoFront(card.number, card.rarity) }));
 });
 export { CN_MOON_TWO_CARDS, CN_MOON_TWO_SET_ID };
@@ -15,6 +15,7 @@ import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
 const EXTRA_SSR_ZOOM_CODES = new Set(["YH-T02-017", "YH-T02-018", "YH-T02-020", "YH-T02-023", "YH-T02-026", "YH-T02-027", "YH-T02-028"]);
 function moonTwoImageStyle(key: string): CSSProperties {
+  if (key === "UR-19") return { position: "absolute", left: -1.5, top: -1.5, width: "calc(100% + 3px)", height: "calc(100% + 3px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
   if (key.startsWith("HR-")) return { transform: "scale(1.05)", transformOrigin: "center" };
   if (key.startsWith("UR-")) return { transform: /^UR-(?:20|21|22|23|24)$/.test(key) ? "scale(1.08)" : "none", transformOrigin: "center" };
 const code = CN_MOON_TWO_CARDS.find(card => card.key === key)?.code ?? "";

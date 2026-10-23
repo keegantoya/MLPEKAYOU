@@ -104,7 +104,7 @@ export default function Wishlist({ characterSearch = "" }: {
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Cards you want to find.</p>
           </div>
           <div className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-semibold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
-            {visibleCards.length} {visibleCards.length === 1 ? "card" : "cards"}
+            {visibleCards.length} {visibleCards.some(card => resolveISOCard(card.set_id, card.card_key)?.family === "merch") ? (visibleCards.length === 1 ? "item" : "items") : (visibleCards.length === 1 ? "card" : "cards")}
           </div>
         </div>
       </section>
@@ -130,7 +130,7 @@ export default function Wishlist({ characterSearch = "" }: {
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
             {visibleCards.map((card) => (<div key={`${card.set_id}:${card.card_key}`} className={`group relative overflow-visible ${resolveISOCard(card.set_id, card.card_key)?.wide ? "col-span-2" : ""}`}>
                 <ISOChecking contentClassName="!rounded-[2px]" contentStyle={{ borderRadius: "2px" }} userId={userId} initialStatus={statuses.get(isoCardIdentity(resolveISOCard(card.set_id, card.card_key)!)) ?? null} setId={card.set_id} cardKey={card.card_key} wishlistMode isWishlisted toggleWishlist={removeFromWishlist}>
-                  <div className={`relative ${resolveISOCard(card.set_id, card.card_key)?.wide ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px] bg-transparent transition hover:-translate-y-0.5`}>
+                  <div className={`relative ${resolveISOCard(card.set_id, card.card_key)?.square ? "aspect-square" : resolveISOCard(card.set_id, card.card_key)?.wide ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px] bg-transparent transition hover:-translate-y-0.5`}>
                     <ISOCardImage card={card}/>
                   </div>
                 </ISOChecking>

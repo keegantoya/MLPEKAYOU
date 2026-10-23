@@ -68,6 +68,7 @@ const scale = baseScale + (SMALL_ZOOM_CODES.has(code) ? .025 : 0) + (EXTRA_ZOOM_
 }
 const EXTRA_SSR_ZOOM_CODES = new Set(["YH-T02-017", "YH-T02-018", "YH-T02-020", "YH-T02-023", "YH-T02-026", "YH-T02-027", "YH-T02-028"]);
 function moonTwoImageStyle(key: string): CSSProperties {
+  if (key === "UR-19") return { position: "absolute", left: -1.5, top: -1.5, width: "calc(100% + 3px)", height: "calc(100% + 3px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
   if (key.startsWith("HR-")) return { transform: "scale(1.05)", transformOrigin: "center" };
   if (key.startsWith("UR-")) return { transform: /^UR-(?:20|21|22|23|24)$/.test(key) ? "scale(1.08)" : "none", transformOrigin: "center" };
 const code = chineseSets.find(set => set.id === "cn-moon-two")!.cards.find(card => card.key === key)?.code ?? "";

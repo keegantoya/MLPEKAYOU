@@ -135,6 +135,11 @@ export default function ISOChecking({ className, contentClassName, contentStyle,
     }
     async function markComplete() {
         await perform(async () => {
+            const entry = resolveISOCard(setId, cardKey);
+            if (entry?.family === "merch") {
+                const { error } = await supabase.rpc("set_english_merchandise_owned", { p_key: entry.stateKey, p_owned: true });
+                if (error) throw error;
+            } else {
             const { data, error: readError } = await supabase.from("collection_progress_raw").select("progress").eq("user_id", userId).eq("set_id", setId).maybeSingle();
             if (readError)
                 throw readError;
@@ -143,6 +148,7 @@ export default function ISOChecking({ className, contentClassName, contentStyle,
             const { error } = await supabase.from("collection_progress_raw").upsert({ user_id: userId, set_id: setId, progress }, { onConflict: "user_id,set_id" });
             if (error)
                 throw error;
+            }
             const { error: statusError } = await supabase.from("iso_status").delete().eq("user_id", userId).in("card_key", isoCardKeys);
             if (statusError)
                 throw statusError;

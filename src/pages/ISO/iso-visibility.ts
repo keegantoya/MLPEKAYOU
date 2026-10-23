@@ -1,5 +1,5 @@
-import { getEnglishCards, isEnglishCardOwned } from "@/lib/english-card-catalog";
-import { buildOwnedISOIdentities, isoSets, isoCardIdentity, normalizeEnglishSetId, type ISOProgressRow } from "./catalog-adapter";
+import { isEnglishCardOwned } from "@/lib/english-card-catalog";
+import { getISOCards, buildOwnedISOIdentities, isoSets, isoCardIdentity, normalizeEnglishSetId, type ISOProgressRow } from "./catalog-adapter";
 export const isISOOwned = isEnglishCardOwned;
 export const normalizeISOKey = (setId: string, key: string): string => {
     const id = normalizeEnglishSetId(setId);
@@ -13,5 +13,5 @@ export const normalizeISOKey = (setId: string, key: string): string => {
     const stripped = (key.startsWith(id + "-") || key.startsWith(id + ":")) ? key.slice(id.length + 1) : key;
     return stripped.replace(/^SHINING ZR-/, "SZR-").replace(/-0*(\d+)$/, (_, n) => `-${Number(n)}`);
 };
-export const ISO_EXPECTED_KEYS: Record<string, string[]> = Object.fromEntries(isoSets.map(set => [set.id, getEnglishCards(set.id).map(card => card.key)]));
-export const getCompletedISOSetIds = (rows: ISOProgressRow[]): string[] => { const owned = buildOwnedISOIdentities(rows); return isoSets.filter(set => { const cards = getEnglishCards(set.id); return cards.length > 0 && cards.every(card => owned.has(isoCardIdentity(card))); }).map(set => set.id); };
+export const ISO_EXPECTED_KEYS: Record<string, string[]> = Object.fromEntries(isoSets.map(set => [set.id, getISOCards(set.id).map(card => card.key)]));
+export const getCompletedISOSetIds = (rows: ISOProgressRow[]): string[] => { const owned = buildOwnedISOIdentities(rows); return isoSets.filter(set => { const cards = getISOCards(set.id); return cards.length > 0 && cards.every(card => owned.has(isoCardIdentity(card))); }).map(set => set.id); };

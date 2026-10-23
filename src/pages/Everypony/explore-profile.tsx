@@ -1,4 +1,5 @@
-import { englishViewCard, englishViewEligible, englishViewName, englishViewCode, englishViewImage, englishViewStyle, englishViewWide, englishViewRarity, englishViewRarityOrder, englishViewRarityLabel, englishViewSetOrder, compareEnglishViewCards, ownedEnglishViewCards, masteredEnglishViewSets, missingEnglishViewCards, englishViewSetId } from "@/lib/english-card-views";
+import { profileViewGroup, profileViewSquare, isProfileMerchandiseHidden } from "@/lib/english-card-views";
+import { profileViewCard as englishViewCard, profileViewEligible as englishViewEligible, profileViewName as englishViewName, profileViewCode as englishViewCode, profileViewImage as englishViewImage, profileViewStyle as englishViewStyle, profileViewWide as englishViewWide, profileViewRarity as englishViewRarity, profileViewRarityOrder as englishViewRarityOrder, profileViewRarityLabel as englishViewRarityLabel, profileViewSetOrder as englishViewSetOrder, compareProfileViewCards as compareEnglishViewCards, ownedEnglishViewCards, masteredEnglishViewSets, missingProfileViewCards as missingEnglishViewCards, englishViewSetId } from "@/lib/english-card-views";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ProfileCardLanguageSwitch, usePublicChineseProfile, type ProfileCardLanguage } from "@/pages/Chinese Kayou/Chinese ISO/PublicChineseCards";
 import ChineseISOImage from "@/pages/Chinese Kayou/Chinese ISO/components/card-image";
@@ -78,7 +79,7 @@ const SafeCardImage = ({ src, alt, className, imageSize, card }: SafeCardImagePr
         </span>
       </div>);
     }
-    return (<CardImage imageSize={resolvedImageSize} src={src} alt={alt} className={className} style={card ? englishViewStyle(card) : { backgroundColor: "transparent", backgroundImage: "none" }} onError={() => setFailed(true)}/>);
+    return (<CardImage publicProfile imageSize={resolvedImageSize} src={src} alt={alt} className={className} style={card ? englishViewStyle(card) : { backgroundColor: "transparent", backgroundImage: "none" }} onError={() => setFailed(true)}/>);
 };
 interface ExploreProfileProps {
     user: any;
@@ -299,7 +300,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                 setuserTab("trades");
             }
             const { data: isoProgress } = await supabase
-                .from("collection_progress")
+                .from("collection_progress_raw")
                 .select("set_id, progress")
                 .eq("user_id", user.id);
             const { data: isoStatusRows } = await supabase
@@ -552,7 +553,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
     const visibleIsoCards = userIsoCards.filter((card) => {
         const setId = String(card.set_id);
         const hidden = userProfileSettings.hidden_iso_sets;
-        if (hidden.includes(setId)) {
+        if (hidden.includes(setId) || isProfileMerchandiseHidden(card, hidden)) {
             return false;
         }
         if (setId === "FW" && hidden.includes("FW")) {
@@ -575,11 +576,11 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
     const activeProfileSettings = showChineseCards ? { hide_iso: chineseProfile.data.settings.chinese_hide_iso, hide_wishlist: chineseProfile.data.settings.chinese_hide_wishlist } : userProfileSettings;
     const displayIsoCards = !cardLanguagesReady || !hasActiveCards ? [] : showChineseCards ? chineseProfile.state.missing.map(card => ({ ...card, set_id: card.setId, card_key: card.key })) : visibleIsoCards.filter(englishViewEligible);
     const displayWishlistCards = !cardLanguagesReady || !hasActiveCards ? [] : showChineseCards ? chineseProfile.state.wishlisted.map(card => ({ ...card, set_id: card.setId, card_key: card.key })) : userWishlistCards.filter(englishViewEligible);
-    const ISO_SET_TABS = Array.from(new Set(displayIsoCards.map((card) => String(card.set_id)))).map((setId) => ({
+    const ISO_SET_TABS = Array.from(new Set(displayIsoCards.map((card) => profileViewGroup(card)))).map((setId) => ({
         id: setId,
         name: getSetName(setId),
     }));
-    const filteredIsoCards = displayIsoCards.filter((card) => String(card.set_id) === selectedSet);
+    const filteredIsoCards = displayIsoCards.filter((card) => profileViewGroup(card) === selectedSet);
     const allTradeCards = !cardLanguagesReady || !hasActiveCards ? [] : showChineseCards ? [...chineseProfile.trades, ...chineseProfile.sales] : [
         ...userTradeCards.map((card: any) => ({
             ...card,
@@ -587,11 +588,11 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
         })),
         ...saleListings,
     ].filter(englishViewEligible);
-    const TRADE_SET_TABS = Array.from(new Set(allTradeCards.map((card) => String(card.set_id)))).map((setId) => ({
+    const TRADE_SET_TABS = Array.from(new Set(allTradeCards.map((card) => profileViewGroup(card)))).map((setId) => ({
         id: setId,
         name: getSetName(setId),
     }));
-    const WISHLIST_SET_TABS = Array.from(new Set(displayWishlistCards.map((card) => String(card.set_id)))).map((setId) => ({
+    const WISHLIST_SET_TABS = Array.from(new Set(displayWishlistCards.map((card) => profileViewGroup(card)))).map((setId) => ({
         id: setId,
         name: getSetName(setId),
     }));
@@ -633,7 +634,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
     const sectionCounts = new Map<string, number>();
     if (!sectionHidden)
         for (const card of sectionCards) {
-            const id = String(card.set_id);
+            const id = profileViewGroup(card);
             sectionCounts.set(id, (sectionCounts.get(id) || 0) + 1);
         }
     function getOfferRarity(card: InventoryCard) {
@@ -658,8 +659,8 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
             return (set?.cards.findIndex(card => card.key === a.card_key) ?? -1) - (set?.cards.findIndex(card => card.key === b.card_key) ?? -1) || String(a.type ?? "").localeCompare(String(b.type ?? ""));
         });
     }
-    const filteredTradeCards = sortByIsoOrder(allTradeCards.filter((card) => String(card.set_id) === selectedSet));
-    const filteredWishlistCards = sortByIsoOrder(displayWishlistCards.filter((card) => String(card.set_id) === selectedSet));
+    const filteredTradeCards = sortByIsoOrder(allTradeCards.filter((card) => profileViewGroup(card) === selectedSet));
+    const filteredWishlistCards = sortByIsoOrder(displayWishlistCards.filter((card) => profileViewGroup(card) === selectedSet));
     const offerSetOptions = allOfferSetOrder.filter((setId) => inventoryCards.some((card) => getOfferCollectionSet(card.set_id) === setId));
     const currentOfferSetIndex = Math.max(0, offerSetOptions.indexOf(offerSet));
     function changeOfferSet(direction: -1 | 1) {
@@ -941,7 +942,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                   {filteredIsoCards.length === 0 ? (<div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                       No cards to show.
                     </div>) : (<div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
-                      {filteredIsoCards.map((card) => (<button key={`${card.set_id}-${getProfileCardCode(card)}`} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
+                      {filteredIsoCards.map((card) => (<button key={`${card.set_id}-${getProfileCardCode(card)}`} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                           <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card)}/>
                         </button>))}
                     </div>)}
@@ -953,7 +954,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                   </div>) : filteredTradeCards.length === 0 ? (<div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                     No listings to show.
                   </div>) : (<div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
-                    {filteredTradeCards.map((card: any) => (<button key={`${card.set_id}-${getProfileCardCode(card)}-${card.type}`} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
+                    {filteredTradeCards.map((card: any) => (<button key={`${card.set_id}-${getProfileCardCode(card)}-${card.type}`} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                         <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card)}/>
                         <span className={`absolute bottom-1 left-1 right-1 truncate rounded px-1 py-0.5 text-[9px] font-semibold sm:text-[10px] ${isLightMode
                         ? "bg-white/90 text-zinc-700"
@@ -972,7 +973,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                 {filteredWishlistCards.length === 0 ? (<div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                     No wishlist cards to show.
                   </div>) : (<div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
-                    {filteredWishlistCards.map((card) => (<button key={`${card.set_id}-${getProfileCardCode(card)}`} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
+                    {filteredWishlistCards.map((card) => (<button key={`${card.set_id}-${getProfileCardCode(card)}`} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                         <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card)}/>
                       </button>))}
                   </div>)}
@@ -988,20 +989,20 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
         }}>
         {quickViewCard && <DialogContent className={`!flex !w-[calc(100%-1.5rem)] !max-w-[760px] max-h-[90dvh] !flex-col !gap-0 overflow-hidden !rounded-xl !p-0 [&>button]:hidden ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#17191a] text-white"}`}>
           <header className={`flex shrink-0 items-start justify-between gap-4 border-b px-4 py-3 sm:px-5 sm:py-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
-            <div className="min-w-0"><DialogDescription className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{getSetName(String(quickViewCard.set_id))}</DialogDescription><DialogTitle className="mt-1 break-words text-lg font-semibold leading-tight sm:text-xl">{getProfileCardCode(quickViewCard)}</DialogTitle></div>
+            <div className="min-w-0"><DialogDescription className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{getSetName(profileViewGroup(quickViewCard))}</DialogDescription><DialogTitle className="mt-1 break-words text-lg font-semibold leading-tight sm:text-xl">{getProfileCardCode(quickViewCard)}</DialogTitle></div>
             <button type="button" aria-label="Close card details" onClick={() => setQuickViewCard(null)} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-2xl leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/5"}`}>&times;</button>
           </header>
           <div className="min-h-0 overflow-y-auto overscroll-contain">
             <div className="grid items-start gap-5 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(220px,.85fr)] sm:gap-6 sm:p-5">
               <div className={`flex min-w-0 items-center justify-center self-start py-2 sm:py-4 ${isLightMode ? "bg-zinc-100/60" : "bg-black/15"}`}>
-                <div className={`relative overflow-hidden rounded-[12px] ${isMoon3DoubleWide(quickViewCard) ? "w-full max-w-[420px] aspect-[10/7]" : "h-[min(34dvh,260px)] aspect-[5/7] sm:h-[340px]"}`} style={{ clipPath: "inset(0 round 12px)" }}>
+                <div className={`relative overflow-hidden rounded-[12px] ${profileViewSquare(quickViewCard) ? "w-full max-w-[300px] aspect-square" : isMoon3DoubleWide(quickViewCard) ? "w-full max-w-[420px] aspect-[10/7]" : "h-[min(34dvh,260px)] aspect-[5/7] sm:h-[340px]"}`} style={{ clipPath: "inset(0 round 12px)" }}>
                   <SafeCardImage imageSize="original" card={quickViewCard} src={getTradeCardImage(quickViewCard)} alt={getProfileCardCode(quickViewCard)} className={`${getCardImageClassName(quickViewCard, "absolute")} rounded-[12px]`}/>
                 </div>
               </div>
               <div className="min-w-0">
                 <h2 className="text-sm font-semibold">Card details</h2>
                 <dl className={`mt-3 divide-y text-sm ${isLightMode ? "divide-black/10" : "divide-white/10"}`}>
-                  <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Set</dt><dd className="text-right font-medium">{getSetName(String(quickViewCard.set_id))}</dd></div>
+                  <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Set</dt><dd className="text-right font-medium">{getSetName(profileViewGroup(quickViewCard))}</dd></div>
                   <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Rarity</dt><dd className="font-medium">{(() => {
                 const cn = getChineseCard(String(quickViewCard.set_id), quickViewCard.card_key);
                 if (cn)
@@ -1106,7 +1107,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                         <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                           You want
                         </div>
-                        <div className="relative mx-auto mt-2 aspect-[5/7] w-full max-w-[112px] overflow-hidden rounded-[6px]">
+                        <div className={`relative mx-auto mt-2 ${profileViewSquare(offerTarget) ? "aspect-square" : "aspect-[5/7]"} w-full max-w-[112px] overflow-hidden rounded-[6px]`}>
                           <SafeCardImage card={offerTarget} src={getTradeCardImage(offerTarget)} alt={getProfileCardCode(offerTarget)} className={getCardImageClassName(offerTarget, "absolute")}/>
                         </div>
                         <div className="mt-1 text-center text-xs text-zinc-500">
@@ -1203,7 +1204,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                                     : isLightMode
                                         ? "hover:ring-2 hover:ring-[#c89d13]/40"
                                         : "hover:ring-2 hover:ring-[#FFD54A]/30")}>
-                                <span className="relative block aspect-[5/7] overflow-hidden rounded-[6px]">
+                                <span className={`relative block ${profileViewSquare(card) ? "aspect-square" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
                                   <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card, "absolute")}/>
                                 </span>
                                 {selected && (<span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-black text-zinc-900 shadow-lg">
@@ -1222,7 +1223,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                         Cards in your offer
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {selectedOfferCards.map((card) => (<button key={card.id} type="button" onClick={() => toggleOfferCard(card)} aria-label="Remove selected card" className="relative h-12 aspect-[5/7] overflow-hidden rounded-[6px] border border-[#FFD54A]/40">
+                        {selectedOfferCards.map((card) => (<button key={card.id} type="button" onClick={() => toggleOfferCard(card)} aria-label="Remove selected card" className={`relative h-12 ${profileViewSquare(card) ? "aspect-square" : "aspect-[5/7]"} overflow-hidden rounded-[6px] border border-[#FFD54A]/40`}>
                             <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card, "absolute")}/>
                             <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/75 text-xs text-white">
                               &times;
@@ -1259,7 +1260,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                       </div>
                       <div className="mt-3 flex flex-1 flex-col items-center justify-center overflow-y-auto">
                         <div className="flex flex-wrap justify-center gap-2">
-                          {selectedOfferCards.map((card) => (<div key={card.id} className="relative h-32 aspect-[5/7] overflow-hidden rounded-[6px]">
+                          {selectedOfferCards.map((card) => (<div key={card.id} className={`relative h-32 ${profileViewSquare(card) ? "aspect-square" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
                               <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card, "absolute")}/>
                             </div>))}
                         </div>
@@ -1280,7 +1281,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                         You want
                       </div>
                       <div className="flex flex-1 flex-col items-center justify-center">
-                        <div className="relative h-32 aspect-[5/7] overflow-hidden rounded-[6px]">
+                        <div className={`relative h-32 ${profileViewSquare(offerTarget) ? "aspect-square" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
                           <SafeCardImage card={offerTarget} src={getTradeCardImage(offerTarget)} alt={getProfileCardCode(offerTarget)} className={getCardImageClassName(offerTarget, "absolute")}/>
                         </div>
                         <div className="mt-2 text-sm font-bold">
@@ -1326,7 +1327,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                     the collector responds.
                   </p>
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    {selectedOfferCards.map((card) => (<div key={card.id} className="relative h-20 aspect-[5/7] overflow-hidden rounded-[6px]">
+                    {selectedOfferCards.map((card) => (<div key={card.id} className={`relative h-20 ${profileViewSquare(card) ? "aspect-square" : "aspect-[5/7]"} overflow-hidden rounded-[6px]`}>
                         <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card, "absolute")}/>
                       </div>))}
                   </div>

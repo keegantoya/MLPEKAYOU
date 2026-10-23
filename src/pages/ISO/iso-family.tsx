@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { getEnglishCards, getEnglishRarityLabel, type EnglishFamily } from "@/lib/english-card-catalog";
-import { buildOwnedISOIdentities, buildISOStatusMap, fetchISOStatuses, getISOSets, getISOSetLabel, getWishlistIdentity, isoActionKey, isoCardIdentity, matchesISOCard, type ISOStatus } from "./catalog-adapter";
+import { getEnglishRarityLabel } from "@/lib/english-card-catalog";
+import { getISOCards, isISOSetHidden, type ISOFamily, buildOwnedISOIdentities, buildISOStatusMap, fetchISOStatuses, getISOSets, getISOSetLabel, getWishlistIdentity, isoActionKey, isoCardIdentity, matchesISOCard, type ISOStatus } from "./catalog-adapter";
 import ISOCardImage from "./catalog-image";
 import ISOChecking from "./iso-checking";
 import { useWishlist } from "./wishlist-in-iso";
@@ -14,7 +14,7 @@ export type ISOFamilyProps = {
     wishlistMode: boolean;
 };
 export default function ISOFamily({ family, userId: publicUserId, cardCodeSearch, characterSearch, searchAllCards, hiddenSets, wishlistMode }: ISOFamilyProps & {
-    family: EnglishFamily;
+    family: ISOFamily;
 }) {
     const sets = getISOSets(family);
     const [owned, setOwned] = useState<Set<string>>(new Set());
@@ -77,7 +77,7 @@ export default function ISOFamily({ family, userId: publicUserId, cardCodeSearch
     }, [family, publicUserId]);
     const searching = !!(cardCodeSearch.trim() || characterSearch.trim());
     const isMissing = (identity: string) => !owned.has(identity) && !inProgress.has(identity);
-    const selectableSets = sets.filter(set => !hiddenSets.includes(set.id) && (searchAllCards || wishlistMode || getEnglishCards(set.id).some(card => isMissing(isoCardIdentity(card)))));
+    const selectableSets = sets.filter(set => !isISOSetHidden(set.id, hiddenSets) && (searchAllCards || wishlistMode || getISOCards(set.id).some(card => isMissing(isoCardIdentity(card)))));
     const visibleSetId = selectedSet && selectableSets.some(set => set.id === selectedSet) ? selectedSet : null;
     if (loading)
         return <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>;
@@ -85,20 +85,20 @@ export default function ISOFamily({ family, userId: publicUserId, cardCodeSearch
         return <p role="alert" className="py-8 text-center text-sm text-red-600 dark:text-red-400">{error}</p>;
     return <div className="space-y-8">
     {!searching && selectableSets.length > 0 && <div className="sticky top-0 z-20"><div className="flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/95 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#17191a]/95 md:flex-wrap md:overflow-visible">{selectableSets.map(set => <button key={set.id} type="button" onClick={() => setSelectedSet(set.id)} className={`shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition ${visibleSetId === set.id ? "bg-[#FFD54A] text-zinc-900" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-white/[0.06] dark:text-zinc-300 dark:hover:bg-white/[0.1]"}`}>{getISOSetLabel(set.id)}</button>)}</div></div>}
-        {sets.filter(set => !hiddenSets.includes(set.id)).filter(set => searching || ((searchAllCards || wishlistMode || selectableSets.some(item => item.id === set.id)) && (!visibleSetId || visibleSetId === set.id))).map(set => {
-            const missing = getEnglishCards(set.id).filter(card => matchesISOCard(card, cardCodeSearch, characterSearch) && (searchAllCards || wishlistMode || isMissing(isoCardIdentity(card))));
+        {sets.filter(set => !isISOSetHidden(set.id, hiddenSets)).filter(set => searching || ((searchAllCards || wishlistMode || selectableSets.some(item => item.id === set.id)) && (!visibleSetId || visibleSetId === set.id))).map(set => {
+            const missing = getISOCards(set.id).filter(card => matchesISOCard(card, cardCodeSearch, characterSearch) && (searchAllCards || wishlistMode || isMissing(isoCardIdentity(card))));
             if (!missing.length)
                 return null;
             const availableRarities = Object.keys(set.rarities).filter(rarity => missing.some(card => card.rarity === rarity));
             const rarity = availableRarities.includes(selectedRarities[set.id]) ? selectedRarities[set.id] : "all";
             const visibleCards = rarity === "all" ? missing : missing.filter(card => card.rarity === rarity);
             return <section id={`set-${set.id}`} key={set.id} className={`min-w-0 ${searching ? "mt-6" : ""}`}>
-            <div className="mb-4 flex items-center justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-base font-semibold">{set.name}</h2><p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{visibleCards.length} {visibleCards.length === 1 ? "card" : "cards"}</p></div>{family !== "promos" && <select value={rarity} onChange={event => setSelectedRarities(current => ({ ...current, [set.id]: event.target.value }))} aria-label={`Filter ${set.name} by rarity`} className="max-w-[150px] rounded-xl border border-black/10 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-700 outline-none dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200"><option value="all">All rarities</option>{availableRarities.map(value => <option key={value} value={value}>{getEnglishRarityLabel(set.id, value)}</option>)}</select>}</div>
+            <div className="mb-4 flex items-center justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-base font-semibold">{set.name}</h2><p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{visibleCards.length} {family === "merch" ? (visibleCards.length === 1 ? "item" : "items") : (visibleCards.length === 1 ? "card" : "cards")}</p></div>{family !== "promos" && <select value={rarity} onChange={event => setSelectedRarities(current => ({ ...current, [set.id]: event.target.value }))} aria-label={`Filter ${set.name} by ${family === "merch" ? "edition" : "rarity"}`} className="max-w-[150px] rounded-xl border border-black/10 bg-zinc-50 px-3 py-2 text-sm font-semibold text-zinc-700 outline-none dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200"><option value="all">{family === "merch" ? "All editions" : "All rarities"}</option>{availableRarities.map(value => <option key={value} value={value}>{family === "merch" ? value : getEnglishRarityLabel(set.id, value)}</option>)}</select>}</div>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">{visibleCards.map(card => {
                     const identity = isoCardIdentity(card), actionKey = isoActionKey(card);
-                    const wishlisted = wishlist.has(getWishlistIdentity(set.id, actionKey));
-                    const content = <div className={searchAllCards ? "" : "cursor-pointer"}><div className={`relative w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${card.wide ? "aspect-[10/7]" : "aspect-[5/7]"} ${wishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}><ISOCardImage card={card}/></div></div>;
-                    return searchAllCards && !wishlistMode ? <div key={card.key} className={card.wide ? "col-span-2" : ""}>{content}</div> : <ISOChecking key={card.key} className={card.wide ? "col-span-2" : ""} userId={userId} setId={set.id} cardKey={actionKey} initialStatus={inProgress.get(identity) ?? null} wishlistMode={wishlistMode} isWishlisted={wishlisted} toggleWishlist={toggleWishlist} onStatusChange={status => setInProgress(previous => {
+                    const wishlisted = wishlist.has(getWishlistIdentity(card.setId, actionKey));
+                    const content = <div className={searchAllCards ? "" : "cursor-pointer"}><div className={`relative w-full overflow-hidden rounded-[2px] sm:rounded-[6px] ${card.square ? "aspect-square" : card.wide ? "aspect-[10/7]" : "aspect-[5/7]"} ${wishlisted ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-[#17191a]" : ""}`}><ISOCardImage card={card}/></div>{family === "merch" && <p className="mt-1 text-center text-xs text-muted-foreground">{card.level}</p>}</div>;
+                    return searchAllCards && !wishlistMode ? <div key={card.key} className={card.wide ? "col-span-2" : ""}>{content}</div> : <ISOChecking key={card.key} className={card.wide ? "col-span-2" : ""} userId={userId} setId={card.setId} cardKey={actionKey} initialStatus={inProgress.get(identity) ?? null} wishlistMode={wishlistMode} isWishlisted={wishlisted} toggleWishlist={toggleWishlist} onStatusChange={status => setInProgress(previous => {
                             const next = new Map(previous);
                             if (status)
                                 next.set(identity, status);

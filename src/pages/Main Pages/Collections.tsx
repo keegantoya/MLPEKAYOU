@@ -1,8 +1,9 @@
+import { ENGLISH_MERCHANDISE_SET_ID, merchandiseSets, getMerchandiseSet, getMerchandiseOwnedCount } from "@/lib/english-merchandise-catalog";
 import { useState, useEffect, type CSSProperties } from "react";
 import CatalogSidebar from "@/components/CatalogSidebar";
 import CollectionCard from "@/components/CollectionCard";
 import { supabase } from "@/lib/supabase";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 type Collection = {
   id: string;
   title: string;
@@ -159,6 +160,7 @@ const collections: Collection[] = [
     category: "promos",
     released: true,
   },
+  ...merchandiseSets.map(set => ({ id: set.id, title: set.title, setName: "", imageUrl: set.thumbnail, totalCards: set.items.length, category: "merch", released: true })),
 ];
 const unreleasedSetIds: string[] = [];
 const databaseSetId: Record<string, string> = {
@@ -170,6 +172,7 @@ const location = useLocation();
 const [activeCategory, setActiveCategory] = useState(
     location.state?.category || "all",
   );
+const [merchandiseCollected, setMerchandiseCollected] = useState<number | null>(null);
 const [sets, setSets] = useState<Collection[]>([]);
 const [hiddenSets, setHiddenSets] = useState<string[]>([]);
 const [hideMastered, setHideMastered] = useState(true);
@@ -202,6 +205,7 @@ const { data } = await supabase.auth.getSession();
         user = data.session?.user;
       }
       if (!user) {
+        setMerchandiseCollected(0);
         setHiddenSets([]);
         setSets(
           collections.map((set) => ({
@@ -219,6 +223,12 @@ const { data: collectionData, error: collectionError } = await supabase
       if (collectionError) {
         console.error("Failed to load collection progress:", collectionError);
       }
+const { data: merchandiseRows, error: merchandiseError } = await supabase
+        .from("collection_progress_raw")
+        .select("progress")
+        .eq("user_id", user.id)
+        .eq("set_id", ENGLISH_MERCHANDISE_SET_ID);
+      if (merchandiseError) console.error("Failed to load merchandise progress:", merchandiseError);
 const progressRows = new Map<string, any>(
         (collectionData || []).map((row: any) => [String(row.set_id), row]),
       );
@@ -250,6 +260,8 @@ const mappedHiddenSets = storedHiddenSets.flatMap((id: string) => {
       });
 const uniqueHiddenSets = [...new Set(mappedHiddenSets)];
       setHiddenSets(uniqueHiddenSets);
+const merchandiseProgress: Record<string, unknown> = Object.assign({}, ...(merchandiseRows || []).map(row => row.progress && typeof row.progress === "object" && !Array.isArray(row.progress) ? row.progress : {}));
+      setMerchandiseCollected(merchandiseError ? null : getMerchandiseOwnedCount(merchandiseProgress, undefined, uniqueHiddenSets));
 const countProgress = (row: any, setId: string): number => {
         if (!row?.progress) {
           return 0;
@@ -283,7 +295,7 @@ const progressMap: Record<string, number> = {};
       collections.forEach((set) => {
 const dbId = databaseSetId[set.id] || set.id;
 const row = progressRows.get(dbId);
-        progressMap[set.id] = countProgress(row, String(dbId));
+        progressMap[set.id] = set.category === "merch" ? getMerchandiseOwnedCount(merchandiseProgress, set.id) : countProgress(row, String(dbId));
       });
       progressMap["tcgpromos"] = countProgress(
         progressRows.get("tcgpromos"),
@@ -338,6 +350,7 @@ const setOrder: Record<string, number> = {
     "fun-moments": 4,
     tcg: 5,
     promos: 6,
+    merch: 7,
   };
 const promoNodeFullyHidden =
     hiddenSets.includes("9") && hiddenSets.includes("tcgpromos");
@@ -349,7 +362,7 @@ const filtered = (
             if (c.id === "9") {
               return !promoNodeFullyHidden;
             }
-            return !hiddenSets.includes(c.id);
+            return !hiddenSets.includes(c.id) && !(c.category === "merch" && hiddenSets.includes(ENGLISH_MERCHANDISE_SET_ID));
           })
       : sets
           .filter((c) => c.category === activeCategory)
@@ -377,6 +390,8 @@ const categoryDiff =
 const ccgSets = sets.filter(
     (set) =>
       set.released &&
+      set.category !== "merch" &&
+      set.id !== ENGLISH_MERCHANDISE_SET_ID &&
       set.id !== "9" &&
       set.id !== "tcgpromos" &&
       !hiddenSets.includes(set.id),
@@ -412,6 +427,7 @@ const completionRate =
           <div className="collections-summary-stats">
             <div><strong>{completedSets}<small> / {totalSets}</small></strong><span>Sets mastered</span></div>
             <div><strong>{totalCardsCollected.toLocaleString()}<small> / {totalCardsAvailable.toLocaleString()}</small></strong><span>Cards collected</span></div>
+            <div><strong>{merchandiseCollected === null ? "--" : merchandiseCollected.toLocaleString()}</strong><span>Merchandise collected</span></div>
             <div><strong>{completionRate}<small>%</small></strong><span>Complete</span></div>
           </div>
           <div className="collections-summary-track" role="progressbar" aria-label="Overall collection completion" aria-valuenow={Math.min(100, Math.max(0, completionRate))} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${Math.min(100, Math.max(0, completionRate))}%` }} /></div>
@@ -426,6 +442,7 @@ const completionRate =
               { label: "Fun Moments", value: "fun-moments" },
               { label: "TCG", value: "tcg" },
               { label: "Promos", value: "promos" },
+              { label: "Other", value: "merch" },
             ].map((item) => {
 const active = activeCategory === item.value;
               return (
@@ -481,6 +498,7 @@ const isHidden =
                     col.id === "9"
                       ? promoNodeFullyHidden
                       : hiddenSets.includes(col.id);
+const merchandise = getMerchandiseSet(col.id);
 const isMastered =
                     (col.collectedCards ?? 0) >= col.totalCards;
 const waitingOnKayouIds: string[] = [];
@@ -497,7 +515,7 @@ const isWaiting = waitingOnKayouIds.includes(col.id);
                               : ""
                         }`}
                       >
-                        <CollectionCard {...col} />
+                        {merchandise ? <Link to={merchandise.href} className="collection-tile merchandise-tile"><div className="collection-tile-art"><img src={merchandise.thumbnail} alt={merchandise.title} draggable={false} loading="lazy" className="collection-tile-image"/></div><div className="collection-tile-body"><div className="collection-tile-title"><h2>{merchandise.title}</h2></div><div className="collection-tile-progress"><div className="collection-tile-count"><span><strong>{col.collectedCards ?? 0}</strong><span> / {merchandise.items.length} items</span></span><strong className="collection-tile-percent">{col.progress ?? 0}%</strong></div><div className="collection-tile-track" role="progressbar" aria-label={`${merchandise.title} collected`} aria-valuemin={0} aria-valuemax={merchandise.items.length} aria-valuenow={col.collectedCards ?? 0}><span style={{ width: `${col.progress ?? 0}%` }}/></div><div className="collection-tile-detail"><span>{Math.max(0, merchandise.items.length - (col.collectedCards ?? 0))} remaining</span><span className="collection-tile-checklist">View checklist</span></div></div></div></Link> : <CollectionCard {...col} /> }
                       </div>
                       {isUnreleased && (
                         <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
@@ -550,12 +568,27 @@ const isWaiting = waitingOnKayouIds.includes(col.id);
         </div>
       </main>
       <style>{`
+.merchandise-tile{display:block;height:100%;overflow:hidden;border:1px solid hsl(var(--border));border-radius:16px;background:hsl(var(--background));color:hsl(var(--foreground));text-decoration:none;transition:border-color .2s;--tile-muted:hsl(var(--muted-foreground));--tile-accent:hsl(var(--primary))}
+.merchandise-tile .collection-tile-art{position:relative;aspect-ratio:4/3;overflow:hidden;background:hsl(var(--muted) / .3)}
+.merchandise-tile .collection-tile-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.merchandise-tile .collection-tile-body{padding:10px}
+.merchandise-tile .collection-tile-title h2{margin:0;font-size:13px;line-height:1.3;font-weight:650}
+.merchandise-tile .collection-tile-progress{margin-top:8px;padding-top:8px;border-top:1px solid hsl(var(--border))}
+.merchandise-tile .collection-tile-count{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-variant-numeric:tabular-nums}
+.merchandise-tile .collection-tile-count>span>strong{font-size:17px;font-weight:650}
+.merchandise-tile .collection-tile-count>span>span{font-size:11px;color:var(--tile-muted)}
+.merchandise-tile .collection-tile-percent{font-size:12px;color:var(--tile-accent)}
+.merchandise-tile .collection-tile-track{height:5px;overflow:hidden;border-radius:5px;background:hsl(var(--muted));margin:6px 0}
+.merchandise-tile .collection-tile-track>span{display:block;height:100%;background:var(--tile-accent)}
+.merchandise-tile .collection-tile-detail{display:flex;justify-content:space-between;gap:4px;font-size:9px;line-height:1.5;color:var(--tile-muted)}
+.merchandise-tile:focus-visible{outline:2px solid var(--tile-accent);outline-offset:3px}
+@media(hover:hover){.merchandise-tile:hover{border-color:var(--tile-accent)}}
 .collections-workspace{--collections-accent:hsl(var(--primary));--collections-muted:#92969e}
 html[data-theme="light"] .collections-workspace{--collections-muted:#6b7078}
 .collections-summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;padding:0 0 24px;margin-bottom:26px;border-bottom:1px solid #80808025}
 .collections-summary-title h1{margin:0 0 6px;font-size:24px;line-height:1.2;letter-spacing:-.035em;font-weight:650}
 .collections-summary-title>span{font-size:11px;color:var(--collections-muted)}
-.collections-summary-stats{display:flex;align-items:center;gap:32px}
+.collections-summary-stats{display:flex;flex-wrap:wrap;align-items:center;gap:20px 28px}
 .collections-summary-stats>div{display:flex;flex-direction:column;gap:5px}
 .collections-summary-stats strong{font-size:24px;line-height:1.2;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
 .collections-summary-stats small{font-size:12px;font-weight:400;letter-spacing:0;color:var(--collections-muted)}
@@ -572,7 +605,7 @@ html[data-theme="light"] .collections-workspace{--collections-muted:#6b7078}
 .collections-mobile-options button{min-height:36px;padding:6px 10px;border:1px solid #80808030;border-radius:7px}
 .collections-mobile-options label{display:flex;align-items:center;gap:8px}
 .collections-mobile-options select{font-size:16px;background:hsl(var(--background));border:1px solid #80808030;border-radius:7px;padding:6px;color:inherit}
-@media(max-width:767px){.collections-summary{gap:18px;margin-bottom:16px;padding-bottom:18px}.collections-summary-title h1{font-size:21px}.collections-summary-stats{width:100%;justify-content:space-between;gap:12px}.collections-summary-stats strong{font-size:22px}.collections-summary-stats small{font-size:10px}.collections-summary-stats>div>span{font-size:9px}.collections-mobile-options{display:flex}}
+@media(max-width:767px){.collections-summary{gap:18px;margin-bottom:16px;padding-bottom:18px}.collections-summary-title h1{font-size:21px}.collections-summary-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:12px;align-items:start}.collections-summary-stats strong{font-size:22px}.collections-summary-stats small{font-size:10px}.collections-summary-stats>div>span{font-size:9px}.collections-mobile-options{display:flex}}
 @keyframes collection-enter{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.collection-grid-item{animation:none}.collections-summary-track>span{transition:none}}
       `}</style>

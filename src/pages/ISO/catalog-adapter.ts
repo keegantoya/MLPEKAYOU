@@ -1,4 +1,5 @@
-import { englishSets, getEnglishCards, getEnglishCard, getISOSetId, type EnglishCard, type EnglishFamily } from "@/lib/english-card-catalog";
+import { merchandiseSets, ENGLISH_MERCHANDISE_SET_ID } from "@/lib/english-merchandise-catalog";
+import { englishSets, getEnglishCards, getEnglishCard, getISOSetId, type EnglishCard, type EnglishFamily, type EnglishSet } from "@/lib/english-card-catalog";
 import { supabase } from "@/lib/supabase";
 import { moonCharacterMap } from "./Card Characters/card-characters-moon";
 import { funCharacterMap } from "./Card Characters/card-characters-fun";
@@ -17,15 +18,26 @@ export type ISOStatusRow = {
 };
 export const isActiveISOStatus = (value: string): value is ISOStatus => value === "purchase_in_progress" || value === "trade_in_progress";
 export const normalizeEnglishSetId = (value: string | number) => getISOSetId(({ FB: "SD", TCG_PROMOS: "tcgpromos" } as Record<string, string>)[String(value)] ?? String(value));
-export const resolveISOCard = (setId: string | number, key: string) => { const card = getEnglishCard(normalizeEnglishSetId(setId), key); return card?.isoEligible ? card : undefined; };
-export const isoCardIdentity = (card: EnglishCard) => `${card.setId}:${card.key}`;
-export const isoActionKey = (card: EnglishCard) => card.setId === "SD" ? card.stateKey : card.key;
+export type ISOFamily = EnglishFamily | "merch";
+export type ISOCard = Omit<EnglishCard, "family"> & { family: ISOFamily; merchandiseSetId?: string; square?: boolean; level?: string };
+const merchandiseCards: ISOCard[] = merchandiseSets.flatMap(set => set.items.map(item => ({ setId: ENGLISH_MERCHANDISE_SET_ID, setName: set.title, family: "merch" as const, key: item.key, stateKey: item.key, identity: `${ENGLISH_MERCHANDISE_SET_ID}:${item.key}`, rarity: item.series, number: item.number, code: item.key, checklistCode: item.key, front: item.image, back: item.image, image: item.image, isoEligible: true, wide: false, original: true, merchandiseSetId: set.id, square: set.aspect === "square", level: item.level })));
+export const resolveISOCard = (setId: string | number, key: string): ISOCard | undefined => {
+    const id = normalizeEnglishSetId(setId);
+    if (id === ENGLISH_MERCHANDISE_SET_ID || merchandiseSets.some(set => set.id === id)) return merchandiseCards.find(card => (id === ENGLISH_MERCHANDISE_SET_ID || card.merchandiseSetId === id) && card.key.replace(/-0*(\d+)$/, "-$1") === key.replace(/-0*(\d+)$/, "-$1"));
+    const card = getEnglishCard(id, key);
+    return card?.isoEligible ? card : undefined;
+};
+export const isoCardIdentity = (card: ISOCard) => `${card.setId}:${card.key}`;
+export const isoActionKey = (card: ISOCard) => card.setId === "SD" ? card.stateKey : card.key;
 const setAliases = (id: string) => id === "SD" ? [id, "friendshipsbegin", "friendships-begin", "FB"] : id === "FW" ? [id, "fantasy-wonderland"] : id === "12" ? [id, "discord"] : id === "14" ? [id, "nightmare-night"] : id === "tcgpromos" ? [id, "TCG_PROMOS"] : [id];
-export const isoCards = englishSets.flatMap(set => getEnglishCards(set.id));
-export const isoSets = englishSets.filter(set => set.family !== "tcg" && !set.promotional).concat(englishSets.filter(set => set.promotional && set.prefix === "PR"), englishSets.filter(set => set.family === "tcg"), englishSets.filter(set => set.promotional && set.prefix !== "PR"));
-export const getISOSets = (family: EnglishFamily) => isoSets.filter(set => set.family === family);
+export const isoCards: ISOCard[] = [...englishSets.flatMap(set => getEnglishCards(set.id)), ...merchandiseCards];
+type ISOSet = Omit<EnglishSet, "family"> & { family: ISOFamily };
+export const isoSets: ISOSet[] = [...englishSets.filter(set => set.family !== "tcg" && !set.promotional).concat(englishSets.filter(set => set.promotional && set.prefix === "PR"), englishSets.filter(set => set.family === "tcg"), englishSets.filter(set => set.promotional && set.prefix !== "PR")), ...merchandiseSets.map(set => ({ id: set.id, setId: ENGLISH_MERCHANDISE_SET_ID, name: set.title, folder: "Other-Merch", prefix: "", family: "merch" as const, promotional: false, rarities: Object.fromEntries([...new Set(set.items.map(item => item.series))].map(series => [series, set.items.filter(item => item.series === series).length])) }))];
+export const getISOSets = (family: ISOFamily) => isoSets.filter(set => set.family === family);
+export const getISOCards = (setId: string): ISOCard[] => merchandiseSets.some(set => set.id === setId) ? merchandiseCards.filter(card => card.merchandiseSetId === setId) : setId === ENGLISH_MERCHANDISE_SET_ID ? merchandiseCards : getEnglishCards(setId);
+export const isISOSetHidden = (setId: string, hidden: readonly string[]) => hidden.includes(setId) || (merchandiseSets.some(set => set.id === setId) && hidden.includes(ENGLISH_MERCHANDISE_SET_ID));
 export const getISOSetLabel = (id: string) => {
-    const set = englishSets.find(set => set.id === id);
+    const set = isoSets.find(set => set.id === id);
     if (!set)
         return id;
     if (["moon", "fun", "rainbow", "star"].includes(set.family)) {
@@ -35,7 +47,7 @@ export const getISOSetLabel = (id: string) => {
     return set.name === set.name.toUpperCase() ? set.name.toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase()) : set.name;
 };
 export const getISOStatusKey = (setId: string, key: string) => { const card = resolveISOCard(setId, key); const id = card?.setId ?? normalizeEnglishSetId(setId); const value = card ? isoActionKey(card) : key; return id === "SD" || id === "FW" ? value : `${id}-${value}`; };
-export const getISOCardKeyVariants = (card: EnglishCard) => {
+export const getISOCardKeyVariants = (card: ISOCard) => {
     const keys = new Set([card.key, card.stateKey]);
     if (card.family !== "tcg") {
         for (const key of [...keys])
@@ -67,7 +79,7 @@ export const getISOStatusKeyVariants = (setId: string, key: string) => {
             variants.add(value);
     return [...variants];
 };
-const statusIndex = new Map<string, EnglishCard>();
+const statusIndex = new Map<string, ISOCard>();
 for (const card of isoCards)
     for (const key of getISOStatusKeyVariants(card.setId, card.key))
         statusIndex.set(key, card);
@@ -107,8 +119,9 @@ export const buildISOStatusMap = (rows: ISOStatusRow[]) => {
     }
     return active;
 };
-const maps: Partial<Record<EnglishFamily, Record<string, string[]>>> = { moon: moonCharacterMap, fun: funCharacterMap, rainbow: rainbowCharacterMap, star: starCharacterMap, promos: promoCharacterMap, tcg: TCGCharacterMap };
-export const getISOCharacters = (card: EnglishCard): string[] => {
+const maps: Partial<Record<ISOFamily, Record<string, string[]>>> = { moon: moonCharacterMap, fun: funCharacterMap, rainbow: rainbowCharacterMap, star: starCharacterMap, promos: promoCharacterMap, tcg: TCGCharacterMap };
+export const getISOCharacters = (card: ISOCard): string[] => {
+    if (card.family === "merch") return [];
     const candidates = new Set([card.key, `${card.setId}-${card.key}`, `${card.setId}-${card.rarity}-${card.number}`]);
     for (const key of getISOCardKeyVariants(card))
         candidates.add(`${card.setId}-${key.replace(/-(\d+)$/, (_, n) => `-${Number(n)}`)}`);
@@ -127,7 +140,7 @@ export const getISOCharacters = (card: EnglishCard): string[] => {
     return [...new Set([...candidates].flatMap(key => maps[card.family]?.[key] ?? []))];
 };
 const normalizeCode = (value: string) => value.toUpperCase().replace(/[\s-]/g, "").replace(/^\u203b/, "");
-export const matchesISOCard = (card: EnglishCard, codeQuery: string, characterQuery: string) => {
+export const matchesISOCard = (card: ISOCard, codeQuery: string, characterQuery: string) => {
     const code = normalizeCode(codeQuery);
     const character = characterQuery.trim().toLowerCase();
     return (!code || [card.code, card.checklistCode, card.key].some(value => normalizeCode(value).startsWith(code))) && (!character || getISOCharacters(card).some(name => name.toLowerCase().includes(character)));

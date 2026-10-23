@@ -1,4 +1,5 @@
-import { englishViewCard, englishViewEligible, englishViewName, englishViewCode, englishViewImage, englishViewStyle, englishViewWide, compareEnglishViewCards, ownedEnglishViewCards, missingEnglishViewCards, readEnglishViewRows } from "@/lib/english-card-views";
+import { profileViewGroup, profileViewSquare, isProfileMerchandiseHidden } from "@/lib/english-card-views";
+import { profileViewCard as englishViewCard, profileViewEligible as englishViewEligible, profileViewName as englishViewName, profileViewCode as englishViewCode, profileViewImage as englishViewImage, profileViewStyle as englishViewStyle, profileViewWide as englishViewWide, compareProfileViewCards as compareEnglishViewCards, ownedEnglishViewCards, missingProfileViewCards as missingEnglishViewCards, readEnglishViewRows } from "@/lib/english-card-views";
 import { ChineseProfileCards, ProfileCardLanguageSwitch, usePublicChineseProfile, type ProfileCardLanguage } from "@/pages/Chinese Kayou/Chinese ISO/PublicChineseCards";
 import ProfileRarestShowcase, { profileShowcaseStyles } from "./ProfileRarestShowcase";
 import CardImage from "@/components/CardImage";
@@ -33,36 +34,36 @@ const outline = "M6 10H7 M6 9V10 M6 9H7 M7 9H8 M8 10H9 M8 9H9 M10 9V10 M9 9H10 M
   </svg></div>;
 }
 function useEnglishProfileActivation(profileId?: string) {
-    const [snapshot, setSnapshot] = useState<{ owner: string; ready: boolean; enabled: boolean; error: string }>({ owner: "", ready: false, enabled: false, error: "" });
-    const [retry, setRetry] = useState(0);
+const [snapshot, setSnapshot] = useState<{ owner: string; ready: boolean; enabled: boolean; error: string }>({ owner: "", ready: false, enabled: false, error: "" });
+const [retry, setRetry] = useState(0);
     useEffect(() => {
-        let active = true;
-        let request = 0;
-        const load = async () => {
-            const ticket = ++request;
+let active = true;
+let request = 0;
+const load = async () => {
+const ticket = ++request;
             if (!profileId) return;
             setSnapshot({ owner: profileId, ready: false, enabled: false, error: "" });
             try {
-                const { data, error } = await supabase.from("profiles").select("english_cards_enabled").eq("id", profileId).single();
+const { data, error } = await supabase.from("profiles").select("english_cards_enabled").eq("id", profileId).single();
                 if (!active || ticket !== request) return;
                 if (error) throw error;
                 if (!data) throw new Error("Profile not found");
                 setSnapshot({ owner: profileId, ready: true, enabled: data.english_cards_enabled !== false, error: "" });
             } catch (cause) {
                 if (!active || ticket !== request) return;
-                const code = (cause as { code?: string } | null)?.code;
+const code = (cause as { code?: string } | null)?.code;
                 setSnapshot({ owner: profileId, ready: true, enabled: false, error: code === "42703" || code === "PGRST204" ? "Run the English activation setup SQL, then retry." : "Card preferences could not be loaded. Please retry." });
             }
         };
-        const changed = (event: Event) => {
-            const detail = (event as CustomEvent<{ userId?: string }>).detail;
+const changed = (event: Event) => {
+const detail = (event as CustomEvent<{ userId?: string }>).detail;
             if (detail?.userId === profileId) void load();
         };
         void load();
         window.addEventListener("english-card-settings-changed", changed);
         return () => { active = false; request += 1; window.removeEventListener("english-card-settings-changed", changed); };
     }, [profileId, retry]);
-    const current = snapshot.owner === profileId;
+const current = snapshot.owner === profileId;
     return { ready: current && snapshot.ready, enabled: current && snapshot.ready && snapshot.enabled, error: current ? snapshot.error : "", refresh: () => setRetry(value => value + 1) };
 }
 export default function PublicProfile() {
@@ -71,10 +72,10 @@ const [profile, setProfile] = useState<any>(null);
 const chineseProfile = usePublicChineseProfile(profile?.id);
 const [cardLanguage, setCardLanguage] = useState<ProfileCardLanguage>("english");
 const englishProfile = useEnglishProfileActivation(profile?.id);
-    const englishEnabled = englishProfile.enabled;
-    const cardLanguagesReady = englishProfile.ready && chineseProfile.ready;
-    const hasActiveCards = englishEnabled || chineseProfile.enabled;
-    const showChineseCards = chineseProfile.enabled && (!englishEnabled || cardLanguage === "chinese");
+const englishEnabled = englishProfile.enabled;
+const cardLanguagesReady = englishProfile.ready && chineseProfile.ready;
+const hasActiveCards = englishEnabled || chineseProfile.enabled;
+const showChineseCards = chineseProfile.enabled && (!englishEnabled || cardLanguage === "chinese");
     useEffect(() => { setCardLanguage("english"); setShowCollectionModal(false); }, [profile?.id]);
 const [profileLoading, setProfileLoading] = useState(true);
 const [profileNotFound, setProfileNotFound] = useState(false);
@@ -298,7 +299,7 @@ const visibleIsoCards = useMemo(() => isoCards.filter((card: any) => {
 const setId = String(card.set_id);
         if (!englishViewEligible(card))
             return false;
-        if (hiddenIsoSets.includes(setId)) {
+        if (hiddenIsoSets.includes(setId) || isProfileMerchandiseHidden(card, hiddenIsoSets)) {
             return false;
         }
         if (setId === "SD" &&
@@ -325,9 +326,9 @@ const modalCards = useMemo(() => {
         }
     }, [collectionMode, visibleIsoCards, wishlistCards, tradeCards, saleCards]);
 const modalTabs = useMemo(() => {
-        return Array.from(new Set(modalCards.map((c: any) => String(c.set_id))));
+        return Array.from(new Set(modalCards.map((c: any) => profileViewGroup(c))));
     }, [modalCards]);
-const filteredCards = modalCards.filter((c: any) => String(c.set_id) === selectedSet);
+const filteredCards = modalCards.filter((c: any) => profileViewGroup(c) === selectedSet);
 const activityStatus = (() => {
         if (!lastActivityAt) {
             return {
@@ -428,7 +429,7 @@ const modeLabel = collectionMode === "iso"
               <button type="button" onClick={() => setShowCollectionModal(false)} className={`rounded-lg px-3 py-1.5 text-xl sm:hidden ${isLightMode
                 ? "text-zinc-500 hover:bg-black/[0.05]"
                 : "text-zinc-400 hover:bg-white/[0.06]"}`}>
-                &#xd7;
+                &times;
               </button>
             </div>
             <div className="flex min-w-0 flex-nowrap gap-2 overflow-x-auto p-3 sm:block sm:flex-1 sm:space-y-1 sm:overflow-x-hidden sm:overflow-y-auto">
@@ -458,7 +459,7 @@ const modeLabel = collectionMode === "iso"
               <button type="button" onClick={() => setShowCollectionModal(false)} className={`hidden rounded-lg px-3 py-1.5 text-2xl sm:block ${isLightMode
                 ? "text-zinc-500 hover:bg-black/[0.05]"
                 : "text-zinc-400 hover:bg-white/[0.06]"}`}>
-                &#xd7;
+                &times;
               </button>
             </div>
             <div className="p-3 sm:p-6">
@@ -472,13 +473,13 @@ const modeLabel = collectionMode === "iso"
                     .sort((a: any, b: any) => {
                     return compareEnglishViewCards(a, b);
                 })
-                    .map((card: any) => (<div key={`${card.set_id}-${card.card_key}`} className={`relative overflow-hidden rounded-[10px] bg-transparent ${englishViewWide(card)
+                    .map((card: any) => (<div key={`${card.set_id}-${card.card_key}`} className={`relative overflow-hidden rounded-[10px] bg-transparent ${profileViewSquare(card) ? "aspect-square" : englishViewWide(card)
                         ? "col-span-2 aspect-[10/7]"
                         : "aspect-[5/7]"}`}>
                         <CardImage publicProfile src={getTradeCardImage(card)} style={englishViewStyle(card)} imageSize={englishViewCard(card)?.original ? "original" : "grid"} alt={englishViewCode(card)} className="absolute inset-0 h-full w-full bg-transparent object-cover"/>
                         {(card.is_for_trade || card.is_for_sale) && (<div className="absolute left-1.5 top-1.5 flex gap-1">
                             {card.is_for_trade && (<span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">
-                                &#x21c4;
+                                &#8644;
                               </span>)}
                             {card.is_for_sale && (<span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-black">
                                 $
@@ -666,7 +667,7 @@ const textArea = document.createElement("textarea");
                     if (section.cards.length === 0)
                         return;
                     setCollectionMode(section.mode);
-                    setSelectedSet(String(section.cards[0]?.set_id ?? ""));
+                    setSelectedSet(section.cards[0] ? profileViewGroup(section.cards[0]) : "");
                     setShowCollectionModal(true);
                 }} className={`text-sm font-semibold ${section.cards.length === 0
                     ? "cursor-not-allowed text-zinc-500"
@@ -683,11 +684,11 @@ const textArea = document.createElement("textarea");
                 </div>) : (<div className={isEmbedded
                         ? "pp-preview-grid grid gap-2"
                         : "pp-preview-grid grid gap-3"}>
-                  {section.cards.slice(0, 12).map((card: any) => (<div key={`${card.set_id}-${card.card_key}`} className={`relative overflow-hidden rounded-[10px] bg-transparent ${String(card.set_id) === "3" &&
+                  {section.cards.slice(0, 12).map((card: any) => (<div key={`${card.set_id}-${card.card_key}`} className={`relative overflow-hidden rounded-[10px] bg-transparent ${profileViewSquare(card) ? "aspect-square" : String(card.set_id) === "3" &&
                             String(card.card_key) === "SZR-1"
                             ? "col-span-2 aspect-[10/7]"
                             : "aspect-[5/7]"}`}>
-                      <CardImage publicProfile src={getTradeCardImage(card)} style={String(card.set_id) === "13" ? { transform: "scale(1.055)" } : String(card.set_id) === "14" &&
+                      <CardImage publicProfile src={getTradeCardImage(card)} style={englishViewCard(card)?.family === "merch" ? englishViewStyle(card) : String(card.set_id) === "13" ? { transform: "scale(1.055)" } : String(card.set_id) === "14" &&
                             /^BP03-C(2[5-9]|3[0-9]|4[0-8])$/.test(card.card_key)
                             ? {
                                 left: "50%",
@@ -699,7 +700,7 @@ const textArea = document.createElement("textarea");
                                 maxWidth: "none",
                                 transform: "translate(-50%, -50%) rotate(-90deg)",
                             }
-                            : undefined} alt={card.card_key} className={`absolute inset-0 h-full w-full bg-transparent ${[
+                            : undefined} alt={card.card_key} className={`absolute inset-0 h-full w-full bg-transparent ${englishViewCard(card)?.family === "merch" ? "object-contain" : [
                             "FW",
                             "SD",
                             "friendshipsbegin",
@@ -711,7 +712,7 @@ const textArea = document.createElement("textarea");
                             : "scale-[1.05] object-cover"}`}/>
                       {(card.is_for_trade || card.is_for_sale) && (<div className="absolute left-1.5 top-1.5 flex gap-1">
                           {card.is_for_trade && (<span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-xs font-bold text-[#FFD54A]">
-                              &#x21c4;
+                              &#8644;
                             </span>)}
                           {card.is_for_sale && (<span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFD54A] text-xs font-bold text-black">
                               $

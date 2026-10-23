@@ -1,3 +1,5 @@
+import AcrylicStands from "./pages/Sets/Other Merch/Acrylic-Stands";
+import GelPens from "./pages/Sets/Other Merch/Gel-Pens";
 import { isValidElement, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -306,6 +308,8 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
     }, []);
     const routes = (<Routes>
       <Route path="/" element={<Index />}/>
+      <Route path="/acrylic-stands" element={<RequireAuth><AcrylicStands /></RequireAuth>}/>
+      <Route path="/gel-pens" element={<RequireAuth><GelPens /></RequireAuth>}/>
       <Route path="/collections" element={<Collections />}/>
     <Route path="/cn-moon-one" element={<RequireAuth><ChineseMoonOne /></RequireAuth>}/>
   <Route path="/cn-moon-two" element={<RequireAuth><ChineseMoonTwo /></RequireAuth>}/>

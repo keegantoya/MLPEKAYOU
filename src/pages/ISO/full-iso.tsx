@@ -1,5 +1,4 @@
-import { getEnglishCards, getEnglishCard } from "@/lib/english-card-catalog";
-import { buildOwnedISOIdentities, buildISOStatusMap, normalizeEnglishSetId, isoSets, isoCardIdentity, isoActionKey, getWishlistIdentity, type ISOProgressRow, type ISOStatusRow } from "./catalog-adapter";
+import { getISOCards, resolveISOCard, isISOSetHidden, buildOwnedISOIdentities, buildISOStatusMap, normalizeEnglishSetId, isoSets, isoCardIdentity, isoActionKey, getWishlistIdentity, type ISOProgressRow, type ISOStatusRow } from "./catalog-adapter";
 import ISOCardImage from "./catalog-image";
 import ISOChecking from "./iso-checking";
 export type FullISOCard = {
@@ -10,7 +9,7 @@ export type FullISOProgressRow = ISOProgressRow;
 export type FullISOStatusRow = ISOStatusRow;
 export const buildFullISOCards = (rows: FullISOProgressRow[], hiddenSets: string[], statuses: FullISOStatusRow[]): FullISOCard[] => {
     const hidden = new Set(hiddenSets.map(normalizeEnglishSetId)), owned = buildOwnedISOIdentities(rows), active = buildISOStatusMap(statuses);
-    return isoSets.filter(set => !hidden.has(set.id)).flatMap(set => getEnglishCards(set.id).filter(card => !owned.has(isoCardIdentity(card)) && !active.has(isoCardIdentity(card))).map(card => ({ set_id: set.id, card_key: card.key })));
+    return isoSets.filter(set => !isISOSetHidden(set.id, [...hidden])).flatMap(set => getISOCards(set.id).filter(card => !owned.has(isoCardIdentity(card)) && !active.has(isoCardIdentity(card))).map(card => ({ set_id: card.setId, card_key: card.key })));
 };
 type FullISOProps = {
     cards: FullISOCard[];
@@ -19,11 +18,11 @@ type FullISOProps = {
     toggleWishlist: (setId: string, cardKey: string) => Promise<void>;
 };
 export default function FullISO({ cards, userId, wishlist, toggleWishlist }: FullISOProps) {
-    return <section className="min-w-0"><div className="mb-4 flex items-center justify-between gap-3"><h1 className="text-xl font-semibold">Full ISO</h1><span className="text-sm text-zinc-500 dark:text-zinc-400">{cards.length} {cards.length === 1 ? "card" : "cards"}</span></div>{cards.length === 0 ? <p className="py-10 text-center text-sm text-zinc-500 dark:text-zinc-400">No cards remaining in your ISO.</p> : <div className="grid grid-cols-5 items-start gap-x-1 gap-y-2 min-[400px]:grid-cols-6 sm:gap-x-2 sm:gap-y-3 xl:grid-cols-7">{cards.map(card => {
-                const entry = getEnglishCard(card.set_id, card.card_key);
+    return <section className="min-w-0"><div className="mb-4 flex items-center justify-between gap-3"><h1 className="text-xl font-semibold">Full ISO</h1><span className="text-sm text-zinc-500 dark:text-zinc-400">{cards.length} {cards.some(card => resolveISOCard(card.set_id, card.card_key)?.family === "merch") ? (cards.length === 1 ? "item" : "items") : (cards.length === 1 ? "card" : "cards")}</span></div>{cards.length === 0 ? <p className="py-10 text-center text-sm text-zinc-500 dark:text-zinc-400">No cards remaining in your ISO.</p> : <div className="grid grid-cols-5 items-start gap-x-1 gap-y-2 min-[400px]:grid-cols-6 sm:gap-x-2 sm:gap-y-3 xl:grid-cols-7">{cards.map(card => {
+                const entry = resolveISOCard(card.set_id, card.card_key);
                 if (!entry?.isoEligible)
                     return null;
                 const key = isoActionKey(entry);
-                return <article key={`${card.set_id}:${card.card_key}`} className={`min-w-0 flex flex-col ${entry.wide ? "col-span-2" : ""}`}><p className="mb-0.5 w-full break-words text-center text-[clamp(5px,0.95vw,7px)] font-semibold leading-tight tracking-tight sm:text-[8px] lg:text-[10px] xl:text-xs">{entry.code}</p><ISOChecking className="!block leading-none" contentClassName="!rounded-none" userId={userId} setId={card.set_id} cardKey={key} initialStatus={null} isWishlisted={wishlist.has(getWishlistIdentity(card.set_id, key))} toggleWishlist={toggleWishlist}><div className={`relative overflow-hidden ${entry.wide ? "aspect-[10/7]" : "aspect-[5/7]"}`} style={{ borderRadius: "4% / 2.857%" }}><ISOCardImage card={entry}/></div></ISOChecking><p className="mt-0.5 break-words text-center text-[6px] leading-tight text-zinc-500 dark:text-zinc-400 sm:text-[8px] lg:text-[10px] xl:text-xs">{entry.setName}</p></article>;
+                return <article key={`${card.set_id}:${card.card_key}`} className={`min-w-0 flex flex-col ${entry.wide ? "col-span-2" : ""}`}><p className="mb-0.5 w-full break-words text-center text-[clamp(5px,0.95vw,7px)] font-semibold leading-tight tracking-tight sm:text-[8px] lg:text-[10px] xl:text-xs">{entry.code}</p><ISOChecking className="!block leading-none" contentClassName="!rounded-none" userId={userId} setId={card.set_id} cardKey={key} initialStatus={null} isWishlisted={wishlist.has(getWishlistIdentity(card.set_id, key))} toggleWishlist={toggleWishlist}><div className={`relative overflow-hidden ${entry.square ? "aspect-square" : entry.wide ? "aspect-[10/7]" : "aspect-[5/7]"}`} style={{ borderRadius: "4% / 2.857%" }}><ISOCardImage card={entry}/></div></ISOChecking><p className="mt-0.5 break-words text-center text-[6px] leading-tight text-zinc-500 dark:text-zinc-400 sm:text-[8px] lg:text-[10px] xl:text-xs">{entry.setName}</p></article>;
             })}</div>}</section>;
 }

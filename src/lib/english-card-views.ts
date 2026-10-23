@@ -1,3 +1,5 @@
+import { merchandiseSets, ENGLISH_MERCHANDISE_SET_ID, isMerchandiseOwned } from "./english-merchandise-catalog";
+import { CARD_IMAGE_WORKER_URL } from "@/lib/card-images";
 import { englishCards, englishSets, getEnglishCard, getEnglishCards, getEnglishSet, getEnglishCardImageStyle, getEnglishCardStamp, getEnglishRarityLabel, getISOSetId, isEnglishCardOwned, type EnglishCard } from "@/lib/english-card-catalog";
 import type { CSSProperties } from "react";
 export type EnglishCardReference = {
@@ -113,3 +115,63 @@ export async function readEnglishViewRows<T>(page: (from: number, to: number) =>
             return rows;
     }
 }
+export type ProfileViewCard = Omit<EnglishCard, "family"> & { family: EnglishCard["family"] | "merch"; merchandiseSetId?: string; square?: boolean; level?: string };
+const profileMerchandiseCards: ProfileViewCard[] = merchandiseSets.flatMap(set => set.items.map(item => ({ setId: ENGLISH_MERCHANDISE_SET_ID, setName: set.title, key: item.key, stateKey: item.key, identity: `${ENGLISH_MERCHANDISE_SET_ID}:${item.key}`, family: "merch" as const, rarity: item.series, number: item.number, code: item.key, checklistCode: item.key, image: item.image, front: item.image, back: item.image, isoEligible: true, original: true, wide: false, square: set.aspect === "square", merchandiseSetId: set.id, level: item.level })));
+const profileMerchandiseIndex = new Map(profileMerchandiseCards.map(card => [card.key, card]));
+export const profileViewCard = (reference: EnglishCardReference | null | undefined): ProfileViewCard | undefined => {
+    if (!reference) return undefined;
+    const id = String(reference.set_id);
+    if (id !== ENGLISH_MERCHANDISE_SET_ID && !merchandiseSets.some(set => set.id === id)) return englishViewCard(reference);
+    const key = String(reference.card_key).replace(new RegExp(`^${id}[:-]`), "").replace(/-0*(\d+)$/, "-$1");
+    const card = profileMerchandiseIndex.get(key);
+    return card && (id === ENGLISH_MERCHANDISE_SET_ID || card.merchandiseSetId === id) ? card : undefined;
+};
+export const profileViewEligible = (reference: EnglishCardReference) => profileViewCard(reference)?.isoEligible === true;
+export const profileViewName = (id: string | number) => String(id) === ENGLISH_MERCHANDISE_SET_ID ? "Other" : merchandiseSets.find(set => set.id === String(id))?.title ?? englishViewName(id);
+export const profileViewCode = (reference: EnglishCardReference) => profileViewCard(reference)?.code ?? reference.card_key;
+export const profileViewImage = (reference: EnglishCardReference | null | undefined) => {
+    const card = profileViewCard(reference);
+    if (!card) return "";
+    if (card.family !== "merch") return card.front;
+    const url = new URL(card.front.split("/").map(encodeURIComponent).join("/"), `${CARD_IMAGE_WORKER_URL.replace(/\/$/, "")}/`);
+    url.searchParams.set("publicProfile", "1");
+    return url.href;
+};
+export const profileViewStyle = (reference: EnglishCardReference, options: { side?: "front" | "back"; inspect?: boolean } = {}): CSSProperties => profileViewCard(reference)?.family === "merch" ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", transform: "none", backgroundColor: "transparent", backgroundImage: "none" } : englishViewStyle(reference, options);
+export const profileViewWide = (reference: EnglishCardReference | null | undefined) => profileViewCard(reference)?.wide === true;
+export const profileViewSquare = (reference: EnglishCardReference | null | undefined) => profileViewCard(reference)?.square === true;
+export const profileViewGroup = (reference: EnglishCardReference) => profileViewCard(reference)?.merchandiseSetId ?? englishViewSetId(reference.set_id);
+export const profileViewRarity = (reference: EnglishCardReference) => profileViewCard(reference)?.rarity ?? "";
+export const profileViewRarityOrder = (id: string | number) => String(id) === ENGLISH_MERCHANDISE_SET_ID || merchandiseSets.some(set => set.id === String(id)) ? [...new Set(profileMerchandiseCards.filter(card => String(id) === ENGLISH_MERCHANDISE_SET_ID || card.merchandiseSetId === String(id)).map(card => card.rarity))] : englishViewRarityOrder(id);
+export const profileViewRarityLabel = (id: string | number, rarity: string) => String(id) === ENGLISH_MERCHANDISE_SET_ID || merchandiseSets.some(set => set.id === String(id)) ? rarity : englishViewRarityLabel(id, rarity);
+export const profileViewSetOrder = () => [...englishViewSetOrder(), ENGLISH_MERCHANDISE_SET_ID, ...merchandiseSets.map(set => set.id)];
+export const compareProfileViewCards = (a: EnglishCardReference, b: EnglishCardReference) => {
+    const left = profileViewCard(a), right = profileViewCard(b);
+    if (left?.family !== "merch" && right?.family !== "merch") return compareEnglishViewCards(a, b);
+    if (left?.family !== "merch") return -1;
+    if (right?.family !== "merch") return 1;
+    return profileMerchandiseCards.indexOf(left) - profileMerchandiseCards.indexOf(right);
+};
+export const isProfileMerchandiseHidden = (reference: EnglishCardReference, hidden: readonly string[]) => {
+    const card = profileViewCard(reference);
+    return card?.family === "merch" && (hidden.includes(ENGLISH_MERCHANDISE_SET_ID) || hidden.includes(card.merchandiseSetId!));
+};
+export const missingProfileViewCards = (rows: EnglishProgressRow[], statuses: { card_key: string; status: string }[], hidden: string[] = []): ProfileViewCard[] => {
+    const owned = new Set<string>();
+    for (const row of rows) for (const [key, value] of Object.entries(row.progress ?? {})) {
+        if (!isMerchandiseOwned(value)) continue;
+        const card = profileViewCard({ set_id: row.set_id, card_key: key });
+        if (card?.family === "merch") owned.add(card.identity);
+    }
+    const active = new Set<string>();
+    for (const row of statuses) {
+        if (row.status !== "purchase_in_progress" && row.status !== "trade_in_progress") continue;
+        for (const id of [ENGLISH_MERCHANDISE_SET_ID, ...merchandiseSets.map(set => set.id)]) for (const separator of ["-", ":"]) {
+            const prefix = `${id}${separator}`;
+            if (!row.card_key.startsWith(prefix)) continue;
+            const card = profileViewCard({ set_id: id, card_key: row.card_key.slice(prefix.length) });
+            if (card) active.add(card.identity);
+        }
+    }
+    return [...missingEnglishViewCards(rows, statuses, hidden), ...profileMerchandiseCards.filter(card => !owned.has(card.identity) && !active.has(card.identity) && !isProfileMerchandiseHidden({ set_id: card.setId, card_key: card.key }, hidden))];
+};

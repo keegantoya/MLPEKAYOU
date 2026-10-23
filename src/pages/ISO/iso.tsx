@@ -1,4 +1,5 @@
-import { getISOSets, getISOSetLabel, fetchISOStatuses, parseISOStatusKey, normalizeEnglishSetId } from "./catalog-adapter";
+import ISOFamily from "./iso-family";
+import { getISOSets, getISOSetLabel, isISOSetHidden, fetchISOStatuses, parseISOStatusKey, normalizeEnglishSetId } from "./catalog-adapter";
 import FullISO, { buildFullISOCards, type FullISOProgressRow, type FullISOStatusRow, } from "./full-iso";
 import { getCompletedISOSetIds } from "./iso-visibility";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -15,55 +16,55 @@ import ISOPROMOS from "./iso-promos";
 import Wishlist from "./wishlist";
 import { useWishlist } from "./wishlist-in-iso";
 import InProgress from "./in-progress";
-type Section = "full" | "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos";
-const sections = [{ id: "full", label: "Full ISO", setIds: [] }, { id: "wishlist", label: "Wishlist", setIds: [] }, { id: "progress", label: "In Progress", setIds: [] }, ...([{ id: "moon", label: "Moon" }, { id: "fun", label: "Fun Moments" }, { id: "rainbow", label: "Rainbow" }, { id: "star", label: "Star" }, { id: "tcg", label: "TCG" }, { id: "promos", label: "Promos" }] as const).map(section => ({ ...section, setIds: getISOSets(section.id).map(set => set.id) }))];
+type Section = "full" | "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos" | "merch";
+const sections = [{ id: "full", label: "Full ISO", setIds: [] }, { id: "wishlist", label: "Wishlist", setIds: [] }, { id: "progress", label: "In Progress", setIds: [] }, ...([{ id: "moon", label: "Moon" }, { id: "fun", label: "Fun Moments" }, { id: "rainbow", label: "Rainbow" }, { id: "star", label: "Star" }, { id: "tcg", label: "TCG" }, { id: "promos", label: "Promos" }, { id: "merch", label: "Other" }] as const).map(section => ({ ...section, setIds: getISOSets(section.id).map(set => set.id) }))];
 function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { onDeactivate: () => void; activationBusy: boolean; activationError: string }) {
-    const [selectedSection, setSelectedSection] = useState<Section>("moon");
-    const [showControls, setShowControls] = useState(false);
-    const [cardCodeSearch, setCardCodeSearch] = useState("");
-    const [characterSearch, setCharacterSearch] = useState("");
-    const [searchAllCards, setSearchAllCards] = useState(false);
-    const [wishlistMode, setWishlistMode] = useState(false);
-    const [hiddenSets, setHiddenSets] = useState<string[]>([]);
-    const [completedSets, setCompletedSets] = useState<string[]>([]);
-    const [hasInProgress, setHasInProgress] = useState(false);
-    const [userId, setUserId] = useState<string | null>(null);
-    const [hideISO, setHideISO] = useState(false);
-    const [isLightMode, setIsLightMode] = useState(() => {
+const [selectedSection, setSelectedSection] = useState<Section>("moon");
+const [showControls, setShowControls] = useState(false);
+const [cardCodeSearch, setCardCodeSearch] = useState("");
+const [characterSearch, setCharacterSearch] = useState("");
+const [searchAllCards, setSearchAllCards] = useState(false);
+const [wishlistMode, setWishlistMode] = useState(false);
+const [hiddenSets, setHiddenSets] = useState<string[]>([]);
+const [completedSets, setCompletedSets] = useState<string[]>([]);
+const [hasInProgress, setHasInProgress] = useState(false);
+const [userId, setUserId] = useState<string | null>(null);
+const [hideISO, setHideISO] = useState(false);
+const [isLightMode, setIsLightMode] = useState(() => {
         if (typeof document === "undefined")
             return false;
-        const root = document.documentElement;
+const root = document.documentElement;
         return (root.dataset.theme === "light" ||
             root.classList.contains("light") ||
             !root.classList.contains("dark"));
     });
-    const { wishlist, toggleWishlist } = useWishlist();
-    const [fullISOProgress, setFullISOProgress] = useState<FullISOProgressRow[]>([]);
-    const [fullISOStatuses, setFullISOStatuses] = useState<FullISOStatusRow[]>([]);
-    const [fullISOLoaded, setFullISOLoaded] = useState(false);
-    const [fullISOError, setFullISOError] = useState("");
-    const fullISOCards = useMemo(() => buildFullISOCards(fullISOProgress, hiddenSets, fullISOStatuses), [fullISOProgress, hiddenSets, fullISOStatuses]);
-    const emptyISOSections = useMemo(() => {
+const { wishlist, toggleWishlist } = useWishlist();
+const [fullISOProgress, setFullISOProgress] = useState<FullISOProgressRow[]>([]);
+const [fullISOStatuses, setFullISOStatuses] = useState<FullISOStatusRow[]>([]);
+const [fullISOLoaded, setFullISOLoaded] = useState(false);
+const [fullISOError, setFullISOError] = useState("");
+const fullISOCards = useMemo(() => buildFullISOCards(fullISOProgress, hiddenSets, fullISOStatuses), [fullISOProgress, hiddenSets, fullISOStatuses]);
+const emptyISOSections = useMemo(() => {
         if (!fullISOLoaded)
             return new Set<string>();
-        const allSetIds = sections.flatMap((section) => [...section.setIds]);
+const allSetIds = sections.flatMap((section) => [...section.setIds]);
         return new Set<string>(sections.filter((section) => {
-            const setIds: readonly string[] = section.setIds;
+const setIds: readonly string[] = section.setIds;
             if (setIds.length === 0)
                 return false;
-            const excludedSets = [...hiddenSets, ...allSetIds.filter((setId) => !setIds.includes(setId))];
+const excludedSets = [...hiddenSets, ...allSetIds.filter((setId) => !setIds.includes(setId))];
             return buildFullISOCards(fullISOProgress, excludedSets, fullISOStatuses).length === 0;
         }).map((section) => section.id));
     }, [fullISOLoaded, fullISOProgress, hiddenSets, fullISOStatuses]);
     useEffect(() => {
-        const syncTheme = () => {
-            const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
             setIsLightMode(root.dataset.theme === "light" ||
                 root.classList.contains("light") ||
                 !root.classList.contains("dark"));
         };
         syncTheme();
-        const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
         observer.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ["class", "data-theme"],
@@ -75,23 +76,23 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
         };
     }, []);
     useEffect(() => {
-        let disposed = false;
-        let requestId = 0;
-        let statusRevision = 0;
-        let activeUserId: string | null = null;
-        const activeStatuses = new Map<string, string>();
-        const load = async () => {
-            const request = ++requestId;
-            const revision = statusRevision;
-            const { data } = await supabase.auth.getSession();
+let disposed = false;
+let requestId = 0;
+let statusRevision = 0;
+let activeUserId: string | null = null;
+const activeStatuses = new Map<string, string>();
+const load = async () => {
+const request = ++requestId;
+const revision = statusRevision;
+const { data } = await supabase.auth.getSession();
             if (disposed || request !== requestId)
                 return;
-            const user = data.session?.user;
+const user = data.session?.user;
             if (!user)
                 return;
             activeUserId = user.id;
             setUserId(user.id);
-            const [{ data: profile }, { data: progress, error: progressError }, { data: isoStatus, error: statusError },] = await Promise.all([
+const [{ data: profile }, { data: progress, error: progressError }, { data: isoStatus, error: statusError },] = await Promise.all([
                 supabase.from("profiles").select("iso_hidden_sets, hide_iso").eq("id", user.id).single(),
                 supabase.from("collection_progress_raw").select("set_id, progress").eq("user_id", user.id),
                 fetchISOStatuses(user.id),
@@ -103,8 +104,8 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
                 return;
             }
             setFullISOError("");
-            const p = profile as any;
-            const hidden = (p?.iso_hidden_sets || []).map((id: unknown) => normalizeEnglishSetId(String(id)));
+const p = profile as any;
+const hidden = (p?.iso_hidden_sets || []).map((id: unknown) => normalizeEnglishSetId(String(id)));
             if (!statusError && revision === statusRevision) {
                 activeStatuses.clear();
                 for (const row of isoStatus || []) {
@@ -123,14 +124,14 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
             setCompletedSets(getCompletedISOSetIds(progress || []));
             setHideISO(p?.hide_iso ?? false);
         };
-        const refresh = () => {
+const refresh = () => {
             void load().catch(() => {
                 if (!disposed)
                     setFullISOError("Your ISO could not be loaded. Please refresh and try again.");
             });
         };
-        const onStatusChange = (event: Event) => {
-            const detail = (event as CustomEvent<{
+const onStatusChange = (event: Event) => {
+const detail = (event as CustomEvent<{
                 userId: string;
                 cardKey: string;
                 status: string | null;
@@ -151,8 +152,8 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
                     setFullISOError("Your ISO could not be loaded. Please refresh and try again.");
             });
         };
-        const onCollectionChange = (event: Event) => {
-            const detail = (event as CustomEvent<{
+const onCollectionChange = (event: Event) => {
+const detail = (event as CustomEvent<{
                 userId: string;
                 setId?: string;
                 cardKey?: string;
@@ -161,8 +162,8 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
             if (detail?.userId !== activeUserId)
                 return;
             if (detail.setId && detail.cardKey) {
-                const setId = detail.setId;
-                const cardKey = detail.cardKey;
+const setId = detail.setId;
+const cardKey = detail.cardKey;
                 setFullISOProgress((previous) => [
                     ...previous,
                     { set_id: setId, progress: { [cardKey]: true } },
@@ -185,10 +186,10 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
             window.removeEventListener("focus", refresh);
         };
     }, []);
-    const toggleSet = async (setId: string) => {
+const toggleSet = async (setId: string) => {
         if (!userId)
             return;
-        const updated = hiddenSets.includes(setId)
+const updated = hiddenSets.includes(setId)
             ? hiddenSets.filter((id) => id !== setId)
             : [...hiddenSets, setId];
         setHiddenSets(updated);
@@ -199,10 +200,10 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
         })
             .eq("id", userId);
     };
-    const toggleHideISO = async () => {
+const toggleHideISO = async () => {
         if (!userId)
             return;
-        const next = !hideISO;
+const next = !hideISO;
         setHideISO(next);
         await supabase
             .from("profiles")
@@ -211,12 +212,12 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
         })
             .eq("id", userId);
     };
-    const isSearching = cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
-    const isWishlistView = wishlistMode || selectedSection === "wishlist";
-    const visibleHiddenSets = isWishlistView || isSearching
+const isSearching = cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
+const isWishlistView = wishlistMode || selectedSection === "wishlist";
+const visibleHiddenSets = isWishlistView || isSearching
         ? []
         : Array.from(new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]));
-    const visibleSections = sections.filter((section) => {
+const visibleSections = sections.filter((section) => {
         if (section.id === "full")
             return fullISOLoaded && fullISOCards.length < 100;
         if (section.id === "wishlist") {
@@ -228,11 +229,11 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
         if (isWishlistView)
             return true;
         if (searchAllCards) {
-            return section.setIds.some((setId) => !hiddenSets.includes(setId));
+            return section.setIds.some((setId) => !isISOSetHidden(setId, hiddenSets));
         }
         if (emptyISOSections.has(section.id))
             return false;
-        return section.setIds.some((setId) => !hiddenSets.includes(setId) && !completedSets.includes(setId));
+        return section.setIds.some((setId) => !isISOSetHidden(setId, hiddenSets) && !completedSets.includes(setId));
     });
     useEffect(() => {
         if (!visibleSections.some((section) => section.id === selectedSection)) {
@@ -249,14 +250,14 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
         fullISOCards.length,
         emptyISOSections,
     ]);
-    const selectSection = (section: Section) => {
+const selectSection = (section: Section) => {
         setCardCodeSearch("");
         setCharacterSearch("");
         if (section === "wishlist" || selectedSection === "wishlist")
             setWishlistMode(true);
         setSelectedSection(section);
     };
-    const sectionContent = (<>
+const sectionContent = (<>
       {selectedSection === "full" && fullISOError && <p role="alert" className="py-8 text-sm text-red-600 dark:text-red-400">{fullISOError}</p>}
     {selectedSection === "full" && !fullISOError && (!userId || !fullISOLoaded) && <p role="status" className="py-8 text-sm text-muted-foreground">Loading English ISO...</p>}
         {selectedSection === "full" && !fullISOError && fullISOLoaded && userId && (<FullISO cards={fullISOCards} userId={userId} wishlist={wishlist} toggleWishlist={toggleWishlist}/>)}
@@ -268,8 +269,9 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
       {selectedSection === "star" && (<ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
       {selectedSection === "tcg" && (<ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
       {selectedSection === "promos" && (<ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "merch" && <ISOFamily family="merch" cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>}
     </>);
-    const allSearchContent = (<>
+const allSearchContent = (<>
       {selectedSection === "progress" && <InProgress />}
       <ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
       <ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={isWishlistView}/>
@@ -277,8 +279,9 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
       <ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
       <ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
       <ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOFamily family="merch" cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
     </>);
-    const navigation = <nav aria-label="English ISO sections" className="flex gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible">
+const navigation = <nav aria-label="English ISO sections" className="flex gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible">
     {visibleSections.filter(item => isWishlistView || item.id !== "wishlist").map(item => <button key={item.id} type="button" aria-pressed={selectedSection === item.id} onClick={() => selectSection(item.id as Section)} className={`flex min-h-11 shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-colors motion-reduce:transition-none ${selectedSection === item.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}><span>{item.label}</span></button>)}
   </nav>;
     return (<div className="min-h-screen bg-background text-foreground">
@@ -305,7 +308,7 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
       </div>
       {showControls && (<div className={`fixed inset-0 z-[120000] flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}>
           <div className={`relative max-h-[90dvh] w-full max-w-4xl overflow-y-auto rounded-[24px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}>
-            <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={setSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={setWishlistMode} availableSets={(["moon", "fun", "rainbow", "star", "tcg", "promos"] as const).map(family => ({ id: family, name: family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }))} hiddenSetIds={hiddenSets} onHideSet={toggleSet} hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
+            <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={setSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={setWishlistMode} availableSets={(["moon", "fun", "rainbow", "star", "tcg", "promos", "merch"] as const).map(family => ({ id: family, name: family === "merch" ? "Other" : family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }))} hiddenSetIds={hiddenSets} onHideSet={toggleSet} hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
           </div>
         </div>)}
     </div>);
@@ -313,26 +316,26 @@ function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { 
 type EnglishActivation = { english_cards_enabled: boolean; english_cards_prompt_seen: boolean };
 const activationColumns = "english_cards_enabled, english_cards_prompt_seen";
 function activationErrorMessage(cause: unknown): string {
-    const error = cause as { code?: string; message?: string } | null;
+const error = cause as { code?: string; message?: string } | null;
     return error && ["42703", "PGRST204"].includes(error.code ?? "") ? "Run the English activation setup SQL first, then retry." : "Your English card setting could not be saved or loaded. Please retry.";
 }
 export default function ISO() {
-    const [account, setAccount] = useState<{ ready: boolean; id: string | null }>({ ready: false, id: null });
-    const [activation, setActivation] = useState<(EnglishActivation & { owner: string }) | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState("");
-    const [reload, setReload] = useState(0);
-    const request = useRef(0);
-    const savingRequest = useRef<number | null>(null);
+const [account, setAccount] = useState<{ ready: boolean; id: string | null }>({ ready: false, id: null });
+const [activation, setActivation] = useState<(EnglishActivation & { owner: string }) | null>(null);
+const [loading, setLoading] = useState(true);
+const [saving, setSaving] = useState(false);
+const [error, setError] = useState("");
+const [reload, setReload] = useState(0);
+const request = useRef(0);
+const savingRequest = useRef<number | null>(null);
     useEffect(() => {
-        let disposed = false;
-        let authRevision = 0;
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+let disposed = false;
+let authRevision = 0;
+const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             authRevision += 1;
             if (!disposed) setAccount(current => current.ready && current.id === (session?.user.id ?? null) ? current : { ready: true, id: session?.user.id ?? null });
         });
-        const revision = authRevision;
+const revision = authRevision;
         void supabase.auth.getSession().then(({ data, error: sessionError }) => {
             if (disposed || revision !== authRevision) return;
             if (sessionError) { setError("Your account could not be loaded. Please sign in again."); setLoading(false); return; }
@@ -341,7 +344,7 @@ export default function ISO() {
         return () => { disposed = true; subscription.unsubscribe(); };
     }, []);
     useEffect(() => {
-        const currentRequest = ++request.current;
+const currentRequest = ++request.current;
         savingRequest.current = null;
         setSaving(false);
         setActivation(null);
@@ -351,7 +354,7 @@ export default function ISO() {
         setLoading(true);
         void (async () => {
             try {
-                const { data, error: loadError } = await supabase.from("profiles").select(activationColumns).eq("id", account.id).single();
+const { data, error: loadError } = await supabase.from("profiles").select(activationColumns).eq("id", account.id).single();
                 if (currentRequest !== request.current) return;
                 if (loadError) throw loadError;
                 if (!data) throw new Error("Profile not found");
@@ -364,17 +367,17 @@ export default function ISO() {
         })();
         return () => { request.current += 1; };
     }, [account.ready, account.id, reload]);
-    const saveActivation = async (enabled: boolean) => {
+const saveActivation = async (enabled: boolean) => {
         if (!account.id || !activation || activation.owner !== account.id || savingRequest.current !== null) return;
-        const currentRequest = request.current;
+const currentRequest = request.current;
         savingRequest.current = currentRequest;
         setSaving(true);
         setError("");
         try {
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
             if (currentRequest !== request.current) return;
             if (sessionError || sessionData.session?.user.id !== account.id) throw new Error("Your account changed. Please retry.");
-            const { data, error: saveError } = await supabase.from("profiles").update({ english_cards_enabled: enabled, english_cards_prompt_seen: true }).eq("id", account.id).select(activationColumns).single();
+const { data, error: saveError } = await supabase.from("profiles").update({ english_cards_enabled: enabled, english_cards_prompt_seen: true }).eq("id", account.id).select(activationColumns).single();
             if (currentRequest !== request.current) return;
             if (saveError) throw saveError;
             if (!data || data.english_cards_enabled !== enabled || data.english_cards_prompt_seen !== true) throw new Error("Your setting was not saved");
@@ -386,7 +389,7 @@ export default function ISO() {
             if (savingRequest.current === currentRequest) { savingRequest.current = null; setSaving(false); }
         }
     };
-    const current = activation?.owner === account.id ? activation : null;
+const current = activation?.owner === account.id ? activation : null;
     if (loading || !account.ready && !error || account.id && !current && !error) return <main className="w-full px-4 py-6 text-foreground"><p role="status" className="text-sm text-muted-foreground">Loading English ISO...</p></main>;
     if (current?.english_cards_enabled && current.english_cards_prompt_seen) return <EnglishISOContent key={current.owner} onDeactivate={() => void saveActivation(false)} activationBusy={saving} activationError={error}/>;
     return <main className="mx-auto w-full max-w-2xl px-4 py-6 text-foreground sm:px-6 sm:py-10">

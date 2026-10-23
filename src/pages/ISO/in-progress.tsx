@@ -76,7 +76,7 @@ export default function InProgress() {
             </p>
           </div>
           <div className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-semibold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
-            {cards.length} {cards.length === 1 ? "card" : "cards"}
+            {cards.length} {cards.some(card => resolveISOCard(card.set_id, card.card_key)?.family === "merch") ? (cards.length === 1 ? "item" : "items") : (cards.length === 1 ? "card" : "cards")}
           </div>
         </div>
       </section>
@@ -94,7 +94,7 @@ export default function InProgress() {
                     if (nextStatus === null)
                         removeCard(card);
                 }} onComplete={() => removeCard(card)}>
-                <div className={`relative ${resolveISOCard(card.set_id, card.card_key)?.wide ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[7px] bg-transparent transition hover:-translate-y-0.5`}>
+                <div className={`relative ${resolveISOCard(card.set_id, card.card_key)?.square ? "aspect-square" : resolveISOCard(card.set_id, card.card_key)?.wide ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[7px] bg-transparent transition hover:-translate-y-0.5`}>
                   <ISOCardImage card={card}/>
                 </div>
               </ISOChecking>))}
