@@ -1,6 +1,5 @@
 import InventoryOverview from "@/components/InventoryOverview";
-import { getEnglishCard } from "@/lib/english-card-catalog";
-import { inventoryCollections as collections, normalizeInventorySetId as normalizeSetId, buildInventoryProgress, getInventoryOwnedCards, fetchInventoryProgress, fetchInventoryListings } from "@/lib/english-inventory";
+import { inventoryCollections as collections, normalizeInventorySetId as normalizeSetId, buildInventoryProgress, getInventoryOwnedCards, getInventoryCard, getInventoryCardSetId, inventoryStorageSetId, fetchInventoryProgress, fetchInventoryListings } from "@/lib/english-inventory";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -48,12 +47,13 @@ export default function MyTrades() {
                 const identities = new Map<string, Set<string>>();
                 for (const row of trades) {
                     const setId = normalizeSetId(row.set_id);
-                    const card = getEnglishCard(setId, row.card_key);
+                    const card = getInventoryCard(setId, row.card_key);
                     if (!card?.isoEligible || !((row.is_for_trade && Number(row.trade_quantity) > 0) || (row.is_for_sale && Number(row.sale_quantity) > 0)))
                         continue;
-                    const cards = identities.get(setId) ?? new Set<string>();
+                    const collectionId = getInventoryCardSetId(setId, row.card_key);
+                    const cards = identities.get(collectionId) ?? new Set<string>();
                     cards.add(card.key);
-                    identities.set(setId, cards);
+                    identities.set(collectionId, cards);
                 }
                 setListingCounts(Object.fromEntries([...identities].map(([id, cards]) => [id, cards.size])));
             }
@@ -78,7 +78,7 @@ export default function MyTrades() {
                 setLoading(false);
                 setLoadError("");
             }
-            else if (event === "SIGNED_IN") {
+            else if (event === "SIGNED_IN" && session?.user.id !== activeUserId) {
                 if (session?.user.id !== activeUserId) {
                     activeUserId = session?.user.id ?? "";
                     setProgress({});
@@ -89,11 +89,10 @@ export default function MyTrades() {
                 queueMicrotask(refresh);
             }
         });
-        window.addEventListener("focus", refresh);
-        return () => { disposed = true; requestId++; subscription.unsubscribe(); window.removeEventListener("focus", refresh); };
+        return () => { disposed = true; requestId++; subscription.unsubscribe(); };
     }, [retry]);
     const hidden = new Set(hiddenSets.map(normalizeSetId));
-    const labels: Record<string, string> = { moon: "Moon", star: "Star", rainbow: "Rainbow", fun: "Fun Moments", tcg: "TCG", promos: "Promotional" };
+    const labels: Record<string, string> = { moon: "Moon", star: "Star", rainbow: "Rainbow", fun: "Fun Moments", tcg: "TCG", promos: "Promotional", merch: "Other" };
     const categories = [...new Set(collections.map(set => set.family))].map(id => ({ id, name: labels[id] ?? id }));
     const sets = collections.map(set => ({
         id: set.id,
@@ -103,8 +102,9 @@ export default function MyTrades() {
         total: set.totalCards,
         owned: getInventoryOwnedCards(set.id, progress[set.id] ?? {}).length,
         listed: listingCounts[set.id] ?? 0,
-        hidden: hidden.has(set.id),
+        hidden: hidden.has(set.id) || (set.family === "merch" && hidden.has(inventoryStorageSetId(set.id))),
         available: Object.keys(progress[set.id] ?? {}).length > 0,
+        merchandise: set.family === "merch",
         preview: <CardImage src={set.imageUrl} alt="" className="block aspect-[5/7] w-full object-cover"/>,
     }));
     return <InventoryOverview title="My Inventory" categories={categories} category={activeFilter} onCategoryChange={setActiveFilter} sets={sets} loading={loading} error={loadError} checklistHref="/collections" onRetry={() => setRetry(value => value + 1)}/>;

@@ -3,28 +3,30 @@ import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { englishStarterDecks, getEnglishCardImageStyle, getEnglishRarityLabel, type EnglishCard } from "@/lib/english-card-catalog";
-import { inventoryStorageSetId, resolveInventorySet, buildInventoryProgress, buildInventoryRecordMap, getInventoryOwnedCards, isInventoryDeckComplete, getInventoryWriteTarget, fetchInventoryProgress, fetchInventoryListings, fetchInventoryQuantities, type InventoryTarget } from "@/lib/english-inventory";
-const getDisplayCode = (card: EnglishCard) => card.code;
+import { englishStarterDecks } from "@/lib/english-card-catalog";
+import { inventoryStorageSetId, resolveInventorySet, buildInventoryProgress, buildInventoryRecordMap, getInventoryOwnedCards, isInventoryDeckComplete, getInventoryWriteTarget, fetchInventoryProgress, fetchInventoryListings, fetchInventoryQuantities, type InventoryTarget, type InventoryCard, isInventoryMerchandise, getInventoryCardImage, getInventoryCardImageStyle, getInventoryRarityLabel } from "@/lib/english-inventory";
+const getDisplayCode = (card: InventoryCard) => card.code;
 export default function MyTradesSets() {
-    const { setId } = useParams();
-    const navigate = useNavigate();
-    const set = resolveInventorySet(setId);
-    const resolvedSetId = set?.id ?? "";
-    const [loading, setLoading] = useState(true);
-    const [loadError, setLoadError] = useState("");
-    const [quantityTargets, setQuantityTargets] = useState<Record<string, InventoryTarget>>({});
-    const [listingTargets, setListingTargets] = useState<Record<string, InventoryTarget>>({});
-    const [collapsedRarities, setCollapsedRarities] = useState<Record<string, boolean>>({});
-    const [progressMap, setProgressMap] = useState<Record<string, Record<string, boolean>>>({});
-    type MarketListing = {
+const { setId } = useParams();
+const navigate = useNavigate();
+const set = resolveInventorySet(setId);
+const resolvedSetId = set?.id ?? "";
+const merchandise = isInventoryMerchandise(resolvedSetId);
+const itemWord = merchandise ? "items" : "cards";
+const [loading, setLoading] = useState(true);
+const [loadError, setLoadError] = useState("");
+const [quantityTargets, setQuantityTargets] = useState<Record<string, InventoryTarget>>({});
+const [listingTargets, setListingTargets] = useState<Record<string, InventoryTarget>>({});
+const [collapsedRarities, setCollapsedRarities] = useState<Record<string, boolean>>({});
+const [progressMap, setProgressMap] = useState<Record<string, Record<string, boolean>>>({});
+type MarketListing = {
         is_for_trade: boolean;
         is_for_sale: boolean;
         asking_price: number | null;
         trade_quantity: number;
         sale_quantity: number;
     };
-    type ListingDraft = {
+type ListingDraft = {
         isForTrade: boolean;
         isForSale: boolean;
         askingPrice: string;
@@ -32,49 +34,49 @@ export default function MyTradesSets() {
         tradeQuantity: string;
         saleQuantity: string;
     };
-    const emptyListing: MarketListing = {
+const emptyListing: MarketListing = {
         is_for_trade: false,
         is_for_sale: false,
         asking_price: null,
         trade_quantity: 0,
         sale_quantity: 0,
     };
-    const [marketListings, setMarketListings] = useState<Record<string, MarketListing>>({});
-    const [selectedCard, setSelectedCard] = useState<EnglishCard | null>(null);
-    const [listingDraft, setListingDraft] = useState<ListingDraft | null>(null);
-    const [savedListingDraft, setSavedListingDraft] = useState<ListingDraft | null>(null);
-    const [isSavingCard, setIsSavingCard] = useState(false);
-    const savingCardRef = useRef(false);
-    const [isSavingInventory, setIsSavingInventory] = useState(false);
-    const savingInventoryRef = useRef(false);
-    const [inventorySaveError, setInventorySaveError] = useState("");
-    const [cardSaveError, setCardSaveError] = useState("");
-    const [quantities, setQuantities] = useState<Record<string, number>>({});
-    const [savedQuantities, setSavedQuantities] = useState<Record<string, number>>({});
-    const [editMode, setEditMode] = useState(false);
-    const [showBulkEdit, setShowBulkEdit] = useState(false);
-    const [inventoryDirty, setInventoryDirty] = useState(false);
-    const [showIntroPopup, setShowIntroPopup] = useState(false);
-    const [showLeavePopup, setShowLeavePopup] = useState(false);
-    const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
-    const [activeDeck, setActiveDeck] = useState<number | null>(null);
-    const inventoryDirtyRef = useRef(false);
-    const navigationGuardRef = useRef(false);
-    const [isLightMode, setIsLightMode] = useState(() => {
+const [marketListings, setMarketListings] = useState<Record<string, MarketListing>>({});
+const [selectedCard, setSelectedCard] = useState<InventoryCard | null>(null);
+const [listingDraft, setListingDraft] = useState<ListingDraft | null>(null);
+const [savedListingDraft, setSavedListingDraft] = useState<ListingDraft | null>(null);
+const [isSavingCard, setIsSavingCard] = useState(false);
+const savingCardRef = useRef(false);
+const [isSavingInventory, setIsSavingInventory] = useState(false);
+const savingInventoryRef = useRef(false);
+const [inventorySaveError, setInventorySaveError] = useState("");
+const [cardSaveError, setCardSaveError] = useState("");
+const [quantities, setQuantities] = useState<Record<string, number>>({});
+const [savedQuantities, setSavedQuantities] = useState<Record<string, number>>({});
+const [editMode, setEditMode] = useState(false);
+const [showBulkEdit, setShowBulkEdit] = useState(false);
+const [inventoryDirty, setInventoryDirty] = useState(false);
+const [showIntroPopup, setShowIntroPopup] = useState(false);
+const [showLeavePopup, setShowLeavePopup] = useState(false);
+const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+const [activeDeck, setActiveDeck] = useState<number | null>(null);
+const inventoryDirtyRef = useRef(false);
+const navigationGuardRef = useRef(false);
+const [isLightMode, setIsLightMode] = useState(() => {
         if (typeof document === "undefined")
             return false;
-        const root = document.documentElement;
+const root = document.documentElement;
         return root.dataset.theme === "light" || root.classList.contains("light");
     });
     useEffect(() => {
-        const syncTheme = () => {
-            const root = document.documentElement;
+const syncTheme = () => {
+const root = document.documentElement;
             setIsLightMode(root.dataset.theme === "light" ||
                 root.classList.contains("light") ||
                 !root.classList.contains("dark"));
         };
         syncTheme();
-        const observer = new MutationObserver(syncTheme);
+const observer = new MutationObserver(syncTheme);
         observer.observe(document.documentElement, {
             attributes: true,
             attributeFilter: ["class", "data-theme"],
@@ -82,37 +84,37 @@ export default function MyTradesSets() {
         return () => observer.disconnect();
     }, []);
     useEffect(() => {
-        let disposed = false;
-        let requestId = 0;
-        let activeUserId = "";
-        const load = async () => {
-            const request = ++requestId;
+let disposed = false;
+let requestId = 0;
+let activeUserId = "";
+const load = async () => {
+const request = ++requestId;
             setLoadError("");
             try {
-                const { data, error: authError } = await supabase.auth.getSession();
+const { data, error: authError } = await supabase.auth.getSession();
                 if (authError)
                     throw authError;
                 if (disposed || request !== requestId)
                     return;
-                const user = data.session?.user;
+const user = data.session?.user;
                 if (!user || !resolvedSetId)
                     return;
                 activeUserId = user.id;
-                const [progressRows, listings, qtyData] = await Promise.all([
+const [progressRows, listings, qtyData] = await Promise.all([
                     fetchInventoryProgress(user.id), fetchInventoryListings(user.id, resolvedSetId), fetchInventoryQuantities(user.id, resolvedSetId),
                 ]);
                 if (disposed || request !== requestId || inventoryDirtyRef.current)
                     return;
-                const listingRows = buildInventoryRecordMap(listings, resolvedSetId);
-                const qtyRows = buildInventoryRecordMap(qtyData, resolvedSetId);
-                const listingMap: Record<string, MarketListing> = {};
+const listingRows = buildInventoryRecordMap(listings, resolvedSetId);
+const qtyRows = buildInventoryRecordMap(qtyData, resolvedSetId);
+const listingMap: Record<string, MarketListing> = {};
                 for (const [key, listing] of Object.entries(listingRows))
                     listingMap[key] = {
                         is_for_trade: Boolean(listing.is_for_trade), is_for_sale: Boolean(listing.is_for_sale),
                         asking_price: listing.asking_price === null ? null : Number(listing.asking_price),
                         trade_quantity: Number(listing.trade_quantity || 0), sale_quantity: Number(listing.sale_quantity || 0),
                     };
-                const qtyMap = Object.fromEntries(Object.entries(qtyRows).map(([key, row]) => [key, Number(row.quantity)]));
+const qtyMap = Object.fromEntries(Object.entries(qtyRows).map(([key, row]) => [key, Number(row.quantity)]));
                 setProgressMap(buildInventoryProgress(progressRows));
                 setMarketListings(listingMap);
                 setQuantities(qtyMap);
@@ -130,7 +132,7 @@ export default function MyTradesSets() {
                     setLoading(false);
             }
         };
-        const clear = () => {
+const clear = () => {
             setProgressMap({});
             setMarketListings({});
             setQuantities({});
@@ -149,7 +151,7 @@ export default function MyTradesSets() {
         clear();
         setLoading(true);
         void load();
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === "SIGNED_OUT") {
                 activeUserId = "";
                 requestId++;
@@ -166,9 +168,9 @@ export default function MyTradesSets() {
         return () => { disposed = true; requestId++; subscription.unsubscribe(); };
     }, [resolvedSetId]);
     useEffect(() => {
-        const INTRO_KEY = "mlpekayou_inventory_intro_seen";
+const INTRO_KEY = "mlpekayou_inventory_intro_seen";
         try {
-            const hasSeenIntro = localStorage.getItem(INTRO_KEY) === "true";
+const hasSeenIntro = localStorage.getItem(INTRO_KEY) === "true";
             setShowIntroPopup(!hasSeenIntro);
         }
         catch {
@@ -179,11 +181,11 @@ export default function MyTradesSets() {
         inventoryDirtyRef.current = inventoryDirty;
     }, [inventoryDirty]);
     useEffect(() => {
-        const handleKayouHeaderNavigation = (event: Event) => {
-            const customEvent = event as CustomEvent<{
+const handleKayouHeaderNavigation = (event: Event) => {
+const customEvent = event as CustomEvent<{
                 destination?: string;
             }>;
-            const destination = customEvent.detail?.destination;
+const destination = customEvent.detail?.destination;
             if (!inventoryDirtyRef.current || !destination) {
                 return;
             }
@@ -197,9 +199,9 @@ export default function MyTradesSets() {
         };
     }, []);
     useEffect(() => {
-        const originalPushState = window.history.pushState.bind(window.history);
-        const originalReplaceState = window.history.replaceState.bind(window.history);
-        const guardNavigation = (originalMethod: typeof window.history.pushState, state: any, title: string, url?: string | URL | null) => {
+const originalPushState = window.history.pushState.bind(window.history);
+const originalReplaceState = window.history.replaceState.bind(window.history);
+const guardNavigation = (originalMethod: typeof window.history.pushState, state: any, title: string, url?: string | URL | null) => {
             if (inventoryDirtyRef.current &&
                 !navigationGuardRef.current &&
                 url &&
@@ -212,10 +214,10 @@ export default function MyTradesSets() {
             }
             originalMethod(state, title, url);
         };
-        const guardedPushState: History["pushState"] = function (state, title, url) {
+const guardedPushState: History["pushState"] = function (state, title, url) {
             guardNavigation(originalPushState, state, title, url);
         };
-        const guardedReplaceState: History["replaceState"] = function (state, title, url) {
+const guardedReplaceState: History["replaceState"] = function (state, title, url) {
             guardNavigation(originalReplaceState, state, title, url);
         };
         window.history.pushState = guardedPushState;
@@ -226,7 +228,7 @@ export default function MyTradesSets() {
         };
     }, []);
     useEffect(() => {
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
             if (!inventoryDirty)
                 return;
             event.preventDefault();
@@ -238,9 +240,9 @@ export default function MyTradesSets() {
     useEffect(() => {
         if (!selectedCard)
             return;
-        const previousOverflow = document.body.style.overflow;
+const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
-        const preventEscape = (event: KeyboardEvent) => {
+const preventEscape = (event: KeyboardEvent) => {
             if (event.key === "Escape")
                 event.preventDefault();
         };
@@ -251,47 +253,47 @@ export default function MyTradesSets() {
         };
     }, [selectedCard]);
     useEffect(() => {
-        const dirty = Object.keys(quantities).some(key => (quantities[key] ?? 1) !== (savedQuantities[key] ?? 1)) ||
+const dirty = Object.keys(quantities).some(key => (quantities[key] ?? 1) !== (savedQuantities[key] ?? 1)) ||
             (!!listingDraft && !!savedListingDraft && JSON.stringify(listingDraft) !== JSON.stringify(savedListingDraft));
         setInventoryDirty(dirty);
         inventoryDirtyRef.current = dirty;
     }, [listingDraft, savedListingDraft, quantities, savedQuantities]);
-    const changeQuantity = (cardKey: string, value: number) => {
-        const next = Math.max(1, Math.trunc(Number.isFinite(value) ? value : 1));
+const changeQuantity = (cardKey: string, value: number) => {
+const next = Math.max(1, Math.trunc(Number.isFinite(value) ? value : 1));
         setQuantities((prev) => {
-            const updated = { ...prev, [cardKey]: next };
-            const dirty = Object.keys(updated).some((key) => (updated[key] ?? 1) !== (savedQuantities[key] ?? 1));
+const updated = { ...prev, [cardKey]: next };
+const dirty = Object.keys(updated).some((key) => (updated[key] ?? 1) !== (savedQuantities[key] ?? 1));
             setInventoryDirty(dirty);
             inventoryDirtyRef.current = dirty;
             return updated;
         });
     };
-    const saveInventoryChanges = async (excludeCardKey?: string): Promise<boolean> => {
+const saveInventoryChanges = async (excludeCardKey?: string): Promise<boolean> => {
         if (savingInventoryRef.current)
             return false;
         savingInventoryRef.current = true;
         setIsSavingInventory(true);
         setInventorySaveError("");
         try {
-            const { data } = await supabase.auth.getSession();
-            const user = data.session?.user;
+const { data } = await supabase.auth.getSession();
+const user = data.session?.user;
             if (!user)
                 throw new Error("Please sign in again before saving.");
-            const keys = new Set([...Object.keys(savedQuantities), ...Object.keys(quantities)]);
-            const changedKeys = Array.from(keys).filter((key) => key !== excludeCardKey && (quantities[key] || 1) !== (savedQuantities[key] || 1));
+const keys = new Set([...Object.keys(savedQuantities), ...Object.keys(quantities)]);
+const changedKeys = Array.from(keys).filter((key) => key !== excludeCardKey && (quantities[key] || 1) !== (savedQuantities[key] || 1));
             if (changedKeys.length > 0) {
-                const results = await Promise.all(changedKeys.map((cardKey) => supabase.from("card_quantity").upsert({
+const results = await Promise.all(changedKeys.map((cardKey) => supabase.from("card_quantity").upsert({
                     user_id: user.id,
                     ...getInventoryWriteTarget(resolvedSetId, cardKey, quantityTargets[cardKey]),
                     quantity: Math.max(1, quantities[cardKey] || 1),
                 })));
-                const failed = results.find((result) => result.error);
+const failed = results.find((result) => result.error);
                 if (failed?.error) {
                     throw failed.error;
                 }
             }
             setSavedQuantities(current => ({ ...current, ...Object.fromEntries(Object.entries(quantities).filter(([key]) => key !== excludeCardKey)) }));
-            const dirty = !!listingDraft && !!savedListingDraft && JSON.stringify(listingDraft) !== JSON.stringify(savedListingDraft);
+const dirty = !!listingDraft && !!savedListingDraft && JSON.stringify(listingDraft) !== JSON.stringify(savedListingDraft);
             setInventoryDirty(dirty);
             inventoryDirtyRef.current = dirty;
             return true;
@@ -305,7 +307,7 @@ export default function MyTradesSets() {
             setIsSavingInventory(false);
         }
     };
-    const requestNavigation = (destination: string) => {
+const requestNavigation = (destination: string) => {
         if (inventoryDirtyRef.current) {
             setPendingNavigation(destination);
             setShowLeavePopup(true);
@@ -315,19 +317,19 @@ export default function MyTradesSets() {
         navigate(destination);
         navigationGuardRef.current = false;
     };
-    const handleEditToggle = async () => {
+const handleEditToggle = async () => {
         if (!editMode) {
             setEditMode(true);
             return;
         }
         if (inventoryDirty) {
-            const saved = await saveInventoryChanges();
+const saved = await saveInventoryChanges();
             if (!saved)
                 return;
         }
         setEditMode(false);
     };
-    const openBulkEdit = async () => {
+const openBulkEdit = async () => {
         if (savingInventoryRef.current || savingCardRef.current)
             return;
         if (inventoryDirtyRef.current && !(await saveInventoryChanges()))
@@ -335,8 +337,8 @@ export default function MyTradesSets() {
         setEditMode(false);
         setShowBulkEdit(true);
     };
-    const toDraft = (cardKey: string): ListingDraft => {
-        const listing = marketListings[cardKey] || emptyListing;
+const toDraft = (cardKey: string): ListingDraft => {
+const listing = marketListings[cardKey] || emptyListing;
         return {
             isForTrade: listing.is_for_trade,
             isForSale: listing.is_for_sale,
@@ -346,27 +348,27 @@ export default function MyTradesSets() {
             saleQuantity: String(listing.sale_quantity || 0),
         };
     };
-    const openCardDetails = (card: EnglishCard) => {
-        const draft = toDraft(card.key);
+const openCardDetails = (card: InventoryCard) => {
+const draft = toDraft(card.key);
         setSelectedCard(card);
         setListingDraft(draft);
         setSavedListingDraft(draft);
         setCardSaveError("");
     };
-    const updateListingDraft = (changes: Partial<ListingDraft>) => {
+const updateListingDraft = (changes: Partial<ListingDraft>) => {
         setListingDraft((current) => (current ? { ...current, ...changes } : current));
     };
-    const saveCardDetails = async (): Promise<boolean> => {
+const saveCardDetails = async (): Promise<boolean> => {
         if (savingCardRef.current || !selectedCard || !listingDraft)
             return false;
-        const personalQuantity = Math.max(1, Math.trunc(Number(listingDraft.personalQuantity) || 1));
-        const tradeQuantity = listingDraft.isForTrade
+const personalQuantity = Math.max(1, Math.trunc(Number(listingDraft.personalQuantity) || 1));
+const tradeQuantity = listingDraft.isForTrade
             ? Math.max(1, Math.trunc(Number(listingDraft.tradeQuantity) || 1))
             : 0;
-        const saleQuantity = listingDraft.isForSale
+const saleQuantity = listingDraft.isForSale
             ? Math.max(1, Math.trunc(Number(listingDraft.saleQuantity) || 1))
             : 0;
-        const askingPrice = listingDraft.isForSale && listingDraft.askingPrice !== ""
+const askingPrice = listingDraft.isForSale && listingDraft.askingPrice !== ""
             ? Number(listingDraft.askingPrice)
             : null;
         if (listingDraft.isForSale &&
@@ -378,23 +380,23 @@ export default function MyTradesSets() {
         setIsSavingCard(true);
         try {
             setCardSaveError("");
-            const { data } = await supabase.auth.getSession();
-            const user = data.session?.user;
+const { data } = await supabase.auth.getSession();
+const user = data.session?.user;
             if (!user) {
                 setCardSaveError("Please sign in again before saving.");
                 setIsSavingCard(false);
                 return false;
             }
-            const cardKey = selectedCard.key;
-            const savedPersonalQuantity = savedQuantities[cardKey] ?? 1;
-            const quantityRequest = personalQuantity !== savedPersonalQuantity
+const cardKey = selectedCard.key;
+const savedPersonalQuantity = savedQuantities[cardKey] ?? 1;
+const quantityRequest = personalQuantity !== savedPersonalQuantity
                 ? supabase.from("card_quantity").upsert({
                     user_id: user.id,
                     ...getInventoryWriteTarget(resolvedSetId, cardKey, quantityTargets[cardKey]),
                     quantity: personalQuantity,
                 })
                 : Promise.resolve({ error: null });
-            const listingRequest = !listingDraft.isForTrade && !listingDraft.isForSale
+const listingRequest = !listingDraft.isForTrade && !listingDraft.isForSale
                 ? supabase
                     .from("card_market_listings")
                     .delete()
@@ -410,7 +412,7 @@ export default function MyTradesSets() {
                     trade_quantity: tradeQuantity,
                     sale_quantity: saleQuantity,
                 }, { onConflict: "user_id,set_id,card_key" });
-            const [quantityResult, listingResult] = await Promise.all([quantityRequest, listingRequest]);
+const [quantityResult, listingResult] = await Promise.all([quantityRequest, listingRequest]);
             if (quantityResult.error || listingResult.error) {
                 console.error("Failed to save card details:", quantityResult.error || listingResult.error);
                 setCardSaveError("Your changes could not be saved. Please try again.");
@@ -423,7 +425,7 @@ export default function MyTradesSets() {
                 [cardKey]: personalQuantity,
             }));
             setMarketListings((current) => {
-                const updated = { ...current };
+const updated = { ...current };
                 if (!listingDraft.isForTrade && !listingDraft.isForSale) {
                     delete updated[cardKey];
                 }
@@ -438,7 +440,7 @@ export default function MyTradesSets() {
                 }
                 return updated;
             });
-            const dirty = Object.keys(quantities).some(key => key !== cardKey && (quantities[key] ?? 1) !== (savedQuantities[key] ?? 1));
+const dirty = Object.keys(quantities).some(key => key !== cardKey && (quantities[key] ?? 1) !== (savedQuantities[key] ?? 1));
             setInventoryDirty(dirty);
             inventoryDirtyRef.current = dirty;
             setIsSavingCard(false);
@@ -463,32 +465,32 @@ export default function MyTradesSets() {
         <div className="mx-auto max-w-3xl px-4 py-16 text-center">Invalid set</div>
       </div>);
     }
-    const progress = progressMap[set.id] ?? {};
-    const ownedBonusCards = getInventoryOwnedCards(set.id, progress);
-    const completeDecks = set.id === "SD" ? englishStarterDecks.filter(deck => isInventoryDeckComplete(progress, deck.code)) : [];
-    const hasStarterDeck = completeDecks.length > 0;
-    const rarityOrder = Object.keys(set.rarities);
-    const rarityGroups = Object.entries(ownedBonusCards.reduce((groups: Record<string, EnglishCard[]>, card) => {
+const progress = progressMap[set.id] ?? {};
+const ownedBonusCards = getInventoryOwnedCards(set.id, progress);
+const completeDecks = set.id === "SD" ? englishStarterDecks.filter(deck => isInventoryDeckComplete(progress, deck.code)) : [];
+const hasStarterDeck = completeDecks.length > 0;
+const rarityOrder = Object.keys(set.rarities);
+const rarityGroups = Object.entries(ownedBonusCards.reduce((groups: Record<string, InventoryCard[]>, card) => {
         (groups[card.rarity] ??= []).push(card);
         return groups;
     }, {})).sort(([a], [b]) => rarityOrder.indexOf(b) - rarityOrder.indexOf(a));
-    const activeListingsCount = Object.values(marketListings).filter((listing) => listing.is_for_trade || listing.is_for_sale).length;
+const activeListingsCount = Object.values(marketListings).filter((listing) => listing.is_for_trade || listing.is_for_sale).length;
     return (<div className={`min-h-screen pb-24 transition-colors ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
         {selectedCard && listingDraft && (<div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/65 p-2 backdrop-blur-md sm:p-5" role="dialog" aria-modal="true" aria-labelledby="card-details-title" onMouseDown={(event) => event.preventDefault()}>
             <div className={`max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-[20px] shadow-2xl md:max-w-4xl md:rounded-[26px] ${isLightMode ? "bg-white text-zinc-900" : "bg-[#17191a] text-white"}`} onMouseDown={(event) => event.stopPropagation()}>
               <div className="grid md:grid-cols-[minmax(250px,0.85fr)_minmax(320px,1.15fr)]">
                 <div className={`flex items-center justify-center p-2.5 sm:p-6 ${isLightMode ? "bg-zinc-100" : "bg-black/25"}`}>
-                  <div className={`relative w-full ${selectedCard.wide
+                  <div className={`relative w-full ${selectedCard.square ? "aspect-square max-w-[170px] md:max-w-[420px]" : selectedCard.wide
                 ? "aspect-[10/7] max-w-[170px] md:max-w-[520px]"
                 : "aspect-[5/7] max-w-[105px] md:max-w-[310px]"} overflow-hidden rounded-xl md:rounded-2xl`}>
-                    <CardImage src={selectedCard.front} imageSize={selectedCard.original ? "original" : undefined} alt={selectedCard.code} style={getEnglishCardImageStyle(selectedCard)} draggable={false}/>
+                    <CardImage src={getInventoryCardImage(selectedCard)} imageSize={selectedCard.original ? "original" : undefined} alt={selectedCard.code} style={getInventoryCardImageStyle(selectedCard)} draggable={false}/>
                   </div>
                 </div>
                 <div className="flex flex-col p-3 sm:p-6">
                   <div>
                     <div className={`text-[10px] font-medium uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em] ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                      Card identification code
+                      {merchandise ? "Item details" : "Card identification code"}
                     </div>
                     <h2 id="card-details-title" className="mt-0.5 text-lg font-bold sm:mt-1 sm:text-2xl">
                       {getDisplayCode(selectedCard)}
@@ -532,7 +534,7 @@ export default function MyTradesSets() {
                       <div className="mt-1 flex items-center gap-2 sm:mt-2">
                         <span className="font-semibold">$</span>
                         <input type="text" inputMode="decimal" disabled={isSavingCard || !listingDraft.isForSale} value={listingDraft.askingPrice} onChange={(event) => {
-                const value = event.target.value;
+const value = event.target.value;
                 if (/^\d*(\.\d{0,2})?$/.test(value))
                     updateListingDraft({ askingPrice: value });
             }} placeholder="0.00" className="w-full bg-transparent text-base outline-none disabled:cursor-not-allowed"/>
@@ -604,12 +606,12 @@ export default function MyTradesSets() {
                 </div>
               </div>
               <div className={`space-y-3 px-5 py-5 text-sm leading-relaxed ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
-                <p>Tap any card to open its inventory, trade, and sale details.</p>
+                <p>Tap any {merchandise ? "item" : "card"} to open its inventory, trade, and sale details.</p>
                 <p>
-                  A card can be marked for trade, sale, or both. Sale prices and public quantities
-                  are saved with that card.
+                  An item can be marked for trade, sale, or both. Sale prices and public quantities
+                  are saved with that item.
                 </p>
-                <p>The card popup stays open until your changes are saved.</p>
+                <p>The details popup stays open until your changes are saved.</p>
               </div>
               <div className={`flex justify-end border-t px-5 py-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
                 <button type="button" onClick={() => {
@@ -634,12 +636,12 @@ export default function MyTradesSets() {
               </div>
               <div className="px-5 py-5">
                 <p className={`text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-300"}`}>
-                  You changed quantities or card listing details. Save them before leaving?
+                  You changed quantities or listing details. Save them before leaving?
                 </p>
                 <div className="mt-5 grid gap-2 sm:grid-cols-2">
                   <button type="button" disabled={isSavingInventory || isSavingCard} onClick={async () => {
-                const hasDraftChanges = !!selectedCard && !!listingDraft && !!savedListingDraft && JSON.stringify(listingDraft) !== JSON.stringify(savedListingDraft);
-                const saved = await saveInventoryChanges(hasDraftChanges ? selectedCard.key : undefined);
+const hasDraftChanges = !!selectedCard && !!listingDraft && !!savedListingDraft && JSON.stringify(listingDraft) !== JSON.stringify(savedListingDraft);
+const saved = await saveInventoryChanges(hasDraftChanges ? selectedCard.key : undefined);
                 if (!saved)
                     return;
                 if (hasDraftChanges && !(await saveCardDetails())) {
@@ -650,7 +652,7 @@ export default function MyTradesSets() {
                 inventoryDirtyRef.current = false;
                 setShowLeavePopup(false);
                 setEditMode(false);
-                const destination = pendingNavigation;
+const destination = pendingNavigation;
                 setPendingNavigation(null);
                 if (destination) {
                     navigationGuardRef.current = true;
@@ -665,7 +667,7 @@ export default function MyTradesSets() {
                 setInventoryDirty(false);
                 inventoryDirtyRef.current = false;
                 setEditMode(false);
-                const destination = pendingNavigation;
+const destination = pendingNavigation;
                 setPendingNavigation(null);
                 if (destination) {
                     navigationGuardRef.current = true;
@@ -694,7 +696,7 @@ export default function MyTradesSets() {
           <div className="min-w-0 text-center">
             <h1 className="break-words text-lg font-semibold leading-tight sm:text-2xl lg:text-3xl">{set.name}</h1>
             <div className={`mt-1 flex flex-wrap justify-center gap-x-2 text-[11px] sm:text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-              <span>{ownedBonusCards.length} cards owned</span><span aria-hidden="true">&#8226;</span><span>{activeListingsCount} listed</span>
+              <span>{ownedBonusCards.length} {itemWord} owned</span><span aria-hidden="true">&#8226;</span><span>{activeListingsCount} listed</span>
             </div>
           </div>
           <div className="flex min-w-0 flex-col items-end justify-self-end gap-2 sm:flex-row sm:items-center">
@@ -704,11 +706,11 @@ export default function MyTradesSets() {
             <button type="button" onClick={() => void openBulkEdit()} disabled={loading || !!loadError || isSavingInventory || isSavingCard || !ownedBonusCards.length} className="min-h-11 max-w-full rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-xs font-semibold text-[#806100] transition-colors hover:bg-[#E7C84B]/20 disabled:opacity-40 sm:px-4 sm:text-sm dark:text-[#E7C84B]">Bulk edit</button>
           </div>
         </section>
-        {showBulkEdit && <InventoryBulkEdit setId={set.id} storageSetId={inventoryStorageSetId(set.id)} setName={set.name} cards={ownedBonusCards} quantities={quantities} listings={marketListings} quantityTargets={quantityTargets} listingTargets={listingTargets} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
+        {showBulkEdit && <InventoryBulkEdit setId={set.id} storageSetId={inventoryStorageSetId(set.id)} setName={set.name} merchandise={merchandise} cards={ownedBonusCards} quantities={quantities} listings={marketListings} quantityTargets={quantityTargets} listingTargets={listingTargets} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
                 setQuantities(current => ({ ...current, [key]: quantity }));
                 setSavedQuantities(current => ({ ...current, [key]: quantity }));
                 setMarketListings(current => {
-                    const next = { ...current };
+const next = { ...current };
                     if (listing.is_for_trade || listing.is_for_sale)
                         next[key] = listing;
                     else
@@ -722,7 +724,7 @@ export default function MyTradesSets() {
             : ownedBonusCards.length === 0) ? (<section className="py-12 text-center">
             <h2 className="text-xl font-semibold">Inventory Empty</h2>
             <p className={`mx-auto mt-2 max-w-xl text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-              You don't currently own any cards in this set. Add cards to your collection first,
+              You don't currently own any {itemWord} in this collection. Add {itemWord} to your collection first,
               then they'll appear here.
             </p>
           </section>) : (<>
@@ -735,7 +737,7 @@ export default function MyTradesSets() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                   {completeDecks.map((deck, i) => {
-                    const isActive = activeDeck === i;
+const isActive = activeDeck === i;
                     return (<div key={deck.code} onClick={(e) => {
                             e.stopPropagation();
                             setActiveDeck(isActive ? null : i);
@@ -750,7 +752,7 @@ export default function MyTradesSets() {
                                 </button>)}
                               <span className="px-1">{quantities[deck.code] || 1}</span>
                               {editMode && (<button type="button" onClick={() => changeQuantity(deck.code, (quantities[deck.code] || 1) + 1)} className="px-1">
-                                  +
+                                  \+
                                 </button>)}
                             </div>
                           </div>
@@ -767,9 +769,9 @@ export default function MyTradesSets() {
             <section className="mt-6 min-w-0">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-3 dark:border-white/10">
                 <div>
-                  <h2 className="text-base font-semibold">Cards</h2>
+                  <h2 className="text-base font-semibold">{merchandise ? "Items" : "Cards"}</h2>
                   <p className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                    Tap a card to edit its quantity, trade, and sale details.
+                    Tap {merchandise ? "an item" : "a card"} to edit its quantity, trade, and sale details.
                   </p>
                 </div>
                 <span className={`text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
@@ -778,9 +780,9 @@ export default function MyTradesSets() {
               </div>
               <div className="divide-y divide-black/[0.08] dark:divide-white/[0.08]">
                 {rarityGroups.map(([rarity, rarityCards]) => {
-                const collapseKey = `${set.id}-${rarity}`;
-                const isCollapsed = collapsedRarities[collapseKey];
-                const rarityLabel = getEnglishRarityLabel(set.id, rarity);
+const collapseKey = `${set.id}-${rarity}`;
+const isCollapsed = collapsedRarities[collapseKey];
+const rarityLabel = getInventoryRarityLabel(set.id, rarity);
                 return (<div key={rarity} className="min-w-0 py-4 first:pt-0 last:pb-0">
                         <button type="button" onClick={() => setCollapsedRarities((prev) => ({
                         ...prev,
@@ -788,33 +790,33 @@ export default function MyTradesSets() {
                     }))} className="flex w-full items-center justify-between gap-3 py-2 text-left transition-opacity hover:opacity-70">
                           <span className="text-sm font-semibold">{rarityLabel}</span>
                           <span className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                            {rarityCards.length} cards {isCollapsed ? "+" : "-"}
+                            {rarityCards.length} {itemWord} {isCollapsed ? "+" : "-"}
                           </span>
                         </button>
                         {!isCollapsed && (<div className="grid grid-cols-3 gap-1.5 pt-1 sm:grid-cols-4 sm:gap-2 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-9">
                             {rarityCards.map((card) => {
-                            const key = card.key;
-                            const listing = marketListings[key];
-                            const isDoubleCard = card.wide;
+const key = card.key;
+const listing = marketListings[key];
+const isDoubleCard = card.wide;
                             return (<div key={key} onClick={() => openCardDetails(card)} className={`group relative cursor-pointer overflow-hidden rounded-xl p-0.5 transition ${listing?.is_for_trade && listing?.is_for_sale
                                     ? "border-violet-500"
                                     : listing?.is_for_trade
                                         ? "border-emerald-500"
                                         : listing?.is_for_sale
                                             ? "border-sky-500"
-                                            : ""} ${isDoubleCard ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
+                                            : ""} ${card.square ? "aspect-square" : isDoubleCard ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
-                                    <CardImage src={card.front} imageSize={card.original ? "original" : undefined} alt={card.code} style={getEnglishCardImageStyle(card)} draggable={false}/>
+                                    <CardImage src={getInventoryCardImage(card)} imageSize={card.original ? "original" : undefined} alt={card.code} style={getInventoryCardImageStyle(card)} draggable={false}/>
                                   </div>
                                   <div onClick={(e) => e.stopPropagation()} className="absolute bottom-1 right-1">
                                     {editMode && window.innerWidth >= 768 ? (<div className={`flex items-center rounded-lg border px-1 text-xs font-semibold ${isLightMode
                                         ? "border-black/10 bg-white/90 text-zinc-700"
                                         : "border-white/10 bg-black/80 text-zinc-200"}`}>
                                         <input type="text" inputMode="numeric" value={String(quantities[key] || "")} placeholder="1" onClick={(e) => e.stopPropagation()} onFocus={(e) => e.target.select()} onChange={(e) => {
-                                        const raw = e.target.value;
+const raw = e.target.value;
                                         if (raw === "") {
                                             setQuantities((prev) => {
-                                                const updated = {
+const updated = {
                                                     ...prev,
                                                     [key]: 0,
                                                 };
@@ -824,14 +826,14 @@ export default function MyTradesSets() {
                                             });
                                             return;
                                         }
-                                        const value = Number(raw);
+const value = Number(raw);
                                         if (!isNaN(value)) {
                                             setQuantities((prev) => {
-                                                const updated = {
+const updated = {
                                                     ...prev,
                                                     [key]: value,
                                                 };
-                                                const dirty = Object.keys(updated).some((cardKey) => (updated[cardKey] ?? 1) !==
+const dirty = Object.keys(updated).some((cardKey) => (updated[cardKey] ?? 1) !==
                                                     (savedQuantities[cardKey] ?? 1));
                                                 setInventoryDirty(dirty);
                                                 inventoryDirtyRef.current = dirty;
@@ -839,7 +841,7 @@ export default function MyTradesSets() {
                                             });
                                         }
                                     }} onBlur={() => {
-                                        const finalValue = Math.max(1, quantities[key] || 1);
+const finalValue = Math.max(1, quantities[key] || 1);
                                         changeQuantity(key, finalValue);
                                     }} className="w-8 bg-transparent py-1 text-center outline-none"/>
                                       </div>) : (<div className={`flex items-center rounded-lg border px-1 py-0.5 text-xs font-semibold ${isLightMode
@@ -850,7 +852,7 @@ export default function MyTradesSets() {
                                           </button>)}
                                         <span className="px-1">{quantities[key] || 1}</span>
                                         {editMode && (<button type="button" onClick={() => changeQuantity(key, (quantities[key] || 1) + 1)} className="px-1">
-                                            +
+                                            \+
                                           </button>)}
                                       </div>)}
                                   </div>

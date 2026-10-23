@@ -1,4 +1,6 @@
-import { englishSets, englishStarterDecks, getEnglishCards, getEnglishCard, getEnglishSet, getEnglishStarterDeckCards, getISOSetId, isEnglishCardOwned, type EnglishCard } from "@/lib/english-card-catalog";
+import { merchandiseSets, ENGLISH_MERCHANDISE_SET_ID } from "@/lib/english-merchandise-catalog";
+import { profileViewCard, profileViewImage, profileViewStyle, type ProfileViewCard } from "@/lib/english-card-views";
+import { englishSets, englishStarterDecks, getEnglishCards, getEnglishCard, getEnglishSet, getEnglishStarterDeckCards, getEnglishCardImageStyle, getEnglishRarityLabel, getISOSetId, isEnglishCardOwned, type EnglishCard } from "@/lib/english-card-catalog";
 import { supabase } from "@/lib/supabase";
 export type InventoryProgressRow = {
     set_id: string;
@@ -43,26 +45,35 @@ const presentation: Record<string, {
     tcgpromos: { title: "TCG", setName: "Promos", slug: "tcg-promos", imageUrl: "/thumbnails/tcgpromossetimage.webp" },
 };
 const setAliases: Record<string, string> = { FB: "SD", TCG_PROMOS: "tcgpromos", fantasywonderland: "FW", BP01: "FW" };
+export type InventoryCard = ProfileViewCard;
+export const isInventoryMerchandise = (id: string) => id === ENGLISH_MERCHANDISE_SET_ID || merchandiseSets.some(set => set.id === id);
+export const getInventoryCard = (id: string, key: string): InventoryCard | undefined => isInventoryMerchandise(id) ? profileViewCard({ set_id: id, card_key: key }) : getEnglishCard(normalizeInventorySetId(id), key);
+export const getInventoryCardSetId = (id: string, key: string) => getInventoryCard(id, key)?.merchandiseSetId ?? normalizeInventorySetId(id);
+export const getInventoryCardImage = (card: InventoryCard) => card.family === "merch" ? profileViewImage({ set_id: card.setId, card_key: card.key }) : card.front;
+export const getInventoryCardImageStyle = (card: InventoryCard) => card.family === "merch" ? profileViewStyle({ set_id: card.setId, card_key: card.key }) : getEnglishCardImageStyle(card as EnglishCard);
+export const getInventoryRarityLabel = (id: string, rarity: string) => isInventoryMerchandise(id) ? rarity : getEnglishRarityLabel(id, rarity);
+const merchandiseInventorySets = merchandiseSets.map(set => ({ id: set.id, setId: set.id, name: set.title, folder: set.id, prefix: "", family: "merch" as const, promotional: false, rarities: set.items.reduce((counts: Record<string, number>, item) => ({ ...counts, [item.series]: (counts[item.series] ?? 0) + 1 }), {}), title: set.title, setName: "", slug: set.id, imageUrl: set.thumbnail, totalCards: set.items.length }));
 export const normalizeInventorySetId = (id: string) => getISOSetId(setAliases[String(id).trim()] ?? String(id).trim());
-export const inventoryCollections = englishSets.map(set => ({ ...set, ...presentation[set.id], title: presentation[set.id]?.title ?? set.name, setName: presentation[set.id]?.setName ?? "", slug: presentation[set.id]?.slug ?? set.folder, imageUrl: presentation[set.id]?.imageUrl ?? getEnglishCards(set.id)[0]?.front ?? "", totalCards: getEnglishCards(set.id).length }));
-export const resolveInventorySet = (value = "") => getEnglishSet(inventoryCollections.find(set => set.slug === value)?.id ?? normalizeInventorySetId(value));
-export const inventoryStorageSetId = (id: string) => normalizeInventorySetId(id) === "SD" ? "friendshipsbegin" : normalizeInventorySetId(id);
+export const inventoryCollections = [...englishSets.map(set => ({ ...set, ...presentation[set.id], title: presentation[set.id]?.title ?? set.name, setName: presentation[set.id]?.setName ?? "", slug: presentation[set.id]?.slug ?? set.folder, imageUrl: presentation[set.id]?.imageUrl ?? getEnglishCards(set.id)[0]?.front ?? "", totalCards: getEnglishCards(set.id).length })), ...merchandiseInventorySets];
+export const resolveInventorySet = (value = "") => merchandiseInventorySets.find(set => set.id === value || set.slug === value) ?? getEnglishSet(inventoryCollections.find(set => set.slug === value)?.id ?? normalizeInventorySetId(value));
+export const inventoryStorageSetId = (id: string) => isInventoryMerchandise(id) ? ENGLISH_MERCHANDISE_SET_ID : normalizeInventorySetId(id) === "SD" ? "friendshipsbegin" : normalizeInventorySetId(id);
 export const inventorySetAliases = (id: string) => {
     const canonical = normalizeInventorySetId(id);
+    if (isInventoryMerchandise(canonical)) return [ENGLISH_MERCHANDISE_SET_ID];
     return [...new Set([canonical, inventoryStorageSetId(canonical), ...Object.keys(setAliases).filter(alias => setAliases[alias] === canonical), ...inventoryCollections.filter(set => set.id === canonical).map(set => set.slug)])];
 };
 export const buildInventoryProgress = (rows: InventoryProgressRow[]) => {
     const progress: Record<string, Record<string, boolean>> = {};
     for (const row of rows) {
         const setId = normalizeInventorySetId(row.set_id);
-        if (!getEnglishSet(setId))
+        if (!getEnglishSet(setId) && !isInventoryMerchandise(setId))
             continue;
         for (const [key, value] of Object.entries(row.progress ?? {})) {
             if (!isEnglishCardOwned(value))
                 continue;
-            const card = getEnglishCard(setId, key);
+            const card = getInventoryCard(setId, key);
             if (card)
-                (progress[setId] ??= {})[card.stateKey] = true;
+                (progress[card.merchandiseSetId ?? setId] ??= {})[card.stateKey] = true;
         }
     }
     return progress;
@@ -71,14 +82,14 @@ export const isInventoryDeckComplete = (progress: Record<string, boolean>, code:
     const cards = getEnglishStarterDeckCards(code);
     return cards.length > 0 && cards.every(card => progress[card.stateKey] === true);
 };
-export const getInventoryOwnedCards = (id: string, progress: Record<string, boolean>): EnglishCard[] => getEnglishCards(id).filter(card => progress[card.stateKey] === true);
+export const getInventoryOwnedCards = (id: string, progress: Record<string, boolean>): InventoryCard[] => (isInventoryMerchandise(id) ? merchandiseSets.filter(set => id === ENGLISH_MERCHANDISE_SET_ID || set.id === id).flatMap(set => set.items.map(item => getInventoryCard(set.id, item.key)!)) : getEnglishCards(id)).filter(card => progress[card.stateKey] === true);
 export const buildInventoryRecordMap = <T extends InventoryTarget>(rows: T[], id: string): Record<string, T> => {
     const canonical = normalizeInventorySetId(id);
     const records: Record<string, T> = {};
     for (const row of rows) {
-        if (normalizeInventorySetId(row.set_id) !== canonical)
+        if (isInventoryMerchandise(canonical) ? inventoryStorageSetId(row.set_id) !== ENGLISH_MERCHANDISE_SET_ID : normalizeInventorySetId(row.set_id) !== canonical)
             continue;
-        const card = getEnglishCard(canonical, row.card_key);
+        const card = getInventoryCard(canonical, row.card_key);
         const key = card?.isoEligible ? card.key : canonical === "SD" && englishStarterDecks.some(deck => deck.code === row.card_key) ? row.card_key : undefined;
         if (!key)
             continue;
@@ -89,13 +100,19 @@ export const buildInventoryRecordMap = <T extends InventoryTarget>(rows: T[], id
     }
     return records;
 };
-export const getInventoryWriteTarget = (id: string, key: string, saved?: InventoryTarget): InventoryTarget => saved ? { set_id: saved.set_id, card_key: saved.card_key } : { set_id: inventoryStorageSetId(id), card_key: getEnglishCard(normalizeInventorySetId(id), key)?.key ?? key };
-export const getInventoryTradeSetIds = (rows: InventoryListingRow[]) => [...new Set(rows.filter(row => (row.is_for_trade || row.is_for_sale) && getEnglishCard(normalizeInventorySetId(row.set_id), row.card_key)?.isoEligible).map(row => normalizeInventorySetId(row.set_id)))];
-export async function fetchInventoryProgress(userId: string) {
-    const { data, error } = await supabase.from("collection_progress").select("set_id, progress").eq("user_id", userId);
-    if (error)
-        throw error;
-    return (data ?? []) as InventoryProgressRow[];
+export const getInventoryWriteTarget = (id: string, key: string, saved?: InventoryTarget): InventoryTarget => saved ? { set_id: saved.set_id, card_key: saved.card_key } : { set_id: inventoryStorageSetId(id), card_key: getInventoryCard(normalizeInventorySetId(id), key)?.key ?? key };
+export const getInventoryTradeSetIds = (rows: InventoryListingRow[]) => [...new Set(rows.filter(row => (row.is_for_trade || row.is_for_sale) && getInventoryCard(normalizeInventorySetId(row.set_id), row.card_key)?.isoEligible).map(row => getInventoryCardSetId(row.set_id, row.card_key)))];
+export async function fetchInventoryProgress(userId: string): Promise<InventoryProgressRow[]> {
+    const rows: InventoryProgressRow[] = [];
+    for (let offset = 0;; offset += 500) {
+        const { data, error } = await supabase.from("collection_progress").select("set_id, progress").eq("user_id", userId).order("set_id").range(offset, offset + 499);
+        if (error) throw error;
+        rows.push(...((data ?? []) as InventoryProgressRow[]).filter(row => row.set_id !== ENGLISH_MERCHANDISE_SET_ID));
+        if (!data || data.length < 500) break;
+    }
+    const { data, error } = await supabase.from("collection_progress_raw").select("set_id, progress").eq("user_id", userId).eq("set_id", ENGLISH_MERCHANDISE_SET_ID);
+    if (error) throw error;
+    return [...rows, ...((data ?? []) as InventoryProgressRow[])];
 }
 export async function fetchInventoryListings(userId: string, setId?: string): Promise<InventoryListingRow[]> {
     const rows: InventoryListingRow[] = [];

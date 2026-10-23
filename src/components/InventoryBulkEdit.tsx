@@ -33,6 +33,7 @@ export type InventoryBulkEditProps = {
     setId: string;
     setName: string;
     storageSetId?: string;
+    merchandise?: boolean;
     cards: InventoryCard[];
     quantities: Record<string, number>;
     listings: Record<string, BulkListing>;
@@ -67,7 +68,7 @@ export async function saveBulkInventoryRow(userId: string, setId: string, key: s
     if (result.error)
         throw result.error;
 }
-export default function InventoryBulkEdit({ setId, storageSetId, setName, cards, quantities, listings, quantityTargets, listingTargets, onSaved, onClose }: InventoryBulkEditProps) {
+export default function InventoryBulkEdit({ setId, storageSetId, merchandise = false, setName, cards, quantities, listings, quantityTargets, listingTargets, onSaved, onClose }: InventoryBulkEditProps) {
     const initial = () => Object.fromEntries(cards.map(card => { const listing = listings[card.key]; return [card.key, { quantity: String(quantities[card.key] ?? 1), trade: listing?.is_for_trade ?? false, sale: listing?.is_for_sale ?? false, tradeQuantity: String(listing?.trade_quantity || 1), saleQuantity: String(listing?.sale_quantity || 1), price: listing?.asking_price == null ? "" : String(listing.asking_price) }]; }));
     const [drafts, setDrafts] = useState<Record<string, BulkDraft>>(initial);
     const baseline = useRef<Record<string, BulkDraft>>(initial());
@@ -171,7 +172,7 @@ export default function InventoryBulkEdit({ setId, storageSetId, setName, cards,
       <button type="button" onClick={close} disabled={busy} className={buttonClass} aria-label="Close bulk edit">Close</button>
     </header>
     <div className="min-h-0 flex-1 overflow-auto overscroll-contain">
-      <table className="w-full border-collapse text-left text-sm"><thead className="sticky top-0 z-10 bg-zinc-100 dark:bg-[#202324]"><tr>{["Card code", "Personal qty", "Trade", "Trade qty", "Sale", "Sale qty", "Price (USD)"].map(label => <th key={label} scope="col" className="whitespace-nowrap px-2 py-2 font-semibold sm:px-3 sm:py-3">{label}</th>)}</tr></thead><tbody>
+      <table className="w-full border-collapse text-left text-sm"><thead className="sticky top-0 z-10 bg-zinc-100 dark:bg-[#202324]"><tr>{[merchandise ? "Item" : "Card code", "Personal qty", "Trade", "Trade qty", "Sale", "Sale qty", "Price (USD)"].map(label => <th key={label} scope="col" className="whitespace-nowrap px-2 py-2 font-semibold sm:px-3 sm:py-3">{label}</th>)}</tr></thead><tbody>
         {cards.map(card => {
             const draft = drafts[card.key];
             return <tr key={card.key} className="border-b border-black/[0.07] dark:border-white/[0.07]">
@@ -185,12 +186,12 @@ export default function InventoryBulkEdit({ setId, storageSetId, setName, cards,
         </tr>;
         })}
       </tbody></table>
-      {!cards.length && <p className="p-6 text-center text-sm text-zinc-500">No cards in this inventory.</p>}
+      {!cards.length && <p className="p-6 text-center text-sm text-zinc-500">No {merchandise ? "items" : "cards"} in this inventory.</p>}
     </div>
     <footer className="max-h-[35%] shrink-0 space-y-2 overflow-y-auto border-t border-black/10 p-2 dark:border-white/10 sm:p-3">
       {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       {confirmClose && <div className="flex flex-wrap items-center gap-2 text-sm"><span>Discard unsaved bulk changes?</span><button type="button" className={buttonClass} onClick={onClose}>Discard and close</button><button type="button" className={buttonClass} onClick={() => setConfirmClose(false)}>Keep editing</button></div>}
-      <div className="flex items-center justify-between gap-2"><p role="status" className="text-sm text-zinc-500 dark:text-zinc-400">{progress || `${changed.length} cards changed`}</p><button type="button" onClick={() => void save()} disabled={busy || !changed.length} className="min-h-11 shrink-0 rounded-lg bg-[#E7C84B] px-3 py-2 text-sm font-semibold text-black disabled:opacity-40 sm:px-5">{busy ? "Saving..." : "Save changes"}</button></div>
+      <div className="flex items-center justify-between gap-2"><p role="status" className="text-sm text-zinc-500 dark:text-zinc-400">{progress || `${changed.length} ${merchandise ? "items" : "cards"} changed`}</p><button type="button" onClick={() => void save()} disabled={busy || !changed.length} className="min-h-11 shrink-0 rounded-lg bg-[#E7C84B] px-3 py-2 text-sm font-semibold text-black disabled:opacity-40 sm:px-5">{busy ? "Saving..." : "Save changes"}</button></div>
     </footer>
   </dialog>;
 }
