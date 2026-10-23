@@ -21,6 +21,22 @@ export const merchandiseSets: MerchandiseSet[] = [{
     const key = `AS-S1-${number}`;
     const level = number <= 4 ? "Luminous" : number <= 9 ? "Grainy" : number <= 12 ? "Starcrown" : number <= 18 ? "Stellar" : "Dawnlight";
     return { key, number, series: "Adventure Edition", level, image: `Other-Merch/${key}.webp` };
+  }).concat(Array.from({ length: 18 }, (_, index) => {
+    const number = index + 1;
+    const key = `AS-S2-${number}`;
+    const level = number <= 5 ? "Delicious" : number <= 11 ? "Vitality" : number <= 15 ? "Energy" : number === 16 ? "Special" : "Friendship";
+    return { key, number, series: "Fantasy Edition", level, image: `Other-Merch/${key}.webp` };
+  })),
+}, {
+  id: "badges-pins",
+  aspect: "square",
+  title: "Badges and Pins",
+  href: "/badges-pins",
+  thumbnail: "/thumbnails/pinsbadgessetimage.webp",
+  items: Array.from({ length: 6 }, (_, index) => {
+    const number = index + 1;
+    const key = `B-S1-${number}`;
+    return { key, number, series: "Magic Garden", level: "Magic Garden", image: `Other-Merch/${key}.webp` };
   }),
 }];
 export const getMerchandiseSet = (id: string) => merchandiseSets.find(set => set.id === id);

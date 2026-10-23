@@ -700,7 +700,7 @@ const textArea = document.createElement("textarea");
                                 maxWidth: "none",
                                 transform: "translate(-50%, -50%) rotate(-90deg)",
                             }
-                            : undefined} alt={card.card_key} className={`absolute inset-0 h-full w-full bg-transparent ${englishViewCard(card)?.family === "merch" ? "object-contain" : [
+                            : undefined} alt={englishViewCard(card)?.family === "merch" ? englishViewCode(card) : card.card_key} className={`absolute inset-0 h-full w-full bg-transparent ${englishViewCard(card)?.family === "merch" ? "object-contain" : [
                             "FW",
                             "SD",
                             "friendshipsbegin",

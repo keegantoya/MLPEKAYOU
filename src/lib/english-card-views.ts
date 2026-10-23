@@ -116,7 +116,7 @@ export async function readEnglishViewRows<T>(page: (from: number, to: number) =>
     }
 }
 export type ProfileViewCard = Omit<EnglishCard, "family"> & { family: EnglishCard["family"] | "merch"; merchandiseSetId?: string; square?: boolean; level?: string };
-const profileMerchandiseCards: ProfileViewCard[] = merchandiseSets.flatMap(set => set.items.map(item => ({ setId: ENGLISH_MERCHANDISE_SET_ID, setName: set.title, key: item.key, stateKey: item.key, identity: `${ENGLISH_MERCHANDISE_SET_ID}:${item.key}`, family: "merch" as const, rarity: item.series, number: item.number, code: item.key, checklistCode: item.key, image: item.image, front: item.image, back: item.image, isoEligible: true, original: true, wide: false, square: set.aspect === "square", merchandiseSetId: set.id, level: item.level })));
+const profileMerchandiseCards: ProfileViewCard[] = merchandiseSets.flatMap(set => set.items.map(item => ({ setId: ENGLISH_MERCHANDISE_SET_ID, setName: set.title, key: item.key, stateKey: item.key, identity: `${ENGLISH_MERCHANDISE_SET_ID}:${item.key}`, family: "merch" as const, rarity: item.series, number: item.number, code: `${item.series} - Item ${item.number}`, checklistCode: `${item.series} - Item ${item.number}`, image: item.image, front: item.image, back: item.image, isoEligible: true, original: true, wide: false, square: set.aspect === "square", merchandiseSetId: set.id, level: item.level })));
 const profileMerchandiseIndex = new Map(profileMerchandiseCards.map(card => [card.key, card]));
 export const profileViewCard = (reference: EnglishCardReference | null | undefined): ProfileViewCard | undefined => {
     if (!reference) return undefined;

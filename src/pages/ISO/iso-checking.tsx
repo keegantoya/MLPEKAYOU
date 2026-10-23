@@ -29,6 +29,7 @@ export default function ISOChecking({ className, contentClassName, contentStyle,
     const [actionError, setActionError] = useState("");
     const menuRef = useRef<HTMLDivElement>(null);
     const menuPanelRef = useRef<HTMLDivElement>(null);
+    const isMerchandise = resolveISOCard(setId, cardKey)?.family === "merch";
     const cardCode = resolveISOCard(setId, cardKey)?.code ?? getISOCardCode(setId, cardKey);
     const setName = resolveISOCard(setId, cardKey)?.setName ?? getISOSetName(setId);
     useEffect(() => {
@@ -190,7 +191,7 @@ export default function ISOChecking({ className, contentClassName, contentStyle,
                     if (event.target === event.currentTarget && !loading)
                         setOpen(false);
                 }}>
-            <div ref={menuPanelRef} data-iso-tour="card-menu" role="dialog" aria-modal="true" aria-label={`${wishlistMode ? "Wishlist" : "Card status"}: ${cardCode}`} aria-busy={loading} tabIndex={-1} className="relative max-h-[calc(100dvh-24px)] w-full max-w-[640px] overflow-y-auto overscroll-contain rounded-3xl border border-black/10 bg-white text-zinc-900 shadow-2xl outline-none dark:border-white/10 dark:bg-[#17191a] dark:text-zinc-100 sm:max-h-[calc(100dvh-48px)]">
+            <div ref={menuPanelRef} data-iso-tour="card-menu" role="dialog" aria-modal="true" aria-label={`${wishlistMode ? "Wishlist" : isMerchandise ? "Item status" : "Card status"}: ${cardCode}`} aria-busy={loading} tabIndex={-1} className="relative max-h-[calc(100dvh-24px)] w-full max-w-[640px] overflow-y-auto overscroll-contain rounded-3xl border border-black/10 bg-white text-zinc-900 shadow-2xl outline-none dark:border-white/10 dark:bg-[#17191a] dark:text-zinc-100 sm:max-h-[calc(100dvh-48px)]">
               <div className="flex items-start justify-between gap-3 border-b border-black/[0.06] px-4 py-3 dark:border-white/[0.08] sm:px-5 sm:py-4">
                 <div className="min-w-0">
                   <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{setName}</p>
@@ -198,7 +199,7 @@ export default function ISOChecking({ className, contentClassName, contentStyle,
                     {cardCode}
                   </h2>
                 </div>
-                <button type="button" data-iso-tour="card-close" aria-label="Close card popup" disabled={loading} onClick={() => setOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xl text-zinc-600 transition hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD54A] disabled:opacity-50 dark:bg-white/[0.07] dark:text-zinc-300 dark:hover:bg-white/[0.12]">
+                <button type="button" data-iso-tour="card-close" aria-label={isMerchandise ? "Close item popup" : "Close card popup"} disabled={loading} onClick={() => setOpen(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xl text-zinc-600 transition hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD54A] disabled:opacity-50 dark:bg-white/[0.07] dark:text-zinc-300 dark:hover:bg-white/[0.12]">
                   &#215;
                 </button>
               </div>
@@ -210,16 +211,16 @@ export default function ISOChecking({ className, contentClassName, contentStyle,
                 </div>
                 <div className="flex min-w-0 flex-col">
                   <h3 className="mb-2 text-sm font-semibold sm:mb-0">
-                    {wishlistMode ? "Wishlist" : "Update card status"}
+                    {wishlistMode ? "Wishlist" : (isMerchandise ? "Update item status" : "Update card status")}
                   </h3>
                   <p className="mb-3 mt-1 hidden text-xs leading-5 sm:block text-zinc-500 dark:text-zinc-400">
                     {wishlistMode
-                    ? "Keep track of the cards you want."
+                    ? isMerchandise ? "Keep track of the items you want." : "Keep track of the cards you want."
                     : status === "purchase_in_progress"
                         ? "Purchase in progress"
                         : status === "trade_in_progress"
                             ? "Trade in progress"
-                            : "Choose how you are getting this card."}
+                            : isMerchandise ? "Choose how you are getting this item." : "Choose how you are getting this card."}
                   </p>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
                     {!wishlistMode && (<>

@@ -1,3 +1,4 @@
+import BadgesPins from "./pages/Sets/Other Merch/Badges-Pins";
 import AcrylicStands from "./pages/Sets/Other Merch/Acrylic-Stands";
 import GelPens from "./pages/Sets/Other Merch/Gel-Pens";
 import { isValidElement, useEffect, useState } from "react";
@@ -308,6 +309,7 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
     }, []);
     const routes = (<Routes>
       <Route path="/" element={<Index />}/>
+      <Route path="/badges-pins" element={<RequireAuth><BadgesPins /></RequireAuth>}/>
       <Route path="/acrylic-stands" element={<RequireAuth><AcrylicStands /></RequireAuth>}/>
       <Route path="/gel-pens" element={<RequireAuth><GelPens /></RequireAuth>}/>
       <Route path="/collections" element={<Collections />}/>

@@ -15,6 +15,7 @@ type CardImageCard = {
     set_id: string | number;
     card_key: string;
 };
+const isMerchandise = (card: CardImageCard | null | undefined) => !!card && englishViewCard(card)?.family === "merch";
 const getTradeCardImage = (card: CardImageCard) => getChineseCard(String(card.set_id), card.card_key)?.image ?? englishViewImage(card);
 type InventoryCard = {
     id: string;
@@ -180,6 +181,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
     const [inventoryCards, setInventoryCards] = useState<InventoryCard[]>([]);
     const [inventoryLoaded, setInventoryLoaded] = useState(false);
     const [selectedOfferCards, setSelectedOfferCards] = useState<InventoryCard[]>([]);
+    const offerHasMerchandise = isMerchandise(offerTarget) || inventoryCards.some(isMerchandise);
     const [offerContact, setOfferContact] = useState("");
     const [offerSet, setOfferSet] = useState("");
     const [offerRarity, setOfferRarity] = useState("ALL");
@@ -463,7 +465,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
     function reviewOffer() {
         const discordUsername = offerContact.trim();
         if (selectedOfferCards.length === 0) {
-            setOfferError("Choose at least one card from your inventory.");
+            setOfferError(offerHasMerchandise ? "Choose at least one item from your inventory." : "Choose at least one card from your inventory.");
             return;
         }
         if (!discordUsername) {
@@ -482,7 +484,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
             return;
         const contact = offerContact.trim();
         if (selectedOfferCards.length === 0) {
-            setOfferError("Choose at least one card from your inventory.");
+            setOfferError(offerHasMerchandise ? "Choose at least one item from your inventory." : "Choose at least one card from your inventory.");
             return;
         }
         if (!contact) {
@@ -513,12 +515,12 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
             setOfferError(error.message?.includes("offer_recipient_active_limit")
                 ? "You already have 2 active offers sent to this user."
                 : error.message?.includes("offer_attempt_limit_reached")
-                    ? "You have used both offers for this card."
+                    ? isMerchandise(offerTarget) ? "You have used both offers for this item." : "You have used both offers for this card."
                     : error.message?.includes("offer_retry_requires_decline") ||
                         error.code === "23505"
                         ? "You can only offer again after the first offer is declined."
                         : error.code === "42501"
-                            ? "This card is no longer available for trade."
+                            ? isMerchandise(offerTarget) ? "This item is no longer available for trade." : "This card is no longer available for trade."
                             : "Your offer could not be sent. Please try again.");
             setOfferStep("compose");
             setIsSendingOffer(false);
@@ -625,6 +627,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
     ]);
     const profileSetOrder = showChineseCards ? chineseSets.map(set => set.id) : [...englishViewSetOrder(), "friendshipsbegin"];
     const sectionCards = selectedSection === "iso" ? displayIsoCards : selectedSection === "trade" ? allTradeCards : displayWishlistCards;
+    const selectedSetIsMerchandise = sectionCards.some(card => profileViewGroup(card) === selectedSet && isMerchandise(card));
     const sectionHidden = selectedSection === "iso" ? activeProfileSettings.hide_iso : selectedSection === "wishlist" ? activeProfileSettings.hide_wishlist : false;
     const sectionError = showChineseCards ? selectedSection === "trade" ? chineseProfile.marketError : chineseProfile.cardsError : "";
     const sectionTabs = (sectionHidden ? [] : selectedSection === "iso" ? ISO_SET_TABS : selectedSection === "trade" ? TRADE_SET_TABS : WISHLIST_SET_TABS).slice().sort((a, b) => {
@@ -928,7 +931,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
             <div className={`flex flex-wrap items-center justify-between gap-3 border-b px-3 py-3 sm:px-5 lg:sticky lg:top-0 lg:z-10 ${isLightMode ? "border-black/[0.08] bg-[#f5f5f3]" : "border-white/[0.07] bg-[#0d0f10]"}`}>
               <div className="min-w-0">
                 <h2 className="text-base font-semibold">{sectionHidden ? selectedSection === "iso" ? "ISO hidden" : "Wishlist hidden" : selectedSet ? getSetName(selectedSet) : "Collection"}</h2>
-                {!sectionHidden && <p className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{sectionCounts.get(selectedSet) || 0} {selectedSection === "trade" ? "listings" : "cards"}</p>}
+                {!sectionHidden && <p className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{sectionCounts.get(selectedSet) || 0} {selectedSection === "trade" ? "listings" : selectedSetIsMerchandise ? "items" : "cards"}</p>}
               </div>
               {sectionTabs.length > 0 && <select aria-label="Choose a set" value={selectedSet} onChange={event => setSelectedSet(event.target.value)} className={`max-w-full rounded-xl border px-3 py-2 text-base lg:hidden ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-700" : "border-white/10 bg-[#202223] text-zinc-200"}`}>
                 {!selectedSet && <option value="">Choose a set</option>}
@@ -990,7 +993,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
         {quickViewCard && <DialogContent className={`!flex !w-[calc(100%-1.5rem)] !max-w-[760px] max-h-[90dvh] !flex-col !gap-0 overflow-hidden !rounded-xl !p-0 [&>button]:hidden ${isLightMode ? "border-black/10 bg-white text-zinc-900" : "border-white/10 bg-[#17191a] text-white"}`}>
           <header className={`flex shrink-0 items-start justify-between gap-4 border-b px-4 py-3 sm:px-5 sm:py-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
             <div className="min-w-0"><DialogDescription className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>{getSetName(profileViewGroup(quickViewCard))}</DialogDescription><DialogTitle className="mt-1 break-words text-lg font-semibold leading-tight sm:text-xl">{getProfileCardCode(quickViewCard)}</DialogTitle></div>
-            <button type="button" aria-label="Close card details" onClick={() => setQuickViewCard(null)} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-2xl leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/5"}`}>&times;</button>
+            <button type="button" aria-label={isMerchandise(quickViewCard) ? "Close item details" : "Close card details"} onClick={() => setQuickViewCard(null)} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-2xl leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isLightMode ? "text-zinc-500 hover:bg-zinc-100" : "text-zinc-400 hover:bg-white/5"}`}>&times;</button>
           </header>
           <div className="min-h-0 overflow-y-auto overscroll-contain">
             <div className="grid items-start gap-5 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(220px,.85fr)] sm:gap-6 sm:p-5">
@@ -1000,21 +1003,21 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                 </div>
               </div>
               <div className="min-w-0">
-                <h2 className="text-sm font-semibold">Card details</h2>
+                <h2 className="text-sm font-semibold">{isMerchandise(quickViewCard) ? "Item details" : "Card details"}</h2>
                 <dl className={`mt-3 divide-y text-sm ${isLightMode ? "divide-black/10" : "divide-white/10"}`}>
                   <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Set</dt><dd className="text-right font-medium">{getSetName(profileViewGroup(quickViewCard))}</dd></div>
-                  <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Rarity</dt><dd className="font-medium">{(() => {
+                  <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">{isMerchandise(quickViewCard) ? "Edition" : "Rarity"}</dt><dd className="font-medium">{(() => {
                 const cn = getChineseCard(String(quickViewCard.set_id), quickViewCard.card_key);
                 if (cn)
                     return chineseRarityLabel(cn.rarity);
                 return getOfferRarityLabel(String(quickViewCard.set_id), getOfferRarity(quickViewCard));
             })()}</dd></div>
                   <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Language</dt><dd className="font-medium">{isChineseSetId(quickViewCard.set_id) ? "Chinese" : "English"}</dd></div>
-                  <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Status</dt><dd className="text-right font-medium">{quickViewCard.type === "sale" ? "For sale" : quickViewCard.type === "trade" ? "Available for trade" : selectedSection === "wishlist" ? "On their wishlist" : "Looking for this card"}</dd></div>
+                  <div className="flex items-start justify-between gap-4 py-2.5"><dt className="shrink-0 text-zinc-500">Status</dt><dd className="text-right font-medium">{quickViewCard.type === "sale" ? "For sale" : quickViewCard.type === "trade" ? "Available for trade" : selectedSection === "wishlist" ? "On their wishlist" : isMerchandise(quickViewCard) ? "Looking for this item" : "Looking for this card"}</dd></div>
                   {quickViewCard.type === "sale" && <><div className="flex items-baseline justify-between gap-4 py-3"><dt className="text-zinc-500">Price</dt><dd className="text-2xl font-semibold tabular-nums text-primary">${Number(quickViewCard.asking_price || 0).toFixed(2)}</dd></div><div className="flex justify-between gap-4 py-2.5"><dt className="text-zinc-500">Available</dt><dd className="font-medium tabular-nums">{quickViewCard.sale_quantity ?? 0}</dd></div></>}
                   {quickViewCard.type === "trade" && quickViewCard.trade_quantity != null && <div className="flex justify-between gap-4 py-2.5"><dt className="text-zinc-500">Available</dt><dd className="font-medium tabular-nums">{quickViewCard.trade_quantity}</dd></div>}
                 </dl>
-                <button type="button" onClick={async () => {
+                {!isMerchandise(quickViewCard) && <button type="button" onClick={async () => {
                 try {
                     await navigator.clipboard.writeText(getProfileCardCode(quickViewCard));
                     setCopiedCardCode(true);
@@ -1022,7 +1025,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                 catch {
                     setCopiedCardCode(false);
                 }
-            }} className="mt-2 min-h-10 text-sm font-medium text-primary underline-offset-4 hover:underline" aria-live="polite">{copiedCardCode ? "Card code copied" : "Copy card code"}</button>
+            }} className="mt-2 min-h-10 text-sm font-medium text-primary underline-offset-4 hover:underline" aria-live="polite">{copiedCardCode ? "Card code copied" : "Copy card code"}</button>}
                 <div className={`mt-4 border-t pt-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
                     {quickViewCard.type === "trade" &&
                 currentUserId &&
@@ -1078,14 +1081,14 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                 </div>
                 <h2 id="profile-offer-title" className="mt-0.5 truncate text-lg font-bold">
                   {offerStep === "compose"
-                ? "Choose your cards"
+                ? offerHasMerchandise ? "Choose your items" : "Choose your cards"
                 : offerStep === "review"
                     ? "Are you sure you want to send this?"
                     : "Offer sent"}
                 </h2>
                 <p className="mt-0.5 text-xs text-zinc-500">
                   {offerStep === "compose"
-                ? "Choose up to 10 cards. This offer expires after 7 days."
+                ? offerHasMerchandise ? "Choose up to 10 items. This offer expires after 7 days." : "Choose up to 10 cards. This offer expires after 7 days."
                 : offerStep === "review"
                     ? "Review both sides of the trade before confirming."
                     : "The collector will see your offer in their inbox."}
@@ -1134,7 +1137,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                         <div>
                           <h3 className="font-semibold">Your inventory</h3>
                           <p className="text-sm text-zinc-500">
-                            {selectedOfferCards.length} of 10 cards selected
+                            {selectedOfferCards.length} of 10 {offerHasMerchandise ? "items" : "cards"} selected
                           </p>
                         </div>
                       </div>
@@ -1193,7 +1196,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                         (isLightMode
                             ? "border-black/10 bg-zinc-50 text-zinc-500"
                             : "border-white/[0.08] bg-white/[0.03] text-zinc-400")}>
-                          You do not own any cards in this set and rarity.
+                          {offerSet === "OTHERMERCH" ? "You do not own any items in this collection and edition." : "You do not own any cards in this set and rarity."}
                         </div>) : (<div className="mt-2.5 grid max-h-[230px] grid-cols-5 gap-2 overflow-y-auto pr-1 sm:grid-cols-6">
                           {visibleOfferInventory.map((card) => {
                         const selected = selectedOfferCards.some((item) => item.id === card.id);
@@ -1220,10 +1223,10 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                             ? "border-[#c89d13]/20 bg-[#c89d13]/[0.05]"
                             : "border-[#FFD54A]/15 bg-[#FFD54A]/[0.05]")}>
                       <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                        Cards in your offer
+                        {offerHasMerchandise ? "Items in your offer" : "Cards in your offer"}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {selectedOfferCards.map((card) => (<button key={card.id} type="button" onClick={() => toggleOfferCard(card)} aria-label="Remove selected card" className={`relative h-12 ${profileViewSquare(card) ? "aspect-square" : "aspect-[5/7]"} overflow-hidden rounded-[6px] border border-[#FFD54A]/40`}>
+                        {selectedOfferCards.map((card) => (<button key={card.id} type="button" onClick={() => toggleOfferCard(card)} aria-label={isMerchandise(card) ? "Remove selected item" : "Remove selected card"} className={`relative h-12 ${profileViewSquare(card) ? "aspect-square" : "aspect-[5/7]"} overflow-hidden rounded-[6px] border border-[#FFD54A]/40`}>
                             <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card, "absolute")}/>
                             <span className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/75 text-xs text-white">
                               &times;
@@ -1266,7 +1269,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                         </div>
                         <div className="mt-2 text-sm font-bold">
                           {selectedOfferCards.length}{" "}
-                          {selectedOfferCards.length === 1 ? "card" : "cards"}
+                          {selectedOfferCards.some(isMerchandise) ? selectedOfferCards.length === 1 ? "item" : "items" : selectedOfferCards.length === 1 ? "card" : "cards"}
                         </div>
                       </div>
                     </div>
