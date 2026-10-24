@@ -12,8 +12,24 @@ export type ChineseSet = { id: string; name: string; family: ChineseFamily; href
 export type ChineseISOCard = ChineseCard & { setId: string; setName: string; family: ChineseFamily; identity: string };
 export const chineseFamilies: { id: ChineseFamily; name: string }[] = [{ id: "moon", name: "Moon" }, { id: "fun", name: "Fun Moments" }, { id: "rainbow", name: "Rainbow" }, { id: "star", name: "Star" }, { id: "promos", name: "Promos" }, { id: "other", name: "Gift Sets" }];
 export const CHINESE_KUJI_TICKET_ZOOM = 1.05;
-const getKujiTicketZoom = (key: string) => key === "3-TICKET-1" ? 1.03 : /^3-TICKET-(3|7)$/.test(key) ? 1 : CHINESE_KUJI_TICKET_ZOOM;
-const getKujiTicketTransform = (key: string) => `${key === "3-TICKET-1" ? "translateY(-1.2%) " : ""}scale(${getKujiTicketZoom(key)})`;
+const kujiTicketZooms: Record<string, number> = {
+  "3-TICKET-1": 1.03,
+  "3-TICKET-3": 1,
+  "4-TICKET-2": 1.085,
+  "4-TICKET-4": 1.12,
+  "4-TICKET-5": 1.105,
+  "4-TICKET-6": 1.095,
+  "4-TICKET-7": 1.075,
+  "4-TICKET-8": 1.08,
+  "4-TICKET-9": 1.105,
+  "4-TICKET-10": 1.08,
+  "4-TICKET-11": 1.065,
+  "4-TICKET-12": 1.095,
+  "4-TICKET-13": 1.085,
+  "4-TICKET-14": 1.08,
+};
+const getKujiTicketZoom = (key: string) => kujiTicketZooms[key] ?? CHINESE_KUJI_TICKET_ZOOM;
+const getKujiTicketTransform = (key: string) => `${key === "3-TICKET-1" ? "translateY(-1.2%) " : key === "3-TICKET-7" ? "translateY(-0.5%) " : ""}scale(${getKujiTicketZoom(key)})`;
 function kujiRafflesImageStyle(key: string): CSSProperties {
   if (/^2-E-(7|8|9|10)$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: `${2048 / 1238 * 100}%`, height: `${1238 / 2048 * 100}%`, maxWidth: "none", maxHeight: "none", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center", objectFit: "contain" };
   return { transform: /^[1-4]-(TICKET|C)-\d+$/.test(key) ? getKujiTicketTransform(key) : "none", transformOrigin: key === "3-TICKET-1" ? "center top" : "center", objectFit: "contain" };
@@ -70,7 +86,7 @@ export const getChineseCardAspectRatio = (card: Pick<ChineseISOCard, "setId" | "
 const ticketCards = chineseCards.filter(isChineseTicket);
 const ticketImageSelectors = ticketCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
 const ticketPocketSelectors = ticketCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
-const ticketZoomOverrides = ticketCards.filter(card => getKujiTicketZoom(card.key) !== CHINESE_KUJI_TICKET_ZOOM).map(card => `img[alt=${JSON.stringify(getChineseCardLabel(card))}],img[alt=${JSON.stringify(card.key)}]{transform:${getKujiTicketTransform(card.key)}!important;transform-origin:${card.key === "3-TICKET-1" ? "center top" : "center"}!important}`).join("\n");
+const ticketZoomOverrides = ticketCards.filter(card => getKujiTicketTransform(card.key) !== `scale(${CHINESE_KUJI_TICKET_ZOOM})`).map(card => `img[alt=${JSON.stringify(getChineseCardLabel(card))}],img[alt=${JSON.stringify(card.key)}]{transform:${getKujiTicketTransform(card.key)}!important;transform-origin:${card.key === "3-TICKET-1" ? "center top" : "center"}!important}`).join("\n");
 const ticketLayoutCSS = ticketCards.length ? `
 :is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is([data-cn-ticket],${ticketImageSelectors})),[data-cn-ticket],${ticketPocketSelectors}{aspect-ratio:1195/2048!important;border-radius:0!important}
 :is(${ticketImageSelectors}){object-fit:contain!important;transform:scale(${CHINESE_KUJI_TICKET_ZOOM})!important;transform-origin:center!important}
