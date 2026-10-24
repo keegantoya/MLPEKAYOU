@@ -1,3 +1,4 @@
+import ChineseLaserTickets from "./pages/Chinese Kayou/Chinese Sets/Other Sets/CN-Laser-Tickets";
 import { chineseTicketLayoutCSS } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import ChineseKujiRaffles from "./pages/Chinese Kayou/Chinese Sets/Other Sets/Kuji-Raffles";
 import BadgesPins from "./pages/Sets/Other Merch/Badges-Pins";
@@ -349,6 +350,7 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
     <Route path="/cn-stardust-two" element={<RequireAuth><ChineseStardustTwo /></RequireAuth>}/>
     <Route path="/cn-magicbook-one" element={<RequireAuth><ChineseMagicBookOne /></RequireAuth>}/>
     <Route path="/cn-newyears-one" element={<RequireAuth><ChineseNewYearsOne /></RequireAuth>}/>
+    <Route path="/cn-laser-tickets" element={<RequireAuth><ChineseLaserTickets /></RequireAuth>}/>
     <Route path="/cn-kuji-raffles" element={<RequireAuth><ChineseKujiRaffles /></RequireAuth>}/>
     <Route path="/cn-newyears-two" element={<RequireAuth><ChineseNewYearsTwo /></RequireAuth>}/>
   <Route path="/iso-chinese" element={<RequireAuth><ISOChinese /></RequireAuth>}/>

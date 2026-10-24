@@ -340,7 +340,7 @@ export const CHINESE_STAR_THREE_CODES: ChineseCardCode[] = [
     ...sequence("OR", 8, "FX03-OR"),
     ...sequence("BP", 8, "FX03-BP"),
     ...sequence("DAR", 13, "FX03-DAR"),
-    ...sequence("SE", 7, "FX03-SE"),
+    ...sequence("SE", 8, "FX03-SE"),
 ];
 export const CHINESE_PROMOS_CODES: ChineseCardCode[] = [
     ...sequence("PR", 19, "YH-PR"),
@@ -348,6 +348,7 @@ export const CHINESE_PROMOS_CODES: ChineseCardCode[] = [
     ...sequence("PR", 63, "YH-PR", 20, 19),
     ...sequence("TFXMLP", 2, "TFXMLP-PR"),
     ...sequence("KB", 3, "YH-KB"),
+    ...sequence("SPR", 6, "YH-SPR"),
 ];
 export const CHINESE_STARDUST_ONE_CODES: ChineseCardCode[] = [
     ...sequence("SR", 20, "YH-PL01"),
@@ -430,3 +431,7 @@ export const CHINESE_KUJI_RAFFLE_PRIZES: ChineseKujiPrizeGroup[] = [
     { raffle: "4", type: "LAST", label: "LAST Prize", imagePrefix: "KUJI4-LAST", names: ["Raffle 4 - LAST Prize"], imageFiles: ["KUJI4-LAST.webp"] },
 ];
 export const CHINESE_KUJI_RAFFLES_CODES: (ChineseCardCode & { imageFile: string; displayName?: string })[] = CHINESE_KUJI_RAFFLE_PRIZES.flatMap(prize => (prize.codes ?? prize.names ?? []).map((value, index) => ({ key: `${prize.raffle}-${prize.type}-${index + 1}`, rarity: prize.raffle, number: index + 1, code: prize.codes ? value : "", ...(prize.names ? { displayName: value } : {}), imageFile: prize.imageFiles?.[index] ?? `${prize.imagePrefix}${index + 1}.webp` })));
+export const CHINESE_LASER_TICKETS_CODES: ChineseCardCode[] = [
+    ...sequence("LTR", 12, "XH-LTR"),
+    ...Array.from({ length: 14 }, (_, index) => ({ key: `SH-${index + 1}`, rarity: "SH", number: index + 1, code: index < 6 ? `YH-LTR-${String(index + 1).padStart(3, "0")}` : index < 12 ? `YH-LTSR-${String(index - 5).padStart(3, "0")}` : index === 12 ? "YH-LTSR-002" : "YH-LTSR-008" })),
+];
