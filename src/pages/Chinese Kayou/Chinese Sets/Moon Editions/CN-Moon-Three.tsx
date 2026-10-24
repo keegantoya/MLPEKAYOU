@@ -10,6 +10,17 @@ import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
 function moonThreeImageStyle(key: string): CSSProperties {
 const code = CN_MOON_THREE_CARDS.find(card => card.key === key)?.code ?? "";
+  const printed = Number(code.split("-").pop());
+  if (key.startsWith("R-") && code.startsWith("YH-F01-")) return { transform: "scale(1.05)", transformOrigin: "center" };
+  if (key.startsWith("R-") && code.startsWith("YH-T01-")) return { transform: [1, 4, 6, 7, 8].includes(printed) ? "scale(1.035)" : "scale(1)", transformOrigin: "center" };
+  if ((key.startsWith("R-") || key.startsWith("SR-")) && code.startsWith("YH-T02-")) return { transform: "scale(1)", transformOrigin: "center" };
+  if (key.startsWith("SSR-") && code.startsWith("YH-T02-")) {
+    const crop = printed === 26;
+    return { transform: `scale(${printed === 23 || crop ? 1.045 : 1.02})`, transformOrigin: "center", ...(crop ? { position: "absolute", left: -3, top: -3, width: "calc(100% + 6px)", height: "calc(100% + 6px)", maxWidth: "none" } : {}) };
+  }
+  if (key.startsWith("SSR-") && code === "YH-F02-012") return { transform: "scale(1.07)", transformOrigin: "center" };
+  if (key.startsWith("UR-") && printed >= 22 && printed <= 24) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
+  if (key.startsWith("UR-") && printed >= 25 && printed <= 30) return { transform: printed === 27 ? "none" : "scale(1.05)", transformOrigin: "center" };
 const scale = ["YH-T03-031", "YH-T03-032"].includes(code) ? 1.08 : key.startsWith("HR-") ? 1.05 : /^YH-UR-03[7-9]$/.test(code) ? 1.06 : /^SC-[2-6]$/.test(key) ? 1.1 : 1;
   if (code === "YH-UR-032") return { position: "absolute", left: -2, top: -2, width: "calc(100% + 4px)", height: "calc(100% + 4px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
   if (key === "HR-16") return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: `translate(-50%, -50%) rotate(-90deg) scale(${scale})`, transformOrigin: "center" };
@@ -180,7 +191,7 @@ const match = CN_MOON_THREE_CARDS.find(card => card.code.toLowerCase().includes(
         .cn-inspect { position:absolute;bottom:8px;right:8px;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.78);color:white;font-size:10px; }
         .cn-art:focus-visible,.cn-rarity:focus-visible { outline:2px solid hsl(var(--primary));outline-offset:4px; }
         @media(max-width:767px) { .cn-shell { grid-template-columns:minmax(0,1fr);gap:20px; }.cn-rarities { flex-direction:row;flex-wrap:wrap;gap:6px; }.cn-rarity { flex:1 0 80px;min-height:42px;border:1px solid hsl(var(--border));padding:8px 10px; }.cn-rarity[aria-pressed=true] { box-shadow:none;border-color:hsl(var(--primary)); }.cn-grid { gap:20px 12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--cn-card-size)),1fr)); } }
-        @media(max-width:480px) { .cn-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:480px) { .cn-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
         @media(prefers-reduced-motion:reduce) { .cn-art img { transition:none; } }
       `}</style>
       <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">

@@ -2,12 +2,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ScanSearch } from "lucide-react";
-import { CN_MOON_TWO_SET_ID, getChineseMoonTwoFront, getChineseCardImage, useChineseCardImage } from "../../card-images-cn";
-import { CHINESE_MOON_TWO_CODES, CHINESE_MOON_TWO_UR_CODES } from "../../Chinese Codes + Char/Chinese-Codes";
-const CN_MOON_TWO_CARDS = ["R", "SR", "SSR", "HR", "UR", "LSR", "SGR", "SC"].flatMap(rarity => {
-  if (rarity === "UR") return CHINESE_MOON_TWO_UR_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-UR${card.number - 18}.webp`)}?v=20261023-m2-ur-own-images-v1` }));
-  return CHINESE_MOON_TWO_CODES.filter(card => card.rarity === rarity && (["HR", "LSR", "SGR", "SC"].includes(rarity) || (rarity === "R" && /^YH-T02-00[1-8]$/.test(card.code)) || (rarity === "SR" && /^YH-T02-0(?:09|1[0-6])$/.test(card.code)) || (rarity === "SSR" && /^YH-T02-0(?:1[7-9]|2[0-8])$/.test(card.code)))).map(card => ({ ...card, image: card.rarity === "HR" ? `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-HR${card.number}.webp`)}?v=20261022-m2-hr-direct-30-v3` : getChineseMoonTwoFront(card.number, card.rarity) }));
-});
+import { CN_MOON_TWO_SET_ID, CN_MOON_TWO_CARDS, useChineseCardImage } from "../../card-images-cn";
 export { CN_MOON_TWO_CARDS, CN_MOON_TWO_SET_ID };
 import type { CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -15,9 +10,20 @@ import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
 const EXTRA_SSR_ZOOM_CODES = new Set(["YH-T02-017", "YH-T02-018", "YH-T02-020", "YH-T02-023", "YH-T02-026", "YH-T02-027", "YH-T02-028"]);
 function moonTwoImageStyle(key: string): CSSProperties {
-  if (key === "UR-19") return { position: "absolute", left: -1.5, top: -1.5, width: "calc(100% + 3px)", height: "calc(100% + 3px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
+  const rCode = CN_MOON_TWO_CARDS.find(card => card.key === key)?.code ?? "";
+  if (/^SC-[1-6]$/.test(key)) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
+  if (/^YH-SGR-0(?:08|09|11|12|13|14)$/.test(rCode)) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
+  if (key.startsWith("R-") && rCode.startsWith("YH-F01-")) return { transform: "scale(1.05)", transformOrigin: "center" };
+  if (key.startsWith("R-") && rCode.startsWith("YH-T01-")) return { transform: ["YH-T01-001", "YH-T01-004", "YH-T01-006", "YH-T01-007", "YH-T01-008"].includes(rCode) ? "scale(1.035)" : "scale(1)", transformOrigin: "center" };
+  if (key.startsWith("SR-") && rCode.startsWith("YH-F01-")) return { transform: "scale(1.05)", transformOrigin: "center" };
+  if (key.startsWith("SSR-") && rCode.startsWith("YH-T01-")) return { transform: "scale(1)", transformOrigin: "center", position: "absolute", inset: "-3px", width: "calc(100% + 6px)", height: "calc(100% + 6px)", maxWidth: "none" };
+  if (/^UR-(?:[1-9]|1[0-8])$/.test(key)) {
+    const printed = Number(key.split("-")[1]);
+    const scale = printed === 13 ? 1.05 : printed === 14 ? 1.025 : 1;
+    return { transform: `scale(${scale})`, transformOrigin: "center" };
+  }
+  if (/^UR-(?:19|2[0-4])$/.test(key)) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
   if (key.startsWith("HR-")) return { transform: "scale(1.05)", transformOrigin: "center" };
-  if (key.startsWith("UR-")) return { transform: /^UR-(?:20|21|22|23|24)$/.test(key) ? "scale(1.08)" : "none", transformOrigin: "center" };
 const code = CN_MOON_TWO_CARDS.find(card => card.key === key)?.code ?? "";
 const scale = ["YH-T01-024", "YH-T02-020"].includes(code) ? 1.01 : code === "YH-T01-021" ? 1.035 : ["YH-T02-017", "YH-T02-018", "YH-T02-021"].includes(code) ? 1.12 : code === "YH-SGR-010" ? 1.005 : code === "YH-SGR-013" ? 1.015 : key.startsWith("SGR-") || key.startsWith("SC-") ? 1.035 : EXTRA_SSR_ZOOM_CODES.has(code) ? 1.045 : key === "SSR-5" ? 1.11 : ["SSR-1", "SSR-11", "SSR-12"].includes(key) ? 1.045 : key === "SSR-9" ? 1.03 : key.startsWith("SSR-") ? 1.02 : 1;
   if (code === "YH-T02-026") return { position: "absolute", left: -3, top: -3, width: "calc(100% + 6px)", height: "calc(100% + 6px)", maxWidth: "none", transform: `scale(${scale})`, transformOrigin: "center" };
@@ -187,7 +193,7 @@ const match = CN_MOON_TWO_CARDS.find(card => card.code.toLowerCase().includes(va
         .cn-inspect { position:absolute;bottom:8px;right:8px;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.78);color:white;font-size:10px; }
         .cn-art:focus-visible,.cn-rarity:focus-visible { outline:2px solid hsl(var(--primary));outline-offset:4px; }
         @media(max-width:767px) { .cn-shell { grid-template-columns:minmax(0,1fr);gap:20px; }.cn-rarities { flex-direction:row;flex-wrap:wrap;gap:6px; }.cn-rarity { flex:1 0 80px;min-height:42px;border:1px solid hsl(var(--border));padding:8px 10px; }.cn-rarity[aria-pressed=true] { box-shadow:none;border-color:hsl(var(--primary)); }.cn-grid { gap:20px 12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--cn-card-size)),1fr)); } }
-        @media(max-width:480px) { .cn-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:480px) { .cn-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
         @media(prefers-reduced-motion:reduce) { .cn-art img { transition:none; } }
       `}</style>
       <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">

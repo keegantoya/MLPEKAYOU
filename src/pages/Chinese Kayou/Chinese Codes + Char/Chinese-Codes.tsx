@@ -17,29 +17,40 @@ export const CHINESE_MOON_ONE_CODES: ChineseCardCode[] = [
 ];
 export const CHINESE_MOON_TWO_CODES: ChineseCardCode[] = [
     ...sequence("R", 8, "YH-T01"),
+    ...sequence("R", 20, "YH-F01", 13, 16),
     ...sequence("R", 8, "YH-T02", 1, 8),
     ...sequence("SR", 8, "YH-T01", 9),
+    ...sequence("SR", 4, "YH-F01", 49, 16),
     ...sequence("SR", 8, "YH-T02", 9, 8),
-    ...sequence("SSR", 12, "YH-T01", 17),
+    ...sequence("SSR", 9, "YH-T01", 17),
     ...sequence("SSR", 12, "YH-T02", 17, 12),
     ...sequence("HR", 30, "YH-HR", 31),
-    ...sequence("UR", 18, "YH-UR"),
+    ...sequence("UR", 24, "YH-UR"),
     ...sequence("LSR", 15, "YH-LSR", 16),
     ...sequence("SGR", 7, "YH-SGR", 8),
     ...sequence("SC", 6, "YH-SC"),
 ];
 export const CHINESE_MOON_TWO_UR_CODES: ChineseCardCode[] = sequence("UR", 6, "YH-UR", 19, 18);
 export const CHINESE_MOON_THREE_CODES: ChineseCardCode[] = [
+    ...sequence("R", 13, "YH-F01", 8, 28),
+    ...sequence("R", 8, "YH-T01", 1, 20),
+    ...sequence("R", 8, "YH-T02", 1, 12),
     ...sequence("R", 12, "YH-T03"),
+    ...sequence("SR", 8, "YH-T02", 9, 12),
     ...sequence("SR", 12, "YH-T03", 13),
+    ...sequence("SSR", 1, "YH-F02", 12, 19),
+    ...sequence("SSR", 4, "YH-T02", 23, 15),
     ...sequence("SSR", 15, "YH-T03", 25),
     ...sequence("HR", 30, "YH-HR", 61),
+    ...sequence("UR", 9, "YH-UR", 22, 9),
     ...sequence("UR", 9, "YH-UR", 31),
     ...sequence("LSR", 24, "YH-LSR", 31),
     ...sequence("SGR", 7, "YH-SGR", 15),
     ...sequence("SC", 6, "YH-SC", 7),
 ];
 export const CHINESE_MOON_FOUR_CODES: ChineseCardCode[] = [
+    ...sequence("R", 8, "YH-T02", 1, 32),
+    ...sequence("R", 12, "YH-T03", 1, 20),
     ...sequence("R", 20, "YH-T04"),
     ...sequence("SR", 20, "YH-T04", 21),
     ...sequence("SSR", 20, "YH-T04", 41),
@@ -50,6 +61,8 @@ export const CHINESE_MOON_FOUR_CODES: ChineseCardCode[] = [
     ...sequence("SC", 6, "YH-SC", 13),
 ];
 export const CHINESE_MOON_FIVE_CODES: ChineseCardCode[] = [
+    ...sequence("R", 5, "YH-T03", 8, 35),
+    ...sequence("R", 15, "YH-T04", 1, 20),
     ...sequence("R", 20, "YH-T05"),
     ...sequence("SR", 20, "YH-T05", 21),
     ...sequence("SSR", 20, "YH-T05", 41),

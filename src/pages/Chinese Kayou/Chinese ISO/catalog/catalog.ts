@@ -226,7 +226,11 @@ const squareKujiStickerBookCSS = squareKujiStickerBooks.length ? `
 :is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${squareKujiStickerBookImages})),:is(div,button,span):has(> :is(${squareKujiStickerBookImages})),${squareKujiStickerBookPockets}{aspect-ratio:1!important;border-radius:2%!important;background:transparent!important;overflow:hidden}
 :is(${squareKujiStickerBookImages}){object-fit:contain!important;object-position:center!important;transform:none!important}
 ` : "";
-export const chineseTicketLayoutCSS = ticketLayoutCSS + kujiPrizeLayoutCSS + kujiPinLayoutCSS + laserTicketLayoutCSS + roundKujiPinLayoutCSS + roundedKujiPrizeLayoutCSS + kujiMatLayoutCSS + kujiFPrizeLayoutCSS + kujiCPrizeLayoutCSS + kujiStickerBookLayoutCSS + squareKujiStickerBookCSS;
+const moonFourUncroppedURSelectors = Array.from({ length: 15 }, (_, index) => `img[alt=${JSON.stringify(`YH-UR-${String(index + 40).padStart(3, "0")}`)}]`).join(",");
+const moonFourUncroppedURCSS = `:is(${moonFourUncroppedURSelectors}){position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;transform:none!important;transform-origin:center!important;object-fit:contain!important;object-position:center!important}`;
+const moonFourUncroppedSCSelectors = Array.from({ length: 6 }, (_, index) => `img[alt=${JSON.stringify(`YH-SC-${String(index + 13).padStart(3, "0")}`)}]`).join(",");
+const moonFourUncroppedSCCSS = `:is(${moonFourUncroppedSCSelectors}){position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;transform:none!important;transform-origin:center!important;object-fit:contain!important;object-position:center!important}`;
+export const chineseTicketLayoutCSS = ticketLayoutCSS + kujiPrizeLayoutCSS + kujiPinLayoutCSS + laserTicketLayoutCSS + roundKujiPinLayoutCSS + roundedKujiPrizeLayoutCSS + kujiMatLayoutCSS + kujiFPrizeLayoutCSS + kujiCPrizeLayoutCSS + kujiStickerBookLayoutCSS + squareKujiStickerBookCSS + moonFourUncroppedURCSS + moonFourUncroppedSCCSS;
 export const isWideChineseCard = (card: ChineseISOCard) => !!chineseSets.find(set => set.id === card.setId)?.wideKeys?.includes(card.key);
 export const chineseRarityLabel = (rarity: string) => ({ LTR: "Fly With Me 2026", SH: "Shining Note", ANN40: "40th", DST: "\u25C7ST", DSP: "\u25C7SP", SM: "L3", CB: "L4", T: "L4B", S: "L5", DN: "\u25C7N", DCR: "\u25C7CR", DZR: "\u25C7ZR", DAR: "\u25C7AR", DUR: "\u25C7UR", DLSR: "\u25C7LSR" }[rarity] ?? rarity);
 export const isChineseSetId = (setId: string | number) => String(setId).toLowerCase().startsWith("cn-");
@@ -244,9 +248,20 @@ const scale = baseScale + (SMALL_ZOOM_CODES.has(code) ? .025 : 0) + (EXTRA_ZOOM_
 }
 const EXTRA_SSR_ZOOM_CODES = new Set(["YH-T02-017", "YH-T02-018", "YH-T02-020", "YH-T02-023", "YH-T02-026", "YH-T02-027", "YH-T02-028"]);
 function moonTwoImageStyle(key: string): CSSProperties {
-  if (key === "UR-19") return { position: "absolute", left: -1.5, top: -1.5, width: "calc(100% + 3px)", height: "calc(100% + 3px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
+  const rCode = CN_MOON_TWO_CARDS.find(card => card.key === key)?.code ?? "";
+  if (/^SC-[1-6]$/.test(key)) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
+  if (/^YH-SGR-0(?:08|09|11|12|13|14)$/.test(rCode)) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
+  if (key.startsWith("R-") && rCode.startsWith("YH-F01-")) return rainbowOneImageStyle(`R-${Number(rCode.split("-").pop())}`);
+  if (key.startsWith("R-") && rCode.startsWith("YH-T01-")) return moonOneImageStyle(key);
+  if (key.startsWith("SR-") && rCode.startsWith("YH-F01-")) return rainbowOneImageStyle(`SR-${Number(rCode.split("-").pop()) - 40}`);
+  if (key.startsWith("SSR-") && rCode.startsWith("YH-T01-")) return moonOneImageStyle(`SSR-${Number(rCode.split("-").pop()) - 1}`);
+  if (/^UR-(?:[1-9]|1[0-8])$/.test(key)) {
+    const number = Number(key.split("-")[1]);
+    if (number <= 12) return rainbowOneImageStyle(`UR-${number}`);
+    return moonOneImageStyle(key);
+  }
+  if (/^UR-(?:19|2[0-4])$/.test(key)) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
   if (key.startsWith("HR-")) return { transform: "scale(1.05)", transformOrigin: "center" };
-  if (key.startsWith("UR-")) return { transform: /^UR-(?:20|21|22|23|24)$/.test(key) ? "scale(1.08)" : "none", transformOrigin: "center" };
 const code = chineseSets.find(set => set.id === "cn-moon-two")!.cards.find(card => card.key === key)?.code ?? "";
 const scale = ["YH-T01-024", "YH-T02-020"].includes(code) ? 1.01 : code === "YH-T01-021" ? 1.035 : ["YH-T02-017", "YH-T02-018", "YH-T02-021"].includes(code) ? 1.12 : code === "YH-SGR-010" ? 1.005 : code === "YH-SGR-013" ? 1.015 : key.startsWith("SGR-") || key.startsWith("SC-") ? 1.035 : EXTRA_SSR_ZOOM_CODES.has(code) ? 1.045 : key === "SSR-5" ? 1.11 : ["SSR-1", "SSR-11", "SSR-12"].includes(key) ? 1.045 : key === "SSR-9" ? 1.03 : key.startsWith("SSR-") ? 1.02 : 1;
   if (code === "YH-T02-026") return { position: "absolute", left: -3, top: -3, width: "calc(100% + 6px)", height: "calc(100% + 6px)", maxWidth: "none", transform: `scale(${scale})`, transformOrigin: "center" };
@@ -254,6 +269,18 @@ const scale = ["YH-T01-024", "YH-T02-020"].includes(code) ? 1.01 : code === "YH-
 }
 function moonThreeImageStyle(key: string): CSSProperties {
 const code = chineseSets.find(set => set.id === "cn-moon-three")!.cards.find(card => card.key === key)?.code ?? "";
+  if (key.startsWith("R-") && code.startsWith("YH-F01-")) return rainbowOneImageStyle(`R-${Number(code.split("-").pop())}`);
+  if (key.startsWith("R-") && code.startsWith("YH-T01-")) return moonOneImageStyle(`R-${Number(code.split("-").pop())}`);
+  if ((key.startsWith("R-") || key.startsWith("SR-") || key.startsWith("SSR-")) && code.startsWith("YH-T02-")) {
+    const source = CN_MOON_TWO_CARDS.find(card => card.rarity === key.split("-")[0] && card.code === code);
+    if (source) return moonTwoImageStyle(source.key);
+  }
+  if (key.startsWith("SSR-") && code === "YH-F02-012") return rainbowTwoImageStyle("SSR-12");
+  if (key.startsWith("UR-")) {
+    const printed = Number(code.split("-").pop());
+    if (printed >= 22 && printed <= 24) return moonTwoImageStyle(`UR-${printed}`);
+    if (printed >= 25 && printed <= 30) return rainbowTwoImageStyle(`UR-${printed - 24}`);
+  }
 const scale = ["YH-T03-031", "YH-T03-032"].includes(code) ? 1.08 : key.startsWith("HR-") ? 1.05 : /^YH-UR-03[7-9]$/.test(code) ? 1.06 : /^SC-[2-6]$/.test(key) ? 1.1 : 1;
   if (code === "YH-UR-032") return { position: "absolute", left: -2, top: -2, width: "calc(100% + 4px)", height: "calc(100% + 4px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
   if (key === "HR-16") return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: `translate(-50%, -50%) rotate(-90deg) scale(${scale})`, transformOrigin: "center" };
@@ -471,7 +498,7 @@ const imageStyles: Record<string, (key: string) => CSSProperties> = {
   "cn-star-three": starThreeImageStyle,
   "cn-promos": promosImageStyle,
 };
-export const getChineseISOImageStyle = (card: ChineseISOCard): CSSProperties => chineseSets.find(set => set.id === card.setId)?.imageStyle?.(card.key) ?? imageStyles[card.setId]?.(card.key) ?? {};
+export const getChineseISOImageStyle = (card: ChineseISOCard): CSSProperties => /^YH-(?:UR-0(?:4[0-9]|5[0-4])|SC-01[3-8])$/.test(card.code) ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : chineseSets.find(set => set.id === card.setId)?.imageStyle?.(card.key) ?? imageStyles[card.setId]?.(card.key) ?? {};
 function stardustOneImageStyle(key: string): CSSProperties {
   if (key === "DUR-7" || key === "DLSR-7" || /^SP-[1-5]$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
   return { transform: "none", transformOrigin: "center" };

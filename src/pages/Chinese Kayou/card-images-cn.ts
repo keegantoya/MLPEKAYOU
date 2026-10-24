@@ -85,6 +85,10 @@ export const cardImagePathsCN = {
         const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon Five card code.");
+        if (code === "R" && index >= 21 && index <= 35)
+            return getChineseMoonFourFront(index - 20, "R");
+        if (code === "R" && index >= 36 && index <= 40)
+            return getChineseMoonThreeFront(index - 28, "R");
         const filePrefix = ["R", "SR", "HR"].includes(code) ? "CN-M4" : "CN-M5";
         return `${getChineseCardImage(`Chinese Sets/Moon-Five-CN/${filePrefix}-${code}${index}.webp`)}?v=${CN_MOON_FIVE_IMAGE_REVISION}`;
     },
@@ -93,14 +97,34 @@ export const cardImagePathsCN = {
         const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon Four card code.");
+        if (code === "R" && index >= 21 && index <= 32)
+            return getChineseMoonThreeFront(index - 20, "R");
+        if (code === "R" && index >= 33 && index <= 40)
+            return getChineseMoonTwoFront(index - 24, "R");
         const imageNumber = code === "HR" ? getChineseMoonFourHRImageNumber(index) : index;
-        return `${getChineseCardImage(`Chinese Sets/Moon-Four-CN/CN-M4-${code}${imageNumber}.webp`)}?v=${CN_MOON_FOUR_IMAGE_REVISION}`;
+        return `${getChineseCardImage(`Chinese Sets/Moon-Four-CN/CN-M4-${code}${imageNumber}.webp`)}?v=${CN_MOON_FOUR_IMAGE_REVISION}${code === "SC" && index >= 1 && index <= 6 ? "&refresh=20261024-m4-sc13-18-replaced-v1" : ""}${code === "UR" && index >= 1 && index <= 15 ? "&refresh=20261024-m4-ur40-54-replaced-v1" : ""}`;
     },
     moonThree: (rarity: string, number: number | string): string => {
         const code = rarity.trim().toUpperCase();
         const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon Three card code.");
+        if (code === "R" && index >= 13 && index <= 20)
+            return getChineseMoonTwoFront(index - 4, "R");
+        if (code === "R" && index >= 21 && index <= 28)
+            return getChineseMoonOneFront(index - 20, "R");
+        if (code === "R" && index >= 29 && index <= 41)
+            return `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-R${index - 21}.webp`)}?v=${CN_MOON_THREE_IMAGE_REVISION}`;
+        if (code === "SR" && index >= 13 && index <= 20)
+            return getChineseMoonTwoFront(index - 4, "SR");
+        if (code === "SSR" && index >= 16 && index <= 19)
+            return getChineseMoonTwoFront(index + 3, "SSR");
+        if (code === "SSR" && index === 20)
+            return `${getChineseCardImage("Chinese Sets/Rainbow-Two-CN/CN-R2-SSR12.webp")}?v=${CN_MOON_THREE_IMAGE_REVISION}`;
+        if (code === "UR" && index >= 10 && index <= 12)
+            return getChineseMoonTwoFront(index + 12, "UR");
+        if (code === "UR" && index >= 13 && index <= 18)
+            return `${getChineseCardImage(`Chinese Sets/Rainbow-Two-CN/CN-R2-UR${index - 12}.webp`)}?v=${CN_MOON_THREE_IMAGE_REVISION}`;
         const imageIndex = code === "HR" && index >= 15 && index <= 30 ? index + 1 : index;
         return `${getChineseCardImage(`Chinese Sets/Moon-Three-CN/CN-M3-${code}${imageIndex}.webp`)}?v=${CN_MOON_THREE_IMAGE_REVISION}`;
     },
@@ -109,7 +133,7 @@ export const cardImagePathsCN = {
         const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon One card code.");
-        return `${getChineseCardImage(`${CN_IMAGE_ROOT}/CN-M1-${code}${index}.webp`)}?v=${CN_MOON_ONE_IMAGE_REVISION}`;
+        return `${getChineseCardImage(`${CN_IMAGE_ROOT}/CN-M1-${code}${index}.webp`)}?v=${CN_MOON_ONE_IMAGE_REVISION}${code === "UR" && index >= 13 && index <= 18 ? "&refresh=20261024-m1-ur13-18-replaced-v1" : ""}`;
     },
 };
 export const getChineseMoonOneFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonOne(rarity, number);
@@ -121,10 +145,24 @@ export const getChineseMoonTwoFront = (number: number | string, rarity = "R") =>
     const index = Number(number);
     if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
         throw new Error("Invalid Chinese Moon Two card code.");
+    if (code === "R" && index <= 8)
+        return getChineseMoonOneFront(index, "R");
+    if (code === "R" && index >= 17 && index <= 36)
+        return `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-R${index - 4}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}`;
+    if (code === "SR" && index >= 17 && index <= 20)
+        return `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-SR${index - 8}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}`;
+    if (code === "SSR" && index <= 9)
+        return getChineseMoonOneFront(index + 15, "SSR");
+    if (code === "HR")
+        return `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-HR${index}.webp`)}?v=20261022-m2-hr-direct-30-v3`;
+    if (code === "UR" && index >= 19 && index <= 24)
+        return `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-UR${index - 18}.webp`)}?v=20261024-m2-ur19-24-replaced-v2&refresh=20261024-m2-ur19-24-replaced-v2`;
+    if (code === "UR" && index <= 12)
+        return `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-UR${index}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}`;
     if (code === "UR")
         return getChineseMoonOneFront(index, "UR");
     const fileNumber = code === "R" && index === 1 ? "01" : String(index);
-    return `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-${code}${fileNumber}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}`;
+    return `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-${code}${fileNumber}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}${code === "SC" && index >= 1 && index <= 6 ? "&refresh=20261024-m2-sc-replaced-v1" : ""}${code === "SGR" && index >= 1 && index <= 7 && index !== 3 ? "&refresh=20261024-m2-sgr-correct-files-replaced-v2" : ""}`;
 };
 export const CN_MOON_TWO_CARDS = CHINESE_MOON_TWO_CODES.map(card => ({ ...card, image: getChineseMoonTwoFront(card.number, card.rarity) }));
 export const getChineseMoonThreeFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonThree(rarity, number);
@@ -377,7 +415,9 @@ export function useChineseCardImage(src: string) {
             try {
                 const url = new URL(src);
                 if (decodeURIComponent(url.pathname).startsWith("/Chinese Sets/Moon-Two-CN/"))
-                    url.searchParams.set("v", CN_MOON_TWO_IMAGE_REVISION);
+                    url.searchParams.set("v", ["20261024-m2-sgr-correct-files-replaced-v2", "20261024-m2-sc-replaced-v1"].includes(url.searchParams.get("refresh") ?? "") ? url.searchParams.get("refresh")! : CN_MOON_TWO_IMAGE_REVISION);
+                if (["20261024-m4-ur40-54-replaced-v1", "20261024-m4-sc13-18-replaced-v1"].includes(url.searchParams.get("refresh") ?? ""))
+                    url.searchParams.set("v", url.searchParams.get("refresh")!);
                 const requestUrl = url.href;
                 if (url.origin !== new URL(CARD_IMAGE_WORKER_URL).origin || !decodeURIComponent(url.pathname).startsWith("/Chinese Sets/"))
                     throw new Error("Invalid Chinese image source.");
