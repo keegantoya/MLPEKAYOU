@@ -30,7 +30,29 @@ const kujiTicketZooms: Record<string, number> = {
 };
 const getKujiTicketZoom = (key: string) => kujiTicketZooms[key] ?? CHINESE_KUJI_TICKET_ZOOM;
 const getKujiTicketTransform = (key: string) => `${key === "3-TICKET-1" ? "translateY(-1.2%) " : key === "3-TICKET-7" ? "translateY(-0.5%) " : ""}scale(${getKujiTicketZoom(key)})`;
+const kujiCPrizeTransforms: Record<string, string> = {
+  "3-C-7": "translate(-0.20799%, 0.09766%) scale(1.000000)",
+  "3-C-8": "translate(-0.21829%, 0.25623%) scale(1.049516)",
+  "3-C-9": "translate(0.43009%, -0.65631%) scale(1.033934)",
+  "3-C-10": "translate(1.18576%, 0.48974%) scale(1.055766)",
+  "3-C-11": "translate(0.62718%, 12.14725%) scale(1.256443)",
+  "3-C-12": "translate(-0.17140%, 0.62873%) scale(1.030111)",
+  "3-C-13": "translate(0.85927%, 2.21899%) scale(1.032839)",
+  "3-C-14": "translate(0.17798%, 1.01848%) scale(1.069665)"
+};
 function kujiRafflesImageStyle(key: string): CSSProperties {
+  if (/^3-C-\d+$/.test(key) && Number(key.split("-")[2]) >= 7) return { objectFit: "contain", objectPosition: "center", transform: kujiCPrizeTransforms[key] ?? "none", transformOrigin: "center" };
+  if (/^3-D-\d+$/.test(key)) return Number(key.split("-")[2]) >= 5
+    ? { position: "absolute", left: "50%", top: "50%", width: `${885 / 625 * 100}%`, height: `${625 / 885 * 100}%`, maxWidth: "none", maxHeight: "none", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center", objectFit: "cover" }
+    : { objectFit: "cover", objectPosition: "center", transform: "none", transformOrigin: "center" };
+  if (/^4-F-\d+$/.test(key)) return { objectFit: "cover", objectPosition: "center", transform: "none", transformOrigin: "center" };
+  if (/^4-C-\d+$/.test(key)) return Number(key.split("-")[2]) >= 9
+    ? { position: "absolute", left: "50%", top: "50%", width: `${885 / 625 * 100}%`, height: `${625 / 885 * 100}%`, maxWidth: "none", maxHeight: "none", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center", objectFit: "cover" }
+    : { objectFit: "cover", objectPosition: "center", transform: "none", transformOrigin: "center" };
+  if (/^4-D-\d+$/.test(key)) return Number(key.split("-")[2]) >= 16
+    ? { position: "absolute", left: "50%", top: "50%", width: `${839 / 508 * 100}%`, height: `${508 / 839 * 100}%`, maxWidth: "none", maxHeight: "none", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center", objectFit: "cover" }
+    : { objectFit: "cover", objectPosition: "center", transform: "none", transformOrigin: "center" };
+  if (/^4-E-\d+$/.test(key)) return { objectFit: "cover", objectPosition: "center", transform: "none", transformOrigin: "center" };
   if (/^2-E-(7|8|9|10)$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: `${2048 / 1238 * 100}%`, height: `${1238 / 2048 * 100}%`, maxWidth: "none", maxHeight: "none", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center", objectFit: "contain" };
   return { transform: /^[1-4]-(TICKET|C)-\d+$/.test(key) ? getKujiTicketTransform(key) : "none", transformOrigin: key === "3-TICKET-1" ? "center top" : "center", objectFit: "contain" };
 }
@@ -85,11 +107,16 @@ export const hasChineseCardCode = (card: ChineseCard | null | undefined) => !!ca
 export const CHINESE_LASER_TICKET_ASPECT_RATIO = 481 / 1263;
 export const isChineseLaserTicket = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === CN_LASER_TICKETS_SET_ID;
 export const CHINESE_TICKET_ASPECT_RATIO = 1195 / 2048;
-export const isChineseTicket = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^[1-4]-(TICKET|C)-\d+$/.test(card.key);
-export const isChineseKujiPrize = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^[1-4]-(E|D|B|A|S|LAST)-\d+$/.test(card.key);
-export const isChineseKujiPin = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^2-E-\d+$/.test(card.key);
-export const getChineseCardBorderRadius = (card: Pick<ChineseISOCard, "setId" | "key">) => isChineseLaserTicket(card) || isChineseTicket(card) ? 0 : isChineseKujiPin(card) ? "23% / 13.9%" : "4% / 2.857%";
-export const getChineseCardAspectRatio = (card: Pick<ChineseISOCard, "setId" | "key">) => isChineseLaserTicket(card) ? CHINESE_LASER_TICKET_ASPECT_RATIO : isChineseTicket(card) ? CHINESE_TICKET_ASPECT_RATIO : isChineseKujiPin(card) ? 1238 / 2048 : isChineseKujiPrize(card) ? 1 : chineseSets.find(set => set.id === card.setId)?.wideKeys?.includes(card.key) ? 10 / 7 : 5 / 7;
+export const isChineseKujiFPrize = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^4-F-\d+$/.test(card.key);
+export const isChineseKujiCPrize = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^3-C-\d+$/.test(card.key) && Number(card.key.split("-")[2]) >= 7;
+export const isChineseKujiMat = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^(3-D|4-C)-\d+$/.test(card.key);
+export const isChineseTicket = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && (/^(?:[1-4]-TICKET|[1-2]-C)-\d+$/.test(card.key) || /^3-C-[1-6]$/.test(card.key));
+export const isChineseKujiPrize = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && (/^[1-4]-(E|D|B|A|S|LAST)-\d+$/.test(card.key) || /^4-(C|F)-\d+$/.test(card.key) || isChineseKujiCPrize(card));
+export const isChineseRoundedKujiPrize = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^4-D-\d+$/.test(card.key);
+export const isChineseRoundKujiPin = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^4-E-\d+$/.test(card.key);
+export const isChineseKujiPin = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^[24]-E-\d+$/.test(card.key);
+export const getChineseCardBorderRadius = (card: Pick<ChineseISOCard, "setId" | "key">) => isChineseKujiCPrize(card) ? 0 : isChineseKujiFPrize(card) ? "3% / 2.16%" : isChineseKujiMat(card) ? "3.2% / 2.26%" : isChineseRoundedKujiPrize(card) ? "12% / 7.27%" : isChineseRoundKujiPin(card) ? "50%" : isChineseLaserTicket(card) || isChineseTicket(card) ? 0 : isChineseKujiPin(card) ? "23% / 13.9%" : "4% / 2.857%";
+export const getChineseCardAspectRatio = (card: Pick<ChineseISOCard, "setId" | "key">) => isChineseKujiCPrize(card) ? 1202 / 2048 : isChineseKujiFPrize(card) ? 925 / 1285 : isChineseKujiMat(card) ? 625 / 885 : isChineseRoundedKujiPrize(card) ? 508 / 839 : isChineseRoundKujiPin(card) ? 1 : isChineseLaserTicket(card) ? CHINESE_LASER_TICKET_ASPECT_RATIO : isChineseTicket(card) ? CHINESE_TICKET_ASPECT_RATIO : isChineseKujiPin(card) ? 1238 / 2048 : isChineseKujiPrize(card) ? 1 : chineseSets.find(set => set.id === card.setId)?.wideKeys?.includes(card.key) ? 10 / 7 : 5 / 7;
 const ticketCards = chineseCards.filter(isChineseTicket);
 const ticketImageSelectors = ticketCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
 const ticketPocketSelectors = ticketCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
@@ -99,19 +126,19 @@ const ticketLayoutCSS = ticketCards.length ? `
 :is(${ticketImageSelectors}){object-fit:contain!important;transform:scale(${CHINESE_KUJI_TICKET_ZOOM})!important;transform-origin:center!important}
 ${ticketZoomOverrides}
 ` : "";
-const kujiPrizeCards = chineseCards.filter(card => isChineseKujiPrize(card) && !isChineseKujiPin(card));
+const kujiPrizeCards = chineseCards.filter(card => isChineseKujiPrize(card) && !isChineseKujiPin(card) && !isChineseRoundedKujiPrize(card) && !isChineseKujiMat(card) && !isChineseKujiFPrize(card) && !isChineseKujiCPrize(card));
 const kujiPrizeImageSelectors = kujiPrizeCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
 const kujiPrizePocketSelectors = kujiPrizeCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
 const kujiPrizeLayoutCSS = kujiPrizeCards.length ? `
-:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is([data-cn-kuji-prize],${kujiPrizeImageSelectors})),[data-cn-kuji-prize],${kujiPrizePocketSelectors}{aspect-ratio:1!important}
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${kujiPrizeImageSelectors})),${kujiPrizePocketSelectors}{aspect-ratio:1!important}
 :is(${kujiPrizeImageSelectors}){object-fit:contain!important}
 ` : "";
-const kujiPinCards = chineseCards.filter(isChineseKujiPin);
+const kujiPinCards = chineseCards.filter(card => isChineseKujiPin(card) && !isChineseRoundKujiPin(card));
 const kujiPinImageSelectors = kujiPinCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
 const kujiPinPocketSelectors = kujiPinCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
 const rotatedKujiPinSelectors = kujiPinCards.filter(card => /^2-E-(7|8|9|10)$/.test(card.key)).flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
 const kujiPinLayoutCSS = kujiPinCards.length ? `
-:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is([data-cn-kuji-pin],${kujiPinImageSelectors})),[data-cn-kuji-pin],${kujiPinPocketSelectors}{aspect-ratio:1238/2048!important;border-radius:23% / 13.9%!important;background:transparent!important;overflow:hidden}
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${kujiPinImageSelectors})),${kujiPinPocketSelectors}{aspect-ratio:1238/2048!important;border-radius:23% / 13.9%!important;background:transparent!important;overflow:hidden}
 :is(${kujiPinImageSelectors}){object-fit:contain!important}
 ${rotatedKujiPinSelectors ? `:is(${rotatedKujiPinSelectors}){position:absolute!important;left:50%!important;top:50%!important;width:${2048 / 1238 * 100}%!important;height:${1238 / 2048 * 100}%!important;max-width:none!important;max-height:none!important;transform:translate(-50%,-50%) rotate(-90deg)!important;transform-origin:center!important}` : ""}
 ` : "";
@@ -124,9 +151,49 @@ const laserTicketLayoutCSS = laserTicketCards.length ? `
 :is(${laserTicketImageSelectors}){object-fit:contain!important;transform:rotate(180deg)!important;transform-origin:center!important}
 ${shiningNoteImageSelectors ? `:is(${shiningNoteImageSelectors}){position:absolute!important;left:50%!important;top:50%!important;width:${1263 / 481 * 100}%!important;height:${481 / 1263 * 100}%!important;max-width:none!important;max-height:none!important;transform:translate(-50%,-50%) rotate(-90deg)!important;transform-origin:center!important}` : ""}
 ` : "";
-export const chineseTicketLayoutCSS = ticketLayoutCSS + kujiPrizeLayoutCSS + kujiPinLayoutCSS + laserTicketLayoutCSS;
+const roundKujiPinCards = chineseCards.filter(isChineseRoundKujiPin);
+const roundKujiPinImageSelectors = roundKujiPinCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const roundKujiPinPocketSelectors = roundKujiPinCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
+const roundKujiPinLayoutCSS = roundKujiPinCards.length ? `
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${roundKujiPinImageSelectors})),${roundKujiPinPocketSelectors}{aspect-ratio:1!important;border-radius:50%!important;background:transparent!important;overflow:hidden}
+:is(${roundKujiPinImageSelectors}){object-fit:cover!important;object-position:center!important;border-radius:50%!important;transform:none!important}
+` : "";
+const roundedKujiPrizeCards = chineseCards.filter(isChineseRoundedKujiPrize);
+const roundedKujiPrizeImageSelectors = roundedKujiPrizeCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const roundedKujiPrizePocketSelectors = roundedKujiPrizeCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
+const rotatedKujiDImageSelectors = roundedKujiPrizeCards.filter(card => card.number >= 16).flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const roundedKujiPrizeLayoutCSS = roundedKujiPrizeCards.length ? `
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${roundedKujiPrizeImageSelectors})),:is(div,button,span):has(> :is(${roundedKujiPrizeImageSelectors})),${roundedKujiPrizePocketSelectors}{aspect-ratio:508/839!important;border-radius:12% / 7.27%!important;background:transparent!important;overflow:hidden}
+:is(${roundedKujiPrizeImageSelectors}){object-fit:cover!important;object-position:center!important}
+${rotatedKujiDImageSelectors ? `:is(${rotatedKujiDImageSelectors}){position:absolute!important;left:50%!important;top:50%!important;width:${839 / 508 * 100}%!important;height:${508 / 839 * 100}%!important;max-width:none!important;max-height:none!important;transform:translate(-50%,-50%) rotate(-90deg)!important;transform-origin:center!important}` : ""}
+` : "";
+const kujiMatCards = chineseCards.filter(isChineseKujiMat);
+const kujiMatImageSelectors = kujiMatCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const kujiMatPocketSelectors = kujiMatCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
+const rotatedKujiMatImageSelectors = kujiMatCards.filter(card => card.number >= (card.key.startsWith("3-D-") ? 5 : 9)).flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const kujiMatLayoutCSS = kujiMatCards.length ? `
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${kujiMatImageSelectors})),:is(div,button,span):has(> :is(${kujiMatImageSelectors})),${kujiMatPocketSelectors}{aspect-ratio:625/885!important;border-radius:3.2% / 2.26%!important;background:transparent!important;overflow:hidden}
+:is(${kujiMatImageSelectors}){object-fit:cover!important;object-position:center!important}
+${rotatedKujiMatImageSelectors ? `:is(${rotatedKujiMatImageSelectors}){position:absolute!important;left:50%!important;top:50%!important;width:${885 / 625 * 100}%!important;height:${625 / 885 * 100}%!important;max-width:none!important;max-height:none!important;transform:translate(-50%,-50%) rotate(-90deg)!important;transform-origin:center!important}` : ""}
+` : "";
+const kujiFPrizeCards = chineseCards.filter(isChineseKujiFPrize);
+const kujiFPrizeImageSelectors = kujiFPrizeCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const kujiFPrizePocketSelectors = kujiFPrizeCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
+const kujiFPrizeLayoutCSS = kujiFPrizeCards.length ? `
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${kujiFPrizeImageSelectors})),:is(div,button,span):has(> :is(${kujiFPrizeImageSelectors})),${kujiFPrizePocketSelectors}{aspect-ratio:925/1285!important;border-radius:3% / 2.16%!important;background:transparent!important;overflow:hidden}
+:is(${kujiFPrizeImageSelectors}){object-fit:cover!important;object-position:center!important;transform:none!important}
+` : "";
+const kujiCPrizeCards = chineseCards.filter(isChineseKujiCPrize);
+const kujiCPrizeImageSelectors = kujiCPrizeCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const kujiCPrizePocketSelectors = kujiCPrizeCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
+const kujiCPrizeLayoutCSS = kujiCPrizeCards.length ? `
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is(${kujiCPrizeImageSelectors})),:is(div,button,span):has(> :is(${kujiCPrizeImageSelectors})),${kujiCPrizePocketSelectors}{aspect-ratio:1202/2048!important;border-radius:0!important;background:transparent!important;overflow:hidden}
+:is(${kujiCPrizeImageSelectors}){object-fit:contain!important;object-position:center!important;transform-origin:center!important}
+${kujiCPrizeCards.map(card => `:is(img[alt=${JSON.stringify(getChineseCardLabel(card))}],img[alt=${JSON.stringify(card.key)}]){transform:${kujiCPrizeTransforms[card.key] ?? "none"}!important}`).join("\n")}
+` : "";
+export const chineseTicketLayoutCSS = ticketLayoutCSS + kujiPrizeLayoutCSS + kujiPinLayoutCSS + laserTicketLayoutCSS + roundKujiPinLayoutCSS + roundedKujiPrizeLayoutCSS + kujiMatLayoutCSS + kujiFPrizeLayoutCSS + kujiCPrizeLayoutCSS;
 export const isWideChineseCard = (card: ChineseISOCard) => !!chineseSets.find(set => set.id === card.setId)?.wideKeys?.includes(card.key);
-export const chineseRarityLabel = (rarity: string) => ({ LTR: "Fly With Me 2026", SH: "Shining Note", DST: "\u25C7ST", DSP: "\u25C7SP", SM: "L3", CB: "L4", T: "L4B", S: "L5", DN: "\u25C7N", DCR: "\u25C7CR", DZR: "\u25C7ZR", DAR: "\u25C7AR", DUR: "\u25C7UR", DLSR: "\u25C7LSR" }[rarity] ?? rarity);
+export const chineseRarityLabel = (rarity: string) => ({ LTR: "Fly With Me 2026", SH: "Shining Note", ANN40: "40th", DST: "\u25C7ST", DSP: "\u25C7SP", SM: "L3", CB: "L4", T: "L4B", S: "L5", DN: "\u25C7N", DCR: "\u25C7CR", DZR: "\u25C7ZR", DAR: "\u25C7AR", DUR: "\u25C7UR", DLSR: "\u25C7LSR" }[rarity] ?? rarity);
 export const isChineseSetId = (setId: string | number) => String(setId).toLowerCase().startsWith("cn-");
 const SMALL_ZOOM_CODES = new Set(["YH-F01-033", "YH-F01-036", "YH-F01-037", "YH-F01-038", "YH-F01-040", "YH-F01-043", "YH-F01-053", "YH-F01-054", "YH-F01-055", "YH-F01-056", "YH-F01-057", "YH-F01-058", "YH-F01-059", "YH-F01-060", "YH-F01-063", "YH-F01-065", "YH-F01-066", "YH-F01-073", "YH-T01-027", "YH-UR-001", "YH-UR-004", "YH-UR-005", "YH-UR-007", "YH-UR-008", "YH-UR-009", "YH-UR-010", "YH-UR-011", "YH-UR-012", "YH-UR-013"]);
 const EXTRA_ZOOM_CODES = new Set(["YH-F01-043", "YH-F01-053", "YH-F01-054", "YH-F01-055", "YH-F01-059", "YH-F01-060", "YH-F01-069", "YH-UR-004", "YH-UR-005", "YH-UR-006", "YH-UR-007", "YH-UR-008", "YH-UR-009", "YH-UR-011", "YH-UR-012", "YH-UR-014"]);
@@ -327,6 +394,7 @@ function starThreeImageStyle(key: string): CSSProperties {
   return { transform: "none", transformOrigin: "center" };
 }
 function promosImageStyle(key: string): CSSProperties {
+  if (key === "ANN40-1") return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
   if (key === "PR-6") return { transform: "scale(1.035)", transformOrigin: "center" };
   if (key === "KB-3") return { transform: "scale(1.035)", transformOrigin: "center" };
   if (/^KB-[123]$/.test(key)) return { transform: "scale(1.025)", transformOrigin: "center" };

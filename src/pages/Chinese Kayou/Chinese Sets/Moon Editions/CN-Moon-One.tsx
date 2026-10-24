@@ -5,8 +5,8 @@ import { ArrowLeft, ScanSearch } from "lucide-react";
 import { CN_MOON_ONE_SET_ID, getChineseMoonOneFront, getChineseMoonTwoFront, useChineseCardImage } from "../../card-images-cn";
 import { CHINESE_MOON_ONE_CODES, CHINESE_MOON_TWO_CODES } from "../../Chinese Codes + Char/Chinese-Codes";
 const CN_MOON_ONE_CARDS = [
-  ...CHINESE_MOON_TWO_CODES.filter(card => (card.rarity === "R" || card.rarity === "SR") && card.number <= 8).map(card => ({ ...card, image: card.rarity === "R" ? getChineseMoonOneFront(card.number, "R") : getChineseMoonTwoFront(card.number, card.rarity) })),
-  ...CHINESE_MOON_ONE_CODES.filter(card => (card.rarity === "SSR" && /^YH-T01-0(?:1[7-9]|2[0-6])$/.test(card.code)) || (card.rarity === "UR" && card.number >= 13 && card.number <= 18) || ["HR", "LSR", "SGR"].includes(card.rarity)).map(card => ({ ...card, image: getChineseMoonOneFront(card.number, card.rarity) })),
+  ...CHINESE_MOON_TWO_CODES.filter(card => (card.rarity === "R" || card.rarity === "SR") && card.number <= 8).map(card => ({ ...card, code: card.rarity === "SR" ? `YH-T01-${String(card.number + 8).padStart(3, "0")}` : card.code, image: card.rarity === "R" ? getChineseMoonOneFront(card.number, "R") : getChineseMoonTwoFront(card.number, card.rarity) })),
+  ...CHINESE_MOON_ONE_CODES.filter(card => (card.rarity === "SSR" && /^YH-T01-0(?:1[7-9]|2[0-8])$/.test(card.code)) || (card.rarity === "UR" && card.number >= 13 && card.number <= 18) || ["HR", "LSR", "SGR"].includes(card.rarity)).map(card => ({ ...card, image: getChineseMoonOneFront(card.number, card.rarity) })),
 ];
 export { CN_MOON_ONE_CARDS, CN_MOON_ONE_SET_ID };
 import type { CSSProperties } from "react";
@@ -190,7 +190,7 @@ const match = CN_MOON_ONE_CARDS.find(card => card.code.toLowerCase().includes(va
         .cn-inspect { position:absolute;bottom:8px;right:8px;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.78);color:white;font-size:10px; }
         .cn-art:focus-visible,.cn-rarity:focus-visible { outline:2px solid hsl(var(--primary));outline-offset:4px; }
         @media(max-width:767px) { .cn-shell { grid-template-columns:minmax(0,1fr);gap:20px; }.cn-rarities { flex-direction:row;flex-wrap:wrap;gap:6px; }.cn-rarity { flex:1 0 80px;min-height:42px;border:1px solid hsl(var(--border));padding:8px 10px; }.cn-rarity[aria-pressed=true] { box-shadow:none;border-color:hsl(var(--primary)); }.cn-grid { gap:20px 12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--cn-card-size)),1fr)); } }
-        @media(max-width:480px) { .cn-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:480px) { .cn-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
         @media(prefers-reduced-motion:reduce) { .cn-art img { transition:none; } }
       `}</style>
       <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">

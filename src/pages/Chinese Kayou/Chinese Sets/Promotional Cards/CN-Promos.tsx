@@ -1,3 +1,4 @@
+import { chineseRarityLabel } from "../../Chinese ISO/catalog/catalog";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -9,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
 function promosImageStyle(key: string): CSSProperties {
+  if (key === "ANN40-1") return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
   if (key === "PR-6") return { transform: "scale(1.035)", transformOrigin: "center" };
   if (key === "KB-3") return { transform: "scale(1.035)", transformOrigin: "center" };
   if (/^KB-[123]$/.test(key)) return { transform: "scale(1.025)", transformOrigin: "center" };
@@ -192,10 +194,10 @@ const match = CN_PROMOS_CARDS.find(card => card.code.toLowerCase().includes(valu
         <div className="w-full sm:w-60" aria-live="polite"><div className="mb-2 flex items-baseline justify-between gap-6"><span className="text-xs text-muted-foreground">Progress on Promotional Cards</span><span className="text-xl font-semibold tabular-nums">{ready ? collected : "--"}<span className="text-xs font-normal text-muted-foreground"> / {CN_PROMOS_CARDS.length}</span></span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Promotional Cards collection" aria-valuemin={0} aria-valuemax={CN_PROMOS_CARDS.length} aria-valuenow={ready ? collected : 0}><div className="h-full bg-primary" style={{ width: `${ready ? percent : 0}%` }} /></div></div>
       </header>
       <div className="cn-shell">
-        <aside aria-label="Card rarities"><p className="mb-3 text-[10px] font-semibold uppercase tracking-[.18em] text-muted-foreground">Rarities</p><div className="cn-rarities">{rarities.map(rarity => <button type="button" key={rarity} onClick={() => { setActiveRarity(rarity); setSearch(""); }} aria-pressed={activeRarity === rarity} className="cn-rarity"><span className="text-sm font-semibold">{rarity === "DAR" ? "\u25C7AR" : rarity === "DN" ? "\u25C7N" : rarity === "DCR" ? "\u25C7CR" : rarity}</span><span className="text-[10px] tabular-nums">{CN_PROMOS_CARDS.filter(card => card.rarity === rarity && progress[card.key]).length}/{CN_PROMOS_CARDS.filter(card => card.rarity === rarity).length}</span></button>)}</div></aside>
+        <aside aria-label="Card rarities"><p className="mb-3 text-[10px] font-semibold uppercase tracking-[.18em] text-muted-foreground">Rarities</p><div className="cn-rarities">{rarities.map(rarity => <button type="button" key={rarity} onClick={() => { setActiveRarity(rarity); setSearch(""); }} aria-pressed={activeRarity === rarity} className="cn-rarity"><span className="text-sm font-semibold">{chineseRarityLabel(rarity)}</span><span className="text-[10px] tabular-nums">{CN_PROMOS_CARDS.filter(card => card.rarity === rarity && progress[card.key]).length}/{CN_PROMOS_CARDS.filter(card => card.rarity === rarity).length}</span></button>)}</div></aside>
         <section className="min-w-0" aria-label={`${activeRarity} cards`}>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div><h2 className="text-lg font-semibold">{query ? "Search results" : activeRarity === "DAR" ? "\u25C7AR" : activeRarity === "DN" ? "\u25C7N" : activeRarity === "DCR" ? "\u25C7CR" : activeRarity}<span className="ml-2 text-xs font-normal text-muted-foreground">{visibleCards.length} cards</span></h2></div>
+            <div><h2 className="text-lg font-semibold">{query ? "Search results" : chineseRarityLabel(activeRarity)}<span className="ml-2 text-xs font-normal text-muted-foreground">{visibleCards.length} cards</span></h2></div>
             <div className="flex flex-wrap items-center gap-2">
               <label className="sr-only" htmlFor="cn-search">Search card codes</label><input id="cn-search" type="search" value={search} onChange={event => searchCodes(event.target.value)} placeholder="Find a code..." className="h-10 w-40 min-w-0 rounded-lg border border-border bg-card px-3 text-base" />
               <label className="sr-only" htmlFor="cn-filter">Collection filter</label><select id="cn-filter" value={filter} onChange={event => setFilter(event.target.value as typeof filter)} className="h-10 rounded-lg border border-border bg-card px-2 text-base"><option value="all">All cards</option><option value="missing">Missing</option><option value="collected">Collected</option></select>

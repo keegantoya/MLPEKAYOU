@@ -9,8 +9,8 @@ import type { CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
-const prizePools = [{ id: "TICKET", name: "Tickets" }, ...["E", "D", "C", "B", "A", "S", "LAST"].map(id => ({ id, name: id }))];
-const getPrizePool = (key: string) => key.split("-")[1] ?? "";
+const prizePools = [{ id: "TICKET", name: "Tickets" }, ...["F", "E", "D", "C", "B", "A", "S", "LAST"].map(id => ({ id, name: id }))];
+const getPrizePool = (key: string) => /^3-C-[1-6]$/.test(key) ? "TICKET" : key.split("-")[1] ?? "";
 function kujiRafflesImageStyle(key: string): CSSProperties {
     const card = getChineseCard(CN_KUJI_RAFFLES_SET_ID, key);
     return card ? getChineseISOImageStyle(card) : {};
@@ -83,6 +83,7 @@ export default function ChineseKujiRaffles() {
     const [error, setError] = useState("");
     const [activeRarity, setActiveRarity] = useState("1");
     const [activePool, setActivePool] = useState("TICKET");
+    const visiblePrizePools = prizePools.filter(pool => pool.id !== "F" || activeRarity === "4");
     const [filter, setFilter] = useState<"all" | "missing" | "collected">("all");
     const [retry, setRetry] = useState(0);
     const [ready, setReady] = useState(false);
@@ -219,7 +220,7 @@ export default function ChineseKujiRaffles() {
         @media(prefers-reduced-motion:reduce) { .cn-art img { transition:none; } }
       `}</style>
       <header className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
-        <div className="flex items-center gap-3"><Link to="/collections-chinese" aria-label="Back to Chinese Collections" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"><ArrowLeft size={16} aria-hidden="true"/></Link><div><p className="text-[10px] font-semibold uppercase tracking-[.2em] text-primary">Chinese Kayou / Gift Sets</p><h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Kuji Raffles<span className="ml-3 align-middle text-xs font-normal tracking-normal text-muted-foreground"></span></h1><p className="mt-2 text-sm text-muted-foreground">More prizes will be added as images become available.</p></div></div>
+        <div className="flex items-center gap-3"><Link to="/collections-chinese" aria-label="Back to Chinese Collections" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"><ArrowLeft size={16} aria-hidden="true"/></Link><div><p className="text-[10px] font-semibold uppercase tracking-[.2em] text-primary">Chinese Kayou / Gift Sets</p><h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Kuji Raffles<span className="ml-3 align-middle text-xs font-normal tracking-normal text-muted-foreground">{CN_KUJI_RAFFLES_CARDS.length} prizes cataloged</span></h1><p className="mt-2 text-sm text-muted-foreground">More prizes will be added as images become available.</p></div></div>
         <div className="w-full sm:w-60" aria-live="polite"><div className="mb-2 flex items-baseline justify-between gap-6"><span className="text-xs text-muted-foreground">Progress on Kuji Raffles</span><span className="text-xl font-semibold tabular-nums">{ready ? collected : "--"}<span className="text-xs font-normal text-muted-foreground"> / {CN_KUJI_RAFFLES_CARDS.length}</span></span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Kuji Raffles collection" aria-valuemin={0} aria-valuemax={CN_KUJI_RAFFLES_CARDS.length} aria-valuenow={ready ? collected : 0}><div className="h-full bg-primary" style={{ width: `${ready ? percent : 0}%` }}/></div></div>
       </header>
       <div className="cn-shell">
@@ -233,7 +234,7 @@ export default function ChineseKujiRaffles() {
               <label className="sr-only" htmlFor="cn-size">Prize size</label><select id="cn-size" value={cardSize} onChange={event => setCardSize(Number(event.target.value))} className="hidden h-10 rounded-lg border border-border bg-card px-2 text-base sm:block"><option value={120}>Compact</option><option value={160}>Standard</option><option value={200}>Large</option></select>
             </div>
           </div>
-          <nav aria-label={`Raffle ${activeRarity} prize pools`} className="mb-5 flex gap-5 overflow-x-auto border-b border-border">{prizePools.map(pool => <button type="button" key={pool.id} aria-pressed={!query && activePool === pool.id} onClick={() => { setActivePool(pool.id); setSearch(""); }} className={`flex min-h-11 shrink-0 items-center gap-2 border-b-2 pb-2 text-sm font-semibold transition-colors ${!query && activePool === pool.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}><span>{pool.name}</span><span className="text-[10px] font-normal tabular-nums">{CN_KUJI_RAFFLES_CARDS.filter(card => card.rarity === activeRarity && getPrizePool(card.key) === pool.id).length}</span></button>)}</nav>
+          <nav aria-label={`Raffle ${activeRarity} prize pools`} className="mb-5 flex gap-5 overflow-x-auto border-b border-border">{visiblePrizePools.map(pool => <button type="button" key={pool.id} aria-pressed={!query && activePool === pool.id} onClick={() => { setActivePool(pool.id); setSearch(""); }} className={`flex min-h-11 shrink-0 items-center gap-2 border-b-2 pb-2 text-sm font-semibold transition-colors ${!query && activePool === pool.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}><span>{pool.name}</span><span className="text-[10px] font-normal tabular-nums">{CN_KUJI_RAFFLES_CARDS.filter(card => card.rarity === activeRarity && getPrizePool(card.key) === pool.id).length}</span></button>)}</nav>
           {error && <div role="alert" className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm">{error}{!ready && <button type="button" onClick={() => setRetry(value => value + 1)} className="ml-3 underline">Retry</button>}</div>}
           {loading ? <div role="status" className="py-16 text-center text-sm text-muted-foreground">Loading your collection...</div> : !ready ? null : visibleCards.length === 0 ? <p className="py-16 text-center text-sm text-muted-foreground">{!query && !CN_KUJI_RAFFLES_CARDS.some(card => card.rarity === activeRarity && getPrizePool(card.key) === activePool) ? `${prizePools.find(pool => pool.id === activePool)?.name ?? activePool} prizes for Raffle ${activeRarity} will be added as images become available.` : "No matching prizes. Adjust your search or filter."}</p> : <div className="cn-grid" style={{ "--cn-card-size": `${cardSize}px` } as CSSProperties}>{visibleCards.map(card => {
                 const owned = Boolean(progress[card.key]);
