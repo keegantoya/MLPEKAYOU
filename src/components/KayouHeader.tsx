@@ -195,31 +195,70 @@ const KayouHeader = () => {
     const property = "--kayou-header-bottom";
     const previous = root.style.getPropertyValue(property);
     const priority = root.style.getPropertyPriority(property);
+    const viewport = window.visualViewport;
+    const resumeTimers = new Set<number>();
     let frame = 0, disposed = false;
     const update = () => {
       frame = 0;
-      if (disposed) return;
-      const bottom = Math.max(0, Math.ceil(header.getBoundingClientRect().bottom));
-      const value = `${bottom}px`;
+      if (disposed || document.visibilityState === "hidden") return;
+      const height = Math.ceil(header.offsetHeight);
+      if (!Number.isFinite(height) || height <= 0) return;
+      const value = `${height}px`;
       if (root.style.getPropertyValue(property) !== value) root.style.setProperty(property, value);
     };
-    const schedule = () => { if (!disposed && !frame) frame = requestAnimationFrame(update); };
+    const schedule = () => {
+      if (!disposed && document.visibilityState !== "hidden" && !frame) frame = requestAnimationFrame(update);
+    };
+    const clearResume = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      resumeTimers.forEach(timer => window.clearTimeout(timer));
+      resumeTimers.clear();
+    };
+    const resume = () => {
+      clearResume();
+      if (disposed || document.visibilityState === "hidden") return;
+      update();
+      schedule();
+      [100, 350].forEach(delay => {
+        const timer = window.setTimeout(() => {
+          resumeTimers.delete(timer);
+          schedule();
+        }, delay);
+        resumeTimers.add(timer);
+      });
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") clearResume();
+      else resume();
+    };
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
     observer?.observe(header);
     const mutations = new MutationObserver(schedule);
     mutations.observe(root, { attributes: true, attributeFilter: ["class", "data-theme"] });
     window.addEventListener("resize", schedule);
-    window.addEventListener("orientationchange", schedule);
-    window.visualViewport?.addEventListener("resize", schedule);
+    window.addEventListener("orientationchange", resume);
+    window.addEventListener("focus", resume);
+    window.addEventListener("pageshow", resume);
+    window.addEventListener("pagehide", clearResume);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    viewport?.addEventListener("resize", schedule);
+    viewport?.addEventListener("scroll", schedule);
     void document.fonts?.ready.then(schedule);
-    update();
+    resume();
     return () => {
       disposed = true;
-      observer?.disconnect(); mutations.disconnect();
+      clearResume();
+      observer?.disconnect();
+      mutations.disconnect();
       window.removeEventListener("resize", schedule);
-      window.removeEventListener("orientationchange", schedule);
-      window.visualViewport?.removeEventListener("resize", schedule);
-      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("orientationchange", resume);
+      window.removeEventListener("focus", resume);
+      window.removeEventListener("pageshow", resume);
+      window.removeEventListener("pagehide", clearResume);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      viewport?.removeEventListener("resize", schedule);
+      viewport?.removeEventListener("scroll", schedule);
       if (previous) root.style.setProperty(property, previous, priority);
       else root.style.removeProperty(property);
     };
