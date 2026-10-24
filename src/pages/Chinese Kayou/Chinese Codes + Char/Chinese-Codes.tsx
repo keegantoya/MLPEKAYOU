@@ -415,6 +415,7 @@ export const CHINESE_KUJI_RAFFLE_PRIZES: ChineseKujiPrizeGroup[] = [
     ] },
     { raffle: "3", type: "C", label: "C Ticket", imagePrefix: "KUJI3-C", codes: Array.from({ length: 6 }, (_, index) => `KYS-MLP03-S${String(index + 1).padStart(2, "0")}`) },
     { raffle: "3", type: "C", label: "C Prize", imagePrefix: "KUJI3-CA", keyOffset: 6, codes: Array.from({ length: 8 }, (_, index) => `MLP-03C-${String(index + 1).padStart(2, "0")}`), imageFiles: Array.from({ length: 8 }, (_, index) => `KUJI3-CA${index + 1}.webp`) },
+    { raffle: "3", type: "F", label: "Pin", imagePrefix: "KUJI3-F", names: Array.from({ length: 9 }, (_, index) => `Raffle 3 - F Pin ${index + 1}`) },
     { raffle: "3", type: "E", label: "Sticker Book", imagePrefix: "KUJI3-E", names: Array.from({ length: 9 }, (_, index) => `Raffle 3 - E Sticker Book ${index + 1}`), imageFiles: Array.from({ length: 9 }, (_, index) => `KUJI3-E${index + 1}.webp`) },
     { raffle: "3", type: "D", label: "Mat", imagePrefix: "KUJI3-D", codes: Array.from({ length: 10 }, (_, index) => `MLP-03D-${index + 1}`), imageFiles: Array.from({ length: 10 }, (_, index) => `KUJI3-D${index + 1}.webp`) },
     { raffle: "1", type: "C", label: "C Prize", imagePrefix: "KUJI1-C", codes: Array.from({ length: 5 }, (_, index) => `MLP-C-${String(index + 1).padStart(2, "0")}`) },

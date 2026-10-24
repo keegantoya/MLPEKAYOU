@@ -83,7 +83,7 @@ export default function ChineseKujiRaffles() {
     const [error, setError] = useState("");
     const [activeRarity, setActiveRarity] = useState("1");
     const [activePool, setActivePool] = useState("TICKET");
-    const visiblePrizePools = prizePools.filter(pool => pool.id !== "F" || activeRarity === "4");
+    const visiblePrizePools = prizePools.filter(pool => pool.id !== "F" || CN_KUJI_RAFFLES_CARDS.some(card => card.rarity === activeRarity && getPrizePool(card.key) === "F"));
     const [filter, setFilter] = useState<"all" | "missing" | "collected">("all");
     const [retry, setRetry] = useState(0);
     const [ready, setReady] = useState(false);
