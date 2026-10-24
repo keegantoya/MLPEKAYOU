@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ScanSearch } from "lucide-react";
-import { CN_MOON_FOUR_CARDS, CN_MOON_FOUR_SET_ID, CN_MOON_FOUR_IMAGE_REVISION, useChineseCardImage } from "../../card-images-cn";
+import { CN_MOON_FOUR_CARDS, CN_MOON_FOUR_SET_ID, CN_MOON_FOUR_IMAGE_REVISION, getChineseMoonFourHRImageNumber, useChineseCardImage } from "../../card-images-cn";
 export { CN_MOON_FOUR_CARDS, CN_MOON_FOUR_SET_ID };
 import type { CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -10,10 +10,11 @@ import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
 const MOON_FOUR_SSR_ZOOM_CODES = new Set(["YH-T04-042", "YH-T04-045", "YH-T04-049", "YH-T04-050", "YH-T04-051", "YH-T04-053", "YH-T04-054"]);
 function moonFourImageStyle(key: string): CSSProperties {
-  const code = CN_MOON_FOUR_CARDS.find(card => card.key === key)?.code ?? "";
-  const scale = ["YH-UR-040", "YH-UR-044"].includes(code) ? 1.12 : /^YH-UR-04[1-9]$/.test(code) ? 1.04 : /^YH-SC-01[4-8]$/.test(code) ? 1.15 : MOON_FOUR_SSR_ZOOM_CODES.has(code) ? 1.035 : 1;
+  if (/^HR-\d+$/.test(key)) key = `HR-${getChineseMoonFourHRImageNumber(Number(key.slice(3)))}`;
+const code = CN_MOON_FOUR_CARDS.find(card => card.key === key)?.code ?? "";
+const scale = ["YH-UR-040", "YH-UR-044"].includes(code) ? 1.12 : /^YH-UR-04[1-9]$/.test(code) ? 1.04 : /^YH-SC-01[4-8]$/.test(code) ? 1.15 : MOON_FOUR_SSR_ZOOM_CODES.has(code) ? 1.035 : 1;
   if (["YH-UR-042", "YH-UR-043"].includes(code)) return { position: "absolute", left: -3, top: -3, width: "calc(100% + 6px)", height: "calc(100% + 6px)", maxWidth: "none", transform: `scale(${scale})`, transformOrigin: "center" };
-  const hrCrop = /^YH-HR-1(?:0[7-9]|1[0-9]|20)$/.test(code) ? 6 : 3;
+const hrCrop = /^YH-HR-1(?:0[7-9]|1[0-9]|20)$/.test(code) ? 6 : 3;
   if (/^HR-(?:6|19|2[0-8]|30)$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: `calc(140% + ${hrCrop * 2}px)`, height: `calc(71.428571% + ${hrCrop * 2}px)`, maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
   if (key.startsWith("HR-")) return { position: "absolute", left: -hrCrop, top: -hrCrop, width: `calc(100% + ${hrCrop * 2}px)`, height: `calc(100% + ${hrCrop * 2}px)`, maxWidth: "none", transform: "none", transformOrigin: "center" };
   return { transform: scale === 1 ? "none" : `scale(${scale})`, transformOrigin: "center" };

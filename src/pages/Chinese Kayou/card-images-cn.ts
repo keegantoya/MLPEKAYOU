@@ -21,6 +21,10 @@ export function getChineseCardImage(path: string): string {
     const normalized = path.replace(/^\/+/, "").replace(/^mlpekayou-card-images\//, "");
     return `${CARD_IMAGE_WORKER_URL.replace(/\/$/, "")}/${normalized.split("/").map(encodeURIComponent).join("/")}`;
 }
+export const getChineseMoonFourHRImageNumber = (number: number) => {
+    const sourceNumber = number === 23 ? 28 : number >= 24 && number <= 28 ? number - 1 : number;
+    return sourceNumber === 16 ? 29 : sourceNumber >= 17 && sourceNumber <= 29 ? sourceNumber - 1 : sourceNumber;
+};
 export const cardImagePathsCN = {
     moonTwelve: (rarity: string, number: number | string): string => {
         const code = rarity.trim().toUpperCase();
@@ -89,7 +93,8 @@ export const cardImagePathsCN = {
         const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon Four card code.");
-        return `${getChineseCardImage(`Chinese Sets/Moon-Four-CN/CN-M4-${code}${index}.webp`)}?v=${CN_MOON_FOUR_IMAGE_REVISION}`;
+        const imageNumber = code === "HR" ? getChineseMoonFourHRImageNumber(index) : index;
+        return `${getChineseCardImage(`Chinese Sets/Moon-Four-CN/CN-M4-${code}${imageNumber}.webp`)}?v=${CN_MOON_FOUR_IMAGE_REVISION}`;
     },
     moonThree: (rarity: string, number: number | string): string => {
         const code = rarity.trim().toUpperCase();
@@ -326,7 +331,7 @@ export const CN_NEWYEARS_ONE_SET_ID = "cn-newyears-one";
 export const CN_NEWYEARS_ONE_CARDS = CHINESE_NEWYEARS_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-One-CN/CN-NY1-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_ONE_IMAGE_REVISION}` }));
 export const CN_KUJI_RAFFLES_IMAGE_REVISION = "20261023-kuji-tickets-29-v1";
 export const CN_KUJI_RAFFLES_SET_ID = "cn-kuji-raffles";
-export const CN_KUJI_RAFFLES_CARDS = CHINESE_KUJI_RAFFLES_CODES.map(({ imageFile, ...card }) => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Kuji-Sets/${imageFile}`)}?v=${CN_KUJI_RAFFLES_IMAGE_REVISION}${/^KUJI3-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-all-replaced-v1" : /^KUJI2-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji2-all-replaced-v2" : imageFile === "KUJI2-TICKET20.webp" ? "&refresh=20261024-kuji2-ticket20-replaced-v1" : /^KUJI[1-4]-TICKET[0-9]+\.webp$/.test(imageFile) ? "&refresh=20261024-kuji-tickets-replaced-v3" : /^KUJI1-(?:B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji1-prizes-replaced-v1" : ""}` }));
+export const CN_KUJI_RAFFLES_CARDS = CHINESE_KUJI_RAFFLES_CODES.map(({ imageFile, ...card }) => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Kuji-Sets/${imageFile}`)}?v=${CN_KUJI_RAFFLES_IMAGE_REVISION}${/^KUJI3-(?:TICKET[0-9]+|C[1-6])\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-tickets-replaced-v2" : /^KUJI3-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-all-replaced-v1" : /^KUJI2-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji2-all-replaced-v2" : imageFile === "KUJI2-TICKET20.webp" ? "&refresh=20261024-kuji2-ticket20-replaced-v1" : /^KUJI[1-4]-TICKET[0-9]+\.webp$/.test(imageFile) ? "&refresh=20261024-kuji-tickets-replaced-v3" : /^KUJI1-(?:B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji1-prizes-replaced-v1" : ""}` }));
 export const CN_NEWYEARS_TWO_IMAGE_REVISION = "20261023-ny2-complete-91-v1";
 export const CN_NEWYEARS_TWO_SET_ID = "cn-newyears-two";
 export const CN_NEWYEARS_TWO_CARDS = CHINESE_NEWYEARS_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-Two-CN/CN-NY2-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_TWO_IMAGE_REVISION}` }));

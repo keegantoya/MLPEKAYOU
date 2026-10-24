@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getCachedCardImage } from "@/lib/card-image-cache";
 import { useChineseCardImage } from "../../card-images-cn";
-import { type ChineseISOCard, isWideChineseCard, isChineseTicket, isChineseKujiPrize, getChineseCardAspectRatio, getChineseCardLabel } from "../catalog/catalog";
+import { type ChineseISOCard, isWideChineseCard, isChineseTicket, isChineseKujiPrize, getChineseCardAspectRatio, getChineseCardLabel, isChineseKujiPin, getChineseCardBorderRadius } from "../catalog/catalog";
 import { getChineseISOImageStyle } from "../catalog/image-styles";
 function LoadedChineseImage({ card }: { card: ChineseISOCard }) {
   const image = useChineseCardImage(card.image);
@@ -37,7 +37,7 @@ export default function ChineseISOImage({ card, publicView = false }: { card: Ch
     if (element.current) observer.observe(element.current);
     return () => observer.disconnect();
   }, [nearby]);
-  return <div ref={element} data-cn-ticket={isChineseTicket(card) ? "true" : undefined} data-cn-kuji-prize={isChineseKujiPrize(card) ? "true" : undefined} className={`relative w-full overflow-hidden bg-muted ${isWideChineseCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"}`} style={{ aspectRatio: getChineseCardAspectRatio(card), borderRadius: isChineseTicket(card) ? 0 : "4% / 2.857%" }}>
+  return <div ref={element} data-cn-ticket={isChineseTicket(card) ? "true" : undefined} data-cn-kuji-prize={isChineseKujiPrize(card) && !isChineseKujiPin(card) ? "true" : undefined} data-cn-kuji-pin={isChineseKujiPin(card) ? "true" : undefined} className={`relative w-full overflow-hidden ${isChineseKujiPin(card) ? "bg-transparent" : "bg-muted"} ${isWideChineseCard(card) ? "aspect-[10/7]" : "aspect-[5/7]"}`} style={{ aspectRatio: getChineseCardAspectRatio(card), borderRadius: getChineseCardBorderRadius(card) }}>
     {nearby && (publicView ? <PublicChineseImage card={card} /> : <LoadedChineseImage card={card} />)}
   </div>;
 }

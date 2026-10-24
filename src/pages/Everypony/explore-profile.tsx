@@ -3,7 +3,7 @@ import { profileViewCard as englishViewCard, profileViewEligible as englishViewE
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ProfileCardLanguageSwitch, usePublicChineseProfile, type ProfileCardLanguage } from "@/pages/Chinese Kayou/Chinese ISO/PublicChineseCards";
 import ChineseISOImage from "@/pages/Chinese Kayou/Chinese ISO/components/card-image";
-import { chineseSets, getChineseCard, getChineseCardLabel, isChineseKujiPrize, isChineseSetId, isWideChineseCard, chineseRarityLabel } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
+import { chineseSets, getChineseCard, getChineseCardLabel, hasChineseCardCode, isChineseKujiPrize, isChineseSetId, isWideChineseCard, chineseRarityLabel } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -1017,7 +1017,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                   {quickViewCard.type === "sale" && <><div className="flex items-baseline justify-between gap-4 py-3"><dt className="text-zinc-500">Price</dt><dd className="text-2xl font-semibold tabular-nums text-primary">${Number(quickViewCard.asking_price || 0).toFixed(2)}</dd></div><div className="flex justify-between gap-4 py-2.5"><dt className="text-zinc-500">Available</dt><dd className="font-medium tabular-nums">{quickViewCard.sale_quantity ?? 0}</dd></div></>}
                   {quickViewCard.type === "trade" && quickViewCard.trade_quantity != null && <div className="flex justify-between gap-4 py-2.5"><dt className="text-zinc-500">Available</dt><dd className="font-medium tabular-nums">{quickViewCard.trade_quantity}</dd></div>}
                 </dl>
-                {!isMerchandise(quickViewCard) && <button type="button" onClick={async () => {
+                {(!isMerchandise(quickViewCard) || hasChineseCardCode(getChineseCard(String(quickViewCard.set_id), quickViewCard.card_key))) && <button type="button" onClick={async () => {
                 try {
                     await navigator.clipboard.writeText(getProfileCardCode(quickViewCard));
                     setCopiedCardCode(true);
@@ -1025,7 +1025,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
                 catch {
                     setCopiedCardCode(false);
                 }
-            }} className="mt-2 min-h-10 text-sm font-medium text-primary underline-offset-4 hover:underline" aria-live="polite">{copiedCardCode ? "Card code copied" : "Copy card code"}</button>}
+            }} className="mt-2 min-h-10 text-sm font-medium text-primary underline-offset-4 hover:underline" aria-live="polite">{copiedCardCode ? "Code copied" : "Copy code"}</button>}
                 <div className={`mt-4 border-t pt-4 ${isLightMode ? "border-black/10" : "border-white/10"}`}>
                     {quickViewCard.type === "trade" &&
                 currentUserId &&
