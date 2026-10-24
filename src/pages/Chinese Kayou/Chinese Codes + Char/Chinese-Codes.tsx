@@ -339,7 +339,7 @@ export const CHINESE_STAR_THREE_CODES: ChineseCardCode[] = [
     ...sequence("AR", 9, "FX03-AR"),
     ...sequence("OR", 8, "FX03-OR"),
     ...sequence("BP", 8, "FX03-BP"),
-    ...sequence("DAR", 13, "FX03-DAR"),
+    ...sequence("DAR", 13, "FX03-\u25C7AR"),
     ...sequence("SE", 8, "FX03-SE"),
 ];
 export const CHINESE_PROMOS_CODES: ChineseCardCode[] = [
