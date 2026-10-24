@@ -5,12 +5,13 @@ import { CN_MOON_THREE_CARDS, CN_MOON_THREE_SET_ID } from "../../Chinese Sets/Mo
 import { CN_MOON_FOUR_CARDS, CN_MOON_FOUR_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-Four";
 import { CN_MOON_FIVE_CARDS, CN_MOON_FIVE_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-Five";
 import { CN_MOON_SIX_CARDS, CN_MOON_SIX_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-Six";
-import { CN_MOON_SEVEN_CARDS, CN_MOON_SEVEN_SET_ID, CN_MOON_EIGHT_CARDS, CN_MOON_EIGHT_SET_ID, CN_MOON_NINE_CARDS, CN_MOON_NINE_SET_ID, CN_MOON_TEN_CARDS, CN_MOON_TEN_SET_ID, CN_MOON_ELEVEN_CARDS, CN_MOON_ELEVEN_SET_ID, CN_MOON_TWELVE_CARDS, CN_MOON_TWELVE_SET_ID, CN_FUN_ONE_CARDS, CN_FUN_ONE_SET_ID, CN_FUN_TWO_CARDS, CN_FUN_TWO_SET_ID, CN_FUN_THREE_CARDS, CN_FUN_THREE_SET_ID, CN_FUN_FOUR_CARDS, CN_FUN_FOUR_SET_ID, CN_FUN_FIVE_CARDS, CN_FUN_FIVE_SET_ID, CN_FUN_SIX_CARDS, CN_FUN_SIX_SET_ID, CN_FUN_SEVEN_CARDS, CN_FUN_SEVEN_SET_ID, CN_FUN_EIGHT_CARDS, CN_FUN_EIGHT_SET_ID, CN_FUN_NINE_CARDS, CN_FUN_NINE_SET_ID, CN_RAINBOW_ONE_CARDS, CN_RAINBOW_ONE_SET_ID, CN_RAINBOW_TWO_CARDS, CN_RAINBOW_TWO_SET_ID, CN_RAINBOW_THREE_CARDS, CN_RAINBOW_THREE_SET_ID, CN_RAINBOW_FOUR_CARDS, CN_RAINBOW_FOUR_SET_ID, CN_RAINBOW_FIVE_CARDS, CN_RAINBOW_FIVE_SET_ID, CN_STAR_ONE_CARDS, CN_STAR_ONE_SET_ID, CN_STAR_TWO_CARDS, CN_STAR_TWO_SET_ID, CN_STAR_THREE_CARDS, CN_STAR_THREE_SET_ID, CN_PROMOS_CARDS, CN_PROMOS_SET_ID, CN_STARDUST_ONE_CARDS, CN_STARDUST_ONE_SET_ID, CN_STARDUST_TWO_CARDS, CN_STARDUST_TWO_SET_ID, CN_MAGICBOOK_ONE_CARDS, CN_MAGICBOOK_ONE_SET_ID, CN_NEWYEARS_ONE_CARDS, CN_NEWYEARS_ONE_SET_ID, CN_NEWYEARS_TWO_CARDS, CN_NEWYEARS_TWO_SET_ID } from "../../card-images-cn";
+import { CN_MOON_SEVEN_CARDS, CN_MOON_SEVEN_SET_ID, CN_MOON_EIGHT_CARDS, CN_MOON_EIGHT_SET_ID, CN_MOON_NINE_CARDS, CN_MOON_NINE_SET_ID, CN_MOON_TEN_CARDS, CN_MOON_TEN_SET_ID, CN_MOON_ELEVEN_CARDS, CN_MOON_ELEVEN_SET_ID, CN_MOON_TWELVE_CARDS, CN_MOON_TWELVE_SET_ID, CN_FUN_ONE_CARDS, CN_FUN_ONE_SET_ID, CN_FUN_TWO_CARDS, CN_FUN_TWO_SET_ID, CN_FUN_THREE_CARDS, CN_FUN_THREE_SET_ID, CN_FUN_FOUR_CARDS, CN_FUN_FOUR_SET_ID, CN_FUN_FIVE_CARDS, CN_FUN_FIVE_SET_ID, CN_FUN_SIX_CARDS, CN_FUN_SIX_SET_ID, CN_FUN_SEVEN_CARDS, CN_FUN_SEVEN_SET_ID, CN_FUN_EIGHT_CARDS, CN_FUN_EIGHT_SET_ID, CN_FUN_NINE_CARDS, CN_FUN_NINE_SET_ID, CN_RAINBOW_ONE_CARDS, CN_RAINBOW_ONE_SET_ID, CN_RAINBOW_TWO_CARDS, CN_RAINBOW_TWO_SET_ID, CN_RAINBOW_THREE_CARDS, CN_RAINBOW_THREE_SET_ID, CN_RAINBOW_FOUR_CARDS, CN_RAINBOW_FOUR_SET_ID, CN_RAINBOW_FIVE_CARDS, CN_RAINBOW_FIVE_SET_ID, CN_STAR_ONE_CARDS, CN_STAR_ONE_SET_ID, CN_STAR_TWO_CARDS, CN_STAR_TWO_SET_ID, CN_STAR_THREE_CARDS, CN_STAR_THREE_SET_ID, CN_PROMOS_CARDS, CN_PROMOS_SET_ID, CN_STARDUST_ONE_CARDS, CN_STARDUST_ONE_SET_ID, CN_STARDUST_TWO_CARDS, CN_STARDUST_TWO_SET_ID, CN_MAGICBOOK_ONE_CARDS, CN_MAGICBOOK_ONE_SET_ID, CN_NEWYEARS_ONE_CARDS, CN_NEWYEARS_ONE_SET_ID, CN_NEWYEARS_TWO_CARDS, CN_NEWYEARS_TWO_SET_ID, CN_KUJI_RAFFLES_CARDS, CN_KUJI_RAFFLES_SET_ID } from "../../card-images-cn";
 export type ChineseFamily = "moon" | "fun" | "rainbow" | "star" | "promos" | "other";
-export type ChineseCard = { key: string; rarity: string; number: number; code: string; image: string };
+export type ChineseCard = { key: string; rarity: string; number: number; code: string; image: string; displayName?: string };
 export type ChineseSet = { id: string; name: string; family: ChineseFamily; href: string; cards: ChineseCard[]; imageStyle?: (key: string) => CSSProperties; wideKeys?: string[] };
 export type ChineseISOCard = ChineseCard & { setId: string; setName: string; family: ChineseFamily; identity: string };
 export const chineseFamilies: { id: ChineseFamily; name: string }[] = [{ id: "moon", name: "Moon" }, { id: "fun", name: "Fun Moments" }, { id: "rainbow", name: "Rainbow" }, { id: "star", name: "Star" }, { id: "promos", name: "Promos" }, { id: "other", name: "Gift Sets" }];
+export const CHINESE_KUJI_TICKET_ZOOM = 1.05;
 export const chineseSets: ChineseSet[] = [
   { id: CN_MOON_ONE_SET_ID, name: "Moon One", family: "moon", href: "/cn-moon-one", cards: CN_MOON_ONE_CARDS },
   { id: CN_MOON_TWO_SET_ID, name: "Moon Two", family: "moon", href: "/cn-moon-two", cards: CN_MOON_TWO_CARDS },
@@ -46,11 +47,33 @@ export const chineseSets: ChineseSet[] = [
   { id: CN_MAGICBOOK_ONE_SET_ID, name: "Equestria Girls: Magic Book", family: "other", href: "/cn-magicbook-one", cards: CN_MAGICBOOK_ONE_CARDS, imageStyle: magicBookOneImageStyle },
   { id: CN_NEWYEARS_ONE_SET_ID, name: "New Years One", family: "other", href: "/cn-newyears-one", cards: CN_NEWYEARS_ONE_CARDS, imageStyle: newYearsOneImageStyle },
   { id: CN_NEWYEARS_TWO_SET_ID, name: "New Years Two", family: "other", href: "/cn-newyears-two", cards: CN_NEWYEARS_TWO_CARDS, imageStyle: newYearsTwoImageStyle },
+  { id: CN_KUJI_RAFFLES_SET_ID, name: "Kuji Raffles", family: "other", href: "/cn-kuji-raffles", cards: CN_KUJI_RAFFLES_CARDS, imageStyle: key => ({ transform: /^[1-4]-TICKET-\d+$/.test(key) ? `scale(${CHINESE_KUJI_TICKET_ZOOM})` : "none", transformOrigin: "center", objectFit: "contain" }) },
   { id: CN_PROMOS_SET_ID, name: "All Promotional Cards", family: "promos", href: "/cn-promos", cards: CN_PROMOS_CARDS },
  ];
 export const chineseCards: ChineseISOCard[] = chineseSets.flatMap(set => set.cards.map(card => ({ ...card, setId: set.id, setName: set.name, family: set.family, identity: `${set.id}:${card.key}` })));
 export const chineseCardsByIdentity = new Map(chineseCards.map(card => [card.identity, card]));
 export const getChineseCard = (setId: string, cardKey: string) => chineseCardsByIdentity.get(`${setId}:${cardKey}`);
+export const getChineseCardLabel = (card: ChineseCard | null | undefined) => card?.displayName ?? card?.code ?? "";
+export const hasChineseCardCode = (card: ChineseCard | null | undefined) => !!card?.code.trim();
+export const CHINESE_TICKET_ASPECT_RATIO = 1195 / 2048;
+export const isChineseTicket = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^[1-4]-TICKET-\d+$/.test(card.key);
+export const isChineseKujiPrize = (card: Pick<ChineseISOCard, "setId" | "key">) => card.setId === "cn-kuji-raffles" && /^[1-4]-(E|D|C|B|A|S|LAST)-\d+$/.test(card.key);
+export const getChineseCardAspectRatio = (card: Pick<ChineseISOCard, "setId" | "key">) => isChineseTicket(card) ? CHINESE_TICKET_ASPECT_RATIO : isChineseKujiPrize(card) ? 1 : chineseSets.find(set => set.id === card.setId)?.wideKeys?.includes(card.key) ? 10 / 7 : 5 / 7;
+const ticketCards = chineseCards.filter(isChineseTicket);
+const ticketImageSelectors = ticketCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const ticketPocketSelectors = ticketCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
+const ticketLayoutCSS = ticketCards.length ? `
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is([data-cn-ticket],${ticketImageSelectors})),[data-cn-ticket],${ticketPocketSelectors}{aspect-ratio:1195/2048!important;border-radius:0!important}
+:is(${ticketImageSelectors}){object-fit:contain!important;transform:scale(${CHINESE_KUJI_TICKET_ZOOM})!important;transform-origin:center!important}
+` : "";
+const kujiPrizeCards = chineseCards.filter(isChineseKujiPrize);
+const kujiPrizeImageSelectors = kujiPrizeCards.flatMap(card => [`img[alt=${JSON.stringify(getChineseCardLabel(card))}]`, `img[alt=${JSON.stringify(card.key)}]`]).join(",");
+const kujiPrizePocketSelectors = kujiPrizeCards.flatMap(card => [`[class*="aspect-"][aria-label^=${JSON.stringify(getChineseCardLabel(card) + ",")}]`, `[class*="aspect-"][title^=${JSON.stringify(getChineseCardLabel(card) + " /")}]`]).join(",");
+const kujiPrizeLayoutCSS = kujiPrizeCards.length ? `
+:is([class*="aspect-"],.cn-art,.tp-art-card,.tp-card-image):has(:is([data-cn-kuji-prize],${kujiPrizeImageSelectors})),[data-cn-kuji-prize],${kujiPrizePocketSelectors}{aspect-ratio:1!important}
+:is(${kujiPrizeImageSelectors}){object-fit:contain!important}
+` : "";
+export const chineseTicketLayoutCSS = ticketLayoutCSS + kujiPrizeLayoutCSS;
 export const isWideChineseCard = (card: ChineseISOCard) => !!chineseSets.find(set => set.id === card.setId)?.wideKeys?.includes(card.key);
 export const chineseRarityLabel = (rarity: string) => ({ DST: "\u25C7ST", DSP: "\u25C7SP", SM: "L3", CB: "L4", T: "L4B", S: "L5", DN: "\u25C7N", DCR: "\u25C7CR", DZR: "\u25C7ZR", DAR: "\u25C7AR", DUR: "\u25C7UR", DLSR: "\u25C7LSR" }[rarity] ?? rarity);
 export const isChineseSetId = (setId: string | number) => String(setId).toLowerCase().startsWith("cn-");

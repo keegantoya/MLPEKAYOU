@@ -1,3 +1,5 @@
+import { chineseTicketLayoutCSS } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
+import ChineseKujiRaffles from "./pages/Chinese Kayou/Chinese Sets/Other Sets/Kuji-Raffles";
 import BadgesPins from "./pages/Sets/Other Merch/Badges-Pins";
 import AcrylicStands from "./pages/Sets/Other Merch/Acrylic-Stands";
 import GelPens from "./pages/Sets/Other Merch/Gel-Pens";
@@ -347,6 +349,7 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
     <Route path="/cn-stardust-two" element={<RequireAuth><ChineseStardustTwo /></RequireAuth>}/>
     <Route path="/cn-magicbook-one" element={<RequireAuth><ChineseMagicBookOne /></RequireAuth>}/>
     <Route path="/cn-newyears-one" element={<RequireAuth><ChineseNewYearsOne /></RequireAuth>}/>
+    <Route path="/cn-kuji-raffles" element={<RequireAuth><ChineseKujiRaffles /></RequireAuth>}/>
     <Route path="/cn-newyears-two" element={<RequireAuth><ChineseNewYearsTwo /></RequireAuth>}/>
   <Route path="/iso-chinese" element={<RequireAuth><ISOChinese /></RequireAuth>}/>
     <Route path="/collections-chinese" element={<CollectionsChinese />}/>
@@ -456,6 +459,7 @@ const hideNavigation = normalizedPath === "/links" ||
 const standalone = window.matchMedia("(display-mode: standalone)").matches;
     return (<>
       <style>{`
+        ${chineseTicketLayoutCSS}
         @media (max-width:767px) {
           .cn-gallery .cn-grid { grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 8px; }
           .cn-gallery .cn-grid > * { min-width:0; }

@@ -9,13 +9,33 @@ export type ChineseISOData = { settings: ChineseSettings; progress: ChineseProgr
 export const emptyChineseISOData = (): ChineseISOData => ({ settings: { ...defaultChineseSettings, chinese_iso_hidden_sets: [] }, progress: [], statuses: [], wishlist: [] });
 export const cardIdentity = (setId: string, cardKey: string) => `${setId}:${cardKey}`;
 export const isChineseOwned = (value: unknown): boolean => value === true || !!(value && typeof value === "object" && !Array.isArray(value) && "owned" in value && value.owned === true);
+export const CHINESE_KUJI_VISIBILITY_SET_ID = "cn-kuji-raffles";
+export const chineseKujiRaffles = ["1", "2", "3", "4"] as const;
+const kujiRaffleVisibilityKey = (raffle: string) => `${CHINESE_KUJI_VISIBILITY_SET_ID}:${raffle}`;
+export const isChineseKujiRaffleHidden = (hiddenSets: readonly string[], raffle: string) => hiddenSets.includes(CHINESE_KUJI_VISIBILITY_SET_ID) || hiddenSets.includes(kujiRaffleVisibilityKey(raffle));
+export function setChineseKujiRaffleHidden(hiddenSets: readonly string[], raffle: string, hidden: boolean): string[] {
+  if (!chineseKujiRaffles.some(id => id === raffle)) return [...hiddenSets];
+  const hiddenRaffles = chineseKujiRaffles.filter(id => id === raffle ? hidden : isChineseKujiRaffleHidden(hiddenSets, id));
+  const next = new Set(hiddenSets);
+  next.delete(CHINESE_KUJI_VISIBILITY_SET_ID);
+  for (const id of chineseKujiRaffles) next.delete(kujiRaffleVisibilityKey(id));
+  if (hiddenRaffles.length === chineseKujiRaffles.length) next.add(CHINESE_KUJI_VISIBILITY_SET_ID);
+  else for (const id of hiddenRaffles) next.add(kujiRaffleVisibilityKey(id));
+  return [...next];
+}
+export function isChineseISOCardHidden(card: Pick<ChineseISOCard, "setId" | "key">, hidden: ReadonlySet<string>): boolean {
+  if (hidden.has(card.setId)) return true;
+  if (card.setId !== CHINESE_KUJI_VISIBILITY_SET_ID) return false;
+  const raffle = card.key.match(/^([1-4])-/)?.[1];
+  return !!raffle && hidden.has(kujiRaffleVisibilityKey(raffle));
+}
 export function buildChineseISOState(data: ChineseISOData) {
   const owned = new Set<string>();
   for (const row of data.progress) for (const [key, value] of Object.entries(row.progress ?? {})) if (isChineseOwned(value)) owned.add(cardIdentity(row.set_id, key));
   const statuses = new Map(data.statuses.filter(row => row.status === "purchase_in_progress" || row.status === "trade_in_progress").map(row => [cardIdentity(row.set_id, row.card_key), row.status]));
   const wishlist = new Set(data.wishlist.map(row => cardIdentity(row.set_id, row.card_key)));
   const hidden = new Set(data.settings.chinese_iso_hidden_sets);
-  const missing = chineseCards.filter(card => !hidden.has(card.setId) && !owned.has(card.identity) && !statuses.has(card.identity));
+  const missing = chineseCards.filter(card => !isChineseISOCardHidden(card, hidden) && !owned.has(card.identity) && !statuses.has(card.identity));
   const inProgress = chineseCards.filter(card => !owned.has(card.identity) && statuses.has(card.identity));
   const wishlisted = chineseCards.filter(card => wishlist.has(card.identity));
   return { owned, statuses, wishlist, hidden, missing, inProgress, wishlisted };

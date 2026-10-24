@@ -4,7 +4,7 @@ import { useState } from "react";
 import CardImage from "@/components/CardImage";
 import { cardImagePaths, getMoonFourFront, getHeartswarmingEveFront } from "@/lib/card-images";
 import { HEARTHSWARMING_EVE_RARITIES, getHeartswarmingEveRarity, getHeartswarmingEveDisplayCode } from "@/lib/hearthswarming-eve";
-import { chineseSets, getChineseCard, isWideChineseCard } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
+import { chineseSets, getChineseCard, getChineseCardLabel, isWideChineseCard } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import ChineseISOImage from "@/pages/Chinese Kayou/Chinese ISO/components/card-image";
 export type TradeCard = {
   id: string;
@@ -243,7 +243,7 @@ const baseCode = setCodeMap[setId] || "";
 export const getListingDisplayCode = (card: { set_id: string; card_key: string }) => {
   const setId = String(card.set_id);
   if (setId === ENGLISH_MERCHANDISE_SET_ID) return `${profileViewName(profileViewGroup(card))} - ${profileViewCode(card)}`;
-  if (setId.startsWith("cn-")) return getChineseCard(setId, card.card_key)?.code ?? card.card_key;
+  if (setId.startsWith("cn-")) { const chineseCard = getChineseCard(setId, card.card_key); return chineseCard ? getChineseCardLabel(chineseCard) : card.card_key; }
   const key = card.card_key.replace(/^(?:BONUS|STARTER|STARTERS)-/, "");
   if (setId === "hearthswarming-eve") return getHeartswarmingEveDisplayCode(key);
   if (/^(?:MLPME|MLPSE|MLPEPR|FME|INT|RBE)\d/i.test(key)) return key;

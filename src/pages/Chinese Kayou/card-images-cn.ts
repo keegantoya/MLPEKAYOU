@@ -1,4 +1,4 @@
-import { CHINESE_MOON_ONE_CODES, CHINESE_MOON_TWO_CODES, CHINESE_MOON_THREE_CODES, CHINESE_MOON_FOUR_CODES, CHINESE_MOON_FIVE_CODES, CHINESE_MOON_SIX_CODES, CHINESE_MOON_SEVEN_CODES, CHINESE_MOON_EIGHT_CODES, CHINESE_MOON_NINE_CODES, CHINESE_MOON_TEN_CODES, CHINESE_MOON_ELEVEN_CODES, CHINESE_MOON_TWELVE_CODES, CHINESE_FUN_ONE_CODES, CHINESE_FUN_TWO_CODES, CHINESE_FUN_THREE_CODES, CHINESE_FUN_FOUR_CODES, CHINESE_FUN_FIVE_CODES, CHINESE_FUN_SIX_CODES, CHINESE_FUN_SEVEN_CODES, CHINESE_FUN_EIGHT_CODES, CHINESE_FUN_NINE_CODES, CHINESE_RAINBOW_ONE_CODES, CHINESE_RAINBOW_TWO_CODES, CHINESE_RAINBOW_THREE_CODES, CHINESE_RAINBOW_FOUR_CODES, CHINESE_RAINBOW_FIVE_CODES, CHINESE_STAR_ONE_CODES, CHINESE_STAR_TWO_CODES, CHINESE_STAR_THREE_CODES, CHINESE_PROMOS_CODES, CHINESE_STARDUST_ONE_CODES, CHINESE_STARDUST_TWO_CODES, CHINESE_MAGICBOOK_ONE_CODES, CHINESE_NEWYEARS_ONE_CODES, CHINESE_NEWYEARS_TWO_CODES } from "./Chinese Codes + Char/Chinese-Codes";
+import { CHINESE_MOON_ONE_CODES, CHINESE_MOON_TWO_CODES, CHINESE_MOON_THREE_CODES, CHINESE_MOON_FOUR_CODES, CHINESE_MOON_FIVE_CODES, CHINESE_MOON_SIX_CODES, CHINESE_MOON_SEVEN_CODES, CHINESE_MOON_EIGHT_CODES, CHINESE_MOON_NINE_CODES, CHINESE_MOON_TEN_CODES, CHINESE_MOON_ELEVEN_CODES, CHINESE_MOON_TWELVE_CODES, CHINESE_FUN_ONE_CODES, CHINESE_FUN_TWO_CODES, CHINESE_FUN_THREE_CODES, CHINESE_FUN_FOUR_CODES, CHINESE_FUN_FIVE_CODES, CHINESE_FUN_SIX_CODES, CHINESE_FUN_SEVEN_CODES, CHINESE_FUN_EIGHT_CODES, CHINESE_FUN_NINE_CODES, CHINESE_RAINBOW_ONE_CODES, CHINESE_RAINBOW_TWO_CODES, CHINESE_RAINBOW_THREE_CODES, CHINESE_RAINBOW_FOUR_CODES, CHINESE_RAINBOW_FIVE_CODES, CHINESE_STAR_ONE_CODES, CHINESE_STAR_TWO_CODES, CHINESE_STAR_THREE_CODES, CHINESE_PROMOS_CODES, CHINESE_STARDUST_ONE_CODES, CHINESE_STARDUST_TWO_CODES, CHINESE_MAGICBOOK_ONE_CODES, CHINESE_NEWYEARS_ONE_CODES, CHINESE_NEWYEARS_TWO_CODES, CHINESE_KUJI_RAFFLES_CODES } from "./Chinese Codes + Char/Chinese-Codes";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
@@ -52,7 +52,7 @@ export const cardImagePathsCN = {
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon Nine card code.");
         const filename = code === "DZR" ? "CN-M9-DZR.webp" : `CN-M9-${code}${index}.webp`;
-        return `${getChineseCardImage(`Chinese Sets/Moon-Nine-CN/${filename}`)}?v=${CN_MOON_NINE_IMAGE_REVISION}`;
+        return `${getChineseCardImage(`Chinese Sets/Moon-Nine-CN/${filename}`)}?v=${CN_MOON_NINE_IMAGE_REVISION}${code === "R" && index === 29 ? "&refresh=20261024-m9-r29-replaced-v1" : ""}`;
     },
     moonEight: (rarity: string, number: number | string): string => {
         const code = rarity.trim().toUpperCase();
@@ -324,6 +324,9 @@ export const CN_MAGICBOOK_ONE_CARDS = CHINESE_MAGICBOOK_ONE_CODES.map(card => ({
 export const CN_NEWYEARS_ONE_IMAGE_REVISION = "20261023-ny1-complete-24-v1";
 export const CN_NEWYEARS_ONE_SET_ID = "cn-newyears-one";
 export const CN_NEWYEARS_ONE_CARDS = CHINESE_NEWYEARS_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-One-CN/CN-NY1-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_ONE_IMAGE_REVISION}` }));
+export const CN_KUJI_RAFFLES_IMAGE_REVISION = "20261023-kuji-tickets-29-v1";
+export const CN_KUJI_RAFFLES_SET_ID = "cn-kuji-raffles";
+export const CN_KUJI_RAFFLES_CARDS = CHINESE_KUJI_RAFFLES_CODES.map(({ imageFile, ...card }) => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Kuji-Sets/${imageFile}`)}?v=${CN_KUJI_RAFFLES_IMAGE_REVISION}${/^KUJI3-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-all-replaced-v1" : /^KUJI2-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji2-all-replaced-v2" : imageFile === "KUJI2-TICKET20.webp" ? "&refresh=20261024-kuji2-ticket20-replaced-v1" : /^KUJI[1-4]-TICKET[0-9]+\.webp$/.test(imageFile) ? "&refresh=20261024-kuji-tickets-replaced-v3" : /^KUJI1-(?:B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji1-prizes-replaced-v1" : ""}` }));
 export const CN_NEWYEARS_TWO_IMAGE_REVISION = "20261023-ny2-complete-91-v1";
 export const CN_NEWYEARS_TWO_SET_ID = "cn-newyears-two";
 export const CN_NEWYEARS_TWO_CARDS = CHINESE_NEWYEARS_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-Two-CN/CN-NY2-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_TWO_IMAGE_REVISION}` }));

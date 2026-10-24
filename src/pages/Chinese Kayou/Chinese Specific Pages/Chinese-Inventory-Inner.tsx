@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { chineseCards, chineseSets, chineseRarityLabel, isWideChineseCard, type ChineseISOCard } from "../Chinese ISO/catalog/catalog";
+import { chineseCards, chineseSets, getChineseCardLabel, hasChineseCardCode, chineseRarityLabel, isWideChineseCard, type ChineseISOCard } from "../Chinese ISO/catalog/catalog";
 import { isChineseOwned } from "../Chinese ISO/data/model";
 import ChineseISOImage from "../Chinese ISO/components/card-image";
 type PageQuery = {
@@ -467,10 +467,10 @@ export default function ChineseInventoryInner() {
                 <div className="flex flex-col p-3 sm:p-6">
                   <div>
                     <div className={`text-[10px] font-medium uppercase tracking-[0.14em] sm:text-xs sm:tracking-[0.18em] ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
-                      Card identification code
+                      {hasChineseCardCode(selectedCard) ? "Card identification code" : "Prize details"}
                     </div>
                     <DialogTitle id="card-details-title" className="mt-0.5 text-lg font-bold sm:mt-1 sm:text-2xl">
-                      {selectedCard.code}
+                      {getChineseCardLabel(selectedCard)}
                     </DialogTitle>
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-5">
@@ -684,7 +684,7 @@ export default function ChineseInventoryInner() {
             <button type="button" onClick={() => void openBulkEdit()} disabled={loading || !!loadError || savingQuantities || isSavingCard || !ownedBonusCards.length} className="min-h-11 max-w-full rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-xs font-semibold text-[#806100] transition-colors hover:bg-[#E7C84B]/20 disabled:opacity-40 sm:px-4 sm:text-sm dark:text-[#E7C84B]">Bulk edit</button>
           </div>
         </section>
-        {showBulkEdit && <InventoryBulkEdit setId={set.id} setName={set.name} cards={ownedBonusCards} quantities={quantities} listings={marketListings} quantityTargets={{}} listingTargets={{}} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
+        {showBulkEdit && <InventoryBulkEdit setId={set.id} setName={set.name} merchandise={set.id === "cn-kuji-raffles"} cards={ownedBonusCards.map(card => ({ ...card, code: getChineseCardLabel(card) }))} quantities={quantities} listings={marketListings} quantityTargets={{}} listingTargets={{}} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
                 setQuantities(current => ({ ...current, [key]: quantity }));
                 setSavedQuantities(current => ({ ...current, [key]: quantity }));
                 setMarketListings(current => {
@@ -751,7 +751,7 @@ export default function ChineseInventoryInner() {
                             const key = card.key;
                             const listing = marketListings[key];
                             const isDoubleCard = isWideChineseCard(card);
-                            return (<div key={key} role="button" tabIndex={0} aria-label={`Edit ${card.code}`} onKeyDown={event => {
+                            return (<div key={key} role="button" tabIndex={0} aria-label={`Edit ${getChineseCardLabel(card)}`} onKeyDown={event => {
                                     if (event.target !== event.currentTarget)
                                         return;
                                     if (event.key === "Enter" || event.key === " ") {

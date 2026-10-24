@@ -3,7 +3,7 @@ import { profileViewCard as englishViewCard, profileViewEligible as englishViewE
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ProfileCardLanguageSwitch, usePublicChineseProfile, type ProfileCardLanguage } from "@/pages/Chinese Kayou/Chinese ISO/PublicChineseCards";
 import ChineseISOImage from "@/pages/Chinese Kayou/Chinese ISO/components/card-image";
-import { chineseSets, getChineseCard, isChineseSetId, isWideChineseCard, chineseRarityLabel } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
+import { chineseSets, getChineseCard, getChineseCardLabel, isChineseKujiPrize, isChineseSetId, isWideChineseCard, chineseRarityLabel } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
@@ -15,7 +15,7 @@ type CardImageCard = {
     set_id: string | number;
     card_key: string;
 };
-const isMerchandise = (card: CardImageCard | null | undefined) => !!card && englishViewCard(card)?.family === "merch";
+const isMerchandise = (card: CardImageCard | null | undefined) => !!card && (englishViewCard(card)?.family === "merch" || isChineseKujiPrize({ setId: String(card.set_id), key: card.card_key }));
 const getTradeCardImage = (card: CardImageCard) => getChineseCard(String(card.set_id), card.card_key)?.image ?? englishViewImage(card);
 type InventoryCard = {
     id: string;
@@ -56,7 +56,7 @@ const buildOfferState = (rows: any[]) => {
     return states;
 };
 const getCardImageClassName = (_card: CardImageCard, position: "block" | "absolute" = "block") => `${position === "absolute" ? "absolute inset-0" : "block"} h-full w-full max-w-none object-cover object-center`;
-const getProfileCardCode = (card: CardImageCard) => getChineseCard(String(card.set_id), card.card_key)?.code ?? englishViewCode(card);
+const getProfileCardCode = (card: CardImageCard) => { const chineseCard = getChineseCard(String(card.set_id), card.card_key); return chineseCard ? getChineseCardLabel(chineseCard) : englishViewCode(card); };
 type SafeCardImageProps = {
     card?: CardImageCard;
     imageSize?: "grid" | "original";
