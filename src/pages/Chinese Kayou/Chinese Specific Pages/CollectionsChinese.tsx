@@ -12,6 +12,7 @@ type ChineseCollection = {
   cardKeys: string[];
   rarities: string;
   catalogComplete: boolean;
+  imageUrl?: string;
 };
 const collections: ChineseCollection[] = chineseSets.map(set => ({
   id: set.id,
@@ -19,6 +20,7 @@ const collections: ChineseCollection[] = chineseSets.map(set => ({
   edition: "",
   category: set.family === "moon" ? "eternal-moon" : set.family === "fun" ? "fun-moments" : set.family,
   href: set.href,
+  imageUrl: set.imageUrl,
   cardKeys: set.cards.map(card => card.key),
   rarities: Array.from(new Set(set.cards.map(card => chineseRarityLabel(card.rarity)))).join(" / "),
   catalogComplete: true,
@@ -136,7 +138,7 @@ const totalCardsAvailable = total;
 const completionRate = percent;
 const activeCategory = category;
 const setActiveCategory = setCategory;
-const categoryOptions = [{ label: "Moon", value: "eternal-moon" }, { label: "Fun Moments", value: "fun-moments" }, { label: "Rainbow", value: "rainbow" }, { label: "Star", value: "star" }, { label: "Gift Sets", value: "other" }, { label: "Promos", value: "promos" }, { label: "Not Collecting", value: "not-collecting" }];
+const categoryOptions = [{ label: "Moon", value: "eternal-moon" }, { label: "Fun Moments", value: "fun-moments" }, { label: "Rainbow", value: "rainbow" }, { label: "Star", value: "star" }, { label: "Gift Sets", value: "other" }, { label: "Other", value: "misc" }, { label: "Promos", value: "promos" }, { label: "Not Collecting", value: "not-collecting" }];
   return (
     <div className={`collections-workspace min-h-screen pb-24 font-['Oxanium'] transition-colors duration-200 sm:pb-10 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <main className="w-full max-w-none px-4 py-5 sm:px-6 sm:py-8">
@@ -168,11 +170,12 @@ const categoryOptions = [{ label: "Moon", value: "eternal-moon" }, { label: "Fun
             <div className="collections-results"><h2>{searchingCode ? "Code matches" : categoryOptions.find(item => item.value === activeCategory)?.label || "Collections"}</h2><span>{visibleSets.length} {visibleSets.length === 1 ? "set" : "sets"}</span></div>
             {error && <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-500/30 p-4 text-sm"><span>{error}</span><button type="button" onClick={() => setRetry(value => value + 1)} className="inline-flex min-h-10 items-center gap-2 rounded-full border px-4"><RefreshCw size={14} /> Retry</button></div>}
             {loading && <p role="status" className="mb-4 text-sm text-zinc-500">Loading your collection progress...</p>}
-            {visibleSets.length === 0 ? <div className={`rounded-2xl border border-dashed p-10 text-center text-sm ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-500" : "border-white/10 bg-white/[0.03] text-zinc-400"}`}>{searchingCode ? "No Chinese sets contain that card code. Try a shorter code or check the spelling." : category === "not-collecting" ? "Sets marked as not collecting will appear here." : "No sets to show with the current filters."}</div> : <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(auto-fill,minmax(165px,1fr))]">
+            {visibleSets.length === 0 ? <div className={`rounded-2xl border border-dashed p-10 text-center text-sm ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-500" : "border-white/10 bg-white/[0.03] text-zinc-400"}`}>{searchingCode ? "No Chinese sets contain that card code. Try a shorter code or check the spelling." : category === "not-collecting" ? "Sets marked as not collecting will appear here." : "No sets to show with the current filters."}</div> : <div className="cn-set-bars">
               {visibleSets.map((set, index) => {
 const collected = counts[set.id] ?? 0;
 const setPercent = set.cardKeys.length ? Math.min(100, Math.floor(collected / set.cardKeys.length * 100)) : 0;
                 return <Link key={set.id} to={set.href} aria-label={`Open Chinese ${set.title} ${set.edition}`} className="collection-tile collection-grid-item" data-code-match={searchingCode ? "true" : undefined} style={{ "--entry-delay": `${Math.min(index, 8) * 25}ms` } as CSSProperties}>
+                  {set.imageUrl && <div className="cn-set-thumbnail" aria-hidden="true"><img src={set.imageUrl} alt="" loading="lazy" decoding="async" draggable={false} onError={event => { event.currentTarget.parentElement?.setAttribute("hidden", ""); }} /></div>}
                   <div className="collection-tile-body">
                     <div className="collection-tile-title"><h2>{set.title} {set.edition}</h2></div>{searchingCode && <div className="cn-code-match-detail"><p>{matchedCodes.get(set.id)?.slice(0, 2).join(" / ")}{(matchedCodes.get(set.id)?.length ?? 0) > 2 ? ` +${matchedCodes.get(set.id)!.length - 2} more` : ""}</p>{notCollectingIds.has(set.id) && <span>Not collecting</span>}</div>}
                     <div className="collection-tile-progress">
@@ -279,11 +282,11 @@ html[data-theme="light"] .catalog-filter{color:#4d5158}
 @media(prefers-reduced-motion:reduce){.catalog-filter *,.catalog-filter *:before{transition:none!important}}
     `}</style>
       <style>{`
-.collection-tile{display:block;height:100%;overflow:hidden;border:1px solid #ffffff13;border-radius:16px;background:#191b1e;color:#f4f4f5;text-decoration:none;transition:border-color .2s,box-shadow .2s;--tile-muted:#92969e;--tile-accent:hsl(var(--primary))}
+.cn-set-bars{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px}.collection-tile{display:flex;align-items:stretch;min-width:0;min-height:112px;height:100%;overflow:hidden;border:1px solid #ffffff13;border-radius:16px;background:#191b1e;color:#f4f4f5;text-decoration:none;transition:border-color .2s,box-shadow .2s;--tile-muted:#92969e;--tile-accent:hsl(var(--primary))}
 html[data-theme="light"] .collection-tile{background:#fff;color:#202226;border-color:#00000015;--tile-muted:#70747c}
 .collection-tile-art{position:relative;aspect-ratio:4/3;overflow:hidden;background:#00000009}
 .collection-tile-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .35s ease}
-.collection-tile-body{padding:10px}
+.cn-set-thumbnail{position:relative;flex:0 0 104px;align-self:stretch;overflow:hidden}.cn-set-thumbnail[hidden]{display:none}.cn-set-thumbnail img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center}.collection-tile-body{flex:1;min-width:0;align-self:center;padding:12px}
 .collection-tile-title{min-height:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
 .collection-tile-title h2{margin:0;font-size:13px;line-height:1.3;font-weight:650;letter-spacing:-.025em}
 .collection-tile-progress{margin-top:8px;padding-top:8px;border-top:1px solid #80808026}
@@ -298,7 +301,7 @@ html[data-theme="light"] .collection-tile{background:#fff;color:#202226;border-c
 .collection-tile-detail>svg{color:var(--tile-accent)}
 .collection-tile:focus-visible{outline:2px solid var(--tile-accent);outline-offset:3px}
 @media(hover:hover){.collection-tile:hover{border-color:var(--tile-accent);box-shadow:0 8px 25px #0002}.collection-tile:hover .collection-tile-image{transform:scale(1.035)}.collection-tile:hover .collection-tile-detail>span:last-child{color:var(--tile-accent)}}
-@media(max-width:480px){.collection-tile-body{padding:9px}.collection-tile-title h2{font-size:13px}.collection-tile-count>span>strong{font-size:17px}.collection-tile-detail{font-size:8px}}
+@media(max-width:480px){.cn-set-thumbnail{flex-basis:96px}.collection-tile-body{padding:10px}.collection-tile-title h2{font-size:13px}.collection-tile-count>span>strong{font-size:17px}.collection-tile-detail{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.collection-tile,.collection-tile *{transition:none!important}}
 .cn-code-search{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-bottom:12px;min-width:0;color:hsl(var(--foreground))}.cn-code-search>label{display:flex;align-items:center;gap:8px;width:min(100%,320px);min-width:0;border-bottom:1px solid #80808040;color:var(--collections-muted)}.cn-code-search input{width:100%;min-width:0;min-height:40px;padding:6px 0;border:0;outline:none;background:transparent;color:inherit;font:inherit;font-size:16px}.cn-code-search input::placeholder{font-size:13px}.cn-code-search input::-webkit-search-cancel-button{-webkit-appearance:none}.cn-code-search label:focus-within{border-color:hsl(var(--primary));color:hsl(var(--primary))}.cn-code-search>button{display:flex;align-items:center;justify-content:center;min-height:40px;width:34px;border:0;background:transparent;color:var(--collections-muted);border-radius:6px}.cn-code-search>button:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:2px}.cn-code-search>span{font-size:11px;color:var(--collections-muted)}.collection-tile[data-code-match="true"]{border-color:hsl(var(--primary));box-shadow:0 0 0 1px hsl(var(--primary)/.35),0 0 22px hsl(var(--primary)/.2)}.cn-code-match-detail{margin-top:7px;font-size:10px;line-height:1.5;color:hsl(var(--primary));overflow-wrap:anywhere}.cn-code-match-detail p{margin:0}.cn-code-match-detail>span{display:block;margin-top:3px;color:var(--tile-muted);font-size:9px}
       `}</style>

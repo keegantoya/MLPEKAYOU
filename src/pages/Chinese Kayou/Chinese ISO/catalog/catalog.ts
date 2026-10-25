@@ -6,11 +6,11 @@ import { CN_MOON_FOUR_CARDS, CN_MOON_FOUR_SET_ID } from "../../Chinese Sets/Moon
 import { CN_MOON_FIVE_CARDS, CN_MOON_FIVE_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-Five";
 import { CN_MOON_SIX_CARDS, CN_MOON_SIX_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-Six";
 import { getChineseMoonFourHRImageNumber, CN_MOON_SEVEN_CARDS, CN_MOON_SEVEN_SET_ID, CN_MOON_EIGHT_CARDS, CN_MOON_EIGHT_SET_ID, CN_MOON_NINE_CARDS, CN_MOON_NINE_SET_ID, CN_MOON_TEN_CARDS, CN_MOON_TEN_SET_ID, CN_MOON_ELEVEN_CARDS, CN_MOON_ELEVEN_SET_ID, CN_MOON_TWELVE_CARDS, CN_MOON_TWELVE_SET_ID, CN_FUN_ONE_CARDS, CN_FUN_ONE_SET_ID, CN_FUN_TWO_CARDS, CN_FUN_TWO_SET_ID, CN_FUN_THREE_CARDS, CN_FUN_THREE_SET_ID, CN_FUN_FOUR_CARDS, CN_FUN_FOUR_SET_ID, CN_FUN_FIVE_CARDS, CN_FUN_FIVE_SET_ID, CN_FUN_SIX_CARDS, CN_FUN_SIX_SET_ID, CN_FUN_SEVEN_CARDS, CN_FUN_SEVEN_SET_ID, CN_FUN_EIGHT_CARDS, CN_FUN_EIGHT_SET_ID, CN_FUN_NINE_CARDS, CN_FUN_NINE_SET_ID, CN_RAINBOW_ONE_CARDS, CN_RAINBOW_ONE_SET_ID, CN_RAINBOW_TWO_CARDS, CN_RAINBOW_TWO_SET_ID, CN_RAINBOW_THREE_CARDS, CN_RAINBOW_THREE_SET_ID, CN_RAINBOW_FOUR_CARDS, CN_RAINBOW_FOUR_SET_ID, CN_RAINBOW_FIVE_CARDS, CN_RAINBOW_FIVE_SET_ID, CN_STAR_ONE_CARDS, CN_STAR_ONE_SET_ID, CN_STAR_TWO_CARDS, CN_STAR_TWO_SET_ID, CN_STAR_THREE_CARDS, CN_STAR_THREE_SET_ID, CN_PROMOS_CARDS, CN_PROMOS_SET_ID, CN_STARDUST_ONE_CARDS, CN_STARDUST_ONE_SET_ID, CN_STARDUST_TWO_CARDS, CN_STARDUST_TWO_SET_ID, CN_MAGICBOOK_ONE_CARDS, CN_MAGICBOOK_ONE_SET_ID, CN_NEWYEARS_ONE_CARDS, CN_NEWYEARS_ONE_SET_ID, CN_NEWYEARS_TWO_CARDS, CN_NEWYEARS_TWO_SET_ID, CN_KUJI_RAFFLES_CARDS, CN_KUJI_RAFFLES_SET_ID, CN_LASER_TICKETS_CARDS, CN_LASER_TICKETS_SET_ID } from "../../card-images-cn";
-export type ChineseFamily = "moon" | "fun" | "rainbow" | "star" | "promos" | "other";
+export type ChineseFamily = "moon" | "fun" | "rainbow" | "star" | "promos" | "other" | "misc";
 export type ChineseCard = { key: string; rarity: string; number: number; code: string; image: string; displayName?: string };
-export type ChineseSet = { id: string; name: string; family: ChineseFamily; href: string; cards: ChineseCard[]; imageStyle?: (key: string) => CSSProperties; wideKeys?: string[] };
+export type ChineseSet = { id: string; name: string; family: ChineseFamily; href: string; imageUrl?: string; cards: ChineseCard[]; imageStyle?: (key: string) => CSSProperties; wideKeys?: string[] };
 export type ChineseISOCard = ChineseCard & { setId: string; setName: string; family: ChineseFamily; identity: string };
-export const chineseFamilies: { id: ChineseFamily; name: string }[] = [{ id: "moon", name: "Moon" }, { id: "fun", name: "Fun Moments" }, { id: "rainbow", name: "Rainbow" }, { id: "star", name: "Star" }, { id: "promos", name: "Promos" }, { id: "other", name: "Gift Sets" }];
+export const chineseFamilies: { id: ChineseFamily; name: string }[] = [{ id: "moon", name: "Moon" }, { id: "fun", name: "Fun Moments" }, { id: "rainbow", name: "Rainbow" }, { id: "star", name: "Star" }, { id: "promos", name: "Promos" }, { id: "other", name: "Gift Sets" }, { id: "misc", name: "Other" }];
 export const CHINESE_KUJI_TICKET_ZOOM = 1.05;
 const kujiTicketZooms: Record<string, number> = {
   "3-TICKET-1": 1.03,
@@ -73,43 +73,43 @@ function laserTicketsImageStyle(key: string): CSSProperties {
   return { transform: "rotate(180deg)", transformOrigin: "center", objectFit: "contain" };
 }
 export const chineseSets: ChineseSet[] = [
-  { id: CN_MOON_ONE_SET_ID, name: "Moon One", family: "moon", href: "/cn-moon-one", cards: CN_MOON_ONE_CARDS },
-  { id: CN_MOON_TWO_SET_ID, name: "Moon Two", family: "moon", href: "/cn-moon-two", cards: CN_MOON_TWO_CARDS },
-  { id: CN_MOON_THREE_SET_ID, name: "Moon Three", family: "moon", href: "/cn-moon-three", cards: CN_MOON_THREE_CARDS },
-  { id: CN_MOON_FOUR_SET_ID, name: "Moon Four", family: "moon", href: "/cn-moon-four", cards: CN_MOON_FOUR_CARDS },
-  { id: CN_MOON_FIVE_SET_ID, name: "Moon Five", family: "moon", href: "/cn-moon-five", cards: CN_MOON_FIVE_CARDS },
-  { id: CN_MOON_SIX_SET_ID, name: "Moon Six", family: "moon", href: "/cn-moon-six", cards: CN_MOON_SIX_CARDS },
-  { id: CN_MOON_SEVEN_SET_ID, name: "Moon Seven", family: "moon", href: "/cn-moon-seven", cards: CN_MOON_SEVEN_CARDS },
-  { id: CN_MOON_EIGHT_SET_ID, name: "Moon Eight", family: "moon", href: "/cn-moon-eight", cards: CN_MOON_EIGHT_CARDS },
-  { id: CN_MOON_NINE_SET_ID, name: "Moon Nine", family: "moon", href: "/cn-moon-nine", cards: CN_MOON_NINE_CARDS, wideKeys: ["DZR-1"] },
-  { id: CN_MOON_TEN_SET_ID, name: "Moon Ten", family: "moon", href: "/cn-moon-ten", cards: CN_MOON_TEN_CARDS },
-  { id: CN_MOON_ELEVEN_SET_ID, name: "Moon Eleven", family: "moon", href: "/cn-moon-eleven", cards: CN_MOON_ELEVEN_CARDS },
-  { id: CN_MOON_TWELVE_SET_ID, name: "Moon Twelve", family: "moon", href: "/cn-moon-twelve", cards: CN_MOON_TWELVE_CARDS },
-  { id: CN_FUN_ONE_SET_ID, name: "Fun Moments One", family: "fun", href: "/cn-fun-one", cards: CN_FUN_ONE_CARDS },
-  { id: CN_FUN_TWO_SET_ID, name: "Fun Moments Two", family: "fun", href: "/cn-fun-two", cards: CN_FUN_TWO_CARDS },
-  { id: CN_FUN_THREE_SET_ID, name: "Fun Moments Three", family: "fun", href: "/cn-fun-three", cards: CN_FUN_THREE_CARDS },
-  { id: CN_FUN_FOUR_SET_ID, name: "Fun Moments Four", family: "fun", href: "/cn-fun-four", cards: CN_FUN_FOUR_CARDS },
-  { id: CN_FUN_FIVE_SET_ID, name: "Fun Moments Five", family: "fun", href: "/cn-fun-five", cards: CN_FUN_FIVE_CARDS },
-  { id: CN_FUN_SIX_SET_ID, name: "Fun Moments Six", family: "fun", href: "/cn-fun-six", cards: CN_FUN_SIX_CARDS },
-  { id: CN_FUN_SEVEN_SET_ID, name: "Fun Moments Seven", family: "fun", href: "/cn-fun-seven", cards: CN_FUN_SEVEN_CARDS },
-  { id: CN_FUN_EIGHT_SET_ID, name: "Fun Moments Eight", family: "fun", href: "/cn-fun-eight", cards: CN_FUN_EIGHT_CARDS },
-  { id: CN_FUN_NINE_SET_ID, name: "Fun Moments Nine", family: "fun", href: "/cn-fun-nine", cards: CN_FUN_NINE_CARDS },
-  { id: CN_RAINBOW_ONE_SET_ID, name: "Rainbow One", family: "rainbow", href: "/cn-rainbow-one", cards: CN_RAINBOW_ONE_CARDS },
-  { id: CN_RAINBOW_TWO_SET_ID, name: "Rainbow Two", family: "rainbow", href: "/cn-rainbow-two", cards: CN_RAINBOW_TWO_CARDS },
-  { id: CN_RAINBOW_THREE_SET_ID, name: "Rainbow Three", family: "rainbow", href: "/cn-rainbow-three", cards: CN_RAINBOW_THREE_CARDS },
-  { id: CN_RAINBOW_FOUR_SET_ID, name: "Rainbow Four", family: "rainbow", href: "/cn-rainbow-four", cards: CN_RAINBOW_FOUR_CARDS },
-  { id: CN_RAINBOW_FIVE_SET_ID, name: "Rainbow Five", family: "rainbow", href: "/cn-rainbow-five", cards: CN_RAINBOW_FIVE_CARDS },
-  { id: CN_STAR_ONE_SET_ID, name: "Star One", family: "star", href: "/cn-star-one", cards: CN_STAR_ONE_CARDS },
-  { id: CN_STAR_TWO_SET_ID, name: "Star Two", family: "star", href: "/cn-star-two", cards: CN_STAR_TWO_CARDS },
-  { id: CN_STAR_THREE_SET_ID, name: "Star Three", family: "star", href: "/cn-star-three", cards: CN_STAR_THREE_CARDS },
-  { id: CN_STARDUST_ONE_SET_ID, name: "Stardust One", family: "other", href: "/cn-stardust-one", cards: CN_STARDUST_ONE_CARDS, imageStyle: stardustOneImageStyle },
-  { id: CN_STARDUST_TWO_SET_ID, name: "Stardust Two", family: "other", href: "/cn-stardust-two", cards: CN_STARDUST_TWO_CARDS, imageStyle: stardustTwoImageStyle },
-  { id: CN_MAGICBOOK_ONE_SET_ID, name: "Equestria Girls: Magic Book", family: "other", href: "/cn-magicbook-one", cards: CN_MAGICBOOK_ONE_CARDS, imageStyle: magicBookOneImageStyle },
-  { id: CN_NEWYEARS_ONE_SET_ID, name: "New Years One", family: "other", href: "/cn-newyears-one", cards: CN_NEWYEARS_ONE_CARDS, imageStyle: newYearsOneImageStyle },
-  { id: CN_NEWYEARS_TWO_SET_ID, name: "New Years Two", family: "other", href: "/cn-newyears-two", cards: CN_NEWYEARS_TWO_CARDS, imageStyle: newYearsTwoImageStyle },
-  { id: CN_KUJI_RAFFLES_SET_ID, name: "Kuji Raffles", family: "other", href: "/cn-kuji-raffles", cards: CN_KUJI_RAFFLES_CARDS, imageStyle: kujiRafflesImageStyle },
-  { id: CN_LASER_TICKETS_SET_ID, name: "Laser Tickets", family: "other", href: "/cn-laser-tickets", cards: CN_LASER_TICKETS_CARDS, imageStyle: laserTicketsImageStyle },
-  { id: CN_PROMOS_SET_ID, name: "All Promotional Cards", family: "promos", href: "/cn-promos", cards: CN_PROMOS_CARDS },
+  { id: CN_MOON_ONE_SET_ID, name: "Moon One", family: "moon", href: "/cn-moon-one", imageUrl: "/Chinese-Thumbnails/moon1setimagecn.webp", cards: CN_MOON_ONE_CARDS },
+  { id: CN_MOON_TWO_SET_ID, name: "Moon Two", family: "moon", href: "/cn-moon-two", imageUrl: "/Chinese-Thumbnails/moon2setimagecn.webp", cards: CN_MOON_TWO_CARDS },
+  { id: CN_MOON_THREE_SET_ID, name: "Moon Three", family: "moon", href: "/cn-moon-three", imageUrl: "/Chinese-Thumbnails/moon3setimagecn.webp", cards: CN_MOON_THREE_CARDS },
+  { id: CN_MOON_FOUR_SET_ID, name: "Moon Four", family: "moon", href: "/cn-moon-four", imageUrl: "/Chinese-Thumbnails/moon4setimagecn.webp", cards: CN_MOON_FOUR_CARDS },
+  { id: CN_MOON_FIVE_SET_ID, name: "Moon Five", family: "moon", href: "/cn-moon-five", imageUrl: "/Chinese-Thumbnails/moon5setimagecn.webp", cards: CN_MOON_FIVE_CARDS },
+  { id: CN_MOON_SIX_SET_ID, name: "Moon Six", family: "moon", href: "/cn-moon-six", imageUrl: "/Chinese-Thumbnails/moon6setimagecn.webp", cards: CN_MOON_SIX_CARDS },
+  { id: CN_MOON_SEVEN_SET_ID, name: "Moon Seven", family: "moon", href: "/cn-moon-seven", imageUrl: "/thumbnails/moononesetimage.webp", cards: CN_MOON_SEVEN_CARDS },
+  { id: CN_MOON_EIGHT_SET_ID, name: "Moon Eight", family: "moon", href: "/cn-moon-eight", imageUrl: "/thumbnails/moontwosetimage.webp", cards: CN_MOON_EIGHT_CARDS },
+  { id: CN_MOON_NINE_SET_ID, name: "Moon Nine", family: "moon", href: "/cn-moon-nine", imageUrl: "/thumbnails/moonthreesetimage.webp", cards: CN_MOON_NINE_CARDS, wideKeys: ["DZR-1"] },
+  { id: CN_MOON_TEN_SET_ID, name: "Moon Ten", family: "moon", href: "/cn-moon-ten", imageUrl: "/Chinese-Thumbnails/moon10setimagecn.webp", cards: CN_MOON_TEN_CARDS },
+  { id: CN_MOON_ELEVEN_SET_ID, name: "Moon Eleven", family: "moon", href: "/cn-moon-eleven", imageUrl: "/thumbnails/moonfoursetimage.webp", cards: CN_MOON_ELEVEN_CARDS },
+  { id: CN_MOON_TWELVE_SET_ID, name: "Moon Twelve", family: "moon", href: "/cn-moon-twelve", imageUrl: "/Chinese-Thumbnails/moon12setimagecn.webp", cards: CN_MOON_TWELVE_CARDS },
+  { id: CN_FUN_ONE_SET_ID, name: "Fun Moments One", family: "fun", href: "/cn-fun-one", imageUrl: "/Chinese-Thumbnails/funmoments1setimagecn.webp", cards: CN_FUN_ONE_CARDS },
+  { id: CN_FUN_TWO_SET_ID, name: "Fun Moments Two", family: "fun", href: "/cn-fun-two", imageUrl: "/Chinese-Thumbnails/funmoments2setimagecn.webp", cards: CN_FUN_TWO_CARDS },
+  { id: CN_FUN_THREE_SET_ID, name: "Fun Moments Three", family: "fun", href: "/cn-fun-three", imageUrl: "/Chinese-Thumbnails/funmoments3setimagecn.webp", cards: CN_FUN_THREE_CARDS },
+  { id: CN_FUN_FOUR_SET_ID, name: "Fun Moments Four", family: "fun", href: "/cn-fun-four", imageUrl: "/thumbnails/funonesetimage.webp", cards: CN_FUN_FOUR_CARDS },
+  { id: CN_FUN_FIVE_SET_ID, name: "Fun Moments Five", family: "fun", href: "/cn-fun-five", imageUrl: "/thumbnails/funtwosetimage.webp", cards: CN_FUN_FIVE_CARDS },
+  { id: CN_FUN_SIX_SET_ID, name: "Fun Moments Six", family: "fun", href: "/cn-fun-six", imageUrl: "/thumbnails/funthreesetimage.webp", cards: CN_FUN_SIX_CARDS },
+  { id: CN_FUN_SEVEN_SET_ID, name: "Fun Moments Seven", family: "fun", href: "/cn-fun-seven", imageUrl: "/Chinese-Thumbnails/funmoments7setimagecn.webp", cards: CN_FUN_SEVEN_CARDS },
+  { id: CN_FUN_EIGHT_SET_ID, name: "Fun Moments Eight", family: "fun", href: "/cn-fun-eight", imageUrl: "/Chinese-Thumbnails/funmoments8setimagecn.webp", cards: CN_FUN_EIGHT_CARDS },
+  { id: CN_FUN_NINE_SET_ID, name: "Fun Moments Nine", family: "fun", href: "/cn-fun-nine", imageUrl: "/Chinese-Thumbnails/funmoments9setimagecn.webp", cards: CN_FUN_NINE_CARDS },
+  { id: CN_RAINBOW_ONE_SET_ID, name: "Rainbow One", family: "rainbow", href: "/cn-rainbow-one", imageUrl: "/Chinese-Thumbnails/rainbow1setimagecn.webp", cards: CN_RAINBOW_ONE_CARDS },
+  { id: CN_RAINBOW_TWO_SET_ID, name: "Rainbow Two", family: "rainbow", href: "/cn-rainbow-two", imageUrl: "/Chinese-Thumbnails/rainbow2setimagecn.webp", cards: CN_RAINBOW_TWO_CARDS },
+  { id: CN_RAINBOW_THREE_SET_ID, name: "Rainbow Three", family: "rainbow", href: "/cn-rainbow-three", imageUrl: "/Chinese-Thumbnails/rainbow3setimagecn.webp", cards: CN_RAINBOW_THREE_CARDS },
+  { id: CN_RAINBOW_FOUR_SET_ID, name: "Rainbow Four", family: "rainbow", href: "/cn-rainbow-four", imageUrl: "/thumbnails/rainbowonesetimage.webp", cards: CN_RAINBOW_FOUR_CARDS },
+  { id: CN_RAINBOW_FIVE_SET_ID, name: "Rainbow Five", family: "rainbow", href: "/cn-rainbow-five", imageUrl: "/thumbnails/rainbowtwosetimage.webp", cards: CN_RAINBOW_FIVE_CARDS },
+  { id: CN_STAR_ONE_SET_ID, name: "Star One", family: "star", href: "/cn-star-one", imageUrl: "/Chinese-Thumbnails/star1setimagecn.webp", cards: CN_STAR_ONE_CARDS },
+  { id: CN_STAR_TWO_SET_ID, name: "Star Two", family: "star", href: "/cn-star-two", imageUrl: "/thumbnails/staronesetimage.webp", cards: CN_STAR_TWO_CARDS },
+  { id: CN_STAR_THREE_SET_ID, name: "Star Three", family: "star", href: "/cn-star-three", imageUrl: "/Chinese-Thumbnails/star3setimagecn.webp", cards: CN_STAR_THREE_CARDS },
+  { id: CN_STARDUST_ONE_SET_ID, name: "Stardust One", family: "other", href: "/cn-stardust-one", imageUrl: "/Chinese-Thumbnails/stardust1setimagecn.webp", cards: CN_STARDUST_ONE_CARDS, imageStyle: stardustOneImageStyle },
+  { id: CN_STARDUST_TWO_SET_ID, name: "Stardust Two", family: "other", href: "/cn-stardust-two", imageUrl: "/Chinese-Thumbnails/stardust2setimagecn.webp", cards: CN_STARDUST_TWO_CARDS, imageStyle: stardustTwoImageStyle },
+  { id: CN_MAGICBOOK_ONE_SET_ID, name: "Equestria Girls: Magic Book", family: "other", href: "/cn-magicbook-one", imageUrl: "/Chinese-Thumbnails/equestriagirls1setimagecn.webp", cards: CN_MAGICBOOK_ONE_CARDS, imageStyle: magicBookOneImageStyle },
+  { id: CN_NEWYEARS_ONE_SET_ID, name: "New Years One", family: "other", href: "/cn-newyears-one", imageUrl: "/Chinese-Thumbnails/newyears1setimagecn.webp", cards: CN_NEWYEARS_ONE_CARDS, imageStyle: newYearsOneImageStyle },
+  { id: CN_NEWYEARS_TWO_SET_ID, name: "New Years Two", family: "other", href: "/cn-newyears-two", imageUrl: "/Chinese-Thumbnails/newyears2setimagecn.webp", cards: CN_NEWYEARS_TWO_CARDS, imageStyle: newYearsTwoImageStyle },
+  { id: CN_KUJI_RAFFLES_SET_ID, name: "Kuji Raffles", family: "misc", href: "/cn-kuji-raffles", imageUrl: "/Chinese-Thumbnails/kujisetimagecn.webp", cards: CN_KUJI_RAFFLES_CARDS, imageStyle: kujiRafflesImageStyle },
+  { id: CN_LASER_TICKETS_SET_ID, name: "Laser Tickets", family: "misc", href: "/cn-laser-tickets", imageUrl: "/Chinese-Thumbnails/ticketsetimagecn.webp", cards: CN_LASER_TICKETS_CARDS, imageStyle: laserTicketsImageStyle },
+  { id: CN_PROMOS_SET_ID, name: "All Promotional Cards", family: "promos", href: "/cn-promos", imageUrl: "/Chinese-Thumbnails/promossetimagecn.webp", cards: CN_PROMOS_CARDS },
  ];
 export const chineseCards: ChineseISOCard[] = chineseSets.flatMap(set => set.cards.map(card => ({ ...card, setId: set.id, setName: set.name, family: set.family, identity: `${set.id}:${card.key}` })));
 export const chineseCardsByIdentity = new Map(chineseCards.map(card => [card.identity, card]));

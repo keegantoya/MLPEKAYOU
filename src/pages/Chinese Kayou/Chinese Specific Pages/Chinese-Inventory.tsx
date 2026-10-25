@@ -12,6 +12,13 @@ type Listing = {
     trade_quantity: number;
     sale_quantity: number;
 };
+function ChineseInventoryPreview({ imageUrl, card }: { imageUrl?: string; card?: ChineseISOCard }) {
+    const [failed, setFailed] = useState(false);
+    if (imageUrl && !failed) {
+        return <img src={imageUrl} alt="" loading="lazy" decoding="async" draggable={false} className="block aspect-[5/7] w-full object-cover object-center" onError={() => setFailed(true)} />;
+    }
+    return card ? <span className="block w-full"><ChineseISOImage card={card}/></span> : null;
+}
 export default function ChineseInventory() {
     const [previewSeed] = useState(() => Math.floor(Math.random() * 0x100000000));
     const [userId, setUserId] = useState("");
@@ -131,7 +138,7 @@ export default function ChineseInventory() {
         listed: listingCounts.get(set.id) ?? 0,
         hidden: hiddenSets.includes(set.id),
         available: counts.has(set.id),
-        preview: previewCards.has(set.id) ? <span className="block w-full"><ChineseISOImage card={previewCards.get(set.id)!}/></span> : undefined,
+        preview: set.imageUrl || previewCards.has(set.id) ? <ChineseInventoryPreview key={`${set.id}:${set.imageUrl ?? "owned"}`} imageUrl={set.imageUrl} card={previewCards.get(set.id)} /> : undefined,
     }));
     return <InventoryOverview title="Chinese Inventory" categories={chineseFamilies} category={family} onCategoryChange={setFamily} sets={sets} loading={loading} listingsLoading={listingLoading} error={error} checklistHref="/collections-chinese" onRetry={() => setRetry(value => value + 1)}/>;
 }

@@ -65,12 +65,10 @@ type SafeCardImageProps = {
     alt: string;
     className: string;
 };
-const SafeCardImage = ({ src, alt, className, imageSize, card }: SafeCardImageProps) => {
+const SafeCardImage = (props: SafeCardImageProps) => <ProfileCardImageSource key={JSON.stringify([props.card ? getProfileCardIdentity(props.card) : "", props.src, props.imageSize ?? "grid"])} {...props}/>;
+const ProfileCardImageSource = ({ src, alt, className, imageSize, card }: SafeCardImageProps) => {
     const [failed, setFailed] = useState(false);
     const resolvedImageSize = imageSize ?? (card && englishViewCard(card)?.original ? "original" : "grid");
-    useEffect(() => {
-        setFailed(false);
-    }, [src]);
     const chineseCard = card ? getChineseCard(String(card.set_id), card.card_key) : undefined;
     if (chineseCard)
         return <span className={className} style={{ display: "block", position: className.includes("absolute") ? "absolute" : "relative" }}><ChineseISOImage card={chineseCard}/></span>;
@@ -81,7 +79,7 @@ const SafeCardImage = ({ src, alt, className, imageSize, card }: SafeCardImagePr
         </span>
       </div>);
     }
-    return (<CardImage publicProfile imageSize={resolvedImageSize} src={src} alt={alt} className={className} style={card ? englishViewStyle(card) : { backgroundColor: "transparent", backgroundImage: "none" }} onError={() => setFailed(true)}/>);
+    return (<CardImage publicProfile draggable={false} imageSize={resolvedImageSize} src={src} alt={alt} className={className} style={card ? englishViewStyle(card) : { backgroundColor: "transparent", backgroundImage: "none" }} onError={() => setFailed(true)}/>);
 };
 interface ExploreProfileProps {
     user: any;
@@ -942,23 +940,23 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
           {sectionError ? <div role="alert" className="p-10 text-center text-sm text-zinc-500">{sectionError}<button type="button" onClick={chineseProfile.refresh} className="ml-2 underline">Retry</button></div> : selectedSection === "iso" ? (activeProfileSettings.hide_iso ? (<div className={`p-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
                 This Superfan has hidden their ISO.
               </div>) : (<>
-                <div className="p-3 sm:p-5">
+                <div key={JSON.stringify([user?.id, showChineseCards ? "chinese" : "english", "iso", selectedSet])} className="p-3 sm:p-5" style={{ isolation: "isolate", contain: "paint" }}>
                   {filteredIsoCards.length === 0 ? (<div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                       No cards to show.
-                    </div>) : (<div key={JSON.stringify([user?.id, showChineseCards ? "chinese" : "english", "iso", selectedSet])} className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
-                      {filteredIsoCards.map((card) => (<button key={getProfileCardIdentity(card)} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
+                    </div>) : (<div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
+                      {filteredIsoCards.map((card) => (<button key={getProfileCardIdentity(card)} type="button" onClick={() => setQuickViewCard(card)} style={{ isolation: "isolate", contain: "paint", clipPath: "inset(0 round 10px)" }} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                           <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card)}/>
                         </button>))}
                     </div>)}
                 </div>
               </>)) : selectedSection === "trade" ? (<>
-              <div className="p-3 sm:p-5">
+              <div key={JSON.stringify([user?.id, showChineseCards ? "chinese" : "english", "trade", selectedSet])} className="p-3 sm:p-5" style={{ isolation: "isolate", contain: "paint" }}>
                 {(!showChineseCards && salesLoading) ? (<div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                     Loading listings...
                   </div>) : filteredTradeCards.length === 0 ? (<div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                     No listings to show.
-                  </div>) : (<div key={JSON.stringify([user?.id, showChineseCards ? "chinese" : "english", "trade", selectedSet])} className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
-                    {filteredTradeCards.map((card: any) => (<button key={JSON.stringify([getProfileCardIdentity(card), card.type])} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
+                  </div>) : (<div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
+                    {filteredTradeCards.map((card: any) => (<button key={JSON.stringify([getProfileCardIdentity(card), card.type])} type="button" onClick={() => setQuickViewCard(card)} style={{ isolation: "isolate", contain: "paint", clipPath: "inset(0 round 10px)" }} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                         <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card)}/>
                         <span className={`absolute bottom-1 left-1 right-1 truncate rounded px-1 py-0.5 text-[9px] font-semibold sm:text-[10px] ${isLightMode
                         ? "bg-white/90 text-zinc-700"
@@ -973,11 +971,11 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
             </>) : activeProfileSettings.hide_wishlist ? (<div className={`p-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
               This Superfan has hidden their wishlist.
             </div>) : (<>
-              <div className="p-3 sm:p-5">
+              <div key={JSON.stringify([user?.id, showChineseCards ? "chinese" : "english", "wishlist", selectedSet])} className="p-3 sm:p-5" style={{ isolation: "isolate", contain: "paint" }}>
                 {filteredWishlistCards.length === 0 ? (<div className={`py-10 text-center text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-500"}`}>
                     No wishlist cards to show.
-                  </div>) : (<div key={JSON.stringify([user?.id, showChineseCards ? "chinese" : "english", "wishlist", selectedSet])} className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
-                    {filteredWishlistCards.map((card) => (<button key={getProfileCardIdentity(card)} type="button" onClick={() => setQuickViewCard(card)} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
+                  </div>) : (<div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-8 lg:grid-cols-[repeat(auto-fill,minmax(86px,1fr))] xl:grid-cols-[repeat(auto-fill,minmax(96px,1fr))]">
+                    {filteredWishlistCards.map((card) => (<button key={getProfileCardIdentity(card)} type="button" onClick={() => setQuickViewCard(card)} style={{ isolation: "isolate", contain: "paint", clipPath: "inset(0 round 10px)" }} className={`relative overflow-hidden rounded-[10px] border-0 bg-transparent p-0 shadow-none ${profileViewSquare(card) ? "aspect-square" : isMoon3DoubleWide(card) ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                         <SafeCardImage card={card} src={getTradeCardImage(card)} alt={getProfileCardCode(card)} className={getCardImageClassName(card)}/>
                       </button>))}
                   </div>)}
