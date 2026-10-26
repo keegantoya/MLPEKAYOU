@@ -424,9 +424,23 @@ const rarity = key.split("-")[0];
   return { transform: ["R", "SR", "SSR", "TR", "TGR"].includes(rarity) ? "scale(1.05)" : "none", transformOrigin: "center" };
 }
 function rainbowTwoImageStyle(key: string): CSSProperties {
+const card = CN_RAINBOW_TWO_CARDS.find(item => item.key === key);
+    if (card) {
+const printedNumber = Number(card.code.split("-").pop());
+        if (card.code.startsWith("YH-F01-")) return rainbowOneImageStyle(card.key);
+        if (card.code.startsWith("YH-T01-") || card.rarity === "UR" && printedNumber <= 18) {
+const source = CN_MOON_ONE_CARDS.find(item => item.rarity === card.rarity && item.code === card.code);
+            if (source) return moonOneImageStyle(source.key);
+        }
+        if (card.code.startsWith("YH-T02-") || card.rarity === "UR" && printedNumber <= 24) {
+const source = CN_MOON_TWO_CARDS.find(item => item.rarity === card.rarity && item.code === card.code);
+            if (source) return moonTwoImageStyle(source.key);
+        }
+    }
 const scale = /^SSR-(?:[7-9]|1[0-2])$/.test(key) ? 1.07 : ["UR-1", "UR-2", "UR-4", "UR-5", "UR-6"].includes(key) ? 1.05 : 1;
   return { transform: scale === 1 ? "none" : `scale(${scale})`, transformOrigin: "center" };
 }
+export { rainbowTwoImageStyle as getChineseRainbowTwoImageStyle };
 function rainbowThreeImageStyle(key: string): CSSProperties {
   if (key === "XR-7") return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
 const code = chineseSets.find(set => set.id === "cn-rainbow-three")!.cards.find(card => card.key === key)?.code ?? "";

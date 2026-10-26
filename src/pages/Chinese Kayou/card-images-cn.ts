@@ -320,13 +320,25 @@ export const CN_RAINBOW_ONE_SET_ID = "cn-rainbow-one";
 export const CN_RAINBOW_ONE_CARDS = CHINESE_RAINBOW_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-${card.rarity}${card.number}.webp`)}?v=${CN_RAINBOW_ONE_IMAGE_REVISION}` }));
 export const CN_RAINBOW_TWO_IMAGE_REVISION = "20261022-r2-complete-39-v1";
 export const CN_RAINBOW_TWO_SET_ID = "cn-rainbow-two";
-export const CN_RAINBOW_TWO_CARDS = CHINESE_RAINBOW_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-Two-CN/CN-R2-${card.rarity}${card.number}.webp`)}?v=${CN_RAINBOW_TWO_IMAGE_REVISION}` }));
+export const CN_RAINBOW_TWO_CARDS = CHINESE_RAINBOW_TWO_CODES.map(card => {
+const printedNumber = Number(card.code.split("-").pop());
+const sourceCards = card.code.startsWith("YH-F01-") ? CN_RAINBOW_ONE_CARDS
+    : card.code.startsWith("YH-T01-") || card.rarity === "UR" && printedNumber <= 18 ? CN_MOON_ONE_CARDS
+    : card.code.startsWith("YH-T02-") || card.rarity === "UR" && printedNumber <= 24 ? CN_MOON_TWO_CARDS
+    : null;
+    if (sourceCards) {
+const source = sourceCards.find(item => item.rarity === card.rarity && item.code === card.code);
+        if (!source) throw new Error(`Missing Chinese Rainbow Two source card: ${card.code}`);
+        return { ...card, image: source.image };
+    }
+    return { ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-Two-CN/CN-R2-${card.rarity}${card.number}.webp`)}?v=${CN_RAINBOW_TWO_IMAGE_REVISION}` };
+});
 export const CN_RAINBOW_THREE_IMAGE_REVISION = "20261022-r3-complete-133-v1";
 export const CN_RAINBOW_THREE_SET_ID = "cn-rainbow-three";
 export const CN_RAINBOW_THREE_CARDS = CHINESE_RAINBOW_THREE_CODES.map(card => {
     if (!["R", "SR", "SSR", "UR"].includes(card.rarity))
         return { ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-Three-CN/CN-R3-${card.rarity}${card.number}.webp`)}?v=${CN_RAINBOW_THREE_IMAGE_REVISION}` };
-const sourceCards = card.code.startsWith("YH-T04-") || /^YH-UR-04[5-9]$/.test(card.code) ? CN_MOON_FOUR_CARDS : CN_MOON_FIVE_CARDS;
+const sourceCards = card.code.startsWith("YH-T04-") || /^YH-UR-04[0-9]$/.test(card.code) ? CN_MOON_FOUR_CARDS : CN_MOON_FIVE_CARDS;
 const source = sourceCards.find(item => item.rarity === card.rarity && item.code === card.code);
     if (!source)
         throw new Error(`Missing Chinese Rainbow Three source card: ${card.code}`);

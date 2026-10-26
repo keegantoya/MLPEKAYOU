@@ -272,9 +272,17 @@ export const CHINESE_RAINBOW_ONE_CODES: ChineseCardCode[] = [
     ...sequence("UR", 12, "YH-UR"),
 ];
 export const CHINESE_RAINBOW_TWO_CODES: ChineseCardCode[] = [
+    ...sequence("R", 22, "YH-F01", 9),
+    ...sequence("R", 8, "YH-T01", 1, 22),
+    ...sequence("R", 8, "YH-T02", 1, 30),
+    ...sequence("SR", 4, "YH-F01", 49),
+    ...sequence("SR", 8, "YH-T01", 9, 4),
+    ...sequence("SR", 8, "YH-T02", 9, 12),
+    ...sequence("SSR", 12, "YH-F03"),
+    ...sequence("SSR", 3, "YH-T02", 22, 12),
     ...sequence("TR", 15, "YH-TR", 16),
     ...sequence("TGR", 6, "YH-TGR", 6),
-    ...sequence("SSR", 12, "YH-F02"),
+    ...sequence("UR", 9, "YH-UR", 16, 6),
     ...sequence("UR", 6, "YH-UR", 25),
 ];
 export const CHINESE_RAINBOW_THREE_CODES: ChineseCardCode[] = [
@@ -288,6 +296,7 @@ export const CHINESE_RAINBOW_THREE_CODES: ChineseCardCode[] = [
     ...sequence("TR", 12, "YH-TR", 31),
     ...sequence("TGR", 8, "YH-TGR"),
     ...sequence("MTR", 18, "YH-MTR"),
+    ...sequence("UR", 5, "YH-UR", 40, 15),
     ...sequence("UR", 5, "YH-UR", 45),
     ...sequence("UR", 6, "YH-UR", 55, 5),
     ...sequence("UR", 4, "YH-UR", 64, 11),

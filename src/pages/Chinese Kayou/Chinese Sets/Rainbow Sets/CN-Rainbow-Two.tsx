@@ -2,16 +2,14 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ScanSearch } from "lucide-react";
-import { CN_RAINBOW_TWO_CARDS, CN_RAINBOW_TWO_SET_ID, CN_RAINBOW_TWO_IMAGE_REVISION, useChineseCardImage } from "../../card-images-cn";
+import { CN_RAINBOW_TWO_CARDS, CN_RAINBOW_TWO_SET_ID, useChineseCardImage } from "../../card-images-cn";
+import { getChineseRainbowTwoImageStyle } from "../../Chinese ISO/catalog/catalog";
 export { CN_RAINBOW_TWO_CARDS, CN_RAINBOW_TWO_SET_ID };
 import type { CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
-function rainbowTwoImageStyle(key: string): CSSProperties {
-  const scale = /^SSR-(?:[7-9]|1[0-2])$/.test(key) ? 1.07 : ["UR-1", "UR-2", "UR-4", "UR-5", "UR-6"].includes(key) ? 1.05 : 1;
-  return { transform: scale === 1 ? "none" : `scale(${scale})`, transformOrigin: "center" };
-}
+const rainbowTwoImageStyle = getChineseRainbowTwoImageStyle;
 function ChineseCardFront({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: CSSProperties }) {
 const image = useChineseCardImage(src);
   return image.url ? <img src={image.url} alt={alt} draggable={false} className={className} style={style} /> : <span className="flex h-full w-full items-center justify-center p-4 text-center text-xs text-muted-foreground" title={image.error || undefined} role="status">{image.error ? "Image unavailable" : "Loading card..."}</span>;
@@ -51,8 +49,7 @@ export default function ChineseRainbowTwo() {
 const [inspected, setInspected] = useState<string | null>(null);
 const [zoom, setZoom] = useState(100);
 const [cardSize, setCardSize] = useState(160);
-const imageRevision = CN_RAINBOW_TWO_IMAGE_REVISION;
-const imageSource = (src: string) => { const url = new URL(src); url.searchParams.set("v", imageRevision); return url.href; };
+const imageSource = (src: string) => src;
 const [search, setSearch] = useState("");
 const inspectorCard = CN_RAINBOW_TWO_CARDS.find(card => card.key === inspected);
 const [progress, setProgress] = useState<Progress>({});
