@@ -515,7 +515,7 @@ const essentialProfileFailed = profileLoadErrors.profile || profileLoadErrors.th
           </div>
         <div className={`mt-4 grid grid-cols-2 gap-3 border-t pt-4 sm:grid-cols-4 ${isLightMode ? "border-black/10" : "border-white/[0.08]"}`}>
           {[
-            [profileLoads.stats && !profileLoadErrors.stats ? stats.owned.toLocaleString() : "", "Cards Owned"],
+            [profileLoads.stats && !profileLoadErrors.stats ? stats.owned.toLocaleString() : "", "English Cards"],
             [profileLoads.stats && !profileLoadErrors.stats ? stats.chineseOwned.toLocaleString() : "", "Chinese Cards"],
             [profileLoads.stats && !profileLoadErrors.stats ? stats.completed.toLocaleString() : "", "Sets Mastered"],
             [profileLoads.stats && !profileLoadErrors.stats ? stats.friends.toLocaleString() : "", "Friends"],

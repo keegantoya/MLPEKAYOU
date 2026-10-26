@@ -1084,7 +1084,7 @@ const MobileProfile = () => {
 </div>
 </div></section>}
   <div className="grid grid-cols-3 border-t border-[var(--mp-line)] py-4">
-    {[["Cards Owned",stats.owned],["Chinese Cards",stats.chineseOwned],["Sets Mastered",stats.completed]].map(([label,value]) => <div key={label} className="min-w-0 px-1 text-center"><p className="text-xl font-semibold tabular-nums text-[hsl(var(--primary))]">{profileLoads.stats && !profileLoadErrors.stats ? Number(value).toLocaleString() : "--"}</p><p className="mp-muted mt-1 text-[10px] font-medium">{label}</p></div>)}
+    {[["English Cards",stats.owned],["Chinese Cards",stats.chineseOwned],["Sets Mastered",stats.completed]].map(([label,value]) => <div key={label} className="min-w-0 px-1 text-center"><p className="text-xl font-semibold tabular-nums text-[hsl(var(--primary))]">{profileLoads.stats && !profileLoadErrors.stats ? Number(value).toLocaleString() : "--"}</p><p className="mp-muted mt-1 text-[10px] font-medium">{label}</p></div>)}
   </div>
 </header>
 {(tradeAccessRevoked || (!loadingLeaderboardBan && leaderboardBanned)) && <section aria-label="Account restrictions" className={`my-4 border-y px-1 py-4 text-sm leading-6 ${isLightMode ? "border-red-300 text-red-800" : "border-red-500/30 text-red-200"}`}>
