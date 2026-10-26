@@ -82,11 +82,11 @@ export function EnglishLeaderboardAppealForm({ restricted, onReinstated }: { res
         </div>}
     </div>;
 }
-export function EnglishLeaderboardAppealQueue({ search, refresh, onChanged }: { search: string; refresh: number; onChanged: () => void }) {
+export function EnglishLeaderboardAppealQueue({ search, refresh, onChanged, reviewOnly = false, reviewAppealId, onCloseReview, onOpenReview }: { search: string; refresh: number; onChanged: () => void; reviewOnly?: boolean; reviewAppealId?: string | null; onCloseReview?: () => void; onOpenReview?: (appeal: { id: string; user_id: string }) => void }) {
     const [rows, setRows] = useState<Appeal[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(0);
-    const [status, setStatus] = useState("all");
+    const [status, setStatus] = useState("pending");
     const [loading, setLoading] = useState(true);
     const [loadedKey, setLoadedKey] = useState("");
     const [error, setError] = useState("");
@@ -104,10 +104,29 @@ export function EnglishLeaderboardAppealQueue({ search, refresh, onChanged }: { 
     const [saveError, setSaveError] = useState("");
     const [notice, setNotice] = useState("");
     const lock = useRef(false);
+    const closeReview = () => { setSelected(null); onCloseReview?.(); };
+    const prepareReview = (appeal: Appeal) => { setSelected(appeal); setResponse(""); setDecision(appeal.reviewed_at ? "approve" : "reply"); setClearMode("none"); setSaveError(""); };
+    useEffect(() => {
+        if (!reviewAppealId) return;
+        let active = true;
+        setSelected(null); setSaveError("");
+        void (async () => {
+            for (let offset = 0; active; offset += 10) {
+                const { data, error: loadError } = await api.rpc("moderator_english_appeals", { p_query: "", p_status: "all", p_offset: offset });
+                if (!active) return;
+                if (loadError) throw loadError;
+                const appeal = (data?.rows ?? []).find((item: Appeal) => item.id === reviewAppealId);
+                if (appeal) { prepareReview(appeal); return; }
+                if (offset + 10 >= Number(data?.total ?? 0)) throw new Error("This appeal no longer exists.");
+            }
+        })().catch((cause: unknown) => { if (active) setSaveError(problem(cause)); });
+        return () => { active = false; };
+    }, [reviewAppealId]);
     const key = `${search.trim()}:${status}:${page}`;
     useEffect(() => { setPage(0); }, [search, status]);
     useEffect(() => {
         let active = true;
+        if (reviewOnly) return;
         setLoading(true);
         setError("");
         const timer = window.setTimeout(() => {
@@ -125,7 +144,7 @@ export function EnglishLeaderboardAppealQueue({ search, refresh, onChanged }: { 
             })();
         }, 250);
         return () => { active = false; window.clearTimeout(timer); };
-    }, [search, status, page, refresh, retry]);
+    }, [search, status, page, refresh, retry, reviewOnly]);
     useEffect(() => {
         let active = true;
         setOwnedSets([]);
@@ -154,9 +173,10 @@ export function EnglishLeaderboardAppealQueue({ search, refresh, onChanged }: { 
         try {
             const { error: reviewError } = await api.rpc("moderator_review_english_appeal", { p_appeal_id: selected.id, p_expected_updated_at: selected.updated_at, p_response: response.trim(), p_decision: decision, p_clear_mode: decision === "approve" ? clearMode : "none", p_set_ids: decision === "approve" && clearMode === "selected" ? setIds : [], p_expected_owned_sets: clearing ? ownedSets : [] });
             if (reviewError) throw reviewError;
-            setSelected(null);
+            closeReview();
             setNotice(decision === "approve" ? clearMode === "none" ? "Appeal approved. English access is reinstated; English progress was kept." : clearMode === "all" ? "Appeal approved. All owned English sets and their trade/sale listings were cleared." : `Appeal approved. Cleared English sets: ${setIds.map(id => englishViewName(id)).join(", ")}. Their trade/sale listings were removed.` : decision === "decline" ? "Appeal denied. The decision and response were saved." : "Reply sent to the collector’s Inbox. Continue in Conversations; the appeal remains pending until you approve or deny it.");
-            if (decision !== "reply") { setStatus("all"); setPage(0); }
+            setPage(0);
+            window.dispatchEvent(new Event("staff-communications-changed"));
             setRetry(value => value + 1);
             onChanged();
         } catch (cause) { setSaveError(problem(cause)); }
@@ -164,15 +184,19 @@ export function EnglishLeaderboardAppealQueue({ search, refresh, onChanged }: { 
     };
     const clearing = decision === "approve" && clearMode !== "none";
     const reviewBlocker = response.trim().length < 3 ? "Write a response of at least 3 characters before confirming." : clearing && setsLoading ? "Wait for the owned English sets to load." : clearing && setsError ? "Resolve the owned-set loading error before clearing progress." : clearing && clearMode === "selected" && !setIds.length ? "Select at least one owned English set to clear." : clearing && !confirmed ? "Check the clearing confirmation above before saving." : "";
-    return <section className="py-4">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-foreground">English leaderboard appeals. Chinese leaderboard eligibility is separate.</p><label className="text-sm">Show <select value={status} onChange={event => setStatus(event.target.value)} className="ml-2 min-h-11 rounded-xl border border-border bg-background px-3 text-base text-foreground"><option value="pending">Pending</option><option value="approved">Approved</option><option value="declined">Declined</option><option value="all">All appeals</option></select></label></div>
+    return <section className={reviewOnly ? "" : "appeal-workspace py-4"}>
+        {!reviewOnly && <>
+        <style>{`.appeal-view-tabs{display:flex;gap:24px;border-bottom:1px solid hsl(var(--border));margin-bottom:20px}.appeal-view-tabs button{min-height:44px;padding:8px 0;border-bottom:2px solid transparent;font-size:14px;font-weight:600;color:hsl(var(--muted-foreground))}.appeal-view-tabs button[aria-pressed=true]{border-color:hsl(var(--primary));color:hsl(var(--foreground))}.appeal-cases{display:grid;gap:18px;padding:0;list-style:none}.appeal-case{border:1px solid hsl(var(--border));border-left:3px solid hsl(var(--primary)/.6);border-radius:10px;padding:18px;background:hsl(var(--muted)/.14)}.appeal-case[data-status=approved]{border-left-color:#22a06b}.appeal-case[data-status=declined]{border-left-color:#d64b55}.appeal-case-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.appeal-case details{margin-top:16px;border-top:1px solid hsl(var(--border));padding-top:12px}.appeal-case summary{cursor:pointer;font-size:13px;font-weight:600;min-height:32px}.appeal-case-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;border-top:1px solid hsl(var(--border));padding-top:12px}.appeal-case-footer button{min-height:44px;border:1px solid hsl(var(--border));border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600}.appeal-case-footer button:hover{border-color:hsl(var(--primary))}@media(max-width:560px){.appeal-case{padding:14px}.appeal-case-heading{flex-direction:column;gap:12px}.appeal-case-footer{align-items:flex-start;flex-direction:column}.appeal-case-footer button{width:100%}}`}</style>
+        <nav className="appeal-view-tabs" aria-label="Appeal status">{[["pending","Pending"],["approved","Approved"],["declined","Denied"]].map(([value,label]) => <button key={value} type="button" aria-pressed={status === value} onClick={() => setStatus(value)}>{label}</button>)}</nav>
+        <div className="mb-5"><h3 className="text-lg font-semibold">{status === "pending" ? "Pending reviews" : status === "approved" ? "Approved reviews" : "Denied reviews"}</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">{status === "pending" ? "Open a collector's conversation to reply or finish their appeal." : "Completed decisions, most recently updated first."} Chinese leaderboard access is separate.</p></div>
         {notice && <p role="status" className="mb-3 text-sm">{notice}</p>}
-        {loading || loadedKey !== key ? <p role="status" className="py-8 text-sm text-muted-foreground">Loading English appeals...</p> : error ? <p role="alert" className="py-8 text-sm text-red-500">{error}<button type="button" onClick={() => setRetry(value => value + 1)} className="ml-2 underline">Retry</button></p> : !rows.length ? <p className="py-8 text-sm text-muted-foreground">No appeals match this view.</p> : <ul className="divide-y divide-current/10">{rows.map(appeal => <li key={appeal.id} className="py-4"><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h3 className="break-words font-semibold">{appeal.username}</h3>{appeal.discord_username && <p className="mt-1 break-all text-sm text-muted-foreground">Discord: {appeal.discord_username}</p>}<div className="mt-2"><AppealReviewState appeal={appeal}/></div><p className="mt-1 text-xs text-muted-foreground">Submitted {new Date(appeal.created_at).toLocaleString()}</p></div><button type="button" onClick={() => { setSelected(appeal); setResponse(""); setDecision(appeal.reviewed_at ? "approve" : "reply"); setClearMode("none"); setSaveError(""); }} className="min-h-11 rounded-xl border border-border px-4 text-sm">{appeal.status === "pending" ? appeal.reviewed_at ? "Complete review" : "Review appeal" : "View decision"}</button></div><a href={`/leaderboard-moderation?view=conversations&user=${encodeURIComponent(appeal.user_id)}`} className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">Open conversation</a><p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6">{appeal.message}</p>{appeal.reviewed_at && <p className="mt-2 text-xs text-muted-foreground">Discussion is saved in Conversations. Return here to complete the appeal decision.</p>}</li>)}</ul>}
-        {!loading && total > 10 && <nav aria-label="Appeal pages" className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3"><span className="text-xs text-muted-foreground">{total} appeals / Page {page + 1} of {Math.ceil(total / 10)}</span><div className="flex gap-2"><button type="button" disabled={page === 0} onClick={() => setPage(value => value - 1)} className="min-h-11 rounded-xl border border-border px-3 text-sm disabled:opacity-40">Previous</button><button type="button" disabled={(page + 1) * 10 >= total} onClick={() => setPage(value => value + 1)} className="min-h-11 rounded-xl border border-border px-3 text-sm disabled:opacity-40">Next</button></div></nav>}
-        <Dialog open={!!selected} onOpenChange={open => { if (!open && !lock.current) setSelected(null); }}><DialogContent className="z-[120020] flex max-h-[calc(100dvh_-_24px)] w-[calc(100%_-_24px)] max-w-2xl flex-col gap-0 overflow-hidden border-border bg-background p-0 text-foreground" onEscapeKeyDown={event => { if (lock.current) event.preventDefault(); }} onPointerDownOutside={event => { if (lock.current) event.preventDefault(); }}>
+        {loading || loadedKey !== key ? <p role="status" className="py-8 text-sm text-muted-foreground">Loading English appeals...</p> : error ? <p role="alert" className="py-8 text-sm text-red-500">{error}<button type="button" onClick={() => setRetry(value => value + 1)} className="ml-2 underline">Retry</button></p> : !rows.length ? <p className="py-8 text-sm text-muted-foreground">No appeals match this view.</p> : <ul className="appeal-cases">{rows.map(appeal => <li key={appeal.id} className="appeal-case" data-status={appeal.status}><div className="appeal-case-heading"><div className="min-w-0"><h3 className="break-words text-base font-semibold">{appeal.username}</h3>{appeal.discord_username && <p className="mt-1 break-words text-sm text-muted-foreground">Discord: {appeal.discord_username}</p>}<p className="mt-2 text-xs text-muted-foreground">Submitted {new Date(appeal.created_at).toLocaleString()}</p></div><AppealReviewState appeal={appeal}/></div><details><summary>Read appeal</summary><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">{appeal.message}</p>{appeal.exclusion_reason && <p className="mt-3 border-l-2 border-border pl-3 text-xs leading-5 text-muted-foreground">Restriction reason: {appeal.exclusion_reason}</p>}</details><div className="appeal-case-footer"><span className="text-xs text-muted-foreground">{appeal.status === "pending" ? appeal.reviewed_at ? "Discussion started; decision pending" : "Awaiting a staff response" : `Completed ${new Date(appeal.reviewed_at ?? appeal.updated_at).toLocaleDateString()}`}</span><button type="button" onClick={() => { if (onOpenReview) onOpenReview(appeal); else prepareReview(appeal); }}>{appeal.status === "pending" ? "Review in conversation" : "View decision"}</button></div></li>)}</ul>}
+        {!loading && total > 10 && <nav aria-label="Appeal pages" className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3"><span className="text-xs text-muted-foreground">{total} appeals / Page {page + 1} of {Math.ceil(total / 10)}</span><div className="flex gap-2"><button type="button" disabled={page === 0} onClick={() => setPage(value => value - 1)} className="min-h-11 rounded-lg border border-border px-3 text-sm disabled:opacity-40">Previous</button><button type="button" disabled={(page + 1) * 10 >= total} onClick={() => setPage(value => value + 1)} className="min-h-11 rounded-lg border border-border px-3 text-sm disabled:opacity-40">Next</button></div></nav>}
+        </>}
+        <Dialog open={!!selected || !!reviewAppealId} onOpenChange={open => { if (!open && !lock.current) closeReview(); }}><DialogContent className="z-[120020] flex max-h-[calc(100dvh_-_24px)] w-[calc(100%_-_24px)] max-w-2xl flex-col gap-0 overflow-hidden border-border bg-background p-0 text-foreground" onEscapeKeyDown={event => { if (lock.current) event.preventDefault(); }} onPointerDownOutside={event => { if (lock.current) event.preventDefault(); }}>
             <header className="shrink-0 border-b border-border px-4 py-4 pr-12 sm:px-6 sm:pr-12"><DialogTitle>English leaderboard appeal</DialogTitle><DialogDescription className="mt-1 break-words">{selected?.username}{selected?.discord_username ? ` / ${selected.discord_username}` : ""}</DialogDescription></header>
             <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6">
-                {selected && <><AppealReviewState appeal={selected}/><a href={`/leaderboard-moderation?view=conversations&user=${encodeURIComponent(selected.user_id)}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">Read or continue the conversation</a></>}
+                {!selected && !saveError && <p role="status" className="text-sm text-muted-foreground">Loading appeal...</p>}{selected && <AppealReviewState appeal={selected}/>}
                 <p className="whitespace-pre-wrap break-words text-sm leading-6">{selected?.message}</p>{selected?.exclusion_reason && <p className="text-sm text-muted-foreground">English exclusion: {selected.exclusion_reason}</p>}
                 {selected?.status === "pending" ? <><label className="block text-sm font-semibold">{selected.reviewed_at ? "Decision note (sent to the collector’s Inbox)" : "Response to the collector (sent to their Inbox)"}<textarea value={response} onChange={event => setResponse(event.target.value)} maxLength={4000} rows={4} disabled={saving} className="mt-2 w-full rounded-xl border border-border bg-background p-3 text-base font-normal"/></label><label className="block text-sm">Decision<select value={decision} onChange={event => { setDecision(event.target.value); setClearMode("none"); setConfirmed(false); }} disabled={saving} className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base">{!selected.reviewed_at && <option value="reply">Reply and keep pending</option>}<option value="approve">Approve and reinstate English access</option><option value="decline">Decline appeal</option></select></label>
                     {decision === "approve" && <><p className="text-xs leading-5 text-muted-foreground">Approval only resets progress when you explicitly choose a clearing option below.</p><label className="block text-sm">English collection progress<select value={clearMode} onChange={event => { setClearMode(event.target.value); setConfirmed(false); }} disabled={saving || setsLoading || !!setsError} className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base"><option value="none">Keep progress</option><option value="selected" disabled={!ownedSets.length}>Clear selected owned English sets</option><option value="all" disabled={!ownedSets.length}>Clear all owned English sets</option></select></label>{setsLoading ? <p role="status" className="text-sm">Loading owned English sets...</p> : setsError ? <p role="alert" className="text-sm text-red-500">{setsError}</p> : !ownedSets.length ? <p className="text-sm text-muted-foreground">This collector owns no English cards.</p> : clearMode !== "none" && <fieldset disabled={saving} className="space-y-1 border-y border-border py-2"><legend className="text-sm font-semibold">Owned English sets only</legend>{ownedSets.map(id => <label key={id} className="flex min-h-11 items-center gap-3 text-sm"><input type="checkbox" checked={clearMode === "all" || setIds.includes(id)} disabled={clearMode === "all"} onChange={event => { setSetIds(previous => event.target.checked ? [...previous,id] : previous.filter(item => item !== id)); setConfirmed(false); }} className="h-4 w-4"/>{englishViewName(id)}</label>)}</fieldset>}
@@ -183,7 +207,7 @@ export function EnglishLeaderboardAppealQueue({ search, refresh, onChanged }: { 
                 {saveError && <p role="alert" className="text-sm text-red-500">{saveError}</p>}
                 {selected?.status === "pending" && !saving && reviewBlocker && <p id="english-review-help" className="text-xs leading-5 text-muted-foreground">{reviewBlocker}</p>}
                 {saving && <p role="status" className="text-xs text-muted-foreground">Saving review...</p>}
-                <div className="flex flex-wrap justify-end gap-2"><button type="button" disabled={saving} onClick={() => setSelected(null)} className="min-h-11 rounded-xl border border-border px-4 text-sm disabled:opacity-50">Close</button>{selected?.status === "pending" && <button type="button" disabled={saving || !!reviewBlocker} aria-describedby={reviewBlocker ? "english-review-help" : undefined} onClick={() => void review()} className="min-h-11 flex-1 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 sm:flex-none">{saving ? "Saving..." : clearing ? "Confirm clearing and approval" : decision === "approve" ? "Confirm approval" : decision === "decline" ? "Confirm denial" : "Save reply"}</button>}</div>
+                <div className="flex flex-wrap justify-end gap-2"><button type="button" disabled={saving} onClick={closeReview} className="min-h-11 rounded-xl border border-border px-4 text-sm disabled:opacity-50">Close</button>{selected?.status === "pending" && <button type="button" disabled={saving || !!reviewBlocker} aria-describedby={reviewBlocker ? "english-review-help" : undefined} onClick={() => void review()} className="min-h-11 flex-1 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50 sm:flex-none">{saving ? "Saving..." : clearing ? "Confirm clearing and approval" : decision === "approve" ? "Confirm approval" : decision === "decline" ? "Confirm denial" : "Save reply"}</button>}</div>
             </footer>
         </DialogContent></Dialog>
     </section>;

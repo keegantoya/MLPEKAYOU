@@ -153,6 +153,52 @@ const LeaderboardModeration = () => {
     const [directoryActionError, setDirectoryActionError] = useState("");
     const directorySaveLock = useRef(false);
     const [appealRefresh, setAppealRefresh] = useState(0);
+    const [reviewAppealId, setReviewAppealId] = useState<string | null>(null);
+    const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+    const [categoryNotices, setCategoryNotices] = useState<{ id: string; category: string }[]>([]);
+    useEffect(() => {
+        if (!authorized || !staffSummary.userId) { setCategoryCounts({}); setCategoryNotices([]); return; }
+        let active = true;
+        void (async () => {
+            try {
+                const notices: { id: string; category: string }[] = [];
+                for (let offset = 0; active; offset += 500) {
+                    const { data, error } = await (supabase as any).from("staff_notifications").select("id,title,url").eq("recipient_id", staffSummary.userId).eq("staff_only", true).is("read_at", null).order("created_at").order("id").range(offset, offset + 499);
+                    if (!active) return;
+                    if (error) throw error;
+                    for (const notice of data ?? []) {
+                        if (/^Frame access |^Moderation history: frame/i.test(notice.title)) continue;
+                        const category = new URL(notice.url, window.location.origin).searchParams.get("view") ?? "history";
+                        notices.push({ id: notice.id, category });
+                    }
+                    if ((data ?? []).length < 500) break;
+                }
+                if (active) { const counts: Record<string, number> = {}; for (const notice of notices) counts[notice.category] = (counts[notice.category] ?? 0) + 1; setCategoryCounts(counts); setCategoryNotices(notices); }
+            } catch { if (active) setErrorMessage("Unread counts could not be loaded. Refresh to retry."); }
+        })();
+        return () => { active = false; };
+    }, [authorized, staffSummary.userId, staffSummary.version]);
+    useEffect(() => {
+        if (!authorized || currentView === "conversations") return;
+        const notices = categoryNotices.filter(notice => notice.category === currentView);
+        if (!notices.length) return;
+        let active = true;
+        void (async () => {
+            for (let offset = 0; active && offset < notices.length; offset += 20) await Promise.all(notices.slice(offset, offset + 20).map(async notice => {
+                const { error } = await (supabase as any).rpc("staff_communications", { p_action: "read_notification", p_data: { id: notice.id } });
+                if (error) throw error;
+            }));
+        })().then(() => { if (active) { setCategoryCounts(previous => ({ ...previous, [currentView]: 0 })); window.dispatchEvent(new Event("staff-communications-changed")); } }).catch(() => { if (active) setErrorMessage("The category could not be marked as read. Refresh to retry."); });
+        return () => { active = false; };
+    }, [authorized, currentView, categoryNotices]);
+    useEffect(() => { setReviewAppealId(currentView === "conversations" ? new URLSearchParams(location.search).get("review") : null); }, [currentView, location.search]);
+    const closeAppealReview = () => {
+        setReviewAppealId(null);
+        const params = new URLSearchParams(location.search);
+        if (params.has("review")) { params.delete("review"); navigate(`${location.pathname}?${params}`, { replace: true }); }
+    };
+    const appealChanged = () => { setBanRefresh(value => value + 1); setAppealRefresh(value => value + 1); setHistoryLoaded(false); window.dispatchEvent(new Event("staff-communications-changed")); };
+
     const [historyItems, setHistoryItems] = useState<ModerationHistoryItem[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -680,7 +726,7 @@ const LeaderboardModeration = () => {
                 action: row.action,
                 actionLabel: actionLabels[row.action] || row.action,
                 createdAt: row.created_at,
-                details: row.details || "",
+                details: row.action.startsWith("staff_") ? (row.details || "").replace(/^Conversation\s+[0-9a-f-]{36}(?:;\s*message\s+\d+:\s*|\s*)/i, "") : row.details || "",
             };
         });
         const strikeHistoryItems: ModerationHistoryItem[] = (strikeRows || []).map((row) => {
@@ -952,6 +998,8 @@ const LeaderboardModeration = () => {
 .mr-case{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;padding:12px;gap:8px 16px}.mr-case-heading{grid-column:1;min-width:0;padding:0;border:0;align-items:center}.mr-facts{grid-column:2;grid-row:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 14px;padding:0;align-self:center}.mr-facts>span{flex-direction:row;gap:5px;border:0;padding:0;align-items:baseline;white-space:normal}.mr-context{grid-column:1/-1;padding:0;margin:0;line-height:1.5}.mr-policy{grid-column:1/-1;justify-self:start;margin:0;min-height:0;padding:3px 0}.mr-evidence{grid-column:1;min-width:0;border:0;align-self:center}.mr-evidence>summary{padding:7px 0;min-height:36px;justify-content:flex-start;gap:8px}.mr-evidence>summary>span:nth-child(2){margin-left:0}.mr-evidence-list{padding:8px 0 0;gap:8px}.mr-evidence[open]{grid-column:1/-1}.mr-actions{grid-column:2;justify-self:end;align-self:center;padding:0;border:0;background:none;gap:8px;flex-wrap:wrap}.mr-actions>span{display:none}.mr-actions>button{flex:0 1 auto;min-height:36px}.mr-listing{grid-column:1;grid-row:2;padding:0;gap:12px}.mr-case>.mr-source{grid-column:2;grid-row:2;padding:0;border:0;align-self:center;max-width:310px;flex-wrap:wrap}.mr-case>.mr-source .mr-reference{width:100%;padding-left:34px}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1/-1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1/-1}.mr-case-list{gap:8px;padding:10px}.mr-price{margin-top:4px}
 @media(max-width:900px){.mr-case{grid-template-columns:minmax(0,1fr);gap:8px;padding:12px}.mr-case-heading,.mr-facts,.mr-context,.mr-policy,.mr-evidence,.mr-actions,.mr-listing,.mr-case>.mr-source{grid-column:1;grid-row:auto}.mr-facts{justify-content:flex-start;gap:5px 14px}.mr-facts>span{flex-direction:row;gap:5px;font-size:10px}.mr-evidence>summary{min-height:40px}.mr-actions{justify-self:stretch;justify-content:flex-end}.mr-actions>button{flex:0 1 auto;min-height:42px}.mr-case>.mr-source{max-width:none;flex-wrap:nowrap}.mr-case>.mr-source .mr-reference{width:auto;padding:0}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1}}
 .moderation-panel{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}.moderation-panel .mr-case-list{gap:0;padding:0}.moderation-panel .mr-case{border:0;border-bottom:1px solid var(--mc-line);border-radius:0;background:transparent;box-shadow:none;padding:18px 0;overflow:visible}.moderation-panel .mr-case:last-child{border-bottom:0}.moderation-panel .moderation-ban-list{gap:0;padding:0}.moderation-panel .moderation-ban-row{border:0!important;border-bottom:1px solid var(--mc-line)!important;border-radius:0;background:transparent;box-shadow:none;padding:16px 0!important}.moderation-panel .moderation-ban-row:last-child{border-bottom:0!important}.moderation-panel .moderation-history-entry{background:transparent;border:0;border-bottom:1px solid var(--mc-line);border-radius:0;box-shadow:none;padding:16px 0!important}.moderation-panel .moderation-pagination{padding-left:0;padding-right:0}.moderation-panel .mr-evidence-item{background:var(--mc-soft)}@media(max-width:719px){.moderation-panel .mr-case{padding:16px 0}.moderation-panel .moderation-ban-row{padding:16px 0!important}}
+
+.moderation-page .moderation-heading{padding:8px 0!important;min-height:0!important;border-bottom:1px solid var(--mc-line);gap:12px}.moderation-page .moderation-heading-emblem,.moderation-page .moderation-heading p{display:none}.moderation-page .mc-title{font-size:21px!important;line-height:1.2;margin:0}.moderation-page .moderation-shell{padding-top:8px!important}.moderation-page .moderation-panel{margin-top:14px}.moderation-directory-list{display:grid;gap:14px;padding:8px 0}.moderation-directory-row{border:1px solid var(--mc-line);border-radius:10px;padding:16px;background:var(--mc-bg)}.moderation-category-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;border:1px solid var(--mc-line);border-radius:10px;overflow:hidden;background:var(--mc-line)}.moderation-category-nav>button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;min-height:48px;padding:10px 14px;background:var(--mc-bg);font-size:13px;font-weight:600;text-align:left;border-bottom:2px solid transparent;transition:background .18s,border-color .18s}.moderation-category-nav>button[aria-pressed=true]{background:var(--mc-soft);border-bottom-color:var(--mc-accent);color:var(--mc-ink)}.moderation-count{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:22px;height:22px;padding:0 5px;border-radius:50%;background:#dc2626;color:white;font-size:10px;font-weight:700}.moderation-section-heading{padding:22px 0 14px}.moderation-section-heading h2{font-size:19px;font-weight:650;margin:0}.moderation-section-heading p{margin:5px 0 0;font-size:12px;line-height:1.6;color:var(--mc-muted)}.moderation-page .moderation-panel .mr-case-list{gap:20px;padding:18px 0}.moderation-page .moderation-panel .mr-case{border:1px solid var(--mc-line);border-left:3px solid var(--mc-accent);border-radius:10px;padding:0;overflow:hidden;background:var(--mc-bg)}.moderation-page .moderation-panel .moderation-ban-list{gap:14px;padding:18px 0}.moderation-page .moderation-panel .moderation-ban-row{border:1px solid var(--mc-line)!important;border-radius:10px;background:var(--mc-bg);padding:16px!important}.moderation-page .moderation-history-table tbody tr:nth-child(even){background:var(--mc-soft)}.moderation-page .moderation-panel .moderation-history-entry{border:1px solid var(--mc-line);border-left:3px solid var(--mc-accent);border-radius:10px;background:var(--mc-bg);margin-top:14px}.moderation-page .mc-query-bar{padding-bottom:16px;margin-bottom:4px}@media(max-width:680px){.moderation-category-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.moderation-category-nav>button{padding:10px 12px;font-size:12px}.moderation-section-heading{padding-top:18px}.moderation-page .moderation-panel .mr-case-list{gap:16px}}@media(prefers-reduced-motion:reduce){.moderation-category-nav>button{transition:none}}
       `}</style>
       <div className="moderation-shell mc-shell w-full px-3 pt-4 sm:px-6 lg:pt-6">
         <div className="moderation-heading flex items-center gap-3">
@@ -966,7 +1014,7 @@ const LeaderboardModeration = () => {
             <Shield size={20}/>
           </div>
           <div className="min-w-0 flex-1">
-            <span className="mc-kicker">MLPEKAYOU / STAFF OPERATIONS</span><h1 className="mc-title">Moderation console</h1>
+            <h1 className="mc-title">Moderation</h1>
             <p className={`text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
               <span className="lg:hidden">Reports, strikes, bans, and activity</span><span className="hidden lg:inline">Review reports, strikes, bans, and moderator activity</span>
             </p>
@@ -983,58 +1031,15 @@ const LeaderboardModeration = () => {
             {errorMessage}
           </div>)}
         <div ref={listPanelRef} className="moderation-panel mt-6 min-w-0">
-          <div className={`moderation-toolbar flex flex-col gap-3 border-b py-3 sm:flex-row sm:items-center sm:justify-between sm:py-4 ${isLightMode ? "border-black/[0.08]" : "border-white/[0.08]"}`}>
-            <div>
-              <h2 className="break-words font-semibold">
-                {currentView === "active"
-            ? "English leaderboard bans"
-            : currentView === "account_reports"
-                ? "Reports"
-                : currentView === "strikes" ? "Strikes"
-                    : currentView === "conversations" ? "Conversations" : currentView === "appeals" ? "English appeals" : currentView === "discord" ? "Discord users" : currentView === "frames" ? "Frame restrictions" : "Moderation History"}
-              </h2>
-              <p className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-500"}`}>
-                {currentView === "conversations" ? "Permanent conversations with collectors" : currentView === "appeals" ? "English leaderboard reviews and responses" : isDirectoryView ? `${directoryResult.total} ${currentView === "frames" ? "frame restrictions" : "users with a Discord username"}` : currentView === "active"
-            ? normalizedSearch
-                ? `${filteredBans.length} of ${bans.length} users`
-                : `${bans.length} ${bans.length === 1 ? "user" : "users"}`
-            : currentView === "account_reports"
-                ? `${reportedAccounts.length} reported accounts / ${searchedCardReports.length} listing reports`
-                : currentView === "strikes" ? `${struckAccounts.length} ${struckAccounts.length === 1 ? "account" : "accounts"}`
-                    : `${filteredHistory.length} ${filteredHistory.length === 1 ? "action" : "actions"}`}
-              </p>
-            </div>
-            <div className="moderation-tabs grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" aria-label="Moderation sections">
-              {([
-            ["active", "English bans"],
-            ["account_reports", "Reports"],
-            ["strikes", "Strikes"],
-            ["history", "History"],
-            ["discord", "Discord users"],
-            ["frames", "Frame restrictions"],
-            ["appeals", "English appeals"],
-            ["conversations", "Conversations"],
-        ] as const).map(([view, label]) => (<button key={view} aria-pressed={currentView === view} type="button" onClick={() => {
-                setSearchQuery("");
-                setHistoryAction("all");
-                setPageByView(pages => ({ ...pages, [view]: 1 }));
-                if (view === "history")
-                    void openHistory();
-                else
-                    setCurrentView(view);
-            }} className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold ${currentView === view
-                ? "bg-[#FFD54A] text-black"
-                : isLightMode
-                    ? "bg-zinc-100 text-zinc-600"
-                    : "bg-white/[0.06] text-zinc-300"}`}>
-                  {label}{view === "conversations" && staffSummary.conversation_unread > 0 && <span aria-label={`${staffSummary.conversation_unread} unread conversation messages`} className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold leading-none text-white">{staffSummary.conversation_unread > 99 ? "99+" : staffSummary.conversation_unread}</span>}
-                </button>))}
-            </div>
-          </div>
+          <nav className="moderation-category-nav" aria-label="Moderation sections">{([
+            ["appeals", "English appeals"], ["conversations", "Conversations"], ["account_reports", "Reports"], ["strikes", "Strikes"],
+            ["active", "English bans"], ["discord", "Discord users"], ["frames", "Frame restrictions"], ["history", "History"],
+          ] as const).map(([view,label]) => <button key={view} type="button" aria-pressed={currentView === view} onClick={() => { setSearchQuery(""); setHistoryAction("all"); setPageByView(pages => ({ ...pages, [view]: 1 })); if (view === "history") void openHistory(); else setCurrentView(view); }}><span>{label}</span>{Number(categoryCounts[view] ?? 0) > 0 && <span className="moderation-count" aria-label={`${categoryCounts[view]} unread notifications`}>{categoryCounts[view] > 99 ? "99+" : categoryCounts[view]}</span>}</button>)}</nav>
+          <header className="moderation-section-heading"><h2>{({ active:"English leaderboard bans", account_reports:"Reports", strikes:"Strikes", history:"Moderation history", discord:"Discord directory", frames:"Frame restrictions", appeals:"English appeals", conversations:"Conversations" })[currentView]}</h2><p>{currentView === "conversations" ? "Read and reply to collectors. Appeal decisions can be completed here." : currentView === "appeals" ? "Pending appeals and completed decisions." : currentView === "frames" ? "Review restricted frames and reinstate access." : currentView === "discord" ? "Search collectors and manage trading access." : currentView === "history" ? "Staff actions, most recent first." : currentView === "strikes" ? "Review unanswered trade offers." : currentView === "account_reports" ? "Review collector reports and listing concerns." : "Manage English leaderboard access."}</p></header>
           <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "conversations" ? "Search conversations by collector or Discord username" : currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
-          {currentView === "conversations" ? <StaffConversations key={location.search} moderator search={searchQuery} refresh={appealRefresh} onOpenAppeal={() => { setSearchQuery(""); setCurrentView("appeals"); setAppealRefresh(value => value + 1); }}/> : currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={() => { setBanRefresh(value => value + 1); setHistoryLoaded(false); }}/> : isDirectoryView ? <div className="py-4">
+          {currentView === "conversations" ? <><StaffConversations key={location.search.replace(/[?&]review=[^&]*/, "")} moderator search={searchQuery} refresh={appealRefresh} onOpenAppeal={id => setReviewAppealId(id)}/><EnglishLeaderboardAppealQueue search="" refresh={appealRefresh} onChanged={appealChanged} reviewOnly reviewAppealId={reviewAppealId} onCloseReview={closeAppealReview}/></> : currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={appealChanged} onOpenReview={appeal => { setSearchQuery(""); navigate(`/leaderboard-moderation?view=conversations&user=${encodeURIComponent(appeal.user_id)}&review=${encodeURIComponent(appeal.id)}`); }}/> : isDirectoryView ? <div className="py-4">
             <p className="mb-4 text-sm text-muted-foreground">{currentView === "discord" ? "Find any collector with a Discord username. Revoking removes the username and blocks trade and sale access until reinstated." : "Each row is one revoked frame. Reinstating restores only that frame and applies a moderator override."}</p>
-            {pageLoading ? <p role="status" className="py-10 text-center text-sm text-muted-foreground">Loading {currentView === "discord" ? "Discord users" : "frame restrictions"}...</p> : directoryError ? <p role="alert" className="py-6 text-sm text-red-500">{directoryError}<button type="button" onClick={() => setDirectoryRefresh(value => value + 1)} className="ml-2 underline">Retry</button></p> : directoryResult.rows.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">{normalizedSearch ? "No users match this search." : currentView === "frames" ? "No frame restrictions are active." : "No collectors have a Discord username."}</p> : <ul className="divide-y divide-current/10">{directoryResult.rows.map(row => <li key={`${row.user_id}:${row.frame_id ?? "discord"}`} className="flex flex-col items-start justify-between gap-3 py-4 sm:flex-row sm:items-center">
+            {pageLoading ? <p role="status" className="py-10 text-center text-sm text-muted-foreground">Loading {currentView === "discord" ? "Discord users" : "frame restrictions"}...</p> : directoryError ? <p role="alert" className="py-6 text-sm text-red-500">{directoryError}<button type="button" onClick={() => setDirectoryRefresh(value => value + 1)} className="ml-2 underline">Retry</button></p> : directoryResult.rows.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">{normalizedSearch ? "No users match this search." : currentView === "frames" ? "No frame restrictions are active." : "No collectors have a Discord username."}</p> : <ul className="moderation-directory-list">{directoryResult.rows.map(row => <li key={`${row.user_id}:${row.frame_id ?? "discord"}`} className="moderation-directory-row flex flex-col items-start justify-between gap-3 py-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-wrap items-center gap-4">{currentView === "frames" && <ModerationFramePreview frameId={row.frame_id} isLightMode={isLightMode}/>}<div className="min-w-0 flex-1"><h3 className="break-words text-base font-semibold">{row.username}</h3>{row.discord_username && <p className="mt-1 break-all text-sm text-muted-foreground">Discord: {row.discord_username}</p>}{currentView === "frames" && <><FrameRestrictionReason frameId={row.frame_id}/><p className="mt-2 text-xs text-muted-foreground">Revoked {row.revoked_at ? new Date(row.revoked_at).toLocaleString() : "date unavailable"}</p></>}</div></div>
               <button type="button" disabled={directorySaving} onClick={() => { setDirectoryTarget({ mode: currentView as "discord" | "frames", row }); setDirectoryReason(""); setDirectoryActionError(""); }} className={`min-h-11 shrink-0 rounded-xl border px-4 py-2 text-sm font-semibold disabled:opacity-50 ${currentView === "discord" ? "border-red-500/30 text-red-500" : "border-current/20"}`}>{currentView === "discord" ? "Revoke Discord access" : "Reinstate frame"}</button>
             </li>)}</ul>}
