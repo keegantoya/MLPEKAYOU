@@ -239,6 +239,8 @@ const EXTRA_ZOOM_CODES = new Set(["YH-F01-043", "YH-F01-053", "YH-F01-054", "YH-
 const ADDITIONAL_ZOOM_CODES = new Set(["YH-F01-033", "YH-F01-038", "YH-F01-035", "YH-F01-058", "YH-UR-013"]);
 function moonOneImageStyle(key: string): CSSProperties {
 const code = chineseSets.find(set => set.id === "cn-moon-one")!.cards.find(card => card.key === key)?.code ?? "";
+  if (code.startsWith("YH-F01-")) return { transform: "scale(1.05)", transformOrigin: "center" };
+  if (/^YH-UR-00[1-9]$|^YH-UR-01[0-2]$/.test(code)) return { transform: "none", transformOrigin: "center" };
   if (/^(LSR|SGR)-/.test(key)) return { transform: "none" };
   if (["YH-T01-001", "YH-T01-004", "YH-T01-006", "YH-T01-007", "YH-T01-008"].includes(code)) return { transform: "scale(1.035)", transformOrigin: "center" };
 const baseScale = key === "SGR-7" ? 1 : /^(LSR|SGR)-/.test(key) ? 1.035 : /^UR-[1-3]$/.test(key) ? 1.025 : 1;

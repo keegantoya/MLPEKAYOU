@@ -6,8 +6,10 @@ export type ChineseCardCode = {
 };
 const sequence = (rarity: string, count: number, prefix: string, start = 1, offset = 0): ChineseCardCode[] => Array.from({ length: count }, (_, index) => ({ key: `${rarity}-${index + offset + 1}`, rarity, number: index + offset + 1, code: `${prefix}-${String(index + start).padStart(3, "0")}` }));
 export const CHINESE_MOON_ONE_CODES: ChineseCardCode[] = [
-    ...sequence("R", 40, "YH-F01"),
-    ...sequence("SR", 20, "YH-F01", 41),
+    ...sequence("R", 32, "YH-F01", 1, 8),
+    ...sequence("R", 8, "YH-T01"),
+    ...sequence("SR", 20, "YH-F01", 41, 8),
+    ...sequence("SR", 8, "YH-T01", 9),
     ...sequence("SSR", 15, "YH-F01", 61),
     ...sequence("SSR", 12, "YH-T01", 17, 15),
     ...sequence("HR", 30, "YH-HR"),

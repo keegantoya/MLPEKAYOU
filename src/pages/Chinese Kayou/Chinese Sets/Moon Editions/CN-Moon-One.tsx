@@ -2,12 +2,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ScanSearch } from "lucide-react";
-import { CN_MOON_ONE_SET_ID, getChineseMoonOneFront, getChineseMoonTwoFront, useChineseCardImage } from "../../card-images-cn";
-import { CHINESE_MOON_ONE_CODES, CHINESE_MOON_TWO_CODES } from "../../Chinese Codes + Char/Chinese-Codes";
-const CN_MOON_ONE_CARDS = [
-  ...CHINESE_MOON_TWO_CODES.filter(card => (card.rarity === "R" || card.rarity === "SR") && card.number <= 8).map(card => ({ ...card, code: card.rarity === "SR" ? `YH-T01-${String(card.number + 8).padStart(3, "0")}` : card.code, image: card.rarity === "R" ? getChineseMoonOneFront(card.number, "R") : getChineseMoonTwoFront(card.number, card.rarity) })),
-  ...CHINESE_MOON_ONE_CODES.filter(card => (card.rarity === "SSR" && /^YH-T01-0(?:1[7-9]|2[0-8])$/.test(card.code)) || (card.rarity === "UR" && card.number >= 13 && card.number <= 18) || ["HR", "LSR", "SGR"].includes(card.rarity)).map(card => ({ ...card, image: getChineseMoonOneFront(card.number, card.rarity) })),
-];
+import { CN_MOON_ONE_CARDS, CN_MOON_ONE_SET_ID, useChineseCardImage } from "../../card-images-cn";
 export { CN_MOON_ONE_CARDS, CN_MOON_ONE_SET_ID };
 import type { CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -18,6 +13,8 @@ const EXTRA_ZOOM_CODES = new Set(["YH-F01-043", "YH-F01-053", "YH-F01-054", "YH-
 const ADDITIONAL_ZOOM_CODES = new Set(["YH-F01-033", "YH-F01-038", "YH-F01-035", "YH-F01-058", "YH-UR-013"]);
 function moonOneImageStyle(key: string): CSSProperties {
 const code = CN_MOON_ONE_CARDS.find(card => card.key === key)?.code ?? "";
+  if (code.startsWith("YH-F01-")) return { transform: "scale(1.05)", transformOrigin: "center" };
+  if (/^YH-UR-00[1-9]$|^YH-UR-01[0-2]$/.test(code)) return { transform: "none", transformOrigin: "center" };
   if (/^(LSR|SGR)-/.test(key)) return { transform: "none" };
   if (["YH-T01-001", "YH-T01-004", "YH-T01-006", "YH-T01-007", "YH-T01-008"].includes(code)) return { transform: "scale(1.035)", transformOrigin: "center" };
 const baseScale = key === "SGR-7" ? 1 : /^(LSR|SGR)-/.test(key) ? 1.035 : /^UR-[1-3]$/.test(key) ? 1.025 : 1;

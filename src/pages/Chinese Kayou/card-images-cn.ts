@@ -138,7 +138,20 @@ const index = Number(number);
 };
 export const getChineseMoonOneFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonOne(rarity, number);
 export const CN_MOON_ONE_SET_ID = "cn-moon-one";
-export const CN_MOON_ONE_CARDS = CHINESE_MOON_ONE_CODES.map(card => ({ ...card, image: getChineseMoonOneFront(card.number, card.rarity) }));
+export const CN_MOON_ONE_CARDS = CHINESE_MOON_ONE_CODES.map(card => {
+const printedNumber = Number(card.code.split("-").pop());
+    if (card.code.startsWith("YH-F01-")) {
+const imageNumber = printedNumber - (card.rarity === "SR" ? 40 : card.rarity === "SSR" ? 60 : 0);
+        return { ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-${card.rarity}${imageNumber}.webp`)}?v=${CN_MOON_ONE_IMAGE_REVISION}` };
+    }
+    if (card.rarity === "R" && card.code.startsWith("YH-T01-"))
+        return { ...card, image: getChineseMoonOneFront(printedNumber, "R") };
+    if (card.rarity === "SR" && card.code.startsWith("YH-T01-"))
+        return { ...card, image: `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-SR${printedNumber - 8}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}` };
+    if (card.rarity === "UR" && printedNumber <= 12)
+        return { ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-UR${printedNumber}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}` };
+    return { ...card, image: getChineseMoonOneFront(card.number, card.rarity) };
+});
 export const CN_MOON_TWO_SET_ID = "cn-moon-two";
 export const getChineseMoonTwoFront = (number: number | string, rarity = "R") => {
 const code = rarity.trim().toUpperCase();
