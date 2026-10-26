@@ -239,7 +239,7 @@ const EXTRA_ZOOM_CODES = new Set(["YH-F01-043", "YH-F01-053", "YH-F01-054", "YH-
 const ADDITIONAL_ZOOM_CODES = new Set(["YH-F01-033", "YH-F01-038", "YH-F01-035", "YH-F01-058", "YH-UR-013"]);
 function moonOneImageStyle(key: string): CSSProperties {
 const code = chineseSets.find(set => set.id === "cn-moon-one")!.cards.find(card => card.key === key)?.code ?? "";
-  if (code === "YH-T01-003") return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
+  if ((code === "YH-T01-003" || code === "YH-T01-008")) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
   if (code.startsWith("YH-F01-")) return { transform: "scale(1.05)", transformOrigin: "center" };
   if (/^YH-UR-00[1-9]$|^YH-UR-01[0-2]$/.test(code)) return { transform: "none", transformOrigin: "center" };
   if (/^(LSR|SGR)-/.test(key)) return { transform: "none" };
@@ -515,7 +515,7 @@ const imageStyles: Record<string, (key: string) => CSSProperties> = {
   "cn-star-three": starThreeImageStyle,
   "cn-promos": promosImageStyle,
 };
-export const getChineseISOImageStyle = (card: ChineseISOCard): CSSProperties => card.code === "YH-T01-003" ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : /^YH-(?:UR-0(?:4[0-9]|5[0-4])|SC-01[3-8])$/.test(card.code) ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : chineseSets.find(set => set.id === card.setId)?.imageStyle?.(card.key) ?? imageStyles[card.setId]?.(card.key) ?? {};
+export const getChineseISOImageStyle = (card: ChineseISOCard): CSSProperties => (card.code === "YH-T01-003" || card.code === "YH-T01-008") ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : /^YH-(?:UR-0(?:4[0-9]|5[0-4])|SC-01[3-8])$/.test(card.code) ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : chineseSets.find(set => set.id === card.setId)?.imageStyle?.(card.key) ?? imageStyles[card.setId]?.(card.key) ?? {};
 function stardustOneImageStyle(key: string): CSSProperties {
   if (key === "DUR-7" || key === "DLSR-7" || /^SP-[1-5]$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
   return { transform: "none", transformOrigin: "center" };
