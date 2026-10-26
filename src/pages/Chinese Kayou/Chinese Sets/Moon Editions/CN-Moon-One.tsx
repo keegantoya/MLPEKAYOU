@@ -13,6 +13,7 @@ const EXTRA_ZOOM_CODES = new Set(["YH-F01-043", "YH-F01-053", "YH-F01-054", "YH-
 const ADDITIONAL_ZOOM_CODES = new Set(["YH-F01-033", "YH-F01-038", "YH-F01-035", "YH-F01-058", "YH-UR-013"]);
 function moonOneImageStyle(key: string): CSSProperties {
 const code = CN_MOON_ONE_CARDS.find(card => card.key === key)?.code ?? "";
+  if (code === "YH-T01-003") return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
   if (code.startsWith("YH-F01-")) return { transform: "scale(1.05)", transformOrigin: "center" };
   if (/^YH-UR-00[1-9]$|^YH-UR-01[0-2]$/.test(code)) return { transform: "none", transformOrigin: "center" };
   if (/^(LSR|SGR)-/.test(key)) return { transform: "none" };

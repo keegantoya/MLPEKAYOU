@@ -133,6 +133,8 @@ const code = rarity.trim().toUpperCase();
 const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon One card code.");
+        if (code === "R" && index === 3)
+            return `${getChineseCardImage("Chinese Sets/Moon-One-CN/YH-T01-003.webp")}?v=20261026-t01-003-correct-image-v1`;
         return `${getChineseCardImage(`${CN_IMAGE_ROOT}/CN-M1-${code}${index}.webp`)}?v=${CN_MOON_ONE_IMAGE_REVISION}${code === "UR" && index >= 13 && index <= 18 ? "&refresh=20261024-m1-ur13-18-replaced-v1" : ""}`;
     },
 };
