@@ -1,3 +1,4 @@
+import { useStaffSummary } from "@/components/StaffCommunications";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import CardImage from "@/components/CardImage";
@@ -264,7 +265,9 @@ const KayouHeader = () => {
   }, [location.pathname]);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [inboxNotificationCount, setInboxNotificationCount] = useState(0);
+  const [baseInboxNotificationCount, setInboxNotificationCount] = useState(0);
+  const staffSummary = useStaffSummary();
+  const inboxNotificationCount = baseInboxNotificationCount + staffSummary.unread;
   const notificationAudio = useRef<AudioContext | null>(null);
   const [isLightMode, setIsLightMode] = useState(false);
   const [isSpookyMode, setIsSpookyMode] = useState(false);
@@ -719,6 +722,9 @@ const KayouHeader = () => {
           (offersResult.count ?? 0),
       );
     };
+    const handleStaffNotice = (payload: any) => {
+      if (payload.eventType === "INSERT" && payload.new?.recipient_id === user.id && payload.new?.read_at == null) playNotificationSound();
+    };
     const handleMessageChange = (payload: any) => {
       void refreshInboxCount();
       if (
@@ -758,6 +764,7 @@ const KayouHeader = () => {
         if (!active) return;
         channel = supabase
           .channel(`header-inbox-${user.id}`)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "staff_notifications", filter: `recipient_id=eq.${user.id}` }, handleStaffNotice)
           .on(
             "postgres_changes",
             {
@@ -2838,6 +2845,22 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
               </ul>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBugReport(false);
+                  setOpen(false);
+                  requireLogin("/inbox?staff=1");
+                }}
+                className={`rounded-2xl border px-4 py-3 text-left transition-all duration-200 active:scale-[0.99] sm:col-span-2 ${isLightMode ? "border-[#E7C84B]/20 bg-white hover:border-[#E7C84B]/35 hover:bg-[#fffaf0]" : "border-white/10 bg-white/[0.06] hover:border-white/20 hover:bg-white/[0.10]"}`}
+              >
+                <span className={`block text-sm font-semibold ${isLightMode ? "text-[#312d24]" : "text-white"}`}>
+                  Message staff
+                </span>
+                <span className={`mt-1 block text-xs ${isLightMode ? "text-[#756b59]" : "text-zinc-400"}`}>
+                  Open your personal conversation with MLPEKAYOU staff.
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={() =>

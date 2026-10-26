@@ -1,3 +1,5 @@
+import { useLocation } from "react-router-dom";
+import { StaffConversations, useStaffResponses, useStaffSummary } from "@/components/StaffCommunications";
 import { getMoonFourFront } from "@/lib/card-images";
 import { getHeartswarmingEveFront } from "@/lib/card-images";
 import CardImage from "@/components/CardImage";
@@ -45,7 +47,9 @@ interface InboxHistoryItem {
   profileId: string;
   username: string;
   avatar_url: string | null;
-  kind: "accepted" | "accepted_by_you" | "denied" | "messages";
+  kind: "accepted" | "accepted_by_you" | "denied" | "messages" | "staff_response";
+  notificationId?: string;
+  unread?: boolean;
   messageCount?: number;
   createdAt: string;
 }
@@ -202,14 +206,22 @@ function OfferCardPreview({ card }: { card: OfferCardRef }) {
 }
 export default function Inbox() {
   const [activeTab, setActiveTab] = useState<
-    "notifications" | "friends" | "offers"
-  >("notifications");
+    "notifications" | "friends" | "offers" | "staff"
+  >(() => new URLSearchParams(window.location.search).get("staff") === "1" ? "staff" : "notifications");
+  const location = useLocation();
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("staff") === "1") setActiveTab("staff");
+  }, [location.key, location.search]);
+  const staffSummary = useStaffSummary();
+  const staffResponses = useStaffResponses(staffSummary.userId, staffSummary.version);
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [pendingSentRequests, setPendingSentRequests] = useState<
     PendingFriendRequest[]
   >([]);
   const [history, setHistory] = useState<InboxHistoryItem[]>([]);
+  const notificationHistory: InboxHistoryItem[] = [...history, ...staffResponses.rows.map(row => ({ id: `staff-response-${row.id}`, notificationId: row.id, profileId: "staff", username: "MLPEKAYOU Staff Member", avatar_url: null, kind: "staff_response" as const, createdAt: row.created_at, unread: !row.read_at }))].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const unreadStaffResponses = staffResponses.rows.filter(row => !row.read_at).length;
   const [friends, setFriends] = useState<Friend[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [offers, setOffers] = useState<TradeOffer[]>([]);
@@ -936,7 +948,7 @@ export default function Inbox() {
           </div>
         </section>
         <div
-          className="mt-5 grid grid-cols-3 border-b border-current/10"
+          className="mt-5 grid grid-cols-4 border-b border-current/10"
         >
           <button
             type="button"
@@ -946,9 +958,9 @@ export default function Inbox() {
           >
             <Bell size={16} />
             Requests
-            {requests.length > 0 && (
+            {requests.length + unreadStaffResponses > 0 && (
               <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                {requests.length > 99 ? "99+" : requests.length}
+                {requests.length + unreadStaffResponses > 99 ? "99+" : requests.length + unreadStaffResponses}
               </span>
             )}
           </button>
@@ -975,7 +987,10 @@ export default function Inbox() {
               </span>
             )}
           </button>
+          <button type="button" onClick={() => setActiveTab("staff")} aria-pressed={activeTab === "staff"} className={`flex min-h-[48px] min-w-0 items-center justify-center gap-1.5 border-b-2 px-1 text-xs font-semibold sm:text-sm ${activeTab === "staff" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>Staff{staffSummary.unread > 0 && <span className="text-[10px] text-primary">{staffSummary.unread > 99 ? "99+" : staffSummary.unread}</span>}</button>
         </div>
+        {activeTab === "staff" && <StaffConversations key={staffSummary.userId} moderator={false}/>}
+
         {activeTab === "notifications" && (
           <section
             className="mt-6 min-w-0"
@@ -1078,7 +1093,7 @@ export default function Inbox() {
                     </button>
                   </div>
                 ))}
-                {pendingSentRequests.length === 0 && history.length === 0 && (
+                {pendingSentRequests.length === 0 && notificationHistory.length === 0 && (
                   <div
                     className="py-6"
                   >
@@ -1102,17 +1117,82 @@ export default function Inbox() {
                     </div>
                   </div>
                 )}
-                {history.length > 0 && (
+
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {requests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="relative min-w-0 border-b border-current/10 py-5"
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 items-center gap-4">
+                        <CardImage
+                          src={getProfileAssets(request).avatar}
+                          alt={request.username}
+                          className={`h-14 w-14 rounded-2xl border object-cover ${
+                            isLightMode ? "border-black/10" : "border-white/10"
+                          }`}
+                        />
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">
+                            {request.username}
+                          </div>
+                          <div
+                            className={`mt-1 text-sm ${
+                              isLightMode ? "text-zinc-500" : "text-zinc-400"
+                            }`}
+                          >
+                            Wants to add you as a friend.
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 sm:flex">
+                        <button
+                          type="button"
+                          onClick={() => acceptRequest(request)}
+                          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
+                        >
+                          <Check size={14} />
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => denyRequest(request)}
+                          className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold ${
+                            isLightMode
+                              ? "border-red-700/15 bg-red-700/[0.04] text-red-700 hover:bg-red-700/[0.08]"
+                              : "border-red-400/15 bg-red-400/[0.05] text-red-400 hover:bg-red-400/[0.09]"
+                          }`}
+                        >
+                          <X size={14} />
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {staffResponses.error && <p role="alert" className="mt-4 text-sm text-red-500">{staffResponses.error}</p>}
+                {notificationHistory.length > 0 && (
                   <div>
                     <h3
                       className={`mb-2 px-1 text-xs font-semibold uppercase tracking-[0.14em] ${
                         isLightMode ? "text-zinc-500" : "text-zinc-400"
                       }`}
                     >
-                      History
+                      Notifications
                     </h3>
                     <div className="space-y-2">
-                      {history.map((item) => (
+                      {notificationHistory.map((item) => item.kind === "staff_response" ? (
+                        <button key={item.id} type="button" onClick={() => { if (item.notificationId) void staffResponses.markRead(item.notificationId).then(saved => { if (saved) { setActiveTab("staff"); } }); }} className="flex w-full items-center gap-3 border-b border-current/10 py-4 text-left">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center text-muted-foreground"><MessageSquare size={21}/></span>
+                          <span className="min-w-0 flex-1"><span className={`block text-sm ${item.unread ? "font-semibold" : "text-muted-foreground"}`}>Staff has replied to you.</span><time dateTime={item.createdAt} className="mt-1 block text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</time></span>
+                          {item.unread && <span aria-label="Unread" className="h-2 w-2 shrink-0 rounded-full bg-primary"/>}
+                        </button>
+                      ) : (
                         <div
                           key={item.id}
                           className="flex items-center gap-3 border-b border-current/10 py-4"
@@ -1215,63 +1295,6 @@ export default function Inbox() {
                     </div>
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {requests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="relative min-w-0 border-b border-current/10 py-5"
-                  >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex min-w-0 items-center gap-4">
-                        <CardImage
-                          src={getProfileAssets(request).avatar}
-                          alt={request.username}
-                          className={`h-14 w-14 rounded-2xl border object-cover ${
-                            isLightMode ? "border-black/10" : "border-white/10"
-                          }`}
-                        />
-                        <div className="min-w-0">
-                          <div className="truncate font-semibold">
-                            {request.username}
-                          </div>
-                          <div
-                            className={`mt-1 text-sm ${
-                              isLightMode ? "text-zinc-500" : "text-zinc-400"
-                            }`}
-                          >
-                            Wants to add you as a friend.
-                          </div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 sm:flex">
-                        <button
-                          type="button"
-                          onClick={() => acceptRequest(request)}
-                          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
-                        >
-                          <Check size={14} />
-                          Accept
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => denyRequest(request)}
-                          className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold ${
-                            isLightMode
-                              ? "border-red-700/15 bg-red-700/[0.04] text-red-700 hover:bg-red-700/[0.08]"
-                              : "border-red-400/15 bg-red-400/[0.05] text-red-400 hover:bg-red-400/[0.09]"
-                          }`}
-                        >
-                          <X size={14} />
-                          Decline
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </section>
         )}
         {activeTab === "offers" && (

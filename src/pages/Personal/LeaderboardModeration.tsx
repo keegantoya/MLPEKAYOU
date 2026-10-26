@@ -1,3 +1,4 @@
+import { StaffConversations, useStaffSummary } from "@/components/StaffCommunications";
 import { EnglishLeaderboardAppealQueue } from "@/components/EnglishLeaderboardAppeals";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { englishViewCard, englishViewName, englishViewCode, englishViewImage, englishViewStyle } from "@/lib/english-card-views";
@@ -5,7 +6,7 @@ import { buildListingWarningMessage } from "@/components/ListingModerationWarnin
 import CardImage from "@/components/CardImage";
 import rylandGraceAvatar from "@/assets/avatars/rylandgrace.webp";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, History, Loader2, MoreVertical, Search, Shield, UserX, X, RefreshCw, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
@@ -90,6 +91,9 @@ const getHistoryActionTitle = (item: ModerationHistoryItem) => {
         english_appeal_approved: "English appeal approved",
         english_appeal_declined: "English appeal declined",
         english_appeal_response: "English appeal response",
+        staff_conversation_message: "Staff conversation reply",
+        staff_issue_escalated: "Collector issue escalated to Keegan",
+        staff_escalation_resolved: "Owner escalation handled",
         trading_access_restored: "Trading access restored",
         trading_access_restored_reports_cleared: "Access restored - Reports cleared",
         trading_profile_report_dismissed: "Profile report dismissed",
@@ -117,6 +121,8 @@ const ReportedCardThumbnail = ({ setId, cardKey }: {
 };
 const LeaderboardModeration = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const staffSummary = useStaffSummary();
     const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
     const [authorized, setAuthorized] = useState<boolean | null>(null);
     const [bans, setBans] = useState<LeaderboardBan[]>([]);
@@ -129,10 +135,14 @@ const LeaderboardModeration = () => {
     const [historyAction, setHistoryAction] = useState("all");
     const [banRefresh, setBanRefresh] = useState(0);
     const [reportRefresh, setReportRefresh] = useState(0);
-    const [currentView, setCurrentView] = useState<"active" | "account_reports" | "strikes" | "history" | "discord" | "frames" | "appeals">(() => new URLSearchParams(window.location.search).get("view") ===
-        "account_reports"
-        ? "account_reports"
-        : new URLSearchParams(window.location.search).get("view") === "strikes" ? "strikes" : "active");
+    const [currentView, setCurrentView] = useState<"active" | "account_reports" | "strikes" | "history" | "discord" | "frames" | "appeals" | "conversations">(() => {
+        const value = new URLSearchParams(window.location.search).get("view");
+        return ["account_reports", "strikes", "history", "discord", "frames", "appeals", "conversations"].includes(value ?? "") ? value as "account_reports" | "strikes" | "history" | "discord" | "frames" | "appeals" | "conversations" : "active";
+    });
+    useEffect(() => {
+        const view = new URLSearchParams(location.search).get("view");
+        if (["active", "account_reports", "strikes", "history", "discord", "frames", "appeals", "conversations"].includes(view ?? "")) setCurrentView(view as typeof currentView);
+    }, [location.search]);
     const [directoryResult, setDirectoryResult] = useState<{ key: string; rows: AccessDirectoryRow[]; total: number }>({ key: "", rows: [], total: 0 });
     const [directoryLoading, setDirectoryLoading] = useState(false);
     const [directoryError, setDirectoryError] = useState("");
@@ -648,6 +658,9 @@ const LeaderboardModeration = () => {
                 english_appeal_approved: "approved an English appeal for",
                 english_appeal_declined: "declined an English appeal for",
                 english_appeal_response: "responded to an English appeal from",
+                staff_conversation_message: "sent a staff message to",
+                staff_issue_escalated: "escalated an issue for",
+                staff_escalation_resolved: "handled an escalation for",
                 trading_access_restored: "reinstated trade and sale rights for",
                 trading_access_restored_reports_cleared: "reinstated rights and cleared reports for",
                 trading_profile_report_dismissed: "dismissed a profile report for",
@@ -692,7 +705,7 @@ const LeaderboardModeration = () => {
         setSearchQuery("");
         await loadHistory(true);
     };
-    const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, strikes: 1, history: 1, discord: 1, frames: 1, appeals: 1 });
+    const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, strikes: 1, history: 1, discord: 1, frames: 1, appeals: 1, conversations: 1 });
     const listPanelRef = useRef<HTMLDivElement>(null);
     const pageSize = 10;
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -743,12 +756,18 @@ const LeaderboardModeration = () => {
         } catch (cause) { setDirectoryActionError((cause as { message?: string }).message || "The update could not be saved. Please retry."); }
         finally { directorySaveLock.current = false; setDirectorySaving(false); }
     };
+    useEffect(() => {
+        const invalidate = () => setHistoryLoaded(false);
+        window.addEventListener("staff-communications-changed", invalidate);
+        return () => window.removeEventListener("staff-communications-changed", invalidate);
+    }, []);
+    useEffect(() => { if (authorized && currentView === "history") void loadHistory(true); }, [authorized, currentView]);
     const filteredBans = bans.filter((ban) => ban.username.toLowerCase().includes(normalizedSearch));
     const reportedAccounts = accountReports.filter((group) => group.reports.length > 0 && `${group.username} ${group.reports.map(report => report.comment).join(" ")}`.toLowerCase().includes(normalizedSearch));
     const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0 && group.username.toLowerCase().includes(normalizedSearch));
     const searchedCardReports = cardReports.filter(report => `${report.reportedUsername} ${report.reporterUsername} ${report.cardKey} ${report.setId}`.toLowerCase().includes(normalizedSearch));
     const filteredHistory = historyItems.filter(item => (historyAction === "all" || item.action === historyAction) && `${item.moderatorUsername} ${item.targetUsername} ${getHistoryActionTitle(item)} ${item.details || ""}`.toLowerCase().includes(normalizedSearch));
-    const totalItems = currentView === "appeals" ? 0 : isDirectoryView ? directoryResult.total : currentView === "active" ? filteredBans.length
+    const totalItems = currentView === "appeals" || currentView === "conversations" ? 0 : isDirectoryView ? directoryResult.total : currentView === "active" ? filteredBans.length
         : currentView === "account_reports" ? searchedCardReports.length + reportedAccounts.length
             : currentView === "strikes" ? struckAccounts.length
                 : filteredHistory.length;
@@ -761,7 +780,7 @@ const LeaderboardModeration = () => {
     const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
         : reportedAccounts.slice(Math.max(0, pageStart - searchedCardReports.length), Math.max(0, pageEnd - searchedCardReports.length));
     const pagedHistoryItems = filteredHistory.slice(pageStart, pageEnd);
-    const pageLoading = currentView === "appeals" ? false : isDirectoryView ? directoryLoading || directoryResult.key !== directoryKey : currentView === "active" ? loading
+    const pageLoading = currentView === "appeals" || currentView === "conversations" ? false : isDirectoryView ? directoryLoading || directoryResult.key !== directoryKey : currentView === "active" ? loading
         : currentView === "account_reports" || currentView === "strikes" ? reportsLoading : historyLoading;
     useEffect(() => {
         setPageByView((pages) => pages[currentView] > totalPages
@@ -773,7 +792,7 @@ const LeaderboardModeration = () => {
     };
     const refreshWorkspace = () => {
         setErrorMessage("");
-        if (currentView === "appeals") setAppealRefresh(value => value + 1);
+        if (currentView === "appeals" || currentView === "conversations") setAppealRefresh(value => value + 1);
         else if (isDirectoryView) setDirectoryRefresh(value => value + 1);
         else if (currentView === "history")
             void loadHistory(true);
@@ -972,10 +991,10 @@ const LeaderboardModeration = () => {
             : currentView === "account_reports"
                 ? "Reports"
                 : currentView === "strikes" ? "Strikes"
-                    : currentView === "appeals" ? "English appeals" : currentView === "discord" ? "Discord users" : currentView === "frames" ? "Frame restrictions" : "Moderation History"}
+                    : currentView === "conversations" ? "Conversations" : currentView === "appeals" ? "English appeals" : currentView === "discord" ? "Discord users" : currentView === "frames" ? "Frame restrictions" : "Moderation History"}
               </h2>
               <p className={`mt-0.5 text-xs ${isLightMode ? "text-zinc-600" : "text-zinc-500"}`}>
-                {currentView === "appeals" ? "Regional association reviews and responses" : isDirectoryView ? `${directoryResult.total} ${currentView === "frames" ? "frame restrictions" : "users with a Discord username"}` : currentView === "active"
+                {currentView === "conversations" ? "Permanent conversations with collectors" : currentView === "appeals" ? "English leaderboard reviews and responses" : isDirectoryView ? `${directoryResult.total} ${currentView === "frames" ? "frame restrictions" : "users with a Discord username"}` : currentView === "active"
             ? normalizedSearch
                 ? `${filteredBans.length} of ${bans.length} users`
                 : `${bans.length} ${bans.length === 1 ? "user" : "users"}`
@@ -994,6 +1013,7 @@ const LeaderboardModeration = () => {
             ["discord", "Discord users"],
             ["frames", "Frame restrictions"],
             ["appeals", "English appeals"],
+            ["conversations", "Conversations"],
         ] as const).map(([view, label]) => (<button key={view} aria-pressed={currentView === view} type="button" onClick={() => {
                 setSearchQuery("");
                 setHistoryAction("all");
@@ -1002,17 +1022,17 @@ const LeaderboardModeration = () => {
                     void openHistory();
                 else
                     setCurrentView(view);
-            }} className={`min-h-11 rounded-xl px-4 py-2 text-sm font-bold ${currentView === view
+            }} className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold ${currentView === view
                 ? "bg-[#FFD54A] text-black"
                 : isLightMode
                     ? "bg-zinc-100 text-zinc-600"
                     : "bg-white/[0.06] text-zinc-300"}`}>
-                  {label}
+                  {label}{view === "conversations" && staffSummary.conversation_unread > 0 && <span aria-label={`${staffSummary.conversation_unread} unread conversation messages`} className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold leading-none text-white">{staffSummary.conversation_unread > 99 ? "99+" : staffSummary.conversation_unread}</span>}
                 </button>))}
             </div>
           </div>
-          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
-          {currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={() => { setBanRefresh(value => value + 1); setHistoryLoaded(false); }}/> : isDirectoryView ? <div className="py-4">
+          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "conversations" ? "Search conversations by collector or Discord username" : currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
+          {currentView === "conversations" ? <StaffConversations key={location.search} moderator search={searchQuery} refresh={appealRefresh} onOpenAppeal={() => { setSearchQuery(""); setCurrentView("appeals"); setAppealRefresh(value => value + 1); }}/> : currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={() => { setBanRefresh(value => value + 1); setHistoryLoaded(false); }}/> : isDirectoryView ? <div className="py-4">
             <p className="mb-4 text-sm text-muted-foreground">{currentView === "discord" ? "Find any collector with a Discord username. Revoking removes the username and blocks trade and sale access until reinstated." : "Each row is one revoked frame. Reinstating restores only that frame and applies a moderator override."}</p>
             {pageLoading ? <p role="status" className="py-10 text-center text-sm text-muted-foreground">Loading {currentView === "discord" ? "Discord users" : "frame restrictions"}...</p> : directoryError ? <p role="alert" className="py-6 text-sm text-red-500">{directoryError}<button type="button" onClick={() => setDirectoryRefresh(value => value + 1)} className="ml-2 underline">Retry</button></p> : directoryResult.rows.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">{normalizedSearch ? "No users match this search." : currentView === "frames" ? "No frame restrictions are active." : "No collectors have a Discord username."}</p> : <ul className="divide-y divide-current/10">{directoryResult.rows.map(row => <li key={`${row.user_id}:${row.frame_id ?? "discord"}`} className="flex flex-col items-start justify-between gap-3 py-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-wrap items-center gap-4">{currentView === "frames" && <ModerationFramePreview frameId={row.frame_id} isLightMode={isLightMode}/>}<div className="min-w-0 flex-1"><h3 className="break-words text-base font-semibold">{row.username}</h3>{row.discord_username && <p className="mt-1 break-all text-sm text-muted-foreground">Discord: {row.discord_username}</p>}{currentView === "frames" && <><FrameRestrictionReason frameId={row.frame_id}/><p className="mt-2 text-xs text-muted-foreground">Revoked {row.revoked_at ? new Date(row.revoked_at).toLocaleString() : "date unavailable"}</p></>}</div></div>
