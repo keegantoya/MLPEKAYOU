@@ -20,7 +20,6 @@ import {
   ArrowLeftRight,
   Users,
   User,
-  Search,
   Sparkles,
   CalendarDays,
   Mail,
@@ -2541,20 +2540,22 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                 </div>
                 <div className="relative group">
                   <button
-                    onClick={() => requestNavigation("/faq")}
+                    onClick={() => requestNavigation("/set-information")}
+                    aria-label="Set Information"
+                    title="Set Information"
                     className={`
             relative flex h-10 w-10 items-center justify-center rounded-xl
             border transition-all duration-200
             ${
-              isActive("/faq")
+              isActive("/set-information")
                 ? "border-[#E7C84B]/55 bg-[#E7C84B]/10 text-[#FFE477] shadow-[0_6px_18px_rgba(0,0,0,0.20)]"
                 : "border-white/10 bg-white/[0.035] text-zinc-400 hover:border-white/20 hover:bg-white/[0.065] hover:text-[#FFE477] hover:shadow-[0_6px_18px_rgba(0,0,0,0.18)]"
             }
           `}
                   >
-                    <Search className="h-[17px] w-[17px]" />
+                    <BookOpen className="h-[17px] w-[17px]" />
                     <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-[#111416]/95 px-2.5 py-1.5 text-[10px] font-medium tracking-[0.02em] text-zinc-100 backdrop-blur-md opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
-                      FAQ
+                      Set Information
                     </span>
                   </button>
                 </div>
@@ -2690,15 +2691,16 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
           </button>
           <button
             type="button"
-            onClick={() => requestNavigation("/faq")}
-            aria-label="FAQ"
+            onClick={() => requestNavigation("/set-information")}
+            aria-label="Set Information"
+            title="Set Information"
             className={`flex h-8 w-8 items-center justify-center rounded-xl border shadow-[inset_0_1px_0_rgba(255,255,255,.04)] transition-colors ${
               isLightMode
                 ? "border-black/10 bg-black/[0.035] text-zinc-700 hover:bg-black/[0.07] hover:text-zinc-900"
                 : "border-white/10 bg-white/[0.045] text-zinc-300 hover:bg-white/[0.08] hover:text-[#FFE477]"
             }`}
           >
-            <Search className="h-4 w-4" />
+            <BookOpen className="h-4 w-4" />
           </button>
         </div>
       </header>

@@ -69,7 +69,7 @@ import ChineseTradePostInner from "./pages/Chinese Kayou/Chinese Specific Pages/
 import MyTrades from "@/pages/Personal/MyTrades";
 import MyTradesSets from "@/pages/Personal/MyTradesSets";
 import RequireAuth from "./components/RequireAuth";
-import FAQ from "@/pages/FAQ";
+import SetInformation from "@/pages/Everypony/Set-Information";
 import ISO from "./pages/ISO/iso";
 import MoonOne from "./pages/Sets/Moon Editions/moon-one";
 import MoonTwo from "./pages/Sets/Moon Editions/moon-two";
@@ -310,7 +310,7 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
             document.removeEventListener("dragstart", preventDrag);
         };
     }, []);
-    const routes = (<Routes>
+const routes = (<Routes>
       <Route path="/" element={<Index />}/>
       <Route path="/badges-pins" element={<RequireAuth><BadgesPins /></RequireAuth>}/>
       <Route path="/acrylic-stands" element={<RequireAuth><AcrylicStands /></RequireAuth>}/>
@@ -424,7 +424,8 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
       <Route path="/trading-post/:setId" element={<TradingPostInner />}/>
       <Route path="/trading-post-chinese" element={<RequireAuth><ChineseTradePost /></RequireAuth>}/>
       <Route path="/trading-post-chinese/:setId" element={<RequireAuth><ChineseTradePostInner /></RequireAuth>}/>
-      <Route path="/faq" element={<FAQ />}/>
+      <Route path="/set-information" element={<SetInformation />}/>
+      <Route path="/faq" element={<Navigate to="/set-information" replace />}/>
       <Route path="/support-mlpekayou" element={<Support />}/>
       <Route path="/binders" element={<Binders />}/>
       <Route path="/binders-chinese" element={<RequireAuth><ChineseBinders /></RequireAuth>}/>

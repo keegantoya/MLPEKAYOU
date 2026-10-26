@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Check, Lock, LockOpen } from "lucide-react";
@@ -19,13 +19,9 @@ import {
   FRAME_CATALOG,
   type ProfileAssetUser,
 } from "../Everypony/profile-assets";
-
 const db = supabase as unknown as SupabaseClient;
-
 type FrameStatus = { frame_id: string; status: "locked" | "unlocked" | "revoked"; owned_count: number; total_count: number; required_count: number };
-
 type Selection = { kind: "avatar"; value: string } | { kind: "frame"; value: string | null };
-
 export default function ChangeAvatar() {
 const navigate = useNavigate();
 const location = useLocation();
@@ -37,6 +33,7 @@ const [activeTab, setActiveTab] = useState<"avatars" | "frames">(
 const [pending, setPending] = useState<Selection | null>(null);
 const [loading, setLoading] = useState(true);
 const [saving, setSaving] = useState(false);
+const unlockPending = useRef(false);
 const [error, setError] = useState("");
 const [isLightMode, setIsLightMode] = useState(
     () => document.documentElement.dataset.theme === "light",
@@ -53,11 +50,9 @@ const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
 const selectedStyle = isLightMode
     ? "border-[#8a6a00]/50 bg-[#c89d13]/10 ring-2 ring-[#8a6a00]/15"
     : "border-[#FFD54A]/55 bg-[#FFD54A]/10 ring-2 ring-[#FFD54A]/15";
-
   useEffect(() => {
     setActiveTab(new URLSearchParams(location.search).get("tab") === "frames" ? "frames" : "avatars");
   }, [location.search]);
-
   useEffect(() => {
 let active = true;
 const load = async () => {
@@ -76,7 +71,7 @@ const { data, error } = await db
           .single();
         if (error) throw error;
         if (!active) return;
-        const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
+const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
       if (statusError) throw statusError;
       if (!active) return;
       setFrameStatuses(Object.fromEntries((statuses || []).map((row: FrameStatus) => [row.frame_id, row])));
@@ -89,10 +84,9 @@ const { data, error } = await db
       }
     };
     void load();
-    const refresh = window.setInterval(() => { void load(); }, 30000);
+const refresh = window.setInterval(() => { void load(); }, 30000);
   return () => { active = false; window.clearInterval(refresh); };
   }, [queryClient]);
-
   useEffect(() => {
 const syncTheme = () => setIsLightMode(document.documentElement.dataset.theme === "light");
 const observer = new MutationObserver(syncTheme);
@@ -100,7 +94,6 @@ const observer = new MutationObserver(syncTheme);
     syncTheme();
     return () => observer.disconnect();
   }, []);
-
   useEffect(() => {
 const previousHtmlBackground = document.documentElement.style.backgroundColor;
 const previousBodyBackground = document.body.style.backgroundColor;
@@ -112,12 +105,51 @@ const background = isLightMode ? "#f5f5f3" : "#0d0f10";
       document.body.style.backgroundColor = previousBodyBackground;
     };
   }, [isLightMode]);
-
 const choose = (selection: Selection) => {
     setError("");
     setPending(selection);
   };
-
+const unlockPakraFrame = async () => {
+    if (saving || unlockPending.current || !profile?.id) return;
+    if (frameStatuses.frame003?.status === "revoked") {
+      setInfoFrame("frame003");
+      return;
+    }
+    unlockPending.current = true;
+    setSaving(true);
+    setError("");
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.user || session.user.id !== profile.id) throw new Error("Log in again to unlock this frame.");
+      const { error: unlockError } = await db.rpc("unlock_pakra_supporter_frame");
+      if (unlockError) throw unlockError;
+      const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
+      if (statusError) throw statusError;
+      const rows = (statuses ?? []) as FrameStatus[];
+      setFrameStatuses(Object.fromEntries(rows.map(row => [row.frame_id, row])));
+      const status = rows.find(row => row.frame_id === "frame003")?.status;
+      if (status === "revoked") throw new Error("Access to this frame has been revoked.");
+      if (status !== "unlocked") throw new Error("The frame could not be unlocked. Please try again.");
+      setInfoFrame(null);
+      choose({ kind: "frame", value: "frame003" });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The Pakra frame could not be unlocked. Please try again.");
+    } finally {
+      unlockPending.current = false;
+      setSaving(false);
+    }
+  };
+const openFrame = (frameId: string | null) => {
+    if (saving || unlockPending.current) return;
+    if (frameId === null || frameStatuses[frameId]?.status === "unlocked") {
+      choose({ kind: "frame", value: frameId });
+    } else if (frameId === "frame003" && frameStatuses[frameId]?.status !== "revoked") {
+      void unlockPakraFrame();
+    } else {
+      setInfoFrame(frameId);
+    }
+  };
 const confirm = async () => {
     if (!pending || saving || !profile?.id) return;
     setSaving(true);
@@ -127,7 +159,7 @@ const { data: { session }, error: sessionError } = await supabase.auth.getSessio
       if (sessionError) throw sessionError;
       if (!session?.user || session.user.id !== profile.id) throw new Error("Session changed");
       if (pending.kind === "frame" && pending.value !== null) {
-      const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
+const { data: statuses, error: statusError } = await db.rpc("get_my_avatar_frames");
       if (statusError) throw statusError;
       if (!statuses?.some((row: FrameStatus) => row.frame_id === pending.value && row.status === "unlocked")) throw new Error("Frame is locked");
     }
@@ -149,7 +181,6 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
         if (metadataError) console.error("Avatar metadata sync failed:", metadataError);
       }
       setPending(null);
-  
     } catch {
       setError(pending.kind === "frame"
         ? "Your frame could not be saved. Please try again."
@@ -158,9 +189,8 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
       setSaving(false);
     }
   };
-
-  const shownFrame = FRAME_CATALOG.find((frame) => frame.id === infoFrame);
-  const shownStatus = infoFrame ? frameStatuses[infoFrame] : null;
+const shownFrame = FRAME_CATALOG.find((frame) => frame.id === infoFrame);
+const shownStatus = infoFrame ? frameStatuses[infoFrame] : null;
   return (
     <div className={`min-h-screen ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <main className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
@@ -187,21 +217,21 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
               </div>
             ) : (
               <>
-                <p className={`mb-4 text-sm leading-6 ${muted}`}>Unlock frames through your collection. Tap a lock to see its requirement.</p>
+                <p className={`mb-4 text-sm leading-6 ${muted}`}>Unlock frames through your collection. Tap the Pakra frame to unlock it, or tap another lock to see its requirement.</p>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                   {[{ id: null, name: "No frame" }, ...FRAME_CATALOG].map((frame) => {
-                    const selected = (profile.avatar_frame ?? null) === frame.id;
-                    const state = frame.id ? frameStatuses[frame.id] : null;
-                    const unlocked = frame.id === null || state?.status === "unlocked";
+const selected = (profile.avatar_frame ?? null) === frame.id;
+const state = frame.id ? frameStatuses[frame.id] : null;
+const unlocked = frame.id === null || state?.status === "unlocked";
                     return <article key={frame.id ?? "none"} className={`relative min-w-0 overflow-hidden rounded-2xl border ${selected ? selectedStyle : surface}`}>
                       <div className="relative">
-                        <button type="button" disabled={saving} aria-pressed={selected} aria-label={unlocked ? `Choose ${frame.name}` : `${frame.name}, ${state?.status === "revoked" ? "permanently locked" : "locked"}`} onClick={() => unlocked ? choose({ kind: "frame", value: frame.id }) : setInfoFrame(frame.id)} className="flex aspect-square w-full items-center justify-center p-4">
+                        <button type="button" disabled={saving} aria-pressed={selected} aria-label={unlocked ? `Choose ${frame.name}` : `${frame.name}, ${state?.status === "revoked" ? "permanently locked" : "locked"}`} onClick={() => openFrame(frame.id)} className="flex aspect-square w-full items-center justify-center p-4">
                           <ProfileAvatar profile={profile} frameId={frame.id} preview alt="" className="h-[60%] w-[60%]" />
                         </button>
-                        {!unlocked ? <button type="button" onClick={() => setInfoFrame(frame.id)} aria-label={`View ${frame.name} unlock requirement`} className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-800/75 text-white backdrop-blur-sm"><Lock className="h-7 w-7" /><span className="text-xs font-medium">{state?.status === "revoked" ? "Permanently locked" : "Locked"}</span></button> : null}
+                        {!unlocked ? <button type="button" disabled={saving} onClick={() => openFrame(frame.id)} aria-label={frame.id === "frame003" && state?.status !== "revoked" ? `Unlock ${frame.name}` : `View ${frame.name} unlock requirement`} className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-800/75 text-white backdrop-blur-sm"><Lock className="h-7 w-7" /><span className="text-xs font-medium">{state?.status === "revoked" ? "Permanently locked" : frame.id === "frame003" ? saving ? "Unlocking..." : "Tap to unlock" : "Locked"}</span></button> : null}
                         {frame.id && unlocked ? <button type="button" onClick={() => setInfoFrame(frame.id)} aria-label={`View ${frame.name} met requirement`} className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-950 text-emerald-200"><LockOpen className="h-4 w-4" /></button> : null}
                       </div>
-                      <div className="border-t border-current/10 px-3 py-3"><p className="text-sm font-semibold">{frame.name}</p><p className={`mt-1 text-xs ${muted}`}>{selected ? "Equipped" : unlocked ? "Available" : state?.status === "revoked" ? "Access revoked" : `${state?.owned_count ?? 0} / ${state?.required_count ?? "..."} ${"progressLabel" in frame ? frame.progressLabel : "cards"}`}</p></div>
+                      <div className="border-t border-current/10 px-3 py-3"><p className="text-sm font-semibold">{frame.name}</p><p className={`mt-1 text-xs ${muted}`}>{selected ? "Equipped" : unlocked ? "Available" : state?.status === "revoked" ? "Access revoked" : frame.id === "frame003" ? "Tap to unlock" : `${state?.owned_count ?? 0} / ${state?.required_count ?? "..."} ${"progressLabel" in frame ? frame.progressLabel : "cards"}`}</p></div>
                     </article>;
                   })}
                 </div>
@@ -214,8 +244,9 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
         <DialogContent className={`max-w-md rounded-2xl border ${surface} ${isLightMode ? "text-zinc-900" : "text-white"}`}>
           <DialogTitle>{shownFrame?.name} {shownStatus?.status === "unlocked" ? "unlocked" : shownStatus?.status === "revoked" ? "permanently locked" : "requirement"}</DialogTitle>
           <DialogDescription className={muted}>{shownFrame?.requirement}</DialogDescription>
-          <p className="text-sm">{shownStatus?.status === "unlocked" ? `Requirement met: ${shownStatus?.owned_count ?? 0} / ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}.` : shownStatus?.status === "revoked" ? "This frame is no longer available for your account." : shownFrame?.merit ? "Unlock this frame on merit." : `You currently own ${shownStatus?.owned_count ?? 0} of ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}. Own ${shownStatus?.required_count ?? 0} to unlock ${shownFrame?.name ?? "this frame"}.`}</p>
-          <button type="button" onClick={() => setInfoFrame(null)} className={`rounded-xl border px-4 py-3 text-sm font-semibold ${selectedStyle}`}>Got it</button>
+          <p className="text-sm">{shownStatus?.status === "unlocked" ? `Requirement met: ${shownStatus?.owned_count ?? 0} / ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}.` : shownStatus?.status === "revoked" ? "This frame is no longer available for your account." : infoFrame === "frame003" ? "Tap Unlock Frame to add the Pakra frame to your available frames." : shownFrame?.merit ? "Unlock this frame on merit." : `You currently own ${shownStatus?.owned_count ?? 0} of ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}. Own ${shownStatus?.required_count ?? 0} to unlock ${shownFrame?.name ?? "this frame"}.`}</p>
+          {infoFrame === "frame003" && shownStatus?.status !== "unlocked" && shownStatus?.status !== "revoked" ? <button type="button" disabled={saving} onClick={() => void unlockPakraFrame()} className={`rounded-xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${selectedStyle}`}>{saving ? "Unlocking..." : "Unlock Frame"}</button> : <button type="button" onClick={() => setInfoFrame(null)} className={`rounded-xl border px-4 py-3 text-sm font-semibold ${selectedStyle}`}>Got it</button>}
+         {error && infoFrame === "frame003" ? <p role="alert" className="text-sm text-red-500">{error}</p> : null}
         </DialogContent>
       </Dialog>
     <Dialog open={pending !== null} onOpenChange={(open) => { if (!open && !saving) { setPending(null); setError(""); } }}>
