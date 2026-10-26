@@ -1,6 +1,8 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
-import { useEffect,useState } from "react";
+import { useEffect,useRef,useState } from "react";
 import {
   Crown,
   ShieldCheck,
@@ -14,11 +16,73 @@ type LeaderboardUser={
   avatar_url?: string|null;
   total: number;
 };
+const db = supabase as unknown as SupabaseClient;
 const LEADERBOARD_USER_ID="94a1c998-d040-4dd2-b2fb-5f606287139d";
 const Leaderboard=() => {
 const [ccgLeaders,setCcgLeaders]=useState<LeaderboardUser[]>([]);
 const [tcgLeaders,setTcgLeaders]=useState<LeaderboardUser[]>([]);
 const [loading,setLoading]=useState(true);
+const [isModerator,setIsModerator]=useState(false);
+const [moderationTarget,setModerationTarget]=useState<LeaderboardUser|null>(null);
+const [moderationReason,setModerationReason]=useState("");
+const [moderationError,setModerationError]=useState("");
+const [moderationSaving,setModerationSaving]=useState(false);
+const [moderationNotice,setModerationNotice]=useState("");
+const [refreshVersion,setRefreshVersion]=useState(0);
+const moderationPending=useRef(false);
+const moderatorId=useRef("");
+  useEffect(() => {
+    let active=true;
+    let request=0;
+    const check=async () => {
+      const current=++request;
+      const { data: { session },error: sessionError }=await supabase.auth.getSession();
+      if(!active||current!==request) return;
+      const id=session?.user.id??"";
+      if(sessionError||!id) { moderatorId.current="";setIsModerator(false);setModerationTarget(null);return; }
+      const { data,error }=await db.from("leaderboard_moderators").select("user_id").eq("user_id",id).maybeSingle();
+      if(!active||current!==request) return;
+      moderatorId.current=!error&&data?id:"";
+      setIsModerator(Boolean(moderatorId.current));
+      if(!moderatorId.current) setModerationTarget(null);
+    };
+    void check();
+    const { data: { subscription } }=supabase.auth.onAuthStateChange((event) => {
+      if(event==="SIGNED_IN"||event==="SIGNED_OUT") {
+        request++;moderatorId.current="";setIsModerator(false);setModerationTarget(null);
+        queueMicrotask(() => { if(active) void check(); });
+      }
+    });
+    return () => { active=false;request++;subscription.unsubscribe(); };
+  },[]);
+const beginRevoke=(user: LeaderboardUser) => {
+    if(!isModerator||moderationPending.current) return;
+    setModerationReason("");setModerationError("");setModerationNotice("");setModerationTarget(user);
+  };
+const revokeAccess=async () => {
+    if(!isModerator||!moderationTarget||moderationPending.current) return;
+    const reason=moderationReason.trim();
+    if(reason.length<5||reason.length>1000) { setModerationError("Enter a reason between 5 and 1000 characters.");return; }
+    const target=moderationTarget;
+    const actingModerator=moderatorId.current;
+    moderationPending.current=true;setModerationSaving(true);setModerationError("");
+    try {
+      const { data: { session },error: sessionError }=await supabase.auth.getSession();
+      if(sessionError) throw sessionError;
+      if(!actingModerator||session?.user.id!==actingModerator) throw new Error("Your session changed. Sign in again before moderating.");
+      const { error }=await db.rpc("revoke_leaderboard_eligibility",{ p_target_user_id:target.id,p_reason:reason });
+      if(error) throw new Error(error.message||"Access could not be revoked.");
+      setCcgLeaders(users => users.filter(user => user.id!==target.id));
+      setTcgLeaders(users => users.filter(user => user.id!==target.id));
+      setModerationTarget(null);setModerationReason("");
+      setModerationNotice(`${target.username}'s English leaderboard access was revoked.`);
+      setRefreshVersion(value => value+1);
+    } catch(cause) {
+      setModerationError(cause instanceof Error?cause.message:"Access could not be revoked. Please try again.");
+    } finally { moderationPending.current=false;setModerationSaving(false); }
+  };
+const revokeButton=(user: LeaderboardUser) => isModerator? <button type="button" disabled={moderationSaving} onClick={() => beginRevoke(user)} aria-label={`Revoke ${user.username}'s English leaderboard access`} className="min-h-10 shrink-0 px-1 py-2 text-[11px] font-medium text-red-500 underline-offset-4 hover:underline disabled:opacity-50">Revoke access</button>:null;
+
 const [showHelp,setShowHelp]=useState(false);
 const [viewerStatus,setViewerStatus]=useState<
     "verified"|"unverified"|"ineligible"
@@ -50,6 +114,7 @@ const observer=new MutationObserver(syncTheme);
     };
   },[]);
   useEffect(() => {
+let active=true;
 const loadLeaderboards=async () => {
       setLoading(true);
       try {
@@ -89,6 +154,7 @@ const eligibleUserIds=new Set(
 const {
           data: { session },
         }=await supabase.auth.getSession();
+if(!active) return;
 const viewerTradingProfile=(tradingProfiles||[]).find(
           (profile: any) => profile.user_id===session?.user?.id,
         );
@@ -99,6 +165,7 @@ const { data: excludedUsers,error: exclusionsError }=await supabase
           console.error("Leaderboard exclusions error:",exclusionsError);
           return;
         }
+if(!active) return;
 const excludedUserIds=new Set(
           (excludedUsers||[]).map((user: any) => user.user_id),
         );
@@ -175,16 +242,18 @@ const tcgLeaderboard=eligibleTcgProfiles
           }))
           .sort((a,b) => b.total-a.total)
           .slice(0,7);
+        if(!active) return;
         setCcgLeaders(ccgLeaderboard);
         setTcgLeaders(tcgLeaderboard);
       } catch(error) {
         console.error("Leaderboard loading error:",error);
       } finally {
-        setLoading(false);
+        if(active) setLoading(false);
       }
     };
-    loadLeaderboards();
-  },[]);
+    void loadLeaderboards();
+    return () => { active=false; };
+  },[refreshVersion]);
 const renderAvatarEffects=(user: LeaderboardUser) => {
     if(user.id!==LEADERBOARD_USER_ID) {
       return null;
@@ -222,9 +291,9 @@ const renderAvatarEffects=(user: LeaderboardUser) => {
 const renderTopThree=(leaders: LeaderboardUser[],section: "ccg"|"tcg") => (
   <div className="grid grid-cols-3 items-end gap-2 pb-6 pt-8 sm:gap-5 sm:pt-10">
     {leaders.slice(0,3).map((user,index) => {
-      const rank=index+1;
-      const { avatar,verification }=getProfileAssets(user);
-      const order=rank===1? "order-2":rank===2? "order-1":"order-3";
+const rank=index+1;
+const { avatar,verification }=getProfileAssets(user);
+const order=rank===1? "order-2":rank===2? "order-1":"order-3";
       return <div key={`${section}-${user.id}`} className={`flex min-w-0 flex-col items-center text-center ${order}`}>
         <div className={`mb-3 flex h-6 items-center gap-1.5 text-xs font-medium ${rank===1? "text-primary":rank===2? isLightMode? "text-slate-600":"text-slate-300":isLightMode? "text-amber-800":"text-amber-500"}`}>
           {rank===1 && <Crown size={17} aria-hidden="true" />}<span>{rank===1? "1st":rank===2? "2nd":"3rd"}</span>
@@ -235,6 +304,7 @@ const renderTopThree=(leaders: LeaderboardUser[],section: "ccg"|"tcg") => (
         <div className="mt-3 flex w-full min-w-0 items-center justify-center gap-1"><span title={user.username} className={`truncate text-xs font-semibold sm:text-base ${rank===1? "text-primary":""}`}>{user.username}</span>{verification && <CardImage src={verification.badge} alt={verification.label} title={verification.label} className="h-3.5 w-3.5 shrink-0 object-contain sm:h-4 sm:w-4" />}</div>
         <div className={`mt-2 font-semibold tabular-nums tracking-tight ${rank===1? "text-2xl sm:text-3xl":"text-xl sm:text-2xl"}`}>{user.total.toLocaleString()}</div>
         <span className={`mt-0.5 text-[10px] sm:text-xs ${isLightMode? "text-zinc-500":"text-zinc-400"}`}>cards collected</span>
+        {revokeButton(user)}
       </div>;
     })}
   </div>
@@ -242,12 +312,13 @@ const renderTopThree=(leaders: LeaderboardUser[],section: "ccg"|"tcg") => (
 const renderRemainingRanks=(leaders: LeaderboardUser[],section: "ccg"|"tcg") => (
   <ol start={4} className={`border-t ${isLightMode? "border-black/10":"border-white/10"}`}>
     {leaders.slice(3).map((user,index) => {
-      const { avatar,verification }=getProfileAssets(user);
+const { avatar,verification }=getProfileAssets(user);
       return <li key={`${section}-${user.id}`} className={`flex min-w-0 items-center gap-3 border-b py-3 sm:gap-4 ${isLightMode? "border-black/[0.07]":"border-white/[0.07]"}`}>
         <span className={`w-5 shrink-0 text-sm tabular-nums ${isLightMode? "text-zinc-500":"text-zinc-400"}`}>{index+4}</span>
         <div className="flex h-16 w-16 shrink-0 items-center justify-center"><ProfileAvatar profile={user} src={avatar} alt="" className="h-10 w-10 rounded-[22%] object-cover" /></div>
         <div className="flex min-w-0 flex-1 items-center gap-1.5"><span title={user.username} className="truncate text-sm font-medium">{user.username}</span>{verification && <CardImage src={verification.badge} alt={verification.label} title={verification.label} className="h-4 w-4 shrink-0 object-contain" />}</div>
         <div className="shrink-0 text-right"><span className="text-base font-semibold tabular-nums sm:text-lg">{user.total.toLocaleString()}</span><span className={`ml-1.5 hidden text-xs sm:inline ${isLightMode? "text-zinc-500":"text-zinc-400"}`}>cards</span></div>
+        {revokeButton(user)}
       </li>;
     })}
   </ol>
@@ -283,9 +354,19 @@ return (
             <span>{viewerStatus==="verified"? "You are Discord verified.":viewerStatus==="ineligible"? "You are not eligible for the leaderboards.":"You are not Discord verified."}</span>
           </div>
         </header>
+        {moderationNotice && <p role="status" className="mt-4 text-sm text-muted-foreground">{moderationNotice}</p>}
         {loading? <div role="status" className={`flex items-center justify-center gap-3 py-20 text-sm ${isLightMode? "text-zinc-500":"text-zinc-400"}`}><span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" />Loading leaderboard...</div>:<div className="mt-7 grid items-start gap-10 xl:grid-cols-2 xl:gap-12">{renderLeaderboardSection("CCG","Collectible Card Game (IDK why it's called a game)",ccgLeaders,"ccg")}{renderLeaderboardSection("TCG","Trading Card Game",tcgLeaders,"tcg")}</div>}
       </main>
     </div>
+    <Dialog open={isModerator&&moderationTarget!==null} onOpenChange={open => { if(!open&&!moderationPending.current) { setModerationTarget(null);setModerationError(""); } }}>
+      <DialogContent className="w-[calc(100%-2rem)] max-w-md" onEscapeKeyDown={event => { if(moderationPending.current) event.preventDefault(); }} onPointerDownOutside={event => { if(moderationPending.current) event.preventDefault(); }}>
+        <DialogTitle>Revoke leaderboard access?</DialogTitle>
+        <DialogDescription>Remove {moderationTarget?.username} from the English CCG and TCG leaderboards. They won't lose access to anything else, just the leaderboard.</DialogDescription>
+        <label className="block text-sm font-medium">Reason<textarea value={moderationReason} disabled={moderationSaving} onChange={event => setModerationReason(event.target.value)} maxLength={1000} rows={4} className="mt-2 block w-full rounded-lg border border-border bg-background px-3 py-2 text-base text-foreground" placeholder="Explain why access is being revoked." /></label>
+        {moderationError && <p role="alert" className="text-sm text-red-500">{moderationError}</p>}
+        <div className="flex justify-end gap-3"><button type="button" disabled={moderationSaving} onClick={() => { setModerationTarget(null);setModerationError(""); }} className="min-h-11 rounded-lg border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">Cancel</button><button type="button" disabled={moderationSaving||moderationReason.trim().length<5} onClick={() => void revokeAccess()} className="min-h-11 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">{moderationSaving?"Revoking...":"Revoke access"}</button></div>
+      </DialogContent>
+    </Dialog>
   </>
 );
 };
