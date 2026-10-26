@@ -100,6 +100,8 @@ import ChangeAvatar from "./pages/Personal/change-avatar";
 import LeaderboardModeration from "./pages/Personal/LeaderboardModeration";
 import PublicProfile from "@/pages/Everypony/PublicProfile";
 import LGSBoards from "./pages/Personal/LGSBoards";
+import GoFish from "./pages/Game/Go-Fish";
+import MatchPairs from "./pages/Game/Match-Pairs";
 const queryClient = new QueryClient({
     defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
@@ -312,6 +314,8 @@ const preventDrag = (event: DragEvent) => event.preventDefault();
     }, []);
 const routes = (<Routes>
       <Route path="/" element={<Index />}/>
+      <Route path="/go-fish" element={<RequireAuth><GoFish /></RequireAuth>}/>
+      <Route path="/match-pairs" element={<RequireAuth><MatchPairs /></RequireAuth>}/>
       <Route path="/badges-pins" element={<RequireAuth><BadgesPins /></RequireAuth>}/>
       <Route path="/acrylic-stands" element={<RequireAuth><AcrylicStands /></RequireAuth>}/>
       <Route path="/gel-pens" element={<RequireAuth><GelPens /></RequireAuth>}/>
