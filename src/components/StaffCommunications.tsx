@@ -1,10 +1,11 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { profileViewName, profileViewCode } from "@/lib/english-card-views";
 import { getChineseCard, getChineseCardLabel, chineseSets } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import CardImage from "@/components/CardImage";
 import { FRAME_CATALOG, getProfileAssets } from "@/pages/Everypony/profile-assets";
-import { useEffect, useId, useRef, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Send, Shield, Search, X, ChevronDown } from "lucide-react";
+import { Fragment, useEffect, useId, useRef, useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, ArrowUp, Shield, Search, X, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 type Summary = { userId: string; is_moderator: boolean; is_owner: boolean; moderation_unread: number; conversation_unread: number; unread: number; error: string };
 type Notice = { id: string; title: string; url: string; thread_id: string | null; created_at: string; read_at: string | null };
@@ -30,7 +31,7 @@ function useCollectorProfiles(ids: string[]) {
 function CollectorPortrait({ profile, name }: { profile?: CollectorProfile; name: string }) {
   const src = profile ? getProfileAssets(profile).avatar : "";
   const initials = name.trim().split(/\s+/).slice(0, 2).map(word => word.slice(0, 1)).join("").toUpperCase();
-  return <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-sm font-semibold text-muted-foreground"><span aria-hidden="true">{initials || "?"}</span>{src && <CardImage key={src} src={src} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" onError={event => { event.currentTarget.style.visibility = "hidden"; }}/>}</span>;
+  return <span className="staff-message-portrait relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-sm font-semibold text-muted-foreground"><span aria-hidden="true">{initials || "?"}</span>{src && <CardImage key={src} src={src} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" onError={event => { event.currentTarget.style.visibility = "hidden"; }}/>}</span>;
 }
 function appealMessageBody(body: string, moderator: boolean, collectorName: string) {
   const prefix = "You sent a leaderboard appeal:";
@@ -53,6 +54,10 @@ function conversationTime(value: string) {
   return date.toDateString() === today.toDateString() ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 const conversationStyles = `
+.staff-conversation-pane .staff-message-portrait{width:56px;height:56px;flex-shrink:0;display:flex}
+.staff-conversation-pane .staff-developer-portrait{width:76px;height:76px;border-radius:50%}
+.staff-developer-portrait>img{object-position:25% 35%;transform:scale(1.25);transform-origin:25% 35%}
+@media(max-width:767px){.staff-conversation-pane .staff-message-portrait{width:44px;height:44px}.staff-conversation-pane .staff-developer-portrait{width:60px;height:60px;border-radius:50%}}
 .staff-system-card{border:1px solid hsl(var(--border));border-radius:14px;background:hsl(var(--muted)/.35);padding:12px 14px;color:hsl(var(--foreground));font-size:13px;line-height:1.6;overflow-wrap:anywhere}
 .staff-system-card>header{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:hsl(var(--muted-foreground));font-size:11px;letter-spacing:.025em;font-weight:650}
 .staff-system-card h3{font-size:14px;font-weight:650;margin-bottom:5px}.staff-system-card time{display:block;margin-top:8px;font-size:10px;color:hsl(var(--muted-foreground))}
@@ -66,7 +71,7 @@ const conversationStyles = `
 .staff-workspace[data-moderator=true] .staff-conversation-pane{display:flex;flex:1;flex-direction:column;height:100%;min-height:0;overflow:hidden;animation:none}
 .staff-workspace[data-moderator=true] .staff-thread-heading{flex-shrink:0;gap:10px;min-height:54px;padding:0 0 8px}
 .staff-workspace[data-moderator=true] .staff-thread-heading>div{flex:1;min-width:0}
-.staff-workspace[data-moderator=true] .staff-thread-heading>span,.staff-workspace[data-moderator=true] .staff-directory-row>span:first-child{width:36px;height:36px;flex-shrink:0}
+.staff-workspace[data-moderator=true] .staff-thread-heading>span{width:48px;height:48px;flex-shrink:0}.staff-workspace[data-moderator=true] .staff-directory-row>span:first-child{width:42px;height:42px;flex-shrink:0}
 .staff-workspace[data-moderator=true] .staff-thread-heading h2{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .staff-workspace[data-moderator=true] .staff-thread-heading p{font-size:11px}
 .staff-thread-actions{position:relative;flex-shrink:0;font-size:12px}
@@ -78,7 +83,6 @@ const conversationStyles = `
 .staff-workspace[data-moderator=true] .staff-message-scroll{flex:1;min-height:0;max-height:none;padding:12px 2px;scrollbar-width:thin}
 .staff-workspace[data-moderator=true] .staff-message-scroll ol{gap:12px}
 .staff-workspace[data-moderator=true] .staff-message-scroll li>div{max-width:92%;gap:8px}
-.staff-workspace[data-moderator=true] .staff-message-scroll li>div>span:first-child{width:30px;height:30px;flex-shrink:0}
 .staff-workspace[data-moderator=true] .staff-message-scroll li p{font-size:13px;line-height:1.55}
 .staff-workspace[data-moderator=true] .staff-message-composer{flex-shrink:0;padding-top:8px}
 .staff-workspace[data-moderator=true] .staff-message-composer textarea{height:58px;min-height:46px;max-height:90px;resize:none;padding:9px 11px;font-size:16px}
@@ -98,7 +102,7 @@ const conversationStyles = `
 .staff-workspace[data-moderator=true] .staff-directory-preview{-webkit-line-clamp:1;line-height:1.5;font-size:12px}
 .staff-workspace[data-moderator=true] .staff-directory-preview+span{margin-top:5px;min-height:0}
 .staff-workspace[data-moderator=true] .staff-directory-row .staff-directory-preview+span:empty{display:none}
-@media(max-width:767px){.staff-workspace[data-moderator=true]{grid-template-columns:minmax(0,1fr);gap:0;padding-top:4px}.staff-workspace[data-moderator=true] .staff-conversation-directory{padding-right:0;border:0}.staff-workspace[data-moderator=true][data-open=true] .staff-conversation-directory{display:none}.staff-workspace[data-moderator=true][data-open=false] .staff-thread-column{display:none}.staff-workspace[data-moderator=true] .staff-back-to-list{flex-shrink:0;margin:0 0 4px;min-height:36px}.staff-workspace[data-moderator=true] .staff-message-scroll li>div{max-width:96%;gap:6px}.staff-workspace[data-moderator=true] .staff-message-scroll li>div>span:first-child{display:none}.staff-workspace[data-moderator=true] .staff-message-composer textarea{height:48px}.staff-workspace[data-moderator=true] .staff-thread-heading{min-height:48px}}
+@media(max-width:767px){.staff-workspace[data-moderator=true]{grid-template-columns:minmax(0,1fr);gap:0;padding-top:4px}.staff-workspace[data-moderator=true] .staff-conversation-directory{padding-right:0;border:0}.staff-workspace[data-moderator=true][data-open=true] .staff-conversation-directory{display:none}.staff-workspace[data-moderator=true][data-open=false] .staff-thread-column{display:none}.staff-workspace[data-moderator=true] .staff-back-to-list{flex-shrink:0;margin:0 0 4px;min-height:36px}.staff-workspace[data-moderator=true] .staff-message-scroll li>div{max-width:96%;gap:6px}.staff-workspace[data-moderator=true] .staff-message-composer textarea{height:48px}.staff-workspace[data-moderator=true] .staff-thread-heading{min-height:48px}}
 .staff-directory-row{border:1px solid hsl(var(--border));border-left-width:3px;box-sizing:border-box;width:100%;min-width:0;max-width:100%;border-radius:12px;background:hsl(var(--background));transition:background-color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
 .staff-directory-list{list-style:none;margin:0;padding:4px;min-width:0;max-width:100%}.staff-directory-list>li{min-width:0;max-width:100%}.staff-directory-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;overflow-wrap:anywhere}
 .staff-directory-row:hover{border-color:hsl(var(--primary)/.4);background:hsl(var(--primary)/.045);transform:translateX(2px)}
@@ -114,6 +118,33 @@ const conversationStyles = `
 .staff-workspace[data-moderator=true] .staff-message-composer>div>span{display:none}
 .staff-workspace[data-moderator=true] .staff-message-composer button{height:48px;min-height:44px}
 @media(prefers-reduced-motion:reduce){.staff-directory-enter,.staff-conversation-pane{animation:none}.staff-directory-row{transition:none}.staff-directory-row:hover{transform:none}}
+.staff-workspace .staff-conversation-pane .staff-message-scroll{padding:18px 6px 12px}
+.staff-workspace .staff-conversation-pane .staff-chat-list{display:flex;flex-direction:column;gap:0;list-style:none;margin:0;padding:0}
+.staff-workspace .staff-conversation-pane .staff-chat-day{margin:12px 0 20px;text-align:center;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:11px;font-weight:600;color:hsl(var(--muted-foreground))}
+.staff-workspace .staff-conversation-pane .staff-chat-item{margin:0;padding:3px 0}
+.staff-workspace .staff-conversation-pane .staff-chat-item[data-group-start=true]{padding-top:15px}
+.staff-workspace .staff-conversation-pane .staff-message-scroll .staff-chat-line{width:auto;max-width:min(82%,670px);gap:10px}
+.staff-workspace .staff-conversation-pane .staff-chat-avatar{display:flex;align-items:flex-end;justify-content:center;flex:0 0 56px;width:56px;min-width:56px}
+.staff-workspace .staff-conversation-pane .staff-chat-avatar[data-developer=true]{flex-basis:76px;width:76px;min-width:76px}
+.staff-workspace .staff-conversation-pane .staff-chat-content{display:flex;flex-direction:column;gap:0}
+.staff-workspace .staff-conversation-pane .staff-chat-author{margin:0 10px 5px;font-size:11px;font-weight:600;line-height:1.5;color:hsl(var(--muted-foreground));overflow-wrap:anywhere}
+.staff-workspace .staff-conversation-pane .staff-chat-author img{width:13px;height:13px}
+.staff-workspace .staff-conversation-pane .staff-chat-bubble{position:relative;width:fit-content;max-width:100%;border:0;border-radius:22px;padding:11px 16px;background:hsl(var(--muted));color:hsl(var(--foreground));box-shadow:none;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.staff-workspace .staff-conversation-pane [data-message-side=outgoing] .staff-chat-bubble{background:#087af5;color:#fff}
+.staff-workspace .staff-conversation-pane [data-message-side=incoming] .staff-chat-bubble[data-group-end=true]{border-bottom-left-radius:7px}
+.staff-workspace .staff-conversation-pane [data-message-side=outgoing] .staff-chat-bubble[data-group-end=true]{border-bottom-right-radius:7px}
+.staff-workspace .staff-conversation-pane .staff-chat-bubble p{margin:0;font-size:15px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;text-align:left}
+.staff-workspace .staff-conversation-pane .staff-chat-bubble[data-rich=true]{background:hsl(var(--muted)/.45);color:hsl(var(--foreground));border:1px solid hsl(var(--border));border-radius:18px}
+.staff-workspace .staff-conversation-pane .staff-chat-time{display:block;margin:5px 10px 0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:10px;line-height:1.5;color:hsl(var(--muted-foreground))}
+.staff-workspace .staff-conversation-pane .staff-imessage-composer{display:flex;align-items:flex-end;gap:6px;margin-top:10px;padding:4px;border:1px solid hsl(var(--border));border-radius:27px;background:hsl(var(--muted)/.2);flex-shrink:0}
+.staff-workspace .staff-conversation-pane .staff-imessage-composer textarea{display:block;flex:1;min-width:0;width:100%;height:44px;min-height:44px;max-height:min(120px,22dvh);resize:none;border:0;border-radius:22px;padding:11px 14px;background:transparent;color:hsl(var(--foreground));font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:22px;outline:none;box-shadow:none}
+.staff-workspace .staff-conversation-pane .staff-imessage-composer:focus-within{border-color:#087af5;box-shadow:0 0 0 2px #087af51a}
+.staff-workspace .staff-conversation-pane .staff-imessage-composer button{display:flex;align-items:center;justify-content:center;flex:0 0 38px;width:38px;height:38px;min-height:38px;margin:3px;padding:0;border:0;border-radius:50%;background:#087af5;color:white;transition:opacity .15s,transform .15s}
+.staff-workspace .staff-conversation-pane .staff-imessage-composer button:disabled{opacity:.35;cursor:not-allowed}
+.staff-workspace .staff-conversation-pane .staff-imessage-composer button:not(:disabled):active{transform:scale(.94)}
+.staff-workspace .staff-conversation-pane .staff-imessage-composer button:focus-visible{outline:2px solid #087af5;outline-offset:3px}
+@media(max-width:767px){.staff-workspace .staff-conversation-pane .staff-message-scroll{padding:12px 0}.staff-workspace .staff-conversation-pane .staff-message-scroll .staff-chat-line{max-width:96%;gap:7px}.staff-workspace .staff-conversation-pane .staff-chat-avatar{flex-basis:44px;width:44px;min-width:44px}.staff-workspace .staff-conversation-pane .staff-chat-avatar[data-developer=true]{flex-basis:60px;width:60px;min-width:60px}.staff-workspace .staff-conversation-pane .staff-chat-author{font-size:10px;margin-left:8px;margin-right:8px}.staff-workspace .staff-conversation-pane .staff-chat-bubble{padding:10px 13px;border-radius:20px}.staff-workspace .staff-conversation-pane .staff-chat-item[data-group-start=true]{padding-top:12px}}
+@media(prefers-reduced-motion:reduce){.staff-workspace .staff-conversation-pane .staff-imessage-composer button{transition:none}}
 `;
 const api = supabase as unknown as { rpc: (name: string, args: { p_action: string; p_data: Record<string, unknown> }) => Promise<{ data: any; error: { message: string } | null }> };
 const failure = (cause: unknown) => cause instanceof Error ? cause.message : "This request could not be completed. Please retry.";
@@ -190,11 +221,36 @@ export function useStaffResponses(userId: string, version: number) {
 }
 export function StaffNotifications(_props: { onOpenStaff?: () => void }) { return null; }
 export function ModerationNotifications() { return null; }
+const DEVELOPER_USER_ID = "17e57e39-bc0c-44e7-b373-ac34c6690185";
+type DeveloperProfile = CollectorProfile & { avatar_frame?: string | null };
+const developerProfileKey = ["staff-developer-profile", DEVELOPER_USER_ID] as const;
+function useDeveloperProfile() {
+  return useQuery({
+    queryKey: developerProfileKey,
+    queryFn: async (): Promise<DeveloperProfile> => {
+      const { data, error } = await supabase.from("profiles").select("id,username,avatar_url,avatar_frame").eq("id", DEVELOPER_USER_ID).single();
+      if (error) throw error;
+      if (!data) throw new Error("Developer profile not found");
+      return data;
+    },
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}
+function DeveloperPortrait() {
+  const { data: profile } = useDeveloperProfile();
+  return <span className="staff-message-portrait staff-developer-portrait relative block shrink-0 overflow-hidden rounded-full border border-border bg-muted"><img src="/kayou's-assets/IMG_0567.webp" alt={profile?.username || "MLPEKAYOU Developer"} draggable={false} className="block h-full w-full max-w-none object-cover"/></span>;
+}
+function DeveloperName() {
+  const { data: profile } = useDeveloperProfile();
+  return <span className="inline-flex flex-wrap items-center gap-1.5"><span>MLPEKAYOU Developer{profile?.username ? ` · ${profile.username}` : ""}</span><img src="/website-assets/goldenverifiedbadge.webp" alt="Verified developer" className="h-4 w-4 shrink-0 object-contain" draggable={false}/></span>;
+}
 function StaffPortrait({ owner = false }: { owner?: boolean }) {
-  return <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">{owner ? <img src="/website-assets/OwnerBadge.webp" alt="" className="h-full w-full object-contain" draggable={false}/> : <Shield size={25}/>}</span>;
+  return owner ? <DeveloperPortrait/> : <span className="staff-message-portrait flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary"><Shield size={25}/></span>;
 }
 export function StaffName({ owner = false }: { owner?: boolean }) {
-  return <span className="inline-flex flex-wrap items-center gap-1.5"><span>{owner ? "MLPEKAYOU Owner" : "MLPEKAYOU Staff Member"}</span>{!owner && <img src="/website-assets/blueverifiedbadge.webp" alt="Verified staff" className="h-4 w-4 shrink-0 object-contain" draggable={false}/>}</span>;
+  return owner ? <DeveloperName/> : <span className="inline-flex flex-wrap items-center gap-1.5"><span>MLPEKAYOU Staff Member</span><img src="/website-assets/blueverifiedbadge.webp" alt="Verified staff" className="h-4 w-4 shrink-0 object-contain" draggable={false}/></span>;
 }
 type OfferItem = { set_id: string; card_key: string };
 type SystemOffer = { id: string; sender: string; received_at: string | null; expired_at: string; recorded_at: string; cleared_at: string | null; target: OfferItem; offered: OfferItem[] };
@@ -266,6 +322,18 @@ function CollectorInformation({ userId, open, onClose, onSent }: { userId: strin
   const notes = topic === "leaderboard" ? snapshot?.staff_notes.leaderboard : topic === "trading" ? snapshot?.staff_notes.trading : null;
   return <Dialog open={open} onOpenChange={value => { if (!value && !lock.current) onClose(); }}><DialogContent className="staff-info-dialog z-[120020]"><header><div className="min-w-0"><DialogTitle className="truncate text-base font-semibold">{snapshot?.username ?? "Collector information"}</DialogTitle><DialogDescription className="mt-1 text-xs">{preview ? "Review the System message before sending." : "Account information · visible only to moderators"}</DialogDescription></div><button type="button" disabled={busy} onClick={onClose} aria-label="Close collector information" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border disabled:opacity-50"><X size={18}/></button></header><nav aria-label="Collector information sections">{([["leaderboard", "Leaderboard"], ["frame", "Frames"], ["trading", "Trading"]] as const).map(([id, label]) => <button key={id} type="button" disabled={busy} aria-pressed={topic === id} onClick={() => selectTopic(id)}>{label}</button>)}</nav><div className="staff-info-content">{loading ? <p role="status" className="py-5 text-sm">Loading account record...</p> : <>{topic === "frame" && snapshot && <><label className="sr-only" htmlFor={`collector-frame-${userId}`}>Choose a frame</label><select id={`collector-frame-${userId}`} value={frameId} disabled={busy} onChange={event => { ++generation.current; setFrameId(event.target.value); setPreview(null); nonce.current = null; setError(""); }}>{snapshot.frames.map(frame => <option key={frame.frame_id} value={frame.frame_id}>{frameName(frame.frame_id)} · {frame.status}</option>)}</select></>}{response && <><p className="staff-info-note">{preview ? "This is exactly what the collector will receive as a System message." : `Current status: ${response.status}${response.request_status ? ` · application ${response.request_status}` : ""}. Review the response to prepare it for the collector.`}</p><SystemResponseCard response={response}/></>}{!preview && notes && <details><summary className="cursor-pointer">Internal moderation note · never included in the System message</summary><p>{notes}</p></details>}</>}{error && <p role="alert" className="mt-3 text-sm text-red-500">{error}</p>}</div><footer><button type="button" disabled={busy} onClick={() => { setPreview(null); nonce.current = null; setRevision(value => value + 1); }} className="border border-border disabled:opacity-50">Refresh record</button>{preview ? <button type="button" disabled={busy} onClick={() => void send()} className="bg-primary text-primary-foreground disabled:opacity-50">{busy ? "Sending..." : "Send System response"}</button> : <button type="button" disabled={busy || loading || !response} onClick={() => void review()} className="bg-primary text-primary-foreground disabled:opacity-50">{busy ? "Preparing..." : "Review System response"}</button>}</footer></DialogContent></Dialog>;
 }
+function sameMessageGroup(previous: Entry | undefined, current: Entry | undefined) {
+  if (!previous || !current || previous.system_context || current.system_context || previous.kind !== "message" || current.kind !== "message") return false;
+  const gap = new Date(current.created_at).getTime() - new Date(previous.created_at).getTime();
+  return previous.from_staff === current.from_staff && (!current.from_staff || (previous.sender_role ?? "staff") === (current.sender_role ?? "staff")) && gap >= 0 && gap < 300000 && new Date(previous.created_at).toDateString() === new Date(current.created_at).toDateString();
+}
+function conversationDay(value: string) {
+  const date = new Date(value);
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) return "Today";
+  today.setDate(today.getDate() - 1);
+  return date.toDateString() === today.toDateString() ? "Yesterday" : date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", ...(date.getFullYear() !== today.getFullYear() ? { year: "numeric" as const } : {}) });
+}
 function StaffConversation({ userId, threadId, targetId, moderator, owner, version, onThread, onOpenAppeal, onResolved }: { userId: string; threadId?: string; targetId?: string; moderator: boolean; owner: boolean; version: number; onThread: (id: string) => void; onResolved?: () => void; onOpenAppeal?: (appealId: string) => void }) {
   const [thread, setThread] = useState<Thread | null>(null);
   const collectorId = thread?.user_id ?? targetId ?? (!moderator ? userId : "");
@@ -286,6 +354,8 @@ function StaffConversation({ userId, threadId, targetId, moderator, owner, versi
   const [loading, setLoading] = useState(true);
   const [olderLoading, setOlderLoading] = useState(false);
   const [draft, setDraft] = useState("");
+  const composerInput = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { if (!draft && composerInput.current) composerInput.current.style.height = "44px"; }, [draft]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -375,28 +445,43 @@ function StaffConversation({ userId, threadId, targetId, moderator, owner, versi
 </div></details>}</header>
     <div ref={scrollArea} className="staff-message-scroll max-h-[52dvh] min-h-40 overflow-y-auto overscroll-contain py-4 sm:max-h-[60dvh]" onScroll={event => { const element = event.currentTarget; follow.current = element.scrollHeight - element.scrollTop - element.clientHeight < 80; }}>
       {hasMore && <button type="button" disabled={olderLoading} onClick={() => void older()} className="mb-4 min-h-11 text-sm underline disabled:opacity-50">{olderLoading ? "Loading..." : "Load earlier messages"}</button>}
-      {loading ? <p role="status" className="py-6 text-sm text-muted-foreground">Loading conversation...</p> : !timeline.length ? <p className="py-6 text-sm text-muted-foreground">Send a message to start a conversation with staff.</p> : <ol className="space-y-4">{timeline.map(entry => {
-        if (entry.system_context) return <li key={entry.id} data-message-side="system" className="mx-auto w-full max-w-2xl"><SystemResponseCard response={entry.system_context} createdAt={entry.created_at}/></li>;
+      {loading ? <p role="status" className="py-6 text-sm text-muted-foreground">Loading conversation...</p> : !timeline.length ? <p className="py-6 text-sm text-muted-foreground">Send a message to start a conversation with staff.</p> : <ol className="staff-chat-list">{timeline.map((entry, index) => {
+        const startsDay = index === 0 || new Date(timeline[index - 1].created_at).toDateString() !== new Date(entry.created_at).toDateString();
+        const day = startsDay ? <li className="staff-chat-day"><time dateTime={entry.created_at}>{conversationDay(entry.created_at)}</time></li> : null;
+        if (entry.system_context) return <Fragment key={entry.id}>{day}<li data-message-side="system" className="mx-auto my-3 w-full max-w-2xl"><SystemResponseCard response={entry.system_context} createdAt={entry.created_at}/></li></Fragment>;
         const outgoing = moderator ? entry.from_staff : !entry.from_staff;
         const decision = appealDecision(entry);
-        return <li key={entry.id} data-message-side={outgoing ? "outgoing" : "incoming"} className={`flex w-full ${outgoing ? "justify-end" : "justify-start"}`}>
-          <div className={`flex max-w-[92%] items-end gap-2 sm:max-w-[85%] sm:gap-3 ${outgoing ? "flex-row-reverse" : "flex-row"}`}>
-            {entry.from_staff ? <StaffPortrait owner={entry.sender_role === "owner"}/> : <CollectorPortrait profile={collectorProfile} name={collectorName}/>}
-            <div className={`min-w-0 rounded-2xl border px-3 py-2.5 sm:px-4 ${outgoing ? "rounded-br-sm border-primary/20 bg-primary/10" : "rounded-bl-sm border-border bg-muted/40"}`}>
-              <div className={`mb-1 text-xs font-semibold ${outgoing ? "text-right" : "text-left"}`}>{entry.from_staff ? <StaffName owner={entry.sender_role === "owner"}/> : collectorName}</div>
-              {decision ? <AppealDecisionCard update={decision}/> : <p className="whitespace-pre-wrap break-words text-left text-sm leading-6 [overflow-wrap:anywhere]">{entry.kind === "appeal" ? appealMessageBody(entry.body, moderator, collectorName) : entry.body}</p>}
-              <time dateTime={entry.created_at} className={`mt-1.5 block text-[10px] text-muted-foreground ${outgoing ? "text-right" : "text-left"}`}>{new Date(entry.created_at).toLocaleString()}</time>
+        const startsGroup = !sameMessageGroup(timeline[index - 1], entry);
+        const endsGroup = !sameMessageGroup(entry, timeline[index + 1]);
+        return <Fragment key={entry.id}>{day}<li data-message-side={outgoing ? "outgoing" : "incoming"} data-group-start={startsGroup} className={`staff-chat-item flex w-full ${outgoing ? "justify-end" : "justify-start"}`}>
+          <div className={`staff-chat-line flex min-w-0 items-end ${outgoing ? "flex-row-reverse" : "flex-row"}`}>
+            <span className="staff-chat-avatar" data-developer={entry.from_staff && entry.sender_role === "owner"}>{endsGroup ? entry.from_staff ? <StaffPortrait owner={entry.sender_role === "owner"}/> : <CollectorPortrait profile={collectorProfile} name={collectorName}/> : null}</span>
+            <div className={`staff-chat-content min-w-0 ${outgoing ? "items-end" : "items-start"}`}>
+              {startsGroup && <div className="staff-chat-author">{entry.from_staff ? <StaffName owner={entry.sender_role === "owner"}/> : collectorName}</div>}
+              <div className="staff-chat-bubble" data-rich={!!decision} data-group-end={endsGroup} title={new Date(entry.created_at).toLocaleString()}>
+                {decision ? <AppealDecisionCard update={decision}/> : <p>{entry.kind === "appeal" ? appealMessageBody(entry.body, moderator, collectorName) : entry.body}</p>}
+              </div>
+              {endsGroup && <time dateTime={entry.created_at} title={new Date(entry.created_at).toLocaleString()} className="staff-chat-time">{new Date(entry.created_at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</time>}
             </div>
           </div>
-        </li>;
+        </li></Fragment>;
       })}</ol>}
     </div>
     {error && <p role="alert" className="mb-3 text-sm text-red-500">{error}<button type="button" onClick={() => setRetry(value => value + 1)} className="ml-3 underline">Retry</button></p>}
-    <form onSubmit={event => { event.preventDefault(); void send(); }} className="staff-message-composer border-t border-current/10 pt-3"><label className="sr-only" htmlFor={`staff-draft-${userId}`}>Message {moderator ? "collector" : "staff"}</label><textarea id={`staff-draft-${userId}`} value={draft} onChange={event => setDraft(event.target.value)} disabled={saving} maxLength={4000} rows={moderator ? 2 : 3} placeholder={moderator ? owner ? "Reply as MLPEKAYOU Owner..." : "Reply as MLPEKAYOU Staff Member..." : "Message staff..."} className="w-full resize-y rounded-lg border border-border bg-background p-3 text-base text-foreground disabled:opacity-60"/><div className="mt-2 flex items-center justify-between gap-3"><span className="text-xs text-muted-foreground">{draft.length}/4000</span><button type="submit" disabled={saving || resolving || !draft.trim() || loading} className="flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50"><Send size={16}/>{saving ? "Sending..." : moderator ? "Send" : "Send message"}</button></div></form>
+    <form onSubmit={event => { event.preventDefault(); void send(); }} className="staff-message-composer staff-imessage-composer"><label className="sr-only" htmlFor={`staff-draft-${userId}`}>Message {moderator ? "collector" : "staff"}</label><textarea ref={composerInput} id={`staff-draft-${userId}`} value={draft} onChange={event => { setDraft(event.target.value); event.currentTarget.style.height = "auto"; event.currentTarget.style.height = `${Math.min(120, Math.max(44, event.currentTarget.scrollHeight))}px`; }} disabled={saving} maxLength={4000} rows={1} placeholder={moderator ? owner ? "Reply as MLPEKAYOU Developer..." : "Reply as MLPEKAYOU Staff Member..." : "Message staff..."}/><button type="submit" disabled={saving || resolving || !draft.trim() || loading} aria-label={saving ? "Sending message" : "Send message"} title="Send message"><ArrowUp size={22} aria-hidden="true"/><span className="sr-only">{saving ? "Sending..." : "Send message"}</span></button></form>
     {moderator && infoOpen && <CollectorInformation userId={collectorId} open={infoOpen} onClose={() => setInfoOpen(false)} onSent={id => { follow.current = true; setRetry(value => value + 1); onThread(id); changed(); }}/>}
   </section>;
 }
 export function StaffConversations({ moderator = false, search = "", refresh = 0, onOpenAppeal }: { moderator?: boolean; search?: string; refresh?: number; onOpenAppeal?: (appealId: string) => void }) {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const update = (event: Event) => {
+      const profile = (event as CustomEvent<Partial<DeveloperProfile>>).detail;
+      if (profile?.id === DEVELOPER_USER_ID) queryClient.setQueryData<DeveloperProfile>(developerProfileKey, previous => previous ? { ...previous, ...profile } : undefined);
+    };
+    window.addEventListener("profile-updated", update);
+    return () => window.removeEventListener("profile-updated", update);
+  }, [queryClient]);
   const summary = useStaffSummary();
   return !summary.userId ? null : moderator && !summary.is_moderator ? <p className="py-6 text-sm text-muted-foreground">{summary.error || "Checking moderator access..."}</p> : <ConversationWorkspace key={summary.userId} userId={summary.userId} moderator={moderator} owner={summary.is_owner} search={search} refresh={refresh + summary.version} onOpenAppeal={onOpenAppeal}/>;
 }
