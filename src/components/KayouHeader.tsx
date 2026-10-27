@@ -299,6 +299,66 @@ const KayouHeader = () => {
   const [showMobileProgressMenu, setShowMobileProgressMenu] = useState(false);
   const [showMobileIsoMenu, setShowMobileIsoMenu] = useState(false);
   const [mobileNavCollapsed, setMobileNavCollapsed] = useState(false);
+  const mobileNavigationRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const nav = mobileNavigationRef.current;
+    if (!nav) return;
+    const viewport = window.visualViewport;
+    const gapProbe = document.createElement("div");
+    gapProbe.setAttribute("aria-hidden", "true");
+    gapProbe.style.cssText = "position:fixed;left:0;top:0;width:0;height:max(12px,env(safe-area-inset-bottom,0px));visibility:hidden;pointer-events:none;";
+    document.body.appendChild(gapProbe);
+    let frame = 0;
+    let disposed = false;
+    const timers = new Set<number>();
+    const update = () => {
+      frame = 0;
+      if (disposed || document.visibilityState === "hidden") return;
+      if (window.innerWidth >= 640) { nav.style.removeProperty("--kayou-mobile-nav-top"); return; }
+      const height = viewport?.height ?? window.innerHeight;
+      const offset = viewport?.offsetTop ?? 0;
+      if (!Number.isFinite(height) || height <= 0 || !Number.isFinite(offset)) return;
+      const gap = Math.max(12, gapProbe.getBoundingClientRect().height);
+      const top = Math.round(Math.max(offset, offset + height - (nav.offsetHeight || 58) - gap));
+      const value = `${top}px`;
+      if (nav.style.getPropertyValue("--kayou-mobile-nav-top") !== value) nav.style.setProperty("--kayou-mobile-nav-top", value);
+    };
+    const schedule = () => { if (!disposed && !frame) frame = requestAnimationFrame(update); };
+    const clearPending = () => { if (frame) cancelAnimationFrame(frame); frame = 0; timers.forEach(timer => window.clearTimeout(timer)); timers.clear(); };
+    const resume = () => {
+      clearPending();
+      if (disposed || document.visibilityState === "hidden") return;
+      update();
+      [100, 350].forEach(delay => { const timer = window.setTimeout(() => { timers.delete(timer); schedule(); }, delay); timers.add(timer); });
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("orientationchange", resume);
+    window.addEventListener("pageshow", resume);
+    window.addEventListener("pagehide", clearPending);
+    window.addEventListener("focus", resume);
+    document.addEventListener("visibilitychange", resume);
+    viewport?.addEventListener("resize", schedule, { passive: true });
+    viewport?.addEventListener("scroll", schedule, { passive: true });
+    viewport?.addEventListener("scrollend", schedule, { passive: true });
+    return () => {
+      disposed = true;
+      clearPending();
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("orientationchange", resume);
+      window.removeEventListener("pageshow", resume);
+      window.removeEventListener("pagehide", clearPending);
+      window.removeEventListener("focus", resume);
+      document.removeEventListener("visibilitychange", resume);
+      viewport?.removeEventListener("resize", schedule);
+      viewport?.removeEventListener("scroll", schedule);
+      viewport?.removeEventListener("scrollend", schedule);
+      gapProbe.remove();
+      nav.style.removeProperty("--kayou-mobile-nav-top");
+    };
+  }, [location.pathname, mobileNavCollapsed]);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [showExistingAccount, setShowExistingAccount] = useState(false);
@@ -1382,7 +1442,7 @@ const KayouHeader = () => {
   .kayou-header-scope .kayou-moderation-button{position:relative;overflow:visible}
   .kayou-header-scope .kayou-staff-button .kayou-moderation-badge{display:inline-flex!important;position:absolute;top:-7px;right:-7px;z-index:2;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 4px;border:2px solid #101315;border-radius:999px;background:#dc2626!important;color:#fff!important;font-size:10px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;pointer-events:none}
   .kayou-header-scope.kayou-header-light .kayou-staff-button .kayou-moderation-badge{border-color:#fff}
-.kayou-mobile-nav{position:fixed!important;top:auto!important;bottom:max(12px,env(safe-area-inset-bottom,0px))!important;transition-property:width,max-width,left!important}
+.kayou-mobile-nav{position:fixed!important;top:var(--kayou-mobile-nav-top,calc(100dvh - 58px - max(12px,env(safe-area-inset-bottom,0px))))!important;bottom:auto!important;transition-property:width,max-width,left!important;will-change:transform}
 .kayou-collections-dropdown{position:fixed;z-index:120001;box-sizing:border-box;padding:6px;border:1px solid #ffffff1f;border-radius:14px;background:#1b1d20;color:#f4f4f5;box-shadow:0 12px 32px #0005;font-family:inherit;animation:kayou-collections-dropdown-in .17s ease-out both}
 .kayou-collections-dropdown-light{background:#fff;color:#242424;border-color:#0000001a;box-shadow:0 12px 32px #0002}
 .kayou-collections-dropdown button{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px;border:0;border-radius:9px;background:transparent;color:inherit;text-align:left;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
@@ -3253,6 +3313,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
         </div>
       )}
       {createPortal(<div
+        ref={mobileNavigationRef}
         className={`
     sm:hidden fixed z-[99999]
     kayou-mobile-nav
@@ -3272,12 +3333,12 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
           maxWidth: mobileNavCollapsed ? "56px" : "360px",
           height: "58px",
           position: "fixed",
-          bottom: "max(12px, env(safe-area-inset-bottom, 0px))",
-          top: "auto",
+          bottom: "auto",
+          top: "var(--kayou-mobile-nav-top, calc(100dvh - 58px - max(12px, env(safe-area-inset-bottom, 0px))))",
           margin: 0,
           left: mobileNavCollapsed ? "12%" : "50%",
-          transform: "translateX(-50%)",
-          WebkitTransform: "translateX(-50%)",
+          transform: "translate3d(-50%, 0, 0)",
+          WebkitTransform: "translate3d(-50%, 0, 0)",
         }}
       >
         <button

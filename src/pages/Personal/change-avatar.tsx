@@ -20,7 +20,7 @@ import {
   type ProfileAssetUser,
 } from "../Everypony/profile-assets";
 const db = supabase as unknown as SupabaseClient;
-const AVATARS_LEAVING_SOON = new Set(["avatar016", "avatar017", "avatar018", "avatar019", "avatar020", "avatar021", "avatar022", "avatar023", "avatar024", "avatar025", "avatar026", "avatar029", "avatar032", "avatar039", "avatar040"]);
+const AVATARS_LEAVING_SOON = new Set(["avatar016", "avatar017", "avatar018", "avatar019", "avatar020", "avatar021", "avatar022", "avatar023", "avatar024", "avatar025", "avatar026", "avatar029", "avatar032", "avatar039", "avatar040", "avatar041", "avatar042", "avatar043", "avatar046"]);
 type FrameStatus = { frame_id: string; status: "locked" | "unlocked" | "revoked"; owned_count: number; total_count: number; required_count: number };
 type KofiRequest = { id: string; frame_id: string; public_name: string; status: "pending" | "approved" | "denied"; staff_comment: string; updated_at: string };
 type Selection = { kind: "avatar"; value: string } | { kind: "frame"; value: string | null };
@@ -42,7 +42,6 @@ const [isLightMode, setIsLightMode] = useState(
   );
 const [frameStatuses, setFrameStatuses] = useState<Record<string, FrameStatus>>({});
 const [infoFrame, setInfoFrame] = useState<string | null>(null);
-const [avatarPage, setAvatarPage] = useState(0);
 const [frameFilter, setFrameFilter] = useState<"all" | "available" | "locked">("all");
 const [requests, setRequests] = useState<KofiRequest[]>([]);
 const [publicName, setPublicName] = useState("");
@@ -240,13 +239,13 @@ const shownStatus = infoFrame ? frameStatuses[infoFrame] : null;
             {error && !pending ? <p role="alert" className="mb-4 text-sm text-red-500">{error}</p> : null}
             {loading ? <p role="status" className={muted}>Loading your appearance...</p> : profile ? activeTab === "avatars" ? (
               <div><div role="note" className="mb-4 flex items-start gap-2 text-sm leading-6 text-muted-foreground"><Hourglass className="mt-1 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" /><p><strong className="font-semibold text-foreground">Leaving soon.</strong> Avatars marked with this hourglass are leaving the selector in 24-48 hours.</p></div><div className="grid grid-cols-4 items-start gap-2 min-[420px]:grid-cols-5 sm:grid-cols-6 lg:grid-cols-[repeat(auto-fill,minmax(90px,1fr))] sm:gap-3">
-                {SELECTABLE_AVATARS.slice(avatarPage * 24, (avatarPage + 1) * 24).map((name) => <button key={name} type="button" disabled={saving} onClick={() => choose({ kind: "avatar", value: name })} aria-label={`Choose avatar ${name.replace("avatar", "")}${AVATARS_LEAVING_SOON.has(name) ? ", leaving the selector soon" : ""}`} aria-pressed={profile.avatar_url === name} className={`relative block aspect-square w-full overflow-hidden rounded-[22%] border p-0 leading-none ${profile.avatar_url === name ? selectedStyle : surface}`}>
+                {SELECTABLE_AVATARS.map((name) => <button key={name} type="button" disabled={saving} onClick={() => choose({ kind: "avatar", value: name })} aria-label={`Choose avatar ${name.replace("avatar", "")}${AVATARS_LEAVING_SOON.has(name) ? ", leaving the selector soon" : ""}`} aria-pressed={profile.avatar_url === name} className={`relative block aspect-square w-full overflow-hidden rounded-[22%] border p-0 leading-none ${profile.avatar_url === name ? selectedStyle : surface}`}>
                   <CardImage src={getAvatar(name)} alt="" className="absolute inset-0 block h-full w-full object-cover object-center" />
                   {AVATARS_LEAVING_SOON.has(name) && <span title="Leaving the selector in 24-48 hours" aria-label="Leaving soon" className="pointer-events-none absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-950/90 text-amber-300 shadow-sm sm:h-7 sm:w-7"><Hourglass className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" /></span>}
                   {profile.avatar_url === name ? <span className="absolute bottom-2 right-2 rounded-full bg-[#E7C84B] p-1 text-black"><Check className="h-3 w-3" /></span> : null}
               </button>)}
             </div>
-            <div className="mt-5 flex items-center justify-between gap-3 border-t border-current/10 pt-4"><button type="button" disabled={avatarPage === 0} onClick={() => setAvatarPage(page => page - 1)} className="min-h-11 rounded-2xl border border-current/20 px-3 text-sm disabled:opacity-30">Previous</button><span className={`text-xs ${muted}`}>Page {avatarPage + 1} of {Math.ceil(SELECTABLE_AVATARS.length / 24)}</span><button type="button" disabled={(avatarPage + 1) * 24 >= SELECTABLE_AVATARS.length} onClick={() => setAvatarPage(page => page + 1)} className="min-h-11 rounded-2xl border border-current/20 px-3 text-sm disabled:opacity-30">Next</button></div></div>
+           </div>
           ) : (
               <>
               <div className="mb-5 flex gap-5 border-b border-current/10">{(["all", "available", "locked"] as const).map(value => <button key={value} type="button" aria-pressed={frameFilter === value} onClick={() => setFrameFilter(value)} className={`min-h-11 rounded-t-2xl border-b-2 px-3 text-sm font-semibold capitalize ${frameFilter === value ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{value === "all" ? "All frames" : value}</button>)}</div>

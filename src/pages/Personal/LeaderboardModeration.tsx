@@ -7,11 +7,55 @@ import { englishViewCard, englishViewName, englishViewCode, englishViewImage, en
 import { buildListingWarningMessage } from "@/components/ListingModerationWarnings";
 import CardImage from "@/components/CardImage";
 import rylandGraceAvatar from "@/assets/avatars/rylandgrace.webp";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, History, Loader2, MoreVertical, Search, Shield, UserX, X, RefreshCw, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
+function FloatingEvidence({ heading, caption, label = "Review evidence", countLabel, isLightMode, children }: { heading: string; caption: string; label?: string; countLabel: string; isLightMode: boolean; children: ReactNode }) {
+    const trigger = useRef<HTMLButtonElement>(null);
+    const panel = useRef<HTMLDivElement>(null);
+    const id = useId();
+    const [position, setPosition] = useState<{ left: number; width: number; maxHeight: number; top?: number; bottom?: number } | null>(null);
+    const open = position !== null;
+    const close = (restoreFocus = false) => { setPosition(null); if (restoreFocus) trigger.current?.focus({ preventScroll: true }); };
+    const toggle = () => {
+        if (open) { close(); return; }
+        const rect = trigger.current?.getBoundingClientRect();
+        if (!rect) return;
+        const width = Math.min(390, window.innerWidth - 24);
+        const headerBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--kayou-header-bottom")) || 64;
+        const above = Math.max(0, rect.top - headerBottom - 20);
+        const below = Math.max(0, window.innerHeight - rect.bottom - 20);
+        const down = below >= 300 || below >= above;
+        setPosition({ width, left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)), maxHeight: Math.min(420, down ? below : above), ...(down ? { top: rect.bottom + 8 } : { bottom: window.innerHeight - rect.top + 8 }) });
+    };
+    useEffect(() => {
+        if (!open) return;
+        const focus = requestAnimationFrame(() => panel.current?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true }));
+        const outside = (event: Event) => { const target = event.target as Node | null; if (target && !panel.current?.contains(target) && !trigger.current?.contains(target)) close(); };
+        const escape = (event: KeyboardEvent) => { if (event.key === "Escape") { event.preventDefault(); close(true); } };
+        const scroll = (event: Event) => { if (!panel.current?.contains(event.target as Node)) close(); };
+        const resize = () => close();
+        document.addEventListener("pointerdown", outside);
+        document.addEventListener("focusin", outside);
+        document.addEventListener("keydown", escape);
+        window.addEventListener("scroll", scroll, true);
+        window.addEventListener("resize", resize);
+        return () => { cancelAnimationFrame(focus); document.removeEventListener("pointerdown", outside); document.removeEventListener("focusin", outside); document.removeEventListener("keydown", escape); window.removeEventListener("scroll", scroll, true); window.removeEventListener("resize", resize); };
+    }, [open]);
+    return <>
+      <button ref={trigger} type="button" aria-expanded={open} aria-haspopup="dialog" aria-controls={open ? id : undefined} onClick={toggle} className="mr-strike-evidence-trigger flex min-h-11 w-full items-center gap-2 border-t border-[var(--mc-line)] px-[15px] py-3 text-left text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"><span className="font-semibold">{label}</span><span className="ml-auto text-[var(--mc-muted)]">{countLabel}</span><ChevronDown size={15} className={open ? "rotate-180" : ""} aria-hidden="true"/></button>
+      {position && createPortal(<div ref={panel} id={id} role="dialog" aria-modal={false} aria-labelledby={`${id}-title`} className={`fixed z-[20050] flex flex-col overflow-hidden rounded-2xl border shadow-2xl ${isLightMode ? "border-black/15 bg-white text-zinc-900" : "border-white/15 bg-[#202325] text-zinc-100"}`} style={position} onClick={event => { if ((event.target as Element).closest("[data-evidence-action]")) close(); }}>
+        <header className={`flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 ${isLightMode ? "border-black/10" : "border-white/10"}`}><div className="min-w-0"><h3 id={`${id}-title`} className="break-words text-sm font-semibold">{heading}</h3><p className="mt-1 text-xs opacity-60">{caption}</p></div><button type="button" onClick={() => close(true)} aria-label="Close evidence" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl hover:bg-zinc-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"><X size={17} aria-hidden="true"/></button></header>
+        <div className="min-h-0 overflow-y-auto overscroll-contain p-3">{children}</div>
+      </div>, document.body)}
+    </>;
+}
+function StrikeEvidence({ report, isLightMode }: { report: AccountReportGroup; isLightMode: boolean }) {
+    return <FloatingEvidence heading={`${report.username} · offer evidence`} caption={`${report.expiredOffers.length} uncleared ${report.expiredOffers.length === 1 ? "strike" : "strikes"}`} countLabel={`${report.expiredOffers.length} expired ${report.expiredOffers.length === 1 ? "offer" : "offers"}`} isLightMode={isLightMode}><ul className="space-y-3">{report.expiredOffers.map(offer => <li key={offer.id} className={`rounded-xl border p-3 ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.03]"}`}><div className="flex items-center gap-2"><CardImage src={offer.senderAvatar} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover"/><div className="min-w-0"><p className="break-words text-xs font-semibold">Offer from {offer.senderUsername}</p><time dateTime={offer.expiredAt} className="mt-1 block text-[10px] opacity-60">Expired {new Date(offer.expiredAt).toLocaleString()}</time></div></div><p className="mt-3 text-xs">{getModerationSetName(offer.targetSetId)}</p><p className="mt-1 break-words text-xs opacity-60">{getModerationCardCode(offer.targetSetId, offer.targetCardKey)}</p></li>)}</ul></FloatingEvidence>;
+}
 type KofiFrameRequest = { id: string; user_id: string; username: string; avatar_url: string | null; avatar_frame: string | null; frame_id: string; public_name: string; status: "pending" | "approved" | "denied"; staff_comment: string; created_at: string; updated_at: string };
 function KofiFrameApprovalQueue({ search, refresh, onChanged }: { search: string; refresh: number; onChanged: () => void }) {
     const [status, setStatus] = useState<"pending" | "approved" | "denied">("pending");
@@ -64,7 +108,6 @@ function KofiFrameApprovalQueue({ search, refresh, onChanged }: { search: string
         <Dialog open={!!selection} onOpenChange={open => { if (!open && !busy) setSelection(null); }}><DialogContent className="max-h-[90dvh] overflow-y-auto" onEscapeKeyDown={event => { if (busy) event.preventDefault(); }} onPointerDownOutside={event => { if (busy) event.preventDefault(); }}><DialogTitle>{selection?.decision === "approved" ? "Approve permanent frame access?" : "Deny frame request?"}</DialogTitle><DialogDescription>{selection?.row.username} requested {FRAME_CATALOG.find(frame => frame.id === selection?.row.frame_id)?.name} under the public Ko-Fi name "{selection?.row.public_name}".</DialogDescription>{selection?.decision === "approved" && <p className="text-sm leading-6">Confirm you verified this membership. Approval permanently unlocks this frame; ending the membership will not remove it.</p>}<label className="block text-sm font-semibold">Staff comment {selection?.decision === "denied" ? "(required)" : "(optional)"}<textarea value={comment} onChange={event => setComment(event.target.value)} maxLength={1000} disabled={busy} className="mt-2 min-h-24 w-full rounded-lg border border-border bg-background p-3 text-base text-foreground" /></label>{actionError && <p role="alert" className="text-sm text-red-500">{actionError}</p>}<div className="flex justify-end gap-3"><button type="button" disabled={busy} onClick={() => setSelection(null)} className="min-h-11 px-4 text-sm">Cancel</button><button type="button" disabled={busy || (selection?.decision === "denied" && comment.trim().length < 3)} onClick={() => void review()} className="min-h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy ? "Saving..." : selection?.decision === "approved" ? "Confirm approval" : "Confirm denial"}</button></div></DialogContent></Dialog>
     </section>;
 }
-
 type AccessDirectoryRow = { user_id: string; username: string; discord_username: string | null; trade_access_revoked: boolean; frame_id: string | null; revoked_at: string | null; total_count: number | string };
 const frameNames: Record<string, string> = { frame001: "Star One", frame002: "500 cards", frame003: "PakraCards Supporter", frame004: "Rainbow One", frame005: "Nightmare Night", frame006: "Moon Three", frame007: "Moon One", frame008: "Moon Two", frame009: "Rainbow Two", frame010: "Pinkie Party" };
 const accessFrameLabel = (id: string | null) => id ? `${id}${frameNames[id] ? ` / ${frameNames[id]}` : ""}` : "Unknown frame";
@@ -256,7 +299,6 @@ const LeaderboardModeration = () => {
         if (params.has("review")) { params.delete("review"); navigate(`${location.pathname}?${params}`, { replace: true }); }
     };
     const appealChanged = () => { setBanRefresh(value => value + 1); setAppealRefresh(value => value + 1); setHistoryLoaded(false); window.dispatchEvent(new Event("staff-communications-changed")); };
-
     const [historyItems, setHistoryItems] = useState<ModerationHistoryItem[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -268,6 +310,8 @@ const LeaderboardModeration = () => {
     const [selectedReportComment, setSelectedReportComment] = useState<AccountReportGroup["reports"][number] | null>(null);
     const [markingContacted, setMarkingContacted] = useState(false);
     const [showOfferStrikeInfo, setShowOfferStrikeInfo] = useState(false);
+    const [strikeFilter, setStrikeFilter] = useState<"revoked" | "one" | "two">("revoked");
+    const [reportFilter, setReportFilter] = useState<"revoked" | "one" | "two" | "three" | "listings">("revoked");
     const [dismissTarget, setDismissTarget] = useState<{
         kind: "profile" | "card";
         id: number;
@@ -386,7 +430,7 @@ const LeaderboardModeration = () => {
                     .select("id, username, avatar_url")
                     .in("id", profileIds)
                 : { data: [] };
-            const profileMap = new Map((profileRows || []).map((profile) => [profile.id, profile]));
+            const profileMap = new Map<string, { id: string; username: string | null; avatar_url: string | null }>((profileRows || []).map((profile) => [profile.id, profile]));
             const targetIds = Array.from(new Set([
                 ...accountRows.map((row) => row.reported_user_id),
                 ...expirationRows.map((row) => row.recipient_user_id),
@@ -397,7 +441,7 @@ const LeaderboardModeration = () => {
                     .select("user_id, trade_access_revoked")
                     .in("user_id", targetIds)
                 : { data: [] };
-            const revokedByUser = new Map((tradingRows || []).map((row) => [
+            const revokedByUser = new Map<string, boolean>((tradingRows || []).map((row) => [
                 row.user_id,
                 Boolean(row.trade_access_revoked),
             ]));
@@ -718,10 +762,14 @@ const LeaderboardModeration = () => {
             if (!data || data.length < 500)
                 break;
         }
-        const { data: strikeRows, error: strikeError } = await supabase
-            .from("trade_offer_expiration_strikes")
-            .select("id, recipient_user_id, expired_at")
-            .order("expired_at", { ascending: false });
+        const strikeRows: any[] = [];
+        let strikeError: { message: string } | null = null;
+        for (let offset = 0;; offset += 500) {
+            const result = await supabase.from("trade_offer_expiration_strikes").select("id, recipient_user_id, expired_at, created_at").order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 499);
+            if (result.error) { strikeError = result.error; break; }
+            strikeRows.push(...(result.data || []));
+            if (!result.data || result.data.length < 500) break;
+        }
         if (logError || strikeError) {
             console.error("Unable to load moderation history:", logError || strikeError);
             setErrorMessage("Unable to load moderation history.");
@@ -763,6 +811,8 @@ const LeaderboardModeration = () => {
                 english_appeal_declined: "declined an English appeal for",
                 english_appeal_response: "responded to an English appeal from",
                 staff_conversation_message: "sent a staff message to",
+                staff_system_response: "sent a System explanation to",
+                automatic_trading_access_revoked: "automatically revoked trading access for",
                 staff_issue_escalated: "escalated an issue for",
                 staff_escalation_resolved: "handled an escalation for",
                 trading_access_restored: "reinstated trade and sale rights for",
@@ -796,8 +846,9 @@ const LeaderboardModeration = () => {
                 targetUsername: targetProfile?.username || "Deleted User",
                 targetAvatar: targetProfile ? getProfileAssets(targetProfile).avatar : fallbackAvatar,
                 action: "trade_offer_expiration_strike",
-                actionLabel: "received an expired-offer strike",
-                createdAt: row.expired_at,
+                actionLabel: "recorded an expired-offer strike for",
+                createdAt: row.created_at || row.expired_at,
+                details: `Offer expired ${new Date(row.expired_at).toLocaleString()}. Strike recorded ${new Date(row.created_at || row.expired_at).toLocaleString()}.`,
             };
         });
         setHistoryItems([...nextHistoryItems, ...strikeHistoryItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
@@ -811,7 +862,7 @@ const LeaderboardModeration = () => {
     };
     const [pageByView, setPageByView] = useState({ active: 1, account_reports: 1, strikes: 1, history: 1, discord: 1, frames: 1, appeals: 1, conversations: 1 });
     const listPanelRef = useRef<HTMLDivElement>(null);
-    const pageSize = 10;
+    const pageSize = currentView === "strikes" || currentView === "account_reports" ? 12 : 10;
     const normalizedSearch = searchQuery.trim().toLowerCase();
     const isDirectoryView = currentView === "discord" || (currentView === "frames" && frameQueue === "restrictions");
     const directoryKey = `${currentView}:${normalizedSearch}:${pageByView[currentView]}`;
@@ -867,12 +918,16 @@ const LeaderboardModeration = () => {
     }, []);
     useEffect(() => { if (authorized && currentView === "history") void loadHistory(true); }, [authorized, currentView]);
     const filteredBans = bans.filter((ban) => ban.username.toLowerCase().includes(normalizedSearch));
-    const reportedAccounts = accountReports.filter((group) => group.reports.length > 0 && `${group.username} ${group.reports.map(report => report.comment).join(" ")}`.toLowerCase().includes(normalizedSearch));
-    const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0 && group.username.toLowerCase().includes(normalizedSearch));
+    const searchedReportedAccounts = accountReports.filter((group) => group.reports.length > 0 && `${group.username} ${group.reports.map(report => report.comment).join(" ")}`.toLowerCase().includes(normalizedSearch));
+    const reportMatchesFilter = (group: AccountReportGroup, filter: typeof reportFilter) => filter === "revoked" ? group.tradeAccessRevoked : !group.tradeAccessRevoked && (filter === "one" ? group.reports.length === 1 : filter === "two" ? group.reports.length === 2 : filter === "three" ? group.reports.length >= 3 : false);
+    const reportedAccounts = searchedReportedAccounts.filter(group => reportMatchesFilter(group, reportFilter));
+    const searchedStruckAccounts = accountReports.filter(group => group.expiredOffers.length > 0 && group.username.toLowerCase().includes(normalizedSearch));
+    const strikeMatchesFilter = (group: AccountReportGroup, filter: "revoked" | "one" | "two") => filter === "revoked" ? group.tradeAccessRevoked : !group.tradeAccessRevoked && group.expiredOffers.length === (filter === "one" ? 1 : 2);
+    const struckAccounts = searchedStruckAccounts.filter(group => strikeMatchesFilter(group, strikeFilter)).sort((a, b) => new Date(b.expiredOffers[0]?.expiredAt ?? 0).getTime() - new Date(a.expiredOffers[0]?.expiredAt ?? 0).getTime() || a.username.localeCompare(b.username));
     const searchedCardReports = cardReports.filter(report => `${report.reportedUsername} ${report.reporterUsername} ${report.cardKey} ${report.setId}`.toLowerCase().includes(normalizedSearch));
     const filteredHistory = historyItems.filter(item => (historyAction === "all" || item.action === historyAction) && `${item.moderatorUsername} ${item.targetUsername} ${getHistoryActionTitle(item)} ${item.details || ""}`.toLowerCase().includes(normalizedSearch));
     const totalItems = currentView === "appeals" || currentView === "conversations" || (currentView === "frames" && frameQueue === "requests") ? 0 : isDirectoryView ? directoryResult.total : currentView === "active" ? filteredBans.length
-        : currentView === "account_reports" ? searchedCardReports.length + reportedAccounts.length
+        : currentView === "account_reports" ? reportFilter === "listings" ? searchedCardReports.length : reportedAccounts.length
             : currentView === "strikes" ? struckAccounts.length
                 : filteredHistory.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -880,9 +935,9 @@ const LeaderboardModeration = () => {
     const pageStart = (currentPage - 1) * pageSize;
     const pageEnd = pageStart + pageSize;
     const pagedBans = filteredBans.slice(pageStart, pageEnd);
-    const pagedCardReports = searchedCardReports.slice(pageStart, pageEnd);
+    const pagedCardReports = currentView === "account_reports" && reportFilter === "listings" ? searchedCardReports.slice(pageStart, pageEnd) : [];
     const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
-        : reportedAccounts.slice(Math.max(0, pageStart - searchedCardReports.length), Math.max(0, pageEnd - searchedCardReports.length));
+        : reportedAccounts.slice(pageStart, pageEnd);
     const pagedHistoryItems = filteredHistory.slice(pageStart, pageEnd);
     const pageLoading = currentView === "appeals" || currentView === "conversations" || (currentView === "frames" && frameQueue === "requests") ? false : isDirectoryView ? directoryLoading || directoryResult.key !== directoryKey : currentView === "active" ? loading
         : currentView === "account_reports" || currentView === "strikes" ? reportsLoading : historyLoading;
@@ -916,7 +971,7 @@ const LeaderboardModeration = () => {
             const target = event.target as HTMLElement;
             if (event.key === "/" && !event.ctrlKey && !event.metaKey && !target?.closest("input, textarea, select, [contenteditable='true']")) {
                 event.preventDefault();
-                document.querySelector<HTMLInputElement>("[data-mc-search]")?.focus();
+                document.querySelector<HTMLInputElement>("[data-mc-search], [data-staff-search]")?.focus();
             }
         };
         window.addEventListener("keydown", shortcut);
@@ -940,7 +995,7 @@ const LeaderboardModeration = () => {
         </div>
       </div>);
     }
-    return (<div data-mobile-theme={isLightMode ? "light" : "dark"} className={`moderation-page min-h-screen pb-12 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+    return (<div data-moderation-view={currentView} data-mobile-theme={isLightMode ? "light" : "dark"} className={`moderation-page min-h-screen pb-12 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <style>{`
 .moderation-page{--mc-accent:#e7c84b;--mc-bg:#181b1e;--mc-soft:#22262a;--mc-line:#ffffff15;--mc-ink:#f4f4f5;--mc-muted:#9ca3af}.moderation-page[data-mobile-theme="light"]{--mc-bg:#fff;--mc-soft:#f0f2f4;--mc-line:#19242d18;--mc-ink:#20262b;--mc-muted:#68727b}.spooky .moderation-page,[data-theme="spooky"] .moderation-page{--mc-accent:#be9af9}.mc-shell{max-width:none!important;margin:0!important}.mc-kicker{font-size:9px;letter-spacing:.1em;color:var(--mc-accent);font-weight:650}.mc-title{font-size:25px;font-weight:700;line-height:1.2;letter-spacing:-.03em;margin:4px 0}.mc-query-bar{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--mc-line);color:var(--mc-ink)}.mc-query-bar>label{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:0 10px;border:1px solid var(--mc-line);border-radius:9px;background:var(--mc-soft)}.mc-query-bar>label svg{flex-shrink:0;color:var(--mc-muted)}.mc-query-bar input{width:100%;min-width:0;border:0;background:none;color:var(--mc-ink);font-size:16px;padding:9px 0;outline:none}.mc-query-bar input::placeholder{font-size:12px}.mc-query-bar kbd{font:11px monospace;color:var(--mc-muted)}.mc-query-bar select{max-width:240px;background:var(--mc-soft);color:var(--mc-ink);border:1px solid var(--mc-line);border-radius:9px;padding:9px;font-size:12px;min-height:40px}.mc-query-bar>button{display:flex;align-items:center;gap:7px;border:1px solid var(--mc-line);background:var(--mc-bg);color:var(--mc-ink);padding:10px;border-radius:9px;font-size:11px;white-space:nowrap}.mc-query-bar>button:disabled{opacity:.4}.moderation-panel{scroll-margin-top:100px}.mc-shell button:focus-visible,.mc-shell select:focus-visible{outline:2px solid var(--mc-accent);outline-offset:3px}.mc-query-bar label:focus-within{border-color:var(--mc-accent)}
 @media(max-width:680px){.mc-title{font-size:22px}.mc-query-bar{flex-wrap:wrap;padding:12px 0;gap:8px}.mc-query-bar>label{flex-basis:100%}.mc-query-bar select{flex:1;max-width:none;min-width:0;font-size:16px}.mc-query-bar>button{margin-left:auto;min-height:42px}.mc-query-bar kbd{display:none}}
@@ -1056,9 +1111,79 @@ const LeaderboardModeration = () => {
 .mr-case{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;padding:12px;gap:8px 16px}.mr-case-heading{grid-column:1;min-width:0;padding:0;border:0;align-items:center}.mr-facts{grid-column:2;grid-row:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 14px;padding:0;align-self:center}.mr-facts>span{flex-direction:row;gap:5px;border:0;padding:0;align-items:baseline;white-space:normal}.mr-context{grid-column:1/-1;padding:0;margin:0;line-height:1.5}.mr-policy{grid-column:1/-1;justify-self:start;margin:0;min-height:0;padding:3px 0}.mr-evidence{grid-column:1;min-width:0;border:0;align-self:center}.mr-evidence>summary{padding:7px 0;min-height:36px;justify-content:flex-start;gap:8px}.mr-evidence>summary>span:nth-child(2){margin-left:0}.mr-evidence-list{padding:8px 0 0;gap:8px}.mr-evidence[open]{grid-column:1/-1}.mr-actions{grid-column:2;justify-self:end;align-self:center;padding:0;border:0;background:none;gap:8px;flex-wrap:wrap}.mr-actions>span{display:none}.mr-actions>button{flex:0 1 auto;min-height:36px}.mr-listing{grid-column:1;grid-row:2;padding:0;gap:12px}.mr-case>.mr-source{grid-column:2;grid-row:2;padding:0;border:0;align-self:center;max-width:310px;flex-wrap:wrap}.mr-case>.mr-source .mr-reference{width:100%;padding-left:34px}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1/-1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1/-1}.mr-case-list{gap:8px;padding:10px}.mr-price{margin-top:4px}
 @media(max-width:900px){.mr-case{grid-template-columns:minmax(0,1fr);gap:8px;padding:12px}.mr-case-heading,.mr-facts,.mr-context,.mr-policy,.mr-evidence,.mr-actions,.mr-listing,.mr-case>.mr-source{grid-column:1;grid-row:auto}.mr-facts{justify-content:flex-start;gap:5px 14px}.mr-facts>span{flex-direction:row;gap:5px;font-size:10px}.mr-evidence>summary{min-height:40px}.mr-actions{justify-self:stretch;justify-content:flex-end}.mr-actions>button{flex:0 1 auto;min-height:42px}.mr-case>.mr-source{max-width:none;flex-wrap:nowrap}.mr-case>.mr-source .mr-reference{width:auto;padding:0}.mr-case:has(>.mr-listing)>.mr-actions{grid-column:1}.mr-case:has(>.mr-listing)>.mr-case-heading{grid-column:1}}
 .moderation-panel{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}.moderation-panel .mr-case-list{gap:0;padding:0}.moderation-panel .mr-case{border:0;border-bottom:1px solid var(--mc-line);border-radius:0;background:transparent;box-shadow:none;padding:18px 0;overflow:visible}.moderation-panel .mr-case:last-child{border-bottom:0}.moderation-panel .moderation-ban-list{gap:0;padding:0}.moderation-panel .moderation-ban-row{border:0!important;border-bottom:1px solid var(--mc-line)!important;border-radius:0;background:transparent;box-shadow:none;padding:16px 0!important}.moderation-panel .moderation-ban-row:last-child{border-bottom:0!important}.moderation-panel .moderation-history-entry{background:transparent;border:0;border-bottom:1px solid var(--mc-line);border-radius:0;box-shadow:none;padding:16px 0!important}.moderation-panel .moderation-pagination{padding-left:0;padding-right:0}.moderation-panel .mr-evidence-item{background:var(--mc-soft)}@media(max-width:719px){.moderation-panel .mr-case{padding:16px 0}.moderation-panel .moderation-ban-row{padding:16px 0!important}}
-
 .moderation-page .moderation-heading{padding:8px 0!important;min-height:0!important;border-bottom:1px solid var(--mc-line);gap:12px}.moderation-page .moderation-heading-emblem,.moderation-page .moderation-heading p{display:none}.moderation-page .mc-title{font-size:21px!important;line-height:1.2;margin:0}.moderation-page .moderation-shell{padding-top:8px!important}.moderation-page .moderation-panel{margin-top:14px}.moderation-directory-list{display:grid;gap:14px;padding:8px 0}.moderation-directory-row{border:1px solid var(--mc-line);border-radius:10px;padding:16px;background:var(--mc-bg)}.moderation-category-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;border:1px solid var(--mc-line);border-radius:10px;overflow:hidden;background:var(--mc-line)}.moderation-category-nav>button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;min-height:48px;padding:10px 14px;background:var(--mc-bg);font-size:13px;font-weight:600;text-align:left;border-bottom:2px solid transparent;transition:background .18s,border-color .18s}.moderation-category-nav>button[aria-pressed=true]{background:var(--mc-soft);border-bottom-color:var(--mc-accent);color:var(--mc-ink)}.moderation-count{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:22px;height:22px;padding:0 5px;border-radius:50%;background:#dc2626;color:white;font-size:10px;font-weight:700}.moderation-section-heading{padding:22px 0 14px}.moderation-section-heading h2{font-size:19px;font-weight:650;margin:0}.moderation-section-heading p{margin:5px 0 0;font-size:12px;line-height:1.6;color:var(--mc-muted)}.moderation-page .moderation-panel .mr-case-list{gap:20px;padding:18px 0}.moderation-page .moderation-panel .mr-case{border:1px solid var(--mc-line);border-left:3px solid var(--mc-accent);border-radius:10px;padding:0;overflow:hidden;background:var(--mc-bg)}.moderation-page .moderation-panel .moderation-ban-list{gap:14px;padding:18px 0}.moderation-page .moderation-panel .moderation-ban-row{border:1px solid var(--mc-line)!important;border-radius:10px;background:var(--mc-bg);padding:16px!important}.moderation-page .moderation-history-table tbody tr:nth-child(even){background:var(--mc-soft)}.moderation-page .moderation-panel .moderation-history-entry{border:1px solid var(--mc-line);border-left:3px solid var(--mc-accent);border-radius:10px;background:var(--mc-bg);margin-top:14px}.moderation-page .mc-query-bar{padding-bottom:16px;margin-bottom:4px}@media(max-width:680px){.moderation-category-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.moderation-category-nav>button{padding:10px 12px;font-size:12px}.moderation-section-heading{padding-top:18px}.moderation-page .moderation-panel .mr-case-list{gap:16px}}@media(prefers-reduced-motion:reduce){.moderation-category-nav>button{transition:none}}
-      `}</style>
+.moderation-page .moderation-strike-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:4px 0 16px}
+.moderation-page .moderation-strike-filters{display:flex;flex-wrap:wrap;gap:20px;border-bottom:1px solid var(--mc-line)}
+.moderation-page .moderation-strike-filters>button{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 0;border-bottom:2px solid transparent;color:var(--mc-muted);font-size:13px;font-weight:600;cursor:pointer}
+.moderation-page .moderation-strike-filters>button[aria-pressed=true]{border-bottom-color:var(--mc-accent);color:var(--mc-accent)}
+.moderation-page .moderation-strike-filter-count{font-size:11px;font-variant-numeric:tabular-nums;opacity:.7}
+.moderation-page .moderation-strike-help{min-height:44px;font-size:12px;color:var(--mc-muted);text-decoration:underline;text-underline-offset:4px}
+.moderation-page .moderation-strike-toolbar button:focus-visible{outline:2px solid var(--mc-accent);outline-offset:3px;border-radius:6px}
+.moderation-page .moderation-panel .mr-case-list.mr-strike-grid{grid-template-columns:minmax(0,1fr);align-items:start;gap:16px;padding:0 0 18px}
+.moderation-page .mr-strike-grid .mr-case-heading{align-items:center;flex-wrap:wrap;gap:10px;padding:15px;border-bottom:1px solid var(--mc-line)}
+.moderation-page .mr-strike-grid .mr-person{gap:10px;flex:1;min-width:120px}
+.moderation-page .mr-strike-grid .mr-person>img{width:36px;height:36px;border-radius:11px}
+.moderation-page .mr-strike-grid .mr-person h3{font-size:16px;margin:0;line-height:1.35}
+.moderation-page .mr-strike-grid .mr-label{display:none}
+.moderation-page .mr-strike-grid .mr-status{padding:5px 8px;font-size:10px;white-space:nowrap}
+.moderation-page .mr-strike-facts{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:14px 15px;color:var(--mc-muted);font-size:12px}
+.moderation-page .mr-strike-facts strong{font-size:23px;line-height:1;font-weight:650;color:var(--mc-ink);font-variant-numeric:tabular-nums}
+.moderation-page .mr-strike-grid .mr-evidence>summary{padding:13px 15px;gap:8px;font-size:12px}
+.moderation-page .mr-strike-grid .mr-evidence-list{padding:0 12px 12px;max-height:360px;overflow-y:auto;overscroll-behavior:contain}
+.moderation-page .mr-strike-grid .mr-evidence-item{padding:10px;border-radius:10px}
+.moderation-page .mr-strike-grid .mr-source{gap:8px;flex-wrap:wrap}
+.moderation-page .mr-strike-grid .mr-source>div{min-width:100px}
+.moderation-page .mr-strike-grid .mr-actions{padding:12px 15px}
+.moderation-page .mr-strike-grid .mr-actions button{min-height:40px}
+@media(min-width:700px){.moderation-page .moderation-panel .mr-case-list.mr-strike-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1100px){.moderation-page .moderation-panel .mr-case-list.mr-strike-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.moderation-page .moderation-panel .mr-strike-grid>.mr-case{display:flex;flex-direction:column;gap:0;box-sizing:border-box;height:216px;min-height:216px;max-height:216px;padding:0;overflow:hidden}
+.moderation-page .mr-strike-grid>.mr-case>*{grid-column:auto;grid-row:auto;min-width:0;margin:0;float:none}
+.moderation-page .mr-strike-grid .mr-case-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;flex:0 0 64px;height:64px;min-height:64px;max-height:64px;gap:8px;padding:12px;overflow:hidden}
+.moderation-page .mr-strike-grid .mr-person{min-width:0;width:100%;gap:8px;overflow:hidden}
+.moderation-page .mr-strike-grid .mr-person>div{min-width:0;flex:1}
+.moderation-page .mr-strike-grid .mr-person h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.moderation-page .mr-strike-grid .mr-status{max-width:none;font-size:10px;padding:5px 7px;line-height:16px;white-space:nowrap}
+.moderation-page .mr-strike-grid .mr-strike-facts{display:flex;flex:0 0 40px;align-items:center;flex-wrap:nowrap;gap:8px;height:40px;min-height:40px;max-height:40px;padding:8px 12px;font-size:11px;overflow:hidden}
+.moderation-page .mr-strike-grid .mr-strike-facts>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.moderation-page .mr-strike-grid .mr-strike-facts strong{font-size:20px}
+.moderation-page .mr-strike-grid .mr-strike-evidence-trigger{flex:0 0 48px;height:48px;min-height:48px;max-height:48px;gap:6px;padding:10px 12px;font-size:11px;white-space:nowrap;overflow:hidden}
+.moderation-page .mr-strike-grid .mr-strike-evidence-trigger>span{overflow:hidden;text-overflow:ellipsis}
+.moderation-page .mr-strike-grid .mr-strike-evidence-trigger>svg{flex-shrink:0}
+.moderation-page .mr-strike-grid .mr-actions{display:flex;flex:0 0 60px;align-items:center;align-self:stretch;justify-content:flex-end;flex-wrap:nowrap;height:60px;min-height:60px;max-height:60px;margin-top:auto;padding:9px 12px;gap:8px;overflow:hidden}
+.moderation-page .mr-strike-grid .mr-actions>button{flex:0 1 auto;min-width:0;max-width:100%;min-height:40px;max-height:40px;padding:8px 10px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.moderation-page .mr-strike-grid .mr-actions>.mr-strike-active-note{margin:0;width:auto;font-size:11px;color:var(--mc-muted)}
+.moderation-page .moderation-category-nav{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:0;border-radius:10px;scrollbar-width:thin;background:var(--mc-bg)}
+.moderation-page .moderation-category-nav>button{flex:0 0 auto;justify-content:center;white-space:nowrap;min-height:42px;padding:9px 13px;font-size:12px;gap:6px}
+.moderation-page .moderation-section-heading{padding:12px 0}
+.moderation-page[data-moderation-view=conversations]{box-sizing:border-box;height:calc(var(--moderation-viewport-height,100dvh) - var(--kayou-header-bottom,64px));min-height:0;padding-bottom:0;overflow:hidden}
+.moderation-page[data-moderation-view=conversations] .moderation-shell{box-sizing:border-box;display:flex;flex-direction:column;height:100%;min-height:0;padding-top:8px;padding-bottom:12px}
+.moderation-page[data-moderation-view=conversations] .moderation-heading{flex-shrink:0;min-height:44px;padding:4px 0!important}
+.moderation-page[data-moderation-view=conversations] .moderation-panel{display:flex;flex:1;flex-direction:column;min-height:0;margin-top:8px;scroll-margin-top:var(--kayou-header-bottom,64px)}
+.moderation-page[data-moderation-view=conversations] .moderation-category-nav{flex-shrink:0}
+.moderation-page[data-moderation-view=conversations] .moderation-section-heading{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:10px;padding:8px 0}
+.moderation-page[data-moderation-view=conversations] .moderation-section-heading h2{font-size:16px}
+.moderation-page[data-moderation-view=conversations] .moderation-section-heading p{display:none}
+.moderation-conversation-slot{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+@media(max-width:639px){.moderation-page[data-moderation-view=conversations] .moderation-shell{padding-bottom:max(82px,calc(env(safe-area-inset-bottom,0px) + 70px))}.moderation-page[data-moderation-view=conversations]:has(.staff-workspace[data-open=true]) .moderation-heading,.moderation-page[data-moderation-view=conversations]:has(.staff-workspace[data-open=true]) .moderation-section-heading{display:none}.moderation-page .moderation-category-nav>button{padding:8px 11px}.moderation-page[data-moderation-view=conversations] .moderation-panel{margin-top:0}}
+@media(max-width:767px) and (max-height:560px){.moderation-page[data-moderation-view=conversations]:has(.staff-workspace[data-open=true]) .moderation-category-nav{display:none}.moderation-page[data-moderation-view=conversations] .moderation-shell{padding-bottom:max(68px,calc(env(safe-area-inset-bottom,0px) + 58px))}}
+.moderation-page .moderation-panel .mr-strike-grid>.mr-case{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:56px 32px 58px;height:148px;min-height:148px;max-height:148px;gap:0;align-items:center}
+.moderation-page .mr-strike-grid .mr-case-heading{grid-column:1/-1;grid-row:1;height:56px;min-height:56px;max-height:56px;padding:8px 12px;gap:8px}
+.moderation-page .mr-strike-grid .mr-strike-facts{grid-column:1/-1;grid-row:2;height:32px;min-height:32px;max-height:32px;padding:4px 12px;font-size:10px;gap:6px;border-bottom:1px solid var(--mc-line)}
+.moderation-page .mr-strike-grid .mr-strike-facts strong{font-size:19px}
+.moderation-page .mr-strike-grid .mr-strike-evidence-trigger{grid-column:1;grid-row:3;width:100%;height:44px;min-height:44px;max-height:44px;padding:6px 10px;font-size:10px;gap:5px;align-self:center}
+.moderation-page .mr-strike-grid .mr-strike-evidence-trigger>span:nth-child(2){max-width:90px;flex-shrink:1}
+.moderation-page .mr-strike-grid .mr-actions{grid-column:2;grid-row:3;height:58px;min-height:58px;max-height:58px;align-self:center;padding:7px 10px 7px 0;gap:6px;margin:0}
+.moderation-page .mr-strike-grid .mr-actions>button{font-size:10px;min-height:40px;padding:7px 8px}
+.moderation-page .mr-strike-grid .mr-actions>.mr-strike-active-note{font-size:10px}
+.moderation-page .moderation-panel .moderation-ban-list{grid-template-columns:minmax(0,1fr);gap:12px;padding:12px 0;align-items:stretch}
+.moderation-page .moderation-panel .moderation-ban-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:space-between;gap:10px!important;padding:12px!important;min-width:0}
+.moderation-page .moderation-ban-row>div{flex:1;min-width:0}
+.moderation-page .moderation-ban-row>button{align-self:flex-end;min-height:40px!important;min-width:0;font-size:11px!important;padding:8px 10px!important}
+.moderation-page .moderation-ban-row .mr-ban-reason{line-height:1.5;font-size:11px}
+@media(min-width:640px){.moderation-page .moderation-panel .moderation-ban-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1000px){.moderation-page .moderation-panel .mr-case-list.mr-strike-grid,.moderation-page .moderation-panel .moderation-ban-list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+`}</style>
       <div className="moderation-shell mc-shell w-full px-3 pt-4 sm:px-6 lg:pt-6">
         <div className="moderation-heading flex items-center gap-3">
           <button type="button" onClick={() => navigate(-1)} aria-label="Go back" className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${isLightMode
@@ -1093,10 +1218,12 @@ const LeaderboardModeration = () => {
             ["appeals", "English appeals"], ["conversations", "Conversations"], ["account_reports", "Reports"], ["strikes", "Strikes"],
             ["active", "English bans"], ["discord", "Discord users"], ["frames", "Frames"], ["history", "History"],
           ] as const).map(([view,label]) => <button key={view} type="button" aria-pressed={currentView === view} onClick={() => { setSearchQuery(""); setHistoryAction("all"); setPageByView(pages => ({ ...pages, [view]: 1 })); if (view === "history") void openHistory(); else setCurrentView(view); }}><span>{label}</span>{Number(categoryCounts[view] ?? 0) > 0 && <span className="moderation-count" aria-label={`${categoryCounts[view]} unread notifications`}>{categoryCounts[view] > 99 ? "99+" : categoryCounts[view]}</span>}</button>)}</nav>
-          <header className="moderation-section-heading"><h2>{({ active:"English leaderboard bans", account_reports:"Reports", strikes:"Strikes", history:"Moderation history", discord:"Discord directory", frames:"Frames", appeals:"English appeals", conversations:"Conversations" })[currentView]}</h2><p>{currentView === "conversations" ? "Read and reply to collectors. Appeal decisions can be completed here." : currentView === "appeals" ? "Pending appeals and completed decisions." : currentView === "frames" ? "Approve Ko-Fi supporter frames or review frame restrictions." : currentView === "discord" ? "Search collectors and manage trading access." : currentView === "history" ? "Staff actions, most recent first." : currentView === "strikes" ? "Review unanswered trade offers." : currentView === "account_reports" ? "Review collector reports and listing concerns." : "Manage English leaderboard access."}</p></header>
+          <header className="moderation-section-heading"><h2>{({ active:"English leaderboard bans", account_reports:"Reports", strikes:"Strikes", history:"Moderation history", discord:"Discord directory", frames:"Frames", appeals:"English appeals", conversations:"Conversations" })[currentView]}</h2><p>{currentView === "conversations" ? "Read and reply to collectors. Appeal decisions can be completed here." : currentView === "appeals" ? "Pending appeals and completed decisions." : currentView === "frames" ? "Approve Ko-Fi supporter frames or review frame restrictions." : currentView === "discord" ? "Search collectors and manage trading access." : currentView === "history" ? "Staff actions, most recent first." : currentView === "strikes" ? "Review unanswered trade offers." : currentView === "account_reports" ? "Review collector reports and listing concerns." : "Manage English leaderboard access."}</p>{currentView === "conversations" && <button type="button" onClick={refreshWorkspace} aria-label="Refresh conversations" title="Refresh conversations" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border"><RefreshCw size={15}/></button>}</header>
           {currentView === "frames" && <div className="mb-4 flex gap-5 border-b border-border">{(["requests", "restrictions"] as const).map(value => <button key={value} type="button" aria-pressed={frameQueue === value} onClick={() => { setFrameQueue(value); setSearchQuery(""); }} className={`min-h-11 border-b-2 px-1 text-sm font-semibold ${frameQueue === value ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{value === "requests" ? "Approval requests" : "Restrictions"}</button>)}</div>}
-          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "conversations" ? "Search conversations by collector or Discord username" : currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? frameQueue === "requests" ? "Search collector or public Ko-Fi membership name" : "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
-          {currentView === "conversations" ? <><StaffConversations key={location.search.replace(/[?&]review=[^&]*/, "")} moderator search={searchQuery} refresh={appealRefresh} onOpenAppeal={id => setReviewAppealId(id)}/><EnglishLeaderboardAppealQueue search="" refresh={appealRefresh} onChanged={appealChanged} reviewOnly reviewAppealId={reviewAppealId} onCloseReview={closeAppealReview}/></> : currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={appealChanged} onOpenReview={appeal => { setSearchQuery(""); navigate(`/leaderboard-moderation?view=conversations&user=${encodeURIComponent(appeal.user_id)}&review=${encodeURIComponent(appeal.id)}`); }}/> : currentView === "frames" && frameQueue === "requests" ? <KofiFrameApprovalQueue search={searchQuery} refresh={directoryRefresh} onChanged={() => setDirectoryRefresh(value => value + 1)}/> : isDirectoryView ? <div className="py-4">
+          {currentView !== "conversations" && (<div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? frameQueue === "requests" ? "Search collector or public Ko-Fi membership name" : "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>)}
+          {currentView === "account_reports" && <div className="moderation-strike-toolbar"><div className="moderation-strike-filters" role="group" aria-label="Filter accounts by report status">{([{ id: "revoked", label: "Revoked" }, { id: "one", label: "1 report" }, { id: "two", label: "2 reports" }, { id: "three", label: "3+ reports" }, { id: "listings", label: "Listings" }] as const).map(filter => <button key={filter.id} type="button" aria-pressed={reportFilter === filter.id} onClick={() => { setReportFilter(filter.id); setPageByView(pages => ({ ...pages, account_reports: 1 })); }}><span>{filter.label}</span><span className="moderation-strike-filter-count">{filter.id === "listings" ? searchedCardReports.length : searchedReportedAccounts.filter(group => reportMatchesFilter(group, filter.id)).length}</span></button>)}</div></div>}
+          {currentView === "strikes" && <div className="moderation-strike-toolbar"><div className="moderation-strike-filters" role="group" aria-label="Filter accounts by strike status">{([{ id: "revoked", label: "Revoked" }, { id: "one", label: "1 strike" }, { id: "two", label: "2 strikes" }] as const).map(filter => <button key={filter.id} type="button" aria-pressed={strikeFilter === filter.id} onClick={() => { setStrikeFilter(filter.id); setPageByView(pages => ({ ...pages, strikes: 1 })); }}><span>{filter.label}</span><span className="moderation-strike-filter-count">{searchedStruckAccounts.filter(group => strikeMatchesFilter(group, filter.id)).length}</span></button>)}</div><button type="button" className="moderation-strike-help" onClick={() => setShowOfferStrikeInfo(true)}>How strikes work</button></div>}
+          {currentView === "conversations" ? <div className="moderation-conversation-slot"><StaffConversations key={location.search.replace(/[?&]review=[^&]*/, "")} moderator search={searchQuery} refresh={appealRefresh} onOpenAppeal={id => setReviewAppealId(id)}/><EnglishLeaderboardAppealQueue search="" refresh={appealRefresh} onChanged={appealChanged} reviewOnly reviewAppealId={reviewAppealId} onCloseReview={closeAppealReview}/></div> : currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={appealChanged} onOpenReview={appeal => { setSearchQuery(""); navigate(`/leaderboard-moderation?view=conversations&user=${encodeURIComponent(appeal.user_id)}&review=${encodeURIComponent(appeal.id)}`); }}/> : currentView === "frames" && frameQueue === "requests" ? <KofiFrameApprovalQueue search={searchQuery} refresh={directoryRefresh} onChanged={() => setDirectoryRefresh(value => value + 1)}/> : isDirectoryView ? <div className="py-4">
             <p className="mb-4 text-sm text-muted-foreground">{currentView === "discord" ? "Find any collector with a Discord username. Revoking removes the username and blocks trade and sale access until reinstated." : "Each row is one revoked frame. Reinstating restores only that frame and applies a moderator override."}</p>
             {pageLoading ? <p role="status" className="py-10 text-center text-sm text-muted-foreground">Loading {currentView === "discord" ? "Discord users" : "frame restrictions"}...</p> : directoryError ? <p role="alert" className="py-6 text-sm text-red-500">{directoryError}<button type="button" onClick={() => setDirectoryRefresh(value => value + 1)} className="ml-2 underline">Retry</button></p> : directoryResult.rows.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">{normalizedSearch ? "No users match this search." : currentView === "frames" ? "No frame restrictions are active." : "No collectors have a Discord username."}</p> : <ul className="moderation-directory-list">{directoryResult.rows.map(row => <li key={`${row.user_id}:${row.frame_id ?? "discord"}`} className="moderation-directory-row flex flex-col items-start justify-between gap-3 py-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-wrap items-center gap-4">{currentView === "frames" && <ModerationFramePreview frameId={row.frame_id} isLightMode={isLightMode}/>}<div className="min-w-0 flex-1"><h3 className="break-words text-base font-semibold">{row.username}</h3>{row.discord_username && <p className="mt-1 break-all text-sm text-muted-foreground">Discord: {row.discord_username}</p>}{currentView === "frames" && <><FrameRestrictionReason frameId={row.frame_id}/><p className="mt-2 text-xs text-muted-foreground">Revoked {row.revoked_at ? new Date(row.revoked_at).toLocaleString() : "date unavailable"}</p></>}</div></div>
@@ -1148,27 +1275,23 @@ const LeaderboardModeration = () => {
             </>) : currentView === "account_reports" || currentView === "strikes" ? (reportsLoading ? (<div className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
                 <Loader2 className="h-4 w-4 animate-spin"/>
                 Loading {currentView === "strikes" ? "strikes" : "reports"}...
-              </div>) : (currentView === "strikes" ? struckAccounts.length === 0 : reportedAccounts.length === 0 && searchedCardReports.length === 0) ? (<div className="px-5 py-14 text-center">
+              </div>) : (currentView === "strikes" ? struckAccounts.length === 0 : (reportFilter === "listings" ? searchedCardReports.length === 0 : reportedAccounts.length === 0)) ? (<div className="px-5 py-14 text-center">
                 <Shield className={`mx-auto h-9 w-9 ${isLightMode ? "text-zinc-400" : "text-zinc-600"}`}/>
                 <p className={`mt-3 font-medium ${isLightMode ? "text-zinc-700" : "text-zinc-300"}`}>
-                  {currentView === "strikes" ? "No active strikes" : "No unresolved reports"}
+                  {currentView === "strikes" ? normalizedSearch ? "No accounts match this search and filter" : strikeFilter === "revoked" ? "No revoked accounts with uncleared strikes" : `No accounts with ${strikeFilter === "one" ? "1 strike" : "2 strikes"}` : "No reports match this filter"}
                 </p>
-              </div>) : (<div className="mr-case-list">
-                {currentView === "account_reports" && pagedCardReports.map(report => <article key={`card-${report.id}`} className="mr-case">
-                  <header className="mr-case-heading"><div className="mr-person"><CardImage src={report.reportedAvatar} alt=""/><div><span className="mr-label">LISTING REPORT</span><h3>{report.reportedUsername}</h3></div></div><span className="mr-status">Awaiting review</span></header>
-                  <div className="mr-listing"><ReportedCardThumbnail setId={report.setId} cardKey={report.cardKey}/><div><h4>{getModerationSetName(report.setId)}</h4><code>{getModerationCardCode(report.setId, report.cardKey)}</code><span className="mr-price">${report.reportedPrice.toFixed(2)}<span>reported listing price</span></span></div></div>
-                  <div className="mr-source"><CardImage src={report.reporterAvatar} alt=""/><div><span>Reported by <strong>{report.reporterUsername}</strong></span><time dateTime={report.createdAt}>{new Date(report.createdAt).toLocaleString()}</time></div><span className="mr-reference">Report #{report.id}</span></div>
-                  <footer className="mr-actions"><button type="button" className="mr-secondary" onClick={() => setDismissTarget({ kind: "card", id: report.id, username: report.reportedUsername })}>Dismiss report</button><button type="button" className="mr-danger" onClick={() => { setWarningTarget(report); setWarningMode("template"); setSuggestedPrice(""); setCustomExplanation(""); setWarningError(""); }}>Review removal and warning</button></footer>
+              </div>) : (<div className={`mr-case-list ${currentView === "strikes" ? "mr-strike-grid" : "mr-strike-grid mr-report-grid"}`}>
+                {currentView === "account_reports" && pagedCardReports.map(report => <article key={report.id} className="mr-case">
+                  <header className="mr-case-heading"><div className="mr-person"><CardImage src={report.reportedAvatar} alt=""/><div><h3 title={report.reportedUsername}>{report.reportedUsername}</h3></div></div><span className="mr-status">Listing report</span></header>
+                  <div className="mr-strike-facts"><span title={getModerationSetName(report.setId)}>{getModerationSetName(report.setId)}</span><span>${report.reportedPrice.toFixed(2)}</span></div>
+                  <FloatingEvidence heading={`${report.reportedUsername} · listing report`} caption={`Reported by ${report.reporterUsername}`} label="Review report" countLabel="Listing details" isLightMode={isLightMode}><div className="space-y-4"><div className="flex items-start gap-3"><div className="relative h-28 w-20 shrink-0 overflow-hidden rounded-lg"><ReportedCardThumbnail setId={report.setId} cardKey={report.cardKey}/></div><div className="min-w-0"><p className="text-sm font-semibold">{getModerationSetName(report.setId)}</p><p className="mt-1 break-words text-xs opacity-60">{getModerationCardCode(report.setId, report.cardKey)}</p><p className="mt-3 text-lg font-semibold">${report.reportedPrice.toFixed(2)}</p><p className="text-xs opacity-60">Reported listing price</p></div></div><div className="flex items-center gap-2"><CardImage src={report.reporterAvatar} alt="" className="h-8 w-8 rounded-lg object-cover"/><div><p className="text-xs font-semibold">Reported by {report.reporterUsername}</p><time className="text-[10px] opacity-60" dateTime={report.createdAt}>{new Date(report.createdAt).toLocaleString()}</time></div></div></div></FloatingEvidence>
+                  <footer className="mr-actions"><button type="button" className="mr-secondary" onClick={() => setDismissTarget({ kind: "card", id: report.id, username: report.reportedUsername })}>Dismiss</button><button type="button" className="mr-danger" onClick={() => { setWarningTarget(report); setWarningMode("template"); setSuggestedPrice(""); setCustomExplanation(""); setWarningError(""); }}>Review warning</button></footer>
                 </article>)}
                 {pagedAccountReports.map(report => <article key={report.userId} className="mr-case">
-                  <header className="mr-case-heading"><div className="mr-person"><CardImage src={report.avatar} alt=""/><div><span className="mr-label">{currentView === "strikes" ? "OFFER RESPONSE RECORD" : "ACCOUNT REPORTS"}</span><h3>{report.username}</h3></div></div><span className={`mr-status ${report.tradeAccessRevoked ? "mr-revoked" : ""}`}>{report.tradeAccessRevoked ? "Access revoked" : "Access active"}</span></header>
-                  <div className="mr-facts"><span><strong>{report.reports.length}</strong>account reports</span><span><strong>{report.expiredOffers.length}</strong>uncleared expirations</span><span><strong>{report.reports.filter(item => item.wantsStaffContact && !item.contactedAt).length}</strong>contact requests pending</span></div>
-                  <p className="mr-context">{report.tradeAccessRevoked ? "Trading and selling access is currently revoked. Review the evidence before considering reinstatement." : currentView === "strikes" ? `${report.expiredOffers.length} unanswered offer ${report.expiredOffers.length === 1 ? "expiration is" : "expirations are"} recorded. The current access status is shown above.` : report.reports.length >= 3 ? "Three or more reports are recorded. Review the individual evidence before deciding on access." : "Review each report on its merits. The report count alone does not establish misconduct."}</p>
-                  {currentView === "strikes" && <button type="button" className="mr-policy" onClick={() => setShowOfferStrikeInfo(true)}>How offer-response strikes work</button>}
-                  <details className="mr-evidence"><summary><span>Review evidence</span><span>{currentView === "strikes" ? `${report.expiredOffers.length} expired offers` : `${report.reports.length} reports`}</span><ChevronDown size={15}/></summary><div className="mr-evidence-list">
-                    {currentView === "strikes" ? report.expiredOffers.map(offer => <div key={offer.id} className="mr-evidence-item"><div className="mr-source"><CardImage src={offer.senderAvatar} alt=""/><div><strong>Offer from {offer.senderUsername}</strong><time dateTime={offer.expiredAt}>Expired {new Date(offer.expiredAt).toLocaleString()}</time></div><span className="mr-reference">#{offer.id}</span></div><p>{getModerationSetName(offer.targetSetId)}</p><code>{getModerationCardCode(offer.targetSetId, offer.targetCardKey)}</code></div>) : report.reports.map(item => <div key={item.id} className="mr-evidence-item"><div className="mr-source"><CardImage src={item.reporterAvatar} alt=""/><div><strong>{item.reporterUsername}</strong><time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString()}</time></div><span className="mr-reference">Report #{item.id}</span></div><p className="mr-comment">{item.comment || "No written comment supplied."}</p>{item.wantsStaffContact && <span className="mr-contact-status">{item.contactedAt ? `Staff contact recorded ${new Date(item.contactedAt).toLocaleString()}` : "Reporter requested staff contact"}</span>}<div className="mr-evidence-actions"><button type="button" className="mr-secondary" onClick={() => setSelectedReportComment(item)}>Full report and contact details</button><button type="button" className="mr-secondary" onClick={() => setDismissTarget({ kind: "profile", id: item.id, username: report.username })}>Dismiss this report</button></div></div>)}
-                  </div></details>
-                  {(currentView === "account_reports" || report.tradeAccessRevoked) && <footer className="mr-actions"><span>Account-level decision</span><button type="button" className={report.tradeAccessRevoked ? "mr-secondary" : "mr-danger"} onClick={() => setSelectedAccountReport(report)}>{report.tradeAccessRevoked ? "Review reinstatement" : "Review access action"}</button></footer>}
+                  <header className="mr-case-heading"><div className="mr-person"><CardImage src={report.avatar} alt=""/><div><span className="mr-label">{currentView === "strikes" ? "OFFER RESPONSE RECORD" : "ACCOUNT REPORTS"}</span><h3 title={report.username}>{report.username}</h3></div></div><span className={`mr-status ${report.tradeAccessRevoked ? "mr-revoked" : ""}`}>{report.tradeAccessRevoked ? "Access revoked" : "Access active"}</span></header>
+                  <div className="mr-strike-facts">{currentView === "strikes" ? <><span><strong>{report.expiredOffers.length}</strong> uncleared {report.expiredOffers.length === 1 ? "strike" : "strikes"}</span>{report.reports.length > 0 && <span>{report.reports.length} {report.reports.length === 1 ? "account report" : "account reports"}</span>}</> : <><span><strong>{report.reports.length}</strong> {report.reports.length === 1 ? "report" : "reports"}</span><span>{report.expiredOffers.length} {report.expiredOffers.length === 1 ? "strike" : "strikes"} · {report.reports.filter(item => item.wantsStaffContact && !item.contactedAt).length} awaiting contact</span></>}</div>
+                  {currentView === "strikes" ? <StrikeEvidence key={report.userId} report={report} isLightMode={isLightMode}/> : <FloatingEvidence heading={`${report.username} · report evidence`} caption={`${report.reports.length} unresolved ${report.reports.length === 1 ? "report" : "reports"}`} countLabel={`${report.reports.length} ${report.reports.length === 1 ? "report" : "reports"}`} isLightMode={isLightMode}><div className="space-y-3">{report.reports.map(item => <div key={item.id} className={`rounded-xl border p-3 ${isLightMode ? "border-black/10 bg-zinc-50" : "border-white/10 bg-white/[0.03]"}`}><div className="flex items-center gap-2"><CardImage src={item.reporterAvatar} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover"/><div><strong className="break-words text-xs">{item.reporterUsername}</strong><time className="mt-1 block text-[10px] opacity-60" dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString()}</time></div></div><p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6">{item.comment || "No written comment supplied."}</p>{item.wantsStaffContact && <span className="mt-2 block text-xs text-primary">{item.contactedAt ? `Staff contact recorded ${new Date(item.contactedAt).toLocaleString()}` : "Reporter requested staff contact"}</span>}<div className="mt-3 flex flex-wrap gap-2"><button type="button" className="min-h-10 rounded-xl border border-border px-3 py-2 text-xs" data-evidence-action onClick={() => setSelectedReportComment(item)}>Full report and contact details</button><button type="button" className="min-h-10 rounded-xl border border-border px-3 py-2 text-xs" data-evidence-action onClick={() => setDismissTarget({ kind: "profile", id: item.id, username: report.username })}>Dismiss this report</button></div></div>)}</div></FloatingEvidence>}
+                  {(currentView === "account_reports" || currentView === "strikes" || report.tradeAccessRevoked) && <footer className="mr-actions">{currentView !== "strikes" && <span>Account-level decision</span>}{(currentView === "account_reports" || report.tradeAccessRevoked) ? <button type="button" className={report.tradeAccessRevoked ? "mr-secondary" : "mr-danger"} onClick={() => setSelectedAccountReport(report)}>{report.tradeAccessRevoked ? "Review reinstatement" : "Review access action"}</button> : <span className="mr-strike-active-note">Trading access active</span>}</footer>}
                 </article>)}
               </div>)) : historyLoading ? (<div className={`flex items-center justify-center gap-2 px-5 py-14 text-sm ${isLightMode ? "text-zinc-600" : "text-zinc-400"}`}>
               <Loader2 className="h-4 w-4 animate-spin"/>
