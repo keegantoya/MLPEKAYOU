@@ -64,10 +64,13 @@ import frame007 from "@/frames/frame007.webp";
 import frame008 from "@/frames/frame008.png";
 import frame009 from "@/frames/frame009.webp";
 import frame010 from "@/frames/frame010.webp";
+import frame011 from "@/frames/frame011.webp";
+import frame012 from "@/frames/frame012.png";
+import frame013A from "@/frames/frame013A.webp";
+import frame013B from "@/frames/frame013B.webp";
 import verifiedBadge from "/website-assets/goldenverifiedbadge.webp";
 import elementOfLaughter from "/website-assets/elementoflaughter.webp";
 import ownerBadge from "/website-assets/OwnerBadge.webp";
-
 const avatarMap: Record<string, string> = {
   avatar001,
   avatar002,
@@ -133,32 +136,30 @@ const avatarMap: Record<string, string> = {
   terrypfp: TerriAvatar,
   "terrypfp.webp": TerriAvatar,
 };
-
 export const DEFAULT_AVATAR = avatar001;
 export const FRAME_OWNER_ID = "17e57e39-bc0c-44e7-b373-ac34c6690185";
 export const SELECTABLE_AVATARS = Object.keys(avatarMap).filter(
   (name) => /^avatar\d{3}$/.test(name) && !/^avatar(00[1-9]|01[0-5]|027)$/.test(name),
 );
-
 export type ProfileAssetUser = {
   id?: string | null;
   avatar_url?: string | null;
   avatar_frame?: string | null;
   unlocked_frames?: readonly string[];
 };
-
 export type AvatarFrame = {
   id: string;
   name: string;
   image: string;
   lightImage?: string;
+  backImage?: string;
+  kofiMonthly?: number;
   scale: number;
   top: number;
   requirement: string;
   progressLabel: string;
   merit?: boolean;
 };
-
 export const FRAME_CATALOG: readonly AvatarFrame[] = [
   {
     id: "frame001",
@@ -188,20 +189,19 @@ export const FRAME_CATALOG: readonly AvatarFrame[] = [
     requirement: "Complete 100% of Rainbow 2: all 170 of 170 cards.", progressLabel: "Rainbow 2 cards" },
   { id: "frame010", name: "Pinkie's Party - Limited Time", image: frame010, scale: 1.6, top: 47,
     requirement: "This is a limited-time unlockable frame. Complete the limited-time Pinkie Pie's Party mini game on the homepage to unlock it.", progressLabel: "Pinkie's Party completions" },
+  { id: "frame011", name: "Ko-Fi $20 Supporter", image: frame011, scale: 1.6, top: 47, kofiMonthly: 20, requirement: "Subscribe to a 20 USD per month MLPEKAYOU Ko-Fi membership and request moderator approval using your public Ko-Fi membership name.", progressLabel: "Moderator approval" },
+  { id: "frame012", name: "Ko-Fi $50 Supporter", image: frame012, scale: 1.6, top: 47, kofiMonthly: 50, requirement: "Subscribe to a 50 USD per month MLPEKAYOU Ko-Fi membership and request moderator approval using your public Ko-Fi membership name.", progressLabel: "Moderator approval" },
+  { id: "frame013", name: "Ko-Fi $100 Supporter", image: frame013B, backImage: frame013A, scale: 1.6, top: 47, kofiMonthly: 100, requirement: "Subscribe to a 100 USD per month MLPEKAYOU Ko-Fi membership and request moderator approval using your public Ko-Fi membership name.", progressLabel: "Moderator approval" },
 ];
-
 export function getAvatar(avatar: string | null | undefined): string {
   return avatarMap[String(avatar ?? "").trim()] ?? DEFAULT_AVATAR;
 }
-
 export function getAvailableFrames(user?: ProfileAssetUser | null) {
   return FRAME_CATALOG.filter((frame) => user?.unlocked_frames?.includes(frame.id));
 }
-
 export function getAvatarFrame(user?: ProfileAssetUser | null) {
   return FRAME_CATALOG.find((frame) => frame.id === user?.avatar_frame) ?? null;
 }
-
 export const VERIFIED_USERS: Record<string, { badge: string; label: string }> = {
   "17e57e39-bc0c-44e7-b373-ac34c6690185": { badge: ownerBadge, label: "MLPEKAYOU OWNER" },
   "408a516c-ee80-4ff8-a869-493e1fd5d961": { badge: verifiedBadge, label: "MLPEKAYOU STAFF" },
@@ -222,11 +222,9 @@ export const VERIFIED_USERS: Record<string, { badge: string; label: string }> = 
   "81a1f57f-cc99-4322-a765-9ee102cfa2b9": { badge: elementOfLaughter, label: "ELEMENT OF LAUGHTER" },
   "0634af21-958f-4922-b812-6ab3b53f7260": { badge: elementOfLaughter, label: "ELEMENT OF LAUGHTER" },
 };
-
 export function getVerification(userId: string | null | undefined) {
   return userId ? VERIFIED_USERS[userId] ?? null : null;
 }
-
 export function getProfileAssets(user?: ProfileAssetUser | null) {
   return {
     avatar: getAvatar(user?.avatar_url),

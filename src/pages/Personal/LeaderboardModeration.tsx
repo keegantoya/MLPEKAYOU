@@ -1,3 +1,5 @@
+import ProfileAvatar from "@/components/ProfileAvatar";
+import { FRAME_CATALOG } from "../Everypony/profile-assets";
 import { StaffConversations, useStaffSummary } from "@/components/StaffCommunications";
 import { EnglishLeaderboardAppealQueue } from "@/components/EnglishLeaderboardAppeals";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -10,6 +12,59 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft, ChevronRight, History, Loader2, MoreVertical, Search, Shield, UserX, X, RefreshCw, ChevronDown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getProfileAssets } from "../Everypony/profile-assets";
+type KofiFrameRequest = { id: string; user_id: string; username: string; avatar_url: string | null; avatar_frame: string | null; frame_id: string; public_name: string; status: "pending" | "approved" | "denied"; staff_comment: string; created_at: string; updated_at: string };
+function KofiFrameApprovalQueue({ search, refresh, onChanged }: { search: string; refresh: number; onChanged: () => void }) {
+    const [status, setStatus] = useState<"pending" | "approved" | "denied">("pending");
+    const [page, setPage] = useState(0);
+    const [revision, setRevision] = useState(0);
+    const [result, setResult] = useState<{ key: string; rows: KofiFrameRequest[]; total: number }>({ key: "", rows: [], total: 0 });
+    const [error, setError] = useState("");
+    const [selection, setSelection] = useState<{ row: KofiFrameRequest; decision: "approved" | "denied" } | null>(null);
+    const [comment, setComment] = useState("");
+    const [busy, setBusy] = useState(false);
+    const [actionError, setActionError] = useState("");
+    const lock = useRef(false);
+    const key = JSON.stringify([status, search.trim(), page, refresh, revision]);
+    useEffect(() => { setPage(0); }, [search, status]);
+    useEffect(() => {
+        let active = true; setError("");
+        const timer = window.setTimeout(() => { void (async () => {
+            try {
+                const { data, error } = await (supabase as any).rpc("kofi_frame_requests", { p_action: "queue", p_data: { status, query: search.trim(), offset: page * 20 } });
+                if (!active) return;
+                if (error) throw error;
+                setResult({ key, rows: data?.rows ?? [], total: Number(data?.total ?? 0) });
+            } catch (cause) { if (active) setError((cause as { message?: string })?.message || "Frame requests could not be loaded."); }
+        })(); }, 250);
+        return () => { active = false; window.clearTimeout(timer); };
+    }, [key]);
+    const review = async () => {
+        if (!selection || lock.current) return;
+        lock.current = true; setBusy(true); setActionError("");
+        try {
+            const { error } = await (supabase as any).rpc("kofi_frame_requests", { p_action: "review", p_data: { id: selection.row.id, expected_updated_at: selection.row.updated_at, decision: selection.decision, comment: comment.trim() } });
+            if (error) throw error;
+            setSelection(null); setRevision(value => value + 1); onChanged();
+            window.dispatchEvent(new Event("staff-communications-changed"));
+        } catch (cause) { setActionError((cause as { message?: string })?.message || "The decision could not be saved."); }
+        finally { lock.current = false; setBusy(false); }
+    };
+    return <section className="min-w-0 py-4">
+        <div className="flex gap-5 overflow-x-auto border-b border-border">{(["pending", "approved", "denied"] as const).map(value => <button key={value} type="button" aria-pressed={status === value} onClick={() => setStatus(value)} className={`min-h-11 shrink-0 border-b-2 px-1 text-sm font-semibold capitalize ${status === value ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{value}</button>)}</div>
+        <p className="my-4 max-w-3xl text-sm leading-6 text-muted-foreground">Verify the public membership name on <a href="https://ko-fi.com/Q2Y429HP6N" target="_blank" rel="noopener noreferrer" className="text-primary underline">MLPEKAYOU's Ko-Fi homepage</a> before approving. Any moderator can approve. These frames are permanent thank-you gifts and stay unlocked when membership ends.</p>
+        {error ? <p role="alert" className="py-6 text-sm text-red-500">{error}<button type="button" className="ml-2 underline" onClick={() => setRevision(value => value + 1)}>Retry</button></p> : result.key !== key ? <p role="status" className="py-8 text-sm text-muted-foreground">Loading frame requests...</p> : !result.rows.length ? <p className="py-8 text-sm text-muted-foreground">No {status} requests{search.trim() ? " match this search" : ""}.</p> : <div className="divide-y divide-border">{result.rows.map(row => {
+            const frame = FRAME_CATALOG.find(frame => frame.id === row.frame_id);
+            return <article key={row.id} className="flex min-w-0 flex-col gap-5 py-5 sm:flex-row sm:items-center">
+                <div className="flex h-28 w-28 shrink-0 items-center justify-center"><ProfileAvatar profile={{ id: row.user_id, avatar_url: row.avatar_url }} frameId={row.frame_id} preview alt="Requested frame preview" className="h-16 w-16" /></div>
+                <div className="min-w-0 flex-1"><div className="flex items-center gap-3"><ProfileAvatar profile={{ id: row.user_id, avatar_url: row.avatar_url, avatar_frame: row.avatar_frame }} alt="" className="h-9 w-9" /><h3 className="break-words text-base font-semibold">{row.username}</h3></div><p className="mt-3 text-sm font-semibold">{frame?.name ?? row.frame_id}</p><p className="mt-1 break-words text-sm">Public Ko-Fi name: <strong>{row.public_name}</strong></p><p className="mt-1 text-xs text-muted-foreground">{new Date(row.updated_at).toLocaleString()} · {row.status}</p>{row.staff_comment && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">Staff comment: {row.staff_comment}</p>}</div>
+                {row.status === "pending" && <div className="flex shrink-0 gap-2"><button type="button" onClick={() => { setSelection({ row, decision: "approved" }); setComment(""); setActionError(""); }} className="min-h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">Approve</button><button type="button" onClick={() => { setSelection({ row, decision: "denied" }); setComment(""); setActionError(""); }} className="min-h-11 rounded-lg border border-border px-4 text-sm font-semibold">Deny</button></div>}
+            </article>;
+        })}</div>}
+        {result.key === key && result.total > 20 && <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4"><button type="button" disabled={page === 0} onClick={() => setPage(value => value - 1)} className="min-h-11 px-3 text-sm disabled:opacity-30">Previous</button><span className="text-xs">Page {page + 1} of {Math.ceil(result.total / 20)}</span><button type="button" disabled={(page + 1) * 20 >= result.total} onClick={() => setPage(value => value + 1)} className="min-h-11 px-3 text-sm disabled:opacity-30">Next</button></div>}
+        <Dialog open={!!selection} onOpenChange={open => { if (!open && !busy) setSelection(null); }}><DialogContent className="max-h-[90dvh] overflow-y-auto" onEscapeKeyDown={event => { if (busy) event.preventDefault(); }} onPointerDownOutside={event => { if (busy) event.preventDefault(); }}><DialogTitle>{selection?.decision === "approved" ? "Approve permanent frame access?" : "Deny frame request?"}</DialogTitle><DialogDescription>{selection?.row.username} requested {FRAME_CATALOG.find(frame => frame.id === selection?.row.frame_id)?.name} under the public Ko-Fi name "{selection?.row.public_name}".</DialogDescription>{selection?.decision === "approved" && <p className="text-sm leading-6">Confirm you verified this membership. Approval permanently unlocks this frame; ending the membership will not remove it.</p>}<label className="block text-sm font-semibold">Staff comment {selection?.decision === "denied" ? "(required)" : "(optional)"}<textarea value={comment} onChange={event => setComment(event.target.value)} maxLength={1000} disabled={busy} className="mt-2 min-h-24 w-full rounded-lg border border-border bg-background p-3 text-base text-foreground" /></label>{actionError && <p role="alert" className="text-sm text-red-500">{actionError}</p>}<div className="flex justify-end gap-3"><button type="button" disabled={busy} onClick={() => setSelection(null)} className="min-h-11 px-4 text-sm">Cancel</button><button type="button" disabled={busy || (selection?.decision === "denied" && comment.trim().length < 3)} onClick={() => void review()} className="min-h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy ? "Saving..." : selection?.decision === "approved" ? "Confirm approval" : "Confirm denial"}</button></div></DialogContent></Dialog>
+    </section>;
+}
+
 type AccessDirectoryRow = { user_id: string; username: string; discord_username: string | null; trade_access_revoked: boolean; frame_id: string | null; revoked_at: string | null; total_count: number | string };
 const frameNames: Record<string, string> = { frame001: "Star One", frame002: "500 cards", frame003: "PakraCards Supporter", frame004: "Rainbow One", frame005: "Nightmare Night", frame006: "Moon Three", frame007: "Moon One", frame008: "Moon Two", frame009: "Rainbow Two", frame010: "Pinkie Party" };
 const accessFrameLabel = (id: string | null) => id ? `${id}${frameNames[id] ? ` / ${frameNames[id]}` : ""}` : "Unknown frame";
@@ -88,6 +143,8 @@ const getHistoryActionTitle = (item: ModerationHistoryItem) => {
         trading_report_contacted: "Report author contacted",
         trading_access_revoked: "Trading access revoked",
         frame_access_reinstated: "Frame access reinstated",
+        frame_kofi_approved: "Ko-Fi frame approved permanently",
+        frame_kofi_denied: "Ko-Fi frame request denied",
         english_appeal_approved: "English appeal approved",
         english_appeal_declined: "English appeal declined",
         english_appeal_response: "English appeal response",
@@ -143,6 +200,7 @@ const LeaderboardModeration = () => {
         const view = new URLSearchParams(location.search).get("view");
         if (["active", "account_reports", "strikes", "history", "discord", "frames", "appeals", "conversations"].includes(view ?? "")) setCurrentView(view as typeof currentView);
     }, [location.search]);
+    const [frameQueue, setFrameQueue] = useState<"requests" | "restrictions">("requests");
     const [directoryResult, setDirectoryResult] = useState<{ key: string; rows: AccessDirectoryRow[]; total: number }>({ key: "", rows: [], total: 0 });
     const [directoryLoading, setDirectoryLoading] = useState(false);
     const [directoryError, setDirectoryError] = useState("");
@@ -755,10 +813,10 @@ const LeaderboardModeration = () => {
     const listPanelRef = useRef<HTMLDivElement>(null);
     const pageSize = 10;
     const normalizedSearch = searchQuery.trim().toLowerCase();
-    const isDirectoryView = currentView === "discord" || currentView === "frames";
+    const isDirectoryView = currentView === "discord" || (currentView === "frames" && frameQueue === "restrictions");
     const directoryKey = `${currentView}:${normalizedSearch}:${pageByView[currentView]}`;
     useEffect(() => {
-        if (!authorized || (currentView !== "discord" && currentView !== "frames")) return;
+        if (!authorized || !isDirectoryView) return;
         let cancelled = false;
         setDirectoryLoading(true);
         setDirectoryError("");
@@ -780,7 +838,7 @@ const LeaderboardModeration = () => {
             })();
         }, 250);
         return () => { cancelled = true; window.clearTimeout(timer); };
-    }, [authorized, currentView, normalizedSearch, pageByView[currentView], directoryRefresh]);
+    }, [authorized, currentView, isDirectoryView, normalizedSearch, pageByView[currentView], directoryRefresh]);
     const runDirectoryAction = async () => {
         if (!directoryTarget || directorySaveLock.current || directoryReason.trim().length < 3) return;
         directorySaveLock.current = true;
@@ -813,7 +871,7 @@ const LeaderboardModeration = () => {
     const struckAccounts = accountReports.filter((group) => group.expiredOffers.length > 0 && group.username.toLowerCase().includes(normalizedSearch));
     const searchedCardReports = cardReports.filter(report => `${report.reportedUsername} ${report.reporterUsername} ${report.cardKey} ${report.setId}`.toLowerCase().includes(normalizedSearch));
     const filteredHistory = historyItems.filter(item => (historyAction === "all" || item.action === historyAction) && `${item.moderatorUsername} ${item.targetUsername} ${getHistoryActionTitle(item)} ${item.details || ""}`.toLowerCase().includes(normalizedSearch));
-    const totalItems = currentView === "appeals" || currentView === "conversations" ? 0 : isDirectoryView ? directoryResult.total : currentView === "active" ? filteredBans.length
+    const totalItems = currentView === "appeals" || currentView === "conversations" || (currentView === "frames" && frameQueue === "requests") ? 0 : isDirectoryView ? directoryResult.total : currentView === "active" ? filteredBans.length
         : currentView === "account_reports" ? searchedCardReports.length + reportedAccounts.length
             : currentView === "strikes" ? struckAccounts.length
                 : filteredHistory.length;
@@ -826,7 +884,7 @@ const LeaderboardModeration = () => {
     const pagedAccountReports = currentView === "strikes" ? struckAccounts.slice(pageStart, pageEnd)
         : reportedAccounts.slice(Math.max(0, pageStart - searchedCardReports.length), Math.max(0, pageEnd - searchedCardReports.length));
     const pagedHistoryItems = filteredHistory.slice(pageStart, pageEnd);
-    const pageLoading = currentView === "appeals" || currentView === "conversations" ? false : isDirectoryView ? directoryLoading || directoryResult.key !== directoryKey : currentView === "active" ? loading
+    const pageLoading = currentView === "appeals" || currentView === "conversations" || (currentView === "frames" && frameQueue === "requests") ? false : isDirectoryView ? directoryLoading || directoryResult.key !== directoryKey : currentView === "active" ? loading
         : currentView === "account_reports" || currentView === "strikes" ? reportsLoading : historyLoading;
     useEffect(() => {
         setPageByView((pages) => pages[currentView] > totalPages
@@ -839,7 +897,7 @@ const LeaderboardModeration = () => {
     const refreshWorkspace = () => {
         setErrorMessage("");
         if (currentView === "appeals" || currentView === "conversations") setAppealRefresh(value => value + 1);
-        else if (isDirectoryView) setDirectoryRefresh(value => value + 1);
+        else if (isDirectoryView || currentView === "frames") setDirectoryRefresh(value => value + 1);
         else if (currentView === "history")
             void loadHistory(true);
         else if (currentView === "active") {
@@ -1033,11 +1091,12 @@ const LeaderboardModeration = () => {
         <div ref={listPanelRef} className="moderation-panel mt-6 min-w-0">
           <nav className="moderation-category-nav" aria-label="Moderation sections">{([
             ["appeals", "English appeals"], ["conversations", "Conversations"], ["account_reports", "Reports"], ["strikes", "Strikes"],
-            ["active", "English bans"], ["discord", "Discord users"], ["frames", "Frame restrictions"], ["history", "History"],
+            ["active", "English bans"], ["discord", "Discord users"], ["frames", "Frames"], ["history", "History"],
           ] as const).map(([view,label]) => <button key={view} type="button" aria-pressed={currentView === view} onClick={() => { setSearchQuery(""); setHistoryAction("all"); setPageByView(pages => ({ ...pages, [view]: 1 })); if (view === "history") void openHistory(); else setCurrentView(view); }}><span>{label}</span>{Number(categoryCounts[view] ?? 0) > 0 && <span className="moderation-count" aria-label={`${categoryCounts[view]} unread notifications`}>{categoryCounts[view] > 99 ? "99+" : categoryCounts[view]}</span>}</button>)}</nav>
-          <header className="moderation-section-heading"><h2>{({ active:"English leaderboard bans", account_reports:"Reports", strikes:"Strikes", history:"Moderation history", discord:"Discord directory", frames:"Frame restrictions", appeals:"English appeals", conversations:"Conversations" })[currentView]}</h2><p>{currentView === "conversations" ? "Read and reply to collectors. Appeal decisions can be completed here." : currentView === "appeals" ? "Pending appeals and completed decisions." : currentView === "frames" ? "Review restricted frames and reinstate access." : currentView === "discord" ? "Search collectors and manage trading access." : currentView === "history" ? "Staff actions, most recent first." : currentView === "strikes" ? "Review unanswered trade offers." : currentView === "account_reports" ? "Review collector reports and listing concerns." : "Manage English leaderboard access."}</p></header>
-          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "conversations" ? "Search conversations by collector or Discord username" : currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
-          {currentView === "conversations" ? <><StaffConversations key={location.search.replace(/[?&]review=[^&]*/, "")} moderator search={searchQuery} refresh={appealRefresh} onOpenAppeal={id => setReviewAppealId(id)}/><EnglishLeaderboardAppealQueue search="" refresh={appealRefresh} onChanged={appealChanged} reviewOnly reviewAppealId={reviewAppealId} onCloseReview={closeAppealReview}/></> : currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={appealChanged} onOpenReview={appeal => { setSearchQuery(""); navigate(`/leaderboard-moderation?view=conversations&user=${encodeURIComponent(appeal.user_id)}&review=${encodeURIComponent(appeal.id)}`); }}/> : isDirectoryView ? <div className="py-4">
+          <header className="moderation-section-heading"><h2>{({ active:"English leaderboard bans", account_reports:"Reports", strikes:"Strikes", history:"Moderation history", discord:"Discord directory", frames:"Frames", appeals:"English appeals", conversations:"Conversations" })[currentView]}</h2><p>{currentView === "conversations" ? "Read and reply to collectors. Appeal decisions can be completed here." : currentView === "appeals" ? "Pending appeals and completed decisions." : currentView === "frames" ? "Approve Ko-Fi supporter frames or review frame restrictions." : currentView === "discord" ? "Search collectors and manage trading access." : currentView === "history" ? "Staff actions, most recent first." : currentView === "strikes" ? "Review unanswered trade offers." : currentView === "account_reports" ? "Review collector reports and listing concerns." : "Manage English leaderboard access."}</p></header>
+          {currentView === "frames" && <div className="mb-4 flex gap-5 border-b border-border">{(["requests", "restrictions"] as const).map(value => <button key={value} type="button" aria-pressed={frameQueue === value} onClick={() => { setFrameQueue(value); setSearchQuery(""); }} className={`min-h-11 border-b-2 px-1 text-sm font-semibold ${frameQueue === value ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{value === "requests" ? "Approval requests" : "Restrictions"}</button>)}</div>}
+          <div className="mc-query-bar"><label><Search size={16}/><input data-mc-search type="search" value={searchQuery} onChange={event => { setSearchQuery(event.target.value); setPageByView(pages => ({ ...pages, [currentView]: 1 })); }} maxLength={isDirectoryView || currentView === "appeals" ? 200 : undefined} placeholder={currentView === "conversations" ? "Search conversations by collector or Discord username" : currentView === "appeals" ? "Search appeals by collector, Discord, or message" : currentView === "discord" ? "Search site username, Discord username, or user ID" : currentView === "frames" ? frameQueue === "requests" ? "Search collector or public Ko-Fi membership name" : "Search site username, Discord username, user ID, or frame ID" : currentView === "history" ? "Search moderator, collector, action, or reason" : currentView === "active" ? "Find an excluded collector" : "Search accounts or reports"} aria-label="Search current moderation queue"/><kbd>/</kbd></label>{currentView === "history" && <select aria-label="Filter audit action" value={historyAction} onChange={event => { setHistoryAction(event.target.value); setPageByView(pages => ({ ...pages, history: 1 })); }}><option value="all">All actions</option>{Array.from(new Set(historyItems.map(item => item.action))).map(action => <option key={action} value={action}>{getHistoryActionTitle(historyItems.find(item => item.action === action)!)}</option>)}</select>}<button type="button" onClick={refreshWorkspace} disabled={pageLoading}><RefreshCw size={15} className={pageLoading ? "animate-spin" : ""}/><span>Refresh queue</span></button></div>
+          {currentView === "conversations" ? <><StaffConversations key={location.search.replace(/[?&]review=[^&]*/, "")} moderator search={searchQuery} refresh={appealRefresh} onOpenAppeal={id => setReviewAppealId(id)}/><EnglishLeaderboardAppealQueue search="" refresh={appealRefresh} onChanged={appealChanged} reviewOnly reviewAppealId={reviewAppealId} onCloseReview={closeAppealReview}/></> : currentView === "appeals" ? <EnglishLeaderboardAppealQueue search={searchQuery} refresh={appealRefresh} onChanged={appealChanged} onOpenReview={appeal => { setSearchQuery(""); navigate(`/leaderboard-moderation?view=conversations&user=${encodeURIComponent(appeal.user_id)}&review=${encodeURIComponent(appeal.id)}`); }}/> : currentView === "frames" && frameQueue === "requests" ? <KofiFrameApprovalQueue search={searchQuery} refresh={directoryRefresh} onChanged={() => setDirectoryRefresh(value => value + 1)}/> : isDirectoryView ? <div className="py-4">
             <p className="mb-4 text-sm text-muted-foreground">{currentView === "discord" ? "Find any collector with a Discord username. Revoking removes the username and blocks trade and sale access until reinstated." : "Each row is one revoked frame. Reinstating restores only that frame and applies a moderator override."}</p>
             {pageLoading ? <p role="status" className="py-10 text-center text-sm text-muted-foreground">Loading {currentView === "discord" ? "Discord users" : "frame restrictions"}...</p> : directoryError ? <p role="alert" className="py-6 text-sm text-red-500">{directoryError}<button type="button" onClick={() => setDirectoryRefresh(value => value + 1)} className="ml-2 underline">Retry</button></p> : directoryResult.rows.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">{normalizedSearch ? "No users match this search." : currentView === "frames" ? "No frame restrictions are active." : "No collectors have a Discord username."}</p> : <ul className="moderation-directory-list">{directoryResult.rows.map(row => <li key={`${row.user_id}:${row.frame_id ?? "discord"}`} className="moderation-directory-row flex flex-col items-start justify-between gap-3 py-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 flex-wrap items-center gap-4">{currentView === "frames" && <ModerationFramePreview frameId={row.frame_id} isLightMode={isLightMode}/>}<div className="min-w-0 flex-1"><h3 className="break-words text-base font-semibold">{row.username}</h3>{row.discord_username && <p className="mt-1 break-all text-sm text-muted-foreground">Discord: {row.discord_username}</p>}{currentView === "frames" && <><FrameRestrictionReason frameId={row.frame_id}/><p className="mt-2 text-xs text-muted-foreground">Revoked {row.revoked_at ? new Date(row.revoked_at).toLocaleString() : "date unavailable"}</p></>}</div></div>
