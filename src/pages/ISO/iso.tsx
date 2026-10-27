@@ -2,7 +2,7 @@ import ISOFamily from "./iso-family";
 import { getISOSets, getISOSetLabel, isISOSetHidden, fetchISOStatuses, parseISOStatusKey, normalizeEnglishSetId } from "./catalog-adapter";
 import FullISO, { buildFullISOCards, type FullISOProgressRow, type FullISOStatusRow, } from "./full-iso";
 import { getCompletedISOSetIds } from "./iso-visibility";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Link } from "react-router-dom";
 import { ArrowLeft, SlidersHorizontal } from "lucide-react";
@@ -21,6 +21,17 @@ const sections = [{ id: "full", label: "Full ISO", setIds: [] }, { id: "wishlist
 function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { onDeactivate: () => void; activationBusy: boolean; activationError: string }) {
 const [selectedSection, setSelectedSection] = useState<Section>("moon");
 const [showControls, setShowControls] = useState(false);
+    useEffect(() => {
+        if (!showControls) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape" && !event.defaultPrevented) {
+                event.preventDefault();
+                setShowControls(false);
+            }
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [showControls]);
 const [cardCodeSearch, setCardCodeSearch] = useState("");
 const [characterSearch, setCharacterSearch] = useState("");
 const [searchAllCards, setSearchAllCards] = useState(false);
@@ -250,11 +261,29 @@ const visibleSections = sections.filter((section) => {
         fullISOCards.length,
         emptyISOSections,
     ]);
+const changeWishlistMode = (enabled: boolean) => {
+        startTransition(() => {
+            setWishlistMode(enabled);
+            if (enabled) setSearchAllCards(false);
+            if (!enabled && selectedSection === "wishlist") setSelectedSection("moon");
+        });
+    };
+const changeSearchAllCards = (enabled: boolean) => {
+        startTransition(() => {
+            setSearchAllCards(enabled);
+            if (enabled) {
+                setWishlistMode(false);
+                if (selectedSection === "wishlist") setSelectedSection("moon");
+            }
+        });
+    };
 const selectSection = (section: Section) => {
         setCardCodeSearch("");
         setCharacterSearch("");
-        if (section === "wishlist" || selectedSection === "wishlist")
+        if (section === "wishlist" || selectedSection === "wishlist") {
             setWishlistMode(true);
+            setSearchAllCards(false);
+        }
         setSelectedSection(section);
     };
 const sectionContent = (<>
@@ -296,7 +325,7 @@ const navigation = <nav aria-label="English ISO sections" className="flex gap-2 
           <main className="min-w-0 flex-1">
             <div className="mb-3 md:hidden">{navigation}</div>
             {(wishlistMode || selectedSection === "wishlist") && (<div className="mb-4">
-                <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={setSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={setWishlistMode} availableSets={[]} hiddenSetIds={[]} onHideSet={() => { }} wishlistCharacterOnly hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
+                <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={changeSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={changeWishlistMode} availableSets={[]} hiddenSetIds={[]} onHideSet={() => { }} wishlistCharacterOnly hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
               </div>)}
             {selectedSection === "full" || selectedSection === "wishlist" || wishlistMode
             ? sectionContent
@@ -306,9 +335,9 @@ const navigation = <nav aria-label="English ISO sections" className="flex gap-2 
           </main>
         </div>
       </div>
-      {showControls && (<div className={`fixed inset-0 z-[120000] flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}>
-          <div className={`relative max-h-[90dvh] w-full max-w-4xl overflow-y-auto rounded-[24px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}>
-            <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={setSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={setWishlistMode} availableSets={(["moon", "fun", "rainbow", "star", "tcg", "promos", "merch"] as const).map(family => ({ id: family, name: family === "merch" ? "Other" : family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }))} hiddenSetIds={hiddenSets} onHideSet={toggleSet} hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
+      {showControls && (<div onClick={event => { if (event.target === event.currentTarget) setShowControls(false); }} className={`fixed inset-0 z-[120000] flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}>
+          <div role="dialog" aria-modal="true" aria-label="ISO Controls" className={`relative max-h-[90dvh] w-full max-w-4xl overflow-y-auto rounded-[24px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}>
+            <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={changeSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={changeWishlistMode} availableSets={(["moon", "fun", "rainbow", "star", "tcg", "promos", "merch"] as const).map(family => ({ id: family, name: family === "merch" ? "Other" : family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }))} hiddenSetIds={hiddenSets} onHideSet={toggleSet} hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
           </div>
         </div>)}
     </div>);

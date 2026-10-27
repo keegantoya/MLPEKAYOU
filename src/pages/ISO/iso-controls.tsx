@@ -62,8 +62,8 @@ export default function ISOCONTROLS({ cardCodeSearch, onCardCodeSearchChange, ch
       <aside className="mx-auto flex max-h-[72dvh] w-full flex-col overflow-y-auto rounded-[22px] border border-black/10 bg-[#f5f5f7] text-zinc-900 shadow-xl sm:max-h-none sm:overflow-hidden sm:rounded-[28px] dark:border-white/10 dark:bg-[#1c1c1e] dark:text-white">
         <div className="shrink-0 px-3 pb-1 pt-2 sm:px-6 sm:pb-2 sm:pt-3">
           <div className="mb-1 flex items-center justify-between sm:mb-3">
-            <button type="button" onClick={onClose} className="group flex h-4 w-4 items-center justify-center rounded-full bg-[#ff5f57] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)] transition hover:brightness-95 sm:h-5 sm:w-5" aria-label="Close ISO Controls" title="Close">
-              <span className="text-[11px] font-bold leading-none text-[#7a1f1b] opacity-0 transition-opacity group-hover:opacity-100">
+            <button type="button" onClick={onClose} className="group relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#ff5f57] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)] transition before:absolute before:-inset-3.5 before:rounded-full before:content-[''] hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current sm:h-5 sm:w-5" aria-label="Close ISO Controls" title="Close">
+              <span className="text-[11px] font-bold leading-none text-[#7a1f1b]">
                 &#xd7;
               </span>
             </button>

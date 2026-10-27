@@ -78,7 +78,7 @@ export default function ISOFamily({ family, userId: publicUserId, cardCodeSearch
     const searching = !!(cardCodeSearch.trim() || characterSearch.trim());
     const isMissing = (identity: string) => !owned.has(identity) && !inProgress.has(identity);
     const selectableSets = sets.filter(set => !isISOSetHidden(set.id, hiddenSets) && (searchAllCards || wishlistMode || getISOCards(set.id).some(card => isMissing(isoCardIdentity(card)))));
-    const visibleSetId = selectedSet && selectableSets.some(set => set.id === selectedSet) ? selectedSet : null;
+    const visibleSetId = selectedSet && selectableSets.some(set => set.id === selectedSet) ? selectedSet : selectableSets[0]?.id ?? null;
     if (loading)
         return <div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>;
     if (error)
