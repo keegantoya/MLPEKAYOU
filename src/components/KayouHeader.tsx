@@ -267,8 +267,12 @@ const KayouHeader = () => {
   const [profile, setProfile] = useState<any>(null);
   const [baseInboxNotificationCount, setInboxNotificationCount] = useState(0);
   const staffSummary = useStaffSummary();
+  const moderationUnread = Number(staffSummary.moderation_unread);
+  const moderationNotificationCount = staffSummary.userId === user?.id && Number.isFinite(moderationUnread) ? Math.max(0, Math.floor(moderationUnread)) : 0;
+  const moderationNotificationLabel = moderationNotificationCount > 0 ? `Moderation, ${moderationNotificationCount} unread notifications` : "Moderation";
   const inboxNotificationCount = baseInboxNotificationCount + staffSummary.unread;
   const notificationAudio = useRef<AudioContext | null>(null);
+  const moderatorSound = useRef<{ context: AudioContext; buffer: Promise<AudioBuffer | null> } | null>(null);
   const [isLightMode, setIsLightMode] = useState(false);
   const [isSpookyMode, setIsSpookyMode] = useState(false);
   const [spookyUnlocked, setSpookyUnlocked] = useState(false);
@@ -345,7 +349,7 @@ const KayouHeader = () => {
   );
   const notificationCountLabel =
     inboxNotificationCount > 99 ? "99+" : String(inboxNotificationCount);
-  const emitNotificationChime = (audio: AudioContext) => {
+  const emitNotificationChime = (audio: AudioContext, kind: "standard" | "staff" = "standard") => {
     const now = audio.currentTime;
     const playTone = (
       frequency: number,
@@ -365,20 +369,48 @@ const KayouHeader = () => {
       oscillator.start(start);
       oscillator.stop(start + duration + 0.01);
     };
+    if (kind === "staff") {
+      playTone(523.25, now, 0.16, 0.22);
+      playTone(659.25, now + 0.14, 0.16, 0.22);
+      playTone(783.99, now + 0.28, 0.3, 0.2);
+      return;
+    }
     playTone(740, now, 0.2, 0.3);
     playTone(988, now + 0.11, 0.26, 0.26);
   };
-  const playNotificationSound = () => {
+  const playNotificationSound = (kind: "standard" | "staff" | "moderator" = "standard") => {
     const audio = notificationAudio.current;
     if (!audio || audio.state === "closed") return;
-    if (audio.state === "suspended") {
-      void audio
-        .resume()
-        .then(() => emitNotificationChime(audio))
-        .catch(() => undefined);
+    if (kind === "moderator") {
+      if (moderatorSound.current?.context !== audio) {
+        moderatorSound.current = {
+          context: audio,
+          buffer: fetch("/website-assets/minecraft-cat.mp3")
+            .then(response => { if (!response.ok) throw new Error("Moderator sound unavailable"); return response.arrayBuffer(); })
+            .then(bytes => audio.decodeAudioData(bytes))
+            .catch(() => null),
+        };
+      }
+      void moderatorSound.current.buffer.then(async buffer => {
+        if (audio.state === "closed") return;
+        if (audio.state === "suspended") await audio.resume();
+        if (!buffer) { emitNotificationChime(audio, "staff"); return; }
+        const source = audio.createBufferSource();
+        const gain = audio.createGain();
+        source.buffer = buffer;
+        gain.gain.setValueAtTime(0.75, audio.currentTime);
+        source.connect(gain);
+        gain.connect(audio.destination);
+        source.onended = () => { source.disconnect(); gain.disconnect(); };
+        source.start();
+      }).catch(() => undefined);
       return;
     }
-    emitNotificationChime(audio);
+    if (audio.state === "suspended") {
+      void audio.resume().then(() => emitNotificationChime(audio, kind)).catch(() => undefined);
+      return;
+    }
+    emitNotificationChime(audio, kind);
   };
   const canUseLgs =
     !!user && staffAccess?.userId === user.id && staffAccess.lgs;
@@ -723,7 +755,7 @@ const KayouHeader = () => {
       );
     };
     const handleStaffNotice = (payload: any) => {
-      if (payload.eventType === "INSERT" && payload.new?.recipient_id === user.id && payload.new?.read_at == null) playNotificationSound();
+      if (payload.eventType === "INSERT" && payload.new?.recipient_id === user.id && payload.new?.read_at == null) playNotificationSound(payload.new.staff_only === true ? "moderator" : "staff");
     };
     const handleMessageChange = (payload: any) => {
       void refreshInboxCount();
@@ -1264,13 +1296,14 @@ const KayouHeader = () => {
       {canModerate && (
         <button
           type="button"
-          className="kayou-staff-button"
-          title="Leaderboard moderation"
-          aria-label="Leaderboard moderation"
+          className="kayou-staff-button kayou-moderation-button"
+          title={moderationNotificationLabel}
+          aria-label={moderationNotificationLabel}
           onClick={() => requestNavigation("/leaderboard-moderation")}
         >
           <Shield size={18} aria-hidden="true" />
           <span>Moderation</span>
+          {moderationNotificationCount > 0 && <span className="kayou-moderation-badge" aria-hidden="true">{moderationNotificationCount > 99 ? "99+" : moderationNotificationCount}</span>}
         </button>
       )}
     </div>
@@ -1346,6 +1379,10 @@ const KayouHeader = () => {
         </div>, document.body
       )}
       <style>{`
+  .kayou-header-scope .kayou-moderation-button{position:relative;overflow:visible}
+  .kayou-header-scope .kayou-staff-button .kayou-moderation-badge{display:inline-flex!important;position:absolute;top:-7px;right:-7px;z-index:2;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 4px;border:2px solid #101315;border-radius:999px;background:#dc2626!important;color:#fff!important;font-size:10px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;pointer-events:none}
+  .kayou-header-scope.kayou-header-light .kayou-staff-button .kayou-moderation-badge{border-color:#fff}
+.kayou-mobile-nav{position:fixed!important;top:auto!important;bottom:max(12px,env(safe-area-inset-bottom,0px))!important;transition-property:width,max-width,left!important}
 .kayou-collections-dropdown{position:fixed;z-index:120001;box-sizing:border-box;padding:6px;border:1px solid #ffffff1f;border-radius:14px;background:#1b1d20;color:#f4f4f5;box-shadow:0 12px 32px #0005;font-family:inherit;animation:kayou-collections-dropdown-in .17s ease-out both}
 .kayou-collections-dropdown-light{background:#fff;color:#242424;border-color:#0000001a;box-shadow:0 12px 32px #0002}
 .kayou-collections-dropdown button{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px;border:0;border-radius:9px;background:transparent;color:inherit;text-align:left;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
@@ -2026,6 +2063,19 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   >
                     <ArrowLeftRight className="h-4 w-4" />
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBugReport(true)}
+                    aria-label="Report a bug"
+                    title="Report a bug"
+                    className={`flex h-8 w-8 items-center justify-center rounded-xl border transition-colors ${
+                      isLightMode
+                        ? "border-red-600/25 bg-red-600/[0.06] text-red-700 hover:bg-red-600/[0.12]"
+                        : "border-red-500/30 bg-red-500/[0.08] text-red-400 hover:bg-red-500/[0.16]"
+                    }`}
+                  >
+                    <Bug className="h-4 w-4" aria-hidden="true" />
+                  </button>
                 </>
               )}
             </div>
@@ -2118,6 +2168,18 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                               {notificationCountLabel}
                             </span>
                           )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            requestNavigation("/support-creators");
+                            setOpen(false);
+                          }}
+                          aria-current={isActive("/support-creators") ? "page" : undefined}
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.07] hover:text-white"
+                        >
+                          <Heart className="h-[18px] w-[18px] text-zinc-400" aria-hidden="true" />
+                          <span>Support Creators</span>
                         </button>
                         <div className="kayou-iso-choice" style={{ "--iso-choice-accent": customEnabled ? `hsl(${customColor.h} ${customColor.s}% ${isLightMode ? Math.min(customColor.l, 36) : Math.max(customColor.l, 66)}%)` : isSpookyMode ? "#c9acff" : isLightMode ? "#887014" : "#E7C84B" } as CSSProperties}>
                           <button
@@ -2366,6 +2428,29 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
           <div className="absolute left-1/2 hidden sm:flex -translate-x-1/2 items-center">
             <div className="relative flex items-center">
               <div className="flex items-center gap-1.5">
+                <div className="relative group">
+                  <button
+                    type="button"
+                    aria-label="Support Creators"
+                    title="Support Creators"
+                    aria-current={isActive("/support-creators") ? "page" : undefined}
+                    onClick={() => requestNavigation("/support-creators")}
+                    className={`
+            relative flex h-10 w-10 items-center justify-center rounded-xl
+            border transition-all duration-200
+            ${
+              isActive("/support-creators")
+                ? "border-[#E7C84B]/55 bg-[#E7C84B]/10 text-[#FFE477] shadow-[0_6px_18px_rgba(0,0,0,0.20)]"
+                : "border-white/10 bg-white/[0.035] text-zinc-400 hover:border-white/20 hover:bg-white/[0.065] hover:text-[#FFE477] hover:shadow-[0_6px_18px_rgba(0,0,0,0.18)]"
+            }
+          `}
+                  >
+                    <Heart className="h-[17px] w-[17px]" />
+                    <span className="pointer-events-none absolute -bottom-8 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-[#111416]/95 px-2.5 py-1.5 text-[10px] font-medium tracking-[0.02em] text-zinc-100 backdrop-blur-md opacity-0 shadow-[0_8px_20px_rgba(0,0,0,0.5)] transition-opacity group-hover:opacity-100">
+                      SUPPORT CREATORS
+                    </span>
+                  </button>
+                </div>
                 <div className="relative group">
                   <button
                     onClick={() => requestNavigation("/support-mlpekayou")}
@@ -2686,6 +2771,20 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
           )}
           <button
             type="button"
+            onClick={() => requestNavigation("/support-creators")}
+            aria-label="Support Creators"
+            title="Support Creators"
+            aria-current={isActive("/support-creators") ? "page" : undefined}
+            className={`flex h-8 w-8 items-center justify-center rounded-xl border transition-colors ${
+              isLightMode
+                ? "border-black/10 bg-black/[0.035] text-zinc-700 hover:bg-black/[0.07] hover:text-zinc-900"
+                : "border-white/10 bg-white/[0.045] text-zinc-300 hover:bg-white/[0.08] hover:text-[#FFE477]"
+            }`}
+          >
+            <Heart className="h-4 w-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
             onClick={() => requestNavigation("/selling")}
             aria-label="Selling"
             className={`flex h-8 w-8 items-center justify-center rounded-xl border shadow-[inset_0_1px_0_rgba(255,255,255,.04)] transition-colors ${
@@ -2822,10 +2921,25 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
               <p
                 className={`mt-2 text-sm leading-6 ${isLightMode ? "text-[#6b6252]" : "text-zinc-400"}`}
               >
-                If you need to contact the developer of this website, please use
-                one of the options below.
+                Get help with bugs, account problems, or community issues. You can message our staff directly without leaving MLPEKAYOU.
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowBugReport(false);
+                setOpen(false);
+                requireLogin("/inbox?staff=1");
+              }}
+              className="mt-5 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-primary bg-primary px-4 py-4 text-left text-primary-foreground shadow-sm transition-[filter] hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            >
+              <Mail className="h-6 w-6 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-bold">Message staff on this website</span>
+                <span className="mt-1 block text-sm leading-5 opacity-90">Chat directly with MLPEKAYOU staff. Your messages and our replies appear in the Staff section of your inbox.</span>
+              </span>
+              <ArrowRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+            </button>
             <div
               className={`mt-5 rounded-2xl border p-4 ${isLightMode ? "border-[#E7C84B]/15 bg-[#E7C84B]/[0.06]" : "border-white/[0.08] bg-white/[0.035]"}`}
             >
@@ -2845,22 +2959,6 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
               </ul>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowBugReport(false);
-                  setOpen(false);
-                  requireLogin("/inbox?staff=1");
-                }}
-                className={`rounded-2xl border px-4 py-3 text-left transition-all duration-200 active:scale-[0.99] sm:col-span-2 ${isLightMode ? "border-[#E7C84B]/20 bg-white hover:border-[#E7C84B]/35 hover:bg-[#fffaf0]" : "border-white/10 bg-white/[0.06] hover:border-white/20 hover:bg-white/[0.10]"}`}
-              >
-                <span className={`block text-sm font-semibold ${isLightMode ? "text-[#312d24]" : "text-white"}`}>
-                  Message staff
-                </span>
-                <span className={`mt-1 block text-xs ${isLightMode ? "text-[#756b59]" : "text-zinc-400"}`}>
-                  Open your personal conversation with MLPEKAYOU staff.
-                </span>
-              </button>
               <button
                 type="button"
                 onClick={() =>
@@ -3154,14 +3252,14 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
           </div>
         </div>
       )}
-      <div
+      {createPortal(<div
         className={`
     sm:hidden fixed z-[99999]
     kayou-mobile-nav
     grid place-items-center overflow-hidden
     rounded-[24px] border
     backdrop-blur-xl
-    transition-all duration-300 ease-out
+    transition-[width,max-width,left] duration-300 ease-out
     ${
       isLightMode
         ? "border-black/10 bg-white/92 shadow-[0_12px_36px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.8)]"
@@ -3173,6 +3271,10 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
           width: mobileNavCollapsed ? "56px" : "calc(100% - 32px)",
           maxWidth: mobileNavCollapsed ? "56px" : "360px",
           height: "58px",
+          position: "fixed",
+          bottom: "max(12px, env(safe-area-inset-bottom, 0px))",
+          top: "auto",
+          margin: 0,
           left: mobileNavCollapsed ? "12%" : "50%",
           transform: "translateX(-50%)",
           WebkitTransform: "translateX(-50%)",
@@ -3287,7 +3389,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
             </span>
           )}
         </button>
-      </div>
+      </div>, document.body)}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { useStaffSummary } from "@/components/StaffCommunications";
 import { EnglishLeaderboardAppealForm } from "@/components/EnglishLeaderboardAppeals";
 import { isISOOwned, normalizeISOKey } from "@/pages/ISO/iso-visibility";
 import { chineseSets } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
@@ -87,7 +88,12 @@ const MobileProfile = () => {
     [],
   );
   const [profile, setProfile] = useState<any>(null);
-  const [inboxNotificationCount, setInboxNotificationCount] = useState(0);
+  const [inboxCounts, setInboxCounts] = useState({ owner: "", count: 0 });
+  const staffSummary = useStaffSummary();
+  const safeUnreadCount = (value: unknown) => { const count = Number(value); return Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0; };
+  const ownStaffSummary = Boolean(profile?.id) && staffSummary.userId === profile.id;
+  const inboxNotificationCount = (inboxCounts.owner === profile?.id ? inboxCounts.count : 0) + (ownStaffSummary ? safeUnreadCount(staffSummary.unread) : 0);
+  const moderationNotificationCount = ownStaffSummary ? safeUnreadCount(staffSummary.moderation_unread) : 0;
   const [activeTheme, setActiveTheme] = useState<"light" | "dark" | "spooky">(() => {
     const theme = document.documentElement.dataset.theme;
     return theme === "light" || theme === "spooky" ? theme : "dark";
@@ -253,11 +259,14 @@ const MobileProfile = () => {
   }, []);
   useEffect(() => {
     if (!profile?.id) {
-      setInboxNotificationCount(0);
+      setInboxCounts({ owner: "", count: 0 });
       return;
     }
     let active = true;
+    let requestId = 0;
     const refreshInboxCount = async () => {
+      const request = ++requestId;
+      try {
       const [messagesResult, requestsResult, offersResult] = await Promise.all([
         supabase
           .from("messages")
@@ -276,14 +285,17 @@ const MobileProfile = () => {
           .eq("status", "pending")
           .gt("expires_at", new Date().toISOString()),
       ]);
-      if (!active) return;
-      setInboxNotificationCount(
-        (messagesResult.count ?? 0) +
-          (requestsResult.count ?? 0) +
-          (offersResult.count ?? 0),
-      );
+      if (!active || request !== requestId) return;
+      const error = messagesResult.error ?? requestsResult.error ?? offersResult.error;
+      if (error) throw error;
+      setInboxCounts({ owner: profile.id, count: (messagesResult.count ?? 0) + (requestsResult.count ?? 0) + (offersResult.count ?? 0) });
+      } catch (error) {
+        if (active && request === requestId) console.error("Unable to refresh inbox counts:", error);
+      }
     };
-    const refresh = () => void refreshInboxCount();
+    const refresh = () => { void refreshInboxCount(); };
+    const refreshVisible = () => { if (document.visibilityState === "visible") refresh(); };
+    const refreshTimer = window.setInterval(refreshVisible, 30000);
     let channel: ReturnType<typeof supabase.channel> | null = null;
     const connect = async () => {
       try {
@@ -330,10 +342,16 @@ const MobileProfile = () => {
     };
     void connect();
     void refreshInboxCount();
+    window.addEventListener("focus", refreshVisible);
+    document.addEventListener("visibilitychange", refreshVisible);
     window.addEventListener("header-message-update", refresh);
     window.addEventListener("header-inbox-update", refresh);
     return () => {
       active = false;
+      ++requestId;
+      window.clearInterval(refreshTimer);
+      window.removeEventListener("focus", refreshVisible);
+      document.removeEventListener("visibilitychange", refreshVisible);
       window.removeEventListener("header-message-update", refresh);
       window.removeEventListener("header-inbox-update", refresh);
       if (channel) void supabase.removeChannel(channel);
@@ -888,7 +906,10 @@ const MobileProfile = () => {
   <div className="flex items-center gap-4 py-5 sm:py-6">
     <ProfileAvatar profile={profile} src={avatar} alt="Your avatar" className="h-24 w-24 shrink-0 rounded-2xl border border-white/10 object-cover shadow-lg" />
     <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><h1 className="truncate text-2xl font-semibold tracking-tight">{displayName}</h1>{verification && <CardImage src={verification.badge} alt={verification.label} title={verification.label} className="h-5 w-5 shrink-0" />}</div><p className="mp-muted mt-1 truncate text-xs">{discord ? `@${discord}` : "No Discord username set"}</p>{vacationMode && <p className="mt-1 text-xs text-[hsl(var(--primary))]">Vacation mode on</p>}</div>
-    <button type="button" onClick={() => navigate("/inbox")} aria-label={`Open inbox, ${inboxNotificationCount} unread`} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10"><Inbox size={19} />{inboxNotificationCount > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">{inboxNotificationCount > 9 ? "9+" : inboxNotificationCount}</span>}</button>
+    <div className="flex shrink-0 flex-col items-center gap-2" aria-label="Profile notifications">
+      {isModerator && <button type="button" onClick={() => navigate("/leaderboard-moderation")} aria-label={`Open moderation, ${moderationNotificationCount} unread notifications`} title="Moderation" className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--mp-line)] text-[hsl(var(--primary))] transition-colors hover:bg-[var(--mp-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><Shield size={19} aria-hidden="true"/>{moderationNotificationCount > 0 && <span aria-hidden="true" className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">{moderationNotificationCount > 99 ? "99+" : moderationNotificationCount}</span>}</button>}
+      <button type="button" onClick={() => navigate("/inbox")} aria-label={`Open inbox, ${inboxNotificationCount} unread notifications`} title="Inbox" className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--mp-line)] transition-colors hover:bg-[var(--mp-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><Inbox size={19} aria-hidden="true"/>{inboxNotificationCount > 0 && <span aria-hidden="true" className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">{inboxNotificationCount > 99 ? "99+" : inboxNotificationCount}</span>}</button>
+    </div>
   </div>
   <div className="flex flex-wrap gap-2 pb-4">
     <button type="button" onClick={()=>navigate("/Personal/change-avatar")} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-xs font-medium"><Pencil size={13}/>Avatar</button>
@@ -1117,7 +1138,7 @@ const MobileProfile = () => {
 <button type="button" onClick={()=>setShowOfferStrikeInfo(true)} className="mp-row"><span className="flex-1 text-sm">Offer response strikes</span><span className={`text-xs font-semibold ${offerStrikeCount>=2?"text-red-400":"mp-muted"}`}>{offerStrikeCount}/3</span><ChevronRight size={15} className="mp-muted"/></button>
 </div></details>
 {offerStrikeCount>=2 && <button type="button" onClick={()=>setShowOfferStrikeInfo(true)} className="mt-3 w-full rounded-xl border border-red-500/25 px-4 py-3 text-left text-xs text-red-400">You have {offerStrikeCount}/3 offer response strikes. Tap for details.</button>}
-{(lgsAccess!==null||canReviewLGS||isModerator) && <section className="mp-surface mt-4 overflow-hidden" aria-label="Staff tools">{lgsAccess!==null && <button type="button" onClick={()=>navigate("/lgs-boards")} className="mp-row"><Store size={17} className="mp-muted"/><span className="flex-1 text-sm">LGS Boards</span><ChevronRight size={16} className="mp-muted"/></button>}{canReviewLGS && <button type="button" onClick={()=>setShowLGSReview(true)} className="mp-row"><Shield size={17} className="mp-muted"/><span className="flex-1 text-sm">LGS Applications</span><ChevronRight size={16} className="mp-muted"/></button>}{isModerator && <button type="button" onClick={()=>navigate("/leaderboard-moderation")} className="mp-row"><Shield size={17} className="mp-muted"/><span className="flex-1 text-sm">Moderation</span><ChevronRight size={16} className="mp-muted"/></button>}</section>}
+{(lgsAccess!==null||canReviewLGS) && <section className="mp-surface mt-4 overflow-hidden" aria-label="Staff tools">{lgsAccess!==null && <button type="button" onClick={()=>navigate("/lgs-boards")} className="mp-row"><Store size={17} className="mp-muted"/><span className="flex-1 text-sm">LGS Boards</span><ChevronRight size={16} className="mp-muted"/></button>}{canReviewLGS && <button type="button" onClick={()=>setShowLGSReview(true)} className="mp-row"><Shield size={17} className="mp-muted"/><span className="flex-1 text-sm">LGS Applications</span><ChevronRight size={16} className="mp-muted"/></button>}</section>}
 <details className="mp-surface mt-3 overflow-hidden"><summary className="flex min-h-14 items-center justify-between gap-3 px-4 py-4"><span><span className="block text-sm font-semibold">Help &amp; account</span><span className="mp-muted mt-1 block text-xs">Bug reports and account controls</span></span><ChevronRight size={16} className="mp-chevron mp-muted" aria-hidden="true" /></summary><div className="border-t border-white/[0.08]"><button type="button" onClick={()=>setShowBugReport(true)} className="mp-row"><Bug size={17} className="text-red-400"/><span className="flex-1 text-sm">Report a bug</span><ChevronRight size={16} className="mp-muted"/></button><button type="button" onClick={async()=>{await supabase.auth.signOut({scope:"local"});navigate("/");}} className="mp-row"><LogOut size={17} className="mp-muted"/><span className="text-sm">Log out</span></button><div className="border-t border-white/[0.08] px-4 py-3"><button type="button" disabled={deletionRequested} onClick={()=>setShowDeletionModal(true)} className="min-h-11 text-xs font-medium text-red-400 disabled:opacity-50">{deletionRequested?"Deletion request pending":"Request account deletion"}</button></div></div></details>
 {profile?.bio && <p className="mp-muted mt-5 px-1 text-xs leading-6">{profile.bio}</p>}
 </div>

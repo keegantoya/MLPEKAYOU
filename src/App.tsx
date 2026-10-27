@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import ScrollToTop from "@/components/ScrollToTop";
 import KayouHeader from "@/components/KayouHeader";
 import Index from "./pages/Main Pages/Index";
+import SupportCreators from "./pages/Main Pages/Support-Creators";
 import Collections from "./pages/Main Pages/Collections";
 import ChineseMoonOne from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/CN-Moon-One";
 import ChineseMoonTwo from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/CN-Moon-Two";
@@ -431,6 +432,7 @@ const routes = (<Routes>
       <Route path="/set-information" element={<SetInformation />}/>
       <Route path="/faq" element={<Navigate to="/set-information" replace />}/>
       <Route path="/support-mlpekayou" element={<Support />}/>
+      <Route path="/support-creators" element={<SupportCreators />}/>
       <Route path="/binders" element={<Binders />}/>
       <Route path="/binders-chinese" element={<RequireAuth><ChineseBinders /></RequireAuth>}/>
       <Route path="/mobile-profile" element={<RequireAuth>
