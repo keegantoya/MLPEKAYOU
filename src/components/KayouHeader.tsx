@@ -1513,6 +1513,9 @@ const KayouHeader = () => {
       )}
       <style>
         {`
+.kayou-support-glow{animation:kayou-support-soft-glow 4.8s ease-in-out infinite;box-shadow:0 0 8px hsl(var(--primary)/.12)}
+@keyframes kayou-support-soft-glow{0%,100%{box-shadow:0 0 7px hsl(var(--primary)/.12),inset 0 0 4px hsl(var(--primary)/.04)}50%{box-shadow:0 0 14px hsl(var(--primary)/.24),inset 0 0 6px hsl(var(--primary)/.08)}}
+@media(prefers-reduced-motion:reduce){.kayou-support-glow{animation:none}}
 .kayou-lgs-intro{--intro-accent:#e7c84b;--intro-bg:#191c1e;--intro-ink:#f4f4f0;--intro-muted:#b7bfbb;position:fixed;inset:0;z-index:120000;isolation:isolate;color:var(--intro-ink);font-family:inherit}.kayou-lgs-intro-light{--intro-bg:#fff;--intro-ink:#242724;--intro-muted:#5c655e}.kayou-lgs-intro-spooky{--intro-accent:#c9acff}.kayou-lgs-intro-shade{position:absolute;inset:0;background:#06090bb3}.kayou-lgs-intro-line{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.kayou-lgs-intro-line path{fill:none;stroke:var(--intro-accent);stroke-width:2;filter:drop-shadow(0 0 5px var(--intro-accent))}.kayou-lgs-intro-line circle{fill:var(--intro-accent)}.kayou-lgs-intro-panel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(480px,calc(100vw - 48px));max-height:calc(100dvh - 120px);overflow:auto;padding:30px;border:1px solid var(--intro-accent);border-radius:18px;background:var(--intro-bg);box-shadow:0 24px 90px #0006}.kayou-lgs-intro-kicker{display:flex;align-items:center;gap:9px;color:var(--intro-accent);font-size:10px;font-weight:700;letter-spacing:.12em}.kayou-lgs-intro-panel h2{font-size:27px;line-height:1.2;letter-spacing:-.025em;margin:17px 0 12px;font-weight:700}.kayou-lgs-intro-panel p{font-size:14px;line-height:1.7;color:var(--intro-muted);margin:0}.kayou-lgs-intro-panel .kayou-lgs-intro-mobile{margin-top:20px;padding-top:16px;border-top:1px solid #80808040;font-size:13px;color:var(--intro-ink)}.kayou-lgs-intro-actions{display:flex;gap:10px;margin-top:24px}.kayou-lgs-intro-actions button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 15px;border-radius:9px;border:1px solid #80808055;background:transparent;color:var(--intro-ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}.kayou-lgs-intro-actions button:first-child{flex:1;background:var(--intro-accent);border-color:transparent;color:#191b1c}.kayou-lgs-intro-actions button:focus-visible{outline:2px solid var(--intro-accent);outline-offset:4px}@media(max-width:767px){.kayou-lgs-intro{display:none}}
   .kayou-header-scope .kayou-staff-actions{display:flex;align-items:center;gap:6px}
   .kayou-staff-lgs{position:relative}
@@ -2495,7 +2498,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                     title="Support Creators"
                     aria-current={isActive("/support-creators") ? "page" : undefined}
                     onClick={() => requestNavigation("/support-creators")}
-                    className={`
+                    className={`kayou-support-glow
             relative flex h-10 w-10 items-center justify-center rounded-xl
             border transition-all duration-200
             ${
@@ -2835,7 +2838,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
             aria-label="Support Creators"
             title="Support Creators"
             aria-current={isActive("/support-creators") ? "page" : undefined}
-            className={`flex h-8 w-8 items-center justify-center rounded-xl border transition-colors ${
+            className={`kayou-support-glow flex h-8 w-8 items-center justify-center rounded-xl border transition-colors ${
               isLightMode
                 ? "border-black/10 bg-black/[0.035] text-zinc-700 hover:bg-black/[0.07] hover:text-zinc-900"
                 : "border-white/10 bg-white/[0.045] text-zinc-300 hover:bg-white/[0.08] hover:text-[#FFE477]"
