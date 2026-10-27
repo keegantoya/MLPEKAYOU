@@ -168,7 +168,7 @@ function CardStage({ card }: { card: ChineseInspectCard }) {
     }} onPointerMove={move} onPointerUp={event=>{if(pointer.current?.id===event.pointerId)finish();}} onPointerCancel={finish} onLostPointerCapture={finish}>
       <div ref={model} className="cn3d-model">
         <div className="cn3d-face cn3d-front"><InspectorImage key={`front-${retry}`} src={card.front} alt={`${card.code} front`} style={card.frontStyle} /></div>
-        <div className="cn3d-face cn3d-back">{card.back ? <InspectorImage key={`back-${retry}`} src={card.back.image} alt={`${card.code} back`} style={getChineseCardBackStyle(card.back)} /> : <span className="cn3d-image-status">Back not available yet</span>}{card.back?.silverStamp && <ChineseSilverStamp/>}</div>
+        <div className="cn3d-face cn3d-back">{card.back ? <InspectorImage key={`back-${retry}`} src={card.back.image} alt={`${card.code} back`} style={getChineseCardBackStyle(card.back)} /> : <span className="cn3d-image-status">Back not available yet</span>}{card.back?.silverStamp && <ChineseSilverStamp landscapeLeft={card.back.silverStampLandscape}/>}</div>
       </div>
     </div>
     {card.notice && <p role="note" className="cn3d-notice">{card.notice}</p>}

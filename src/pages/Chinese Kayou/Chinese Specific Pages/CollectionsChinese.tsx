@@ -28,10 +28,10 @@ const collections: ChineseCollection[] = chineseSets.map(set => ({
 const normalizeCardCode = (value: string) => value.normalize("NFKC").toUpperCase().replace(/<>|[\u25C6\u2662]/g, "\u25C7").replace(/[\u2010-\u2015\u2212]/g, "-").replace(/\s+/g, "");
 const compactCardCode = (value: string) => value.replace(/[^A-Z0-9\u25C7]/g, "");
 const cardCodeMatches = (code: string, query: string) => {
-    const value = normalizeCardCode(code);
-    const search = normalizeCardCode(query);
+const value = normalizeCardCode(code);
+const search = normalizeCardCode(query);
     if (!compactCardCode(search)) return false;
-    const unpadded = (text: string) => text.replace(/-(\d+)$/, (_, number: string) => `-${Number(number)}`);
+const unpadded = (text: string) => text.replace(/-(\d+)$/, (_, number: string) => `-${Number(number)}`);
     return value.includes(search) || compactCardCode(value).includes(compactCardCode(search)) || unpadded(value) === unpadded(search);
 };
 const isOwned = (value: unknown): boolean => value === true || Boolean(value && typeof value === "object" && "owned" in value && value.owned === true);
@@ -151,7 +151,12 @@ const categoryOptions = [{ label: "Moon", value: "eternal-moon" }, { label: "Fun
           </div>
           <div className="collections-summary-track" role="progressbar" aria-label="Overall Chinese collection completion" aria-valuenow={unknown ? undefined : completionRate} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${unknown ? 0 : completionRate}%` }} /></div>
         </section>
-        <nav aria-label="Chinese collection pages" className="mt-4 grid grid-cols-2 gap-x-5 gap-y-1 border-b border-border pb-3 sm:grid-cols-3 xl:grid-cols-5">
+        <aside aria-label="Chinese catalog update notice" className="mt-4 border-l-2 border-primary/50 pl-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+        <p className="font-semibold text-foreground">Catalog updates in progress</p>
+        <p className="mt-1">Some Chinese sets, especially older editions, are still being revised as more information becomes available. Card lists and details may change.</p>
+        <p className="mt-1">Some sets now support 3D viewing, while others are still waiting. Every individual card back needs to be found and uploaded before 3D viewing can be added to a set.</p>
+      </aside>
+      <nav aria-label="Chinese collection pages" className="mt-4 grid grid-cols-2 gap-x-5 gap-y-1 border-b border-border pb-3 sm:grid-cols-3 xl:grid-cols-5">
         {[{ href: "/iso-chinese", label: "Chinese ISO & Wishlist" }, { href: "/trading-post-chinese", label: "Chinese Trading Post" }, { href: "/inventory-chinese", label: "Chinese Inventory" }, { href: "/binders-chinese", label: "Chinese Binders" }, { href: "/leaderboard-chinese", label: "Chinese Leaderboard" }].map(item => <Link key={item.href} to={item.href} className="group flex min-h-11 min-w-0 items-center justify-between gap-2 py-2 text-xs font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:text-sm"><span>{item.label}</span><ArrowUpRight size={14} aria-hidden="true" className="shrink-0 text-muted-foreground transition-colors group-hover:text-primary" /></Link>)}
       </nav>
         <div className="cn-category-scroll mt-4 flex gap-2 md:hidden" role="group" aria-label="Chinese set categories">

@@ -1,3 +1,4 @@
+import HeaderTutorial, { type HeaderTourPreparation } from "@/Tutorials/HeaderTutorial";
 import { useStaffSummary } from "@/components/StaffCommunications";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
@@ -33,7 +34,7 @@ import {
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useEffect, useId, useLayoutEffect, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useState, useCallback } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useRef, type CSSProperties } from "react";
 import { getProfileAssets } from "../pages/Everypony/profile-assets";
@@ -369,6 +370,7 @@ const KayouHeader = () => {
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [showMobilePrompt, setShowMobilePrompt] = useState(false);
   const [open, setOpen] = useState(false);
+  const [headerTutorialBusy, setHeaderTutorialBusy] = useState(true);
   const [showISOChooser, setShowISOChooser] = useState(false);
   const isoChooserId = useId();
   const isoChooserRef = useRef<HTMLDivElement>(null);
@@ -481,7 +483,18 @@ const KayouHeader = () => {
   const [lgsIntroLine, setLgsIntroLine] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const lgsIntroRef = useRef<HTMLDivElement>(null);
   const lgsIntroShown = useRef(new Set<string>());
-  const lgsIntroVisible = lgsIntroUserId === user?.id && canUseLgs;
+  const lgsIntroVisible = lgsIntroUserId === user?.id && canUseLgs && !headerTutorialBusy;
+  const prepareHeaderTour = useCallback((value: HeaderTourPreparation) => {
+    setOpen(value.sidebar);
+    setShowInventoryChooser(Boolean(value.inventory));
+    setShowISOChooser(false);
+    setShowBinderChooser(false);
+    setShowCollectionsChooser(false);
+    setShowLeaderboardLanguageChooser(false);
+    setShowTradePostLanguageChooser(false);
+    setShowThemeMenu(false);
+    setMobileNavCollapsed(false);
+  }, []);
   const saveLgsDiscovery = async (accountId: string, opened: boolean) => {
     const stamp = new Date().toISOString();
     try {
@@ -501,7 +514,7 @@ const KayouHeader = () => {
   };
   useEffect(() => {
     setLgsIntroUserId(null);
-    if (!user?.id || !canUseLgs) return;
+    if (!user?.id || !canUseLgs || headerTutorialBusy) return;
     const accountId = user.id;
     if (location.pathname === "/lgs-boards" || location.pathname.startsWith("/lgs-boards/")) {
       lgsIntroShown.current.add(accountId);
@@ -535,7 +548,7 @@ const KayouHeader = () => {
       window.clearTimeout(timer);
       desktop.removeEventListener("change", resized);
     };
-  }, [user?.id, canUseLgs, location.pathname]);
+  }, [user?.id, canUseLgs, location.pathname, headerTutorialBusy]);
   useEffect(() => {
     if (!lgsIntroVisible) return;
     const panel = lgsIntroRef.current;
@@ -1372,6 +1385,7 @@ const KayouHeader = () => {
     <div
       className={`kayou-header-scope ${isLightMode ? "kayou-header-light" : ""} ${isSpookyMode ? "kayou-header-spooky" : ""}`}
     >
+      <HeaderTutorial userId={user?.id} light={isLightMode} accent={customEnabled ? `hsl(${customColor.h} ${customColor.s}% ${isLightMode ? Math.min(customColor.l, 36) : Math.max(customColor.l, 66)}%)` : isSpookyMode ? "#c9acff" : isLightMode ? "#887014" : "#E7C84B"} blocked={showLogin || showForgotPassword || showLoginRequired || showSignupSuccess || showBugReport || customEditor} onPrepare={prepareHeaderTour} onActiveChange={setHeaderTutorialBusy}/>
       {showCollectionsChooser && createPortal(
         <div ref={collectionsMenuRef} id={collectionsMenuId} role="menu" aria-label="Collections checklists" className={`kayou-collections-dropdown ${isLightMode ? "kayou-collections-dropdown-light" : ""}`} style={{ ...collectionsPosition, "--collections-accent": customEnabled ? `hsl(${customColor.h} ${customColor.s}% ${isLightMode ? Math.min(customColor.l, 36) : Math.max(customColor.l, 66)}%)` : isSpookyMode ? "#c9acff" : isLightMode ? "#887014" : "#E7C84B" } as CSSProperties} onKeyDown={event => {
           if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
@@ -2085,7 +2099,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                 </Button>
               ) : (
                 <>
-                  <button
+                  <button data-header-tour="leaderboard"
                     type="button"
                     onClick={event => toggleLeaderboardLanguageMenu(event.currentTarget)}
                     aria-haspopup="menu"
@@ -2100,7 +2114,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   >
                     <Trophy className="h-4 w-4" />
                   </button>
-                  <button
+                  <button data-header-tour="finishers"
                     onClick={() => requestNavigation("/community")}
                     aria-label="First Finishers"
                     className={`flex h-8 w-8 items-center justify-center rounded-xl border shadow-[inset_0_1px_0_rgba(255,255,255,.04)] transition-colors ${
@@ -2111,7 +2125,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   >
                     <Medal className="h-4 w-4" />
                   </button>
-                  <button
+                  <button data-header-tour="trade"
                     type="button"
                     onClick={event => toggleTradePostLanguageMenu(event.currentTarget)}
                     aria-haspopup="menu"
@@ -2126,7 +2140,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   >
                     <ArrowLeftRight className="h-4 w-4" />
                   </button>
-                  <button
+                  <button data-header-tour="help"
                     type="button"
                     onClick={() => setShowBugReport(true)}
                     aria-label="Report a bug"
@@ -2146,7 +2160,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
               <div className="hidden sm:flex items-center gap-5">
                 <Sheet modal={false} open={open} onOpenChange={setOpen}>
                   <SheetTrigger asChild>
-                    <button
+                    <button aria-label="Open profile sidebar"
                       className={`relative hidden sm:flex h-14 w-14 items-center justify-center rounded-[20px] border p-1 backdrop-blur-md transition-all duration-200 ${
                         isLightMode
                           ? open
@@ -2176,10 +2190,12 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   </SheetTrigger>
                   <SheetContent
                     side="left"
+                    onOpenAutoFocus={event => { if (headerTutorialBusy) event.preventDefault(); }}
+                    onFocusOutside={event => { if ((event.target as HTMLElement | null)?.closest('[data-header-tutorial]')) event.preventDefault(); }}
                     onInteractOutside={(event) => {
                       const target = event.target as HTMLElement | null;
                       if (
-                        target?.closest('[data-header-theme-toggle="true"]')
+                        target?.closest('[data-header-theme-toggle="true"]') || target?.closest('[data-header-tutorial]')
                       ) {
                         event.preventDefault();
                       }
@@ -2191,7 +2207,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                     }`}
                   >
                     <div className="flex h-full flex-col">
-                      <div className="border-b border-white/10 px-5 py-5">
+                      <div data-header-tour="sidebar-profile" className="border-b border-white/10 px-5 py-5">
                         <div className="flex items-center gap-2">
                           <div className="min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-white">
                             {profile?.username || "My Profile"}
@@ -2217,7 +2233,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                           <User className="h-[18px] w-[18px] text-zinc-400" />
                           <span>Edit Profile</span>
                         </button>
-                        <button
+                        <button data-header-tour="inbox"
                           onClick={() => {
                             requestNavigation("/inbox");
                             setOpen(false);
@@ -2245,7 +2261,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                           <span>Support Creators</span>
                         </button>
                         <div className="kayou-iso-choice" style={{ "--iso-choice-accent": customEnabled ? `hsl(${customColor.h} ${customColor.s}% ${isLightMode ? Math.min(customColor.l, 36) : Math.max(customColor.l, 66)}%)` : isSpookyMode ? "#c9acff" : isLightMode ? "#887014" : "#E7C84B" } as CSSProperties}>
-                          <button
+                          <button data-header-tour="inventory"
                             type="button"
                             ref={inventoryChooserTriggerRef}
                             aria-expanded={showInventoryChooser}
@@ -2289,7 +2305,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                           </div>
                         </div>
                         <div className="kayou-iso-choice" style={{ "--iso-choice-accent": customEnabled ? `hsl(${customColor.h} ${customColor.s}% ${isLightMode ? Math.min(customColor.l, 36) : Math.max(customColor.l, 66)}%)` : isSpookyMode ? "#c9acff" : isLightMode ? "#887014" : "#E7C84B" } as CSSProperties}>
-                          <button
+                          <button data-header-tour="binders"
                             type="button"
                             ref={binderChooserTriggerRef}
                             aria-expanded={showBinderChooser}
@@ -2333,7 +2349,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                           </div>
                         </div>
                         <div className="kayou-iso-choice" style={{ "--iso-choice-accent": customEnabled ? `hsl(${customColor.h} ${customColor.s}% ${isLightMode ? Math.min(customColor.l, 36) : Math.max(customColor.l, 66)}%)` : isSpookyMode ? "#c9acff" : isLightMode ? "#887014" : "#E7C84B" } as CSSProperties}>
-                          <button
+                          <button data-header-tour="iso"
                             type="button"
                             ref={isoChooserTriggerRef}
                             aria-expanded={showISOChooser}
@@ -2437,7 +2453,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   </SheetContent>
                 </Sheet>
                 <div className="kayou-theme-picker">
-                  <button
+                  <button data-header-tour="theme"
                     type="button"
                     data-header-theme-toggle="true"
                     onClick={() => setShowThemeMenu((value) => !value)}
@@ -2492,7 +2508,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
             <div className="relative flex items-center">
               <div className="flex items-center gap-1.5">
                 <div className="relative group">
-                  <button
+                  <button data-header-tour="support"
                     type="button"
                     aria-label="Support Creators"
                     title="Support Creators"
@@ -2534,7 +2550,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   </button>
                 </div>
                 <div className="relative group">
-                  <button
+                  <button data-header-tour="explore"
                     onClick={() => requireLogin("/explore")}
                     className={`
             relative flex h-10 w-10 items-center justify-center rounded-xl
@@ -2553,7 +2569,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   </button>
                 </div>
                 <div className="relative group">
-                  <button
+                  <button data-header-tour="collections"
                     onClick={event => toggleCollectionsMenu(event.currentTarget)}
                     aria-label="Open collections"
                     aria-haspopup="menu"
@@ -2576,7 +2592,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   </button>
                 </div>
                 <div className="relative group">
-                  <button
+                  <button data-header-tour="leaderboard"
                     type="button"
                     onClick={event => toggleLeaderboardLanguageMenu(event.currentTarget)}
                     aria-haspopup="menu"
@@ -2632,7 +2648,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="relative group">
-                  <button
+                  <button data-header-tour="finishers"
                     onClick={() => requestNavigation("/community")}
                     className={`
             relative flex h-10 w-10 items-center justify-center rounded-xl
@@ -2651,7 +2667,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
                   </button>
                 </div>
                 <div className="relative group">
-                  <button
+                  <button data-header-tour="trade"
                     type="button"
                     onClick={event => toggleTradePostLanguageMenu(event.currentTarget)}
                     aria-haspopup="menu"
@@ -2779,7 +2795,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
               )}
             </div>
             {user && (
-              <Button
+              <Button data-header-tour="help"
                 type="button"
                 onClick={() => setShowBugReport(true)}
                 aria-label="Report a bug"
@@ -2809,7 +2825,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
         >
           {user && (
             <div className="kayou-theme-picker">
-              <button
+              <button data-header-tour="theme"
                 type="button"
                 onClick={() => setShowThemeMenu((value) => !value)}
                 disabled={themeSaving}
@@ -2832,7 +2848,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
               </div>
             </div>
           )}
-          <button
+          <button data-header-tour="support"
             type="button"
             onClick={() => requestNavigation("/support-creators")}
             aria-label="Support Creators"
@@ -3367,7 +3383,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
         >
           <Home className="h-5 w-5" />
         </button>
-        <button
+        <button data-header-tour="collections"
           onClick={event => {
             setShowMobileProgressMenu(false);
             setShowMobileIsoMenu(false);
@@ -3393,7 +3409,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
         >
           <Sparkles className="h-5 w-5" />
         </button>
-        <button
+        <button data-header-tour="explore"
           onClick={() => {
             setShowMobileProgressMenu(false);
             setShowMobileIsoMenu(false);
@@ -3416,7 +3432,7 @@ html[data-custom-theme="true"]{--primary:var(--kayou-custom-hsl);--ring:var(--ka
         >
           <Users className="h-5 w-5" />
         </button>
-        <button
+        <button data-header-tour="profile"
           onClick={() => {
             setShowMobileProgressMenu(false);
             setShowMobileIsoMenu(false);
