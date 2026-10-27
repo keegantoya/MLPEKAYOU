@@ -55,9 +55,9 @@ function conversationTime(value: string) {
 }
 const conversationStyles = `
 .staff-conversation-pane .staff-message-portrait{width:56px;height:56px;flex-shrink:0;display:flex}
-.staff-conversation-pane .staff-developer-portrait{width:76px;height:76px;border-radius:50%}
-.staff-developer-portrait>img{object-position:25% 35%;transform:scale(1.25);transform-origin:25% 35%}
-@media(max-width:767px){.staff-conversation-pane .staff-message-portrait{width:44px;height:44px}.staff-conversation-pane .staff-developer-portrait{width:60px;height:60px;border-radius:50%}}
+.staff-conversation-pane .staff-developer-portrait{width:56px;height:56px;border-radius:50%}
+.staff-developer-portrait>img{object-position:center;transform:none}
+@media(max-width:767px){.staff-conversation-pane .staff-message-portrait{width:44px;height:44px}.staff-conversation-pane .staff-developer-portrait{width:44px;height:44px;border-radius:50%}}
 .staff-system-card{border:1px solid hsl(var(--border));border-radius:14px;background:hsl(var(--muted)/.35);padding:12px 14px;color:hsl(var(--foreground));font-size:13px;line-height:1.6;overflow-wrap:anywhere}
 .staff-system-card>header{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:hsl(var(--muted-foreground));font-size:11px;letter-spacing:.025em;font-weight:650}
 .staff-system-card h3{font-size:14px;font-weight:650;margin-bottom:5px}.staff-system-card time{display:block;margin-top:8px;font-size:10px;color:hsl(var(--muted-foreground))}
@@ -125,7 +125,7 @@ const conversationStyles = `
 .staff-workspace .staff-conversation-pane .staff-chat-item[data-group-start=true]{padding-top:15px}
 .staff-workspace .staff-conversation-pane .staff-message-scroll .staff-chat-line{width:auto;max-width:min(82%,670px);gap:10px}
 .staff-workspace .staff-conversation-pane .staff-chat-avatar{display:flex;align-items:flex-end;justify-content:center;flex:0 0 56px;width:56px;min-width:56px}
-.staff-workspace .staff-conversation-pane .staff-chat-avatar[data-developer=true]{flex-basis:76px;width:76px;min-width:76px}
+.staff-workspace .staff-conversation-pane .staff-chat-avatar[data-developer=true]{flex-basis:56px;width:56px;min-width:56px}
 .staff-workspace .staff-conversation-pane .staff-chat-content{display:flex;flex-direction:column;gap:0}
 .staff-workspace .staff-conversation-pane .staff-chat-author{margin:0 10px 5px;font-size:11px;font-weight:600;line-height:1.5;color:hsl(var(--muted-foreground));overflow-wrap:anywhere}
 .staff-workspace .staff-conversation-pane .staff-chat-author img{width:13px;height:13px}
@@ -143,7 +143,7 @@ const conversationStyles = `
 .staff-workspace .staff-conversation-pane .staff-imessage-composer button:disabled{opacity:.35;cursor:not-allowed}
 .staff-workspace .staff-conversation-pane .staff-imessage-composer button:not(:disabled):active{transform:scale(.94)}
 .staff-workspace .staff-conversation-pane .staff-imessage-composer button:focus-visible{outline:2px solid #087af5;outline-offset:3px}
-@media(max-width:767px){.staff-workspace .staff-conversation-pane .staff-message-scroll{padding:12px 0}.staff-workspace .staff-conversation-pane .staff-message-scroll .staff-chat-line{max-width:96%;gap:7px}.staff-workspace .staff-conversation-pane .staff-chat-avatar{flex-basis:44px;width:44px;min-width:44px}.staff-workspace .staff-conversation-pane .staff-chat-avatar[data-developer=true]{flex-basis:60px;width:60px;min-width:60px}.staff-workspace .staff-conversation-pane .staff-chat-author{font-size:10px;margin-left:8px;margin-right:8px}.staff-workspace .staff-conversation-pane .staff-chat-bubble{padding:10px 13px;border-radius:20px}.staff-workspace .staff-conversation-pane .staff-chat-item[data-group-start=true]{padding-top:12px}}
+@media(max-width:767px){.staff-workspace .staff-conversation-pane .staff-message-scroll{padding:12px 0}.staff-workspace .staff-conversation-pane .staff-message-scroll .staff-chat-line{max-width:96%;gap:7px}.staff-workspace .staff-conversation-pane .staff-chat-avatar{flex-basis:44px;width:44px;min-width:44px}.staff-workspace .staff-conversation-pane .staff-chat-avatar[data-developer=true]{flex-basis:44px;width:44px;min-width:44px}.staff-workspace .staff-conversation-pane .staff-chat-author{font-size:10px;margin-left:8px;margin-right:8px}.staff-workspace .staff-conversation-pane .staff-chat-bubble{padding:10px 13px;border-radius:20px}.staff-workspace .staff-conversation-pane .staff-chat-item[data-group-start=true]{padding-top:12px}}
 @media(prefers-reduced-motion:reduce){.staff-workspace .staff-conversation-pane .staff-imessage-composer button{transition:none}}
 `;
 const api = supabase as unknown as { rpc: (name: string, args: { p_action: string; p_data: Record<string, unknown> }) => Promise<{ data: any; error: { message: string } | null }> };
@@ -157,6 +157,17 @@ async function conversationQueue(action: string, data: Record<string, unknown> =
   const result = await api.rpc("moderator_conversation_queue", { p_action: action, p_data: data });
   if (result.error) throw new Error(result.error.message);
   return result.data;
+}
+function messageNonce(): string {
+  const source = globalThis.crypto;
+  if (typeof source?.randomUUID === "function") return source.randomUUID();
+  const bytes = new Uint8Array(16);
+  if (typeof source?.getRandomValues === "function") source.getRandomValues(bytes);
+  else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = Array.from(bytes, value => value.toString(16).padStart(2, "0"));
+  return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
 }
 function changed() { window.dispatchEvent(new Event("staff-communications-changed")); window.dispatchEvent(new Event("header-inbox-update")); }
 export function useStaffSummary() {
@@ -240,7 +251,7 @@ function useDeveloperProfile() {
 }
 function DeveloperPortrait() {
   const { data: profile } = useDeveloperProfile();
-  return <span className="staff-message-portrait staff-developer-portrait relative block shrink-0 overflow-hidden rounded-full border border-border bg-muted"><img src="/kayou's-assets/IMG_0567.webp" alt={profile?.username || "MLPEKAYOU Developer"} draggable={false} className="block h-full w-full max-w-none object-cover"/></span>;
+  return <span className="staff-message-portrait staff-developer-portrait relative block shrink-0 overflow-hidden rounded-full border border-border bg-muted"><img src="/kayou's-assets/mehehehe.webp" alt={profile?.username || "MLPEKAYOU Developer"} draggable={false} className="block h-full w-full max-w-none object-cover"/></span>;
 }
 function DeveloperName() {
   const { data: profile } = useDeveloperProfile();
@@ -305,7 +316,7 @@ function CollectorInformation({ userId, open, onClose, onSent }: { userId: strin
     const selected = selection;
     try {
       const result = await collectorContext("preview", { user_id: userId, topic, ...(topic === "frame" ? { frame_id: frameId } : {}) });
-      if (alive.current && request === generation.current && selected === currentSelection.current) { setPreview(result); nonce.current = crypto.randomUUID(); }
+      if (alive.current && request === generation.current && selected === currentSelection.current) { nonce.current = messageNonce(); setPreview(result); }
     } catch (cause) { if (alive.current) setError(failure(cause)); }
     finally { lock.current = false; if (alive.current) setBusy(false); }
   };
@@ -411,7 +422,7 @@ function StaffConversation({ userId, threadId, targetId, moderator, owner, versi
     const body = draft.trim();
     if (!body || lock.current || resolutionLock.current || body.length > 4000) return;
     lock.current = true; setSaving(true); setError("");
-    if (pending.current?.body !== body) pending.current = { body, nonce: crypto.randomUUID() };
+    if (pending.current?.body !== body) pending.current = { body, nonce: messageNonce() };
     try {
       const result = await staff("send", { ...context, ...pending.current });
       if (!alive.current) return;
