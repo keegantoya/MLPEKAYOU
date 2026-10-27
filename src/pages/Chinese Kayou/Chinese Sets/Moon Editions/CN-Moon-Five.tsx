@@ -1,8 +1,8 @@
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ChineseCardInspector, { ChineseSilverStamp } from "../../ChineseCardInspector";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ScanSearch } from "lucide-react";
-import { CN_MOON_FIVE_CARDS, CN_MOON_FIVE_SET_ID, CN_MOON_FIVE_IMAGE_REVISION, useChineseCardImage } from "../../card-images-cn";
+import { CN_MOON_FIVE_CARDS, CN_MOON_FIVE_SET_ID, CN_MOON_FIVE_IMAGE_REVISION, useChineseCardImage, getChineseCardBackStyle, getChineseReplacementFront } from "../../card-images-cn";
 export { CN_MOON_FIVE_CARDS, CN_MOON_FIVE_SET_ID };
 import type { CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
@@ -13,6 +13,7 @@ const MOON_FIVE_UR_ZOOM_CODES = new Set(["YH-UR-055", "YH-UR-056", "YH-UR-057", 
 const MOON_FIVE_UR_EXTRA_ZOOM_CODES = new Set(["YH-UR-060", "YH-UR-061", "YH-UR-062", "YH-UR-063", "YH-UR-068"]);
 function moonFiveImageStyle(key: string): CSSProperties {
 const code = CN_MOON_FIVE_CARDS.find(card => card.key === key)?.code ?? "";
+  if (getChineseReplacementFront(code)) return { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" };
   if (/^(LSR|SGR)-/.test(key)) return { position: "absolute", left: -4, top: -4, width: "calc(100% + 8px)", height: "calc(100% + 8px)", maxWidth: "none", transform: "none", transformOrigin: "center" };
   if (/^HR-2[6-9]$|^HR-30$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
 const scale = code === "YH-T05-047" ? 1.04 : ["YH-T05-050", "YH-T05-053"].includes(code) ? 1.15 : MOON_FIVE_SSR_ZOOM_CODES.has(code) ? 1.035 : MOON_FIVE_UR_EXTRA_ZOOM_CODES.has(code) ? 1.09 : MOON_FIVE_UR_ZOOM_CODES.has(code) ? 1.045 : code === "YH-UR-066" ? 1.025 : 1;
@@ -23,40 +24,14 @@ function ChineseCardFront({ src, alt, className, style }: { src: string; alt: st
 const image = useChineseCardImage(src);
   return image.url ? <img src={image.url} alt={alt} draggable={false} className={className} style={style} /> : <span className="flex h-full w-full items-center justify-center p-4 text-center text-xs text-muted-foreground" title={image.error || undefined} role="status">{image.error ? "Image unavailable" : "Loading card..."}</span>;
 }
-function InspectorCanvas({ card, src, zoom }: { card: typeof CN_MOON_FIVE_CARDS[number]; src: string; zoom: number }) {
-const viewport = useRef<HTMLDivElement>(null);
-const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
-const [size, setSize] = useState({ width: 0, height: 0 });
-const [pan, setPan] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-const node = viewport.current;
-    if (!node) return;
-const measure = () => setSize({ width: node.clientWidth, height: node.clientHeight });
-    measure();
-const observer = new ResizeObserver(measure);
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => { setPan({ x: 0, y: 0 }); drag.current = null; }, [zoom, size.width, size.height]);
-const width = Math.max(0, Math.min(size.width - 32, (size.height - 32) * 5 / 7));
-const height = width * 7 / 5;
-const limitX = Math.max(0, (width * zoom / 100 - size.width) / 2);
-const limitY = Math.max(0, (height * zoom / 100 - size.height) / 2);
-  return <div ref={viewport} className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-muted" style={{ touchAction: "none", cursor: zoom > 100 ? "grab" : "default" }} onPointerDown={event => {
-    if (zoom <= 100 || (event.pointerType === "mouse" && event.button !== 0)) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
-  }} onPointerMove={event => {
-    if (!drag.current) return;
-    setPan({ x: Math.max(-limitX, Math.min(limitX, drag.current.panX + event.clientX - drag.current.x)), y: Math.max(-limitY, Math.min(limitY, drag.current.panY + event.clientY - drag.current.y)) });
-  }} onPointerUp={event => { drag.current = null; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }}>
-    <div className="absolute overflow-hidden rounded-xl" style={{ left: "50%", top: "50%", width, height, transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`, transformOrigin: "center" }}><ChineseCardFront src={src} alt={card.code} className="block h-full w-full object-cover" style={{ ...moonFiveImageStyle(card.key), filter: "none", opacity: 1 }} /></div>
-  </div>;
+function MoonFiveCardFaces({ card, front, owned }: { card: typeof CN_MOON_FIVE_CARDS[number]; front: string; owned: boolean }) {
+  return <span className="cn-m5-flip" data-owned={owned}>
+    <span className="cn-m5-face" aria-hidden={owned}><ChineseCardFront src={front} alt={card.code} className="h-full w-full object-cover" style={{ ...moonFiveImageStyle(card.key), filter: "none", opacity: 1 }} /></span>
+    <span className="cn-m5-face cn-m5-back" aria-hidden={!owned}><ChineseCardFront src={card.back.image} alt={`${card.code} back`} className="block h-full w-full" style={getChineseCardBackStyle(card.back)} />{card.back.silverStamp && <ChineseSilverStamp/>}</span>
+  </span>;
 }
 export default function ChineseMoonFive() {
 const [inspected, setInspected] = useState<string | null>(null);
-const [zoom, setZoom] = useState(100);
 const [cardSize, setCardSize] = useState(160);
 const imageRevision = CN_MOON_FIVE_IMAGE_REVISION;
 const imageSource = (src: string) => { const url = new URL(src); url.searchParams.set("v", imageRevision); return url.href; };
@@ -180,6 +155,12 @@ const match = CN_MOON_FIVE_CARDS.find(card => card.code.toLowerCase().includes(v
         .cn-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--cn-card-size)),1fr));gap:24px 16px; }
         .cn-art { display:block;position:relative;width:100%;aspect-ratio:5/7;overflow:hidden;border-radius:12px;background:hsl(var(--muted)); }
         .cn-art img { transition:filter .2s,opacity .2s; }
+.cn-gallery .cn-art { overflow:visible;perspective:1000px;background:transparent; }
+.cn-m5-flip { display:block;position:absolute;inset:0;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.22,.61,.36,1);transform:rotateY(0deg); }
+.cn-m5-flip[data-owned=true] { transform:rotateY(180deg); }
+.cn-m5-face { display:block;position:absolute;inset:0;overflow:hidden;border-radius:12px;background:hsl(var(--muted));backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(0deg) translateZ(.1px); }
+.cn-m5-back { transform:rotateY(180deg) translateZ(.1px); }
+@media(prefers-reduced-motion:reduce) { .cn-m5-flip { transition:none; } }
         .cn-inspect { position:absolute;bottom:8px;right:8px;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.78);color:white;font-size:10px; }
         .cn-art:focus-visible,.cn-rarity:focus-visible { outline:2px solid hsl(var(--primary));outline-offset:4px; }
         @media(max-width:767px) { .cn-shell { grid-template-columns:minmax(0,1fr);gap:20px; }.cn-rarities { flex-direction:row;flex-wrap:wrap;gap:6px; }.cn-rarity { flex:1 0 80px;min-height:42px;border:1px solid hsl(var(--border));padding:8px 10px; }.cn-rarity[aria-pressed=true] { box-shadow:none;border-color:hsl(var(--primary)); }.cn-grid { gap:20px 12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--cn-card-size)),1fr)); } }
@@ -205,23 +186,14 @@ const match = CN_MOON_FIVE_CARDS.find(card => card.code.toLowerCase().includes(v
           {loading ? <div role="status" className="py-16 text-center text-sm text-muted-foreground">Loading your collection...</div> : !ready ? null : visibleCards.length === 0 ? <p className="py-16 text-center text-sm text-muted-foreground">No matching cards. Adjust your search or filter.</p> : <div className="cn-grid" style={{ "--cn-card-size": `${cardSize}px` } as CSSProperties}>{visibleCards.map(card => {
 const owned = Boolean(progress[card.key]);
             return <article key={card.key} className="min-w-0">
-              <div className="relative"><button type="button" disabled={saving !== null} onClick={() => void toggle(card.key)} aria-pressed={owned} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className="cn-art"><ChineseCardFront src={imageSource(card.image)} alt={card.code} className="h-full w-full object-cover" style={{ ...moonFiveImageStyle(card.key), filter: owned ? "none" : "grayscale(1)", opacity: owned ? 1 : .65 }} /></button><button type="button" onClick={() => { setInspected(card.key); setZoom(100); }} aria-label={`Inspect ${card.code}`} className="cn-inspect min-h-9"><ScanSearch size={12} aria-hidden="true" /> Inspect</button></div>
+              <div className="relative"><button type="button" disabled={saving !== null} onClick={() => void toggle(card.key)} aria-pressed={owned} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className="cn-art"><MoonFiveCardFaces card={card} front={imageSource(card.image)} owned={owned} /></button><button type="button" onClick={() => { setInspected(card.key); }} aria-label={`Inspect ${card.code}`} className="cn-inspect min-h-9"><ScanSearch size={12} aria-hidden="true" /> 3D</button></div>
               <p className="mb-2 mt-3 break-words text-xs font-semibold tracking-tight">{card.code}</p>
-              <button type="button" disabled={saving !== null} aria-pressed={owned} onClick={() => void toggle(card.key)} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className={`min-h-9 w-full rounded-lg border px-2 text-[11px] font-medium disabled:cursor-wait ${owned ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>{saving === card.key ? "Saving..." : owned ? "Collected" : "Missing"}</button>
             </article>;
           })}</div>}
           <p role="status" aria-live="polite" className="mt-4 min-h-5 text-xs text-muted-foreground">{saving ? "Saving your collection..." : ""}</p>
         </section>
       </div>
-      <Dialog open={Boolean(inspectorCard)} onOpenChange={open => { if (!open) setInspected(null); }}>
-        <DialogContent style={{ zIndex: 100001 }} className="z-[100001] flex h-[90dvh] max-h-[90dvh] w-[calc(100%_-_24px)] max-w-4xl flex-col gap-3 overflow-hidden rounded-2xl p-4 sm:p-5">
-          <DialogTitle className="pr-8 text-base">{inspectorCard?.code}</DialogTitle>
-          <DialogDescription className="text-xs">Gallery framing in full color. Zoom, then drag to move the card.</DialogDescription>
-          <label className="flex items-center gap-3 text-sm"><span>Zoom</span><input type="range" min={100} max={400} step={10} value={zoom} onChange={event => setZoom(Number(event.target.value))} className="min-w-0 flex-1" /><output className="w-12 text-right tabular-nums">{zoom}%</output><button type="button" onClick={() => setZoom(100)} className="min-h-10 rounded-lg border border-border px-3 text-xs">Reset</button></label>
-          {inspectorCard && <InspectorCanvas key={inspectorCard.key} card={inspectorCard} src={imageSource(inspectorCard.image)} zoom={zoom} />}
-          <div className="flex items-center justify-between gap-2"><button type="button" onClick={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index - 1 + visibleCards.length) % visibleCards.length]?.key ?? null); setZoom(100); }} className="min-h-11 rounded-lg border border-border px-4 text-sm">Previous</button><button type="button" onClick={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index + 1) % visibleCards.length]?.key ?? null); setZoom(100); }} className="min-h-11 rounded-lg border border-border px-4 text-sm">Next</button></div>
-        </DialogContent>
-      </Dialog>
+      <ChineseCardInspector card={inspectorCard ? { key: inspectorCard.key, code: inspectorCard.code, front: imageSource(inspectorCard.image), back: inspectorCard.back, frontStyle: moonFiveImageStyle(inspectorCard.key) } : null} onClose={() => setInspected(null)} onPrevious={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index - 1 + visibleCards.length) % visibleCards.length]?.key ?? null); }} onNext={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index + 1) % visibleCards.length]?.key ?? null); }} />
     </main>
   );
 }

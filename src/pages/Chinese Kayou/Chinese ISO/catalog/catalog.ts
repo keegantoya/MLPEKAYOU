@@ -1,3 +1,4 @@
+import { CHINESE_REPLACEMENT_FRONT_CODES } from "../../card-images-cn";
 import type { CSSProperties } from "react";
 import { CN_MOON_ONE_CARDS, CN_MOON_ONE_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-One";
 import { CN_MOON_TWO_CARDS, CN_MOON_TWO_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-Two";
@@ -13,6 +14,7 @@ export type ChineseISOCard = ChineseCard & { setId: string; setName: string; fam
 export const chineseFamilies: { id: ChineseFamily; name: string }[] = [{ id: "moon", name: "Moon" }, { id: "fun", name: "Fun Moments" }, { id: "rainbow", name: "Rainbow" }, { id: "star", name: "Star" }, { id: "promos", name: "Promos" }, { id: "other", name: "Gift Sets" }, { id: "misc", name: "Other" }];
 export const CHINESE_KUJI_TICKET_ZOOM = 1.05;
 const kujiTicketZooms: Record<string, number> = {
+  "2-TICKET-22": 1.115,
   "3-TICKET-1": 1.03,
   "3-TICKET-3": 1,
   "4-TICKET-2": 1.085,
@@ -515,7 +517,7 @@ const imageStyles: Record<string, (key: string) => CSSProperties> = {
   "cn-star-three": starThreeImageStyle,
   "cn-promos": promosImageStyle,
 };
-export const getChineseISOImageStyle = (card: ChineseISOCard): CSSProperties => (card.code === "YH-T01-003" || card.code === "YH-T01-008") ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : /^YH-(?:UR-0(?:4[0-9]|5[0-4])|SC-01[3-8])$/.test(card.code) ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : chineseSets.find(set => set.id === card.setId)?.imageStyle?.(card.key) ?? imageStyles[card.setId]?.(card.key) ?? {};
+export const getChineseISOImageStyle = (card: ChineseISOCard): CSSProperties => (CHINESE_REPLACEMENT_FRONT_CODES.has(card.code) || card.image.includes("/card-backs/Chinese/Replacements/")) ? { position: "absolute", inset: 0, width: "100%", height: "100%", maxWidth: "none", transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : (card.code === "YH-T01-003" || card.code === "YH-T01-008") ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : /^YH-(?:UR-0(?:4[0-9]|5[0-4])|SC-01[3-8])$/.test(card.code) ? { transform: "none", transformOrigin: "center", objectFit: "contain", objectPosition: "center" } : chineseSets.find(set => set.id === card.setId)?.imageStyle?.(card.key) ?? imageStyles[card.setId]?.(card.key) ?? {};
 function stardustOneImageStyle(key: string): CSSProperties {
   if (key === "DUR-7" || key === "DLSR-7" || /^SP-[1-5]$/.test(key)) return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
   return { transform: "none", transformOrigin: "center" };

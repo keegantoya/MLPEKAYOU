@@ -419,14 +419,18 @@ export const CHINESE_NEWYEARS_TWO_CODES: ChineseCardCode[] = [
   ...sequence("DSP", 6, "FL02-\u25C7SP"),
   ...sequence("MT", 6, "FL02-MT"),
 ];
-export type ChineseKujiPrizeGroup = { raffle: string; type: string; label: string; imagePrefix: string; codes?: string[]; names?: string[]; imageFiles?: string[]; keyOffset?: number };
+export type ChineseKujiPrizeGroup = { raffle: string; type: string; label: string; imagePrefix: string; codes?: string[]; names?: string[]; imageFiles?: string[]; keyOffset?: number; numbers?: number[] };
 export const CHINESE_KUJI_RAFFLE_PRIZES: ChineseKujiPrizeGroup[] = [
     { raffle: "1", type: "TICKET", label: "Ticket", imagePrefix: "KUJI1-TICKET", codes: Array.from({ length: 10 }, (_, index) => `KYS-MLP01-${String(index + 1).padStart(2, "0")}`) },
     { raffle: "2", type: "TICKET", label: "Ticket", imagePrefix: "KUJI2-TICKET", codes: [
         ...Array.from({ length: 12 }, (_, index) => `KYS-MLP02-B${String(index + 1).padStart(2, "0")}`),
-        ...Array.from({ length: 3 }, (_, index) => `KYS-MLP02-A${String(index + 1).padStart(2, "0")}`),
+        ...Array.from({ length: 4 }, (_, index) => `KYS-MLP02-A${String(index + 1).padStart(2, "0")}`),
         ...Array.from({ length: 6 }, (_, index) => `KYS-MLP02-S${String(index + 1).padStart(2, "0")}`),
-    ] },
+    ], imageFiles: [
+        ...Array.from({ length: 15 }, (_, index) => `KUJI2-TICKET${index + 1}.webp`),
+        "KUJI2-MISSING-SUNSET.webp",
+        ...Array.from({ length: 6 }, (_, index) => `KUJI2-TICKET${index + 16}.webp`),
+    ], numbers: [...Array.from({ length: 15 }, (_, index) => index + 1), 22, ...Array.from({ length: 6 }, (_, index) => index + 16)] },
     { raffle: "3", type: "TICKET", label: "Ticket", imagePrefix: "KUJI3-TICKET", codes: [
         ...Array.from({ length: 6 }, (_, index) => `KYS-MLP03-C${String(index + 1).padStart(2, "0")}`),
         ...Array.from({ length: 4 }, (_, index) => `KYS-MLP03-B${String(index + 1).padStart(2, "0")}`),
@@ -469,7 +473,7 @@ export const CHINESE_KUJI_RAFFLE_PRIZES: ChineseKujiPrizeGroup[] = [
     { raffle: "4", type: "S", label: "S Prize", imagePrefix: "KUJI4-S", names: ["Raffle 4 - S Prize"], imageFiles: ["KUJI4-S.webp"] },
     { raffle: "4", type: "LAST", label: "LAST Prize", imagePrefix: "KUJI4-LAST", names: ["Raffle 4 - LAST Prize"], imageFiles: ["KUJI4-LAST.webp"] },
 ];
-export const CHINESE_KUJI_RAFFLES_CODES: (ChineseCardCode & { imageFile: string; displayName?: string })[] = CHINESE_KUJI_RAFFLE_PRIZES.flatMap(prize => (prize.codes ?? prize.names ?? []).map((value, index) => ({ key: `${prize.raffle}-${prize.type}-${index + (prize.keyOffset ?? 0) + 1}`, rarity: prize.raffle, number: index + 1, code: prize.codes ? value : "", ...(prize.names ? { displayName: value } : {}), imageFile: prize.imageFiles?.[index] ?? `${prize.imagePrefix}${index + 1}.webp` })));
+export const CHINESE_KUJI_RAFFLES_CODES: (ChineseCardCode & { imageFile: string; displayName?: string })[] = CHINESE_KUJI_RAFFLE_PRIZES.flatMap(prize => (prize.codes ?? prize.names ?? []).map((value, index) => ({ key: `${prize.raffle}-${prize.type}-${(prize.numbers?.[index] ?? index + (prize.keyOffset ?? 0) + 1)}`, rarity: prize.raffle, number: prize.numbers?.[index] ?? index + 1, code: prize.codes ? value : "", ...(prize.names ? { displayName: value } : {}), imageFile: prize.imageFiles?.[index] ?? `${prize.imagePrefix}${index + 1}.webp` })));
 export const CHINESE_LASER_TICKETS_CODES: ChineseCardCode[] = [
     ...sequence("LTR", 12, "XH-LTR"),
     ...Array.from({ length: 14 }, (_, index) => ({ key: `SH-${index + 1}`, rarity: "SH", number: index + 1, code: index < 6 ? `YH-LTR-${String(index + 1).padStart(3, "0")}` : index < 12 ? `YH-LTSR-${String(index - 5).padStart(3, "0")}` : index === 12 ? "YH-LTSR-002" : "YH-LTSR-008" })),

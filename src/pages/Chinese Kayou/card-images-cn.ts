@@ -1,9 +1,37 @@
 import { CHINESE_MOON_ONE_CODES, CHINESE_MOON_TWO_CODES, CHINESE_MOON_THREE_CODES, CHINESE_MOON_FOUR_CODES, CHINESE_MOON_FIVE_CODES, CHINESE_MOON_SIX_CODES, CHINESE_MOON_SEVEN_CODES, CHINESE_MOON_EIGHT_CODES, CHINESE_MOON_NINE_CODES, CHINESE_MOON_TEN_CODES, CHINESE_MOON_ELEVEN_CODES, CHINESE_MOON_TWELVE_CODES, CHINESE_FUN_ONE_CODES, CHINESE_FUN_TWO_CODES, CHINESE_FUN_THREE_CODES, CHINESE_FUN_FOUR_CODES, CHINESE_FUN_FIVE_CODES, CHINESE_FUN_SIX_CODES, CHINESE_FUN_SEVEN_CODES, CHINESE_FUN_EIGHT_CODES, CHINESE_FUN_NINE_CODES, CHINESE_RAINBOW_ONE_CODES, CHINESE_RAINBOW_TWO_CODES, CHINESE_RAINBOW_THREE_CODES, CHINESE_RAINBOW_FOUR_CODES, CHINESE_RAINBOW_FIVE_CODES, CHINESE_STAR_ONE_CODES, CHINESE_STAR_TWO_CODES, CHINESE_STAR_THREE_CODES, CHINESE_PROMOS_CODES, CHINESE_STARDUST_ONE_CODES, CHINESE_STARDUST_TWO_CODES, CHINESE_MAGICBOOK_ONE_CODES, CHINESE_NEWYEARS_ONE_CODES, CHINESE_NEWYEARS_TWO_CODES, CHINESE_KUJI_RAFFLES_CODES, CHINESE_LASER_TICKETS_CODES } from "./Chinese Codes + Char/Chinese-Codes";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
 import { CARD_IMAGE_WORKER_URL } from "@/lib/card-images";
 import { getCachedCardImage } from "@/lib/card-image-cache";
+export const CHINESE_REPLACEMENT_FRONT_CODES = new Set(["YH-T05-047", "YH-T05-050", ...Array.from({ length: 10 }, (_, index) => `YH-T05-${String(index + 51).padStart(3, "0")}`)]);
+export function getChineseReplacementFront(code: string): string | undefined {
+  return CHINESE_REPLACEMENT_FRONT_CODES.has(code) ? getChineseCardImage(`card-backs/Chinese/Replacements/${code}.webp`) : undefined;
+}
+function withChineseReplacementFront<T extends { code: string; image: string }>(card: T): T {
+  const image = getChineseReplacementFront(card.code);
+  return image ? { ...card, image } : card;
+}
+const replacementFrontStyles = new Map<string, { node: HTMLStyleElement; users: number }>();
+function retainUncroppedFrontStyle(source: string, resolved: string): () => void {
+  const url = new URL(source);
+  const code = decodeURIComponent(url.pathname).match(/^\/card-backs\/Chinese\/Replacements\/(YH-T05-\d{3})\.webp$/)?.[1];
+  if (!code || !CHINESE_REPLACEMENT_FRONT_CODES.has(code)) return () => {};
+  let entry = replacementFrontStyles.get(resolved);
+  if (!entry) {
+    const node = document.createElement("style");
+    node.textContent = `img[src=${JSON.stringify(resolved)}]{object-fit:contain!important;object-position:center!important;transform:none!important;inset:0!important;left:0!important;top:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important}`;
+    document.head.appendChild(node);
+    entry = { node, users: 0 };
+    replacementFrontStyles.set(resolved, entry);
+  }
+  entry.users += 1;
+  const retained = entry;
+  return () => {
+    retained.users -= 1;
+    if (retained.users === 0) { retained.node.remove(); replacementFrontStyles.delete(resolved); }
+  };
+}
 export const CN_MOON_ONE_IMAGE_REVISION = "20261021-m1-gallery-157-v2";
 export const CN_MOON_TWO_IMAGE_REVISION = "20261022-m2-cloudflare-replaced-images-v4";
 export const CN_MOON_THREE_IMAGE_REVISION = "20261021-m3-complete-115-v1";
@@ -155,7 +183,7 @@ const imageNumber = printedNumber - (card.rarity === "SR" ? 40 : card.rarity ===
     if (card.rarity === "UR" && printedNumber <= 12)
         return { ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-UR${printedNumber}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}` };
     return { ...card, image: getChineseMoonOneFront(card.number, card.rarity) };
-});
+}).map(withChineseReplacementFront);
 export const CN_MOON_TWO_SET_ID = "cn-moon-two";
 export const getChineseMoonTwoFront = (number: number | string, rarity = "R") => {
 const code = rarity.trim().toUpperCase();
@@ -181,37 +209,84 @@ const index = Number(number);
 const fileNumber = code === "R" && index === 1 ? "01" : String(index);
     return `${getChineseCardImage(`Chinese Sets/Moon-Two-CN/CN-M2-${code}${fileNumber}.webp`)}?v=${CN_MOON_TWO_IMAGE_REVISION}${code === "SC" && index >= 1 && index <= 6 ? "&refresh=20261024-m2-sc-replaced-v1" : ""}${code === "SGR" && index >= 1 && index <= 7 && index !== 3 ? "&refresh=20261024-m2-sgr-correct-files-replaced-v2" : ""}`;
 };
-export const CN_MOON_TWO_CARDS = CHINESE_MOON_TWO_CODES.map(card => ({ ...card, image: getChineseMoonTwoFront(card.number, card.rarity) }));
+export type ChineseCardBack = { image: string; rotation: 0 | 90; silverStamp?: boolean };
+export const CN_MOON_TWO_BACK_IMAGES = {
+  standard: getChineseCardImage("card-backs/Chinese/Moon-Two/CHINESE-STANDARD-BACK.webp"),
+  sideways: getChineseCardImage("card-backs/Chinese/Moon-Two/CHINESE-SIDEWAYS-STANDARD-BACK.webp"),
+  sgr: getChineseCardImage("card-backs/Chinese/Moon-Two/CHINESE-M2-SGR-BACK.webp"),
+  ur: getChineseCardImage("card-backs/Chinese/Moon-Two/CHINESE-OLD-UR-BACK.webp"),
+} as const;
+const CN_MOON_TWO_SIDEWAYS_BACK_CODES = new Set(["YH-HR-038", "YH-HR-039", "YH-HR-047", "YH-HR-058", "YH-HR-059", "YH-HR-060"]);
+export function getChineseMoonTwoBack(card: { code: string; rarity: string }): ChineseCardBack {
+  if (card.rarity === "SGR") return { image: CN_MOON_TWO_BACK_IMAGES.sgr, rotation: 0 };
+  if (card.rarity === "UR") return { image: CN_MOON_TWO_BACK_IMAGES.ur, rotation: 0 };
+  if (card.rarity === "HR" && CN_MOON_TWO_SIDEWAYS_BACK_CODES.has(card.code)) return { image: CN_MOON_TWO_BACK_IMAGES.sideways, rotation: 90 };
+  return { image: CN_MOON_TWO_BACK_IMAGES.standard, rotation: 0 };
+}
+export function getChineseCardBackStyle(back: ChineseCardBack): CSSProperties {
+  return back.rotation === 90
+    ? { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.4285714286%", maxWidth: "none", objectFit: "contain", objectPosition: "center", transform: "translate(-50%, -50%) rotate(90deg)", transformOrigin: "center" }
+    : { position: "absolute", inset: 0, width: "100%", height: "100%", maxWidth: "none", objectFit: "contain", objectPosition: "center", transform: "none" };
+}
+export const CN_MOON_TWO_CARDS = CHINESE_MOON_TWO_CODES.map(card => ({ ...card, image: getChineseMoonTwoFront(card.number, card.rarity), back: getChineseMoonTwoBack(card) })).map(withChineseReplacementFront);
 export const getChineseMoonThreeFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonThree(rarity, number);
 export const CN_MOON_THREE_SET_ID = "cn-moon-three";
-export const CN_MOON_THREE_CARDS = CHINESE_MOON_THREE_CODES.map(card => ({ ...card, image: getChineseMoonThreeFront(card.number, card.rarity) }));
+export const CN_OLDER_R_BACK_ROOT = "card-backs/Chinese/R-Cards-Older-Sets";
+export function getChineseMoonThreeBack(card: { key: string; code: string; rarity: string }): ChineseCardBack {
+  if (card.rarity === "R") return { image: getChineseCardImage(`${CN_OLDER_R_BACK_ROOT}/${card.code}.webp`), rotation: 0 };
+  if (card.rarity === "UR") return { image: CN_MOON_TWO_BACK_IMAGES.ur, rotation: 0 };
+  if (card.rarity === "HR" && /^HR-(?:16|2[4-9])$/.test(card.key)) return { image: CN_MOON_TWO_BACK_IMAGES.sideways, rotation: 90 };
+  return { image: CN_MOON_TWO_BACK_IMAGES.standard, rotation: 0 };
+}
+export const CN_MOON_THREE_CARDS = CHINESE_MOON_THREE_CODES.filter(card => card.code !== "YH-F01-008").map(card => ({ ...card, image: getChineseMoonThreeFront(card.number, card.rarity), back: getChineseMoonThreeBack(card) })).map(withChineseReplacementFront);
 export const getChineseMoonFourFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonFour(rarity, number);
 export const CN_MOON_FOUR_SET_ID = "cn-moon-four";
-export const CN_MOON_FOUR_CARDS = CHINESE_MOON_FOUR_CODES.map(card => ({ ...card, image: getChineseMoonFourFront(card.number, card.rarity) }));
-export const getChineseMoonFiveFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonFive(rarity, number);
+export const CN_MOON_FOUR_SC_BACK = getChineseCardImage("card-backs/Chinese/SC-CARDS/MOON-4-SCS.webp");
+export const CN_MOON_FOUR_SC_ALTERNATE_BACK = getChineseCardImage("card-backs/Chinese/SC-CARDS/SC-4-ALTERNATE.webp");
+export function getChineseMoonFourBack(card: { key: string; code: string; rarity: string }, alternateSCBack = false): ChineseCardBack {
+  if (card.rarity === "R") return { image: getChineseCardImage(`${CN_OLDER_R_BACK_ROOT}/${card.code}.webp`), rotation: 0 };
+  if (card.rarity === "UR") return { image: CN_MOON_TWO_BACK_IMAGES.ur, rotation: 0 };
+  if (card.rarity === "SC") return { image: alternateSCBack ? CN_MOON_FOUR_SC_ALTERNATE_BACK : CN_MOON_FOUR_SC_BACK, rotation: 0, silverStamp: true };
+  if (card.rarity === "HR") {
+    const imageKey = `HR-${getChineseMoonFourHRImageNumber(Number(card.key.slice(3)))}`;
+    if (/^HR-(?:6|19|2[0-8]|30)$/.test(imageKey)) return { image: CN_MOON_TWO_BACK_IMAGES.sideways, rotation: 90 };
+  }
+  return { image: CN_MOON_TWO_BACK_IMAGES.standard, rotation: 0 };
+}
+export const CN_MOON_FOUR_CARDS = CHINESE_MOON_FOUR_CODES.map(card => ({ ...card, image: getChineseMoonFourFront(card.number, card.rarity), back: getChineseMoonFourBack(card) })).map(withChineseReplacementFront);
+export const getChineseMoonFiveFront = (number: number | string, rarity = "R") => {
+  const card = CHINESE_MOON_FIVE_CODES.find(card => card.rarity === rarity && card.number === Number(number));
+  return (card && getChineseReplacementFront(card.code)) ?? cardImagePathsCN.moonFive(rarity, number);
+};
 export const CN_MOON_FIVE_SET_ID = "cn-moon-five";
-export const CN_MOON_FIVE_CARDS = CHINESE_MOON_FIVE_CODES.map(card => ({ ...card, image: getChineseMoonFiveFront(card.number, card.rarity) }));
+export function getChineseMoonFiveBack(card: { key: string; code: string; rarity: string }): ChineseCardBack {
+  if (card.rarity === "R") return { image: getChineseCardImage(`${CN_OLDER_R_BACK_ROOT}/${card.code}.webp`), rotation: 0 };
+  if (card.rarity === "UR") return { image: CN_MOON_TWO_BACK_IMAGES.ur, rotation: 0 };
+  if (card.rarity === "HR" && /^HR-(?:2[6-9]|30)$/.test(card.key)) return { image: CN_MOON_TWO_BACK_IMAGES.sideways, rotation: 90 };
+  return { image: CN_MOON_TWO_BACK_IMAGES.standard, rotation: 0, ...(card.rarity === "SC" ? { silverStamp: true } : {}) };
+}
+export const CN_MOON_FIVE_CARDS = CHINESE_MOON_FIVE_CODES.map(card => ({ ...card, image: getChineseMoonFiveFront(card.number, card.rarity), back: getChineseMoonFiveBack(card) })).map(withChineseReplacementFront);
 export const getChineseMoonSixFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonSix(rarity, number);
 export const CN_MOON_SIX_SET_ID = "cn-moon-six";
-export const CN_MOON_SIX_CARDS = CHINESE_MOON_SIX_CODES.map(card => ({ ...card, image: getChineseMoonSixFront(card.number, card.rarity) }));
+export const CN_MOON_SIX_CARDS = CHINESE_MOON_SIX_CODES.map(card => ({ ...card, image: getChineseMoonSixFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const getChineseMoonSevenFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonSeven(rarity, number);
 export const CN_MOON_SEVEN_SET_ID = "cn-moon-seven";
-export const CN_MOON_SEVEN_CARDS = CHINESE_MOON_SEVEN_CODES.map(card => ({ ...card, image: getChineseMoonSevenFront(card.number, card.rarity) }));
+export const CN_MOON_SEVEN_CARDS = CHINESE_MOON_SEVEN_CODES.map(card => ({ ...card, image: getChineseMoonSevenFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const getChineseMoonEightFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonEight(rarity, number);
 export const CN_MOON_EIGHT_SET_ID = "cn-moon-eight";
-export const CN_MOON_EIGHT_CARDS = CHINESE_MOON_EIGHT_CODES.map(card => ({ ...card, image: getChineseMoonEightFront(card.number, card.rarity) }));
+export const CN_MOON_EIGHT_CARDS = CHINESE_MOON_EIGHT_CODES.map(card => ({ ...card, image: getChineseMoonEightFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const getChineseMoonNineFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonNine(rarity, number);
 export const CN_MOON_NINE_SET_ID = "cn-moon-nine";
-export const CN_MOON_NINE_CARDS = CHINESE_MOON_NINE_CODES.map(card => ({ ...card, image: getChineseMoonNineFront(card.number, card.rarity) }));
+export const CN_MOON_NINE_CARDS = CHINESE_MOON_NINE_CODES.map(card => ({ ...card, image: getChineseMoonNineFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const getChineseMoonTenFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonTen(rarity, number);
 export const CN_MOON_TEN_SET_ID = "cn-moon-ten";
-export const CN_MOON_TEN_CARDS = CHINESE_MOON_TEN_CODES.map(card => ({ ...card, image: getChineseMoonTenFront(card.number, card.rarity) }));
+export const CN_MOON_TEN_CARDS = CHINESE_MOON_TEN_CODES.map(card => ({ ...card, image: getChineseMoonTenFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const getChineseMoonElevenFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonEleven(rarity, number);
 export const CN_MOON_ELEVEN_SET_ID = "cn-moon-eleven";
-export const CN_MOON_ELEVEN_CARDS = CHINESE_MOON_ELEVEN_CODES.map(card => ({ ...card, image: getChineseMoonElevenFront(card.number, card.rarity) }));
+export const CN_MOON_ELEVEN_CARDS = CHINESE_MOON_ELEVEN_CODES.map(card => ({ ...card, image: getChineseMoonElevenFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const getChineseMoonTwelveFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonTwelve(rarity, number);
 export const CN_MOON_TWELVE_SET_ID = "cn-moon-twelve";
-export const CN_MOON_TWELVE_CARDS = CHINESE_MOON_TWELVE_CODES.map(card => ({ ...card, image: getChineseMoonTwelveFront(card.number, card.rarity) }));
+export const CN_MOON_TWELVE_CARDS = CHINESE_MOON_TWELVE_CODES.map(card => ({ ...card, image: getChineseMoonTwelveFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const CN_FUN_ONE_IMAGE_REVISION = "20261022-f1-complete-121-v1";
 export const CN_FUN_ONE_SET_ID = "cn-fun-one";
 export const CN_FUN_ONE_CARDS = CHINESE_FUN_ONE_CODES.map(card => {
@@ -222,7 +297,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun One source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_TWO_IMAGE_REVISION = "20261022-f2-complete-137-v1";
 export const CN_FUN_TWO_SET_ID = "cn-fun-two";
 export const CN_FUN_TWO_CARDS = CHINESE_FUN_TWO_CODES.map(card => {
@@ -233,7 +308,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun Two source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_THREE_IMAGE_REVISION = "20261022-f3-complete-134-v1";
 export const CN_FUN_THREE_SET_ID = "cn-fun-three";
 export const CN_FUN_THREE_CARDS = CHINESE_FUN_THREE_CODES.map(card => {
@@ -247,7 +322,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun Three source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_FOUR_IMAGE_REVISION = "20261022-f4-complete-127-v1";
 export const CN_FUN_FOUR_SET_ID = "cn-fun-four";
 export const CN_FUN_FOUR_CARDS = CHINESE_FUN_FOUR_CODES.map(card => {
@@ -260,7 +335,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun Four source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_FIVE_IMAGE_REVISION = "20261022-f5-complete-141-v1";
 export const CN_FUN_FIVE_SET_ID = "cn-fun-five";
 export const CN_FUN_FIVE_CARDS = CHINESE_FUN_FIVE_CODES.map(card => {
@@ -271,7 +346,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun Five source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_SIX_IMAGE_REVISION = "20261022-f6-complete-152-v1";
 export const CN_FUN_SIX_SET_ID = "cn-fun-six";
 export const CN_FUN_SIX_CARDS = CHINESE_FUN_SIX_CODES.map(card => {
@@ -284,7 +359,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun Six source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_SEVEN_IMAGE_REVISION = "20261022-f7-complete-151-v1";
 export const CN_FUN_SEVEN_SET_ID = "cn-fun-seven";
 export const CN_FUN_SEVEN_CARDS = CHINESE_FUN_SEVEN_CODES.map(card => {
@@ -296,7 +371,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun Seven source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_EIGHT_IMAGE_REVISION = "20261022-f8-complete-151-v1";
 export const CN_FUN_EIGHT_SET_ID = "cn-fun-eight";
 export const CN_FUN_EIGHT_CARDS = CHINESE_FUN_EIGHT_CODES.map(card => {
@@ -308,7 +383,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Fun Eight source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_FUN_NINE_IMAGE_REVISION = "20261022-f9-complete-151-v1";
 export const CN_FUN_NINE_SET_ID = "cn-fun-nine";
 export const CN_FUN_NINE_CARDS = CHINESE_FUN_NINE_CODES.map(card => {
@@ -318,10 +393,10 @@ const source = CN_MOON_TWELVE_CARDS.find(item => item.rarity === card.rarity && 
     if (!source)
         throw new Error(`Missing Chinese Fun Nine source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_RAINBOW_ONE_IMAGE_REVISION = "20261022-r1-complete-107-v1";
 export const CN_RAINBOW_ONE_SET_ID = "cn-rainbow-one";
-export const CN_RAINBOW_ONE_CARDS = CHINESE_RAINBOW_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-${card.rarity}${card.number}.webp`)}?v=${CN_RAINBOW_ONE_IMAGE_REVISION}` }));
+export const CN_RAINBOW_ONE_CARDS = CHINESE_RAINBOW_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-One-CN/CN-R1-${card.rarity}${card.number}.webp`)}?v=${CN_RAINBOW_ONE_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_RAINBOW_TWO_IMAGE_REVISION = "20261022-r2-complete-39-v1";
 export const CN_RAINBOW_TWO_SET_ID = "cn-rainbow-two";
 export const CN_RAINBOW_TWO_CARDS = CHINESE_RAINBOW_TWO_CODES.map(card => {
@@ -336,7 +411,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
         return { ...card, image: source.image };
     }
     return { ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-Two-CN/CN-R2-${card.rarity}${card.number}.webp`)}?v=${CN_RAINBOW_TWO_IMAGE_REVISION}` };
-});
+}).map(withChineseReplacementFront);
 export const CN_RAINBOW_THREE_IMAGE_REVISION = "20261022-r3-complete-133-v1";
 export const CN_RAINBOW_THREE_SET_ID = "cn-rainbow-three";
 export const CN_RAINBOW_THREE_CARDS = CHINESE_RAINBOW_THREE_CODES.map(card => {
@@ -347,7 +422,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Rainbow Three source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_RAINBOW_FOUR_IMAGE_REVISION = "20261022-r4-complete-141-v1";
 export const CN_RAINBOW_FOUR_SET_ID = "cn-rainbow-four";
 export const CN_RAINBOW_FOUR_CARDS = CHINESE_RAINBOW_FOUR_CODES.map(card => {
@@ -360,7 +435,7 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     if (!source)
         throw new Error(`Missing Chinese Rainbow Four source card: ${card.code}`);
     return { ...card, image: source.image };
-});
+}).map(withChineseReplacementFront);
 export const CN_RAINBOW_FIVE_IMAGE_REVISION = "20261022-r5-complete-170-v1";
 export const CN_RAINBOW_FIVE_SET_ID = "cn-rainbow-five";
 export const CN_RAINBOW_FIVE_CARDS = CHINESE_RAINBOW_FIVE_CODES.map(card => {
@@ -373,37 +448,37 @@ const source = sourceCards.find(item => item.rarity === card.rarity && item.code
     }
 const imageNumber = card.rarity === "SSR" ? 1 : card.number;
     return { ...card, image: `${getChineseCardImage(`Chinese Sets/Rainbow-Five-CN/CN-R5-${card.rarity}${imageNumber}.webp`)}?v=${CN_RAINBOW_FIVE_IMAGE_REVISION}` };
-});
+}).map(withChineseReplacementFront);
 export const CN_STAR_ONE_IMAGE_REVISION = "20261022-s1-complete-82-v1";
 export const CN_STAR_ONE_SET_ID = "cn-star-one";
-export const CN_STAR_ONE_CARDS = CHINESE_STAR_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Star-One-CN/CN-S1-${card.rarity}${card.number}.webp`)}?v=${CN_STAR_ONE_IMAGE_REVISION}` }));
+export const CN_STAR_ONE_CARDS = CHINESE_STAR_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Star-One-CN/CN-S1-${card.rarity}${card.number}.webp`)}?v=${CN_STAR_ONE_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_STAR_TWO_IMAGE_REVISION = "20261022-s2-complete-105-v1";
 export const CN_STAR_TWO_SET_ID = "cn-star-two";
-export const CN_STAR_TWO_CARDS = CHINESE_STAR_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Star-Two-CN/CN-S2-${card.rarity}${card.number}.webp`)}?v=${CN_STAR_TWO_IMAGE_REVISION}` }));
+export const CN_STAR_TWO_CARDS = CHINESE_STAR_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Star-Two-CN/CN-S2-${card.rarity}${card.number}.webp`)}?v=${CN_STAR_TWO_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_STAR_THREE_IMAGE_REVISION = "20261022-s3-complete-143-v1";
 export const CN_STAR_THREE_SET_ID = "cn-star-three";
-export const CN_STAR_THREE_CARDS = CHINESE_STAR_THREE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Star-Three-CN/CN-S3-${card.rarity}${card.number}.webp`)}?v=${CN_STAR_THREE_IMAGE_REVISION}` }));
+export const CN_STAR_THREE_CARDS = CHINESE_STAR_THREE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Star-Three-CN/CN-S3-${card.rarity}${card.number}.webp`)}?v=${CN_STAR_THREE_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_PROMOS_IMAGE_REVISION = "20261022-pr-complete-83-v2";
 export const CN_PROMOS_SET_ID = "cn-promos";
-export const CN_PROMOS_CARDS = CHINESE_PROMOS_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Promotional-Cards/${(card.rarity === "KB" || card.rarity === "SPR" || card.rarity === "ANN40") ? card.code : card.rarity === "TFXMLP" ? `TFXMLP${card.number}` : `CN-PR-${card.key === "PR-D19" ? "D19" : String(card.number).padStart(3, "0")}`}.webp`)}?v=${CN_PROMOS_IMAGE_REVISION}` }));
+export const CN_PROMOS_CARDS = CHINESE_PROMOS_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Promotional-Cards/${(card.rarity === "KB" || card.rarity === "SPR" || card.rarity === "ANN40") ? card.code : card.rarity === "TFXMLP" ? `TFXMLP${card.number}` : `CN-PR-${card.key === "PR-D19" ? "D19" : String(card.number).padStart(3, "0")}`}.webp`)}?v=${CN_PROMOS_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_STARDUST_ONE_IMAGE_REVISION = "20261023-sd1-lsr-replaced-v2";
 export const CN_STARDUST_ONE_SET_ID = "cn-stardust-one";
-export const CN_STARDUST_ONE_CARDS = CHINESE_STARDUST_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Stardust-One-CN/CN-SD1-${card.rarity}${card.number}.webp`)}?v=${CN_STARDUST_ONE_IMAGE_REVISION}` }));
+export const CN_STARDUST_ONE_CARDS = CHINESE_STARDUST_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Stardust-One-CN/CN-SD1-${card.rarity}${card.number}.webp`)}?v=${CN_STARDUST_ONE_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_STARDUST_TWO_IMAGE_REVISION = "20261023-sd2-complete-111-v1";
 export const CN_STARDUST_TWO_SET_ID = "cn-stardust-two";
-export const CN_STARDUST_TWO_CARDS = CHINESE_STARDUST_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Stardust-Two-CN/CN-SD2-${card.rarity}${card.number}.webp`)}?v=${CN_STARDUST_TWO_IMAGE_REVISION}` }));
+export const CN_STARDUST_TWO_CARDS = CHINESE_STARDUST_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Stardust-Two-CN/CN-SD2-${card.rarity}${card.number}.webp`)}?v=${CN_STARDUST_TWO_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_MAGICBOOK_ONE_IMAGE_REVISION = "20261023-eg1-complete-87-v1";
 export const CN_MAGICBOOK_ONE_SET_ID = "cn-magicbook-one";
-export const CN_MAGICBOOK_ONE_CARDS = CHINESE_MAGICBOOK_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Equestria-Girls-One-CN/CN-EG1-${card.rarity}${card.number}.webp`)}?v=${CN_MAGICBOOK_ONE_IMAGE_REVISION}` }));
+export const CN_MAGICBOOK_ONE_CARDS = CHINESE_MAGICBOOK_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Equestria-Girls-One-CN/CN-EG1-${card.rarity}${card.number}.webp`)}?v=${CN_MAGICBOOK_ONE_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_NEWYEARS_ONE_IMAGE_REVISION = "20261023-ny1-complete-24-v1";
 export const CN_NEWYEARS_ONE_SET_ID = "cn-newyears-one";
-export const CN_NEWYEARS_ONE_CARDS = CHINESE_NEWYEARS_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-One-CN/CN-NY1-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_ONE_IMAGE_REVISION}` }));
+export const CN_NEWYEARS_ONE_CARDS = CHINESE_NEWYEARS_ONE_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-One-CN/CN-NY1-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_ONE_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 export const CN_KUJI_RAFFLES_IMAGE_REVISION = "20261024-all-kuji-images-refresh-v1";
 export const CN_KUJI_RAFFLES_SET_ID = "cn-kuji-raffles";
-export const CN_KUJI_RAFFLES_CARDS = CHINESE_KUJI_RAFFLES_CODES.map(({ imageFile, ...card }) => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Kuji-Sets/${imageFile}`)}?v=${CN_KUJI_RAFFLES_IMAGE_REVISION}${/^KUJI4-B[1-4]\.webp$/.test(imageFile) ? "&refresh=20261024-kuji4-b-replaced-v1" : ""}${imageFile === "KUJI1-D1.webp" ? "&refresh=20261024-kuji1-d1-replaced-v1" : ""}${/^KUJI3-(?:TICKET[0-9]+|C[1-6])\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-tickets-replaced-v2" : /^KUJI3-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-all-replaced-v1" : /^KUJI2-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji2-all-replaced-v2" : imageFile === "KUJI2-TICKET20.webp" ? "&refresh=20261024-kuji2-ticket20-replaced-v1" : /^KUJI[1-4]-TICKET[0-9]+\.webp$/.test(imageFile) ? "&refresh=20261024-kuji-tickets-replaced-v3" : /^KUJI1-(?:B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji1-prizes-replaced-v1" : ""}` }));
+export const CN_KUJI_RAFFLES_CARDS = CHINESE_KUJI_RAFFLES_CODES.map(({ imageFile, ...card }) => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Kuji-Sets/${imageFile}`)}?v=${CN_KUJI_RAFFLES_IMAGE_REVISION}${/^KUJI4-B[1-4]\.webp$/.test(imageFile) ? "&refresh=20261024-kuji4-b-replaced-v1" : ""}${imageFile === "KUJI1-D1.webp" ? "&refresh=20261024-kuji1-d1-replaced-v1" : ""}${/^KUJI3-(?:TICKET[0-9]+|C[1-6])\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-tickets-replaced-v2" : /^KUJI3-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji3-all-replaced-v1" : /^KUJI2-(?:TICKET[0-9]+|B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji2-all-replaced-v2" : imageFile === "KUJI2-TICKET20.webp" ? "&refresh=20261024-kuji2-ticket20-replaced-v1" : /^KUJI[1-4]-TICKET[0-9]+\.webp$/.test(imageFile) ? "&refresh=20261024-kuji-tickets-replaced-v3" : /^KUJI1-(?:B[1-4]|A[1-2]|S|LAST)\.webp$/.test(imageFile) ? "&refresh=20261024-kuji1-prizes-replaced-v1" : ""}` })).map(withChineseReplacementFront);
 export const CN_NEWYEARS_TWO_IMAGE_REVISION = "20261023-ny2-complete-91-v1";
 export const CN_NEWYEARS_TWO_SET_ID = "cn-newyears-two";
-export const CN_NEWYEARS_TWO_CARDS = CHINESE_NEWYEARS_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-Two-CN/CN-NY2-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_TWO_IMAGE_REVISION}` }));
+export const CN_NEWYEARS_TWO_CARDS = CHINESE_NEWYEARS_TWO_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/NewYears-Two-CN/CN-NY2-${card.rarity}${card.number}.webp`)}?v=${CN_NEWYEARS_TWO_IMAGE_REVISION}` })).map(withChineseReplacementFront);
 let sessionPending: ReturnType<typeof supabase.auth.getSession> | null = null;
 let refreshPending: ReturnType<typeof supabase.auth.refreshSession> | null = null;
 function readChineseImageSession() {
@@ -441,6 +516,7 @@ const { data: { subscription } } = onAuthIdentityChange(() => {
     useEffect(() => {
 let active = true;
 let release: (() => void) | undefined;
+      let releaseStyle: (() => void) | undefined;
         setState({ source: src, url: "", error: "" });
 const load = async () => {
             try {
@@ -450,7 +526,7 @@ const url = new URL(src);
                 if (["20261024-m4-ur40-54-replaced-v1", "20261024-m4-sc13-18-replaced-v1"].includes(url.searchParams.get("refresh") ?? ""))
                     url.searchParams.set("v", url.searchParams.get("refresh")!);
 const requestUrl = url.href;
-                if (url.origin !== new URL(CARD_IMAGE_WORKER_URL).origin || !decodeURIComponent(url.pathname).startsWith("/Chinese Sets/"))
+                if (url.origin !== new URL(CARD_IMAGE_WORKER_URL).origin || (!decodeURIComponent(url.pathname).startsWith("/Chinese Sets/") && !/^\/card-backs\/Chinese\/Moon-Two\/(?:CHINESE-STANDARD-BACK|CHINESE-SIDEWAYS-STANDARD-BACK|CHINESE-M2-SGR-BACK|CHINESE-OLD-UR-BACK)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/R-Cards-Older-Sets\/[A-Z0-9]+(?:-[A-Z0-9]+)+\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/SC-CARDS\/(?:MOON-4-SCS|SC-4-ALTERNATE)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Replacements\/YH-T05-0(?:47|5[0-9]|60)\.webp$/.test(decodeURIComponent(url.pathname))))
                     throw new Error("Invalid Chinese image source.");
 const { data, error } = await readChineseImageSession();
                 if (!active)
@@ -490,6 +566,7 @@ const refreshed = await refreshChineseImageSession();
                     return;
                 }
                 release = image.release;
+                releaseStyle = retainUncroppedFrontStyle(src, image.url);
                 setState({ source: src, url: image.url, error: "" });
             }
             catch (cause) {
@@ -500,6 +577,7 @@ const refreshed = await refreshChineseImageSession();
         void load();
         return () => {
             active = false;
+            releaseStyle?.();
             release?.();
         };
     }, [src, authVersion]);
@@ -507,4 +585,4 @@ const refreshed = await refreshChineseImageSession();
 }
 export const CN_LASER_TICKETS_SET_ID = "cn-laser-tickets";
 export const CN_LASER_TICKETS_IMAGE_REVISION = "20261024-laser-tickets-v1";
-export const CN_LASER_TICKETS_CARDS = CHINESE_LASER_TICKETS_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Laser-Tickets-CN/LT-${card.rarity === "SH" ? "SH" : "FWM"}-${card.number}.webp`)}?v=${CN_LASER_TICKETS_IMAGE_REVISION}${card.rarity === "LTR" && card.number === 6 ? "&refresh=20261024-laser-ticket6-replaced-v2" : card.rarity === "LTR" && card.number === 2 ? "&refresh=20261024-laser-tickets-2-6-replaced-v1" : ""}` }));
+export const CN_LASER_TICKETS_CARDS = CHINESE_LASER_TICKETS_CODES.map(card => ({ ...card, image: `${getChineseCardImage(`Chinese Sets/Laser-Tickets-CN/LT-${card.rarity === "SH" ? "SH" : "FWM"}-${card.number}.webp`)}?v=${CN_LASER_TICKETS_IMAGE_REVISION}${card.rarity === "LTR" && card.number === 6 ? "&refresh=20261024-laser-ticket6-replaced-v2" : card.rarity === "LTR" && card.number === 2 ? "&refresh=20261024-laser-tickets-2-6-replaced-v1" : ""}` })).map(withChineseReplacementFront);
