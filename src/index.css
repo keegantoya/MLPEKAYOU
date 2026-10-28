@@ -627,3 +627,5 @@ html[data-theme="dark"] {
     scroll-behavior: auto !important;
   }
 }
+:root{--card-3d-corner-x:5.5%;--card-3d-corner-y:3.93%;}
+:is(.cn3d-face,.card-face,.card3d-face,.card-3d-face,[class*="-card-face"]){border-radius:var(--card-3d-corner-x) / var(--card-3d-corner-y)!important;clip-path:inset(0 round var(--card-3d-corner-x) / var(--card-3d-corner-y))!important;overflow:hidden;-webkit-mask-image:linear-gradient(#fff,#fff);}

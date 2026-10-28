@@ -17,6 +17,18 @@ export const CHINESE_MOON_ONE_CODES: ChineseCardCode[] = [
     ...sequence("LSR", 15, "YH-LSR"),
     ...sequence("SGR", 7, "YH-SGR"),
 ];
+export const CHINESE_MOON_THIRTEEN_CODES: ChineseCardCode[] = [
+    ...sequence("R", 30, "HY13-R"),
+    ...sequence("SR", 21, "HY13-SR"),
+    ...sequence("HR", 30, "HY13-HR"),
+    ...sequence("SSR", 20, "HY13-SSR"),
+    ...sequence("UR", 16, "HY13-UR"),
+    ...sequence("LSR", 16, "HY13-LSR"),
+    ...sequence("SGR", 8, "HY13-SGR"),
+    ...sequence("ZR", 7, "HY13-ZR"),
+    ...sequence("SC", 8, "HY13-SC"),
+    ...sequence("DZR", 2, "HY13-◇ZR"),
+];
 export const CHINESE_MOON_TWO_CODES: ChineseCardCode[] = [
     ...sequence("R", 8, "YH-T01"),
     ...sequence("R", 20, "YH-F01", 13, 16),

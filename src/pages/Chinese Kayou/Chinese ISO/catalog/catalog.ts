@@ -1,3 +1,4 @@
+import { CN_MOON_THIRTEEN_CARDS, CN_MOON_THIRTEEN_SET_ID, getChineseMoonThirteenImageStyle } from "../../card-images-cn";
 import { CHINESE_REPLACEMENT_FRONT_CODES } from "../../card-images-cn";
 import type { CSSProperties } from "react";
 import { CN_MOON_ONE_CARDS, CN_MOON_ONE_SET_ID } from "../../Chinese Sets/Moon Editions/CN-Moon-One";
@@ -87,6 +88,7 @@ export const chineseSets: ChineseSet[] = [
   { id: CN_MOON_TEN_SET_ID, name: "Moon Ten", family: "moon", href: "/cn-moon-ten", imageUrl: "/Chinese-Thumbnails/moon10setimagecn.webp", cards: CN_MOON_TEN_CARDS },
   { id: CN_MOON_ELEVEN_SET_ID, name: "Moon Eleven", family: "moon", href: "/cn-moon-eleven", imageUrl: "/thumbnails/moonfoursetimage.webp", cards: CN_MOON_ELEVEN_CARDS },
   { id: CN_MOON_TWELVE_SET_ID, name: "Moon Twelve", family: "moon", href: "/cn-moon-twelve", imageUrl: "/Chinese-Thumbnails/moon12setimagecn.webp", cards: CN_MOON_TWELVE_CARDS },
+  { id: CN_MOON_THIRTEEN_SET_ID, name: "Moon Thirteen", family: "moon", href: "/cn-moon-thirteen", imageUrl: "/thumbnails/moonthirteensetimage.webp", cards: CN_MOON_THIRTEEN_CARDS, imageStyle: getChineseMoonThirteenImageStyle },
   { id: CN_FUN_ONE_SET_ID, name: "Fun Moments One", family: "fun", href: "/cn-fun-one", imageUrl: "/Chinese-Thumbnails/funmoments1setimagecn.webp", cards: CN_FUN_ONE_CARDS },
   { id: CN_FUN_TWO_SET_ID, name: "Fun Moments Two", family: "fun", href: "/cn-fun-two", imageUrl: "/Chinese-Thumbnails/funmoments2setimagecn.webp", cards: CN_FUN_TWO_CARDS },
   { id: CN_FUN_THREE_SET_ID, name: "Fun Moments Three", family: "fun", href: "/cn-fun-three", imageUrl: "/Chinese-Thumbnails/funmoments3setimagecn.webp", cards: CN_FUN_THREE_CARDS },

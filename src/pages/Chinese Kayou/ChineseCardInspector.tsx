@@ -40,6 +40,7 @@ const facing = Math.max(0, nz);
 const silverStampStyles = `.cn3d-certificate-seal{position:absolute;left:6%;bottom:3.5%;width:10.5%;aspect-ratio:1;border-radius:14%;overflow:hidden;isolation:isolate;background:#bbc2c8;box-shadow:0 .3px .8px #00000075;pointer-events:none}
 .cn3d-certificate-seal.cn3d-seal-sideways{right:auto;left:7.5%;bottom:6%;transform:rotate(90deg)}
 .cn3d-certificate-seal.cn3d-seal-landscape-left{right:auto;left:7.5%;top:6%;bottom:auto;transform:rotate(180deg)}
+.cn3d-certificate-seal.cn3d-seal-diamond{left:44.4%;top:69.5%;bottom:auto;right:auto;width:10.5%;transform:none}
 .cn3d-seal-foil{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7%,#e4f4ff65 7.3% 8.3%,transparent 8.6% 19%),repeating-linear-gradient(125deg,#f5f6f875 0 .8px,#7f8c9930 .8px 1.6px),linear-gradient(var(--cn3d-foil-angle,115deg),#d3d9dd 0%,#fafcfc 12%,#77838e 23%,#c1cbd3 33%,#eef4f7 41%,#505a66 49%,#c6d0d7 60%,#f5f8fa 68%,#88929b 80%,#dce1e5 92%,#f7f8f8 100%);background-size:100% 100%,100% 100%,240% 240%;background-position:center,center,var(--cn3d-foil-x,50%) var(--cn3d-foil-y,50%)}
 .cn3d-seal-art{position:absolute;inset:0;width:100%;height:100%}
 .cn3d-seal-letter-band{opacity:1}
@@ -47,12 +48,13 @@ const silverStampStyles = `.cn3d-certificate-seal{position:absolute;left:6%;bott
 .cn3d-seal-certificate{opacity:var(--cn3d-cert-opacity,.55)}
 .cn3d-seal-glint{position:absolute;inset:0;background:linear-gradient(var(--cn3d-foil-angle,115deg),transparent 25%,#c6efff18 36%,#ffffff60 48%,#ffe1ff16 57%,transparent 68%);background-size:230% 230%;background-position:var(--cn3d-foil-x,50%) var(--cn3d-foil-y,50%);opacity:.2}
 `;
-export function ChineseSilverStamp({ sideways = false, landscapeLeft = false }: {
+export function ChineseSilverStamp({ sideways = false, landscapeLeft = false, diamond = false }: {
     sideways?: boolean;
     landscapeLeft?: boolean;
+    diamond?: boolean;
 }) {
 const id = useId().replace(/:/g, "");
-    return <><style>{silverStampStyles}</style><span className={`cn3d-certificate-seal${sideways ? " cn3d-seal-sideways" : ""}${landscapeLeft ? " cn3d-seal-landscape-left" : ""}`} aria-hidden="true">
+    return <><style>{silverStampStyles}</style><span className={`cn3d-certificate-seal${sideways ? " cn3d-seal-sideways" : ""}${landscapeLeft ? " cn3d-seal-landscape-left" : ""}${diamond ? " cn3d-seal-diamond" : ""}`} aria-hidden="true">
         <span className="cn3d-seal-foil"/>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="cn3d-seal-art" focusable="false">
             <defs>
@@ -168,7 +170,7 @@ function CardStage({ card }: { card: ChineseInspectCard }) {
     }} onPointerMove={move} onPointerUp={event=>{if(pointer.current?.id===event.pointerId)finish();}} onPointerCancel={finish} onLostPointerCapture={finish}>
       <div ref={model} className="cn3d-model">
         <div className="cn3d-face cn3d-front"><InspectorImage key={`front-${retry}`} src={card.front} alt={`${card.code} front`} style={card.frontStyle} /></div>
-        <div className="cn3d-face cn3d-back">{card.back ? <InspectorImage key={`back-${retry}`} src={card.back.image} alt={`${card.code} back`} style={getChineseCardBackStyle(card.back)} /> : <span className="cn3d-image-status">Back not available yet</span>}{card.back?.silverStamp && <ChineseSilverStamp landscapeLeft={card.back.silverStampLandscape}/>}</div>
+        <div className="cn3d-face cn3d-back">{card.back ? <InspectorImage key={`back-${retry}`} src={card.back.image} alt={`${card.code} back`} style={getChineseCardBackStyle(card.back)} /> : <span className="cn3d-image-status">Back not available yet</span>}{card.back?.silverStamp && <ChineseSilverStamp landscapeLeft={card.back.silverStampLandscape} diamond={card.back.silverStampDiamond}/>}</div>
       </div>
     </div>
     {card.notice && <p role="note" className="cn3d-notice">{card.notice}</p>}
@@ -188,7 +190,7 @@ const styles=`
 .cn3d-heading{padding-right:32px;flex:none}.cn3d-heading h2{font-size:16px;font-weight:600}.cn3d-heading p{font-size:11px;color:hsl(var(--muted-foreground));margin-top:3px}
 .cn3d-stage{display:flex;align-items:center;justify-content:center;position:relative;min-height:0;flex:1;overflow:hidden;perspective:1000px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;border-radius:14px;background:radial-gradient(ellipse at center,hsl(var(--primary)/.05),transparent 70%)}.cn3d-dragging{cursor:grabbing}.cn3d-stage:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:-3px}
 .cn3d-model{position:relative;flex:none;width:0;height:0;transform-style:preserve-3d;pointer-events:none}
-.cn3d-face{position:absolute;inset:0;border-radius:4.5% / 3.2%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(.5px);background:hsl(var(--muted));clip-path:inset(0 round 4.5% / 3.2%);-webkit-mask-image:linear-gradient(#fff,#fff)}.cn3d-back{transform:rotateY(180deg) translateZ(.5px)}
+.cn3d-face{position:absolute;inset:0;border-radius:5.5% / 3.93%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(.5px);background:hsl(var(--muted));clip-path:inset(0 round 5.5% / 3.93%);-webkit-mask-image:linear-gradient(#fff,#fff)}.cn3d-back{transform:rotateY(180deg) translateZ(.5px)}
 .cn3d-image{display:block;position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;object-position:center;transform-origin:center;-webkit-user-drag:none}.cn3d-image-status{display:flex;align-items:center;justify-content:center;text-align:center;position:absolute;inset:0;padding:10px;font-size:11px;color:hsl(var(--muted-foreground))}
 .cn3d-notice{flex:none;margin:0;text-align:center;font-size:11px;line-height:1.45;color:hsl(var(--muted-foreground));padding:0 6px}
 .cn3d-tools{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;flex:none}.cn3d-tools button,.cn3d-zoom button,.cn3d-footer button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;padding:6px 10px;border:1px solid hsl(var(--border));border-radius:10px;font:inherit;font-size:11px;background:transparent;color:inherit}.cn3d-tools button[aria-pressed=true]{background:hsl(var(--primary)/.12);border-color:hsl(var(--primary)/.4);color:hsl(var(--primary))}.cn3d-dialog button:focus-visible,.cn3d-dialog input:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:2px}

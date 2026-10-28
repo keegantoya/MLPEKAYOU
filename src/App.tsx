@@ -29,6 +29,7 @@ import ChineseMoonEight from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/C
 import ChineseMoonNine from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/CN-Moon-Nine";
 import ChineseMoonTen from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/CN-Moon-Ten";
 import ChineseMoonEleven from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/CN-Moon-Eleven";
+import ChineseMoonThirteen from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/CN-Moon-Thirteen";
 import ChineseMoonTwelve from "./pages/Chinese Kayou/Chinese Sets/Moon Editions/CN-Moon-Twelve";
 import ChineseFunOne from "./pages/Chinese Kayou/Chinese Sets/Fun Moments Editions/CN-Fun-One";
 import ChineseFunTwo from "./pages/Chinese Kayou/Chinese Sets/Fun Moments Editions/CN-Fun-Two";
@@ -333,6 +334,7 @@ const routes = (<Routes>
   <Route path="/cn-moon-ten" element={<RequireAuth><ChineseMoonTen /></RequireAuth>}/>
   <Route path="/cn-moon-eleven" element={<RequireAuth><ChineseMoonEleven /></RequireAuth>}/>
   <Route path="/cn-moon-twelve" element={<RequireAuth><ChineseMoonTwelve /></RequireAuth>}/>
+  <Route path="/cn-moon-thirteen" element={<RequireAuth><ChineseMoonThirteen /></RequireAuth>}/>
   <Route path="/cn-fun-one" element={<RequireAuth><ChineseFunOne /></RequireAuth>}/>
   <Route path="/cn-fun-two" element={<RequireAuth><ChineseFunTwo /></RequireAuth>}/>
   <Route path="/cn-fun-three" element={<RequireAuth><ChineseFunThree /></RequireAuth>}/>
