@@ -8,12 +8,20 @@ export const CHINESE_REPLACEMENT_FRONT_CODES = new Set(["YH-T05-047", "YH-T05-05
 export function getChineseReplacementFront(code: string): string | undefined {
   return CHINESE_REPLACEMENT_FRONT_CODES.has(code) ? getChineseCardImage(`card-backs/Chinese/Replacements/${code}.webp`) : undefined;
 }
+export const CN_MOON_ONE_T01_R_REFRESH = "20261028-t01-r001-008-code-fronts-v1";
 export const CN_MOON_ONE_F01_R_REFRESH = "20261027-f01-r009-032-replaced-v1";
 export const CN_MOON_TWO_T01_SR_REFRESH = "20261027-t01-sr009-016-replaced-v1";
 export const CN_MOON_ONE_UR_REFRESH = "20261027-m1-ur001-018-replaced-v2";
 export function refreshChineseMoonOneFront(src: string): string {
   const url = new URL(src);
   const path = decodeURIComponent(url.pathname);
+  const t01 = path.match(/^\/Chinese Sets\/Moon-One-CN\/(?:CN-M1-R([1-8])|YH-T01-00([1-8]))\.webp$/);
+  if (t01) {
+    url.pathname = `/Chinese Sets/Moon-One-CN/YH-T01-00${t01[1] ?? t01[2]}.webp`;
+    url.searchParams.set("v", CN_MOON_ONE_T01_R_REFRESH);
+    url.searchParams.set("refresh", CN_MOON_ONE_T01_R_REFRESH);
+    return url.href;
+  }
   const revision = /^\/Chinese Sets\/Rainbow-One-CN\/CN-R1-R(?:9|[12]\d|3[0-2])\.webp$/.test(path) ? CN_MOON_ONE_F01_R_REFRESH : /^\/Chinese Sets\/Moon-Two-CN\/CN-M2-SR[1-8]\.webp$/.test(path) ? CN_MOON_TWO_T01_SR_REFRESH : /^\/Chinese Sets\/(?:Rainbow-One-CN\/CN-R1-UR(?:[1-9]|1[0-2])|Moon-One-CN\/CN-M1-UR1[3-8])\.webp$/.test(path) ? CN_MOON_ONE_UR_REFRESH : undefined;
   if (!revision) return src;
   url.searchParams.set("v", revision);
@@ -180,10 +188,8 @@ const code = rarity.trim().toUpperCase();
 const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon One card code.");
-        if (code === "R" && index === 3)
-            return `${getChineseCardImage("Chinese Sets/Moon-One-CN/YH-T01-003.webp")}?v=20261026-t01-003-correct-image-v1`;
-        if (code === "R" && index === 8)
-            return `${getChineseCardImage("Chinese Sets/Moon-One-CN/YH-T01-008.webp")}?v=20261026-t01-008-correct-image-v1`;
+        if (code === "R" && index <= 8)
+            return refreshChineseMoonOneFront(getChineseCardImage(`Chinese Sets/Moon-One-CN/YH-T01-${String(index).padStart(3, "0")}.webp`));
         return `${getChineseCardImage(`${CN_IMAGE_ROOT}/CN-M1-${code}${index}.webp`)}?v=${CN_MOON_ONE_IMAGE_REVISION}${code === "UR" && index >= 13 && index <= 18 ? "&refresh=20261024-m1-ur13-18-replaced-v1" : ""}`;
     },
 };
@@ -204,9 +210,9 @@ const imageNumber = printedNumber - (card.rarity === "SR" ? 40 : card.rarity ===
     return { ...card, image: getChineseMoonOneFront(card.number, card.rarity) };
 }).map(withChineseReplacementFront);
 const CN_MOON_ONE_LOGO_REVISION = "20261027-m1-shared-corner-v1";
-const moonOneLogoFrontPaths = new Set(CN_MOON_ONE_CARDS.filter(card => (card.rarity === "R" && /^YH-F01-0(?:09|[12]\d|3[0-2])$/.test(card.code)) || (card.rarity === "SR" && /^YH-T01-0(?:09|1[0-6])$/.test(card.code))).map(card => decodeURIComponent(new URL(card.image).pathname)));
+const moonOneLogoFrontPaths = new Set(CN_MOON_ONE_CARDS.filter(card => (card.rarity === "R" && (/^YH-F01-0(?:09|[12]\d|3[0-2])$/.test(card.code) || /^YH-T01-00[1-8]$/.test(card.code))) || (card.rarity === "SR" && /^YH-T01-0(?:09|1[0-6])$/.test(card.code))).map(card => decodeURIComponent(new URL(card.image).pathname)));
 export function hasChineseMoonOneCornerLogo(src: string): boolean {
-  try { return moonOneLogoFrontPaths.has(decodeURIComponent(new URL(src).pathname)); } catch { return false; }
+  try { return moonOneLogoFrontPaths.has(decodeURIComponent(new URL(refreshChineseMoonOneFront(src)).pathname)); } catch { return false; }
 }
 type MoonOneLogoEntry = { users: number; promise: Promise<string>; url?: string };
 const moonOneLogoImages = new Map<string, MoonOneLogoEntry>();

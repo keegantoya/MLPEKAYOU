@@ -323,6 +323,7 @@ export const CHINESE_RAINBOW_FOUR_CODES: ChineseCardCode[] = [
     ...sequence("TGR", 8, "CH04-TGR"),
     ...sequence("MTR", 18, "CH04-MTR"),
     ...sequence("SR", 7, "QY03-SR"),
+    ...sequence("SR", 5, "QY03-SR", 8, 10),
     ...sequence("SR", 3, "QY03-SR", 13, 7),
     ...sequence("SSR", 15, "QY04-SSR"),
     ...sequence("UR", 15, "CH04-UR"),
