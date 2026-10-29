@@ -20,7 +20,7 @@ export const isActiveISOStatus = (value: string): value is ISOStatus => value ==
 export const normalizeEnglishSetId = (value: string | number) => getISOSetId(({ FB: "SD", TCG_PROMOS: "tcgpromos" } as Record<string, string>)[String(value)] ?? String(value));
 export type ISOFamily = EnglishFamily | "merch";
 export type ISOCard = Omit<EnglishCard, "family"> & { family: ISOFamily; merchandiseSetId?: string; square?: boolean; level?: string };
-const merchandiseCards: ISOCard[] = merchandiseSets.flatMap(set => set.items.map(item => ({ setId: ENGLISH_MERCHANDISE_SET_ID, setName: set.title, family: "merch" as const, key: item.key, stateKey: item.key, identity: `${ENGLISH_MERCHANDISE_SET_ID}:${item.key}`, rarity: item.series, number: item.number, code: `${item.series} - Item ${item.number}`, checklistCode: `${item.series} - Item ${item.number}`, front: item.image, back: item.image, image: item.image, isoEligible: true, wide: false, original: true, merchandiseSetId: set.id, square: set.aspect === "square", level: item.level })));
+const merchandiseCards: ISOCard[] = merchandiseSets.flatMap(set => set.items.map(item => ({ setId: ENGLISH_MERCHANDISE_SET_ID, setName: set.title, family: "merch" as const, key: item.key, stateKey: item.key, identity: `${ENGLISH_MERCHANDISE_SET_ID}:${item.key}`, rarity: item.series, number: item.number, code: item.series, checklistCode: item.series, front: item.image, back: item.image, image: item.image, isoEligible: true, wide: false, original: true, merchandiseSetId: set.id, square: set.aspect === "square", level: item.level })));
 export const resolveISOCard = (setId: string | number, key: string): ISOCard | undefined => {
     const id = normalizeEnglishSetId(setId);
     if (id === ENGLISH_MERCHANDISE_SET_ID || merchandiseSets.some(set => set.id === id)) return merchandiseCards.find(card => (id === ENGLISH_MERCHANDISE_SET_ID || card.merchandiseSetId === id) && card.key.replace(/-0*(\d+)$/, "-$1") === key.replace(/-0*(\d+)$/, "-$1"));
@@ -145,9 +145,10 @@ export const matchesISOCard = (card: ISOCard, codeQuery: string, characterQuery:
     const character = characterQuery.trim().toLowerCase();
     return (!code || [card.code, card.checklistCode, card.key].some(value => normalizeCode(value).startsWith(code))) && (!character || getISOCharacters(card).some(name => name.toLowerCase().includes(character)));
 };
-export const getWishlistIdentity = (setId: string, key: string) => { const card = resolveISOCard(setId, key); return card ? `${card.setId}:${isoActionKey(card)}` : `${setId}:${key}`.replace(/-(\d+)$/, (_, n) => `-${Number(n)}`); };
-export const getWishlistVariants = (setId: string, key: string) => { const card = resolveISOCard(setId, key); return card ? [...new Set(setAliases(card.setId).flatMap(alias => getISOCardKeyVariants(card).map(value => `${alias}:${value}`)))] : [`${setId}:${key}`]; };
-export const parseEnglishWishlist = (value: string) => { const index = value.indexOf(":"); return index < 0 ? undefined : resolveISOCard(value.slice(0, index), value.slice(index + 1)); };
+export const resolveWishlistCard = (setId: string | number, key: string): ISOCard | undefined => resolveISOCard(setId,key) ?? getEnglishCard(normalizeEnglishSetId(setId),key);
+export const getWishlistIdentity = (setId: string, key: string) => { const card = resolveWishlistCard(setId, key); return card ? `${card.setId}:${isoActionKey(card)}` : `${setId}:${key}`.replace(/-(\d+)$/, (_, n) => `-${Number(n)}`); };
+export const getWishlistVariants = (setId: string, key: string) => { const card = resolveWishlistCard(setId, key); return card ? [...new Set(setAliases(card.setId).flatMap(alias => getISOCardKeyVariants(card).map(value => `${alias}:${value}`)))] : [`${setId}:${key}`]; };
+export const parseEnglishWishlist = (value: string) => { const index = value.indexOf(":"); return index < 0 ? undefined : resolveWishlistCard(value.slice(0, index), value.slice(index + 1)); };
 export const fetchISOStatuses = async (userId: string) => {
     const rows: ISOStatusRow[] = [];
     for (let start = 0;; start += 500) {
@@ -185,7 +186,7 @@ export const buildEnglishWishlistCards = (rows: {
         const card = parseEnglishWishlist(row.card_key);
         if (!card)
             continue;
-        const id = isoCardIdentity(card);
+        const id = card.identity;
         const saved = found.get(id);
         if (saved)
             saved.storedKeys.push(row.card_key);

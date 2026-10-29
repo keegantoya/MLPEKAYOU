@@ -1,7 +1,7 @@
-import { getWishlistCharacters } from "./wishlist-characters";
+import { ISOCardCaption, isoGridClass } from "@/components/iso/ISOShared";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { fetchEnglishWishlist, fetchISOStatuses, buildEnglishWishlistCards, buildISOStatusMap, getWishlistVariants, getWishlistIdentity, resolveISOCard, isoCardIdentity, type StoredWishlistCard, type ISOStatus } from "./catalog-adapter";
+import { fetchEnglishWishlist, fetchISOStatuses, buildEnglishWishlistCards, buildISOStatusMap, getWishlistVariants, getWishlistIdentity, resolveWishlistCard, getISOCharacters, isoCardIdentity, type StoredWishlistCard, type ISOStatus } from "./catalog-adapter";
 import ISOCardImage from "./catalog-image";
 import ISOChecking from "./iso-checking";
 type Card = StoredWishlistCard;
@@ -90,21 +90,18 @@ export default function Wishlist({ characterSearch = "" }: {
     };
     const query = characterSearch.trim().toLowerCase();
     const visibleCards = query
-        ? cards.filter((card) => getWishlistCharacters(card.set_id, card.card_key).some((name) => name.toLowerCase().includes(query)))
+        ? cards.filter((card) => getISOCharacters(resolveWishlistCard(card.set_id,card.card_key)!).some((name) => name.toLowerCase().includes(query)))
         : cards;
     if (loading)
         return (<div className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">Loading...</div>);
     if (loadError)
         return <p role="alert" className="py-8 text-sm text-red-600 dark:text-red-400">{loadError}</p>;
-    return (<div className="space-y-4">
-      <section className="mb-5">
+    return (<div className="space-y-3">
+      <section className="mb-3">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold sm:text-2xl">Wishlist</h1>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Hehe hi. This your wishlist.</p>
-          </div>
-          <div className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-semibold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
-            {visibleCards.length} {visibleCards.some(card => resolveISOCard(card.set_id, card.card_key)?.family === "merch") ? (visibleCards.length === 1 ? "item" : "items") : (visibleCards.length === 1 ? "card" : "cards")}
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Cards you have saved, including cards you already own.</p>
           </div>
         </div>
       </section>
@@ -117,7 +114,7 @@ export default function Wishlist({ characterSearch = "" }: {
           </h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             {cards.length === 0
-                ? "Add cards from the ISO view and they will appear here."
+                ? "Save cards from Collections or use Edit wishlist in Controls."
                 : "Try another character name or clear the search."}
           </p>
         </section>) : (<section className="min-w-0">
@@ -127,13 +124,13 @@ export default function Wishlist({ characterSearch = "" }: {
               Tap a card to manage it
             </span>
           </div>
-          <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
-            {visibleCards.map((card) => (<div key={`${card.set_id}:${card.card_key}`} className={`group relative overflow-visible ${resolveISOCard(card.set_id, card.card_key)?.wide ? "col-span-2" : ""}`}>
-                <ISOChecking contentClassName="!rounded-[2px]" contentStyle={{ borderRadius: "2px" }} userId={userId} initialStatus={statuses.get(isoCardIdentity(resolveISOCard(card.set_id, card.card_key)!)) ?? null} setId={card.set_id} cardKey={card.card_key} wishlistMode isWishlisted toggleWishlist={removeFromWishlist}>
-                  <div className={`relative ${resolveISOCard(card.set_id, card.card_key)?.square ? "aspect-square" : resolveISOCard(card.set_id, card.card_key)?.wide ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px] bg-transparent transition hover:-translate-y-0.5`}>
-                    <ISOCardImage card={card}/>
+          <div className={isoGridClass}>
+            {visibleCards.map((card) => (<div key={`${card.set_id}:${card.card_key}`} className={`group relative overflow-visible ${resolveWishlistCard(card.set_id, card.card_key)?.wide ? "col-span-2" : ""}`}>
+                <ISOChecking contentClassName="!rounded-[2px]" contentStyle={{ borderRadius: "2px" }} userId={userId} initialStatus={resolveWishlistCard(card.set_id,card.card_key)!.isoEligible ? statuses.get(isoCardIdentity(resolveWishlistCard(card.set_id, card.card_key)!)) ?? null : null} setId={card.set_id} cardKey={card.card_key} wishlistMode isWishlisted toggleWishlist={removeFromWishlist}>
+                  <div className={`relative ${resolveWishlistCard(card.set_id, card.card_key)?.square ? "aspect-square" : resolveWishlistCard(card.set_id, card.card_key)?.wide ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[6px] bg-transparent transition hover:-translate-y-0.5`}>
+                    <ISOCardImage card={resolveWishlistCard(card.set_id,card.card_key)!}/>
                   </div>
-                </ISOChecking>
+                </ISOChecking><ISOCardCaption code={resolveWishlistCard(card.set_id,card.card_key)?.code ?? card.card_key} setName={resolveWishlistCard(card.set_id,card.card_key)?.setName ?? card.set_id}/>
               </div>))}
           </div>
         </section>)}

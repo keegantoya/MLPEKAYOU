@@ -256,7 +256,8 @@ export function getChineseMoonThirteenFront(number: number | string, rarity = "R
   const code = rarity.trim().toUpperCase(); const index = Number(number);
   const card = CHINESE_MOON_THIRTEEN_CODES.find(item => item.rarity === code && item.number === index);
   if (!card) throw new Error("Invalid Chinese Moon Thirteen card code.");
-  return `${getChineseCardImage(`Chinese Sets/Moon-Thirteen-CN/${card.code.replace("◇ZR", "DZR")}.webp`)}?v=${CN_MOON_THIRTEEN_IMAGE_REVISION}`;
+  const revision = card.code === "HY13-SGR-005" ? "20261028-m13-sgr005-replaced-v1" : CN_MOON_THIRTEEN_IMAGE_REVISION;
+  return `${getChineseCardImage(`Chinese Sets/Moon-Thirteen-CN/${card.code.replace("◇ZR", "DZR")}.webp`)}?v=${revision}${card.code === "HY13-SGR-005" ? `&refresh=${revision}` : ""}`;
 }
 export function getChineseMoonThirteenBack(card: { key: string; rarity: string }): ChineseCardBack {
   const sideways = CN_MOON_THIRTEEN_ROTATED_KEYS.has(card.key);

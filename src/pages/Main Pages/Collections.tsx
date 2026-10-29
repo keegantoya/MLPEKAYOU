@@ -1,7 +1,11 @@
 import { ENGLISH_MERCHANDISE_SET_ID, merchandiseSets, getMerchandiseSet, getMerchandiseOwnedCount } from "@/lib/english-merchandise-catalog";
-import { useState, useEffect, type CSSProperties } from "react";
-import CatalogSidebar from "@/components/CatalogSidebar";
-import CollectionCard from "@/components/CollectionCard";
+import { useState, useEffect, useMemo, useDeferredValue, type CSSProperties } from "react";
+import { ArrowUpRight, ChevronRight, Search, X, Heart } from "lucide-react";
+import { isoCards, getISOCharacters, getWishlistIdentity, isoActionKey, type ISOCard } from "@/pages/ISO/catalog-adapter";
+import { englishChecklistCards } from "@/lib/english-card-catalog";
+import { useWishlist } from "@/pages/ISO/wishlist-in-iso";
+import ISOCardImage from "@/pages/ISO/catalog-image";
+import { ISOCardCaption } from "@/components/iso/ISOShared";
 import { supabase } from "@/lib/supabase";
 import { Link, useLocation } from "react-router-dom";
 type Collection = {
@@ -167,8 +171,38 @@ const databaseSetId: Record<string, string> = {
   tcg: "FW",
   friendshipsbegin: "SD",
 };
+const checklistPaths: Record<string, string> = { "1":"/moon-one", "2":"/moon-two", "3":"/moon-three", "4":"/star-one", "5":"/rainbow-one", "6":"/rainbow-two", "7":"/fun-moments-one", "8":"/fun-moments-two", "11":"/fun-moments-three", "12":"/discord", "13":"/moon-four", "14":"/nightmare-night", tcg:"/fantasy-wonderland", friendshipsbegin:"/friendships-begin", "hearthswarming-eve":"/hearthswarming-eve", "9":"/promotional-cards" };
+const collectionIdForCard = (card: ISOCard): string => card.merchandiseSetId ?? ({ FW:"tcg",SD:"friendshipsbegin",tcgpromos:"9",TCG_PROMOS:"9" } as Record<string,string>)[card.setId] ?? card.setId;
+const hrefForCollection = (id: string) => getMerchandiseSet(id)?.href ?? checklistPaths[id];
+const normalizeSearchCode = (value: string) => value.normalize("NFKC").toUpperCase().replace(/<>|[\u25C6\u2662]/g,"◇").replace(/<(ZR|AR|CR|N)/g,"◇$1").replace(/#/g,"※").replace(/[\u2010-\u2015\u2212]/g,"-").replace(/\s+/g,"");
+const compactCode = (value: string) => normalizeSearchCode(value).replace(/[^A-Z0-9◇※]/g,"");
+const codeMatches = (card: ISOCard, query: string) => {
+ const search = normalizeSearchCode(query);if (!compactCode(search)) return true;
+ const unpad = (text: string) => text.replace(/-(\d+)$/,(_,number:string)=>`-${Number(number)}`);
+ return [card.code,card.checklistCode,card.key].some(raw=>{const value=normalizeSearchCode(raw);return value.includes(search)||compactCode(value).includes(compactCode(search))||unpad(value)===unpad(search);});
+};
+const normalizeCharacter = (value:string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+const collectionSearchCards: ISOCard[] = [...englishChecklistCards, ...isoCards.filter(card=>card.family === "merch")];
+const searchableCards = collectionSearchCards.filter(card => !!hrefForCollection(collectionIdForCard(card))).map(card => ({card,characters:getISOCharacters(card).map(normalizeCharacter)}));
+const categoryOptions = [{label:"All",value:"all"},{label:"Star",value:"star"},{label:"Moon",value:"eternal-moon"},{label:"Rainbow",value:"rainbow"},{label:"Fun Moments",value:"fun-moments"},{label:"TCG",value:"tcg"},{label:"Promos",value:"promos"},{label:"Other",value:"merch"},{label:"Not collecting",value:"not-collecting"}];
 const Collections = () => {
 const location = useLocation();
+const {wishlist,toggleWishlist,loading:wishlistLoading,error:wishlistError,pendingCards,retry:retryWishlist}=useWishlist();
+const [codeSearch,setCodeSearch] = useState("");
+const [characterSearch,setCharacterSearch] = useState("");
+const [resultLimit,setResultLimit] = useState(96);
+const deferredCode = useDeferredValue(codeSearch);
+const deferredCharacter = useDeferredValue(characterSearch);
+const searchingCode = !!compactCode(deferredCode);
+const searchingCharacter = !!normalizeCharacter(deferredCharacter);
+const searching = searchingCode || searchingCharacter;
+const matches = useMemo(() => {
+ if (!searching) return [];
+ const words=normalizeCharacter(deferredCharacter).split(" ").filter(Boolean);
+ return searchableCards.filter(({card,characters}) => codeMatches(card,deferredCode) && (!words.length || characters.some(name=>words.every(word=>name.includes(word))))).map(item=>item.card);
+},[searching,deferredCode,deferredCharacter]);
+const matchedCodes = useMemo(()=>{const result=new Map<string,string[]>();for(const card of matches){const id=collectionIdForCard(card);const codes=result.get(id)??[];if(!codes.includes(card.code))codes.push(card.code);result.set(id,codes);}return result;},[matches]);
+useEffect(()=>setResultLimit(96),[deferredCode,deferredCharacter]);
 const [activeCategory, setActiveCategory] = useState(
     location.state?.category || "all",
   );
@@ -198,12 +232,16 @@ const observer = new MutationObserver(syncTheme);
     }
   }, [location.state]);
   useEffect(() => {
+let active = true;
+let request = 0;
 const load = async (userOverride?: any) => {
+const ticket = ++request;
 let user = userOverride;
       if (!user) {
 const { data } = await supabase.auth.getSession();
         user = data.session?.user;
       }
+      if (!active || ticket !== request) return;
       if (!user) {
         setMerchandiseCollected(0);
         setHiddenSets([]);
@@ -237,6 +275,7 @@ const { data: profile, error: profileError } = await supabase
         .select("iso_hidden_sets")
         .eq("id", user.id)
         .single();
+      if (!active || ticket !== request) return;
       if (profileError) {
         console.error("Failed to load hidden collection sets:", profileError);
       }
@@ -340,6 +379,8 @@ const {
       load(session?.user);
     });
     return () => {
+      active = false;
+      ++request;
       subscription.unsubscribe();
     };
   }, []);
@@ -354,39 +395,12 @@ const setOrder: Record<string, number> = {
   };
 const promoNodeFullyHidden =
     hiddenSets.includes("9") && hiddenSets.includes("tcgpromos");
-const filtered = (
-    activeCategory === "all"
-      ? sets
-          .filter((c) => !hideMastered || c.progress !== 100)
-          .filter((c) => {
-            if (c.id === "9") {
-              return !promoNodeFullyHidden;
-            }
-            return !hiddenSets.includes(c.id) && !(c.category === "merch" && hiddenSets.includes(ENGLISH_MERCHANDISE_SET_ID));
-          })
-      : sets
-          .filter((c) => c.category === activeCategory)
-          .filter((c) => {
-            if (c.id === "9") {
-              return !promoNodeFullyHidden;
-            }
-            return true;
-          })
-  )
-    .filter((c) => c.released || unreleasedSetIds.includes(c.id))
-    .sort((a, b) => {
-      if (sortBy === "set") {
-const categoryDiff =
-          (setOrder[a.category] ?? 999) - (setOrder[b.category] ?? 999);
-        if (categoryDiff !== 0) {
-          return categoryDiff;
-        }
-      }
-      return (
-        collections.findIndex((s) => s.id === a.id) -
-        collections.findIndex((s) => s.id === b.id)
-      );
-    });
+const isHiddenCollection = (set:Collection) => set.id === "9" ? promoNodeFullyHidden : hiddenSets.includes(set.id) || (set.category === "merch" && hiddenSets.includes(ENGLISH_MERCHANDISE_SET_ID));
+const filtered = sets.filter(set => set.released || unreleasedSetIds.includes(set.id)).filter(set => {
+ if (searching) return matchedCodes.has(set.id);
+ if (activeCategory === "not-collecting") return isHiddenCollection(set);
+ return !isHiddenCollection(set) && (activeCategory === "all" || set.category === activeCategory) && (!hideMastered || set.progress !== 100);
+}).sort((a,b)=>{if(sortBy === "set"){const diff=(setOrder[a.category]??999)-(setOrder[b.category]??999);if(diff)return diff;}return collections.findIndex(set=>set.id===a.id)-collections.findIndex(set=>set.id===b.id);});
 const ccgSets = sets.filter(
     (set) =>
       set.released &&
@@ -423,7 +437,7 @@ const completionRate =
     >
       <main className="w-full max-w-none px-4 py-5 sm:px-6 sm:py-8">
         <section className="collections-summary" aria-label="Collection progress">
-          <div className="collections-summary-title"><h1>English Collections</h1><span>{totalSets} sets in your collection</span></div>
+          <div className="cn-summary-top"><div className="collections-summary-title"><h1>English Collections</h1><span>{totalSets} sets in your collection</span></div><button className="cn-mastered-compact md:hidden" type="button" aria-pressed={!hideMastered} onClick={()=>setHideMastered(value=>!value)}>{hideMastered ? "Show mastered" : "Hide mastered"}</button></div>
           <div className="collections-summary-stats">
             <div><strong>{completedSets}<small> / {totalSets}</small></strong><span>Sets mastered</span></div>
             <div><strong>{totalCardsCollected.toLocaleString()}<small> / {totalCardsAvailable.toLocaleString()}</small></strong><span>Cards collected</span></div>
@@ -432,163 +446,51 @@ const completionRate =
           </div>
           <div className="collections-summary-track" role="progressbar" aria-label="Overall collection completion" aria-valuenow={Math.min(100, Math.max(0, completionRate))} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${Math.min(100, Math.max(0, completionRate))}%` }} /></div>
         </section>
-        <div className="mt-4 md:hidden">
-          <div className="flex flex-wrap gap-2">
-            {[
-              { label: "All", value: "all" },
-              { label: "Star", value: "star" },
-              { label: "Moon", value: "eternal-moon" },
-              { label: "Rainbow", value: "rainbow" },
-              { label: "Fun Moments", value: "fun-moments" },
-              { label: "TCG", value: "tcg" },
-              { label: "Promos", value: "promos" },
-              { label: "Other", value: "merch" },
-            ].map((item) => {
-const active = activeCategory === item.value;
-              return (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => setActiveCategory(item.value)}
-                  aria-pressed={active}
-                  className={`collections-mobile-category rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
-                    active
-                      ? "border-[#FFD54A] bg-[#FFD54A] text-black"
-                      : isLightMode
-                        ? "border-black/10 bg-white text-zinc-600"
-                        : "border-white/10 bg-[#151718] text-zinc-300"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <nav aria-label="English collection pages" className="mt-4 grid grid-cols-2 gap-x-5 gap-y-1 border-b border-border pb-3 sm:grid-cols-3 xl:grid-cols-5">{[{href:"/iso",label:"English ISO & Wishlist"},{href:"/trading-post",label:"English Trading Post"},{href:"/inventory",label:"English Inventory"},{href:"/binders",label:"English Binders"},{href:"/leaderboard",label:"English Leaderboard"}].map(item=><Link key={item.href} to={item.href} className="group flex min-h-11 min-w-0 items-center justify-between gap-2 py-2 text-xs font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:text-sm"><span>{item.label}</span><ArrowUpRight size={14} aria-hidden="true" className="shrink-0 text-muted-foreground group-hover:text-primary"/></Link>)}</nav>
+        <div className="cn-category-scroll mt-4 flex gap-2 md:hidden" role="group" aria-label="English set categories">{categoryOptions.map(item=><button key={item.value} type="button" aria-pressed={activeCategory===item.value} onClick={()=>setActiveCategory(item.value)} className={`collections-mobile-category rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${isLightMode ? "border-black/10 bg-white text-zinc-600" : "border-white/10 bg-[#151718] text-zinc-300"}`}>{item.label}</button>)}</div>
         <div className="mt-4 flex gap-6">
-          <aside className="hidden shrink-0 md:block">
-            <CatalogSidebar
-              activeCategory={activeCategory}
-              onCategoryChange={setActiveCategory}
-              hideMastered={hideMastered}
-              onToggleHideMastered={() => setHideMastered((prev) => !prev)}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-            />
-          </aside>
+          <aside className="catalog-filter hidden md:block"><nav aria-label="English set categories"><h2>Browse sets</h2><div className="catalog-filter-categories">{categoryOptions.map(item=><button key={item.value} type="button" aria-pressed={activeCategory===item.value} onClick={()=>setActiveCategory(item.value)}><span>{item.label}</span><ChevronRight size={14} aria-hidden="true"/></button>)}</div><div className="catalog-filter-options"><h3>Sort sets</h3><div className="catalog-filter-sort"><span aria-hidden="true" style={{transform:sortBy==="set"?"translateX(100%)":"none"}}/>{(["release","set"] as const).map(value=><button key={value} type="button" aria-pressed={sortBy===value} onClick={()=>setSortBy(value)}>{value==="release"?"Release":"Set"}</button>)}</div><button className="catalog-filter-toggle" type="button" aria-pressed={hideMastered} onClick={()=>setHideMastered(value=>!value)}><span>Hide mastered</span><span className="catalog-filter-switch" aria-hidden="true"><span/></span></button></div></nav></aside>
           <div className="min-w-0 flex-1">
-            <div className="collections-results"><h2>{({ all: "All collections", star: "Star", "eternal-moon": "Moon", rainbow: "Rainbow", "fun-moments": "Fun Moments", tcg: "Card Game", promos: "Promotional", merch: "Other" } as Record<string, string>)[activeCategory] || "Collections"}</h2><span>{filtered.length} {filtered.length === 1 ? "set" : "sets"}</span></div>
-            <div className="collections-mobile-options md:hidden"><button type="button" aria-pressed={hideMastered} onClick={() => setHideMastered(value => !value)}>{hideMastered ? "Show mastered" : "Hide mastered"}</button><label>Sort <select aria-label="Sort collections" value={sortBy} onChange={event => setSortBy(event.target.value as "release" | "set")}><option value="release">Release</option><option value="set">Set</option></select></label></div>
-            {activeCategory === "" ? (
-              <div className="py-20" />
-            ) : filtered.length === 0 ? (
-              <div
-                className={`rounded-2xl border border-dashed p-10 text-center text-sm sm:text-base ${
-                  isLightMode
-                    ? "border-black/10 bg-zinc-50 text-zinc-500"
-                    : "border-white/10 bg-white/[0.03] text-zinc-400"
-                }`}
-              >
-                No sets to show with the current filters.
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-[repeat(auto-fill,minmax(165px,1fr))]">
-                {filtered.map((col, index) => {
-const isHidden =
-                    col.id === "9"
-                      ? promoNodeFullyHidden
-                      : hiddenSets.includes(col.id);
-const merchandise = getMerchandiseSet(col.id);
-const isMastered =
-                    (col.collectedCards ?? 0) >= col.totalCards;
-const waitingOnKayouIds: string[] = [];
-const isUnreleased = unreleasedSetIds.includes(col.id);
-const isWaiting = waitingOnKayouIds.includes(col.id);
-                  return (
-                    <div key={col.id} className="collection-grid-item group relative" style={{ "--entry-delay": `${Math.min(index, 8) * 25}ms` } as CSSProperties}>
-                      <div
-                        className={`relative rounded-[16px] ${
-                          isUnreleased || isWaiting
-                            ? "pointer-events-none opacity-50 grayscale"
-                            : isHidden
-                              ? "opacity-50 grayscale"
-                              : ""
-                        }`}
-                      >
-                        {merchandise ? <Link to={merchandise.href} className="collection-tile merchandise-tile">{merchandise.thumbnail && (<div className="collection-tile-art"><img src={merchandise.thumbnail} alt={merchandise.title} draggable={false} loading="lazy" className="collection-tile-image"/></div>)}<div className="collection-tile-body"><div className="collection-tile-title"><h2>{merchandise.title}</h2></div><div className="collection-tile-progress"><div className="collection-tile-count"><span><strong>{col.collectedCards ?? 0}</strong><span> / {merchandise.items.length} items</span></span><strong className="collection-tile-percent">{col.progress ?? 0}%</strong></div><div className="collection-tile-track" role="progressbar" aria-label={`${merchandise.title} collected`} aria-valuemin={0} aria-valuemax={merchandise.items.length} aria-valuenow={col.collectedCards ?? 0}><span style={{ width: `${col.progress ?? 0}%` }}/></div><div className="collection-tile-detail"><span>{Math.max(0, merchandise.items.length - (col.collectedCards ?? 0))} remaining</span><span className="collection-tile-checklist">View checklist</span></div></div></div></Link> : <CollectionCard {...col} /> }
-                      </div>
-                      {isUnreleased && (
-                        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center">
-                          <div
-                            className={`rounded-xl border px-4 py-2 text-center text-sm font-bold tracking-wide shadow-lg sm:text-base ${
-                              isLightMode
-                                ? "border-[#8a6a00]/30 bg-white/90 text-[#725700]"
-                                : "border-[#FFD54A]/40 bg-black/85 text-[#FFE27A]"
-                            }`}
-                          >
-                            COMING SOON
-                          </div>
-                        </div>
-                      )}
-                      {isHidden && !isUnreleased && !isWaiting && (
-                        <div className="pointer-events-none absolute inset-x-2 top-2 z-30">
-                          <div
-                            className={`rounded-xl border px-3 py-2 text-xs font-semibold ${
-                              isLightMode
-                                ? "border-[#8a6a00]/20 bg-white/95 text-[#725700]"
-                                : "border-[#FFD54A]/25 bg-black/80 text-[#FFE27A]"
-                            }`}
-                          >
-                            Not collecting this set
-                          </div>
-                        </div>
-                      )}
-                      {isMastered &&
-                        !isHidden &&
-                        !isUnreleased &&
-                        !isWaiting && (
-                          <div className="pointer-events-none absolute left-2 top-2 z-30">
-                            <div
-                              className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${
-                                isLightMode
-                                  ? "border-[#8a6a00]/20 bg-white/95 text-[#725700]"
-                                  : "border-[#FFD54A]/25 bg-black/75 text-[#FFE27A]"
-                              }`}
-                            >
-                              Mastered
-                            </div>
-                          </div>
-                        )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <div className="en-card-search" role="search" aria-label="Search English checklists">
+              <label><Search size={15} aria-hidden="true"/><span className="sr-only">Find a card code across all English sets</span><input type="search" value={codeSearch} onChange={event=>setCodeSearch(event.target.value)} onKeyDown={event=>{if(event.key==="Escape")setCodeSearch("");}} placeholder="Find a card code..." maxLength={120} autoCapitalize="characters" autoComplete="off" spellCheck={false}/>{codeSearch && <button type="button" onClick={()=>setCodeSearch("")} aria-label="Clear card code search"><X size={15}/></button>}</label>
+              <label><Search size={15} aria-hidden="true"/><span className="sr-only">Find cards featuring a character across all English sets</span><input type="search" value={characterSearch} onChange={event=>setCharacterSearch(event.target.value)} onKeyDown={event=>{if(event.key==="Escape")setCharacterSearch("");}} placeholder="Find a character..." maxLength={120} autoComplete="off" spellCheck={false}/>{characterSearch && <button type="button" onClick={()=>setCharacterSearch("")} aria-label="Clear character search"><X size={15}/></button>}</label>
+            </div>
+            <div className="collections-results en-search-results" aria-live="polite"><h2>{searchingCharacter ? `Cards featuring ${deferredCharacter.trim()}` : searchingCode ? "Cards matching this code" : categoryOptions.find(item=>item.value===activeCategory)?.label??"Collections"}</h2><span>{searching ? `${matches.length} ${matches.length===1?"card":"cards"} · ${filtered.length} ${filtered.length===1?"set":"sets"}` : `${filtered.length} ${filtered.length===1?"set":"sets"}`}</span></div>
+            {searching && <p className="mb-3 text-xs leading-5 text-muted-foreground">Searching every English set, including completed sets and sets you do not collect.</p>}
+            {!searching && <div className="collections-mobile-options md:hidden"><label>Sort <select aria-label="Sort collections" value={sortBy} onChange={event=>setSortBy(event.target.value as "release"|"set")}><option value="release">Release</option><option value="set">Set</option></select></label></div>}
+            {wishlistError && <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">{wishlistError}<button type="button" onClick={()=>void retryWishlist()} className="ml-2 min-h-10 underline">Retry wishlist</button></p>}
+            {searching ? <>
+              {matches.length ? <div className="grid grid-cols-2 items-start gap-x-3 gap-y-4 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">{matches.slice(0,resultLimit).map(card=>{
+                const key=isoActionKey(card);const identity=getWishlistIdentity(card.setId,key);const saved=wishlist.has(identity);const pending=pendingCards.has(identity);
+                return <article key={card.identity} className={`min-w-0 ${card.wide ? "col-span-2" : ""}`}><Link to={hrefForCollection(collectionIdForCard(card))!} aria-label={`Open ${card.code} in ${card.setName}`} className="group relative block w-full rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"><div className={`relative w-full overflow-hidden rounded-lg ${card.square?"aspect-square":card.wide?"aspect-[10/7]":"aspect-[5/7]"}`}><ISOCardImage card={card}/></div>{saved&&<span className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-pink-600 text-white shadow-sm"><Heart size={14} fill="currentColor" aria-label="Already on your wishlist"/></span>}</Link><ISOCardCaption code={card.code} setName={card.setName}/><div className="mt-1 flex flex-wrap items-center justify-between gap-x-1"><Link to={hrefForCollection(collectionIdForCard(card))!} className="inline-flex min-h-11 items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-primary" aria-label={`Open set: ${card.setName} for ${card.code}`}>Open set<ArrowUpRight size={11}/></Link><button type="button" aria-label={`${saved?"Remove":"Add"} ${card.code} ${saved?"from":"to"} wishlist`} aria-pressed={saved} disabled={wishlistLoading||pending} onClick={()=>{void toggleWishlist(card.setId,key).catch(()=>{});}} className={`inline-flex min-h-11 items-center gap-1 text-[10px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 ${saved?"text-pink-500":"text-muted-foreground hover:text-pink-500"}`}><Heart size={13} fill={saved?"currentColor":"none"}/>{pending?"Saving…":saved?"Wishlisted":"Wishlist"}</button></div></article>;
+              })}</div> : <p role="status" className="py-10 text-center text-sm text-muted-foreground">{searchingCode&&searchingCharacter ? "No cards match both searches. Try a different code or character name." : searchingCharacter ? "No cards found for that character. Try part of their name." : "No cards found for that code. Try a shorter code or check the spelling."}</p>}
+              {resultLimit<matches.length && <button type="button" onClick={()=>setResultLimit(value=>value+96)} className="mt-5 min-h-11 w-full rounded-lg border border-border px-3 text-sm">Show more cards ({matches.length-resultLimit} remaining)</button>}
+            </> : filtered.length ? <div className="en-set-bars">{filtered.map((col,index)=>{
+              const collected=col.collectedCards??0;const percent=col.progress??0;const codes=matchedCodes.get(col.id)??[];const href=hrefForCollection(col.id);
+              return <Link key={col.id} to={href??"/collections"} aria-label={`Open ${col.title} ${col.setName}`} className="collection-tile collection-grid-item" data-code-match={searchingCode?"true":undefined} style={{"--entry-delay":`${Math.min(index,8)*25}ms`} as CSSProperties}>
+                {col.imageUrl && <div className="en-set-thumbnail" aria-hidden="true"><img src={col.imageUrl} alt="" loading="lazy" decoding="async" draggable={false} onError={event=>event.currentTarget.parentElement?.setAttribute("hidden","")}/></div>}
+                <div className="collection-tile-body"><div className="collection-tile-title"><h2>{col.title} {col.setName}</h2></div>{isHiddenCollection(col)&&<p className="mt-1 text-[10px] text-muted-foreground">Not collecting</p>}{searchingCode&&<div className="cn-code-match-detail"><p>{codes.slice(0,2).join(" / ")}{codes.length>2?` +${codes.length-2} more`:""}</p></div>}
+                  <div className="collection-tile-progress"><div className="collection-tile-count"><span><strong>{collected.toLocaleString()}</strong><span> / {col.totalCards.toLocaleString()}</span></span><strong className="collection-tile-percent">{percent}%</strong></div><div className="collection-tile-track" role="progressbar" aria-label={`${col.title} ${col.setName} collected`} aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}><span style={{width:`${percent}%`}}/></div><div className="collection-tile-detail"><span>{collected>=col.totalCards&&col.totalCards>0?"Set complete":`${Math.max(0,col.totalCards-collected).toLocaleString()} remaining`}</span><span className="collection-tile-checklist">View checklist<ArrowUpRight size={11} aria-hidden="true"/></span></div></div>
+                </div>
+              </Link>;
+            })}</div> : <p role="status" className="py-10 text-center text-sm text-muted-foreground">{searchingCode ? "No sets contain that card code. Try a shorter code or check the spelling." : activeCategory==="not-collecting" ? "Sets you choose to hide from your needed cards will appear here." : "No sets to show with the current filters."}</p>}
           </div>
         </div>
       </main>
       <style>{`
-.merchandise-tile{display:block;height:100%;overflow:hidden;border:1px solid hsl(var(--border));border-radius:16px;background:hsl(var(--background));color:hsl(var(--foreground));text-decoration:none;transition:border-color .2s;--tile-muted:hsl(var(--muted-foreground));--tile-accent:hsl(var(--primary))}
-.merchandise-tile .collection-tile-art{position:relative;aspect-ratio:4/3;overflow:hidden;background:hsl(var(--muted) / .3)}
-.merchandise-tile .collection-tile-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
-.merchandise-tile .collection-tile-body{padding:10px}
-.merchandise-tile .collection-tile-title h2{margin:0;font-size:13px;line-height:1.3;font-weight:650}
-.merchandise-tile .collection-tile-progress{margin-top:8px;padding-top:8px;border-top:1px solid hsl(var(--border))}
-.merchandise-tile .collection-tile-count{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-variant-numeric:tabular-nums}
-.merchandise-tile .collection-tile-count>span>strong{font-size:17px;font-weight:650}
-.merchandise-tile .collection-tile-count>span>span{font-size:11px;color:var(--tile-muted)}
-.merchandise-tile .collection-tile-percent{font-size:12px;color:var(--tile-accent)}
-.merchandise-tile .collection-tile-track{height:5px;overflow:hidden;border-radius:5px;background:hsl(var(--muted));margin:6px 0}
-.merchandise-tile .collection-tile-track>span{display:block;height:100%;background:var(--tile-accent)}
-.merchandise-tile .collection-tile-detail{display:flex;justify-content:space-between;gap:4px;font-size:9px;line-height:1.5;color:var(--tile-muted)}
-.merchandise-tile:focus-visible{outline:2px solid var(--tile-accent);outline-offset:3px}
-@media(hover:hover){.merchandise-tile:hover{border-color:var(--tile-accent)}}
+.cn-summary-top{display:contents}
+.cn-category-scroll{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
+.cn-category-scroll::-webkit-scrollbar{display:none}
+.cn-category-scroll>button{flex-shrink:0;white-space:nowrap}
+.cn-mastered-compact{flex-shrink:0;min-height:44px;padding:6px 0 6px 10px;background:transparent;border:0;color:var(--collections-accent);font-size:10px;font-weight:600;white-space:nowrap}
+.cn-mastered-compact:focus-visible{outline:2px solid var(--collections-accent);outline-offset:2px;border-radius:5px}
+@media(max-width:767px){.cn-summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%}.cn-summary-top .collections-summary-title{min-width:0}.cn-summary-top .collections-summary-title h1{font-size:clamp(17px,4.7vw,21px)}}
 .collections-workspace{--collections-accent:hsl(var(--primary));--collections-muted:#92969e}
 html[data-theme="light"] .collections-workspace{--collections-muted:#6b7078}
 .collections-summary{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;padding:0 0 24px;margin-bottom:26px;border-bottom:1px solid #80808025}
 .collections-summary-title h1{margin:0 0 6px;font-size:24px;line-height:1.2;letter-spacing:-.035em;font-weight:650}
 .collections-summary-title>span{font-size:11px;color:var(--collections-muted)}
-.collections-summary-stats{display:flex;flex-wrap:wrap;align-items:center;gap:20px 28px}
+.collections-summary-stats{display:flex;align-items:center;gap:32px}
 .collections-summary-stats>div{display:flex;flex-direction:column;gap:5px}
 .collections-summary-stats strong{font-size:24px;line-height:1.2;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
 .collections-summary-stats small{font-size:12px;font-weight:400;letter-spacing:0;color:var(--collections-muted)}
@@ -605,10 +507,58 @@ html[data-theme="light"] .collections-workspace{--collections-muted:#6b7078}
 .collections-mobile-options button{min-height:36px;padding:6px 10px;border:1px solid #80808030;border-radius:7px}
 .collections-mobile-options label{display:flex;align-items:center;gap:8px}
 .collections-mobile-options select{font-size:16px;background:hsl(var(--background));border:1px solid #80808030;border-radius:7px;padding:6px;color:inherit}
-@media(max-width:767px){.collections-summary{gap:18px;margin-bottom:16px;padding-bottom:18px}.collections-summary-title h1{font-size:21px}.collections-summary-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:12px;align-items:start}.collections-summary-stats strong{font-size:22px}.collections-summary-stats small{font-size:10px}.collections-summary-stats>div>span{font-size:9px}.collections-mobile-options{display:flex}}
+@media(max-width:767px){.collections-results{display:none}.collections-summary{gap:18px;margin-bottom:16px;padding-bottom:18px}.collections-summary-title h1{font-size:21px}.collections-summary-stats{width:100%;justify-content:space-between;gap:12px}.collections-summary-stats strong{font-size:22px}.collections-summary-stats small{font-size:10px}.collections-summary-stats>div>span{font-size:9px}.collections-mobile-options{display:flex}}
 @keyframes collection-enter{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.collection-grid-item{animation:none}.collections-summary-track>span{transition:none}}
-      `}</style>
+.catalog-filter{width:194px;flex-shrink:0;color:#c5c7cb;--filter-accent:hsl(var(--primary))}
+html[data-theme="light"] .catalog-filter{color:#4d5158}
+.catalog-filter h2{margin:0 0 15px;padding:0 12px;font-size:13px;font-weight:650;color:inherit}
+.catalog-filter-categories{display:grid;gap:3px}
+.catalog-filter-categories>button{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;min-height:41px;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:inherit;text-align:left;font-size:12px;transition:background .18s,color .18s}
+.catalog-filter-categories>button:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:2px;border-radius:2px;background:var(--filter-accent);transform:scaleY(0);transition:transform .2s}
+.catalog-filter-categories>button svg{opacity:0;transform:translateX(-4px);transition:opacity .2s,transform .2s}
+.catalog-filter-categories>button:hover{background:#8080800c}
+.catalog-filter-categories>button[aria-pressed="true"]{background:#80808014;color:var(--filter-accent)}
+.catalog-filter-categories>button[aria-pressed="true"]:before{transform:scaleY(1)}
+.catalog-filter-categories>button[aria-pressed="true"] svg{opacity:1;transform:translateX(0)}
+.catalog-filter-options{margin-top:22px;padding:19px 12px 0;border-top:1px solid #80808025}
+.catalog-filter h3{margin:0 0 10px;font-size:10px;font-weight:500;color:inherit;opacity:.75}
+.catalog-filter-sort{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:3px;border-radius:9px;background:#80808015}
+.catalog-filter-sort>span{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);border:1px solid #80808028;border-radius:6px;background:#8080801a;transition:transform .22s ease}
+.catalog-filter-sort button{position:relative;min-height:31px;font-size:11px;color:inherit}
+.catalog-filter-sort button[aria-pressed="true"]{color:var(--filter-accent)}
+.catalog-filter-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:46px;margin-top:12px;font-size:11px;text-align:left}
+.catalog-filter-switch{width:30px;height:18px;padding:3px;border-radius:20px;background:#80808050;transition:background .2s}
+.catalog-filter-switch>span{display:block;width:12px;height:12px;border-radius:50%;background:white;transition:transform .2s}
+.catalog-filter-toggle[aria-pressed="true"] .catalog-filter-switch{background:var(--filter-accent)}
+.catalog-filter-toggle[aria-pressed="true"] .catalog-filter-switch>span{transform:translateX(12px);background:hsl(var(--primary-foreground))}
+.catalog-filter button:focus-visible{outline:2px solid var(--filter-accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.catalog-filter *,.catalog-filter *:before{transition:none!important}}
+.en-set-bars{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px}.collection-tile{display:flex;align-items:stretch;min-width:0;min-height:112px;height:100%;overflow:hidden;border:1px solid #ffffff13;border-radius:16px;background:#191b1e;color:#f4f4f5;text-decoration:none;transition:border-color .2s,box-shadow .2s;--tile-muted:#92969e;--tile-accent:hsl(var(--primary))}
+html[data-theme="light"] .collection-tile{background:#fff;color:#202226;border-color:#00000015;--tile-muted:#70747c}
+.collection-tile-art{position:relative;aspect-ratio:4/3;overflow:hidden;background:#00000009}
+.collection-tile-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .35s ease}
+.en-set-thumbnail{position:relative;flex:0 0 104px;align-self:stretch;overflow:hidden}.en-set-thumbnail[hidden]{display:none}.en-set-thumbnail img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center}.collection-tile-body{flex:1;min-width:0;align-self:center;padding:12px}
+.collection-tile-title{min-height:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.collection-tile-title h2{margin:0;font-size:13px;line-height:1.3;font-weight:650;letter-spacing:-.025em}
+.collection-tile-progress{margin-top:8px;padding-top:8px;border-top:1px solid #80808026}
+.collection-tile-count{display:flex;align-items:baseline;justify-content:space-between;gap:5px;font-variant-numeric:tabular-nums}
+.collection-tile-count>span>strong{font-size:17px;font-weight:650;letter-spacing:-.04em}
+.collection-tile-count>span>span{font-size:11px;color:var(--tile-muted)}
+.collection-tile-percent{font-size:12px;color:var(--tile-accent)}
+.collection-tile-track{height:5px;overflow:hidden;border-radius:5px;background:#80808025;margin:6px 0 6px}
+.collection-tile-track>span{display:block;height:100%;border-radius:inherit;background:var(--tile-accent);transition:width .65s cubic-bezier(.2,.7,.2,1)}
+.collection-tile-detail{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:9px;line-height:1.5;color:var(--tile-muted)}
+.collection-tile-checklist{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.collection-tile-detail>svg{color:var(--tile-accent)}
+.collection-tile:focus-visible{outline:2px solid var(--tile-accent);outline-offset:3px}
+@media(hover:hover){.collection-tile:hover{border-color:var(--tile-accent);box-shadow:0 8px 25px #0002}.collection-tile:hover .collection-tile-image{transform:scale(1.035)}.collection-tile:hover .collection-tile-detail>span:last-child{color:var(--tile-accent)}}
+@media(max-width:480px){.en-set-thumbnail{flex-basis:96px}.collection-tile-body{padding:10px}.collection-tile-title h2{font-size:13px}.collection-tile-count>span>strong{font-size:17px}.collection-tile-detail{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.collection-tile,.collection-tile *{transition:none!important}}
+.cn-code-search{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-bottom:12px;min-width:0;color:hsl(var(--foreground))}.cn-code-search>label{display:flex;align-items:center;gap:8px;width:min(100%,320px);min-width:0;border-bottom:1px solid #80808040;color:var(--collections-muted)}.cn-code-search input{width:100%;min-width:0;min-height:40px;padding:6px 0;border:0;outline:none;background:transparent;color:inherit;font:inherit;font-size:16px}.cn-code-search input::placeholder{font-size:13px}.cn-code-search input::-webkit-search-cancel-button{-webkit-appearance:none}.cn-code-search label:focus-within{border-color:hsl(var(--primary));color:hsl(var(--primary))}.cn-code-search>button{display:flex;align-items:center;justify-content:center;min-height:40px;width:34px;border:0;background:transparent;color:var(--collections-muted);border-radius:6px}.cn-code-search>button:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:2px}.cn-code-search>span{font-size:11px;color:var(--collections-muted)}.collection-tile[data-code-match="true"]{border-color:hsl(var(--primary));box-shadow:0 0 0 1px hsl(var(--primary)/.35),0 0 22px hsl(var(--primary)/.2)}.cn-code-match-detail{margin-top:7px;font-size:10px;line-height:1.5;color:hsl(var(--primary));overflow-wrap:anywhere}.cn-code-match-detail p{margin:0}.cn-code-match-detail>span{display:block;margin-top:3px;color:var(--tile-muted);font-size:9px}
+.en-card-search{display:flex;flex-wrap:wrap;gap:10px 20px;margin-bottom:16px;min-width:0}.en-card-search>label{display:flex;flex:1 1 210px;align-items:center;gap:8px;max-width:360px;min-width:0;border-bottom:1px solid #80808040;color:var(--collections-muted)}.en-card-search>label:focus-within{border-color:var(--collections-accent);color:var(--collections-accent)}.en-card-search input{flex:1;min-width:0;width:100%;min-height:44px;border:0;outline:none;background:transparent;color:hsl(var(--foreground));font:inherit;font-size:16px}.en-card-search input::placeholder{font-size:13px;color:var(--collections-muted)}.en-card-search input::-webkit-search-cancel-button{-webkit-appearance:none}.en-card-search button{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:36px;min-height:44px;color:var(--collections-muted)}.en-card-search button:focus-visible{outline:2px solid var(--collections-accent);outline-offset:2px}.en-search-results{display:flex!important;flex-wrap:wrap}.en-search-results h2{overflow-wrap:anywhere}.collections-summary-stats{flex-wrap:wrap}
+@media(max-width:767px){.collections-summary-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}.en-card-search>label{max-width:none;flex-basis:100%}.en-search-results{gap:6px}.en-search-results h2{font-size:13px}}
+`}</style>
     </div>
   );
 };

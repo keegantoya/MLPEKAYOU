@@ -1,7 +1,11 @@
-import { chineseSets, chineseRarityLabel } from "../Chinese ISO/catalog/catalog";
-import { useEffect, useState, type CSSProperties } from "react";
+import { chineseSets, chineseCards, chineseRarityLabel, getChineseCardLabel, isWideChineseCard } from "../Chinese ISO/catalog/catalog";
+import { useEffect, useMemo, useDeferredValue, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { RefreshCw, ArrowUpRight, ChevronRight, Search, X } from "lucide-react";
+import { RefreshCw, ArrowUpRight, ChevronRight, Search, X, Heart } from "lucide-react";
+import { getChineseCardCharacters, matchesChineseCharacter, normalizeChineseCharacterName } from "../Chinese Codes + Char/Chinese-Characters";
+import ChineseISOImage from "../Chinese ISO/components/card-image";
+import { useChineseISO } from "../Chinese ISO/data/use-chinese-iso";
+import { ISOCardCaption } from "@/components/iso/ISOShared";
 import { supabase } from "@/lib/supabase";
 type ChineseCollection = {
   id: string;
@@ -36,12 +40,20 @@ const unpadded = (text: string) => text.replace(/-(\d+)$/, (_, number: string) =
 };
 const isOwned = (value: unknown): boolean => value === true || Boolean(value && typeof value === "object" && "owned" in value && value.owned === true);
 export default function CollectionsChinese() {
+const wishlistController=useChineseISO();
+const savedCards=useMemo(()=>new Set(wishlistController.data.wishlist.map(row=>`${row.set_id}:${row.card_key}`)),[wishlistController.data.wishlist]);
+const [savingWishlist,setSavingWishlist]=useState("");
+const [wishlistMessage,setWishlistMessage]=useState("");
+const [characterSearch,setCharacterSearch]=useState("");
+const [resultLimit,setResultLimit]=useState(96);
+const deferredCharacter=useDeferredValue(characterSearch);
 const [notCollecting, setNotCollecting] = useState<string[]>([]);
 const [counts, setCounts] = useState<Record<string, number>>({});
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState("");
 const [retry, setRetry] = useState(0);
 const [codeSearch, setCodeSearch] = useState("");
+const deferredCode=useDeferredValue(codeSearch);
 const [category, setCategory] = useState("eternal-moon");
 const [hideMastered, setHideMastered] = useState(true);
 const [isLightMode, setIsLightMode] = useState(() => document.documentElement.dataset.theme === "light");
@@ -125,11 +137,22 @@ const collectingSets = collections.filter(set => !notCollectingIds.has(set.id));
 const total = collectingSets.reduce((sum, set) => sum + set.cardKeys.length, 0);
 const owned = collectingSets.reduce((sum, set) => sum + (counts[set.id] ?? 0), 0);
 const percent = total ? Math.round(owned / total * 100) : 0;
-const searchingCode = compactCardCode(normalizeCardCode(codeSearch)).length > 0;
-const matchedCodes = new Map(chineseSets.map(set => [set.id, searchingCode ? [...new Set(set.cards.filter(card => cardCodeMatches(card.code, codeSearch)).map(card => card.code))] : []]));
-const visibleSets = searchingCode ? collections.filter(set => (matchedCodes.get(set.id)?.length ?? 0) > 0) : collections.filter(set => category === "not-collecting"
-  ? notCollectingIds.has(set.id)
-  : !notCollectingIds.has(set.id) && set.category === category && (!hideMastered || !set.catalogComplete || (counts[set.id] ?? 0) < set.cardKeys.length));
+const searchingCode=compactCardCode(normalizeCardCode(deferredCode)).length>0;
+const searchingCharacter=!!normalizeChineseCharacterName(deferredCharacter);
+const searching=searchingCode||searchingCharacter;
+const matchedCards=useMemo(()=>searching?chineseCards.filter(card=>(!searchingCode||cardCodeMatches(card.code,deferredCode))&&matchesChineseCharacter(card,deferredCharacter)):[],[searching,searchingCode,deferredCode,deferredCharacter]);
+const matchedSetIds=useMemo(()=>new Set(matchedCards.map(card=>card.setId)),[matchedCards]);
+const setLinks=useMemo(()=>new Map(chineseSets.map(set=>[set.id,set.href])),[]);
+const mappedCardCount=useMemo(()=>chineseCards.filter(card=>getChineseCardCharacters(card).length>0).length,[]);
+useEffect(()=>setResultLimit(96),[deferredCode,deferredCharacter]);
+const visibleSets=searching?collections.filter(set=>matchedSetIds.has(set.id)):collections.filter(set=>category==="not-collecting"?notCollectingIds.has(set.id):!notCollectingIds.has(set.id)&&set.category===category&&(!hideMastered||!set.catalogComplete||(counts[set.id]??0)<set.cardKeys.length));
+const toggleWishlist=async(card:typeof chineseCards[number])=>{
+ if(wishlistController.busy||savingWishlist)return;
+ setSavingWishlist(card.identity);setWishlistMessage("");
+ try{await wishlistController.wishlist(card,!savedCards.has(card.identity));}
+ catch(cause){setWishlistMessage(cause instanceof Error?cause.message:"Your wishlist could not be updated. Please retry.");}
+ finally{setSavingWishlist("");}
+};
 const unknown = loading || Boolean(error);
 const totalSets = collectingSets.length;
 const completedSets = collectingSets.filter(set => set.catalogComplete && set.cardKeys.length > 0 && (counts[set.id] ?? 0) >= set.cardKeys.length).length;
@@ -171,18 +194,31 @@ const categoryOptions = [{ label: "Moon", value: "eternal-moon" }, { label: "Fun
             </nav>
           </aside>
           <div className="min-w-0 flex-1">
-            <div className="cn-code-search" role="search" aria-label="Find the Chinese sets containing a card code"><label><Search size={15} aria-hidden="true"/><span className="sr-only">Search every Chinese set by card code, including hidden sets</span><input type="search" value={codeSearch} onChange={event => setCodeSearch(event.target.value)} onKeyDown={event => { if (event.key === "Escape") setCodeSearch(""); }} placeholder="Find a card code..." maxLength={120} autoCapitalize="characters" autoComplete="off" spellCheck={false}/></label>{codeSearch && <button type="button" onClick={() => setCodeSearch("")} aria-label="Clear card code search"><X size={15}/></button>}<span role="status" aria-live="polite">{searchingCode ? `${visibleSets.length} matching ${visibleSets.length === 1 ? "set" : "sets"} / all categories` : ""}</span></div>
-            <div className="collections-results"><h2>{searchingCode ? "Code matches" : categoryOptions.find(item => item.value === activeCategory)?.label || "Collections"}</h2><span>{visibleSets.length} {visibleSets.length === 1 ? "set" : "sets"}</span></div>
+            <div className="cn-character-search" role="search" aria-label="Search Chinese checklists">
+              <label><Search size={15} aria-hidden="true"/><span className="sr-only">Find a card code across all Chinese sets</span><input type="search" value={codeSearch} onChange={event=>setCodeSearch(event.target.value)} onKeyDown={event=>{if(event.key==="Escape")setCodeSearch("");}} placeholder="Find a card code..." maxLength={120} autoCapitalize="characters" autoComplete="off" spellCheck={false}/>{codeSearch&&<button type="button" onClick={()=>setCodeSearch("")} aria-label="Clear card code search"><X size={15}/></button>}</label>
+              <label><Search size={15} aria-hidden="true"/><span className="sr-only">Find cards featuring a character across all Chinese sets</span><input type="search" value={characterSearch} onChange={event=>setCharacterSearch(event.target.value)} onKeyDown={event=>{if(event.key==="Escape")setCharacterSearch("");}} placeholder="Find a character..." maxLength={120} autoComplete="off" spellCheck={false}/>{characterSearch&&<button type="button" onClick={()=>setCharacterSearch("")} aria-label="Clear character search"><X size={15}/></button>}</label>
+            </div>
+            <div className="collections-results cn-search-results" aria-live="polite"><h2>{searchingCharacter?`Cards featuring ${deferredCharacter.trim()}`:searchingCode?"Cards matching this code":categoryOptions.find(item=>item.value===activeCategory)?.label||"Collections"}</h2><span>{searching?`${matchedCards.length} ${matchedCards.length===1?"card":"cards"} · ${matchedSetIds.size} ${matchedSetIds.size===1?"set":"sets"}`:`${visibleSets.length} ${visibleSets.length===1?"set":"sets"}`}</span></div>
+            {searching&&<p className="mb-3 text-xs leading-5 text-muted-foreground">Searching every Chinese set, including completed sets and sets you do not collect.</p>}
+            {searchingCharacter&&mappedCardCount<chineseCards.length&&<p className="mb-3 text-xs leading-5 text-muted-foreground">Character names are still being added. Cards without names will not appear in character searches yet.</p>}
+            {(wishlistMessage||wishlistController.error)&&<p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">{wishlistMessage||wishlistController.error}<button type="button" onClick={()=>{setWishlistMessage("");void wishlistController.refresh();}} className="ml-2 min-h-10 underline">Retry wishlist</button></p>}
+            {searching&&!wishlistController.loading&&!wishlistController.data.settings.chinese_cards_enabled&&<p className="mb-3 text-xs leading-5 text-muted-foreground"><Link to="/iso-chinese" className="underline underline-offset-2">Activate your Chinese wishlist</Link> to save cards from these results.</p>}
             {error && <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-500/30 p-4 text-sm"><span>{error}</span><button type="button" onClick={() => setRetry(value => value + 1)} className="inline-flex min-h-10 items-center gap-2 rounded-full border px-4"><RefreshCw size={14} /> Retry</button></div>}
             {loading && <p role="status" className="mb-4 text-sm text-zinc-500">Loading your collection progress...</p>}
-            {visibleSets.length === 0 ? <div className={`rounded-2xl border border-dashed p-10 text-center text-sm ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-500" : "border-white/10 bg-white/[0.03] text-zinc-400"}`}>{searchingCode ? "No Chinese sets contain that card code. Try a shorter code or check the spelling." : category === "not-collecting" ? "Sets marked as not collecting will appear here." : "No sets to show with the current filters."}</div> : <div className="cn-set-bars">
+            {searching?<>
+              {matchedCards.length?<div className="grid grid-cols-2 items-start gap-x-3 gap-y-4 min-[420px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">{matchedCards.slice(0,resultLimit).map(card=>{
+                const saved=savedCards.has(card.identity);const pending=savingWishlist===card.identity;const href=setLinks.get(card.setId)!;
+                return <article key={card.identity} className={`min-w-0 ${isWideChineseCard(card)?"col-span-2":""}`}><Link to={href} aria-label={`Open ${getChineseCardLabel(card)} in ${card.setName}`} className="relative block w-full rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"><ChineseISOImage card={card}/>{saved&&<span className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-pink-600 text-white shadow-sm"><Heart size={14} fill="currentColor" aria-label="Already on your wishlist"/></span>}</Link><ISOCardCaption code={getChineseCardLabel(card)} setName={card.setName}/><div className="mt-1 flex flex-wrap items-center justify-between gap-x-1"><Link to={href} aria-label={`Open set: ${card.setName} for ${getChineseCardLabel(card)}`} className="inline-flex min-h-11 items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-primary">Open set<ArrowUpRight size={11}/></Link><button type="button" aria-label={`${saved?"Remove":"Add"} ${getChineseCardLabel(card)} ${saved?"from":"to"} wishlist`} aria-pressed={saved} disabled={wishlistController.loading||wishlistController.busy||!wishlistController.userId||!wishlistController.data.settings.chinese_cards_enabled} onClick={()=>{void toggleWishlist(card);}} className={`inline-flex min-h-11 items-center gap-1 text-[10px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 ${saved?"text-pink-500":"text-muted-foreground hover:text-pink-500"}`}><Heart size={13} fill={saved?"currentColor":"none"}/>{pending?"Saving…":saved?"Wishlisted":"Wishlist"}</button></div></article>;
+              })}</div>:<p role="status" className="py-10 text-center text-sm text-muted-foreground">{searchingCode&&searchingCharacter?"No cards match both searches. Try another code or character name.":searchingCharacter?"No labelled cards match that character yet. Try part of their name or search by card code.":"No cards match that code. Try a shorter code or check the spelling."}</p>}
+              {resultLimit<matchedCards.length&&<button type="button" onClick={()=>setResultLimit(value=>value+96)} className="mt-5 min-h-11 w-full rounded-lg border border-border px-3 text-sm">Show more cards ({matchedCards.length-resultLimit} remaining)</button>}
+            </>:visibleSets.length === 0 ? <div className={`rounded-2xl border border-dashed p-10 text-center text-sm ${isLightMode ? "border-black/10 bg-zinc-50 text-zinc-500" : "border-white/10 bg-white/[0.03] text-zinc-400"}`}>{searchingCode ? "No Chinese sets contain that card code. Try a shorter code or check the spelling." : category === "not-collecting" ? "Sets marked as not collecting will appear here." : "No sets to show with the current filters."}</div> : <div className="cn-set-bars">
               {visibleSets.map((set, index) => {
 const collected = counts[set.id] ?? 0;
 const setPercent = set.cardKeys.length ? Math.min(100, Math.floor(collected / set.cardKeys.length * 100)) : 0;
-                return <Link key={set.id} to={set.href} aria-label={`Open Chinese ${set.title} ${set.edition}`} className="collection-tile collection-grid-item" data-code-match={searchingCode ? "true" : undefined} style={{ "--entry-delay": `${Math.min(index, 8) * 25}ms` } as CSSProperties}>
+                return <Link key={set.id} to={set.href} aria-label={`Open Chinese ${set.title} ${set.edition}`} className="collection-tile collection-grid-item" style={{ "--entry-delay": `${Math.min(index, 8) * 25}ms` } as CSSProperties}>
                   {set.imageUrl && <div className="cn-set-thumbnail" aria-hidden="true"><img src={set.imageUrl} alt="" loading="lazy" decoding="async" draggable={false} onError={event => { event.currentTarget.parentElement?.setAttribute("hidden", ""); }} /></div>}
                   <div className="collection-tile-body">
-                    <div className="collection-tile-title"><h2>{set.title} {set.edition}</h2></div>{searchingCode && <div className="cn-code-match-detail"><p>{matchedCodes.get(set.id)?.slice(0, 2).join(" / ")}{(matchedCodes.get(set.id)?.length ?? 0) > 2 ? ` +${matchedCodes.get(set.id)!.length - 2} more` : ""}</p>{notCollectingIds.has(set.id) && <span>Not collecting</span>}</div>}
+                    <div className="collection-tile-title"><h2>{set.title} {set.edition}</h2></div>
                     <div className="collection-tile-progress">
                       <div className="collection-tile-count"><span><strong>{unknown ? "--" : collected.toLocaleString()}</strong><span> / {set.cardKeys.length.toLocaleString()}</span></span><strong className="collection-tile-percent">{unknown ? "--" : `${setPercent}%`}</strong></div>
                       <div className="collection-tile-track" role="progressbar" aria-label={`${set.title} ${set.edition} collected`} aria-valuenow={unknown ? undefined : setPercent} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${unknown ? 0 : setPercent}%` }} /></div>
@@ -198,13 +234,17 @@ const setPercent = set.cardKeys.length ? Math.min(100, Math.floor(collected / se
           <h2 id="cn-collection-faq-title">Chinese Collections FAQ</h2>
           <div className="cn-collection-faq-items">
             <details><summary>Why are the images in the sets so low quality?<span aria-hidden="true">+</span></summary><div><p>Older Kayou CN sets were not documented well and are nearly impossible to find. All of my images inside each set and representing each set generously came from HeiManTou's Dropbox with his last five years of tracking, data, and research.</p></div></details>
-            <details><summary>Well, now I know what cards are in each set. How do I find them?<span aria-hidden="true">+</span></summary><div><p>Do not use AliExpress. It is <strong>only</strong> resealed or fake product and nothing else. You will get nothing authentic unless it's a trick box, sent to you so that you tell everyone you found a trusted source on AliExpress. Kayou has <strong>no official presence</strong> in that cesspool.</p><p>I only get my Chinese products and singles from Amber and Hao, my beloved Chinese friends, who live in Shenzhen and run <a href="https\://www.pakracards.com/" target="_blank" rel="noopener noreferrer">PakraCards</a>. They are an extremely reputable and highly trusted source... they also don't condone scammer pricing. Some cards are naturally higher because of their limited quantities or availability, but 99% of the singles on their website don't even break the 5-10 USD limit.</p></div></details>
+            <details><summary>Well, now I know what cards are in each set. How do I find them?<span aria-hidden="true">+</span></summary><div><p>Do not use AliExpress. It is <strong>only</strong> resealed or fake product and nothing else. You will get nothing authentic unless it's a trick box, sent to you so that you tell everyone you found a trusted source on AliExpress. Kayou has <strong>no official presence</strong> in that cesspool.</p><p>I only get my Chinese products and singles from Amber and Hao, my beloved Chinese friends, who live in Shenzhen and run <a href="https://www.pakracards.com/" target="_blank" rel="noopener noreferrer">PakraCards</a>. They are an extremely reputable and highly trusted source... they also don't condone scammer pricing. Some cards are naturally higher because of their limited quantities or availability, but 99% of the singles on their website don't even break the 5-10 USD limit.</p></div></details>
             <details><summary>Why do some cards have the My Little Pony logo and others don't?<span aria-hidden="true">+</span></summary><div><p>Some of it is just a matter of whether or not that card was documented. Kayou CN MLP did not pick up popularity until it was a few sets in, therefore nobody was running any kind of documentation or databases.</p></div></details>
             <details><summary>Why did you add CN MLP to MLPEKAYOU?<span aria-hidden="true">+</span></summary><div><p>High demand. This will drastically increase website costs, but I did it in the hopes that you would be able to safely branch out.</p></div></details>
             <details><summary>How can we help offset website costs?<span aria-hidden="true">+</span></summary><div><p>Buy through <strong>StonesTradingCo</strong>!</p></div></details>
           </div>
         </section>
       </main>
+      <style>{`
+.cn-character-search{display:flex;flex-wrap:wrap;gap:10px 20px;margin-bottom:16px;min-width:0}.cn-character-search>label{display:flex;flex:1 1 210px;align-items:center;gap:8px;max-width:360px;min-width:0;border-bottom:1px solid #80808040;color:var(--collections-muted)}.cn-character-search>label:focus-within{border-color:var(--collections-accent);color:var(--collections-accent)}.cn-character-search input{flex:1;min-width:0;width:100%;min-height:44px;border:0;outline:none;background:transparent;color:hsl(var(--foreground));font:inherit;font-size:16px}.cn-character-search input::placeholder{font-size:13px;color:var(--collections-muted)}.cn-character-search input::-webkit-search-cancel-button{-webkit-appearance:none}.cn-character-search button{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:36px;min-height:44px;color:var(--collections-muted)}.cn-character-search button:focus-visible{outline:2px solid var(--collections-accent);outline-offset:2px}.cn-search-results{display:flex!important;flex-wrap:wrap}.cn-search-results h2{overflow-wrap:anywhere}
+@media(max-width:767px){.cn-character-search>label{max-width:none;flex-basis:100%}.cn-search-results{gap:6px}.cn-search-results h2{font-size:13px}}
+`}</style>
       <style>{`
 .cn-collection-faq{margin-top:32px;border-top:1px solid #80808025;padding-top:22px}
 .cn-collection-faq h2{margin:0 0 12px;font-size:15px;font-weight:650;letter-spacing:-.02em}

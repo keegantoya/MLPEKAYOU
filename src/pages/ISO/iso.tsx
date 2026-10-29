@@ -1,3 +1,4 @@
+import { ISOMobileViewControl } from "@/components/iso/ISOShared";
 import ISOFamily from "./iso-family";
 import { getISOSets, getISOSetLabel, isISOSetHidden, fetchISOStatuses, parseISOStatusKey, normalizeEnglishSetId } from "./catalog-adapter";
 import FullISO, { buildFullISOCards, type FullISOProgressRow, type FullISOStatusRow, } from "./full-iso";
@@ -19,20 +20,10 @@ import InProgress from "./in-progress";
 type Section = "full" | "wishlist" | "progress" | "moon" | "fun" | "rainbow" | "star" | "tcg" | "promos" | "merch";
 const sections = [{ id: "full", label: "Full ISO", setIds: [] }, { id: "wishlist", label: "Wishlist", setIds: [] }, { id: "progress", label: "In Progress", setIds: [] }, ...([{ id: "moon", label: "Moon" }, { id: "fun", label: "Fun Moments" }, { id: "rainbow", label: "Rainbow" }, { id: "star", label: "Star" }, { id: "tcg", label: "TCG" }, { id: "promos", label: "Promos" }, { id: "merch", label: "Other" }] as const).map(section => ({ ...section, setIds: getISOSets(section.id).map(set => set.id) }))];
 function EnglishISOContent({ onDeactivate, activationBusy, activationError }: { onDeactivate: () => void; activationBusy: boolean; activationError: string }) {
+const [mobileColumns, setMobileColumns] = useState(4);
 const [selectedSection, setSelectedSection] = useState<Section>("moon");
 const [showControls, setShowControls] = useState(false);
-    useEffect(() => {
-        if (!showControls) return;
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape" && !event.defaultPrevented) {
-                event.preventDefault();
-                setShowControls(false);
-            }
-        };
-        window.addEventListener("keydown", onKeyDown);
-        return () => window.removeEventListener("keydown", onKeyDown);
-    }, [showControls]);
-const [cardCodeSearch, setCardCodeSearch] = useState("");
+const cardCodeSearch = "";
 const [characterSearch, setCharacterSearch] = useState("");
 const [searchAllCards, setSearchAllCards] = useState(false);
 const [wishlistMode, setWishlistMode] = useState(false);
@@ -41,14 +32,6 @@ const [completedSets, setCompletedSets] = useState<string[]>([]);
 const [hasInProgress, setHasInProgress] = useState(false);
 const [userId, setUserId] = useState<string | null>(null);
 const [hideISO, setHideISO] = useState(false);
-const [isLightMode, setIsLightMode] = useState(() => {
-        if (typeof document === "undefined")
-            return false;
-const root = document.documentElement;
-        return (root.dataset.theme === "light" ||
-            root.classList.contains("light") ||
-            !root.classList.contains("dark"));
-    });
 const { wishlist, toggleWishlist } = useWishlist();
 const [fullISOProgress, setFullISOProgress] = useState<FullISOProgressRow[]>([]);
 const [fullISOStatuses, setFullISOStatuses] = useState<FullISOStatusRow[]>([]);
@@ -67,25 +50,6 @@ const excludedSets = [...hiddenSets, ...allSetIds.filter((setId) => !setIds.incl
             return buildFullISOCards(fullISOProgress, excludedSets, fullISOStatuses).length === 0;
         }).map((section) => section.id));
     }, [fullISOLoaded, fullISOProgress, hiddenSets, fullISOStatuses]);
-    useEffect(() => {
-const syncTheme = () => {
-const root = document.documentElement;
-            setIsLightMode(root.dataset.theme === "light" ||
-                root.classList.contains("light") ||
-                !root.classList.contains("dark"));
-        };
-        syncTheme();
-const observer = new MutationObserver(syncTheme);
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["class", "data-theme"],
-        });
-        window.addEventListener("themechange", syncTheme);
-        return () => {
-            observer.disconnect();
-            window.removeEventListener("themechange", syncTheme);
-        };
-    }, []);
     useEffect(() => {
 let disposed = false;
 let requestId = 0;
@@ -223,8 +187,9 @@ const next = !hideISO;
         })
             .eq("id", userId);
     };
-const isSearching = cardCodeSearch.trim() !== "" || characterSearch.trim() !== "";
 const isWishlistView = wishlistMode || selectedSection === "wishlist";
+const activeCharacterSearch = isWishlistView ? characterSearch : "";
+const isSearching = activeCharacterSearch.trim() !== "";
 const visibleHiddenSets = isWishlistView || isSearching
         ? []
         : Array.from(new Set([...hiddenSets, ...(!wishlistMode && !searchAllCards ? completedSets : [])]));
@@ -235,7 +200,7 @@ const visibleSections = sections.filter((section) => {
             return true;
         }
         if (section.id === "progress") {
-            return hasInProgress;
+            return true;
         }
         if (isWishlistView)
             return true;
@@ -264,7 +229,8 @@ const visibleSections = sections.filter((section) => {
 const changeWishlistMode = (enabled: boolean) => {
         startTransition(() => {
             setWishlistMode(enabled);
-            if (enabled) setSearchAllCards(false);
+            setCharacterSearch("");
+            if (enabled) { setSearchAllCards(false); if(selectedSection === "full" || selectedSection === "progress") setSelectedSection("moon"); }
             if (!enabled && selectedSection === "wishlist") setSelectedSection("moon");
         });
     };
@@ -278,56 +244,48 @@ const changeSearchAllCards = (enabled: boolean) => {
         });
     };
 const selectSection = (section: Section) => {
-        setCardCodeSearch("");
         setCharacterSearch("");
-        if (section === "wishlist" || selectedSection === "wishlist") {
-            setWishlistMode(true);
-            setSearchAllCards(false);
-        }
+        if (section === "wishlist") { setWishlistMode(false); setSearchAllCards(false); } else if (selectedSection === "wishlist") { setWishlistMode(false); }
         setSelectedSection(section);
     };
 const sectionContent = (<>
       {selectedSection === "full" && fullISOError && <p role="alert" className="py-8 text-sm text-red-600 dark:text-red-400">{fullISOError}</p>}
     {selectedSection === "full" && !fullISOError && (!userId || !fullISOLoaded) && <p role="status" className="py-8 text-sm text-muted-foreground">Loading English ISO...</p>}
         {selectedSection === "full" && !fullISOError && fullISOLoaded && userId && (<FullISO cards={fullISOCards} userId={userId} wishlist={wishlist} toggleWishlist={toggleWishlist}/>)}
-      {selectedSection === "wishlist" && <Wishlist characterSearch={characterSearch}/>}
+      {selectedSection === "wishlist" && <Wishlist characterSearch={activeCharacterSearch}/>}
       {selectedSection === "progress" && <InProgress />}
-      {selectedSection === "moon" && (<ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
-      {selectedSection === "fun" && (<ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={isWishlistView}/>)}
-      {selectedSection === "rainbow" && (<ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
-      {selectedSection === "star" && (<ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
-      {selectedSection === "tcg" && (<ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
-      {selectedSection === "promos" && (<ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
-      {selectedSection === "merch" && <ISOFamily family="merch" cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>}
+      {selectedSection === "moon" && (<ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "fun" && (<ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={isWishlistView}/>)}
+      {selectedSection === "rainbow" && (<ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "star" && (<ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "tcg" && (<ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "promos" && (<ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>)}
+      {selectedSection === "merch" && <ISOFamily family="merch" cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>}
     </>);
 const allSearchContent = (<>
       {selectedSection === "progress" && <InProgress />}
-      <ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
-      <ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={isWishlistView}/>
-      <ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
-      <ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
-      <ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
-      <ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
-      <ISOFamily family="merch" cardCodeSearch={cardCodeSearch} characterSearch={characterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOMOON cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOFUN cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets} wishlistMode={isWishlistView}/>
+      <ISORAINBOW cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOSTAR cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOTCG cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOPROMOS cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
+      <ISOFamily family="merch" cardCodeSearch={cardCodeSearch} characterSearch={activeCharacterSearch} wishlistMode={isWishlistView} searchAllCards={searchAllCards} hiddenSets={visibleHiddenSets}/>
     </>);
-const navigation = <nav aria-label="English ISO sections" className="flex gap-2 overflow-x-auto pb-2 md:flex-col md:overflow-visible">
-    {visibleSections.filter(item => isWishlistView || item.id !== "wishlist").map(item => <button key={item.id} type="button" aria-pressed={selectedSection === item.id} onClick={() => selectSection(item.id as Section)} className={`flex min-h-11 shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-colors motion-reduce:transition-none ${selectedSection === item.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}><span>{item.label}</span></button>)}
+const navigation = <nav aria-label="English ISO sections" className="flex gap-1 overflow-x-auto border-b border-border pb-2">
+    {visibleSections.map(item => <button key={item.id} type="button" aria-pressed={selectedSection === item.id} onClick={() => selectSection(item.id as Section)} className={`flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors motion-reduce:transition-none ${selectedSection === item.id ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}><span>{item.label}</span></button>)}
   </nav>;
-    return (<div className="min-h-screen bg-background text-foreground">
-      <div className="w-full px-3 py-3 sm:px-5 md:px-6">
-        <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0"><h1 className="text-xl font-semibold tracking-tight sm:text-2xl">English ISO</h1><Link to="/collections" className="inline-flex min-h-8 items-center gap-1.5 text-xs text-muted-foreground"><ArrowLeft size={13}/>English checklists</Link></div>
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2"><button type="button" disabled={activationBusy} onClick={onDeactivate} className="min-h-10 rounded-xl px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50">{activationBusy ? "Saving..." : "Deactivate English"}</button><button type="button" onClick={() => setShowControls(true)} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 text-sm"><SlidersHorizontal size={16}/><span>Controls</span></button></div>
+    return (<div className="iso-page min-h-screen bg-background text-foreground" data-iso-columns={mobileColumns}>
+      <div className="w-full max-w-none px-3 py-3 sm:px-5 md:px-6">
+        <header className="mb-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 md:flex md:flex-wrap md:justify-between md:gap-x-3 md:gap-y-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-4"><h1 className="text-xl font-semibold tracking-tight">English ISO</h1><Link to="/collections" className="hidden md:inline-flex min-h-9 items-center gap-1.5 text-xs text-muted-foreground"><ArrowLeft size={13}/>English checklists</Link></div>
+          <div className="contents md:flex md:shrink-0 md:flex-wrap md:items-center md:justify-end md:gap-2"><button type="button" disabled={activationBusy} onClick={onDeactivate} className="min-h-10 rounded-xl px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50">{activationBusy ? "Saving..." : "Deactivate English"}</button><ISOMobileViewControl columns={mobileColumns} onChange={setMobileColumns} /><button type="button" onClick={() => setShowControls(true)} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 text-sm"><SlidersHorizontal size={16}/><span>Controls</span></button></div>
         </header>
         {activationError && <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">{activationError}</p>}
-        <div className="flex gap-6">
-          <aside className="hidden w-48 shrink-0 md:block"><div className="sticky top-[calc(var(--kayou-header-bottom,64px)+1rem)]">{navigation}</div></aside>
-          <main className="min-w-0 flex-1">
-            <div className="mb-3 md:hidden">{navigation}</div>
-            {(wishlistMode || selectedSection === "wishlist") && (<div className="mb-4">
-                <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={changeSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={changeWishlistMode} availableSets={[]} hiddenSetIds={[]} onHideSet={() => { }} wishlistCharacterOnly hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
-              </div>)}
-            {selectedSection === "full" || selectedSection === "wishlist" || wishlistMode
+        <div className="mb-3">{navigation}</div>
+        <div><main className="min-w-0">
+          {isWishlistView && <div className="mb-3 flex items-center gap-3"><label className="flex min-h-10 w-full max-w-sm items-center gap-2 border-b border-border text-muted-foreground"><span className="sr-only">Search wishlist cards by character</span><input type="search" placeholder="Find a character..." value={characterSearch} onChange={event=>setCharacterSearch(event.target.value)} className="min-h-10 w-full min-w-0 bg-transparent px-1 text-base outline-none focus:ring-0"/></label>{characterSearch&&<button type="button" onClick={()=>setCharacterSearch("")} className="min-h-10 px-2 text-xs text-muted-foreground">Clear</button>}</div>}
+            {selectedSection === "wishlist"
             ? sectionContent
             : isSearching
                 ? allSearchContent
@@ -335,11 +293,7 @@ const navigation = <nav aria-label="English ISO sections" className="flex gap-2 
           </main>
         </div>
       </div>
-      {showControls && (<div onClick={event => { if (event.target === event.currentTarget) setShowControls(false); }} className={`fixed inset-0 z-[120000] flex items-center justify-center p-3 sm:p-5 ${isLightMode ? "bg-zinc-900/35" : "bg-black/70"}`}>
-          <div role="dialog" aria-modal="true" aria-label="ISO Controls" className={`relative max-h-[90dvh] w-full max-w-4xl overflow-y-auto rounded-[24px] border shadow-2xl ${isLightMode ? "border-black/10 bg-white" : "border-white/[0.1] bg-[#17191a]"}`}>
-            <ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={setCardCodeSearch} characterSearch={characterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={changeSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={changeWishlistMode} availableSets={(["moon", "fun", "rainbow", "star", "tcg", "promos", "merch"] as const).map(family => ({ id: family, name: family === "merch" ? "Other" : family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }))} hiddenSetIds={hiddenSets} onHideSet={toggleSet} hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>
-          </div>
-        </div>)}
+      {showControls && (<ISOCONTROLS cardCodeSearch={cardCodeSearch} onCardCodeSearchChange={() => {}} characterSearch={activeCharacterSearch} onCharacterSearchChange={setCharacterSearch} searchAllCards={searchAllCards} onSearchAllCardsChange={changeSearchAllCards} wishlistMode={isWishlistView} onWishlistModeChange={changeWishlistMode} availableSets={(["moon", "fun", "rainbow", "star", "tcg", "promos", "merch"] as const).map(family => ({ id: family, name: family === "merch" ? "Other" : family === "tcg" ? "TCG" : family === "fun" ? "Fun Moments" : family.charAt(0).toUpperCase() + family.slice(1), children: getISOSets(family).map(set => ({ id: set.id, name: getISOSetLabel(set.id) })) }))} hiddenSetIds={hiddenSets} onHideSet={toggleSet} hideISO={hideISO} onToggleHideISO={toggleHideISO} onClose={() => setShowControls(false)}/>)}
     </div>);
 }
 type EnglishActivation = { english_cards_enabled: boolean; english_cards_prompt_seen: boolean };
@@ -422,7 +376,7 @@ const current = activation?.owner === account.id ? activation : null;
     if (loading || !account.ready && !error || account.id && !current && !error) return <main className="w-full px-4 py-6 text-foreground"><p role="status" className="text-sm text-muted-foreground">Loading English ISO...</p></main>;
     if (current?.english_cards_enabled && current.english_cards_prompt_seen) return <EnglishISOContent key={current.owner} onDeactivate={() => void saveActivation(false)} activationBusy={saving} activationError={error}/>;
     return <main className="mx-auto w-full max-w-2xl px-4 py-6 text-foreground sm:px-6 sm:py-10">
-        <Link to="/collections" className="inline-flex min-h-10 items-center gap-2 text-sm text-muted-foreground"><ArrowLeft size={16}/>English checklists</Link>
+        <Link to="/collections" className="hidden md:inline-flex min-h-10 items-center gap-2 text-sm text-muted-foreground"><ArrowLeft size={16}/>English checklists</Link>
         {!current ? <section className="mt-5 border-t border-border pt-6"><h1 className="text-2xl font-semibold">English ISO</h1>{error && <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}{account.id ? <button type="button" onClick={() => setReload(value => value + 1)} className="mt-4 min-h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">Retry</button> : <p className="mt-3 text-sm text-muted-foreground">Sign in to manage your English ISO.</p>}</section> : <section className="mt-5 border-t border-border pt-6">
             <h1 className="text-2xl font-semibold tracking-tight">{current.english_cards_enabled ? "Do you collect English cards?" : "English cards are deactivated"}</h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{current.english_cards_enabled ? "You can keep your English ISO, wishlist, and cards in progress, or deactivate them if you only collect Chinese cards." : "Activate your English ISO, wishlist, and cards in progress whenever you want to use them again."}</p>

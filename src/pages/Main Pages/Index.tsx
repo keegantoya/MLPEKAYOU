@@ -1,71 +1,123 @@
-import React from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import CardImage from "@/components/CardImage";
-import { getPromotionalCardsBack as getCardBack, cardImagePaths } from "@/lib/card-images";
-const promoFront = cardImagePaths.ccgPromo("015");
-const promoBack = getCardBack(15);
-const funMomentsBox = "https://stonestradingco.com/cdn/shop/files/funmoments004.png?v=1789970426&width=1064";
-const funMomentsProduct = "https://stonestradingco.com/products/fun-moments-four";
-const featureStyles = `
-.kayou-news{--page-bg:hsl(var(--background));--page-text:hsl(var(--foreground));--muted:hsl(var(--muted-foreground));--accent:hsl(var(--kayou-yellow));--accent-border:hsl(var(--kayou-yellow) / .4);--accent-soft:hsl(var(--kayou-yellow) / .08);--accent-text:hsl(var(--kayou-yellow));--release-bg:hsl(var(--background));--release-border:hsl(var(--border));--fun-bg:hsl(var(--background));--fun-title:hsl(var(--foreground));--fun-emphasis:hsl(var(--kayou-yellow));--fun-copy:hsl(var(--muted-foreground));--fun-eyebrow:hsl(var(--kayou-yellow));--fun-button:hsl(var(--kayou-yellow));--fun-button-ink:hsl(var(--primary-foreground));position:relative;width:100%;min-width:0;min-height:100vh;overflow:hidden;background:var(--page-bg);color:var(--page-text)}
-html[data-theme="spooky"] .kayou-news{--accent:#c9acff;--accent-border:rgba(201,172,255,.58);--accent-soft:rgba(167,123,232,.12);--accent-text:#d8c2ff;--fun-emphasis:#c9acff;--fun-eyebrow:#c9acff;--fun-button:#7544ad;--fun-button-ink:#fff}
-.kayou-news *{box-sizing:border-box}
-.kayou-news .news-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);align-items:center;gap:3vw;isolation:isolate;overflow:hidden;min-height:0;padding:18px clamp(20px,4vw,62px)}
-.kayou-news .news-title{max-width:900px;margin:16px 0 0;color:var(--page-text);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:clamp(46px,6.8vw,104px);line-height:1.04;letter-spacing:-.055em;font-weight:800;text-wrap:balance}
-.kayou-news .news-title span{display:block;color:var(--accent);margin-top:8px;letter-spacing:-.045em}
-.kayou-news .news-intro{max-width:640px;margin:22px 0 0;color:var(--muted);font-size:clamp(16px,1.5vw,21px);line-height:1.7}
-.kayou-news .promo-stage{position:relative;display:grid;place-items:center;min-height:520px;perspective:1200px;isolation:isolate}
-.kayou-news .promo-card{position:relative;z-index:1;width:min(44vw,340px);min-width:230px;aspect-ratio:5/7;transform-style:flat;overflow:hidden;border-radius:4.2% / 3%;clip-path:inset(0 round 4.2% / 3%);-webkit-clip-path:inset(0 round 4.2% / 3%);background:transparent!important;animation:promo-gentle-spin 24s linear infinite;box-shadow:none;filter:drop-shadow(0 22px 22px #0006)}
-.kayou-news .promo-card-face{position:absolute;inset:0;border:0;background:transparent!important;backface-visibility:visible;-webkit-backface-visibility:visible;transform-style:flat}
-.kayou-news .promo-card-front{z-index:2;opacity:1;transform:none;animation:promo-front-visible 24s step-end infinite}
-.kayou-news .promo-card-back{z-index:1;opacity:0;transform:scaleX(-1);animation:promo-back-visible 24s step-end infinite}
-.kayou-news .promo-crop{position:absolute;inset:0;overflow:hidden;border:0;border-radius:4.2% / 3%;isolation:isolate;background:transparent;clip-path:inset(0 round 4.2% / 3%);-webkit-clip-path:inset(0 round 4.2% / 3%);-webkit-mask-image:linear-gradient(#fff,#fff);mask-image:linear-gradient(#fff,#fff);backface-visibility:visible;-webkit-backface-visibility:visible}
-.kayou-news .promo-crop>img.promo-card-image{position:absolute!important;inset:0!important;display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;padding:0!important;margin:0!important;object-fit:cover!important;object-position:center!important;transform:scale(1.025)!important;transform-origin:center!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;backface-visibility:visible;-webkit-backface-visibility:visible;user-select:none;-webkit-user-drag:none}
-.kayou-news .promo-crop:after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(125deg,#fff0 27%,#ffffff4f 45%,#fff0 62%);background-size:250% 250%;animation:promo-foil-sweep 7s ease-in-out infinite;pointer-events:none;backface-visibility:visible;-webkit-backface-visibility:visible}
-.kayou-news .ticker{position:relative;overflow:hidden;border-top:1px solid var(--release-border);border-bottom:1px solid var(--release-border);background:color-mix(in srgb,var(--page-text) 4%,var(--page-bg))}
-.kayou-news .ticker-track{display:flex;width:max-content;animation:ticker-slide 28s linear infinite}
-.kayou-news .ticker-group{display:flex;flex:0 0 auto;width:max-content;justify-content:flex-start}
-.kayou-news .ticker span{padding:16px 22px;color:var(--accent);font-size:12px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
-.kayou-news .fun-feature{position:relative;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);align-items:center;gap:4vw;min-height:0;padding:clamp(28px,5vw,72px);border-top:1px solid var(--release-border);overflow:hidden;background:var(--fun-bg)}
-.kayou-news .fun-feature-content,.kayou-news .fun-product-art{position:relative;z-index:1}
-.kayou-news .fun-eyebrow{color:var(--fun-eyebrow);font-size:13px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
-.kayou-news .fun-title{margin:15px 0 0;color:var(--fun-title);font-size:clamp(52px,7vw,104px);line-height:.98;letter-spacing:-.055em;font-weight:800}
-.kayou-news .fun-title span{display:block;color:var(--fun-emphasis)}
-.kayou-news .fun-copy{max-width:620px;margin:28px 0 0;color:var(--fun-copy);font-size:clamp(17px,1.7vw,23px);line-height:1.65}
-.kayou-news .preorder-link{display:inline-flex;align-items:center;gap:14px;margin-top:32px;border:1px solid color-mix(in srgb,var(--fun-button) 70%,white);border-radius:999px;padding:16px 22px;background:var(--fun-button);color:var(--fun-button-ink);font-size:15px;font-weight:900;text-decoration:none;box-shadow:0 8px 24px #0002;transition:transform .2s,box-shadow .2s}
-.kayou-news .preorder-link:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 18px 45px #397e9d77}
-.kayou-news .preorder-arrow{display:grid;width:30px;height:30px;place-items:center;border-radius:50%;background:var(--fun-button-ink);color:var(--fun-button);font-size:18px}
-.kayou-news .fun-product-art{display:grid;align-items:end;justify-items:start;width:100%;max-width:520px;aspect-ratio:1.05;min-width:0;min-height:0;margin-inline:auto;text-decoration:none;isolation:isolate}
-.kayou-news .fun-box{position:relative;z-index:2;display:block;width:84%;max-height:460px;margin-top:70px;object-fit:contain;filter:drop-shadow(0 28px 35px #1c0c2180);animation:box-float 5s ease-in-out infinite}
-.kayou-news .promo-logo-pattern{position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;justify-content:space-around;overflow:hidden;pointer-events:none;opacity:.13}
-.kayou-news .logo-lane{display:flex;flex:0 0 auto;width:max-content;animation:logo-travel 90s linear infinite;will-change:transform}
-.kayou-news .logo-lane:nth-child(even){animation-direction:reverse;animation-duration:110s}
-.kayou-news .logo-run{display:flex;flex:none;align-items:center;gap:60px;padding-right:60px}
-.kayou-news .promo-logo-pattern img{display:block;flex:none;width:clamp(150px,15vw,240px);height:100px;object-fit:contain}
-.kayou-news .news-community{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 24px;margin:24px clamp(18px,4vw,62px);padding:24px clamp(20px,3vw,34px);border:1px solid #5865f280;border-radius:22px;background:color-mix(in srgb,#5865f2 12%,var(--page-bg));box-shadow:0 8px 28px #5865f212}.kayou-news .news-community-copy{flex:1;min-width:min(100%,220px)}.kayou-news .news-community h2{margin:0 0 6px;color:var(--page-text);font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.025em}.kayou-news .news-community p{margin:0;color:var(--muted);font-size:15px;line-height:1.6}.kayou-news .news-community a{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 14px;min-height:52px;max-width:100%;padding:14px 22px;border:1px solid #7380ff;border-radius:14px;background:#5865f2;color:#fff;font-size:16px;font-weight:800;text-decoration:none;box-shadow:0 6px 20px #5865f240;transition:background .2s,transform .2s}.kayou-news .news-community a small{flex-basis:100%;text-align:center;font-size:11px;font-weight:500;opacity:.85;letter-spacing:.015em}.kayou-news .news-community a:hover{background:#4752c4;transform:translateY(-2px)}.kayou-news .news-community a:focus-visible{outline:3px solid #8993ff;outline-offset:4px}@media(max-width:560px){.kayou-news .news-community{padding:20px;margin:20px 18px;gap:16px}.kayou-news .news-community a{width:100%}}
-.kayou-news .news-community-actions{display:flex;flex-wrap:wrap;align-items:stretch;gap:12px;max-width:100%;min-width:0}.kayou-news .news-community .news-kofi-link{gap:10px;max-width:100%;background:#f5ca73;border-color:#f5ca73;color:#282116;box-shadow:0 6px 20px #00000012;line-height:1.4;text-align:center}.kayou-news .news-community .news-kofi-link:hover{background:#ffda91}.kayou-news .news-community .news-kofi-link:focus-visible{outline-color:#f5ca73}.kayou-news .news-kofi-link svg{width:25px;height:25px;flex:none}.kayou-news .news-kofi-link span{min-width:0;overflow-wrap:anywhere}@media(max-width:560px){.kayou-news .news-community-actions{width:100%;flex-direction:column}.kayou-news .news-community-actions a{width:100%;padding:14px 16px}.kayou-news .news-community .news-kofi-link{font-size:15px}}
-
-@keyframes promo-front-visible{0%{opacity:1}25%{opacity:0}75%{opacity:1}100%{opacity:1}}
-@keyframes promo-back-visible{0%{opacity:0}25%{opacity:1}75%{opacity:0}100%{opacity:0}}
-@keyframes promo-gentle-spin{from{transform:rotateX(3deg) rotateY(0deg)}to{transform:rotateX(3deg) rotateY(360deg)}}
-@keyframes promo-foil-sweep{0%,100%{background-position:130% 0;opacity:.15}50%{background-position:-30% 100%;opacity:.75}}
-@keyframes logo-travel{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes ticker-slide{to{transform:translateX(-50%)}}
-@keyframes box-float{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-14px) rotate(-1deg)}}
-@media(max-width:850px){.kayou-news .news-hero,.kayou-news .fun-feature{grid-template-columns:minmax(0,1fr)}.kayou-news .news-hero{gap:18px;padding:24px 24px 28px}.kayou-news .news-hero>div{min-width:0}.kayou-news .news-title{font-size:clamp(42px,8vw,70px);line-height:1.04}.kayou-news .news-intro{font-size:16px;line-height:1.6;margin-top:16px;max-width:560px}.kayou-news .promo-stage{min-height:0;height:350px}.kayou-news .promo-card{width:220px;min-width:0}.kayou-news .fun-feature{gap:24px;padding:32px 24px}.kayou-news .fun-product-art{width:min(100%,420px);aspect-ratio:1.05}.kayou-news .fun-title{font-size:64px}.kayou-news .fun-copy{font-size:17px;line-height:1.6;margin-top:18px}.kayou-news .fun-box{width:84%;margin-top:60px}}
-@media(max-width:560px){.kayou-news .news-hero{padding:20px 18px 24px;gap:12px}.kayou-news .news-title{font-size:clamp(36px,10.5vw,54px);letter-spacing:-.045em}.kayou-news .promo-stage{height:310px}.kayou-news .promo-card{width:194px}.kayou-news .promo-logo-pattern{opacity:.08}.kayou-news .promo-logo-pattern img{width:150px;height:70px}.kayou-news .logo-run{gap:32px;padding-right:32px}.kayou-news .ticker span{font-size:10px;padding:13px 16px;letter-spacing:.12em}.kayou-news .fun-feature{padding:28px 18px;gap:22px}.kayou-news .fun-title{font-size:clamp(48px,14vw,68px)}.kayou-news .fun-product-art{width:min(100%,340px)}.kayou-news .fun-box{width:84%;margin-top:50px}.kayou-news .preorder-link{font-size:14px;padding:12px 16px;gap:10px;margin-top:22px;max-width:100%}}
-@media(prefers-reduced-motion:reduce){.kayou-news .promo-card-front{animation:none!important;opacity:1!important}.kayou-news .promo-card-back{animation:none!important;opacity:0!important}.kayou-news *, .kayou-news *:before,.kayou-news *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+import { getPromotionalCardsBack, cardImagePaths } from "@/lib/card-images";
+import { supabase } from "@/lib/supabase";
+const giveawayCards = Array.from({ length: 6 }, (_, index) => ({ number: index + 8, code: `MLPEPR${String(index + 8).padStart(3, "0")}`, front: cardImagePaths.ccgPromo(String(index + 8).padStart(3, "0")) }));
+const giveawayBack = getPromotionalCardsBack(8);
+const INTRO_DURATION = 10000;
+const seenFlag = "mlpekayou_sdcc_giveaway_20261101_seen";
+const discordUrl = "https://discord.gg/mlpekayou";
+const kofiUrl = "https://ko-fi.com/Q2Y429HP6N";
+type Phase = "checking" | "waiting" | "playing" | "fan";
+const homeStyles = `
+.giveaway-home{--gw-bg:hsl(var(--background));--gw-ink:hsl(var(--foreground));--gw-muted:hsl(var(--muted-foreground));--gw-accent:hsl(var(--primary));--gw-card-width:clamp(140px,16vw,228px);--gw-step:clamp(24px,4vw,58px);position:relative;isolation:isolate;width:100%;min-width:0;overflow:clip;background:var(--gw-bg);color:var(--gw-ink)}
+.giveaway-home *{box-sizing:border-box}.gw-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:clamp(12px,3vw,48px);min-height:clamp(540px,76svh,840px);padding:clamp(24px,4.5vw,74px);isolation:isolate}
+.gw-copy{position:relative;z-index:2;min-width:0;max-width:640px}.gw-title{margin:0;font-size:clamp(38px,4.5vw,72px);font-weight:750;line-height:1.06;letter-spacing:-.025em}.gw-title span{display:block;color:var(--gw-accent)}.gw-deadline{margin:16px 0 0;font-size:14px;font-weight:650}.gw-discord-address{display:block;margin-top:9px;font-size:12px;color:var(--gw-muted)}.gw-enter svg{width:19px;height:19px}.gw-support svg{width:21px;height:21px;flex:none}.gw-description{max-width:410px;margin:20px 0 0;font-size:16px;line-height:1.6;color:var(--gw-muted)}.gw-enter{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;margin-top:20px;padding:10px 18px;border:1px solid hsl(var(--primary)/.65);border-radius:8px;background:var(--gw-accent);color:hsl(var(--primary-foreground));font-size:14px;font-weight:650;text-decoration:none;transition:transform .2s,box-shadow .2s}.gw-enter:hover{transform:translateY(-2px);box-shadow:0 8px 28px hsl(var(--primary)/.18)}.gw-support{display:flex;width:fit-content;align-items:center;gap:8px;max-width:100%;margin-top:18px;color:var(--gw-muted);font-size:12px;line-height:1.5;text-decoration:none}.gw-support:hover{color:var(--gw-ink)}.gw-enter:focus-visible,.gw-support:focus-visible,.gw-fan-button:focus-visible{outline:2px solid var(--gw-accent);outline-offset:5px}
+.gw-fan-stage{position:relative;width:100%;height:clamp(380px,42vw,570px);min-width:0;isolation:isolate}.gw-fan-stage:after{content:"";position:absolute;bottom:5%;left:12%;right:12%;height:12%;border-radius:50%;background:radial-gradient(ellipse,#0002,transparent 68%);pointer-events:none}.gw-scene{position:absolute;inset:0;perspective:1300px;perspective-origin:50% 50%;z-index:1}.gw-flight{position:absolute;left:50%;top:50%;width:var(--gw-card-width);aspect-ratio:5/7;margin-left:calc(var(--gw-card-width) / -2);margin-top:calc(var(--gw-card-width) * -.7);transform:translate3d(calc(var(--gw-index) * var(--gw-step)),calc(var(--gw-abs) * 8px),0) rotateZ(calc(var(--gw-index) * 9deg));transform-origin:50% 90%;transform-style:preserve-3d;z-index:var(--gw-order);transition:filter .2s}.gw-fan-button{position:relative;display:block;width:100%;height:100%;padding:0;border:0;border-radius:5.5% / 3.93%;background:transparent;transform-style:preserve-3d;transform-origin:50% 80%;cursor:pointer}.gw-card-art{position:absolute;inset:0;display:block;width:100%;height:100%;transform-style:preserve-3d;transform-origin:50% 80%;transition:transform .25s cubic-bezier(.2,.75,.25,1);pointer-events:none}.gw-face{position:absolute;inset:0;display:block;overflow:hidden;border-radius:5.5% / 3.93%;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 12px 28px #0003;background:var(--gw-bg);transform:translateZ(.5px)}.gw-face-back{transform:rotateY(180deg) translateZ(.5px)}.gw-face>img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;border:0!important;padding:0!important;margin:0!important;transform:none!important;border-radius:0!important;user-select:none;-webkit-user-drag:none}.gw-face-front:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 28%,#ffffff32 45%,transparent 65%);opacity:.4;transition:opacity .3s}.gw-hero[data-phase="fan"] .gw-flight:hover,.gw-hero[data-phase="fan"] .gw-flight:focus-within,.gw-flight[data-active="true"]{z-index:30}.gw-hero[data-phase="fan"] .gw-fan-button:hover .gw-card-art,.gw-hero[data-phase="fan"] .gw-fan-button:focus-visible .gw-card-art,.gw-hero[data-phase="fan"] .gw-flight[data-active="true"] .gw-card-art{transform:translateY(-22px) rotateY(-5deg) scale(1.06)}.gw-fan-button:hover .gw-face-front:after{opacity:.9}
+.gw-hero[data-phase="checking"] .gw-flight,.gw-hero[data-phase="waiting"] .gw-flight{transform:translate3d(calc((6 - var(--gw-order)) * 1.2px),calc((6 - var(--gw-order)) * -1.2px),0) rotateZ(-3deg)}.gw-hero[data-phase="playing"] .gw-flight{will-change:transform;pointer-events:none}.gw-hero[data-phase="playing"] .gw-fan-button{transition:none}.gw-hero[data-phase="playing"] .gw-flight:last-child{z-index:25}.gw-flight-overlay{position:fixed!important;isolation:isolate;overflow:visible!important;background:transparent!important;pointer-events:none!important;z-index:2147483000!important}.gw-flight-overlay .gw-flight{will-change:transform;pointer-events:none}.gw-flight-overlay .gw-flight:last-child{z-index:25}.gw-flight-overlay .gw-fan-button{transition:none}.gw-face-front>img{transform:scale(1.04)!important;transform-origin:center!important}.gw-face-back>img{transform:scale(1.035)!important;transform-origin:center!important}
+@media(max-width:767px){.giveaway-home{--gw-card-width:clamp(104px,30vw,160px);--gw-step:clamp(24px,6vw,40px)}.gw-hero{grid-template-columns:minmax(0,1fr);gap:8px;min-height:0;padding:12px 18px 100px}.gw-fan-stage{grid-row:1;height:clamp(250px,68vw,360px);margin-bottom:10px}.gw-copy{grid-row:2;max-width:none}.gw-title{font-size:34px;max-width:560px}.gw-description{margin-top:14px;font-size:14px;line-height:1.6;max-width:470px}.gw-enter{margin-top:17px;min-height:46px;font-size:14px;padding:12px 20px}.gw-support{margin-top:18px;font-size:11px}.gw-hero[data-phase="fan"] .gw-fan-button:hover .gw-card-art,.gw-hero[data-phase="fan"] .gw-flight[data-active="true"] .gw-card-art{transform:translateY(-16px) rotateY(-4deg) scale(1.04)}}
+@media(prefers-reduced-motion:reduce){.giveaway-home *,.giveaway-home *:before,.giveaway-home *:after{animation:none!important;transition:none!important}.gw-hero[data-phase="fan"] .gw-fan-button:hover .gw-card-art,.gw-hero[data-phase="fan"] .gw-flight[data-active="true"] .gw-card-art{transform:translateY(-12px)}}
 `;
+function hasLocalSeen(userId: string): boolean { try { return localStorage.getItem(`${seenFlag}:${userId}`) === "true"; } catch { return false; } }
 export default function KayouNews() {
-return (
-<div className="kayou-news">
-<style>{featureStyles}</style>
-<main className="relative w-full">
-<section className="news-hero"><div className="promo-logo-pattern" aria-hidden="true">{[0,1,2,3].map(row => <div className="logo-lane" key={row}>{[0,1].map(copy => <div className="logo-run" key={copy}>{[0,1,2,3,4,5].map(tile => <img key={tile} src="/website-assets/KayouLogoPFP.webp" alt=""/>)}</div>)}</div>)}</div><div className="relative z-10"><h1 className="news-title">Kayou US<span>NYCC Magic</span></h1><p className="news-intro">NYCC-001 was available at New York Comic Con, October 9-11, 2026, bundled with a Boom Studios comic.</p></div>
-<div className="promo-stage" aria-label="Slowly rotating 3D view of MLPEPR015"><div className="promo-card"><div className="promo-card-face promo-card-front"><div className="promo-crop"><CardImage imageSize="original" visible={true} loading="eager" src={promoFront} draggable={false} alt="MLPEPR015 front" className="promo-card-image promo-front-image" style={{ backgroundColor: "transparent", transform: "scale(1.025)", transformOrigin: "center", borderRadius: "4.2% / 3%" }}/></div></div><div className="promo-card-face promo-card-back"><div className="promo-crop"><CardImage imageSize="original" visible={true} loading="eager" src={promoBack} draggable={false} alt="MLPEPR015 back" className="promo-card-image" style={{ backgroundColor: "transparent", transform: "scale(1.025)", transformOrigin: "center", borderRadius: "4.2% / 3%" }}/></div></div></div></div>
-</section>
-<div className="ticker" aria-hidden="true"><div className="ticker-track">{[0, 1].map(copy => <div className="ticker-group" key={copy}>{["NYCC 2026", "NYCC-001", "OCT 09-11 2026", "Boom Studios", "NYCC 2026", "NYCC-001", "OCT 09-11 2026", "I just wanted to animate this strip ngl"].map((item, index) => <span key={`${copy}-${index}`}>{item}</span>)}</div>)}</div></div>
-<aside className="news-community" aria-label="MLPEKAYOU community and support"><div className="news-community-copy"><h2>Join us! We want to meet you! :)</h2><p>We're less than 50 member from growing larger than the Kayou US Official server!</p></div><div className="news-community-actions"><a href="https://discord.gg/mlpekayou" target="_blank" rel="noopener noreferrer"><span>Join Discord</span><span aria-hidden="true">&gt;</span><small>discord.gg/mlpekayou</small></a><a className="news-kofi-link" href="https://ko-fi.com/Q2Y429HP6N" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 28 26" fill="none" aria-hidden="true"><path d="M4 6h17v8a8.5 8.5 0 0 1-17 0V6Z" fill="white" stroke="currentColor" strokeWidth="1.8"/><path d="M21 7h2a4 4 0 0 1 0 8h-2" stroke="currentColor" strokeWidth="1.8"/><path d="M12.5 18s-5-3-5-6a2.8 2.8 0 0 1 5-1.7 2.8 2.8 0 0 1 5 1.7c0 3-5 6-5 6Z" fill="#ff5e5b"/><path d="M3 24h20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg><span>Support MLPEKAYOU on Ko-fi</span><span className="sr-only"> (opens in a new tab)</span></a></div></aside>
-<section className="fun-feature"><div className="fun-feature-content"><div className="fun-eyebrow">Coming in November</div><h2 className="fun-title">Fun<br/><span>Moments</span></h2><p className="fun-copy">Fun Moments 4 arrives in November. Preorder through StonesTradingCo and select MLPEKAYOU at checkout to support the website!</p><a className="preorder-link" href={funMomentsProduct} target="_blank" rel="noopener noreferrer">Preorder Fun Moments 4<span className="preorder-arrow" aria-hidden="true">&gt;</span></a></div><a className="fun-product-art" href={funMomentsProduct} target="_blank" rel="noopener noreferrer" aria-label="View Fun Moments 4 preorder at Stone's Trading Co."><img className="fun-box" src={funMomentsBox} alt="Fun Moments 4 box" loading="lazy"/></a></section>
-</main></div>
-);
+  const [phase, setPhase] = useState<Phase>("checking");
+  const [viewerId, setViewerId] = useState("");
+  const [overlayRect, setOverlayRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const flightRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const animationsRef = useRef<Animation[]>([]);
+  const loadedImages = useRef(new Set<string>());
+  const handledViewer = useRef("");
+  const completed = useRef(false);
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Denver", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const giveawayEnded = today > "2026-11-01";
+  useEffect(() => {
+    let disposed = false, authRevision = 0;
+    const accept = (user: { id: string; user_metadata?: Record<string, unknown> } | undefined) => {
+      if (disposed) return;
+      if (!user) { handledViewer.current = ""; setViewerId(""); setPhase("fan"); return; }
+      if (handledViewer.current === user.id) return;
+      handledViewer.current = user.id;
+      completed.current = false;
+      setViewerId(user.id);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      setPhase((hasLocalSeen(user.id) || user.user_metadata?.[seenFlag] === true) || reduced ? "fan" : "waiting");
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => { authRevision++; accept(session?.user); });
+    const initialRevision = authRevision;
+    void supabase.auth.getSession().then(({ data }) => { if (!disposed && initialRevision === authRevision) accept(data.session?.user); }).catch(() => { if (!disposed) setPhase("fan"); });
+    return () => { disposed = true; subscription.unsubscribe(); };
+  }, []);
+  useEffect(() => {
+    if (phase !== "waiting") return;
+    let cancelled = false, frame = 0;
+    const started = performance.now();
+    const check = () => {
+      if (cancelled) return;
+      const ready = giveawayCards.every(card => loadedImages.current.has(card.code)) && loadedImages.current.has("back");
+      if (ready) { const rect = stageRef.current?.getBoundingClientRect(); if (rect) setOverlayRect({ left: rect.left, top: rect.top, width: rect.width, height: rect.height }); setPhase("playing"); return; }
+      if (performance.now() - started > 9000) { setPhase("fan"); return; }
+      frame = requestAnimationFrame(check);
+    };
+    frame = requestAnimationFrame(check);
+    return () => { cancelled = true; cancelAnimationFrame(frame); };
+  }, [phase, viewerId]);
+  useLayoutEffect(() => {
+    if (phase !== "playing") { animationsRef.current.forEach(animation => animation.cancel()); animationsRef.current = []; }
+  }, [phase]);
+  useLayoutEffect(() => {
+    if (phase !== "playing" || !stageRef.current || !viewerId) return;
+    let cancelled = false;
+    const stage = stageRef.current.getBoundingClientRect();
+    const finish = () => {
+      if (cancelled || completed.current) return;
+      completed.current = true;
+      try { localStorage.setItem(`${seenFlag}:${viewerId}`, "true"); } catch { /* Keep the account preference when browser storage is unavailable. */ }
+      void supabase.auth.getSession().then(({ data }) => { if (data.session?.user.id === viewerId && data.session.user.user_metadata?.[seenFlag] !== true) return supabase.auth.updateUser({ data: { [seenFlag]: true } }); }).catch(() => {});
+      setPhase("fan");
+    };
+    const transform = (x: number, y: number, z: number, rx: number, ry: number, rz: number, scale: number) => `translate3d(${x}px,${y}px,${z}px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${scale})`;
+    const created = flightRefs.current.map((node, index) => {
+      if (!node) return null;
+      const fanTransform = getComputedStyle(node).transform;
+      const stack = transform((5 - index) * 1.2, (5 - index) * -1.2, 0, 0, 0, -3, 1);
+      const lead = index === 5;
+      const reach = Math.min(42, stage.width * .11);
+      const frames: Keyframe[] = lead ? [
+        { offset: 0, transform: stack },
+        { offset: .1, transform: stack },
+        { offset: .29, transform: transform(-reach, -28, 155, -13, -32, -13, 1.55) },
+        { offset: .38, transform: transform(-reach, -28, 155, -13, -32, -13, 1.55) },
+        { offset: .53, transform: transform(20, -14, 85, 7, 155, 6, 1.15) },
+        { offset: .61, transform: transform(12, -8, 50, 3, 180, 1, 1.06) },
+        { offset: .72, transform: transform(0, 0, 0, 0, 360, -3, 1) },
+        { offset: .8, transform: transform(0, 0, 0, 0, 360, -3, 1) },
+        { offset: 1, transform: fanTransform }
+      ] : [
+        { offset: 0, transform: stack },
+        { offset: .8, transform: stack },
+        { offset: 1, transform: fanTransform }
+      ];
+      return node.animate(frames.map(frame => ({ ...frame, easing: "cubic-bezier(.22,.65,.3,1)" })), { duration: INTRO_DURATION, easing: "linear", fill: "forwards" });
+    }).filter((animation): animation is Animation => !!animation);
+    animationsRef.current = created;
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") finish(); };
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const motionChanged = () => { if (reducedMotion.matches) finish(); };
+    window.addEventListener("keydown", escape);
+    window.addEventListener("resize", finish);
+    reducedMotion.addEventListener("change", motionChanged);
+    void Promise.all(created.map(animation => animation.finished)).then(finish).catch(() => {});
+    return () => { cancelled = true; created.forEach(animation => animation.cancel()); window.removeEventListener("keydown", escape); window.removeEventListener("resize", finish); reducedMotion.removeEventListener("change", motionChanged); };
+  }, [phase, viewerId]);
+  const cardScene = <div className="gw-scene" ref={sceneRef}>{giveawayCards.map((card, index) => <div key={card.code} ref={node => { flightRefs.current[index] = node; }} className="gw-flight" data-active={activeCard === index} style={{ "--gw-index": index - 2.5, "--gw-abs": Math.abs(index - 2.5), "--gw-order": index + 1 } as CSSProperties}><button type="button" className="gw-fan-button" aria-label={`${card.code}: lift this giveaway card`} aria-pressed={activeCard === index} disabled={phase !== "fan"} onClick={() => setActiveCard(value => value === index ? null : index)}><span className="gw-card-art"><span className="gw-face gw-face-front"><CardImage src={card.front} publicProfile imageSize="original" visible loading="eager" onLoad={() => { loadedImages.current.add(card.code); }} draggable={false} alt={`${card.code} front`}/></span><span className="gw-face gw-face-back" aria-hidden="true">{viewerId && <CardImage src={giveawayBack} imageSize="original" visible loading="eager" onLoad={() => { loadedImages.current.add("back"); }} draggable={false} alt=""/>}</span></span></button></div>)}</div>;
+  return <div className="giveaway-home" data-intro={phase === "playing"}><style>{homeStyles}</style>{phase === "playing" && overlayRect && createPortal(<div className="giveaway-home gw-flight-overlay" style={overlayRect} aria-hidden="true">{cardScene}</div>, document.body)}<main>
+    <section className="gw-hero" data-phase={phase} aria-label="SDCC promo giveaway">
+      <div className="gw-copy"><h1 className="gw-title">SDCC promo<span>giveaway.</span></h1><p className="gw-description">A full set of SDCC Boom Promos!!! Join the server for details!</p><p className="gw-deadline">{giveawayEnded ? "This giveaway has ended. See what’s next in Discord." : "Ends this Sunday · November 1, 2026"}</p><a className="gw-enter" href={discordUrl} target="_blank" rel="noopener noreferrer">{giveawayEnded ? "Visit Discord" : "Enter on Discord"}<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></a><span className="gw-discord-address">discord.gg/mlpekayou</span><a className="gw-support" href={kofiUrl} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 28 26" fill="none" aria-hidden="true"><path d="M4 6h17v8a8.5 8.5 0 0 1-17 0V6Z" fill="white" stroke="currentColor" strokeWidth="1.8"/><path d="M21 7h2a4 4 0 0 1 0 8h-2" stroke="currentColor" strokeWidth="1.8"/><path d="M12.5 18s-5-3-5-6a2.8 2.8 0 0 1 5-1.7 2.8 2.8 0 0 1 5 1.7c0 3-5 6-5 6Z" fill="#ff5e5b"/></svg><span>Support MLPEKAYOU on Ko-Fi</span><span className="sr-only"> (opens in a new tab)</span></a></div>
+      <div className="gw-fan-stage" ref={stageRef}>{phase !== "playing" ? cardScene : null}</div>
+    </section>
+  </main></div>;
 }

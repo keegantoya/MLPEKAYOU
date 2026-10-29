@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { ChineseISOCard } from "../catalog/catalog";
-import { emptyChineseISOData, type ChineseSettings, type ChineseStatus } from "./model";
+import { emptyChineseISOData, type ChineseSettings, type ChineseStatus, type ChineseISOData } from "./model";
 import { loadChineseISOData, saveChineseSettings, saveChineseStatus, saveChineseWishlist, completeChineseCard } from "./repository";
 export function useChineseISO() {
   const [data, setData] = useState(emptyChineseISOData);
@@ -49,7 +49,7 @@ export function useChineseISO() {
     void refresh();
     return () => { alive.current = false; generation.current += 1; subscription.subscription.unsubscribe(); window.removeEventListener("focus", reload); window.removeEventListener("chinese-iso-changed", reload); };
   }, [refresh]);
-  const run = async (operation: (id: string) => Promise<void>) => {
+  const run = async (operation: (id: string) => Promise<void>, apply?: (previous: ChineseISOData) => ChineseISOData) => {
     if (saving.current || !identity.current) return;
     const id = identity.current;
     saving.current = true;
@@ -61,7 +61,8 @@ export function useChineseISO() {
       if (authError || auth.user?.id !== id || identity.current !== id) throw new Error("Your login changed. Reload before updating this card.");
       await operation(id);
       if (!alive.current || identity.current !== id) return;
-      await refresh();
+      if (apply) setData(previous => apply(previous));
+      else await refresh();
       window.dispatchEvent(new CustomEvent("chinese-iso-changed", { detail: { userId: id } }));
     } catch (cause) {
       if (alive.current && identity.current === id) setError(cause instanceof Error ? cause.message : "The update could not be saved. Please retry.");
@@ -69,9 +70,9 @@ export function useChineseISO() {
     } finally { saving.current = false; if (alive.current) setBusy(false); }
   };
   const settings = (patch: Partial<ChineseSettings>) => run(async id => { await saveChineseSettings(id, patch); });
-  const status = (card: ChineseISOCard, value: ChineseStatus | null) => run(id => saveChineseStatus(id, card.setId, card.key, value));
-  const wishlist = (card: ChineseISOCard, add: boolean) => run(id => saveChineseWishlist(id, card.setId, card.key, add));
-  const complete = (card: ChineseISOCard) => run(() => completeChineseCard(card.setId, card.key));
+  const status = (card: ChineseISOCard, value: ChineseStatus | null) => run(id => saveChineseStatus(id, card.setId, card.key, value), previous => ({ ...previous, statuses: [...previous.statuses.filter(row => row.set_id !== card.setId || row.card_key !== card.key), ...(value ? [{set_id:card.setId,card_key:card.key,status:value}] : [])] }));
+  const wishlist = (card: ChineseISOCard, add: boolean) => run(id => saveChineseWishlist(id, card.setId, card.key, add), previous => ({ ...previous, wishlist: [...previous.wishlist.filter(row => row.set_id !== card.setId || row.card_key !== card.key), ...(add ? [{set_id:card.setId,card_key:card.key}] : [])] }));
+  const complete = (card: ChineseISOCard) => run(() => completeChineseCard(card.setId, card.key), previous => ({...previous, progress:[...previous.progress.filter(row => row.set_id !== card.setId), {set_id:card.setId,progress:{...previous.progress.find(row => row.set_id === card.setId)?.progress,[card.key]:true}}], statuses:previous.statuses.filter(row => row.set_id !== card.setId || row.card_key !== card.key)}));
   return { data, userId, loading, busy, error, refresh, settings, status, wishlist, complete };
 }
 export type ChineseISOController = ReturnType<typeof useChineseISO>;

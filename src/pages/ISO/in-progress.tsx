@@ -1,6 +1,8 @@
+import { useWishlist } from "./wishlist-in-iso";
+import { ISOCardCaption, isoGridClass } from "@/components/iso/ISOShared";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { fetchISOStatuses, buildInProgressCards, resolveISOCard, isoActionKey, type ISOStatus } from "./catalog-adapter";
+import { fetchISOStatuses, buildInProgressCards, resolveISOCard, getWishlistIdentity, isoActionKey, type ISOStatus } from "./catalog-adapter";
 import ISOCardImage from "./catalog-image";
 import ISOChecking from "./iso-checking";
 type Card = {
@@ -9,6 +11,7 @@ type Card = {
     status: ISOStatus;
 };
 export default function InProgress() {
+    const { wishlist, toggleWishlist } = useWishlist();
     const [cards, setCards] = useState<Card[]>([]);
     const [userId, setUserId] = useState("");
     const [loading, setLoading] = useState(true);
@@ -89,15 +92,15 @@ export default function InProgress() {
             <h2 className="text-base font-semibold">Active cards</h2>
             <span className="text-sm text-zinc-500 dark:text-zinc-400">Tap a card to update its status</span>
           </div>
-          <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 md:grid-cols-5 md:gap-3 lg:grid-cols-6 xl:grid-cols-7">
-            {cards.map((card) => (<ISOChecking key={`${card.set_id}:${card.card_key}`} contentClassName="!rounded-[2px]" contentStyle={{ borderRadius: "2px" }} userId={userId} initialStatus={card.status} className={resolveISOCard(card.set_id, card.card_key)?.wide ? "col-span-2" : ""} setId={card.set_id} cardKey={isoActionKey(resolveISOCard(card.set_id, card.card_key)!)} onStatusChange={(nextStatus) => {
+          <div className={isoGridClass}>
+            {cards.map((card) => (<article key={`${card.set_id}:${card.card_key}`} className={`min-w-0 ${resolveISOCard(card.set_id, card.card_key)?.wide ? "col-span-2" : ""}`}><ISOChecking contentClassName="!rounded-[2px]" contentStyle={{ borderRadius: "2px" }} userId={userId} initialStatus={card.status} isWishlisted={wishlist.has(getWishlistIdentity(card.set_id,isoActionKey(resolveISOCard(card.set_id,card.card_key)!)))} toggleWishlist={toggleWishlist} setId={card.set_id} cardKey={isoActionKey(resolveISOCard(card.set_id, card.card_key)!)} onStatusChange={(nextStatus) => {
                     if (nextStatus === null)
                         removeCard(card);
                 }} onComplete={() => removeCard(card)}>
                 <div className={`relative ${resolveISOCard(card.set_id, card.card_key)?.square ? "aspect-square" : resolveISOCard(card.set_id, card.card_key)?.wide ? "aspect-[10/7]" : "aspect-[5/7]"} overflow-hidden rounded-[7px] bg-transparent transition hover:-translate-y-0.5`}>
                   <ISOCardImage card={card}/>
                 </div>
-              </ISOChecking>))}
+              </ISOChecking><ISOCardCaption code={resolveISOCard(card.set_id,card.card_key)?.code ?? card.card_key} setName={resolveISOCard(card.set_id,card.card_key)?.setName ?? card.set_id}/></article>))}
           </div>
         </section>)}
     </div>);
