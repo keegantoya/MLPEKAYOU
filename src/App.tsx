@@ -1,3 +1,4 @@
+import MLPEKAYOUFooter from "@/components/MLPEKAYOUFooter";
 import ChineseLaserTickets from "./pages/Chinese Kayou/Chinese Sets/Other Sets/CN-Laser-Tickets";
 import { chineseTicketLayoutCSS } from "@/pages/Chinese Kayou/Chinese ISO/catalog/catalog";
 import ChineseKujiRaffles from "./pages/Chinese Kayou/Chinese Sets/Other Sets/Kuji-Raffles";
@@ -485,6 +486,7 @@ const standalone = window.matchMedia("(display-mode: standalone)").matches;
       <div data-kayou-page-content="true" className={hideNavigation ? "min-h-screen" : "min-h-screen sm:pb-0"} style={hideNavigation ? undefined : { paddingTop: `var(--kayou-header-bottom, ${standalone ? "88px" : "64px"})` }}>
         <AppRoutes />
       </div>
+      {!hideNavigation && <MLPEKAYOUFooter />}
     </>);
 }
 const App = () => (<QueryClientProvider client={queryClient}>
