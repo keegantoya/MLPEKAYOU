@@ -1,56 +1,34 @@
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ChineseCardInspector, { ChineseSilverStamp } from "../../ChineseCardInspector";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ScanSearch } from "lucide-react";
-import { CN_MOON_TWELVE_CARDS, CN_MOON_TWELVE_SET_ID, CN_MOON_TWELVE_IMAGE_REVISION, useChineseCardImage } from "../../card-images-cn";
+import { CN_MOON_TWELVE_CARDS, CN_MOON_TWELVE_SET_ID, CN_MOON_TWELVE_IMAGE_REVISION, useChineseCardImage, getChineseCardBackStyle, getChineseMoonTwelveImageStyle, CN_MOON_TWELVE_RARITY_ORDER } from "../../card-images-cn";
 export { CN_MOON_TWELVE_CARDS, CN_MOON_TWELVE_SET_ID };
 import type { CSSProperties } from "react";
 import { supabase } from "@/lib/supabase";
 import { saveCollectionProgress } from "@/lib/saveCollectionProgress";
 type Progress = Record<string, boolean>;
-const MOON_TWELVE_ROTATED_KEYS = new Set([...Array.from({ length: 30 }, (_, index) => `R-${index + 1}`), ...Array.from({ length: 22 }, (_, index) => `HR-${index + 1}`), "UR-16", "SGR-9", "SGR-10", "SC-7", "DZR-1", "DZR-2"]);
-function moonTwelveImageStyle(key: string): CSSProperties {
-  if (MOON_TWELVE_ROTATED_KEYS.has(key)) return { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.428571%", maxWidth: "none", objectFit: "contain", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" };
-  return { transform: "none", transformOrigin: "center" };
-}
+const redemptionHiddenKey = "cn-moon-twelve:REDEMPTION-1";
+const moonTwelveImageStyle = getChineseMoonTwelveImageStyle;
+const rarityLabel = (rarity: string) => rarity === "REDEMPTION" ? "Redemption prize" : rarity === "DZR" ? "◇ZR" : rarity;
 function ChineseCardFront({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: CSSProperties }) {
 const image = useChineseCardImage(src);
   return image.url ? <img src={image.url} alt={alt} draggable={false} className={className} style={style} /> : <span className="flex h-full w-full items-center justify-center p-4 text-center text-xs text-muted-foreground" title={image.error || undefined} role="status">{image.error ? "Image unavailable" : "Loading card..."}</span>;
 }
-function InspectorCanvas({ card, src, zoom }: { card: typeof CN_MOON_TWELVE_CARDS[number]; src: string; zoom: number }) {
-const viewport = useRef<HTMLDivElement>(null);
-const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
-const [size, setSize] = useState({ width: 0, height: 0 });
-const [pan, setPan] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-const node = viewport.current;
-    if (!node) return;
-const measure = () => setSize({ width: node.clientWidth, height: node.clientHeight });
-    measure();
-const observer = new ResizeObserver(measure);
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => { setPan({ x: 0, y: 0 }); drag.current = null; }, [zoom, size.width, size.height]);
-const width = Math.max(0, Math.min(size.width - 32, (size.height - 32) * 5 / 7));
-const height = width * 7 / 5;
-const limitX = Math.max(0, (width * zoom / 100 - size.width) / 2);
-const limitY = Math.max(0, (height * zoom / 100 - size.height) / 2);
-  return <div ref={viewport} className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-muted" style={{ touchAction: "none", cursor: zoom > 100 ? "grab" : "default" }} onPointerDown={event => {
-    if (zoom <= 100 || (event.pointerType === "mouse" && event.button !== 0)) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
-  }} onPointerMove={event => {
-    if (!drag.current) return;
-    setPan({ x: Math.max(-limitX, Math.min(limitX, drag.current.panX + event.clientX - drag.current.x)), y: Math.max(-limitY, Math.min(limitY, drag.current.panY + event.clientY - drag.current.y)) });
-  }} onPointerUp={event => { drag.current = null; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }}>
-    <div className="absolute overflow-hidden rounded-xl" style={{ left: "50%", top: "50%", width, height, transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`, transformOrigin: "center" }}><ChineseCardFront src={src} alt={card.code} className="block h-full w-full object-cover" style={{ ...moonTwelveImageStyle(card.key), filter: "none", opacity: 1 }} /></div>
-  </div>;
+function MoonTwelveCardFaces({ card, front, owned }: { card: typeof CN_MOON_TWELVE_CARDS[number]; front: string; owned: boolean }) {
+  if (!card.back) return <span className="cn-m12-face"><ChineseCardFront src={front} alt={card.code} className="h-full w-full" style={moonTwelveImageStyle(card.key)} /></span>;
+  return <span className="cn-m12-flip" data-owned={owned}>
+    <span className="cn-m12-face" aria-hidden={owned}><ChineseCardFront src={front} alt={card.code} className="h-full w-full object-cover" style={{ ...moonTwelveImageStyle(card.key), filter: "none", opacity: 1 }} /></span>
+    <span className="cn-m12-face cn-m12-back" aria-hidden={!owned}><ChineseCardFront src={card.back.image} alt={`${card.code} back`} className="block h-full w-full" style={getChineseCardBackStyle(card.back)} />{card.back.silverStamp && <ChineseSilverStamp landscapeLeft={card.back.silverStampLandscape} diamond={card.back.silverStampDiamond}/>}</span>
+  </span>;
 }
 export default function ChineseMoonTwelve() {
 const [inspected, setInspected] = useState<string | null>(null);
-const [zoom, setZoom] = useState(100);
+const [dontWantRedemption, setDontWantRedemption] = useState(false);
+const [preferenceReady, setPreferenceReady] = useState(false);
+const [preferenceBusy, setPreferenceBusy] = useState(false);
+const [preferenceError, setPreferenceError] = useState("");
+const preferenceSaving = useRef(false);
 const [cardSize, setCardSize] = useState(160);
 const imageRevision = CN_MOON_TWELVE_IMAGE_REVISION;
 const imageSource = (src: string) => { const url = new URL(src); url.searchParams.set("v", imageRevision); return url.href; };
@@ -79,7 +57,7 @@ const ticket = ++generation.current;
       try {
 const { data, error: authError } = await supabase.auth.getUser();
         if (!mounted || ticket !== generation.current) return;
-        if (authError || !data.user) throw new Error("Log in to view and save your Chinese Moon 6 collection.");
+        if (authError || !data.user) throw new Error("Log in to view and save your Chinese Moon 12 collection.");
         identity.current = data.user.id;
 const { data: row, error: loadError } = await supabase
           .from("collection_progress_raw")
@@ -121,6 +99,43 @@ const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sessi
       subscription.unsubscribe();
     };
   }, [retry]);
+useEffect(() => {
+  if (!ready || !identity.current) { setPreferenceBusy(false); setPreferenceReady(false); setDontWantRedemption(false); setPreferenceError(""); return; }
+  let active = true;
+  const userId = identity.current;
+  setPreferenceReady(false);
+  void (async () => {
+    try {
+      const { data, error } = await supabase.from("profiles").select("chinese_iso_hidden_sets").eq("id", userId).single();
+      if (error) throw error;
+      if (active && identity.current === userId) { setDontWantRedemption(Array.isArray(data?.chinese_iso_hidden_sets) && data.chinese_iso_hidden_sets.includes(redemptionHiddenKey)); setPreferenceReady(true); setPreferenceError(""); }
+    } catch { if (active && identity.current === userId) setPreferenceError("The ISO preference could not be loaded. Reload to try again."); }
+  })();
+  return () => { active = false; };
+}, [ready, retry]);
+const changeRedemptionPreference = async (hidden: boolean) => {
+  if (!preferenceReady || preferenceSaving.current || !identity.current) return;
+  const userId = identity.current;
+  const ticket = generation.current;
+  preferenceSaving.current = true;
+  setPreferenceBusy(true);
+  setPreferenceError("");
+  try {
+    const { data: auth, error: authError } = await supabase.auth.getUser();
+    if (authError || auth.user?.id !== userId || identity.current !== userId || generation.current !== ticket) throw new Error("Your login changed. Reload before saving.");
+    const { data: profile, error: readError } = await supabase.from("profiles").select("chinese_iso_hidden_sets").eq("id", userId).single();
+    if (readError) throw readError;
+    if (identity.current !== userId || generation.current !== ticket) return;
+    const hiddenKeys = new Set<string>(Array.isArray(profile?.chinese_iso_hidden_sets) ? profile.chinese_iso_hidden_sets.filter((key: unknown): key is string => typeof key === "string") : []);
+    if (hidden) hiddenKeys.add(redemptionHiddenKey); else hiddenKeys.delete(redemptionHiddenKey);
+    const { data, error } = await supabase.from("profiles").update({ chinese_iso_hidden_sets: [...hiddenKeys] }).eq("id", userId).select("chinese_iso_hidden_sets").single();
+    if (error) throw error;
+    if (identity.current !== userId || generation.current !== ticket) return;
+    setDontWantRedemption(Array.isArray(data?.chinese_iso_hidden_sets) && data.chinese_iso_hidden_sets.includes(redemptionHiddenKey));
+    window.dispatchEvent(new CustomEvent("chinese-iso-changed", { detail: { userId } }));
+  } catch { if (identity.current === userId && generation.current === ticket) setPreferenceError("That ISO preference could not be saved. Please try again."); }
+  finally { preferenceSaving.current = false; if (identity.current === userId && generation.current === ticket) setPreferenceBusy(false); }
+};
 const toggle = async (key: string) => {
     if (!ready || loading || savingRef.current || !identity.current) return;
     savingRef.current = true;
@@ -151,7 +166,7 @@ const saveError = await saveCollectionProgress(CN_MOON_TWELVE_SET_ID, next);
   };
 const collected = CN_MOON_TWELVE_CARDS.filter(card => progress[card.key]).length;
 const percent = Math.round(collected / CN_MOON_TWELVE_CARDS.length * 100);
-const rarities = Array.from(new Set(CN_MOON_TWELVE_CARDS.map(card => card.key.split("-")[0])));
+const rarities = CN_MOON_TWELVE_RARITY_ORDER.filter(rarity => CN_MOON_TWELVE_CARDS.some(card => card.rarity === rarity));
 const query = search.trim().toLowerCase();
 const visibleCards = CN_MOON_TWELVE_CARDS.filter(card => (query ? card.code.toLowerCase().includes(query) : card.rarity === activeRarity) && (filter === "all" || (filter === "collected" ? progress[card.key] : !progress[card.key])));
 const searchCodes = (value: string) => {
@@ -174,6 +189,12 @@ const match = CN_MOON_TWELVE_CARDS.find(card => card.code.toLowerCase().includes
         .cn-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--cn-card-size)),1fr));gap:24px 16px; }
         .cn-art { display:block;position:relative;width:100%;aspect-ratio:5/7;overflow:hidden;border-radius:12px;background:hsl(var(--muted)); }
         .cn-art img { transition:filter .2s,opacity .2s; }
+.cn-gallery .cn-art { overflow:visible;perspective:1000px;background:transparent; }
+.cn-m12-flip { display:block;position:absolute;inset:0;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.22,.61,.36,1);transform:rotateY(0deg); }
+.cn-m12-flip[data-owned=true] { transform:rotateY(180deg); }
+.cn-m12-face { display:block;position:absolute;inset:0;overflow:hidden;border-radius:12px;background:hsl(var(--muted));backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(0deg) translateZ(.1px); }
+.cn-m12-back { transform:rotateY(180deg) translateZ(.1px); }
+@media(prefers-reduced-motion:reduce) { .cn-m12-flip { transition:none; } }
         .cn-inspect { position:absolute;bottom:8px;right:8px;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,.78);color:white;font-size:10px; }
         .cn-art:focus-visible,.cn-rarity:focus-visible { outline:2px solid hsl(var(--primary));outline-offset:4px; }
         @media(max-width:767px) { .cn-shell { grid-template-columns:minmax(0,1fr);gap:20px; }.cn-rarities { flex-direction:row;flex-wrap:wrap;gap:6px; }.cn-rarity { flex:1 0 80px;min-height:42px;border:1px solid hsl(var(--border));padding:8px 10px; }.cn-rarity[aria-pressed=true] { box-shadow:none;border-color:hsl(var(--primary)); }.cn-grid { gap:20px 12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--cn-card-size)),1fr)); } }
@@ -185,37 +206,34 @@ const match = CN_MOON_TWELVE_CARDS.find(card => card.code.toLowerCase().includes
         <div className="w-full sm:w-60" aria-live="polite"><div className="mb-2 flex items-baseline justify-between gap-6"><span className="text-xs text-muted-foreground">Progress on Moon Twelve</span><span className="text-xl font-semibold tabular-nums">{ready ? collected : "--"}<span className="text-xs font-normal text-muted-foreground"> / {CN_MOON_TWELVE_CARDS.length}</span></span></div><div className="h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Moon Twelve collection" aria-valuemin={0} aria-valuemax={CN_MOON_TWELVE_CARDS.length} aria-valuenow={ready ? collected : 0}><div className="h-full bg-primary" style={{ width: `${ready ? percent : 0}%` }} /></div></div>
       </header>
       <div className="cn-shell">
-        <aside aria-label="Card rarities"><p className="mb-3 text-[10px] font-semibold uppercase tracking-[.18em] text-muted-foreground">Rarities</p><div className="cn-rarities">{rarities.map(rarity => <button type="button" key={rarity} onClick={() => { setActiveRarity(rarity); setSearch(""); }} aria-pressed={activeRarity === rarity} className="cn-rarity"><span className="text-sm font-semibold">{rarity === "DZR" ? "\u25C7ZR" : rarity}</span><span className="text-[10px] tabular-nums">{CN_MOON_TWELVE_CARDS.filter(card => card.rarity === rarity && progress[card.key]).length}/{CN_MOON_TWELVE_CARDS.filter(card => card.rarity === rarity).length}</span></button>)}</div></aside>
+        <aside aria-label="Card rarities"><p className="mb-3 text-[10px] font-semibold uppercase tracking-[.18em] text-muted-foreground">Rarities</p><div className="cn-rarities">{rarities.map(rarity => <button type="button" key={rarity} onClick={() => { setActiveRarity(rarity); setSearch(""); }} aria-pressed={activeRarity === rarity} className="cn-rarity"><span className="text-sm font-semibold">{rarityLabel(rarity)}</span><span className="text-[10px] tabular-nums">{CN_MOON_TWELVE_CARDS.filter(card => card.rarity === rarity && progress[card.key]).length}/{CN_MOON_TWELVE_CARDS.filter(card => card.rarity === rarity).length}</span></button>)}</div></aside>
         <section className="min-w-0" aria-label={`${activeRarity} cards`}>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div><h2 className="text-lg font-semibold">{query ? "Search results" : activeRarity === "DZR" ? "\u25C7ZR" : activeRarity}<span className="ml-2 text-xs font-normal text-muted-foreground">{visibleCards.length} cards</span></h2></div>
+            <div><h2 className="text-lg font-semibold">{query ? "Search results" : rarityLabel(activeRarity)}<span className="ml-2 text-xs font-normal text-muted-foreground">{visibleCards.length} cards</span></h2></div>
             <div className="flex flex-wrap items-center gap-2">
               <label className="sr-only" htmlFor="cn-search">Search card codes</label><input id="cn-search" type="search" value={search} onChange={event => searchCodes(event.target.value)} placeholder="Find a code..." className="h-10 w-40 min-w-0 rounded-lg border border-border bg-card px-3 text-base" />
               <label className="sr-only" htmlFor="cn-filter">Collection filter</label><select id="cn-filter" value={filter} onChange={event => setFilter(event.target.value as typeof filter)} className="h-10 rounded-lg border border-border bg-card px-2 text-base"><option value="all">All cards</option><option value="missing">Missing</option><option value="collected">Collected</option></select>
               <label className="sr-only" htmlFor="cn-size">Card size</label><select id="cn-size" value={cardSize} onChange={event => setCardSize(Number(event.target.value))} className="hidden h-10 rounded-lg border border-border bg-card px-2 text-base sm:block"><option value={120}>Compact</option><option value={160}>Standard</option><option value={200}>Large</option></select>
             </div>
           </div>
+          {ready && visibleCards.some(card => card.rarity === "REDEMPTION") && <div className="mb-5 max-w-xl text-xs leading-relaxed text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2"><label className="inline-flex min-h-10 cursor-pointer items-center gap-2"><input type="checkbox" checked={dontWantRedemption} disabled={!preferenceReady || preferenceBusy} onChange={event => void changeRedemptionPreference(event.target.checked)} className="h-4 w-4 accent-primary" />I don't want this.</label><a href="https://pakracards.com/products/moon12-redemption-card-binder-14-17-10-24-1-97-in" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center text-primary underline underline-offset-4">Buy from Pakra Cards</a></div>
+            <p role="status">{preferenceBusy ? "Saving..." : dontWantRedemption ? "Removed from your ISO. Uncheck to add it back." : "Check this to remove the binder from your ISO."}</p>
+            {preferenceError && <p role="alert" className="mt-1 text-destructive">{preferenceError}</p>}
+            <details className="mt-2"><summary className="w-fit cursor-pointer underline decoration-border underline-offset-4">About this binder</summary><p className="mt-2">This very rare binder was a limited-time redemption prize. Collectors had to collect every Moon 12 LSR within a short window and send them to Kayou to redeem it. Kayou kept the submitted LSR cards.</p></details>
+          </div>}
           {error && <div role="alert" className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm">{error}{!ready && <button type="button" onClick={() => setRetry(value => value + 1)} className="ml-3 underline">Retry</button>}</div>}
           {loading ? <div role="status" className="py-16 text-center text-sm text-muted-foreground">Loading your collection...</div> : !ready ? null : visibleCards.length === 0 ? <p className="py-16 text-center text-sm text-muted-foreground">No matching cards. Adjust your search or filter.</p> : <div className="cn-grid" style={{ "--cn-card-size": `${cardSize}px` } as CSSProperties}>{visibleCards.map(card => {
 const owned = Boolean(progress[card.key]);
             return <article key={card.key} className="min-w-0">
-              <div className="relative"><button type="button" disabled={saving !== null} onClick={() => void toggle(card.key)} aria-pressed={owned} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className="cn-art"><ChineseCardFront src={imageSource(card.image)} alt={card.code} className="h-full w-full object-cover" style={{ ...moonTwelveImageStyle(card.key), filter: owned ? "none" : "grayscale(1)", opacity: owned ? 1 : .65 }} /></button><button type="button" onClick={() => { setInspected(card.key); setZoom(100); }} aria-label={`Inspect ${card.code}`} className="cn-inspect min-h-9"><ScanSearch size={12} aria-hidden="true" /> Inspect</button></div>
+              <div className="relative"><button type="button" disabled={saving !== null} onClick={() => void toggle(card.key)} aria-pressed={owned} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className="cn-art" style={card.rarity === "REDEMPTION" ? { aspectRatio: "1017 / 1426" } : undefined}><MoonTwelveCardFaces card={card} front={imageSource(card.image)} owned={owned} /></button><button type="button" onClick={() => { setInspected(card.key); }} aria-label={`Inspect ${card.code}`} className="cn-inspect min-h-9"><ScanSearch size={12} aria-hidden="true" /> 3D</button></div>
               <p className="mb-2 mt-3 break-words text-xs font-semibold tracking-tight">{card.code}</p>
-              <button type="button" disabled={saving !== null} aria-pressed={owned} onClick={() => void toggle(card.key)} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className={`min-h-9 w-full rounded-lg border px-2 text-[11px] font-medium disabled:cursor-wait ${owned ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>{saving === card.key ? "Saving..." : owned ? "Collected" : "Missing"}</button>
             </article>;
           })}</div>}
           <p role="status" aria-live="polite" className="mt-4 min-h-5 text-xs text-muted-foreground">{saving ? "Saving your collection..." : ""}</p>
         </section>
       </div>
-      <Dialog open={Boolean(inspectorCard)} onOpenChange={open => { if (!open) setInspected(null); }}>
-        <DialogContent style={{ zIndex: 100001 }} className="z-[100001] flex h-[90dvh] max-h-[90dvh] w-[calc(100%_-_24px)] max-w-4xl flex-col gap-3 overflow-hidden rounded-2xl p-4 sm:p-5">
-          <DialogTitle className="pr-8 text-base">{inspectorCard?.code}</DialogTitle>
-          <DialogDescription className="text-xs">Gallery framing in full color. Zoom, then drag to move the card.</DialogDescription>
-          <label className="flex items-center gap-3 text-sm"><span>Zoom</span><input type="range" min={100} max={400} step={10} value={zoom} onChange={event => setZoom(Number(event.target.value))} className="min-w-0 flex-1" /><output className="w-12 text-right tabular-nums">{zoom}%</output><button type="button" onClick={() => setZoom(100)} className="min-h-10 rounded-lg border border-border px-3 text-xs">Reset</button></label>
-          {inspectorCard && <InspectorCanvas key={inspectorCard.key} card={inspectorCard} src={imageSource(inspectorCard.image)} zoom={zoom} />}
-          <div className="flex items-center justify-between gap-2"><button type="button" onClick={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index - 1 + visibleCards.length) % visibleCards.length]?.key ?? null); setZoom(100); }} className="min-h-11 rounded-lg border border-border px-4 text-sm">Previous</button><button type="button" onClick={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index + 1) % visibleCards.length]?.key ?? null); setZoom(100); }} className="min-h-11 rounded-lg border border-border px-4 text-sm">Next</button></div>
-        </DialogContent>
-      </Dialog>
+      <ChineseCardInspector card={inspectorCard ? { key: inspectorCard.key, code: inspectorCard.code, front: imageSource(inspectorCard.image), back: inspectorCard.back, frontStyle: moonTwelveImageStyle(inspectorCard.key), aspectRatio: inspectorCard.rarity === "REDEMPTION" ? 1017 / 1426 : undefined } : null} onClose={() => setInspected(null)} onPrevious={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index - 1 + visibleCards.length) % visibleCards.length]?.key ?? null); }} onNext={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index + 1) % visibleCards.length]?.key ?? null); }} />
     </main>
   );
 }

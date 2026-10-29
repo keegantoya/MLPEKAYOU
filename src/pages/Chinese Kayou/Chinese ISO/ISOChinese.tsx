@@ -36,7 +36,8 @@ export default function ISOChinese() {
     if (activeSection === "wishlist") return state.wishlisted;
     if (activeSection === "progress") return state.inProgress;
     const pool = browsingAll ? chineseCards : searching ? chineseCards.filter(card => !state.owned.has(card.identity) && !state.statuses.has(card.identity)) : state.missing;
-    return searching || activeSection === "full" ? pool : pool.filter(card => card.family === activeSection);
+    const wanted = pool.filter(card => !state.hidden.has(`${card.setId}:${card.key}`));
+    return searching || activeSection === "full" ? wanted : wanted.filter(card => card.family === activeSection);
   }, [activeSection, state, browsingAll, searching]);
   const searchedCards = useMemo(() => searchChineseCards(baseCards, query), [baseCards, query]);
   const availableSets = useMemo(() => {

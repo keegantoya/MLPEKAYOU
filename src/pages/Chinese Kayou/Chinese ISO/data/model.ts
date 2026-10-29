@@ -24,7 +24,7 @@ export function setChineseKujiRaffleHidden(hiddenSets: readonly string[], raffle
   return [...next];
 }
 export function isChineseISOCardHidden(card: Pick<ChineseISOCard, "setId" | "key">, hidden: ReadonlySet<string>): boolean {
-  if (hidden.has(card.setId)) return true;
+  if (hidden.has(card.setId) || hidden.has(cardIdentity(card.setId, card.key))) return true;
   if (card.setId !== CHINESE_KUJI_VISIBILITY_SET_ID) return false;
   const raffle = card.key.match(/^([1-4])-/)?.[1];
   return !!raffle && hidden.has(kujiRaffleVisibilityKey(raffle));

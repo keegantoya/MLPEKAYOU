@@ -37,12 +37,14 @@ function retainUncroppedFrontStyle(source: string, resolved: string): () => void
   const url = new URL(source);
   const code = decodeURIComponent(url.pathname).match(/^\/card-backs\/Chinese\/Replacements\/((?:YH-T05|HY06-UR)-\d{3})\.webp$/)?.[1];
   const freshMoonSixLSR = /^\/Chinese Sets\/Moon-Six-CN\/CN-M6-LSR\d+\.webp$/.test(decodeURIComponent(url.pathname)) && url.searchParams.get("refresh") === CN_MOON_SIX_LSR_REVISION;
-  if ((!code || !CHINESE_REPLACEMENT_FRONT_CODES.has(code)) && !freshMoonSixLSR) return () => {};
+  const moonTwelveFront = decodeURIComponent(url.pathname).match(/^\/Chinese Sets\/Moon-Twelve-CN\/CN-M12-(R|HR|UR|SGR|ZR|SC|DZR)(\d+)\.webp$/);
+  const rotatedMoonTwelveFront = !!moonTwelveFront && CN_MOON_TWELVE_ROTATED_KEYS.has(`${moonTwelveFront[1]}-${Number(moonTwelveFront[2])}`);
+  if ((!code || !CHINESE_REPLACEMENT_FRONT_CODES.has(code)) && !freshMoonSixLSR && !rotatedMoonTwelveFront) return () => {};
   let entry = replacementFrontStyles.get(resolved);
   if (!entry) {
     const node = document.createElement("style");
-    const framing = code === "HY06-UR-016"
-      ? "transform:translate(-50%,-50%) rotate(-90deg)!important;inset:auto!important;left:50%!important;top:50%!important;width:140%!important;height:71.4285714286%!important"
+    const framing = code === "HY06-UR-016" || rotatedMoonTwelveFront
+      ? `${rotatedMoonTwelveFront ? "position:absolute!important;" : ""}transform:translate(-50%,-50%) rotate(-90deg)!important;inset:auto!important;left:50%!important;top:50%!important;width:140%!important;height:71.4285714286%!important`
       : "transform:none!important;inset:0!important;left:0!important;top:0!important;width:100%!important;height:100%!important";
     node.textContent = `img[src=${JSON.stringify(resolved)}]{object-fit:contain!important;object-position:center!important;transform-origin:center!important;${framing};max-width:none!important;max-height:none!important}`;
     document.head.appendChild(node);
@@ -70,6 +72,7 @@ export const CN_MOON_TEN_IMAGE_REVISION = "20261021-m10-complete-158-v1";
 export const CN_MOON_ELEVEN_IMAGE_REVISION = "20261022-m11-complete-162-v1";
 export const CN_MOON_THIRTEEN_IMAGE_REVISION = "20261027-m13-code-fronts-backs-v1";
 export const CN_MOON_TWELVE_IMAGE_REVISION = "20261022-m12-complete-164-v1";
+export const CN_MOON_TWELVE_DZR_REFRESH = "20261029-m12-dzr1-2-replaced-v1";
 const CN_IMAGE_ROOT = "Chinese Sets/Moon-One-CN";
 export function getChineseCardImage(path: string): string {
 const normalized = path.replace(/^\/+/, "").replace(/^mlpekayou-card-images\//, "");
@@ -86,7 +89,9 @@ const index = Number(number);
         if (!/^[A-Z]+$/.test(code) || !Number.isSafeInteger(index) || index < 1)
             throw new Error("Invalid Chinese Moon Twelve card code.");
 const filename = `CN-M12-${code}${index}.webp`;
-        return `${getChineseCardImage(`Chinese Sets/Moon-Twelve-CN/${filename}`)}?v=${CN_MOON_TWELVE_IMAGE_REVISION}`;
+const replaced = code === "DZR" && (index === 1 || index === 2);
+const revision = replaced ? CN_MOON_TWELVE_DZR_REFRESH : CN_MOON_TWELVE_IMAGE_REVISION;
+        return `${getChineseCardImage(`Chinese Sets/Moon-Twelve-CN/${filename}`)}?v=${revision}${replaced ? `&refresh=${revision}` : ""}`;
     },
     moonEleven: (rarity: string, number: number | string): string => {
 const code = rarity.trim().toUpperCase();
@@ -383,7 +388,36 @@ export const CN_MOON_ELEVEN_SET_ID = "cn-moon-eleven";
 export const CN_MOON_ELEVEN_CARDS = CHINESE_MOON_ELEVEN_CODES.map(card => ({ ...card, image: getChineseMoonElevenFront(card.number, card.rarity) })).map(withChineseReplacementFront);
 export const getChineseMoonTwelveFront = (number: number | string, rarity = "R") => cardImagePathsCN.moonTwelve(rarity, number);
 export const CN_MOON_TWELVE_SET_ID = "cn-moon-twelve";
-export const CN_MOON_TWELVE_CARDS = CHINESE_MOON_TWELVE_CODES.map(card => ({ ...card, image: getChineseMoonTwelveFront(card.number, card.rarity) })).map(withChineseReplacementFront);
+export const CN_MOON_TWELVE_RARITY_ORDER = ["R", "SR", "HR", "SSR", "UR", "LSR", "SGR", "ZR", "SC", "DZR", "REDEMPTION"] as const;
+export const CN_MOON_TWELVE_ROTATED_KEYS = new Set([...Array.from({ length: 30 }, (_, index) => `R-${index + 1}`), ...Array.from({ length: 22 }, (_, index) => `HR-${index + 1}`), "UR-16", "SGR-9", "SGR-10", "SC-7", "DZR-1", "DZR-2"]);
+export function getChineseMoonTwelveImageStyle(key: string): CSSProperties {
+  if (key === "REDEMPTION-1") return { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "center", transform: "none" };
+  return CN_MOON_TWELVE_ROTATED_KEYS.has(key) ? { position: "absolute", left: "50%", top: "50%", width: "140%", height: "71.4285714286%", maxWidth: "none", objectFit: "contain", objectPosition: "center", transform: "translate(-50%, -50%) rotate(-90deg)", transformOrigin: "center" } : { transform: "none", transformOrigin: "center" };
+}
+export const CN_MOON_TWELVE_BACK_IMAGES = {
+  r: getChineseCardImage("card-backs/Chinese/Moon-Thirteen-CN/HY13-R-BACK.webp"),
+  sr: getChineseCardImage("card-backs/Chinese/Moon-Twelve-CN/M11-SR-BACKS.webp"),
+  ssr: getChineseCardImage("card-backs/Chinese/Moon-Twelve-CN/M12-SSR-BACKS.webp"),
+  standard: getChineseCardImage("card-backs/Chinese/Moon-Thirteen-CN/HY13-STANDARD-BACK.webp"),
+  standardLandscape: getChineseCardImage("card-backs/Chinese/Moon-Thirteen-CN/HY13-STANDARD-BACK-LANDSCAPE.webp"),
+  ur: getChineseCardImage("card-backs/Chinese/Moon-Twelve-CN/REGULAR-UR-BACKS.webp"),
+  urLandscape: getChineseCardImage("card-backs/Chinese/Moon-Thirteen-CN/M12-LANDSCAPE-URBACKS.webp"),
+  sgr: getChineseCardImage("card-backs/Chinese/Moon-Thirteen-CN/M12-SGR-BACKS.webp"),
+  highTier: getChineseCardImage("card-backs/Chinese/Moon-Thirteen-CN/HY13-HIGH-TIER-BACK.webp"),
+  highTierLandscape: getChineseCardImage("card-backs/Chinese/Moon-Thirteen-CN/HY13-HIGH-TIER-BACK-LANDSCAPE.webp"),
+} as const;
+export function getChineseMoonTwelveBack(card: { key: string; rarity: string }): ChineseCardBack {
+  const sideways = CN_MOON_TWELVE_ROTATED_KEYS.has(card.key);
+  const backs = CN_MOON_TWELVE_BACK_IMAGES;
+  if (["ZR", "SC", "DZR"].includes(card.rarity)) {
+    const landscape = sideways || card.rarity === "DZR";
+    return { image: landscape ? backs.highTierLandscape : backs.highTier, rotation: landscape ? 90 : 0, silverStamp: true, silverStampLandscape: landscape };
+  }
+  const image = card.rarity === "R" ? backs.r : card.rarity === "SR" ? backs.sr : card.rarity === "SSR" ? backs.ssr : card.rarity === "HR" ? sideways ? backs.standardLandscape : backs.standard : card.rarity === "UR" ? sideways ? backs.urLandscape : backs.ur : card.rarity === "SGR" ? backs.sgr : backs.standard;
+  return { image, rotation: sideways ? 90 : 0 };
+}
+export const CN_MOON_TWELVE_REDEMPTION_PRIZE = { key: "REDEMPTION-1", code: "Redemption prize", rarity: "REDEMPTION", number: 1, image: getChineseCardImage("Chinese Sets/Moon-Twelve-CN/RedeptionBinderM12-2.webp"), back: { image: getChineseCardImage("Chinese Sets/Moon-Twelve-CN/RedeptionBinderM12-2.webp"), rotation: 0 } as ChineseCardBack };
+export const CN_MOON_TWELVE_CARDS = [...CHINESE_MOON_TWELVE_CODES.map(card => ({ ...card, image: getChineseMoonTwelveFront(card.number, card.rarity), back: getChineseMoonTwelveBack(card) })).map(withChineseReplacementFront), CN_MOON_TWELVE_REDEMPTION_PRIZE].sort((a, b) => CN_MOON_TWELVE_RARITY_ORDER.indexOf(a.rarity as typeof CN_MOON_TWELVE_RARITY_ORDER[number]) - CN_MOON_TWELVE_RARITY_ORDER.indexOf(b.rarity as typeof CN_MOON_TWELVE_RARITY_ORDER[number]));
 export const CN_FUN_ONE_IMAGE_REVISION = "20261022-f1-complete-121-v1";
 export const CN_FUN_ONE_SET_ID = "cn-fun-one";
 export const CN_FUN_ONE_CARDS = CHINESE_FUN_ONE_CODES.map(card => {
@@ -624,8 +658,10 @@ const url = new URL(refreshChineseMoonOneFront(src));
                     url.searchParams.set("v", url.searchParams.get("refresh")!);
 if (/^\/Chinese Sets\/Moon-Six-CN\/CN-M6-LSR\d+\.webp$/.test(decodeURIComponent(url.pathname)) && url.searchParams.get("refresh") === CN_MOON_SIX_LSR_REVISION)
                     url.searchParams.set("v", CN_MOON_SIX_LSR_REVISION);
+if (/^\/Chinese Sets\/Moon-Twelve-CN\/CN-M12-DZR[12]\.webp$/.test(decodeURIComponent(url.pathname)) && url.searchParams.get("refresh") === CN_MOON_TWELVE_DZR_REFRESH)
+                    url.searchParams.set("v", CN_MOON_TWELVE_DZR_REFRESH);
 const requestUrl = url.href;
-                if (url.origin !== new URL(CARD_IMAGE_WORKER_URL).origin || (!decodeURIComponent(url.pathname).startsWith("/Chinese Sets/") && !/^\/card-backs\/Chinese\/Moon-Two\/(?:CHINESE-STANDARD-BACK|CHINESE-SIDEWAYS-STANDARD-BACK|CHINESE-M2-SGR-BACK|CHINESE-OLD-UR-BACK|LANDSCAPE-UR)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/R-Cards-Older-Sets\/[A-Z0-9]+(?:-[A-Z0-9]+)+\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/SC-CARDS\/(?:MOON-4-SCS|SC-4-ALTERNATE)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Replacements\/(?:YH-T05-0(?:47|5[0-9]|60)|HY06-UR-0(?:0[1-9]|1[0-6]))\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Moon-Thirteen-CN\/HY13-(?:DZR-BACK|HIGH-TIER-BACK(?:-LANDSCAPE)?|R-BACK|SGR-BACK|SIDEWAYS-BACK|SR-BACK|SSR-BACK|STANDARD-BACK(?:-LANDSCAPE)?|UR-BACK)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Moon-Six\/(?:HY06-R-\d{3}|PTR-LANDSCAPE|PTR-PORTRAIT)\.webp$/.test(decodeURIComponent(url.pathname))))
+                if (url.origin !== new URL(CARD_IMAGE_WORKER_URL).origin || (!decodeURIComponent(url.pathname).startsWith("/Chinese Sets/") && !/^\/card-backs\/Chinese\/Moon-Two\/(?:CHINESE-STANDARD-BACK|CHINESE-SIDEWAYS-STANDARD-BACK|CHINESE-M2-SGR-BACK|CHINESE-OLD-UR-BACK|LANDSCAPE-UR)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/R-Cards-Older-Sets\/[A-Z0-9]+(?:-[A-Z0-9]+)+\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/SC-CARDS\/(?:MOON-4-SCS|SC-4-ALTERNATE)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Replacements\/(?:YH-T05-0(?:47|5[0-9]|60)|HY06-UR-0(?:0[1-9]|1[0-6]))\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Moon-Thirteen-CN\/(?:HY13-(?:DZR-BACK|HIGH-TIER-BACK(?:-LANDSCAPE)?|R-BACK|SGR-BACK|SIDEWAYS-BACK|SR-BACK|SSR-BACK|STANDARD-BACK(?:-LANDSCAPE)?|UR-BACK)|M12-(?:LANDSCAPE-URBACKS|SGR-BACKS))\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Moon-Twelve-CN\/(?:M11-SR-BACKS|M12-SSR-BACKS|REGULAR-UR-BACKS)\.webp$/.test(decodeURIComponent(url.pathname)) && !/^\/card-backs\/Chinese\/Moon-Six\/(?:HY06-R-\d{3}|PTR-LANDSCAPE|PTR-PORTRAIT)\.webp$/.test(decodeURIComponent(url.pathname))))
                     throw new Error("Invalid Chinese image source.");
 const { data, error } = await readChineseImageSession();
                 if (!active)
