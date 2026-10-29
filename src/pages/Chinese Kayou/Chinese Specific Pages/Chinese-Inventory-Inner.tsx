@@ -1,9 +1,10 @@
+import { InventoryListingFilters, InventoryListingBadges, inventoryListingMatches, type InventoryListingView } from "@/components/InventoryOverview";
 import InventoryBulkEdit from "@/components/InventoryBulkEdit";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { chineseCards, chineseSets, getChineseCardLabel, hasChineseCardCode, chineseRarityLabel, isWideChineseCard, type ChineseISOCard } from "../Chinese ISO/catalog/catalog";
+import { chineseCards, chineseSets, getChineseCard, getChineseCardLabel, hasChineseCardCode, chineseRarityLabel, isWideChineseCard, type ChineseISOCard } from "../Chinese ISO/catalog/catalog";
 import { isChineseOwned } from "../Chinese ISO/data/model";
 import ChineseISOImage from "../Chinese ISO/components/card-image";
 type PageQuery = {
@@ -29,6 +30,9 @@ async function readRows<T>(query: () => PageQuery): Promise<T[]> {
 export default function ChineseInventoryInner() {
     const { setId } = useParams();
     const navigate = useNavigate();
+const [searchParams] = useSearchParams();
+const [listingView, setListingView] = useState<InventoryListingView>(() => { const value = searchParams.get("listings"); return value === "listed" || value === "sale" || value === "trade" ? value : "all"; });
+const openedListing = useRef("");
     const [collapsedRarities, setCollapsedRarities] = useState<Record<string, boolean>>({});
     const [progressMap, setProgressMap] = useState<Record<string, any>>({});
     type MarketListing = {
@@ -335,6 +339,15 @@ export default function ChineseInventoryInner() {
         setSavedListingDraft(draft);
         setCardSaveError("");
     };
+useEffect(() => {
+  const key = searchParams.get("card");
+  const request = `${resolvedSetId}:${key}`;
+  if (loading || !resolvedSetId || !key || openedListing.current === request) return;
+  const card = getChineseCard(resolvedSetId, key);
+  if (!card || !inventoryListingMatches(marketListings[key])) return;
+  openedListing.current = request;
+  openCardDetails(card);
+}, [loading, resolvedSetId, searchParams, marketListings]);
     const updateListingDraft = (changes: Partial<ListingDraft>) => {
         setListingDraft((current) => (current ? { ...current, ...changes } : current));
     };
@@ -446,12 +459,13 @@ export default function ChineseInventoryInner() {
         }
     };
     const ownedBonusCards = chineseCards.filter(card => card.setId === resolvedSetId && isChineseOwned(progressMap[card.setId]?.[card.key]));
+const visibleInventoryCards = listingView === "all" ? ownedBonusCards : chineseCards.filter(card => card.setId === resolvedSetId && inventoryListingMatches(marketListings[card.key], listingView));
     const rarityOrders: Record<string, string[]> = set ? { [set.id]: Array.from(new Set(set.cards.map(card => card.rarity))) } : {};
     if (loading)
         return <div role="status" className="p-10 text-center text-sm text-muted-foreground">Loading Chinese inventory...</div>;
     if (loadError || !set)
         return <div role="alert" className="p-10 text-center"><p>{loadError || "Chinese set not found."}</p><button type="button" onClick={() => navigate("/inventory-chinese")} className="mt-4 underline">Back to Chinese inventory</button></div>;
-    const activeListingsCount = Object.values(marketListings).filter((listing) => listing.is_for_trade || listing.is_for_sale).length;
+    const activeListingsCount = Object.values(marketListings).filter((listing) => inventoryListingMatches(listing)).length;
     return (<div className={`min-h-screen pb-24 transition-colors ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
     {saveError && <p role="alert" className="mb-3 rounded-xl border border-red-500/30 p-3 text-sm text-red-500">{saveError}</p>}
@@ -681,10 +695,12 @@ export default function ChineseInventoryInner() {
           <button type="button" onClick={handleEditToggle} disabled={savingQuantities} className={`min-h-11 min-w-0 max-w-full rounded-lg border px-2 py-2 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7C84B]/60 disabled:opacity-50 sm:px-4 sm:text-sm ${editMode ? "border-[#E7C84B] bg-[#E7C84B] text-black" : "border-black/10 bg-black/[0.025] hover:bg-black/[0.05] dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"}`}>
             {savingQuantities ? "Saving..." : editMode ? "Save quantities" : "Quick edit"}
           </button>
-            <button type="button" onClick={() => void openBulkEdit()} disabled={loading || !!loadError || savingQuantities || isSavingCard || !ownedBonusCards.length} className="min-h-11 max-w-full rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-xs font-semibold text-[#806100] transition-colors hover:bg-[#E7C84B]/20 disabled:opacity-40 sm:px-4 sm:text-sm dark:text-[#E7C84B]">Bulk edit</button>
+            <button type="button" onClick={() => void openBulkEdit()} disabled={loading || !!loadError || savingQuantities || isSavingCard || !visibleInventoryCards.length} className="min-h-11 max-w-full rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-xs font-semibold text-[#806100] transition-colors hover:bg-[#E7C84B]/20 disabled:opacity-40 sm:px-4 sm:text-sm dark:text-[#E7C84B]">Bulk edit</button>
           </div>
         </section>
-        {showBulkEdit && <InventoryBulkEdit setId={set.id} setName={set.name} merchandise={set.id === "cn-kuji-raffles"} cards={ownedBonusCards.map(card => ({ ...card, code: getChineseCardLabel(card) }))} quantities={quantities} listings={marketListings} quantityTargets={{}} listingTargets={{}} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
+        <InventoryListingFilters value={listingView} onChange={value => { setListingView(value); setCollapsedRarities({}); }}/>
+        {!loading && !loadError && listingView !== "all" && !visibleInventoryCards.length && <p role="status" className="py-8 text-center text-sm text-muted-foreground">No active listings match this filter.</p>}
+        {showBulkEdit && <InventoryBulkEdit setId={set.id} setName={set.name} merchandise={set.id === "cn-kuji-raffles"} cards={visibleInventoryCards.map(card => ({ ...card, code: getChineseCardLabel(card) }))} quantities={quantities} listings={marketListings} quantityTargets={{}} listingTargets={{}} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
                 setQuantities(current => ({ ...current, [key]: quantity }));
                 setSavedQuantities(current => ({ ...current, [key]: quantity }));
                 setMarketListings(current => {
@@ -696,7 +712,7 @@ export default function ChineseInventoryInner() {
                     return next;
                 });
             }}/>}
-        {ownedBonusCards.length === 0 ? (<section className="py-12 text-center">
+        {listingView === "all" && ownedBonusCards.length === 0 ? (<section className="py-12 text-center">
             <h2 className="text-xl font-semibold">Inventory Empty</h2>
             <p className={`mx-auto mt-2 max-w-xl text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
               You don't currently own any cards in this set. Add cards to your collection first,
@@ -716,7 +732,7 @@ export default function ChineseInventoryInner() {
                 </span>
               </div>
               <div className="divide-y divide-black/[0.08] dark:divide-white/[0.08]">
-                {Object.entries(ownedBonusCards.reduce((acc: Record<string, any[]>, card) => {
+                {Object.entries(visibleInventoryCards.reduce((acc: Record<string, any[]>, card) => {
                 const rarity = card.rarity;
                 if (!acc[rarity])
                     acc[rarity] = [];
@@ -758,12 +774,12 @@ export default function ChineseInventoryInner() {
                                         event.preventDefault();
                                         openCardDetails(card);
                                     }
-                                }} onClick={() => openCardDetails(card)} className={`group relative cursor-pointer overflow-hidden rounded-xl p-0.5 transition ${listing?.is_for_trade && listing?.is_for_sale
-                                    ? "border-violet-500"
-                                    : listing?.is_for_trade
-                                        ? "border-emerald-500"
-                                        : listing?.is_for_sale
-                                            ? "border-sky-500"
+                                }} onClick={() => openCardDetails(card)} className={`group relative cursor-pointer overflow-hidden rounded-xl border-2 p-0.5 transition ${inventoryListingMatches(listing, "trade") && inventoryListingMatches(listing, "sale")
+                                    ? "border-violet-400"
+                                    : inventoryListingMatches(listing, "trade")
+                                        ? "border-emerald-400"
+                                        : inventoryListingMatches(listing, "sale")
+                                            ? "border-blue-400"
                                             : ""} ${isDoubleCard ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                     <ChineseISOImage card={card}/>
@@ -816,13 +832,7 @@ export default function ChineseInventoryInner() {
                                           </button>)}
                                       </div>)}
                                   </div>
-                                  {(listing?.is_for_trade || listing?.is_for_sale) && (<div className={`absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white ${listing.is_for_trade && listing.is_for_sale
-                                        ? "bg-violet-500"
-                                        : listing.is_for_trade
-                                            ? "bg-emerald-500"
-                                            : "bg-sky-500"}`}>
-                                      &#10003;
-                                    </div>)}
+                                  <InventoryListingBadges listing={listing}/>
                                 </div>);
                         })}
                           </div>)}

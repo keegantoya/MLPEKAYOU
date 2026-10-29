@@ -1,9 +1,10 @@
-import InventoryOverview from "@/components/InventoryOverview";
-import { inventoryCollections as collections, normalizeInventorySetId as normalizeSetId, buildInventoryProgress, getInventoryOwnedCards, getInventoryCard, getInventoryCardSetId, inventoryStorageSetId, fetchInventoryProgress, fetchInventoryListings } from "@/lib/english-inventory";
+import InventoryOverview, { inventoryListingMatches, type InventoryOverviewListing } from "@/components/InventoryOverview";
+import { inventoryCollections as collections, normalizeInventorySetId as normalizeSetId, buildInventoryProgress, getInventoryOwnedCards, getInventoryCard, getInventoryCardImage, getInventoryCardImageStyle, getInventoryCardSetId, inventoryStorageSetId, fetchInventoryProgress, fetchInventoryListings } from "@/lib/english-inventory";
 import CardImage from "@/components/CardImage";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 export default function MyTrades() {
+    const [listingItems, setListingItems] = useState<InventoryOverviewListing[]>([]);
     const [activeFilter, setActiveFilter] = useState("moon");
     const [hiddenSets, setHiddenSets] = useState<string[]>([]);
     const [progress, setProgress] = useState<Record<string, Record<string, boolean>>>({});
@@ -30,6 +31,7 @@ export default function MyTrades() {
                     setHiddenSets([]);
                     setProgress({});
                     setListingCounts({});
+                    setListingItems([]);
                     return;
                 }
                 activeUserId = user.id;
@@ -55,6 +57,14 @@ export default function MyTrades() {
                     cards.add(card.key);
                     identities.set(collectionId, cards);
                 }
+                setListingItems([...new Map(trades.filter(row => inventoryListingMatches(row)).flatMap(row => {
+                    const card = getInventoryCard(normalizeSetId(row.set_id), row.card_key);
+                    if (!card?.isoEligible) return [];
+                    const collectionId = getInventoryCardSetId(normalizeSetId(row.set_id), row.card_key);
+                    const collection = collections.find(set => set.id === collectionId);
+                    if (!collection) return [];
+                    return [{ id: `${collectionId}:${card.key}`, code: card.code, setName: [collection.title, collection.setName === "TCG" ? "" : collection.setName].filter(Boolean).join(" "), href: `/inventory/${collection.slug}?listings=listed&card=${encodeURIComponent(card.key)}`, image: <span className="relative block overflow-hidden" style={{ aspectRatio: card.square ? "1" : card.wide ? "10 / 7" : "5 / 7" }}><CardImage src={getInventoryCardImage(card)} imageSize={card.original ? "original" : undefined} alt={card.code} className="h-full w-full object-cover" style={getInventoryCardImageStyle(card)} draggable={false}/></span>, listing: row }];
+                }).map(item => [item.id, item] as const)).values()]);
                 setListingCounts(Object.fromEntries([...identities].map(([id, cards]) => [id, cards.size])));
             }
             catch (cause) {
@@ -75,6 +85,7 @@ export default function MyTrades() {
                 setHiddenSets([]);
                 setProgress({});
                 setListingCounts({});
+                    setListingItems([]);
                 setLoading(false);
                 setLoadError("");
             }
@@ -83,6 +94,7 @@ export default function MyTrades() {
                     activeUserId = session?.user.id ?? "";
                     setProgress({});
                     setListingCounts({});
+                    setListingItems([]);
                     setHiddenSets([]);
                     setLoading(true);
                 }
@@ -107,5 +119,5 @@ export default function MyTrades() {
         merchandise: set.family === "merch",
         preview: <CardImage src={set.imageUrl} alt="" className="block aspect-[5/7] w-full object-cover"/>,
     }));
-    return <InventoryOverview title="My Inventory" categories={categories} category={activeFilter} onCategoryChange={setActiveFilter} sets={sets} loading={loading} error={loadError} checklistHref="/collections" onRetry={() => setRetry(value => value + 1)}/>;
+    return <InventoryOverview listingItems={listingItems} title="My Inventory" categories={categories} category={activeFilter} onCategoryChange={setActiveFilter} sets={sets} loading={loading} error={loadError} checklistHref="/collections" onRetry={() => setRetry(value => value + 1)}/>;
 }

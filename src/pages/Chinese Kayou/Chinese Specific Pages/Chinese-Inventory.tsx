@@ -140,5 +140,10 @@ export default function ChineseInventory() {
         available: counts.has(set.id),
         preview: set.imageUrl || previewCards.has(set.id) ? <ChineseInventoryPreview key={`${set.id}:${set.imageUrl ?? "owned"}`} imageUrl={set.imageUrl} card={previewCards.get(set.id)} /> : undefined,
     }));
-    return <InventoryOverview title="Chinese Inventory" categories={chineseFamilies} category={family} onCategoryChange={setFamily} sets={sets} loading={loading} listingsLoading={listingLoading} error={error} checklistHref="/collections-chinese" onRetry={() => setRetry(value => value + 1)}/>;
+    const listingItems = listings.flatMap(row => {
+        const card = getChineseCard(row.set_id, row.card_key);
+        const set = chineseSets.find(set => set.id === row.set_id);
+        return card && set ? [{ id: `${row.set_id}:${row.card_key}`, code: card.code, setName: set.name, href: `/inventory-chinese/${set.id}?listings=listed&card=${encodeURIComponent(card.key)}`, image: <ChineseISOImage card={card}/>, listing: row }] : [];
+    });
+    return <InventoryOverview listingItems={listingItems} title="Chinese Inventory" categories={chineseFamilies} category={family} onCategoryChange={setFamily} sets={sets} loading={loading} listingsLoading={listingLoading} error={error} checklistHref="/collections-chinese" onRetry={() => setRetry(value => value + 1)}/>;
 }

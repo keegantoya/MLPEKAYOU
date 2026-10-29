@@ -1,14 +1,18 @@
+import { InventoryListingFilters, InventoryListingBadges, inventoryListingMatches, type InventoryListingView } from "@/components/InventoryOverview";
 import InventoryBulkEdit from "@/components/InventoryBulkEdit";
 import CardImage from "@/components/CardImage";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { englishStarterDecks } from "@/lib/english-card-catalog";
-import { inventoryStorageSetId, resolveInventorySet, buildInventoryProgress, buildInventoryRecordMap, getInventoryOwnedCards, isInventoryDeckComplete, getInventoryWriteTarget, fetchInventoryProgress, fetchInventoryListings, fetchInventoryQuantities, type InventoryTarget, type InventoryCard, isInventoryMerchandise, getInventoryCardImage, getInventoryCardImageStyle, getInventoryRarityLabel } from "@/lib/english-inventory";
+import { inventoryStorageSetId, resolveInventorySet, buildInventoryProgress, buildInventoryRecordMap, getInventoryOwnedCards, isInventoryDeckComplete, getInventoryWriteTarget, fetchInventoryProgress, fetchInventoryListings, fetchInventoryQuantities, type InventoryTarget, type InventoryCard, isInventoryMerchandise, getInventoryCard, getInventoryCardImage, getInventoryCardImageStyle, getInventoryRarityLabel } from "@/lib/english-inventory";
 const getDisplayCode = (card: InventoryCard) => card.code;
 export default function MyTradesSets() {
 const { setId } = useParams();
 const navigate = useNavigate();
+const [searchParams] = useSearchParams();
+const [listingView, setListingView] = useState<InventoryListingView>(() => { const value = searchParams.get("listings"); return value === "listed" || value === "sale" || value === "trade" ? value : "all"; });
+const openedListing = useRef("");
 const set = resolveInventorySet(setId);
 const resolvedSetId = set?.id ?? "";
 const merchandise = isInventoryMerchandise(resolvedSetId);
@@ -355,6 +359,15 @@ const draft = toDraft(card.key);
         setSavedListingDraft(draft);
         setCardSaveError("");
     };
+useEffect(() => {
+  const key = searchParams.get("card");
+  const request = `${resolvedSetId}:${key}`;
+  if (loading || !resolvedSetId || !key || openedListing.current === request) return;
+  const card = getInventoryCard(resolvedSetId, key);
+  if (!card || !inventoryListingMatches(marketListings[key])) return;
+  openedListing.current = request;
+  openCardDetails(card);
+}, [loading, resolvedSetId, searchParams, marketListings]);
 const updateListingDraft = (changes: Partial<ListingDraft>) => {
         setListingDraft((current) => (current ? { ...current, ...changes } : current));
     };
@@ -467,14 +480,15 @@ const dirty = Object.keys(quantities).some(key => key !== cardKey && (quantities
     }
 const progress = progressMap[set.id] ?? {};
 const ownedBonusCards = getInventoryOwnedCards(set.id, progress);
+const visibleInventoryCards = listingView === "all" ? ownedBonusCards : Object.keys(marketListings).map(key => getInventoryCard(set.id, key)).filter((card): card is InventoryCard => !!card && inventoryListingMatches(marketListings[card.key], listingView));
 const completeDecks = set.id === "SD" ? englishStarterDecks.filter(deck => isInventoryDeckComplete(progress, deck.code)) : [];
 const hasStarterDeck = completeDecks.length > 0;
 const rarityOrder = Object.keys(set.rarities);
-const rarityGroups = Object.entries(ownedBonusCards.reduce((groups: Record<string, InventoryCard[]>, card) => {
+const rarityGroups = Object.entries(visibleInventoryCards.reduce((groups: Record<string, InventoryCard[]>, card) => {
         (groups[card.rarity] ??= []).push(card);
         return groups;
     }, {})).sort(([a], [b]) => rarityOrder.indexOf(b) - rarityOrder.indexOf(a));
-const activeListingsCount = Object.values(marketListings).filter((listing) => listing.is_for_trade || listing.is_for_sale).length;
+const activeListingsCount = Object.values(marketListings).filter((listing) => inventoryListingMatches(listing)).length;
     return (<div className={`min-h-screen pb-24 transition-colors ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <div className="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
         {selectedCard && listingDraft && (<div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/65 p-2 backdrop-blur-md sm:p-5" role="dialog" aria-modal="true" aria-labelledby="card-details-title" onMouseDown={(event) => event.preventDefault()}>
@@ -703,10 +717,12 @@ const destination = pendingNavigation;
           <button type="button" onClick={handleEditToggle} disabled={isSavingInventory} className={`min-h-11 min-w-0 max-w-full rounded-lg border px-2 py-2 text-center text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7C84B]/60 disabled:opacity-50 sm:px-4 sm:text-sm ${editMode ? "border-[#E7C84B] bg-[#E7C84B] text-black" : "border-black/10 bg-black/[0.025] hover:bg-black/[0.05] dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]"}`}>
             {isSavingInventory ? "Saving..." : editMode ? "Save quantities" : "Quick edit"}
           </button>
-            <button type="button" onClick={() => void openBulkEdit()} disabled={loading || !!loadError || isSavingInventory || isSavingCard || !ownedBonusCards.length} className="min-h-11 max-w-full rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-xs font-semibold text-[#806100] transition-colors hover:bg-[#E7C84B]/20 disabled:opacity-40 sm:px-4 sm:text-sm dark:text-[#E7C84B]">Bulk edit</button>
+            <button type="button" onClick={() => void openBulkEdit()} disabled={loading || !!loadError || isSavingInventory || isSavingCard || !visibleInventoryCards.length} className="min-h-11 max-w-full rounded-lg border border-[#E7C84B]/40 bg-[#E7C84B]/10 px-2 py-2 text-xs font-semibold text-[#806100] transition-colors hover:bg-[#E7C84B]/20 disabled:opacity-40 sm:px-4 sm:text-sm dark:text-[#E7C84B]">Bulk edit</button>
           </div>
         </section>
-        {showBulkEdit && <InventoryBulkEdit setId={set.id} storageSetId={inventoryStorageSetId(set.id)} setName={set.name} merchandise={merchandise} cards={ownedBonusCards} quantities={quantities} listings={marketListings} quantityTargets={quantityTargets} listingTargets={listingTargets} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
+        <InventoryListingFilters value={listingView} onChange={value => { setListingView(value); setCollapsedRarities({}); }}/>
+        {!loading && !loadError && listingView !== "all" && !visibleInventoryCards.length && <p role="status" className="py-8 text-center text-sm text-muted-foreground">No active listings match this filter.</p>}
+        {showBulkEdit && <InventoryBulkEdit setId={set.id} storageSetId={inventoryStorageSetId(set.id)} setName={set.name} merchandise={merchandise} cards={visibleInventoryCards} quantities={quantities} listings={marketListings} quantityTargets={quantityTargets} listingTargets={listingTargets} onClose={() => setShowBulkEdit(false)} onSaved={({ key, quantity, listing }) => {
                 setQuantities(current => ({ ...current, [key]: quantity }));
                 setSavedQuantities(current => ({ ...current, [key]: quantity }));
                 setMarketListings(current => {
@@ -719,16 +735,16 @@ const next = { ...current };
                 });
             }}/>}
         {inventorySaveError && <p role="alert" className="mt-3 text-sm text-red-500">{inventorySaveError}</p>}
-        {loading ? <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading inventory...</p> : loadError ? <p role="alert" className="py-10 text-center text-sm text-red-500">{loadError}</p> : (set.id === "SD"
+        {loading ? <p role="status" className="py-10 text-center text-sm text-zinc-500">Loading inventory...</p> : loadError ? <p role="alert" className="py-10 text-center text-sm text-red-500">{loadError}</p> : (listingView === "all" && (set.id === "SD"
             ? ownedBonusCards.length === 0 && !hasStarterDeck
-            : ownedBonusCards.length === 0) ? (<section className="py-12 text-center">
+            : ownedBonusCards.length === 0)) ? (<section className="py-12 text-center">
             <h2 className="text-xl font-semibold">Inventory Empty</h2>
             <p className={`mx-auto mt-2 max-w-xl text-sm ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
               You don't currently own any {itemWord} in this collection. Add {itemWord} to your collection first,
               then they'll appear here.
             </p>
           </section>) : (<>
-            {set.id === "SD" && (<section className="mt-6 border-b border-black/10 pb-5 dark:border-white/10">
+            {set.id === "SD" && listingView === "all" && (<section className="mt-6 border-b border-black/10 pb-5 dark:border-white/10">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-base font-semibold">Starter Decks</h2>
                   <span className={`text-xs ${isLightMode ? "text-zinc-500" : "text-zinc-400"}`}>
@@ -798,12 +814,12 @@ const rarityLabel = getInventoryRarityLabel(set.id, rarity);
 const key = card.key;
 const listing = marketListings[key];
 const isDoubleCard = card.wide;
-                            return (<div key={key} onClick={() => openCardDetails(card)} className={`group relative cursor-pointer overflow-hidden rounded-xl p-0.5 transition ${listing?.is_for_trade && listing?.is_for_sale
-                                    ? "border-violet-500"
-                                    : listing?.is_for_trade
-                                        ? "border-emerald-500"
-                                        : listing?.is_for_sale
-                                            ? "border-sky-500"
+                            return (<div key={key} onClick={() => openCardDetails(card)} className={`group relative cursor-pointer overflow-hidden rounded-xl border-2 p-0.5 transition ${inventoryListingMatches(listing, "trade") && inventoryListingMatches(listing, "sale")
+                                    ? "border-violet-400"
+                                    : inventoryListingMatches(listing, "trade")
+                                        ? "border-emerald-400"
+                                        : inventoryListingMatches(listing, "sale")
+                                            ? "border-blue-400"
                                             : ""} ${card.square ? "aspect-square" : isDoubleCard ? "col-span-2 aspect-[10/7]" : "aspect-[5/7]"}`}>
                                   <div className="relative h-full w-full overflow-hidden rounded-[10px]">
                                     <CardImage src={getInventoryCardImage(card)} imageSize={card.original ? "original" : undefined} alt={card.code} style={getInventoryCardImageStyle(card)} draggable={false}/>
@@ -856,13 +872,7 @@ const finalValue = Math.max(1, quantities[key] || 1);
                                           </button>)}
                                       </div>)}
                                   </div>
-                                  {(listing?.is_for_trade || listing?.is_for_sale) && (<div className={`absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white ${listing.is_for_trade && listing.is_for_sale
-                                        ? "bg-violet-500"
-                                        : listing.is_for_trade
-                                            ? "bg-emerald-500"
-                                            : "bg-sky-500"}`}>
-                                      &#10003;
-                                    </div>)}
+                                  <InventoryListingBadges listing={listing}/>
                                 </div>);
                         })}
                           </div>)}
