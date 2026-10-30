@@ -2,6 +2,7 @@ import { profileViewGroup, profileViewSquare, isProfileMerchandiseHidden } from 
 import { profileViewCard as englishViewCard, profileViewEligible as englishViewEligible, profileViewName as englishViewName, profileViewCode as englishViewCode, profileViewImage as englishViewImage, profileViewStyle as englishViewStyle, profileViewWide as englishViewWide, compareProfileViewCards as compareEnglishViewCards, ownedEnglishViewCards, missingProfileViewCards as missingEnglishViewCards, readEnglishViewRows } from "@/lib/english-card-views";
 import { ChineseProfileCards, ProfileCardLanguageSwitch, usePublicChineseProfile, type ProfileCardLanguage } from "@/pages/Chinese Kayou/Chinese ISO/PublicChineseCards";
 import ProfileRarestShowcase, { profileShowcaseStyles } from "./ProfileRarestShowcase";
+import ProfileAvatar from "@/components/ProfileAvatar";
 import CardImage from "@/components/CardImage";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -265,7 +266,7 @@ const savedWishlist = wishlist.map(row => { const [set_id, ...keys] = row.card_k
         void loadStats().catch(console.error);
         return () => { active = false; };
     }, [profile, englishEnabled]);
-const { avatar, frame } = getProfileAssets(profile);
+const { avatar } = getProfileAssets(profile);
 const [englishISO, setEnglishISO] = useState<{
         owner: string;
         cards: Array<{
@@ -503,6 +504,7 @@ const modeLabel = collectionMode === "iso"
     }
     return (<div className={`pp-upgrade min-h-screen pb-32 transition-colors duration-200 sm:pb-8 ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
       <style>{publicProfileStyles + profileShowcaseStyles + `.pp-hero-copy .pp-avatar{width:92px!important;height:92px!important;border-radius:20px!important}.pp-hero-copy .pp-name{font-size:32px!important;line-height:1.15!important}.pp-hero-copy .pp-profile-discord{font-size:15px!important}.pp-hero-copy .pp-profile-description{font-size:15px!important;line-height:1.6!important}.pp-hero-copy .pp-profile-actions button{font-size:14px!important;min-height:44px}.pp-hero-copy .pp-owned strong{font-size:30px}.pp-hero-copy .pp-metric strong{font-size:21px}.pp-hero-copy .pp-metric{font-size:11px}@media(max-width:850px){.pp-hero-copy .pp-identity{grid-template-columns:72px minmax(0,1fr);gap:8px 14px}.pp-hero-copy .pp-avatar{width:72px!important;height:72px!important}.pp-hero-copy .pp-profile-title .pp-name{font-size:27px!important}.pp-hero-copy .pp-profile-discord{font-size:13px!important}.pp-hero-copy .pp-profile-description{font-size:13px!important;line-height:1.5!important}.pp-hero-copy .pp-profile-actions button{font-size:13px!important}.pp-hero-copy .pp-owned strong{font-size:27px}.pp-hero-copy .pp-metric strong{font-size:20px}}@media(max-width:360px){.pp-hero-copy .pp-identity{grid-template-columns:64px minmax(0,1fr);gap:8px 10px}.pp-hero-copy .pp-avatar{width:64px!important;height:64px!important}.pp-hero-copy .pp-profile-title .pp-name{font-size:24px!important}.pp-hero-copy .pp-metric{font-size:9px}.pp-hero-copy .pp-metric strong{font-size:18px}}.pp-pixel-twilight{display:none;pointer-events:none;color:var(--pp-ink);opacity:.42}.spooky .pp-pixel-twilight,[data-theme="spooky"] .pp-pixel-twilight{color:var(--pp-accent);opacity:.7}.pp-pixel-twilight svg{display:block;width:100%;height:100%;overflow:visible}.pp-twilight-body{animation:pp-twilight-bob .55s steps(2,end) infinite;transform-origin:40px 47px}.pp-twilight-leg{transform-box:view-box;transform-origin:40px 48px;animation:pp-twilight-trot .55s steps(3,end) infinite alternate}.pp-twilight-leg-front,.pp-twilight-leg-near-back{animation-delay:-.55s}@keyframes pp-twilight-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1px)}}@keyframes pp-twilight-trot{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}@media(min-width:1100px){.pp-hero-copy>section>div.relative{padding-right:280px!important}.pp-pixel-twilight{display:block;position:absolute;right:22px;top:50%;width:240px;height:224px;transform:translateY(-50%)}}@media(prefers-reduced-motion:reduce){.pp-twilight-body,.pp-twilight-leg{animation:none}}`}</style>
+      <style>{`.pp-avatar-space{display:flex;flex-shrink:0;align-items:center;justify-content:center}.pp-identity:has(.pp-avatar[data-avatar-frame="frame013"]){align-items:center}.pp-avatar-space:has(>[data-avatar-frame="frame013"]){padding:46px 34px 32px}.pp-identity:has([data-avatar-frame="frame013"]) .pp-profile-details{min-width:0}@media(max-width:640px){.pp-identity:has([data-avatar-frame="frame013"]){display:flex!important;flex-direction:column;align-items:stretch;gap:4px!important}.pp-avatar-space:has(>[data-avatar-frame="frame013"]){align-self:center;padding:40px 34px 28px}.pp-identity:has([data-avatar-frame="frame013"]) .pp-profile-details{width:100%}}`}</style>
       <main className={isEmbedded
             ? "pp-shell pp-embedded px-3 py-3 sm:px-4 sm:py-4"
             : "pp-shell px-4 py-5 sm:px-6 sm:py-8"}>
@@ -519,12 +521,9 @@ const modeLabel = collectionMode === "iso"
             : "bg-gradient-to-r from-[#151718] via-[#151718]/95 to-[#151718]/80"}`}/>
           <div className={isEmbedded ? "relative p-4" : "relative p-4 sm:p-5"}>
             <div style={{ marginTop: 0 }} className={isEmbedded
-            ? "mt-3 flex items-center gap-3 sm:gap-4"
+            ? "pp-identity mt-3 flex items-center gap-3 sm:gap-4"
             : "pp-identity mt-2 flex items-center gap-4"}>
-              <div className="pp-avatar relative shrink-0" style={{ overflow: "visible" }}>
-                <CardImage src={avatar} alt={profile?.username} className={`h-full w-full rounded-[20px] border object-cover ${isLightMode ? "border-black/10" : "border-white/10"}`}/>
-                {frame && <CardImage src={isLightMode && frame.lightImage ? frame.lightImage : frame.image} alt={frame.name} className="pointer-events-none absolute z-10 max-w-none object-contain" style={{ left: "50%", top: `${frame.top ?? 50}%`, width: `${(frame.scale ?? 1) * 100}%`, height: `${(frame.scale ?? 1) * 100}%`, transform: "translate(-50%, -50%)" }}/>}
-              </div>
+              <div className="pp-avatar-space"><ProfileAvatar profile={profile} src={avatar} alt={profile?.username || "Profile avatar"} className={`pp-avatar relative shrink-0 rounded-[20px] border ${isLightMode ? "border-black/10" : "border-white/10"}`} /></div>
               <div className="pp-profile-details min-w-0 flex-1">
                 <div className="pp-profile-title flex flex-wrap items-center gap-2">
                   <h1 className={`pp-name break-words font-semibold tracking-tight ${isEmbedded

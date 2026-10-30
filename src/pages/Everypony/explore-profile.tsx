@@ -773,6 +773,7 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
       </div>);
     }
     return (<div className={`w-full transition-colors duration-200 [overflow-anchor:none] ${isLightMode ? "text-zinc-900" : "text-white"}`}>
+      <style>{`.ep-avatar-space{display:flex;align-items:center;justify-content:center;flex-shrink:0}.ep-profile-identity:has([data-avatar-frame="frame013"]){display:flex;align-items:center}.ep-avatar-space:has(>[data-avatar-frame="frame013"]){padding:42px 34px 30px}@media(max-width:639px){.ep-profile-identity:has([data-avatar-frame="frame013"]){flex-direction:column;align-items:stretch;gap:4px}.ep-avatar-space:has(>[data-avatar-frame="frame013"]){align-self:center;padding:36px 34px 26px}}`}</style>
       <section className="relative overflow-hidden">
         <div className={`absolute inset-0 bg-cover bg-center ${isLightMode ? "opacity-[0.08]" : "opacity-[0.07]"}`} style={{
             backgroundImage: "url('/website-assets/exploreequestria.webp')",
@@ -796,8 +797,8 @@ const ExploreProfile = ({ user, tradingProfile, onClose, lightMode, }: ExplorePr
               {activityStatus.label}
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-[64px_minmax(0,1fr)] items-start gap-3 sm:flex sm:items-center sm:gap-4">
-            <ProfileAvatar profile={user} src={avatar} alt={user?.username} className={`h-16 w-16 shrink-0 rounded-2xl border object-cover sm:h-20 sm:w-20 ${isLightMode ? "border-black/10" : "border-white/10"}`}/>
+          <div className="ep-profile-identity mt-4 grid grid-cols-[64px_minmax(0,1fr)] items-start gap-3 sm:flex sm:items-center sm:gap-4">
+            <div className="ep-avatar-space"><ProfileAvatar profile={user} src={avatar} alt={user?.username} className={`h-16 w-16 shrink-0 rounded-2xl border object-cover sm:h-20 sm:w-20 ${isLightMode ? "border-black/10" : "border-white/10"}`}/></div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className={`min-w-0 break-words text-2xl font-semibold leading-tight tracking-tight sm:text-3xl ${isLightMode ? "text-zinc-950" : "text-white"}`}>

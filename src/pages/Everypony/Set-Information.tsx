@@ -3,9 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { CARD_IMAGE_WORKER_URL } from "@/lib/card-images";
 import { getCachedCardImage } from "@/lib/card-image-cache";
 import { onAuthIdentityChange } from "@/lib/auth-identity";
-
 type Language = "english" | "chinese";
-type BoxKind = "display" | "collector" | "gift" | "starter" | "merchandise";
+type BoxKind = "display" | "collector" | "gift" | "starter" | "merchandise" | "blister";
 type Probability = { ratio: string; contents: string };
 type BoxVariant = {
   id: string;
@@ -20,6 +19,8 @@ type BoxVariant = {
   source: string | null;
   sourceLabel: string | null;
   probabilities: Probability[];
+  notes?: string[];
+  packLabel?: string;
 };
 type BoxSet = {
   id: string;
@@ -28,10 +29,11 @@ type BoxSet = {
   language: Language;
   family: string;
   variants: BoxVariant[];
+  checklist?: string;
+  shopCollection?: string;
   cardCount: number | null;
   pending: boolean;
 };
-
 const families = [
   { id: "all", label: "All sets" },
   { id: "moon", label: "Moon" },
@@ -43,13 +45,13 @@ const families = [
 ];
 const kindNames: Record<BoxKind, string> = {
   display: "Display box",
+  blister: "Blister pack",
   collector: "Collector box",
   gift: "Gift box",
   starter: "Starter deck",
   merchandise: "Merchandise",
 };
 const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
-
 function Icon({ name, size = 20 }: { name: "box" | "search" | "close" | "arrow" | "link"; size?: number }) {
   const paths = {
     box: <><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="M3 8v9l9 5 9-5V8M12 13v9M7.5 5.5l9 5" /></>,
@@ -60,7 +62,6 @@ function Icon({ name, size = 20 }: { name: "box" | "search" | "close" | "arrow" 
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
-
 function BoxImage({ src, alt, large = false }: { src: string | null; alt: string; large?: boolean }) {
   const [image, setImage] = useState<{ path: string; url: string } | null>(null);
   const [failedPath, setFailedPath] = useState<string | null>(null);
@@ -117,21 +118,19 @@ function BoxImage({ src, alt, large = false }: { src: string | null; alt: string
   if (!src || waiting || failed) return <div className="si-image-fallback" role={waiting ? "status" : undefined} aria-busy={waiting || undefined}><Icon name="box" size={large ? 66 : 48} /><span>{waiting ? "Loading box image..." : src ? "Box image unavailable" : "Photo coming soon"}</span></div>;
   return <img src={resolved ?? undefined} alt={alt} loading={large ? "eager" : "lazy"} decoding="async" draggable={false} onError={() => setFailedPath(src)} />;
 }
-
 function configurationLabel(variant: BoxVariant) {
   if (variant.kind === "merchandise") return "Merchandise";
   if (variant.kind === "starter") return "Starter deck";
   if (variant.kind === "gift") return "Gift box";
   return variant.packs ? `${variant.packs}-pack ${variant.kind === "collector" ? "collector" : "display"}` : kindNames[variant.kind];
 }
-
 function setTitle(set: BoxSet) {
   const series = set.subtitle.match(/\bSeries\s+(\d+)\b/i)?.[1];
+  if (set.language === "chinese" && series) return `${set.name} ${series}`;
   const familyNames: Record<string, string> = { moon: "Moon", fun: "Fun Moments", rainbow: "Rainbow", star: "Star" };
   if (series && familyNames[set.family]) return `${familyNames[set.family]} ${series}`;
   return set.subtitle && set.subtitle !== "Booster Pack" ? `${set.name} - ${set.subtitle}` : set.name;
 }
-
 function matchesSearch(set: BoxSet, query: string) {
   const normalized = query.trim().toLowerCase();
   const requestedSeries = normalized.match(/\bseries\s*(\d+)\b/);
@@ -142,7 +141,6 @@ function matchesSearch(set: BoxSet, query: string) {
   const content = [setTitle(set), set.name, set.subtitle, set.family, set.language, ...set.variants.flatMap(v => [v.label, v.release, configurationLabel(v)])].filter(Boolean).join(" ").toLowerCase();
   return query.trim().toLowerCase().split(/\s+/).every(word => content.includes(word));
 }
-
 const styles = `
 .set-info-root{--si-bg:hsl(var(--background,0 0% 10%));--si-fg:hsl(var(--foreground,0 0% 95%));--si-card:hsl(var(--card,var(--background,0 0% 12%)));--si-muted:hsl(var(--muted-foreground,0 0% 60%));--si-border:hsl(var(--border,0 0% 24%));--si-accent:hsl(var(--primary,48 77% 60%));--si-accent-fg:hsl(var(--primary-foreground,0 0% 8%));color:var(--si-fg);background:var(--si-bg);min-height:100vh;width:100%;font-family:inherit}
 .set-info-root *{box-sizing:border-box}
@@ -173,15 +171,14 @@ const styles = `
 .si-card:focus-visible,.set-info-root button:focus-visible,.si-select:focus-visible,.set-info-root a:focus-visible{outline:2px solid var(--si-accent);outline-offset:4px}
 .si-image-fallback{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;text-align:center;color:var(--si-muted);width:100%;height:100%;font-size:12px}.si-image-fallback svg{opacity:.35}
 .si-empty{padding:48px 20px;text-align:center;border-bottom:1px solid var(--si-border);color:var(--si-muted)}.si-empty svg{margin:auto auto 16px}.si-empty h2{font-size:20px;font-weight:600;color:var(--si-fg);margin:0 0 8px}.si-empty p{font-size:14px}.si-reset{background:none;color:var(--si-accent);font-size:13px;border:0;border-bottom:1px solid currentColor;border-radius:0;padding:6px 0}
-
 .si-format-label{display:block;font-size:12px;color:var(--si-muted);margin-bottom:7px}.si-format-select{width:100%;font-size:16px;min-height:40px}
 .si-detail-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0 10px;padding-bottom:16px;border-bottom:1px solid var(--si-border)}.si-detail-stat{min-width:0}.si-detail-stat strong{display:block;font-size:22px;font-weight:600;line-height:1.1}.si-detail-stat span{display:block;color:var(--si-muted);font-size:10px;line-height:1.4;margin-top:6px}
 .si-specs{margin:0}.si-spec-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid var(--si-border);font-size:12px;line-height:1.6}.si-spec-row dt{color:var(--si-muted)}.si-spec-row dd{margin:0;overflow-wrap:anywhere}
-
+.si-box-note{font-size:12px;line-height:1.65;color:var(--si-muted);margin:14px 0 0}.si-ratio-note{font-size:11px}
 .si-section-label{font-size:13px;font-weight:600;line-height:1.4;margin:20px 0 8px}
 .si-probability{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;border-bottom:1px solid var(--si-border);padding:8px 0;font-size:11px;line-height:1.6}.si-probability strong{font-weight:600}.si-probability span{overflow-wrap:anywhere}
+.si-detail-links{display:flex;flex-wrap:wrap;gap:0 20px}
 .si-source{display:inline-flex;gap:7px;align-items:center;color:var(--si-muted);font-size:11px;margin-top:20px;text-decoration:underline;text-underline-offset:3px}
-
 .si-listing{min-width:0}.si-listing[data-open=true]{grid-column:1/-1;border-top:1px solid var(--si-accent);border-bottom:1px solid var(--si-border)}
 .si-listing[data-open=true]>.si-card{padding:14px 0;border:0}.si-listing[data-open=true]>.si-card .si-card-image{display:none}.si-listing[data-open=true]>.si-card .si-card-content{padding:0;flex-direction:row;align-items:center;justify-content:space-between;gap:16px}.si-listing[data-open=true]>.si-card .si-card-bottom{margin:0;padding:0}
 .si-expansion{min-width:0;animation:si-reveal .18s ease-out}.si-expansion-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:start;gap:clamp(20px,3vw,44px);padding:8px 0 26px}
@@ -194,8 +191,6 @@ const styles = `
 @media(max-width:640px){.si-shell{padding-top:20px}.si-heading h1{font-size:30px}.si-control-top{gap:12px}.si-language{width:100%}.si-search{flex-basis:100%;min-width:0}.si-control-top>label:last-child{width:100%}.si-control-top .si-select{width:100%}.si-families{column-gap:20px;row-gap:0;margin-top:12px}.si-results-bar>span:last-child{display:none}.si-card-image{height:220px;padding:8px}.si-expansion-grid{grid-template-columns:1fr;gap:16px}.si-expansion-visual{position:static}.si-expansion-image{height:280px}.si-expansion-details{padding:0}.si-listing[data-open=true]>.si-card .si-card-bottom{font-size:11px}.si-listing[data-open=true]>.si-card h2{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.set-info-root *{transition:none!important;animation:none!important}.si-card:hover .si-card-image img{transform:none}}
 `;
-
-
 export default function SetInformation() {
   const [language, setLanguage] = useState<Language>("english");
   const [family, setFamily] = useState("all");
@@ -251,21 +246,21 @@ export default function SetInformation() {
           <div className="si-expansion-visual"><div className="si-expansion-image"><BoxImage src={variant.image} alt={imageLabel} large /></div></div>
           <div className="si-expansion-details"><p className="si-eyebrow">{families.find(item => item.id === selected.family)?.label ?? "Other"}</p><div className="si-expansion-heading"><h2 id={`si-title-${set.id}`}>{setTitle(selected)}</h2><button type="button" className="si-close" onClick={closeDetails} aria-label="Close box details"><Icon name="close" /></button></div>
             {selected.variants.length > 1 && <label className="si-format-label">Configuration<select className="si-select si-format-select" value={variant.id} onChange={event => setVariantId(event.target.value)}>{selected.variants.map(item => <option key={item.id} value={item.id}>{item.label}{item.packs && !item.label.toLowerCase().includes("pack") ? ` / ${item.packs} packs` : ""}</option>)}</select></label>}
-            <div className="si-detail-stats">{variant.packs !== null && <div className="si-detail-stat"><strong>{variant.packs}</strong><span>{variant.kind === "gift" ? "booster packs" : "packs per box"}</span></div>}{variant.cardsPerPack !== null && <div className="si-detail-stat"><strong>{variant.cardsPerPack}</strong><span>cards per pack</span></div>}{(variant.cardCount ?? selected.cardCount) !== null && <div className="si-detail-stat"><strong>{variant.cardCount ?? selected.cardCount}</strong><span>cards in set</span></div>}</div>
+            <div className="si-detail-stats">{variant.packs !== null && <div className="si-detail-stat"><strong>{variant.packs}</strong><span>{variant.packLabel ?? (variant.kind === "gift" ? "booster packs" : "packs per box")}</span></div>}{variant.cardsPerPack !== null && <div className="si-detail-stat"><strong>{variant.cardsPerPack}</strong><span>cards per pack</span></div>}{(variant.cardCount ?? selected.cardCount) !== null && <div className="si-detail-stat"><strong>{variant.cardCount ?? selected.cardCount}</strong><span>cards in set</span></div>}</div>
             <dl className="si-specs"><div className="si-spec-row"><dt>Language</dt><dd>{selected.language === "english" ? "English" : "Chinese"}</dd></div><div className="si-spec-row"><dt>Box format</dt><dd>{kindNames[variant.kind]}</dd></div>{variant.release && <div className="si-spec-row"><dt>Listed release</dt><dd>{variant.release}</dd></div>}</dl>
+            {variant.notes?.map((note,index)=><p className="si-box-note" key={index}>{note}</p>)}
             {variant.probabilities.length > 0 && <><h3 className="si-section-label">Published pack configurations</h3><div>{variant.probabilities.map((item, index) => <div className="si-probability" key={`${item.ratio}-${index}`}><strong>{item.ratio}</strong><span>{item.contents}</span></div>)}</div></>}
-            {variant.source && <a className="si-source" href={variant.source} target="_blank" rel="noopener noreferrer">View {variant.sourceLabel ?? "product"} source<Icon name="link" size={15} /></a>}
+            {selected.language === "chinese" && <p className="si-box-note si-ratio-note">{variant.probabilities.length ? "Ratios describe pack groups across production, not a guaranteed mix in each box. A slash means one of the listed rarities. Individual-card odds are not given." : "Pull rates for this box haven't been verified yet."}</p>}
+            <div className="si-detail-links">{selected.checklist && <a className="si-source" href={selected.checklist}>Open checklist</a>}{variant.source?.startsWith("https://pakracards.com/") && <a className="si-source" href={variant.source} target="_blank" rel="noopener noreferrer">Box at Pakra Cards<Icon name="link" size={15} /></a>}{selected.shopCollection && <a className="si-source" href={selected.shopCollection} target="_blank" rel="noopener noreferrer">Shop this set at Pakra Cards<Icon name="link" size={15} /></a>}</div>
           </div>
           </div>
         </section>}
           </article>;
         })}</div> : <div className="si-empty"><Icon name="search" size={38} /><h2>No matching boxes</h2><p>Try another set name or box format.</p><button type="button" className="si-reset" onClick={resetFilters}>Clear filters</button></div>}
       </div>
-
     </main>
   );
 }
-
 const boxSets: BoxSet[] =
 [
   {
@@ -321,7 +316,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 162,
-    "pending": false
+    "pending": false,
+    "checklist": "/moon-four"
   },
   {
     "id": "en-series-5r09mbdf",
@@ -393,7 +389,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 290,
-    "pending": false
+    "pending": false,
+    "checklist": "/moon-three"
   },
   {
     "id": "en-series-wusnjcxp",
@@ -513,7 +510,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 189,
-    "pending": false
+    "pending": false,
+    "checklist": "/moon-two"
   },
   {
     "id": "en-series-7zzyc8zq",
@@ -590,7 +588,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 186,
-    "pending": false
+    "pending": false,
+    "checklist": "/moon-one"
   },
   {
     "id": "en-series-7nthr0lb",
@@ -669,7 +668,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 148,
-    "pending": false
+    "pending": false,
+    "checklist": "/fun-moments-three"
   },
   {
     "id": "en-series-bkh5xfg6",
@@ -702,7 +702,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 136,
-    "pending": false
+    "pending": false,
+    "checklist": "/fun-moments-two"
   },
   {
     "id": "en-series-uwn0xy7l",
@@ -735,7 +736,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 127,
-    "pending": false
+    "pending": false,
+    "checklist": "/fun-moments-one"
   },
   {
     "id": "en-series-6j45wgxd",
@@ -781,7 +783,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 170,
-    "pending": false
+    "pending": false,
+    "checklist": "/rainbow-two"
   },
   {
     "id": "en-series-mjrrqnhj",
@@ -814,7 +817,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 146,
-    "pending": false
+    "pending": false,
+    "checklist": "/rainbow-one"
   },
   {
     "id": "en-series-nogr2a7b",
@@ -851,7 +855,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 105,
-    "pending": false
+    "pending": false,
+    "checklist": "/star-one"
   },
   {
     "id": "en-friendships-begin",
@@ -969,7 +974,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": null,
-    "pending": false
+    "pending": false,
+    "checklist": "/friendships-begin"
   },
   {
     "id": "en-series-i9q374dz",
@@ -1041,7 +1047,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 197,
-    "pending": false
+    "pending": false,
+    "checklist": "/hearthswarming-eve"
   },
   {
     "id": "en-series-27z4pa09",
@@ -1096,7 +1103,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 190,
-    "pending": false
+    "pending": false,
+    "checklist": "/nightmare-night"
   },
   {
     "id": "en-series-ry03llcx",
@@ -1151,7 +1159,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 191,
-    "pending": false
+    "pending": false,
+    "checklist": "/discord"
   },
   {
     "id": "en-series-2nicsllo",
@@ -1184,7 +1193,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": 191,
-    "pending": false
+    "pending": false,
+    "checklist": "/fantasy-wonderland"
   },
   {
     "id": "en-series-qehxs6c6",
@@ -1208,7 +1218,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": null,
-    "pending": false
+    "pending": false,
+    "checklist": "/gel-pens"
   },
   {
     "id": "en-series-8gse15td",
@@ -1253,7 +1264,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": null,
-    "pending": false
+    "pending": false,
+    "checklist": "/acrylic-stands"
   },
   {
     "id": "en-series-ysh7t0mu",
@@ -1277,7 +1289,8 @@ const boxSets: BoxSet[] =
       }
     ],
     "cardCount": null,
-    "pending": false
+    "pending": false,
+    "checklist": "/acrylic-stands"
   },
   {
     "id": "en-series-3zamajbz",
@@ -1302,5 +1315,1239 @@ const boxSets: BoxSet[] =
     ],
     "cardCount": null,
     "pending": false
+  },
+  {
+    "id": "cn-moon-1",
+    "name": "Moon",
+    "subtitle": "Series 1",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-1-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon1.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": []
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-one",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-1"
+  },
+  {
+    "id": "cn-moon-2",
+    "name": "Moon",
+    "subtitle": "Series 2",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-2-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon2.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": []
+      },
+      {
+        "id": "cn-moon-2-blister",
+        "label": "Blister pack",
+        "kind": "blister",
+        "image": "Assets/Chinese-Boxes/moon2blister.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": [],
+        "notes": [
+          "Blister packaging. Pack counts and pull rates for this format haven't been verified."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-two",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-2"
+  },
+  {
+    "id": "cn-moon-3",
+    "name": "Moon",
+    "subtitle": "Series 3",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-3-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon3.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": []
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-three",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-3"
+  },
+  {
+    "id": "cn-moon-4",
+    "name": "Moon",
+    "subtitle": "Series 4",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-4-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon4.webp",
+        "packs": 18,
+        "cardsPerPack": 6,
+        "source": "https://pakracards.com/products/mlp-moon-edition-chinese-series-4-t4w4",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 SSR/UR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 LSR/SGR/SC"
+          }
+        ]
+      },
+      {
+        "id": "cn-moon-4-blister",
+        "label": "Blister pack",
+        "kind": "blister",
+        "image": "Assets/Chinese-Boxes/moon4blister.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": [],
+        "notes": [
+          "Blister packaging. Pack counts and pull rates for this format haven't been verified."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-four",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-4"
+  },
+  {
+    "id": "cn-moon-5",
+    "name": "Moon",
+    "subtitle": "Series 5",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-5-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon5.webp",
+        "packs": 18,
+        "cardsPerPack": 6,
+        "source": "https://pakracards.com/products/mlp-moon-edition-chinese-series-5-t4w5",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 SSR/UR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 LSR/SGR/SC"
+          }
+        ]
+      },
+      {
+        "id": "cn-moon-5-blister",
+        "label": "Blister pack",
+        "kind": "blister",
+        "image": "Assets/Chinese-Boxes/moon5blister.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": [],
+        "notes": [
+          "Blister packaging. Pack counts and pull rates for this format haven't been verified."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-five",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-5"
+  },
+  {
+    "id": "cn-moon-6",
+    "name": "Moon",
+    "subtitle": "Series 6",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-6-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon6.webp",
+        "packs": 18,
+        "cardsPerPack": 6,
+        "source": "https://pakracards.com/products/kayou-mlp-moon-edition-chinese-series-6-t4w6-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "3 R + 1 SR + 1 PTR + 1 SSR/UR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "3 R + 1 SR + 1 PTR + 1 LSR/SGR/SC"
+          }
+        ],
+        "notes": [
+          "This wave uses PTR in the slot usually occupied by HR."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-six",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-6"
+  },
+  {
+    "id": "cn-moon-7",
+    "name": "Moon",
+    "subtitle": "Series 7",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-7-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon7.webp",
+        "packs": 18,
+        "cardsPerPack": 6,
+        "source": "https://pakracards.com/products/kayou-mlp-moon-edition-chinese-series-7-t4w7-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 SSR/UR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 LSR/SGR/SC"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-seven",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-7"
+  },
+  {
+    "id": "cn-moon-8",
+    "name": "Moon",
+    "subtitle": "Series 8",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-8-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon8.webp",
+        "packs": 18,
+        "cardsPerPack": 6,
+        "source": "https://pakracards.com/products/kayou-mlp-moon-edition-chinese-series-8-t4w8-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 SSR/UR/ZR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 LSR/SGR/SC/\u25c7ZR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-eight",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-8"
+  },
+  {
+    "id": "cn-moon-9",
+    "name": "Moon",
+    "subtitle": "Series 9",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-9-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon9.webp",
+        "packs": 18,
+        "cardsPerPack": 6,
+        "source": "https://pakracards.com/products/kayou-mlp-moon-edition-chinese-series-9-t4w9-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 SSR/UR/ZR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "3 R + 1 SR + 1 HR + 1 LSR/SGR/SC/\u25c7ZR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-nine",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-9"
+  },
+  {
+    "id": "cn-moon-10",
+    "name": "Moon",
+    "subtitle": "Series 10",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-10-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon10.webp",
+        "packs": 18,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/box-sealed-my-little-pony-mlp-trading-card-pack-lunar-ver-season-10-booster",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "2 R + 1 SR + 1 HR + 1 SSR/UR/ZR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "2 R + 1 SR + 1 HR + 1 LSR/SGR/SC/\u25c7ZR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-ten",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-10"
+  },
+  {
+    "id": "cn-moon-11",
+    "name": "Moon",
+    "subtitle": "Series 11",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-11-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon11.webp",
+        "packs": 18,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/pre-order-mlp-moon-edition-chinese-series-11-t4w11",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "2 R + 1 SR + 1 HR + 1 SSR/UR/ZR"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "2 R + 1 SR + 1 HR + 1 LSR/SGR/SC/\u25c7ZR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-eleven",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-11"
+  },
+  {
+    "id": "cn-moon-12",
+    "name": "Moon",
+    "subtitle": "Series 12",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-12-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon12.webp",
+        "packs": 18,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-mlp-moon-edition-chinese-series-12-t4w12-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "13:18",
+            "contents": "1 R + 1 SR + 1 HR + 1 SSR/UR/ZR + 1 R/Redemption Card"
+          },
+          {
+            "ratio": "5:18",
+            "contents": "2 R + 1 SR + 1 HR + 1 LSR/SGR/SC/\u25c7ZR"
+          }
+        ],
+        "notes": [
+          "The redemption card is an alternative in the first pack group; no separate redemption-card odds are listed."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-moon-twelve",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-12"
+  },
+  {
+    "id": "cn-moon-13",
+    "name": "Moon",
+    "subtitle": "Series 13",
+    "language": "chinese",
+    "family": "moon",
+    "variants": [
+      {
+        "id": "cn-moon-13-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/moon13.webp",
+        "packs": 18,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-huiyue-pack-mlp-yh10-hy013-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": []
+      }
+    ],
+    "cardCount": 158,
+    "pending": false,
+    "checklist": "/cn-moon-thirteen",
+    "shopCollection": "https://pakracards.com/collections/mlp-moon-13"
+  },
+  {
+    "id": "cn-fun-1",
+    "name": "Fun Moments",
+    "subtitle": "Series 1",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-1-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun1.webp",
+        "packs": 30,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-mlp-fun-moments-edition-chinese-series-1-t2w1-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "16:30",
+            "contents": "2 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "14:30",
+            "contents": "2 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/CR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-one",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-1"
+  },
+  {
+    "id": "cn-fun-2",
+    "name": "Fun Moments",
+    "subtitle": "Series 2",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-2-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun2.webp",
+        "packs": 30,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-mlp-fun-moments-edition-chinese-series-2-t2w2-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "2 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "2 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/CR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-two",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-2"
+  },
+  {
+    "id": "cn-fun-3",
+    "name": "Fun Moments",
+    "subtitle": "Series 3",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-3-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun3.webp",
+        "packs": 30,
+        "cardsPerPack": 5,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "2 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "2 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/CR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-three",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-3"
+  },
+  {
+    "id": "cn-fun-4",
+    "name": "Fun Moments",
+    "subtitle": "Series 4",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-4-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun4.webp",
+        "packs": 30,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-shadow-edition-chinese-series-4-t2w4",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "2 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "2 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/CR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-four",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-4"
+  },
+  {
+    "id": "cn-fun-5",
+    "name": "Fun Moments",
+    "subtitle": "Series 5",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-5-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun5.webp",
+        "packs": 30,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-shadow-edition-chinese-series-5-t2w5",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "2 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "2 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/UGR/CR"
+          }
+        ],
+        "notes": [
+          "UGR joins the checklist in this wave."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-five",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-5"
+  },
+  {
+    "id": "cn-fun-6",
+    "name": "Fun Moments",
+    "subtitle": "Series 6",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-6-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun6.webp",
+        "packs": 30,
+        "cardsPerPack": 4,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-shadow-edition-chinese-series-6-t2w6",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "1 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "1 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/UGR/CR/\u25c7CR"
+          }
+        ],
+        "notes": [
+          "Packs change from five cards to four in this wave. \u25c7CR joins the checklist."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-six",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-6"
+  },
+  {
+    "id": "cn-fun-7",
+    "name": "Fun Moments",
+    "subtitle": "Series 7",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-7-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun7.webp",
+        "packs": 30,
+        "cardsPerPack": 4,
+        "source": "https://pakracards.com/products/mlp-shadow-edition-chinese-series-7-t2w7",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "1 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "1 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/UGR/CR/\u25c7CR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-seven",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-7"
+  },
+  {
+    "id": "cn-fun-8",
+    "name": "Fun Moments",
+    "subtitle": "Series 8",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-8-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun8.webp",
+        "packs": 30,
+        "cardsPerPack": 4,
+        "source": "https://pakracards.com/products/kayou-mlp-fun-moments-edition-t2-8-card-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "1 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "1 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/UGR/CR/\u25c7CR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-eight",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-8"
+  },
+  {
+    "id": "cn-fun-9",
+    "name": "Fun Moments",
+    "subtitle": "Series 9",
+    "language": "chinese",
+    "family": "fun",
+    "variants": [
+      {
+        "id": "cn-fun-9-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/fun9.webp",
+        "packs": 30,
+        "cardsPerPack": 4,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-fun-moments-edition-9-preorder",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "17:30",
+            "contents": "1 N/\u25c7N + 2 R + 1 SR"
+          },
+          {
+            "ratio": "13:30",
+            "contents": "1 N/\u25c7N + 1 R + 1 SR + 1 SSR/UR/UGR/CR/\u25c7CR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-fun-nine",
+    "shopCollection": "https://pakracards.com/collections/mlp-fun-moments-9"
+  },
+  {
+    "id": "cn-rainbow-1",
+    "name": "Rainbow",
+    "subtitle": "Series 1",
+    "language": "chinese",
+    "family": "rainbow",
+    "variants": [
+      {
+        "id": "cn-rainbow-1-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/rainbow1.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": []
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-rainbow-one",
+    "shopCollection": "https://pakracards.com/collections/mlp-rainbow-1"
+  },
+  {
+    "id": "cn-rainbow-2",
+    "name": "Rainbow",
+    "subtitle": "Series 2",
+    "language": "chinese",
+    "family": "rainbow",
+    "variants": [
+      {
+        "id": "cn-rainbow-2-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/rainbow2.webp",
+        "packs": 20,
+        "cardsPerPack": 6,
+        "source": "https://pakracards.com/products/mlp-rainbow-edition-chinese-series-2-t3w2",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:20",
+            "contents": "1 SR + 4 R + 1 TR/TGR"
+          },
+          {
+            "ratio": "6:20",
+            "contents": "1 SSR + 4 R + 1 TR/TGR"
+          },
+          {
+            "ratio": "4:20",
+            "contents": "1 UR + 4 R + 1 TR/TGR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-rainbow-two",
+    "shopCollection": "https://pakracards.com/collections/mlp-rainbow-2"
+  },
+  {
+    "id": "cn-rainbow-3",
+    "name": "Rainbow",
+    "subtitle": "Series 3",
+    "language": "chinese",
+    "family": "rainbow",
+    "variants": [
+      {
+        "id": "cn-rainbow-3-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/rainbow3.webp",
+        "packs": 20,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/mlp-rainbow-edition-chinese-series-3-t3w3",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:20",
+            "contents": "1 XR/USR/UR/SSR + 1 TGR/TR/MTR + 3 FR/SR/R"
+          },
+          {
+            "ratio": "10:20",
+            "contents": "1 SR + 1 TGR/TR + 3 FR/R"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-rainbow-three",
+    "shopCollection": "https://pakracards.com/collections/mlp-rainbow-3"
+  },
+  {
+    "id": "cn-rainbow-4",
+    "name": "Rainbow",
+    "subtitle": "Series 4",
+    "language": "chinese",
+    "family": "rainbow",
+    "variants": [
+      {
+        "id": "cn-rainbow-4-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/rainbow4.webp",
+        "packs": 20,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-mlp-rainbow-edition-chinese-series-4-t3w4-display-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:20",
+            "contents": "1 XR/USR/UR/SSR + 1 TGR/TR/MTR + 3 FR/SR/R"
+          },
+          {
+            "ratio": "10:20",
+            "contents": "1 SR + 1 TGR/TR + 3 FR/R"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-rainbow-four",
+    "shopCollection": "https://pakracards.com/collections/mlp-rainbow-4"
+  },
+  {
+    "id": "cn-rainbow-5",
+    "name": "Rainbow",
+    "subtitle": "Series 5",
+    "language": "chinese",
+    "family": "rainbow",
+    "variants": [
+      {
+        "id": "cn-rainbow-5-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/rainbow5.webp",
+        "packs": 20,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-rainbow-edition-chinese-series-5-t3w5",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:20",
+            "contents": "1 BASE + 1 ST + 1 TR/TGR + 1 SR + 1 FR"
+          },
+          {
+            "ratio": "10:20",
+            "contents": "1 BASE + 1 ST + 1 TR/TGR + 1 R + 1 SSR/UR/USR/XR"
+          }
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-rainbow-five",
+    "shopCollection": "https://pakracards.com/collections/mlp-rainbow-5"
+  },
+  {
+    "id": "cn-star-1",
+    "name": "Star",
+    "subtitle": "Series 1",
+    "language": "chinese",
+    "family": "star",
+    "variants": [
+      {
+        "id": "cn-star-1-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/star1.webp",
+        "packs": 16,
+        "cardsPerPack": 3,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-fan-xin-edition-chinese-series-1-t5w1",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:16",
+            "contents": "1 SCR + 2 SSR/UR"
+          },
+          {
+            "ratio": "5:16",
+            "contents": "1 SSR + 1 SCR/UR + 1 USR/AR"
+          },
+          {
+            "ratio": "1:16",
+            "contents": "1 OR/BP/\u25c7AR + 2 SSR/SCR"
+          }
+        ],
+        "notes": [
+          "Standard display format. Separate gift-box editions may have different contents."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-star-one",
+    "shopCollection": "https://pakracards.com/collections/mlp-star-1"
+  },
+  {
+    "id": "cn-star-2",
+    "name": "Star",
+    "subtitle": "Series 2",
+    "language": "chinese",
+    "family": "star",
+    "variants": [
+      {
+        "id": "cn-star-2-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/star2.webp",
+        "packs": 16,
+        "cardsPerPack": 3,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-fan-xin-edition-chinese-series-2-t5w2",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:16",
+            "contents": "1 SCR + 2 SSR/UR"
+          },
+          {
+            "ratio": "5:16",
+            "contents": "1 SSR + 1 SCR/UR + 1 USR/AR"
+          },
+          {
+            "ratio": "1:16",
+            "contents": "1 OR/BP/\u25c7AR + 2 SSR/SCR"
+          }
+        ],
+        "notes": [
+          "Standard display. Gift-box \u25c7AR cards have gold borders."
+        ]
+      },
+      {
+        "id": "cn-star-2-giftbox",
+        "label": "Gift box  -  gold-bordered \u25c7AR",
+        "kind": "gift",
+        "image": "Assets/Chinese-Boxes/star2giftbox.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": [
+          {
+            "ratio": "10:16",
+            "contents": "1 SCR + 2 SSR/UR"
+          },
+          {
+            "ratio": "5:16",
+            "contents": "1 SSR + 1 SCR/UR + 1 USR/AR"
+          },
+          {
+            "ratio": "1:16",
+            "contents": "1 OR/BP/\u25c7AR + 2 SSR/SCR"
+          }
+        ],
+        "notes": [
+          "Gift-box \u25c7AR cards have gold borders. Pack odds match the standard display.",
+          "This is the higher-priced gift-box edition; the number of packs in this format has not been verified."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-star-two",
+    "shopCollection": "https://pakracards.com/collections/mlp-star-2"
+  },
+  {
+    "id": "cn-star-3",
+    "name": "Star",
+    "subtitle": "Series 3",
+    "language": "chinese",
+    "family": "star",
+    "variants": [
+      {
+        "id": "cn-star-3-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/star3.webp",
+        "packs": 16,
+        "cardsPerPack": 3,
+        "source": "https://pakracards.com/products/pre-order-new-kayou-my-little-pony-star-pack-wave-3",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:16",
+            "contents": "1 MTR + 1 SCR + 1 SSR/UR"
+          },
+          {
+            "ratio": "5:16",
+            "contents": "1 SSR + 1 MTR + 1 AR/USR"
+          },
+          {
+            "ratio": "1:16",
+            "contents": "1 MTR + 1 SSR/SCR + 1 OR/BP/\u25c7AR/SE"
+          }
+        ],
+        "notes": [
+          "Standard display. Gift-box \u25c7AR cards have gold borders."
+        ]
+      },
+      {
+        "id": "cn-star-3-giftbox",
+        "label": "Gift box  -  gold-bordered \u25c7AR",
+        "kind": "gift",
+        "image": "Assets/Chinese-Boxes/star3giftbox.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": "https://pakracards.com/products/pre-order-new-kayou-my-little-pony-star-pack-wave-3?variant=47319683104956",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "10:16",
+            "contents": "1 MTR + 1 SCR + 1 SSR/UR"
+          },
+          {
+            "ratio": "5:16",
+            "contents": "1 SSR + 1 MTR + 1 AR/USR"
+          },
+          {
+            "ratio": "1:16",
+            "contents": "1 MTR + 1 SSR/SCR + 1 OR/BP/\u25c7AR/SE"
+          }
+        ],
+        "notes": [
+          "Gift-box \u25c7AR cards have gold borders. Pack odds match the standard display.",
+          "This is the higher-priced gift-box edition; the number of packs in this format has not been verified."
+        ]
+      }
+    ],
+    "cardCount": 144,
+    "pending": false,
+    "checklist": "/cn-star-three",
+    "shopCollection": "https://pakracards.com/collections/mlp-star-3"
+  },
+  {
+    "id": "cn-equestriagirls-1",
+    "name": "Equestria Girls",
+    "subtitle": "Series 1",
+    "language": "chinese",
+    "family": "other",
+    "variants": [
+      {
+        "id": "cn-equestriagirls-1-box",
+        "label": "Gift box",
+        "kind": "gift",
+        "image": "Assets/Chinese-Boxes/equestriagirls1.webp",
+        "packs": 4,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-mlp-magic-book-friendship-sonic-rainboom-card-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "1:4",
+            "contents": "3 L2 + 1 L4 + 1 L5"
+          },
+          {
+            "ratio": "3:4",
+            "contents": "2 L2 + 2 L3 + 1 L4/L5"
+          }
+        ],
+        "packLabel": "regular packs per box",
+        "notes": [
+          "Magic Book / Friendship Sonic Rainboom. Includes a separate SP card: 21 cards in total."
+        ]
+      }
+    ],
+    "cardCount": 87,
+    "pending": false,
+    "checklist": "/cn-magicbook-one",
+    "shopCollection": "https://pakracards.com/collections/mlp-equestria-girls-magic-book"
+  },
+  {
+    "id": "cn-stardust-1",
+    "name": "Stardust",
+    "subtitle": "Series 1",
+    "language": "chinese",
+    "family": "other",
+    "variants": [
+      {
+        "id": "cn-stardust-1-box",
+        "label": "Display box",
+        "kind": "display",
+        "image": "Assets/Chinese-Boxes/stardust1.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": []
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-stardust-one",
+    "shopCollection": "https://pakracards.com/collections/mlp-stardust-1"
+  },
+  {
+    "id": "cn-stardust-2",
+    "name": "Stardust",
+    "subtitle": "Series 2",
+    "language": "chinese",
+    "family": "other",
+    "variants": [
+      {
+        "id": "cn-stardust-2-box",
+        "label": "Gift box",
+        "kind": "gift",
+        "image": "Assets/Chinese-Boxes/stardust2.webp",
+        "packs": 4,
+        "cardsPerPack": 5,
+        "source": "https://pakracards.com/products/kayou-my-little-pony-stardust-edition-2-box",
+        "sourceLabel": "Pakra Cards",
+        "probabilities": [
+          {
+            "ratio": "2:4",
+            "contents": "3 SR + 1 SSR + 1 UR/LSR"
+          },
+          {
+            "ratio": "2:4",
+            "contents": "3 SR + 1 SSR + 1 \u25c7UR/\u25c7LSR/SGR"
+          }
+        ],
+        "packLabel": "regular packs per box",
+        "notes": [
+          "Qimeng Party 2 / Pony Life. Four regular packs plus one single-card SP pack: 21 cards in total.",
+          "The ratios below cover regular packs only; the SP pack is separate."
+        ]
+      }
+    ],
+    "cardCount": 109,
+    "pending": false,
+    "checklist": "/cn-stardust-two",
+    "shopCollection": "https://pakracards.com/collections/mlp-stardust-2"
+  },
+  {
+    "id": "cn-newyears-1",
+    "name": "New Year",
+    "subtitle": "Series 1",
+    "language": "chinese",
+    "family": "other",
+    "variants": [
+      {
+        "id": "cn-newyears-1-box",
+        "label": "Gift box",
+        "kind": "gift",
+        "image": "Assets/Chinese-Boxes/newyears1.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": [],
+        "notes": [
+          "Lunar New Year gift-box release. Pack contents and pull rates are still being checked."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-newyears-one",
+    "shopCollection": "https://pakracards.com/collections/mlp-new-years-eve-2025"
+  },
+  {
+    "id": "cn-newyears-2",
+    "name": "New Year",
+    "subtitle": "Series 2",
+    "language": "chinese",
+    "family": "other",
+    "variants": [
+      {
+        "id": "cn-newyears-2-box",
+        "label": "Gift box",
+        "kind": "gift",
+        "image": "Assets/Chinese-Boxes/newyears2.webp",
+        "packs": null,
+        "cardsPerPack": null,
+        "source": null,
+        "sourceLabel": null,
+        "probabilities": [],
+        "notes": [
+          "The gift box includes one MT metal-inlaid card per box, plus an acrylic calendar card brick and themed red envelopes.",
+          "Redemption cards are listed as possible pulls, but no numerical redemption odds are given."
+        ]
+      }
+    ],
+    "cardCount": null,
+    "pending": false,
+    "checklist": "/cn-newyears-two",
+    "shopCollection": "https://pakracards.com/collections/mlp-spring-festival-2-fu-lai-qi-yun"
   }
 ];

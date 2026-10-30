@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useId, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { RotateCcw, RotateCw, Move, Box, ChevronLeft, ChevronRight } from "lucide-react";
-import { useChineseCardImage, getChineseCardBackStyle, type ChineseCardBack } from "./card-images-cn";
+import { useChineseCardImage, getChineseCardBackStyle, CN_STAR_THREE_BACK_NOTICE, type ChineseCardBack } from "./card-images-cn";
 export type ChineseInspectCard = { key: string; code: string; front: string; back?: ChineseCardBack; frontStyle?: CSSProperties; aspectRatio?: number; notice?: string };
 type Props = { card: ChineseInspectCard | null; onClose: () => void; onPrevious?: () => void; onNext?: () => void };
 type Quaternion = [number, number, number, number];
@@ -48,13 +48,14 @@ const silverStampStyles = `.cn3d-certificate-seal{position:absolute;left:6%;bott
 .cn3d-seal-certificate{opacity:var(--cn3d-cert-opacity,.55)}
 .cn3d-seal-glint{position:absolute;inset:0;background:linear-gradient(var(--cn3d-foil-angle,115deg),transparent 25%,#c6efff18 36%,#ffffff60 48%,#ffe1ff16 57%,transparent 68%);background-size:230% 230%;background-position:var(--cn3d-foil-x,50%) var(--cn3d-foil-y,50%);opacity:.2}
 `;
-export function ChineseSilverStamp({ sideways = false, landscapeLeft = false, diamond = false }: {
+export function ChineseSilverStamp({ sideways = false, landscapeLeft = false, diamond = false, placement }: {
     sideways?: boolean;
     landscapeLeft?: boolean;
     diamond?: boolean;
+    placement?: ChineseCardBack["silverStampPlacement"];
 }) {
 const id = useId().replace(/:/g, "");
-    return <><style>{silverStampStyles}</style><span className={`cn3d-certificate-seal${sideways ? " cn3d-seal-sideways" : ""}${landscapeLeft ? " cn3d-seal-landscape-left" : ""}${diamond ? " cn3d-seal-diamond" : ""}`} aria-hidden="true">
+    return <><style>{silverStampStyles}</style><span className={`cn3d-certificate-seal${sideways ? " cn3d-seal-sideways" : ""}${landscapeLeft ? " cn3d-seal-landscape-left" : ""}${diamond ? " cn3d-seal-diamond" : ""}`} style={placement === "star-dar" ? { left: "45.3%", bottom: ".9%", width: "9.4%" } : placement === "star-se" ? { left: "45%", bottom: "7.5%", width: "10%" } : undefined} aria-hidden="true">
         <span className="cn3d-seal-foil"/>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="cn3d-seal-art" focusable="false">
             <defs>
@@ -107,6 +108,7 @@ function CardStage({ card }: { card: ChineseInspectCard }) {
   const [zoom,setZoom] = useState(100);
   const [retry,setRetry] = useState(0);
   const [dragging,setDragging] = useState(false);
+  const thickStar = /\/Chinese Sets\/Star-(?:One|Two|Three)-CN\//.test(decodeURIComponent(card.front));
   const aspect = card.aspectRatio && card.aspectRatio > 0 ? card.aspectRatio : 5/7;
   const apply = (next: Quaternion) => {
     rotation.current = next;
@@ -133,13 +135,32 @@ function CardStage({ card }: { card: ChineseInspectCard }) {
       const radius=limit/Math.sqrt(1+(limit/1000)**2);
       const height=Math.min(440,2*radius/Math.hypot(1,aspect))*zoom/100;
       model.current.style.height=`${height}px`;
-      model.current.style.width=`${height*aspect}px`;
+      const width=height*aspect;
+      model.current.style.width=`${width}px`;
+      if (thickStar) {
+        // Only perimeter walls: no overlapping full-card planes for Safari to depth-sort.
+        const inset=.7, rx=Math.max(0,width*.055-inset), ry=Math.max(0,height*.0393-inset);
+        const corners=[[width-inset-rx,inset+ry,-Math.PI/2],[width-inset-rx,height-inset-ry,0],[inset+rx,height-inset-ry,Math.PI/2],[inset+rx,inset+ry,Math.PI]];
+        const points=corners.flatMap(([cx,cy,start])=>Array.from({length:9},(_,i)=>{
+          const angle=start+i*Math.PI/16;
+          return [cx+Math.cos(angle)*rx,cy+Math.sin(angle)*ry];
+        }));
+        model.current.querySelectorAll<HTMLElement>(".cn3d-stock-edge").forEach((edge,i)=>{
+          const a=points[i], b=points[(i+1)%points.length];
+          const dx=b[0]-a[0], dy=b[1]-a[1];
+          const length=Math.hypot(dx,dy), overlap=.8;
+          edge.style.width=`${length+overlap}px`;
+          edge.style.left=`${a[0]-dx/length*overlap/2}px`;
+          edge.style.top=`${a[1]-dy/length*overlap/2-1.9}px`;
+          edge.style.transform=`rotateZ(${Math.atan2(dy,dx)}rad) rotateX(90deg)`;
+        });
+      }
     };
     measure();
     const observer=new ResizeObserver(measure);
     observer.observe(node);
     return ()=>observer.disconnect();
-  },[aspect,zoom]);
+  },[aspect,zoom,thickStar]);
   const move=(event:ReactPointerEvent<HTMLDivElement>)=>{
     const current=pointer.current;
     if (!current || current.id!==event.pointerId) return;
@@ -168,9 +189,10 @@ function CardStage({ card }: { card: ChineseInspectCard }) {
       event.currentTarget.focus();event.currentTarget.setPointerCapture(event.pointerId);
       pointer.current={id:event.pointerId,x:event.clientX,y:event.clientY,mode};setDragging(true);
     }} onPointerMove={move} onPointerUp={event=>{if(pointer.current?.id===event.pointerId)finish();}} onPointerCancel={finish} onLostPointerCapture={finish}>
-      <div ref={model} className="cn3d-model">
-        <div className="cn3d-face cn3d-front"><InspectorImage key={`front-${retry}`} src={card.front} alt={`${card.code} front`} style={card.frontStyle} /></div>
-        <div className="cn3d-face cn3d-back">{card.back ? <InspectorImage key={`back-${retry}`} src={card.back.image} alt={`${card.code} back`} style={getChineseCardBackStyle(card.back)} /> : <span className="cn3d-image-status">Back not available yet</span>}{card.back?.silverStamp && <ChineseSilverStamp landscapeLeft={card.back.silverStampLandscape} diamond={card.back.silverStampDiamond}/>}</div>
+      <div ref={model} className="cn3d-model" data-stock={thickStar ? "star" : undefined}>
+        {thickStar && Array.from({length:36},(_,index)=><span key={index} className="cn3d-stock-edge" aria-hidden="true"/>)}
+        <div className="cn3d-face cn3d-front"><div className="cn3d-surface"><InspectorImage key={`front-${retry}`} src={card.front} alt={`${card.code} front`} style={card.frontStyle} /></div></div>
+        <div className="cn3d-face cn3d-back"><div className="cn3d-surface">{card.back ? <InspectorImage key={`back-${retry}`} src={card.back.image} alt={`${card.code} back`} style={{ ...getChineseCardBackStyle(card.back), ...(card.back.unavailable ? { filter: "blur(9px)", opacity: .35 } : {}) }} /> : <span className="cn3d-image-status">Back not available yet</span>}{card.back?.silverStamp && <ChineseSilverStamp landscapeLeft={card.back.silverStampLandscape} diamond={card.back.silverStampDiamond} placement={card.back.silverStampPlacement}/>}{card.back?.unavailable && <span className="cn3d-back-unavailable" role="note">{CN_STAR_THREE_BACK_NOTICE}</span>}</div></div>
       </div>
     </div>
     {card.notice && <p role="note" className="cn3d-notice">{card.notice}</p>}
@@ -189,10 +211,15 @@ const styles=`
 .cn3d-dialog{display:flex!important;flex-direction:column!important;width:calc(100% - 24px)!important;max-width:780px!important;height:min(640px,82dvh)!important;max-height:82dvh!important;padding:14px!important;gap:10px!important;overflow:hidden;border-radius:20px;background:hsl(var(--background));color:hsl(var(--foreground));z-index:120020!important;font-family:'Oxanium',sans-serif}
 .cn3d-heading{padding-right:32px;flex:none}.cn3d-heading h2{font-size:16px;font-weight:600}.cn3d-heading p{font-size:11px;color:hsl(var(--muted-foreground));margin-top:3px}
 .cn3d-stage{display:flex;align-items:center;justify-content:center;position:relative;min-height:0;flex:1;overflow:hidden;perspective:1000px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;border-radius:14px;background:radial-gradient(ellipse at center,hsl(var(--primary)/.05),transparent 70%)}.cn3d-dragging{cursor:grabbing}.cn3d-stage:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:-3px}
-.cn3d-model{position:relative;flex:none;width:0;height:0;transform-style:preserve-3d;pointer-events:none}
+.cn3d-model{position:relative;flex:none;width:0;height:0;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;pointer-events:none}
+.cn3d-back-unavailable{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12%;text-align:center;font-size:clamp(10px,2.5vw,16px);line-height:1.6;color:hsl(var(--foreground));background:hsl(var(--background)/.4)}
 .cn3d-face{position:absolute;inset:0;border-radius:5.5% / 3.93%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(.5px);background:hsl(var(--muted));clip-path:inset(0 round 5.5% / 3.93%);-webkit-mask-image:linear-gradient(#fff,#fff)}.cn3d-back{transform:rotateY(180deg) translateZ(.5px)}
 .cn3d-image{display:block;position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;object-position:center;transform-origin:center;-webkit-user-drag:none}.cn3d-image-status{display:flex;align-items:center;justify-content:center;text-align:center;position:absolute;inset:0;padding:10px;font-size:11px;color:hsl(var(--muted-foreground))}
 .cn3d-notice{flex:none;margin:0;text-align:center;font-size:11px;line-height:1.45;color:hsl(var(--muted-foreground));padding:0 6px}
+.cn3d-model[data-stock="star"] .cn3d-front{transform:translateZ(2px)}.cn3d-model[data-stock="star"] .cn3d-back{transform:rotateY(180deg) translateZ(2px)}
+.cn3d-model[data-stock="star"] .cn3d-face{overflow:visible;clip-path:none;-webkit-mask-image:none;background:transparent}
+.cn3d-surface{display:contents}.cn3d-model[data-stock="star"] .cn3d-surface{display:block;position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:hsl(var(--muted));backface-visibility:hidden;-webkit-backface-visibility:hidden;clip-path:inset(0 round 5.5% / 3.93%);-webkit-mask-image:linear-gradient(#fff,#fff)}
+.cn3d-stock-edge{position:absolute;display:block;height:3.8px;background:#fff;backface-visibility:hidden;-webkit-backface-visibility:hidden;pointer-events:none;transform-origin:0 50%}
 .cn3d-tools{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;flex:none}.cn3d-tools button,.cn3d-zoom button,.cn3d-footer button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;padding:6px 10px;border:1px solid hsl(var(--border));border-radius:10px;font:inherit;font-size:11px;background:transparent;color:inherit}.cn3d-tools button[aria-pressed=true]{background:hsl(var(--primary)/.12);border-color:hsl(var(--primary)/.4);color:hsl(var(--primary))}.cn3d-dialog button:focus-visible,.cn3d-dialog input:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:2px}
 .cn3d-zoom{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;flex:none}.cn3d-zoom input{width:min(220px,35vw);min-width:0;accent-color:hsl(var(--primary))}.cn3d-zoom output{width:34px;font-variant-numeric:tabular-nums}.cn3d-zoom button{border:none;color:hsl(var(--muted-foreground));padding:4px;min-height:32px;font-size:10px}
 .cn3d-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid hsl(var(--border));padding-top:8px;flex:none}.cn3d-footer span{font-size:10px;color:hsl(var(--muted-foreground));text-align:center}
@@ -200,5 +227,5 @@ const styles=`
 @media(max-height:500px){.cn3d-dialog{height:90dvh!important;max-height:90dvh!important;gap:4px!important}.cn3d-heading p{display:none}.cn3d-tools button,.cn3d-footer button{min-height:28px;padding:3px 7px}.cn3d-zoom button{min-height:24px}.cn3d-footer{padding-top:4px}}
 `;
 export default function ChineseCardInspector({card,onClose,onPrevious,onNext}:Props){
-  return <Dialog open={Boolean(card)} onOpenChange={open=>{if(!open)onClose();}}><DialogContent className="cn3d-dialog" style={{zIndex:120020}}><style>{styles}</style><header className="cn3d-heading"><DialogTitle>{card?.code}</DialogTitle><DialogDescription>Drag to turn the card in 3D. Zoom or switch to Move for a closer look.</DialogDescription></header>{card && <CardStage key={card.key} card={card}/>}<footer className="cn3d-footer"><button type="button" disabled={!onPrevious} onClick={onPrevious}><ChevronLeft size={15} aria-hidden="true"/>Previous</button><span>Arrow keys rotate · Shift + arrows roll · R resets</span><button type="button" disabled={!onNext} onClick={onNext}>Next<ChevronRight size={15} aria-hidden="true"/></button></footer></DialogContent></Dialog>;
+  return <Dialog open={Boolean(card)} onOpenChange={open=>{if(!open)onClose();}}><DialogContent className="cn3d-dialog" style={{zIndex:120020}}><style>{styles}</style><header className="cn3d-heading"><DialogTitle>{card?.code}</DialogTitle><DialogDescription>Drag to turn the card in 3D. Zoom or switch to Move for a closer look.</DialogDescription></header>{card && <CardStage key={card.key} card={card}/>}<footer className="cn3d-footer"><button type="button" disabled={!onPrevious} onClick={onPrevious}><ChevronLeft size={15} aria-hidden="true"/>Previous</button><span>Arrow keys rotate Â· Shift + arrows roll Â· R resets</span><button type="button" disabled={!onNext} onClick={onNext}>Next<ChevronRight size={15} aria-hidden="true"/></button></footer></DialogContent></Dialog>;
 }

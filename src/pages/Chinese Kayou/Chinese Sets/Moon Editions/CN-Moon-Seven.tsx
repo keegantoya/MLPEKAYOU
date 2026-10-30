@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ChineseCardInspector from "../../ChineseCardInspector";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ScanSearch } from "lucide-react";
@@ -19,40 +19,8 @@ function ChineseCardFront({ src, alt, className, style }: { src: string; alt: st
 const image = useChineseCardImage(src);
   return image.url ? <img src={image.url} alt={alt} draggable={false} className={className} style={style} /> : <span className="flex h-full w-full items-center justify-center p-4 text-center text-xs text-muted-foreground" title={image.error || undefined} role="status">{image.error ? "Image unavailable" : "Loading card..."}</span>;
 }
-function InspectorCanvas({ card, src, zoom }: { card: typeof CN_MOON_SEVEN_CARDS[number]; src: string; zoom: number }) {
-const viewport = useRef<HTMLDivElement>(null);
-const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
-const [size, setSize] = useState({ width: 0, height: 0 });
-const [pan, setPan] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-const node = viewport.current;
-    if (!node) return;
-const measure = () => setSize({ width: node.clientWidth, height: node.clientHeight });
-    measure();
-const observer = new ResizeObserver(measure);
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  useEffect(() => { setPan({ x: 0, y: 0 }); drag.current = null; }, [zoom, size.width, size.height]);
-const width = Math.max(0, Math.min(size.width - 32, (size.height - 32) * 5 / 7));
-const height = width * 7 / 5;
-const limitX = Math.max(0, (width * zoom / 100 - size.width) / 2);
-const limitY = Math.max(0, (height * zoom / 100 - size.height) / 2);
-  return <div ref={viewport} className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-muted" style={{ touchAction: "none", cursor: zoom > 100 ? "grab" : "default" }} onPointerDown={event => {
-    if (zoom <= 100 || (event.pointerType === "mouse" && event.button !== 0)) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
-  }} onPointerMove={event => {
-    if (!drag.current) return;
-    setPan({ x: Math.max(-limitX, Math.min(limitX, drag.current.panX + event.clientX - drag.current.x)), y: Math.max(-limitY, Math.min(limitY, drag.current.panY + event.clientY - drag.current.y)) });
-  }} onPointerUp={event => { drag.current = null; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }}>
-    <div className="absolute overflow-hidden rounded-xl" style={{ left: "50%", top: "50%", width, height, transform: `translate(-50%, -50%) translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`, transformOrigin: "center" }}><ChineseCardFront src={src} alt={card.code} className="block h-full w-full object-cover" style={{ ...moonSevenImageStyle(card.key), filter: "none", opacity: 1 }} /></div>
-  </div>;
-}
 export default function ChineseMoonSeven() {
 const [inspected, setInspected] = useState<string | null>(null);
-const [zoom, setZoom] = useState(100);
 const [cardSize, setCardSize] = useState(160);
 const imageRevision = CN_MOON_SEVEN_IMAGE_REVISION;
 const imageSource = (src: string) => { const url = new URL(src); url.searchParams.set("v", imageRevision); return url.href; };
@@ -201,7 +169,7 @@ const match = CN_MOON_SEVEN_CARDS.find(card => card.code.toLowerCase().includes(
           {loading ? <div role="status" className="py-16 text-center text-sm text-muted-foreground">Loading your collection...</div> : !ready ? null : visibleCards.length === 0 ? <p className="py-16 text-center text-sm text-muted-foreground">No matching cards. Adjust your search or filter.</p> : <div className="cn-grid" style={{ "--cn-card-size": `${cardSize}px` } as CSSProperties}>{visibleCards.map(card => {
 const owned = Boolean(progress[card.key]);
             return <article key={card.key} className="min-w-0">
-              <div className="relative"><button type="button" disabled={saving !== null} onClick={() => void toggle(card.key)} aria-pressed={owned} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className="cn-art"><ChineseCardFront src={imageSource(card.image)} alt={card.code} className="h-full w-full object-cover" style={{ ...moonSevenImageStyle(card.key), filter: owned ? "none" : "grayscale(1)", opacity: owned ? 1 : .65 }} /></button><button type="button" onClick={() => { setInspected(card.key); setZoom(100); }} aria-label={`Inspect ${card.code}`} className="cn-inspect min-h-9"><ScanSearch size={12} aria-hidden="true" /> Inspect</button></div>
+              <div className="relative"><button type="button" disabled={saving !== null} onClick={() => void toggle(card.key)} aria-pressed={owned} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className="cn-art"><ChineseCardFront src={imageSource(card.image)} alt={card.code} className="h-full w-full object-cover" style={{ ...moonSevenImageStyle(card.key), filter: owned ? "none" : "grayscale(1)", opacity: owned ? 1 : .65 }} /></button><button type="button" onClick={() => { setInspected(card.key); }} aria-label={`Inspect ${card.code}`} className="cn-inspect min-h-9"><ScanSearch size={12} aria-hidden="true" /> 3D</button></div>
               <p className="mb-2 mt-3 break-words text-xs font-semibold tracking-tight">{card.code}</p>
               <button type="button" disabled={saving !== null} aria-pressed={owned} onClick={() => void toggle(card.key)} aria-label={`${card.code}, ${owned ? "collected; mark missing" : "missing; mark collected"}`} className={`min-h-9 w-full rounded-lg border px-2 text-[11px] font-medium disabled:cursor-wait ${owned ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>{saving === card.key ? "Saving..." : owned ? "Collected" : "Missing"}</button>
             </article>;
@@ -209,15 +177,7 @@ const owned = Boolean(progress[card.key]);
           <p role="status" aria-live="polite" className="mt-4 min-h-5 text-xs text-muted-foreground">{saving ? "Saving your collection..." : ""}</p>
         </section>
       </div>
-      <Dialog open={Boolean(inspectorCard)} onOpenChange={open => { if (!open) setInspected(null); }}>
-        <DialogContent style={{ zIndex: 100001 }} className="z-[100001] flex h-[90dvh] max-h-[90dvh] w-[calc(100%_-_24px)] max-w-4xl flex-col gap-3 overflow-hidden rounded-2xl p-4 sm:p-5">
-          <DialogTitle className="pr-8 text-base">{inspectorCard?.code}</DialogTitle>
-          <DialogDescription className="text-xs">Gallery framing in full color. Zoom, then drag to move the card.</DialogDescription>
-          <label className="flex items-center gap-3 text-sm"><span>Zoom</span><input type="range" min={100} max={400} step={10} value={zoom} onChange={event => setZoom(Number(event.target.value))} className="min-w-0 flex-1" /><output className="w-12 text-right tabular-nums">{zoom}%</output><button type="button" onClick={() => setZoom(100)} className="min-h-10 rounded-lg border border-border px-3 text-xs">Reset</button></label>
-          {inspectorCard && <InspectorCanvas key={inspectorCard.key} card={inspectorCard} src={imageSource(inspectorCard.image)} zoom={zoom} />}
-          <div className="flex items-center justify-between gap-2"><button type="button" onClick={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index - 1 + visibleCards.length) % visibleCards.length]?.key ?? null); setZoom(100); }} className="min-h-11 rounded-lg border border-border px-4 text-sm">Previous</button><button type="button" onClick={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index + 1) % visibleCards.length]?.key ?? null); setZoom(100); }} className="min-h-11 rounded-lg border border-border px-4 text-sm">Next</button></div>
-        </DialogContent>
-      </Dialog>
+      <ChineseCardInspector card={inspectorCard ? { key: inspectorCard.key, code: inspectorCard.code, front: imageSource(inspectorCard.image), back: inspectorCard.back, frontStyle: moonSevenImageStyle(inspectorCard.key) } : null} onClose={() => setInspected(null)} onPrevious={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index - 1 + visibleCards.length) % visibleCards.length]?.key ?? null); }} onNext={() => { const index = visibleCards.findIndex(card => card.key === inspected); setInspected(visibleCards[(index + 1) % visibleCards.length]?.key ?? null); }}/>
     </main>
   );
 }
