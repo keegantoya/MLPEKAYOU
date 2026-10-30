@@ -48,6 +48,34 @@ import avatar047 from "@/assets/avatars/avatar047.webp";
 import avatar048 from "@/assets/avatars/avatar048.webp";
 import avatar049 from "@/assets/avatars/avatar049.webp";
 import avatar050 from "@/assets/avatars/avatar050.webp";
+import avatar051 from "@/assets/avatars/avatar051.webp";
+import avatar052 from "@/assets/avatars/avatar052.webp";
+import avatar053 from "@/assets/avatars/avatar053.webp";
+import avatar054 from "@/assets/avatars/avatar054.webp";
+import avatar055 from "@/assets/avatars/avatar055.webp";
+import avatar056 from "@/assets/avatars/avatar056.webp";
+import avatar057 from "@/assets/avatars/avatar057.webp";
+import avatar058 from "@/assets/avatars/avatar058.webp";
+import avatar059 from "@/assets/avatars/avatar059.webp";
+import avatar060 from "@/assets/avatars/avatar060.webp";
+import avatar061 from "@/assets/avatars/avatar061.webp";
+import avatar062 from "@/assets/avatars/avatar062.webp";
+import avatar063 from "@/assets/avatars/avatar063.webp";
+import avatar064 from "@/assets/avatars/avatar064.webp";
+import avatar065 from "@/assets/avatars/avatar065.webp";
+import avatar066 from "@/assets/avatars/avatar066.webp";
+import avatar067 from "@/assets/avatars/avatar067.webp";
+import avatar068 from "@/assets/avatars/avatar068.webp";
+import avatar069 from "@/assets/avatars/avatar069.webp";
+import avatar070 from "@/assets/avatars/avatar070.webp";
+import avatar071 from "@/assets/avatars/avatar071.webp";
+import avatar072 from "@/assets/avatars/avatar072.webp";
+import avatar073 from "@/assets/avatars/avatar073.webp";
+import avatar074 from "@/assets/avatars/avatar074.webp";
+import avatar075 from "@/assets/avatars/avatar075.webp";
+import avatar076 from "@/assets/avatars/avatar076.webp";
+import avatar077 from "@/assets/avatars/avatar077.webp";
+import avatar078 from "@/assets/avatars/avatar078.webp";
 import KeeganAvatar from "@/assets/avatars/keeganpfp3.webp";
 import heimantouAvatar from "@/assets/avatars/heimantouavatar.webp";
 import maipfp from "@/assets/avatars/maipfp.webp";
@@ -122,6 +150,34 @@ const avatarMap: Record<string, string> = {
   avatar048,
   avatar049,
   avatar050,
+  avatar051,
+  avatar052,
+  avatar053,
+  avatar054,
+  avatar055,
+  avatar056,
+  avatar057,
+  avatar058,
+  avatar059,
+  avatar060,
+  avatar061,
+  avatar062,
+  avatar063,
+  avatar064,
+  avatar065,
+  avatar066,
+  avatar067,
+  avatar068,
+  avatar069,
+  avatar070,
+  avatar071,
+  avatar072,
+  avatar073,
+  avatar074,
+  avatar075,
+  avatar076,
+  avatar077,
+  avatar078,
   heimantouavatar: heimantouAvatar,
   "heimantouavatar.webp": heimantouAvatar,
   keeganpfp: KeeganAvatar,
@@ -138,9 +194,10 @@ const avatarMap: Record<string, string> = {
 };
 export const DEFAULT_AVATAR = avatar001;
 export const FRAME_OWNER_ID = "17e57e39-bc0c-44e7-b373-ac34c6690185";
-export const SELECTABLE_AVATARS = Object.keys(avatarMap).filter(
-  (name) => /^avatar\d{3}$/.test(name) && !/^avatar(00[1-9]|01[0-5]|027)$/.test(name),
-);
+const RETIRED_AVATARS = new Set(["avatar016", "avatar017", "avatar018", "avatar019", "avatar020", "avatar021", "avatar022", "avatar023", "avatar024", "avatar025", "avatar026", "avatar029", "avatar032", "avatar039", "avatar040", "avatar041", "avatar042", "avatar043", "avatar046"]);
+export const SELECTABLE_AVATARS = Object.keys(avatarMap)
+  .filter((name) => /^avatar\d{3}$/.test(name) && !/^avatar(00[1-9]|01[0-5]|027)$/.test(name) && !RETIRED_AVATARS.has(name))
+  .sort((a, b) => Number(a.slice(6)) - Number(b.slice(6)));
 export type ProfileAssetUser = {
   id?: string | null;
   avatar_url?: string | null;

@@ -58,7 +58,7 @@ import ChineseNewYearsTwo from "./pages/Chinese Kayou/Chinese Sets/Other Sets/CN
 import ISOChinese from "./pages/Chinese Kayou/Chinese ISO/ISOChinese";
 import CollectionsChinese from "./pages/Chinese Kayou/Chinese Specific Pages/CollectionsChinese";
 import Community from "./pages/Main Pages/Community";
-import CommunitySet from "./pages//Main Pages/CommunitySet";
+import CommunitySet from "./pages/Main Pages/CommunitySet";
 import Leaderboard from "./pages/Main Pages/Leaderboard";
 import ChineseLeaderboard from "./pages/Chinese Kayou/Chinese Specific Pages/Chinese-Leaderboard";
 import NotFound from "./pages/NotFound";

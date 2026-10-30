@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Check, Hourglass } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, UserRound, Medal } from "lucide-react";
 import CardImage from "@/components/CardImage";
 import ProfileAvatar, { avatarFrameQueryKey } from "@/components/ProfileAvatar";
 import {
@@ -19,8 +19,14 @@ import {
   FRAME_CATALOG,
   type ProfileAssetUser,
 } from "../Everypony/profile-assets";
+const appearanceStyles = `
+.appearance-page{color:hsl(var(--foreground));background:hsl(var(--background))!important}.ap-heading{padding-bottom:18px;border-bottom:1px solid hsl(var(--border))}.ap-heading h1{letter-spacing:-.025em;font-size:clamp(23px,3vw,32px);line-height:1.2}.ap-heading p{margin-top:5px}.ap-preview{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 12px;gap:18px}.ap-preview-art{display:flex;align-items:center;justify-content:center;width:174px;height:174px;flex:none;position:relative}.ap-preview-label{font-size:16px;font-weight:700}.ap-tabs{display:flex;gap:26px;border-bottom:1px solid hsl(var(--border));margin-bottom:22px}.ap-tab{display:flex;align-items:center;gap:9px;min-height:52px;padding:0 3px;border-bottom:3px solid transparent;font-size:17px;font-weight:700;color:hsl(var(--muted-foreground));transition:color .18s,border-color .18s}.ap-tab[aria-pressed=true]{border-color:hsl(var(--primary));color:hsl(var(--foreground))}.ap-tab[aria-pressed=true] svg{color:hsl(var(--primary))}.ap-section-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 14px;font-size:16px;font-weight:700;letter-spacing:-.01em}.ap-section-title span{font-size:11px;font-weight:400;color:hsl(var(--muted-foreground))}.ap-avatar-group+.ap-avatar-group{margin-top:28px}.ap-avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:13px}.ap-avatar{position:relative;display:block;aspect-ratio:1;overflow:hidden;padding:0;border-radius:24%;border:2px solid transparent;background:hsl(var(--muted));transition:transform .2s,border-color .2s,box-shadow .2s}.ap-avatar img{transition:transform .25s}.ap-avatar[aria-pressed=true]{border-color:hsl(var(--primary));box-shadow:0 0 0 3px hsl(var(--primary)/.14)}.ap-equipped{position:absolute;right:5px;bottom:5px;padding:4px;border-radius:50%;background:hsl(var(--primary));color:hsl(var(--primary-foreground));box-shadow:0 2px 7px #0003}.ap-filters{display:flex;gap:20px;margin:0 0 24px;border-bottom:1px solid hsl(var(--border))}.ap-filter{min-height:44px;padding:0 0 9px;border-bottom:2px solid transparent;font-size:13px;color:hsl(var(--muted-foreground))}.ap-filter[aria-pressed=true]{color:hsl(var(--foreground));border-color:hsl(var(--primary));font-weight:700}.ap-frame{min-width:0;overflow:hidden;border:1px solid hsl(var(--border));border-radius:20px;background:hsl(var(--card));transition:transform .2s,border-color .2s,box-shadow .2s}.ap-frame[data-equipped=true]{border-color:hsl(var(--primary)/.65);box-shadow:inset 0 0 0 1px hsl(var(--primary)/.12)}.ap-frame-art{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;padding:18px;overflow:hidden;background:radial-gradient(circle at center,hsl(var(--primary)/.1),transparent 67%)}.ap-frame-art>[data-frame-art]{transition:transform .24s}.ap-progress{height:4px;border-radius:4px;overflow:hidden;background:hsl(var(--primary)/.12);margin-top:10px}.ap-progress span{display:block;height:100%;border-radius:inherit;background:hsl(var(--primary));transition:width .3s}.ap-dialog{border-color:hsl(var(--primary)/.25)!important;background:hsl(var(--card))!important;color:hsl(var(--foreground))!important}.appearance-page button:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:4px}.ap-avatar:disabled,.ap-frame-art:disabled{opacity:.6}
+.ap-frame-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}.ap-staff-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:10px;background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-size:14px;font-weight:600;text-decoration:none}.ap-staff-link:focus-visible{outline:2px solid hsl(var(--primary));outline-offset:4px}@media(min-width:640px){.ap-frame-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1024px){.ap-frame-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}@media(min-width:1800px){.ap-frame-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}}
+@media(hover:hover) and (pointer:fine){.ap-avatar:hover:not(:disabled){transform:translateY(-4px) rotate(-1deg);border-color:hsl(var(--primary)/.5);box-shadow:0 8px 18px #0002}.ap-avatar:hover img{transform:scale(1.055)}.ap-frame:hover{border-color:hsl(var(--primary)/.45);box-shadow:0 8px 24px #0001}.ap-frame-art:hover>[data-frame-art]{transform:scale(1.06) rotate(-2deg)}}
+@media(min-width:1024px){.ap-avatar-grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}}@media(max-width:639px){.ap-heading{padding-bottom:14px}.ap-preview{flex-direction:row;text-align:left;gap:14px;padding:16px;border-radius:22px}.ap-preview-art{width:110px;height:110px}.ap-preview-art>span,.ap-preview-art>div{max-width:80px;max-height:80px}.ap-preview-label{font-size:14px}.ap-preview p.mt-3{margin-top:6px;font-size:11px}.ap-tabs{margin-bottom:18px;gap:24px}.ap-tab{font-size:16px;min-height:48px}.ap-avatar-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ap-section-title{font-size:14px}.ap-frame-art{padding:12px}.ap-avatar-group+.ap-avatar-group{margin-top:24px}}
+@media(prefers-reduced-motion:reduce){.appearance-page *,.ap-dialog *{transition:none!important;animation:none!important}.ap-avatar:hover,.ap-avatar:hover img,.ap-frame-art:hover>[data-frame-art]{transform:none!important}}
+`;
 const db = supabase as unknown as SupabaseClient;
-const AVATARS_LEAVING_SOON = new Set(["avatar016", "avatar017", "avatar018", "avatar019", "avatar020", "avatar021", "avatar022", "avatar023", "avatar024", "avatar025", "avatar026", "avatar029", "avatar032", "avatar039", "avatar040", "avatar041", "avatar042", "avatar043", "avatar046"]);
 type FrameStatus = { frame_id: string; status: "locked" | "unlocked" | "revoked"; owned_count: number; total_count: number; required_count: number };
 type KofiRequest = { id: string; frame_id: string; public_name: string; status: "pending" | "approved" | "denied"; staff_comment: string; updated_at: string };
 type Selection = { kind: "avatar"; value: string } | { kind: "frame"; value: string | null };
@@ -32,6 +38,7 @@ const [profile, setProfile] = useState<ProfileAssetUser | null>(null);
 const [activeTab, setActiveTab] = useState<"avatars" | "frames">(
     () => new URLSearchParams(location.search).get("tab") === "frames" ? "frames" : "avatars",
   );
+const [hoverPreview, setHoverPreview] = useState<Selection | null>(null);
 const [pending, setPending] = useState<Selection | null>(null);
 const [loading, setLoading] = useState(true);
 const [saving, setSaving] = useState(false);
@@ -68,6 +75,9 @@ const previewProfile = pending?.kind === "avatar"
     : pending?.kind === "frame"
       ? { ...profile, avatar_frame: pending.value }
       : profile;
+const displayProfile = hoverPreview?.kind === "avatar" ? { ...profile, avatar_url: hoverPreview.value } : hoverPreview?.kind === "frame" ? { ...profile, avatar_frame: hoverPreview.value } : profile;
+const olderAvatars = SELECTABLE_AVATARS.filter(name => Number(name.slice(6)) < 51);
+const newAvatars = SELECTABLE_AVATARS.filter(name => Number(name.slice(6)) >= 51);
 const surface = isLightMode ? "border-black/10 bg-white" : "border-white/10 bg-[#151718]";
 const muted = isLightMode ? "text-zinc-600" : "text-zinc-400";
 const selectedStyle = isLightMode
@@ -217,49 +227,51 @@ const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar
       setSaving(false);
     }
   };
-const savedAppearance = useMemo(() => <ProfileAvatar profile={{ id: profile?.id, avatar_url: profile?.avatar_url, avatar_frame: profile?.avatar_frame }} frameId={profile?.avatar_frame ?? null} preview alt="Current avatar" className="h-16 w-16 lg:h-24 lg:w-24" />, [profile?.id, profile?.avatar_url, profile?.avatar_frame]);
+const savedAppearance = useMemo(() => <ProfileAvatar profile={displayProfile} frameId={displayProfile?.avatar_frame ?? null} preview alt={hoverPreview ? "Preview appearance" : "Current avatar"} className="h-24 w-24 lg:h-28 lg:w-28" />, [displayProfile?.id, displayProfile?.avatar_url, displayProfile?.avatar_frame, hoverPreview]);
 const shownFrame = FRAME_CATALOG.find((frame) => frame.id === infoFrame);
 const shownStatus = infoFrame ? frameStatuses[infoFrame] : null;
   return (
-    <div className={`min-h-screen ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+    <div className={`appearance-page min-h-screen ${isLightMode ? "bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
+      <style>{appearanceStyles}</style>
       <main className="w-full min-w-0 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
-        <header className="mb-5 flex items-center gap-3">
+        <header className="ap-heading mb-5 flex items-center gap-3">
           <button type="button" onClick={() => navigate(-1)} aria-label="Back to profile" className={`flex h-10 w-10 items-center justify-center rounded-2xl border ${surface}`}><ChevronLeft className="h-5 w-5" /></button>
-          <div><h1 className="text-xl font-semibold sm:text-2xl">Profile appearance</h1><p className={`text-sm ${muted}`}>Choose your avatar and collect frames.</p></div>
+          <div><h1 className="text-xl font-semibold sm:text-2xl">Profile appearance</h1><p className={`text-sm ${muted}`}>Change your avatar or pick a frame.</p></div>
         </header>
-        <div className="grid items-start gap-5 lg:grid-cols-[210px_minmax(0,1fr)] lg:gap-8">
-          <aside className={`flex items-center gap-4 rounded-3xl border-b p-4 lg:sticky lg:top-[calc(var(--kayou-header-bottom,64px)+1rem)] lg:flex-col lg:border-b-0 lg:border-r lg:p-4 lg:text-center ${surface}`}>
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center lg:h-36 lg:w-36">{savedAppearance}</div>
-            <div><p className="text-sm font-semibold">Your current look</p><p className={`mt-1 text-xs ${muted}`}>{FRAME_CATALOG.find((frame) => frame.id === profile?.avatar_frame)?.name || "No frame equipped"}</p><p className={`mt-3 max-w-52 text-xs leading-5 ${muted}`}>Frames appear wherever your profile picture is shown.</p></div>
+        <div className="grid items-start gap-5 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
+          <aside className="ap-preview lg:sticky lg:top-[calc(var(--kayou-header-bottom,64px)+1rem)]">
+            <div className="ap-preview-art">{savedAppearance}</div>
+            <div><p className="ap-preview-label">{hoverPreview ? "Trying on" : "On your profile"}</p><p className={`mt-1 text-xs ${muted}`}>{FRAME_CATALOG.find((frame) => frame.id === displayProfile?.avatar_frame)?.name || "No frame equipped"}</p><p className={`mt-3 max-w-52 text-xs leading-5 ${muted}`}>{hoverPreview ? "Click to get a closer look." : "Pick an avatar or see which frames you’ve unlocked."}</p></div>
           </aside>
           <section className="min-w-0">
-            <div className={`mb-5 flex gap-1 rounded-2xl border p-1 ${surface}`}>
-              {(["avatars", "frames"] as const).map((tab) => <button key={tab} type="button" aria-pressed={activeTab === tab} onClick={() => setActiveTab(tab)} className={`flex-1 rounded-2xl px-4 py-2.5 text-sm font-semibold ${activeTab === tab ? isLightMode ? "bg-[#c89d13]/15 text-[#725700]" : "bg-[#FFD54A]/15 text-[#FFE27A]" : muted}`}>{tab === "avatars" ? "Avatars" : "Frames"}</button>)}
+            <div className="ap-tabs">
+              {(["avatars", "frames"] as const).map((tab) => <button key={tab} type="button" aria-pressed={activeTab === tab} onClick={() => setActiveTab(tab)} className="ap-tab">{tab === "avatars" ? <UserRound size={18} aria-hidden="true"/> : <Medal size={18} aria-hidden="true"/>}{tab === "avatars" ? "Avatars" : "Frames"}</button>)}
             </div>
             {error && !pending ? <p role="alert" className="mb-4 text-sm text-red-500">{error}</p> : null}
             {loading ? <p role="status" className={muted}>Loading your appearance...</p> : profile ? activeTab === "avatars" ? (
-              <div><div role="note" className="mb-4 flex items-start gap-2 text-sm leading-6 text-muted-foreground"><Hourglass className="mt-1 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" aria-hidden="true" /><p><strong className="font-semibold text-foreground">Leaving soon.</strong> Avatars marked with this hourglass are leaving the selector in 24-48 hours.</p></div><div className="grid grid-cols-4 items-start gap-2 min-[420px]:grid-cols-5 sm:grid-cols-6 lg:grid-cols-[repeat(auto-fill,minmax(90px,1fr))] sm:gap-3">
-                {SELECTABLE_AVATARS.map((name) => <button key={name} type="button" disabled={saving} onClick={() => choose({ kind: "avatar", value: name })} aria-label={`Choose avatar ${name.replace("avatar", "")}${AVATARS_LEAVING_SOON.has(name) ? ", leaving the selector soon" : ""}`} aria-pressed={profile.avatar_url === name} className={`relative block aspect-square w-full overflow-hidden rounded-[22%] border p-0 leading-none ${profile.avatar_url === name ? selectedStyle : surface}`}>
-                  <CardImage src={getAvatar(name)} alt="" className="absolute inset-0 block h-full w-full object-cover object-center" />
-                  {AVATARS_LEAVING_SOON.has(name) && <span title="Leaving the selector in 24-48 hours" aria-label="Leaving soon" className="pointer-events-none absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-950/90 text-amber-300 shadow-sm sm:h-7 sm:w-7"><Hourglass className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" /></span>}
-                  {profile.avatar_url === name ? <span className="absolute bottom-2 right-2 rounded-full bg-[#E7C84B] p-1 text-black"><Check className="h-3 w-3" /></span> : null}
-              </button>)}
-            </div>
-           </div>
+              <div className="ap-avatar-sections">
+                {[{ title: "Earlier avatars", avatars: olderAvatars }, { title: "Just added", avatars: newAvatars }].map(group => <section key={group.title} className="ap-avatar-group"><h2 className="ap-section-title">{group.title}<span>{group.avatars.length} avatars</span></h2><div className="ap-avatar-grid">
+                  {group.avatars.map(name => <button key={name} type="button" disabled={saving} onMouseEnter={() => setHoverPreview({ kind: "avatar", value: name })} onMouseLeave={() => setHoverPreview(null)} onFocus={() => setHoverPreview({ kind: "avatar", value: name })} onBlur={() => setHoverPreview(null)} onClick={() => choose({ kind: "avatar", value: name })} aria-label={`Choose avatar ${name.replace("avatar", "")}`} aria-pressed={profile.avatar_url === name} className="ap-avatar">
+                    <CardImage src={getAvatar(name)} alt="" className="absolute inset-0 block h-full w-full object-cover object-center" />
+                    {profile.avatar_url === name && <span className="ap-equipped"><Check size={13} aria-hidden="true"/></span>}
+                  </button>)}
+                </div></section>)}
+              </div>
           ) : (
               <>
-              <div className="mb-5 flex gap-5 border-b border-current/10">{(["all", "available", "locked"] as const).map(value => <button key={value} type="button" aria-pressed={frameFilter === value} onClick={() => setFrameFilter(value)} className={`min-h-11 rounded-t-2xl border-b-2 px-3 text-sm font-semibold capitalize ${frameFilter === value ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{value === "all" ? "All frames" : value}</button>)}</div>
+              <div className="ap-filters">{(["all", "available", "locked"] as const).map(value => <button key={value} type="button" aria-pressed={frameFilter === value} onClick={() => setFrameFilter(value)} className="ap-filter">{value === "all" ? "All frames" : value === "available" ? "Unlocked" : "Locked"}</button>)}</div>
               {[{ name: "Collection frames", frames: FRAME_CATALOG.filter(frame => !frame.kofiMonthly && !["frame003", "frame010"].includes(frame.id)) }, { name: "Community frames", frames: FRAME_CATALOG.filter(frame => ["frame003", "frame010"].includes(frame.id)) }, { name: "Ko-Fi supporter frames", frames: FRAME_CATALOG.filter(frame => frame.kofiMonthly) }].map(group => {
 const frames = group.frames.filter(frame => frameFilter === "all" || (frameStatuses[frame.id]?.status === "unlocked") === (frameFilter === "available"));
                 if (!frames.length) return null;
-                return <section key={group.name} className="mb-7"><h2 className="border-b border-current/10 pb-2 text-sm font-semibold">{group.name}</h2>{group.name === "Ko-Fi supporter frames" && <p className={`mt-2 text-xs leading-5 ${muted}`}>A permanent thank-you from Keegan. These frames stay unlocked even after your Ko-Fi membership ends.</p>}<div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-[repeat(auto-fill,minmax(170px,1fr))]">
+                return <section key={group.name} className="mb-7"><h2 className="ap-section-title">{group.name}</h2>{group.name === "Ko-Fi supporter frames" && <p className={`mt-2 text-xs leading-5 ${muted}`}>A permanent thank-you from Keegan. These frames stay unlocked even after your Ko-Fi membership ends.</p>}<div className="ap-frame-grid">
                 {frames.map(frame => {
 const state = frameStatuses[frame.id]; const unlocked = state?.status === "unlocked"; const permanentlyLocked = state?.status === "revoked"; const selected = profile.avatar_frame === frame.id; const application = requests.find(row => row.frame_id === frame.id);
-                  return <article key={frame.id} className={`min-w-0 overflow-hidden rounded-2xl border ${selected ? selectedStyle : surface}`}>
+                  return <article key={frame.id} className="ap-frame" data-equipped={selected}>
                     <p className={`px-3 pt-3 text-center text-xs font-bold ${permanentlyLocked ? "text-red-600 dark:text-red-300" : unlocked ? "text-emerald-700 dark:text-emerald-300" : muted}`}>{permanentlyLocked ? "Permanently locked" : unlocked ? selected ? "Equipped" : "Unlocked" : "Locked"}</p>
-                    <button type="button" disabled={saving} onClick={() => openFrame(frame.id)} aria-label={unlocked ? `Choose ${frame.name}` : permanentlyLocked ? `${frame.name}, permanently locked; view details` : `View ${frame.name} requirement`} className="flex aspect-square w-full items-center justify-center overflow-hidden p-5 sm:p-6"><span data-frame-art={frame.id} className={`flex h-[60%] w-[60%] items-center justify-center ${permanentlyLocked ? "grayscale blur-[2px] opacity-35" : !unlocked ? "grayscale opacity-60" : ""}`}><ProfileAvatar profile={profile} frameId={frame.id} preview alt="" className="h-full w-full" /></span></button>
-                    <div className="border-t border-current/10 px-3 py-2.5"><p className="text-xs font-semibold sm:text-sm">{frame.name}</p><p className={`mt-1 text-xs ${muted}`}>{selected ? "Equipped" : unlocked ? "Available" : frame.kofiMonthly ? application?.status === "pending" ? "Awaiting approval" : application?.status === "denied" ? "Request reviewed" : `$${frame.kofiMonthly}/month - request approval` : state?.status === "revoked" ? "Permanently locked" : frame.id === "frame003" ? "Tap to unlock" : frame.id === "frame010" ? "Limited-time reward" : `${state?.owned_count ?? 0} / ${state?.required_count ?? "..."}`}</p>
-                    <button type="button" onClick={() => { setInfoFrame(frame.id); setPublicName(application?.public_name ?? ""); setRequestError(""); }} className="mt-1 min-h-9 text-xs font-medium text-primary">{frame.kofiMonthly && !unlocked ? "View criteria / request" : "View requirement"}</button></div>
+                    <button type="button" disabled={saving} onMouseEnter={() => setHoverPreview({ kind: "frame", value: frame.id })} onMouseLeave={() => setHoverPreview(null)} onFocus={() => setHoverPreview({ kind: "frame", value: frame.id })} onBlur={() => setHoverPreview(null)} onClick={() => openFrame(frame.id)} aria-label={unlocked ? `Choose ${frame.name}` : permanentlyLocked ? `${frame.name}, permanently locked; view details` : `View ${frame.name} requirement`} className="ap-frame-art"><span data-frame-art={frame.id} className={`flex h-[64%] w-[64%] items-center justify-center ${permanentlyLocked ? "grayscale blur-[2px] opacity-35" : !unlocked ? "opacity-75" : ""}`}><ProfileAvatar profile={profile} frameId={frame.id} preview alt="" className="h-full w-full" /></span></button>
+                    <div className="border-t border-current/10 px-3 py-2.5"><p className="text-xs font-semibold sm:text-sm">{frame.name}</p><p className={`mt-1 text-xs ${muted}`}>{permanentlyLocked ? "Staff review needed" : selected ? "Equipped" : unlocked ? "Available" : frame.kofiMonthly ? application?.status === "pending" ? "Awaiting approval" : application?.status === "denied" ? "Request reviewed" : `$${frame.kofiMonthly}/month - request approval` : state?.status === "revoked" ? "Permanently locked" : frame.id === "frame003" ? "Tap to unlock" : frame.id === "frame010" ? "Limited-time reward" : `${state?.owned_count ?? 0} / ${state?.required_count ?? "..."}`}</p>
+                    {!frame.kofiMonthly && !frame.merit && frame.id !== "frame010" && !permanentlyLocked && <div className="ap-progress" role="progressbar" aria-label={`${frame.name} unlock progress`} aria-valuemin={0} aria-valuemax={Math.max(1, state?.required_count ?? 1)} aria-valuenow={Math.min(Math.max(0, state?.owned_count ?? 0), Math.max(1, state?.required_count ?? 1))}><span style={{ width: `${unlocked ? 100 : Math.min(100, Math.max(0, (state?.owned_count ?? 0) / Math.max(1, state?.required_count ?? 1) * 100))}%` }}/></div>}
+                    <button type="button" onClick={() => { setInfoFrame(frame.id); setPublicName(application?.public_name ?? ""); setRequestError(""); }} className="mt-1 min-h-9 text-xs font-medium text-primary">{permanentlyLocked ? "Contact staff" : frame.kofiMonthly && !unlocked ? "Request this frame" : "How to unlock"}</button></div>
                   </article>;
                 })}</div></section>;
               })}
@@ -270,10 +282,10 @@ const state = frameStatuses[frame.id]; const unlocked = state?.status === "unloc
         </div>
       </main>
       <Dialog open={infoFrame !== null} onOpenChange={(open) => { if (!open && !requestBusy) setInfoFrame(null); }}>
-        <DialogContent onEscapeKeyDown={event => { if (requestBusy) event.preventDefault(); }} onPointerDownOutside={event => { if (requestBusy) event.preventDefault(); }} className={`max-h-[90dvh] overflow-y-auto max-w-md rounded-3xl border ${surface} ${isLightMode ? "text-zinc-900" : "text-white"}`}>
+        <DialogContent onEscapeKeyDown={event => { if (requestBusy) event.preventDefault(); }} onPointerDownOutside={event => { if (requestBusy) event.preventDefault(); }} className={`ap-dialog max-h-[90dvh] overflow-y-auto max-w-md rounded-3xl border ${surface} ${isLightMode ? "text-zinc-900" : "text-white"}`}>
           <DialogTitle>{shownFrame?.name} {shownStatus?.status === "unlocked" ? "unlocked" : shownStatus?.status === "revoked" ? "permanently locked" : "requirement"}</DialogTitle>
           <DialogDescription className={muted}>{shownFrame?.requirement}</DialogDescription>
-          {shownFrame?.kofiMonthly ? <div className="space-y-4">
+          {shownStatus?.status === "revoked" ? <div className="space-y-4"><p className="text-sm leading-6">{shownFrame && !shownFrame.kofiMonthly && !shownFrame.merit && shownFrame.id !== "frame010" ? "This frame was locked after your collection passed its unlock requirement and later dropped below it. The system flags that change as a possible attempt to claim a frame without earning it." : "This frame needs a staff review before it can be unlocked again."}</p><p className="text-sm leading-6">If you were correcting your checklist or think this was a mistake, please reach out to staff. They can review it and restore access.</p><a className="ap-staff-link" href="https://discord.gg/mlpekayou" target="_blank" rel="noopener noreferrer">Contact staff on Discord</a><p className={`text-xs leading-5 ${muted}`}>Let staff know your website username and which frame is locked.</p></div> : shownFrame?.kofiMonthly ? <div className="space-y-4">
           <div className="mx-auto flex h-32 w-32 items-center justify-center"><ProfileAvatar profile={profile} frameId={shownFrame.id} preview className="h-20 w-20" alt="Frame preview" /></div>
           <p className="text-sm leading-6">This frame is yours permanently once approved, even if your membership ends. A thank you from Keegan for supporting MLPEKAYOU.</p>
           <a href="https\://ko-fi.com/Q2Y429HP6N" target="_blank" rel="noopener noreferrer" className="inline-block text-sm font-semibold text-primary underline">Visit MLPEKAYOU on Ko-Fi</a>
@@ -285,25 +297,25 @@ const state = frameStatuses[frame.id]; const unlocked = state?.status === "unloc
           </form>}
           {requestError && <p role="alert" className="text-sm text-red-500">{requestError}</p>}
         </div> : <>
-          <p className="text-sm">{shownStatus?.status === "unlocked" ? `Requirement met: ${shownStatus.owned_count} / ${shownStatus.total_count} ${shownFrame?.progressLabel ?? "cards"}.` : shownStatus?.status === "revoked" ? "This frame is no longer available for your account." : infoFrame === "frame003" ? "Tap Unlock Frame to add the Pakra frame to your available frames." : shownFrame?.merit ? "Unlock this frame on merit." : `You currently own ${shownStatus?.owned_count ?? 0} of ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}. Own ${shownStatus?.required_count ?? 0} to unlock ${shownFrame?.name ?? "this frame"}.`}</p>
-          {infoFrame === "frame003" && shownStatus?.status !== "unlocked" && shownStatus?.status !== "revoked" ? <button type="button" disabled={saving} onClick={() => void unlockPakraFrame()} className={`rounded-2xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${selectedStyle}`}>{saving ? "Unlocking..." : "Unlock Frame"}</button> : <button type="button" onClick={() => setInfoFrame(null)} className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${selectedStyle}`}>Got it</button>}
+          <p className="text-sm">{shownStatus?.status === "unlocked" ? `Requirement met: ${shownStatus.owned_count} / ${shownStatus.total_count} ${shownFrame?.progressLabel ?? "cards"}.` : infoFrame === "frame003" ? "Tap Unlock Frame to add the Pakra frame to your available frames." : shownFrame?.merit ? "Unlock this frame on merit." : `You currently own ${shownStatus?.owned_count ?? 0} of ${shownStatus?.total_count ?? 0} ${shownFrame?.progressLabel ?? "cards"}. Own ${shownStatus?.required_count ?? 0} to unlock ${shownFrame?.name ?? "this frame"}.`}</p>
+          {infoFrame === "frame003" && shownStatus?.status !== "unlocked" ? <button type="button" disabled={saving} onClick={() => void unlockPakraFrame()} className={`rounded-2xl border px-4 py-3 text-sm font-semibold disabled:opacity-50 ${selectedStyle}`}>{saving ? "Unlocking..." : "Unlock Frame"}</button> : <button type="button" onClick={() => setInfoFrame(null)} className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${selectedStyle}`}>Got it</button>}
           {error && infoFrame === "frame003" && <p role="alert" className="text-sm text-red-500">{error}</p>}
         </>}
        </DialogContent>
       </Dialog>
     <Dialog open={pending !== null} onOpenChange={(open) => { if (!open && !saving) { setPending(null); setError(""); } }}>
-        <DialogContent className={`max-w-md rounded-3xl border ${isLightMode ? "bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
+        <DialogContent className={`ap-dialog max-w-md rounded-3xl border ${isLightMode ? "bg-white text-zinc-900" : "border-white/10 bg-[#151718] text-white"}`}
           onEscapeKeyDown={(event) => { if (saving) event.preventDefault(); }}
           onPointerDownOutside={(event) => { if (saving) event.preventDefault(); }}>
           <DialogTitle>{pending?.kind === "frame" ? pending.value ? "Use this frame?" : "Remove your frame?" : "Use this avatar?"}</DialogTitle>
           <DialogDescription className={muted}>Your selection will appear on your profile.</DialogDescription>
           <div className="flex items-center justify-center gap-3 py-8">
             <div className="flex h-32 w-32 items-center justify-center">
-              <ProfileAvatar profile={profile} frameId={profile?.avatar_frame ?? null} preview alt="Current appearance" className="h-20 w-20 rounded-3xl" />
+              <ProfileAvatar profile={profile} frameId={profile?.avatar_frame ?? null} preview alt="Current appearance" className="h-24 w-24 rounded-3xl" />
             </div>
-            <ChevronRight className="h-5 w-5 shrink-0 text-[#b38a13]" />
+            <ChevronRight className="h-5 w-5 shrink-0 text-primary" />
             <div className="flex h-32 w-32 items-center justify-center">
-              <ProfileAvatar profile={previewProfile} frameId={previewProfile?.avatar_frame ?? null} preview alt="New appearance" className="h-20 w-20 rounded-3xl" />
+              <ProfileAvatar profile={previewProfile} frameId={previewProfile?.avatar_frame ?? null} preview alt="New appearance" className="h-24 w-24 rounded-3xl" />
             </div>
           </div>
           {error ? <p role="alert" className="text-sm text-red-500">{error}</p> : null}
