@@ -1163,7 +1163,7 @@ export const getFantasyWonderlandBack = (key: string) => {
         return cardImagePaths.parallelRubyBack(key.slice(-2));
     }
     if (key.startsWith("BP01RR")) {
-        return cardImagePaths.starterRubyBack(key.slice(-2));
+        return `/tcg-card-backs/BP01-RR${key.slice(-2)}-Back.webp`;
     }
     if (key.startsWith("BP01ER") || key.startsWith("BP01PER")) {
         return cardImagePaths.fixed.tcgCardBacksSCENECARDBACK;
@@ -1748,6 +1748,8 @@ export const getEnglishCardImageStyle = (card: EnglishCard, options: {
     const base: CSSProperties = { position: "absolute", inset: 0, width: "100%", height: "100%", maxWidth: "none", maxHeight: "none", objectFit: "cover", objectPosition: "50% 50%", transformOrigin: "50% 50%" };
     if (card.family === "promos")
         return { ...base, ...(back ? { transform: "scale(1.035)" } : englishPromoRules.getPromoFrontStyle(card.key)) };
+    if (back && card.setId === "FW" && /^BP01RR0[1-6]$/.test(card.key))
+        return { ...base, objectFit: "cover", transform: "scale(1.01)" };
     if (card.family === "tcg")
         return { ...base, transform: back && ["SD", "FW"].includes(card.setId) ? "scale(1.035)" : "scale(1)", ...(back ? rules?.getBackStyle?.(card.key, inspect) : rules?.getFrontStyle?.(card.key, inspect)) };
     const older = ["1", "2", "3"].includes(card.setId);
