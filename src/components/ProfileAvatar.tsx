@@ -46,7 +46,7 @@ export default function ProfileAvatar({ profile, src, frameId, preview = false, 
     document.head.appendChild(sheet);
   }, [frame?.id]);
   const layerStyle: CSSProperties | undefined = frame ? { position: "absolute", pointerEvents: "none", maxWidth: "none", width: `${frame.scale * 100}%`, height: `${frame.scale * 100}%`, left: "50%", top: `${frame.top}%`, transform: "translate(-50%, -50%)", objectFit: "contain" } : undefined;
-  return <span className={className} style={{ ...style, display: "inline-block", position: "relative", flexShrink: 0, aspectRatio: "1 / 1", height: "auto", boxSizing: "border-box", overflow: "visible", verticalAlign: "middle", borderRadius: "22%", isolation: "isolate" }}>
+  return <span className={className} data-avatar-frame={frame?.id ?? undefined} style={{ ...style, display: "inline-block", position: "relative", flexShrink: 0, aspectRatio: "1 / 1", height: "auto", boxSizing: "border-box", overflow: "visible", verticalAlign: "middle", borderRadius: "22%", isolation: "isolate" }}>
     {frame?.backImage && (frame.id === "frame013" ? <span aria-hidden="true" style={{ ...layerStyle, top: `${frame.top - 12}%`, display: "block", zIndex: 0 }}>
       {(["left", "right"] as const).map(side => <span key={side} className={`mlpe-kofi-wing mlpe-kofi-wing-${side}`}><img src={frame.backImage} alt="" draggable={false} decoding="async" style={{ display: "block", position: "absolute", inset: 0, width: "100%", height: "100%", maxWidth: "none", objectFit: "contain", pointerEvents: "none" }} /></span>)}
     </span> : <img src={frame.backImage} alt="" aria-hidden="true" draggable={false} style={{ ...layerStyle, zIndex: 0 }} />)}

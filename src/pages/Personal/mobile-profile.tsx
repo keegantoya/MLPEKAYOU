@@ -826,6 +826,7 @@ const MobileProfile = () => {
   return (
     <main className={`mobile-profile-scope mp-clean min-h-screen pb-24 font-['Oxanium'] ${isLightMode ? "mobile-profile-light bg-[#f5f5f3] text-zinc-900" : "bg-[#0d0f10] text-white"}`}>
 <style>{`
+@media(max-width:767px){.mp-profile-identity:has(>[data-avatar-frame="frame012"]){display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:12px}.mp-profile-identity>[data-avatar-frame="frame012"]{grid-column:1 / -1;justify-self:center;margin:32px 0 26px}.mp-profile-identity:has(>[data-avatar-frame="frame012"])>[aria-label="Profile notifications"]{flex-direction:row;align-self:center}.mp-profile-identity:has(>[data-avatar-frame="frame012"]) h1{white-space:normal;overflow-wrap:anywhere;overflow:visible;text-overflow:clip}}
 .mp-page-language-menu{position:fixed;z-index:120100;box-sizing:border-box;width:156px;padding:6px;border:1px solid #ffffff24;border-radius:12px;background:#1b1d20;color:#f4f4f5;box-shadow:0 8px 24px #0004;font-family:"Oxanium",sans-serif;animation:mp-page-language-in .16s ease-out both}
 .mp-page-language-menu-light{background:#fff;color:#202124;border-color:#00000020;box-shadow:0 8px 24px #0002}
 .mp-page-language-menu button{display:block;width:100%;min-height:46px;padding:10px 12px;text-align:left;font:inherit;font-size:13px;font-weight:600;color:inherit;border:0;border-radius:7px;background:none;cursor:pointer}
@@ -903,7 +904,7 @@ const MobileProfile = () => {
 <div className="w-full px-4 pb-6 sm:px-6">
 <header className="pt-4 sm:pt-6">
 <div className="text-[10px] font-semibold uppercase tracking-[.18em] text-[hsl(var(--primary))]">Reminder that i love and appreciate you! -keegan</div>
-  <div className="flex items-center gap-4 py-5 sm:py-6">
+  <div className="mp-profile-identity flex items-center gap-4 py-5 sm:py-6">
     <ProfileAvatar profile={profile} src={avatar} alt="Your avatar" className="h-24 w-24 shrink-0 rounded-2xl border border-white/10 object-cover shadow-lg" />
     <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><h1 className="truncate text-2xl font-semibold tracking-tight">{displayName}</h1>{verification && <CardImage src={verification.badge} alt={verification.label} title={verification.label} className="h-5 w-5 shrink-0" />}</div><p className="mp-muted mt-1 truncate text-xs">{discord ? `@${discord}` : "No Discord username set"}</p>{vacationMode && <p className="mt-1 text-xs text-[hsl(var(--primary))]">Vacation mode on</p>}</div>
     <div className="flex shrink-0 flex-col items-center gap-2" aria-label="Profile notifications">
