@@ -1,3 +1,4 @@
+import CollectionPageExperience from "@/components/CollectionPageExperience";
 import ChinesePakraLinks from "@/components/ChinesePakraLinks";
 import MLPEKAYOUFooter from "@/components/MLPEKAYOUFooter";
 import ChineseLaserTickets from "./pages/Chinese Kayou/Chinese Sets/Other Sets/CN-Laser-Tickets";
@@ -485,7 +486,7 @@ const standalone = window.matchMedia("(display-mode: standalone)").matches;
       <ScrollToTop />
       {!hideNavigation && <KayouHeader />}
       <div data-kayou-page-content="true" className={hideNavigation ? "min-h-screen" : "min-h-screen sm:pb-0"} style={hideNavigation ? undefined : { paddingTop: `var(--kayou-header-bottom, ${standalone ? "88px" : "64px"})` }}>
-        <AppRoutes />
+        <CollectionPageExperience><AppRoutes /></CollectionPageExperience>
       </div>
       <ChinesePakraLinks />
       {!hideNavigation && <MLPEKAYOUFooter />}
