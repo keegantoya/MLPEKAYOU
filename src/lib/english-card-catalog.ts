@@ -1228,6 +1228,8 @@ export const getHeartswarmingEveRarity = (key: string) => {
 export const getHeartswarmingEveRarityLabel = (key: string) => { const rarity = getHeartswarmingEveRarity(key); return rarity.startsWith("P") ? `\u203b${rarity.slice(1)}` : rarity; };
 export const HEARTHSWARMING_EVE_PSPR_PRINTED_NUMBERS = [2, 3, 4, 6, 9, 11, 17, 25, 26, 27, 28];
 export const getHeartswarmingEveDisplayCode = (key: string) => {
+    const token = key.match(/^BP04-TK0([1-6])$/);
+    if (token) return `BP04-TK${String(Number(token[1]) + 1).padStart(2, "0")}`;
     const sapphire = key.match(/^PBP04-SPR(\d{2})$/);
     if (sapphire) {
         const printed = HEARTHSWARMING_EVE_PSPR_PRINTED_NUMBERS[Number(sapphire[1]) - 1];
