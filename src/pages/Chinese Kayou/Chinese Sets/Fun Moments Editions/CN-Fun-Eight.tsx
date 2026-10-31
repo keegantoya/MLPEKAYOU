@@ -23,6 +23,7 @@ const viewport = useRef<HTMLDivElement>(null);
 const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 const [size, setSize] = useState({ width: 0, height: 0 });
 const [pan, setPan] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
 const node = viewport.current;
     if (!node) return;
